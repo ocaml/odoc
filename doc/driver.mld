@@ -1,1124 +1,415 @@
 {0 How to Drive [odoc]}
 
-This 'live' document describes how to use [odoc] to produce the documentation of [odoc] itself. The aim is
-to show a short, simple example of how [odoc] can be used, covering most of the important features.
-The document built here includes not only the documentation of [odoc] itself, but it also builds the
-docs for a subset of [odoc]'s dependent libraries to show how this may be done. For a much more
-complete and comprehensive use of [odoc], see the {{: https://github.com/ocaml-doc/voodoo} Voodoo project}, the tool currently used to build
-the package docs for
-{{: https://ocaml.org/packages} ocaml.org/packages}. The information in this page is specific to
-[odoc] version 2.3 or later. For earlier
-versions, see the [driver.md] or [driver.mld] file in the corresponding source distribution.
+[odoc] is a CLI tool to create API and documentation for OCaml
+projects. However, it operates at a rather low level, taking individual files
+through several distinct phases until the HTML output is generated.
 
-First, we need to initialise MDX with some libraries and helpful values:
+For this reason, just like for building any multifiles OCaml project, [odoc]
+needs to be driver by a higher level tool. The driver will take care of calling
+the [odoc] command with the right arguments throughout the different
+phases. Several drivers for [odoc] exist, such as:
+{{:https://dune.readthedocs.io/en/stable/documentation.html}dune} and
+{{:https://erratique.ch/software/odig}odig}.
 
-{[
-(* Prelude *)
-#require "bos";;
-#install_printer Fpath.pp;;
-#print_length 655360;;
-#print_depth 10;;
-open Bos;;
-let (>>=) = Result.bind;;
-let (>>|=) m f = m >>= fun x -> Ok (f x);;
-let get_ok = function | Ok x -> x | Error (`Msg m) -> failwith m
-let relativize p = Fpath.(v ".." // p) (* this driver is run from the [doc] dir *)
+The [odoc] tools also contains a "reference driver", that is kept up-to-date
+with the latest development of [odoc].
 
-(* Whether to instrument with landmarks. Result for each command will be saved
-   to directory [_build/default/doc/landmarks]. *)
-let instrument = false
+This document explains how to drive [odoc], as of version 3. It is not needed to
+know any of this to {e use} [odoc], it is targeted at driver authors, tools that
+interact with [odoc], or any curious passerby. This includes several subjects:
+
+- A big picture view of the doc generation model,
+- A unified explanation for the various command line flags,
+- An explanation of the [odoc] pipeline,
+- A convention for building docs for [opam]-installed packages.
+
+In addition to the documentation, the reference driver is a good tool to
+understand how to build [odoc] projects. It can be useful to look at the
+implementation code, but it can also help to simply look at all invocation of
+[odoc] during a run of the driver.
+
+{1:units Units of documentation}
+
+In its third major version, [odoc] has been improved so that a single
+documentation can work on multiple scenarios, from local switches to big
+monorepos, or the ocaml.org hub of documentation for all packages.
+
+The idea is that we have named units of documentation. We have two kind of them:
+page units, and modules units. Inside the units, everything is managed by
+[odoc]. Outside of the unit, the driver is free to arranged them however they
+like. (Note that however, for building [opam] packages there is a convention to
+follow for the driver.) In order to reference another unit, a documentation
+author can use the name of the unit.
+
+Different situations will give different meanings to the units. In the case of
+[opam] packages, though, there is a natural meaning to give to those units
+(you'll find more details in the convention for opam-installed packages). Any
+opam package will have an associated "documentation unit", with the name of the
+package. Any of its libraries will have an associated "module unit", with the
+name of the library. Another package can refer to the doc using the package
+name, or to any of its library using the library name, no matter where the
+package is located in the hierarchy.
+
+{1 The doc generation pipeline}
+
+Just like when compiling OCaml modules, generating docs for these modules need
+to be run in a specific order, as some information for generating docs for a
+file might reside in another one. However, [odoc] actually allows a particular
+file to reference a module that depend on it, creating a circular dependency.
+
+This circular dependency problem is one of the reason we have several phases in
+[odoc]. Let's review them:
+
+- The [compile] phase, which is used to create the [.odoc] artifacts from
+  [.cm{i;t;ti}] and [.mld] files. This is where [odoc] does a similar work to
+  that of OCaml, computing expansions for each module types. The dependencies
+  between are the same as the ones for the [.cm{i;t;ti}] input.
+
+- The [link] phase transforms the [.odoc] artifacts to [.odocl]. The main result
+  of this phase is to resolve odoc reference, which also has an effect on
+  canonical modules.
+
+- The [indexing] phase generates [.odoc-index] files from sets of [.odocl]
+  files. These index files will be used both for generating a global sidebar,
+  and for generating a search index.
+
+- The [generation] phase takes the [.odocl] and [.odoc-index] files and turns
+  them into either HTML, man pages or Latex files.
+
+{2 The compile phase}
+
+The compile phase takes as input a set of [.cm{i;t;ti}] as well as [.mld] files,
+and builds a directory hierarchy of [.odoc] files.
+
+There are distinct commands for this phase: [odoc compile] for interfaces and
+pages, [odoc compile-impl] for implementations, and [odoc compile-asset] for
+assets.
+
+{3 Compiling interfaces}
+
+Let's have a look at a generic invocation of [odoc] during the compile phase:
+
+{@shell[
+  $ odoc compile --output-dir <od> --parent-id <pid> -I <dir1> -I <dir2> <input-file>.<ext>
 ]}
 
-{1 Desired Output}
+- [<input-file>.<ext>] is the input file, either a [.cm{i;t;ti}] file or an [.mld]
+  file. Prefer [.cmti] files over the other format!
 
-[odoc] produces output files (HTML or others) in a structured directory tree, so before running [odoc], the output's structure must be decided. For these docs, we want the following structure:
-{ul {- [odoc/index.html] : Main page
-}{- [odoc/{odoc_for_authors.html,...}] : Other documentation pages
-}{- [odoc/odoc_model/index.html] : [odoc] model library subpage
-}{- [odoc/odoc_model/Odoc_model/index.html] : Module page for the module [Odoc_model]
-}{- [odoc/odoc_model/Odoc_model/...] : Further pages for the submodules of [Odoc_model]
-}{- [odoc/odoc_.../index.html] : Other [odoc] library pages
-}{- [odoc/deps/stdlib/index.html] : [Stdlib] main page
-}{- [odoc/deps/stdlib/Stdlib/index.html] : Module page for the module [Stdlib]
-}{- [odoc/deps/astring/index.html] : [astring] main page
-}{- [odoc/deps/...] : Other dependencies
-}{- [odoc/source/...] : Rendered source files
-}}
+- [--output-dir <od>] allows to specify the directory that will contain all the
+  [.odoc] files. This directory has to be fully managed by [odoc] and should not
+  be modified by another tool! The output file depends on the [--parent-id]
+  option.
 
-The [odoc] model for achieving this is that we have {e pages} ([.mld] files) that have {e children} that are either {e further pages} ([.mld] files), {e modules} (from [.cmti] files), or
-a {e source parent}. This {{!page-parent_child_spec}parent/child relationship} is specified on the command line. Parent pages must be {e compiled} by [odoc] before their children. Then compiling a page [mypage.mld] will produce the file [page-mypage.odoc].
+- [--parent-id <pid>] allows to place the output [.odoc] file in the
+  documentation hierarchy. This consists in a [/] separated sequence of non
+  empty strings (used as directory name). This "path" determines where the
+  [.odoc] file will be located below the [<od>] output dir. The name of the
+  output file is [<input-file>.odoc] for modules, and [page-<input-file>.odoc]
+  for pages. Documentation artifacts that will be in the same {{!units}unit of
+  documentation} needs to hare a common root in their parent id.
 
-In the example below, there will be a file [odoc.mld] that corresponds with the top-level directory [odoc/]. It will be compiled as follows:
+- [-I <dir>] corresponds to the search path for other [.odoc] file. It can be
+  given as many times as necessary, but should allow to access every [.odoc]
+  file generated from a [.cm{i;t;ti}] listed when calling [odoc compile-deps] on
+  the input file. [<dir>] are directories under the [<od>] directory, computed
+  from the [--parent-id] option given to previous call to [odoc compile].
 
-{@sh skip[
-odoc compile odoc.mld --child page-odoc_model --child deps 
-  --child src-source ...
+A concrete example for such command would be:
+
+{@shell[
+  $ odoc compile ~/.opam/5.2.0/lib/ppxlib/ppxlib__Extension.cmti --output-dir _odoc/ -I _odoc/ocaml-base-compiler/lib/compiler-libs.common -I _odoc/ocaml-base-compiler/lib/stdlib -I _odoc/ocaml-compiler-libs/lib/ocaml-compiler-libs.common -I _odoc/ppxlib/lib/ppxlib -I _odoc/ppxlib/lib/ppxlib.ast -I _odoc/ppxlib/lib/ppxlib.astlib -I _odoc/ppxlib/lib/ppxlib.stdppx -I _odoc/ppxlib/lib/ppxlib.traverse_builtins -I _odoc/sexplib0/lib/sexplib0 --parent-id ppxlib/lib/ppxlib
 ]}
 
-The file [deps.mld], which corresponds with the subdirectory [odoc/deps/], will be compiled as follows:
+{3 Compiling implementations}
 
-{@sh skip[
-odoc compile deps.mld -I . --parent page-odoc --child page-stdlib --child page-astring ...
+A [compile-impl] command is pretty similar:
+
+{@shell[
+  $ odoc compile-impl --output-dir <od> --source-id <sid> --parent-id <pid> -I <dir1> -I <dir2> <input-file>.<ext>
 ]}
 
-The file [odoc_model.mld] will have a child module [Odoc_model]. It will be compiled as follows:
+- [<input-file>.cmt] is the input file, it has to be a [.cmt] file.
 
-{@sh skip[
-odoc compile odoc_model.mld -I . --parent page-odoc --child module-Odoc_model
+- [--output-dir <od>] has the same meaning as for [odoc compile].
+
+- [--parent-id <pid>] also has the same meaning as for [odoc compile]. However,
+  the name of the output file is [impl-<input-file>.odoc]. Implementations needs
+  to be available through the [-I] search path, so it is very likely that one
+  wants the implementation and interface [.odoc] files to share the same parent
+  id.
+
+- [-I <dir>] also corresponds to the search path for other [.odoc] file.
+
+- [source-id <sid>] is a new argument specific to [compile-impl]. This corresponds to the location of the rendering of the source, which is required to generate links to it.
+
+A concrete example for such command would be:
+
+{@shell[
+  $ odoc compile-impl ~/.opam/5.2.0/lib/ppxlib/ppxlib__Spellcheck.cmt --output-dir _odoc/ -I _odoc/ocaml-base-compiler/lib/compiler-libs.common -I _odoc/ocaml-base-compiler/lib/stdlib -I _odoc/ocaml-compiler-libs/lib/ocaml-compiler-libs.common -I _odoc/ppxlib/lib/ppxlib -I _odoc/ppxlib/lib/ppxlib.ast -I _odoc/ppxlib/lib/ppxlib.astlib -I _odoc/ppxlib/lib/ppxlib.stdppx -I _odoc/sexplib0/lib/sexplib0 --enable-missing-root-warning --parent-id ppxlib/lib/ppxlib --source-id ppxlib/src/ppxlib/spellcheck.ml
 ]}
 
-The last type of page contains a list of paths to the source files that should be rendered as HTML. The output will be found as a tree underneath this page. This will be compiled in the following way:
+{3 Compiling assets}
 
-{@sh skip[
-odoc source-tree source.map -I . --parent page-odoc
+Assets are given during the generation phase. But we still need to create an
+[.odoc] file, for [odoc]'s resolution mechanism.
+
+{@shell[
+  $ odoc compile-asset --output-dir <od> --parent-id <pid> --name <assetname>
 ]}
 
-The first few lines of [source.map] will be:
+- [--output-dir] and [--parent-id] are identical to the [compile] and
+  [compile-impl] commands,
 
-{@text[
-src/xref2/utils.ml
-src/xref2/type_of.ml
-src/xref2/tools.ml
+- [--name <assetname>] gives the asset name.
+
+- The output file name is computed from the previous values as
+  [<output-dir>/<parent-id>/asset-<assetname>.odoc].
+
+{2 The link phase}
+
+The link phase requires the directory of the [compile] phase to generate its set
+of [.odocl] files. This phase resolves references and canonicals.
+
+A generic link command is:
+
+{@shell[
+  $ odoc link
+      -I <dir1> -I <dir2>
+      -P <pname1>:<pdir1> -P <pname2>:<pdir2>
+      -L <lname1>:<ldir1> -L <lname2>:<ldir2>
+      <path/to/file.odoc>
 ]}
 
-The above indicates the desire for the rendered source of [utils.ml] to be found as the file [odoc/source/src/xref2/utils.ml.html].
+- [<path/to/file.odoc] is the input [.odoc] file. The result of this command is
+  [path/to/file.odocl]. This path was determined by [--output-dir] and
+  [--parent-id] from the link phase, and it is important for the indexing phase
+  that it stays in the same location.
 
-When compiling any [.mld] file, the parent and all children must be specified. Parents can only be pages from other [.mld] files, but children may be pages (from [.mld] files) or modules (from [.cmti]/[.cmt] or [.cmi] files).
+- [-P <name>:<dir>] are used to list the "named page-units", used to resolve
+  references such as [{!/ocamlfind/index}].
 
-The parent page must exist before the child page is created, and it must have had the child specified when it was initially compiled.
+- [-L <name>:<dir>] are used to list the "named module-units", used to resolve
+  references such as [{!/findlib.dynload/Fl_dynload}].
 
-{1 Document Generation Phases}
+- [-I <dir>] are used to resolve non-references, and should include the same set
+  of [.odoc] than in the compile phase.
 
-Using [odoc] is a three-phase process:
-{ol {- Compilation: odoc compile
-}}
+{2 The indexing phase}
 
-This takes as input either [.mld] files containing pure [odoc] markup or the output from the compiler in the form of [.cmti], [.cmt], or [.cmi] files (in order of preference). For [.mld] files, this step simply translates them into [odoc]'s internal format and writes the corresponding file. For example, given the input [foobar.mld], [odoc] will output [page-foobar.odoc]. There are no dependencies for compiling [.mld] files beyond the parent as outlined above.
+The indexing phase refers to the crunching of information found in several
+[.odocl] files. Currently, there are two use-cases for this phase:
 
-For modules, compilation is the point where [odoc] performs some initial expansion and resolution operations, a process that usually introduces dependencies. For a given input [/path/to/file.cmti], it will output the file [/path/to/file.odoc] unless the [-o] option is used to override the output file. If there were [.cmi] dependencies required for OCaml to compile a particular module, then there will be equivalent [.odoc] dependencies needed for the [odoc compile] step. [odoc] will search for these dependencies in the paths specified with the [-I] directive on compilation. [odoc] provides a command to help with this: [odoc compile-deps].
+- Generating a search index. This requires all information from linked
+  interfaces and pages, but also form linked implementations in order to sort
+  results.
 
-As an example, we can run [odoc compile-deps] on the file [../src/xref2/.odoc_xref2.objs/byte/odoc_xref2__Compile.cmti]:
+- Generating a global sidebar.
 
-{@text[
-$ `odoc` compile-deps ../src/xref2/.odoc_xref2.objs/byte/odoc_xref2__Compile.cmti | tail -n 5
-Stdlib__result 2ba42445465981713146b97d5e185dd5
-Stdlib__seq d6a8de25c9eecf5ae9420a9f3f8b2e88
-Stdlib__set 5d365647a10f75c22f2b045a867b4d3e
-Stdlib__uchar ab6f1df93abf9e800a3e0d1543523c96
-Odoc_xref2__Compile e0d620d652a724705f7ed620dfe07be0
+{3 Counting occurrences}
+
+This step counts the number of occurrences of each value/type/... in the
+implementation, and stores them in a big table. A generic invocation is:
+
+{@shell[
+  $ odoc count-occurrences <dir1> <dir2> -o <path/to/name.odoc-occurrences>
 ]}
 
-From this, we see it's necessary to run [odoc compile] against several [Stdlib] modules before we can compile [odoc_xref2__Compile.cmti]
-{ol {- Linking: odoc link
-}}
+An example of such command:
 
-This takes the [odoc] files produced during the compilation step and performs the final steps of resolution for both pages and modules, and expansion for modules only. It is during this phase that all the references in the documentation comments are resolved. In order for these to be resolved, everything that is referenced must have been compiled already, and their [odoc] files must be on the
-include path as specified by the [-I] arguments to [odoc link]. In this example, we achieve that by compiling all modules and [.mld] files before linking anything. The output of the
-link step is an [odocl] file, which is in the same path as the original [odoc] file by default.
-
-Please note: it's only necessary to link the non-hidden modules (i.e., without a double underscore).
-{ol {- Generation: odoc html-generate
-}}
-
-Once the compile and link phases are complete, the resulting [odocl] files may be rendered in a variety of formats. In this example we output HTML:
-
-{1 [odoc] Documentation}
-
-In this section [odoc] is used to generate the documentation of [odoc] and some of its dependent packages. We can make a few simplifying assumptions here:
-{ol {- Since we're working with one leaf package, we can assume that there can be no module name clashes in the dependencies. As such, we can afford to put all of our [.odoc] files into one directory and then hardcode the include path to be this directory. When using [odoc] in a context where there may be module name clashes, it requires more careful partitioning of output directories.
-}{- We'll do all of the compiling before any linking.
-}}
-
-Let's start with some functions to execute the three phases of [odoc].
-
-Compiling a file with [odoc] requires a few arguments: the file to compile, an
-optional parent, a list of include paths, a list of children for [.mld] files,
-and an output path. Include paths can be just ['.'], and we can calculate the
-output file from the input because all the files go into the same
-directory.
-
-[odoc] supports compiling {i implementations}. This can be useful to render source
-code, generate links from and to source code, and count occurrences of
-identifiers. The [compile-src] command takes a source-tree parent file and a
-source path that has to be in the source tree.
-
-Linking a file with [odoc] requires the input file and a list of include paths. As
-for compile, we will hardcode the include path.
-
-Generating the HTML requires the input [odocl] file and an output path. We will
-hardcode the output path to be [html/]. In the case of implementations, a
-source file (passed via the [--source] argument) is required.
-
-To get the number of uses of each identifier, we can use the [count-occurrences]
-command on the "implementation" units.
-
-In all of these, we'll capture [stdout] and [stderr] so we can check it later.
-
-{[
-let odoc = Cmd.v "../src/odoc/bin/main.exe" (* This is the just-built [odoc] binary *)
-
-let compile_output = ref [ "" ]
-
-let compile_src_output = ref [ "" ]
-
-let link_output = ref [ "" ]
-
-let generate_output = ref [ "" ]
-
-type executed_command = {
-  cmd : Cmd.t;
-  time : float; (** Running time in seconds. *)
-  output_file : Fpath.t option;
-}
-
-(* Record the commands executed, their running time and optionally the path to
-   the produced file. *)
-let commands = ref [ ]
-
-let instrument_dir =
-  lazy (
-    let dir = Fpath.v "landmarks" in
-    OS.Dir.delete dir |> get_ok;
-    OS.Dir.create dir |> get_ok |> ignore;
-    dir
-  )
-
-(* Environment variables passed to commands. *)
-let env = OS.Env.current () |> get_ok
-
-let run ?output_file cmd =
-  let t_start = Unix.gettimeofday () in
-  let env =
-    if instrument then
-      let lazy instrument_dir = instrument_dir in
-      let instrument_out =
-        match output_file with
-        | Some outf ->
-            Fpath.(/) instrument_dir (Fpath.basename outf ^ ".json")
-            |> Fpath.to_string
-        | None -> "temporary:" ^ Fpath.to_string instrument_dir
-      in
-      Astring.String.Map.add "OCAML_LANDMARKS"
-        ("time,allocation,format=json,output=" ^ instrument_out)
-        env
-    else env
-  in
-  let r = OS.Cmd.(run_out ~env ~err:OS.Cmd.err_run_out cmd |> to_lines) |> get_ok in
-  let t_end = Unix.gettimeofday () in
-  let time = t_end -. t_start in
-  commands := { cmd; time; output_file } :: !commands;
-  r
-
-let add_prefixed_output cmd list prefix lines =
-  if List.length lines > 0 then
-    list :=
-      !list
-      @ Bos.Cmd.to_string cmd :: List.map (fun l -> prefix ^ ": " ^ l) lines
-
-let compile file ?parent ?(output_dir = Fpath.v "./") ?(ignore_output = false)
-    children =
-  let output_basename =
-    let ext = Fpath.get_ext file in
-    let basename = Fpath.basename (Fpath.rem_ext file) in
-    match ext with
-    | ".mld" -> "page-" ^ basename ^ ".odoc"
-    | ".cmt" | ".cmti" | ".cmi" -> basename ^ ".odoc"
-    | _ -> failwith ("bad extension: " ^ ext)
-  in
-  let output_file = Fpath.( / ) output_dir output_basename in
-  let open Cmd in
-  let cmd =
-    odoc % "compile" % Fpath.to_string file % "-I" % "." % "-o" % p output_file
-    |> List.fold_right (fun child cmd -> cmd % "--child" % child) children
-  in
-  let cmd =
-    match parent with
-    | Some p -> cmd % "--parent" % ("page-\"" ^ p ^ "\"")
-    | None -> cmd
-  in
-  let lines = run ~output_file cmd in
-  if not ignore_output then
-    add_prefixed_output cmd compile_output (Fpath.to_string file) lines
-
-let compile_src file ?(output_dir = Fpath.v "./") ?(ignore_output = false)
-    ~source_name ~source_parent_file () =
-  let output_basename =
-    let ext = Fpath.get_ext file in
-    let basename = Fpath.basename (Fpath.rem_ext file) in
-    match ext with
-    | ".cmt" -> "impl-" ^ basename ^ ".odoc"
-    | _ -> failwith ("bad extension: " ^ ext)
-  in
-  let output_file = Fpath.( / ) output_dir output_basename in
-  let open Cmd in
-  let source_args =
-    Cmd.(
-      v "--source-path" % p source_name % "--parent"
-      % p source_parent_file)
-  in
-  let cmd =
-    odoc % "compile-src" % Fpath.to_string file %% source_args % "-I" % "."
-    % "-o" % p output_file
-  in
-  let lines = run ~output_file cmd in
-  if not ignore_output then
-    add_prefixed_output cmd compile_src_output (Fpath.to_string file) lines
-
-let link ?(ignore_output = false) file =
-  let open Cmd in
-  let output_file = Fpath.set_ext "odocl" file in
-  let cmd = odoc % "link" % p file % "-o" % p output_file % "-I" % "." in
-  let cmd =
-    if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd
-  in
-  let lines = run ~output_file cmd in
-  if not ignore_output then
-    add_prefixed_output cmd link_output (Fpath.to_string file) lines
-
-let html_generate ?(ignore_output = false) ?(assets = []) ?(search_uris = [])
-    file source =
-  let open Cmd in
-  let source =
-    match source with None -> empty | Some source -> v "--source" % p source
-  in
-  let assets =
-    List.fold_left (fun acc filename -> acc % "--asset" % filename) empty assets
-  in
-  let search_uris =
-    List.fold_left
-      (fun acc filename -> acc % "--search-uri" % p filename)
-      empty search_uris
-  in
-  let cmd =
-    odoc % "html-generate" %% source % p file %% assets %% search_uris % "-o"
-    % "html" % "--theme-uri" % "odoc" % "--support-uri" % "odoc"
-  in
-  let lines = run cmd in
-  if not ignore_output then
-    add_prefixed_output cmd generate_output (Fpath.to_string file) lines
-
-let support_files () =
-  let open Cmd in
-  let cmd = odoc % "support-files" % "-o" % "html/odoc" in
-  run cmd
-
-let count_occurrences output =
-  let open Cmd in
-  let cmd = odoc % "count-occurrences" % "-I" % "." % "-o" % p output in
-  run cmd
+{@shell[
+  $ odoc count-occurrences _odoc/ -o _odoc/occurrences-all.odoc-occurrences
 ]}
 
+{3 Indexing entries}
 
-We'll now make some library lists. We have not only external dependency
-libraries, but [odoc] itself is also separated into libraries. These two
-sets of libraries will be documented in different sections, so we'll keep them
-in separate lists. Moreover, [odoc] libraries will include the source code via
-a hardcoded path.
+The [odoc compile-index] produces an [.odoc-index] file, from [.odocl] files,
+other [.odoc-index] files, and possibly some [.odoc-occurrences] files.
 
-Additionally, we'll construct a list containing the extra documentation pages. Finally let's create a list mapping the section to its parent, which matches
-the hierarchy declared above.
+To create an index for the page and documentation units, we use the [-P] and
+[-L] arguments.
 
-{[
-let dep_libraries_core = [
-    "odoc-parser";
-    "astring";
-    "cmdliner";
-    "fpath";
-    "result";
-    "tyxml";
-    "fmt";
-    "stdlib";
-    "yojson";
-];;
-
-let extra_deps = [
-    "base";
-    "base_bigstring";
-    "base_quickcheck";
-    "bin_prot";
-    "camlp-streams";
-    "core";
-    "fieldslib";
-    "int_repr";
-    "ocaml-compiler-libs";
-    "parsexp";
-    "ppx_bench.runtime-lib";
-    "ppx_compare";
-    "ppx_enumerate";
-    "ppx_expect";
-    "ppx_expect.collector";
-    "ppx_expect.common";
-    "ppx_expect.config";
-    "ppx_expect.config_types";
-    "ppx_expect.evaluator";
-    "ppx_expect.make_corrected_file";
-    "ppx_expect.matcher";
-    "ppx_expect.payload";
-    "ppx_hash";
-    "ppx_inline_test.config";
-    "ppx_inline_test.runtime-lib";
-    "ppx_module_timer";
-    "ppx_sexp_conv";
-    "ppx_stable_witness";
-    "ppx_stable_witness.runtime";
-    "ppx_stable_witness.stable_witness";
-    "ppxlib";
-    "ppxlib.ast";
-    "ppxlib.astlib";
-    "ppxlib.traverse_builtins";
-    "sexplib";
-    "sexplib0";
-    "splittable_random";
-    "stdio";
-    "typerep";
-    "variantslib";
-]
-
-let dep_libraries =
-    match Sys.getenv_opt "ODOC_BENCHMARK" with
-    | Some "true" -> dep_libraries_core @ extra_deps
-    | _ -> dep_libraries_core
-
-let odoc_libraries = [
-    "odoc_xref_test"; "odoc_xref2"; "odoc_odoc"; "odoc_html_support_files";
-    "odoc_model_desc"; "odoc_model"; "odoc_manpage"; "odoc_loader";
-    "odoc_latex"; "odoc_html"; "odoc_document"; "odoc_examples"; "odoc_parser";
-    "ocamlary"; "odoc_search" ; "odoc_html_frontend" ; "odoc_json_index";
-    "syntax_highlighter"; "type_desc_to_yojson" ];;
-
-let all_libraries = dep_libraries @ odoc_libraries;;
-
-let extra_docs = [
-    "interface";
-    "driver";
-    "parent_child_spec";
-    "features";
-    "odoc_for_authors";
-    "cheatsheet";
-    "dune";
-    "ocamldoc_differences";
-    "api_reference";
-]
-
-let parents =
-    let add_parent p l = List.map (fun lib -> (lib, p)) l in
-    (add_parent "deps" dep_libraries) @ (add_parent "odoc" odoc_libraries);;
-
+{@shell[
+  $ odoc compile-index -o path/to/<indexname>.odoc-index -P <pname1>:<ppath1> -P <pname2>:<ppath2> -L <lname1>:<lpath1> -L <lname2>:<lpath2> --occurrences <path/to/name.odoc-occurrences>
 ]}
 
-[odoc] operates on the compiler outputs. We need to find them for both the files compiled by Dune within this project and those in libraries we compile against.
-The following uses [ocamlfind] to locate the library paths for our dependencies. Since [ocamlfind] gives
-us the absolute path, we also have a short function here to relativise it based on our current working
-directory to ensure the log of commands we collect is as reproducible as possible.
+An example of such command:
 
-{[
-let ocamlfind = Cmd.v "ocamlfind"
-
-let reach t ~from =
-  let rec loop t from =
-    match (t, from) with
-    | a :: t, b :: from when a = b -> loop t from
-    | _ -> List.fold_right (fun _ acc -> ".." :: acc) from t
-  in
-  let v s = String.split_on_char '/' s in
-  loop (v t) (v from) |> String.concat "/"
-
-let relativize_path =
-  let pwd = Sys.getcwd () in
-  fun p -> reach p ~from:pwd
-
-let lib_path lib =
-  let cmd = Cmd.(ocamlfind % "query" % lib) in
-  run cmd |> List.hd |> relativize_path
-
-let lib_paths =
-  List.fold_right
-    (fun lib acc ->
-      (lib, lib_path lib) :: acc)
-    dep_libraries []
+{@shell[
+  $ odoc compile-index -o _odoc/ppxlib/index.odoc-index -P ppxlib:_odoc/ppxlib/doc -L ppxlib:_odoc/ppxlib/lib/ppxlib -L ppxlib.ast:_odoc/ppxlib/lib/ppxlib.ast -L ppxlib.astlib:_odoc/ppxlib/lib/ppxlib.astlib -L ppxlib.metaquot:_odoc/ppxlib/lib/ppxlib.metaquot -L ppxlib.metaquot_lifters:_odoc/ppxlib/lib/ppxlib.metaquot_lifters -L ppxlib.print_diff:_odoc/ppxlib/lib/ppxlib.print_diff -L ppxlib.runner:_odoc/ppxlib/lib/ppxlib.runner -L ppxlib.runner_as_ppx:_odoc/ppxlib/lib/ppxlib.runner_as_ppx -L ppxlib.stdppx:_odoc/ppxlib/lib/ppxlib.stdppx -L ppxlib.traverse:_odoc/ppxlib/lib/ppxlib.traverse -L ppxlib.traverse_builtins:_odoc/ppxlib/lib/ppxlib.traverse_builtins --occurrences _odoc/occurrences-all.odoc-occurrences
 ]}
 
-We need a function to find [odoc] inputs from the given search path. [odoc]
-operates on [.cmti], [.cmt], or [.cmi] files, in order of preference. The following
-function finds all matching files starting from the given path. Then it returns an [Fpath.Set.t]
-that contains the [Fpath.t] values representing the absolute file path, without its extension.
+{2 The generation phase}
 
-{[
-let find_units p =
-  OS.Dir.fold_contents ~dotfiles:true
-    (fun p acc ->
-      if List.exists (fun ext -> Fpath.has_ext ext p) [ "cmt"; "cmti"; "cmi" ]
-      then p :: acc
-      else acc)
-    [] (Fpath.v p)
-  >>|= fun paths ->
-  let l = List.map Fpath.rem_ext paths in
-  let l =
-    List.filter
-      (fun f ->
-        not @@ Astring.String.is_infix ~affix:"ocamldoc" (Fpath.to_string f))
-      l
-  in
-  List.fold_right Fpath.Set.add l Fpath.Set.empty;;
+The generation phase is the phase that takes all information computed in
+previous files, and actually generates the documentation. It can take the form
+of HTML, Latex and manpages, although currently HTML is the [odoc] backend that
+supports the most functionalities (such as images, videos, ...).
+
+In this manual, we describe the situation for generating HTML. Usually,
+generating for other backend boils down to replacing [html-generate] by
+[latex-generate] or [man-generate], refer to the manpage to see the diverging
+options.
+
+Given an [.odocl] file, [odoc] might generate a single [.html] file, or a
+complete directory of [.html] files. The [--output-dir] option specifies the
+root for generating those output.
+
+{3 A js file for search requests}
+
+[odoc] provides a way to plugin a javascript file, containing the code to answer
+user's queries. In order to never block the UI, this file will be loaded in a
+web worker to perform searches:
+
+- The search query will be sent as a plain string to the web worker, using the
+  standard mechanism of message passing.
+
+- The web worker has to send back the result as a message to the main thread,
+  containing the list of results. The format is defined in the TODO.
+
+- The file must be manually put in the [--output-dir] values, the driver can
+  decide where.
+
+{3 Interfaces and pages}
+
+A generic [html-generate] command for interfaces has the following form:
+
+{@shell[
+  $ odoc html-generate
+    --output-dir <odir>
+    --index <path/to/file.odoc-index>
+    --search-uri <relative/to/output-dir/file.js> --search-uri <relative/to/output-dir/file2.js>
+    <path/to/file.odocl>
 ]}
 
-Since the units returned by this function have their extension stripped, we need a
-function to find the best file to use with this basename.
+- [--output-dir <odir>] is used to specify the root output for the generated
+  [.html].
 
-{[
-let best_file base =
-  List.map (fun ext -> Fpath.add_ext ext base) [ "cmti"; "cmt"; "cmi" ]
-  |> List.find (fun f -> Bos.OS.File.exists f |> get_ok)
+- [--index <path/to/file.odoc-index>] is given to [odoc] for sidebar generation.
+
+- [--search-uri <relative/to/output-dir/file.js>] tells [odoc] which file(s) to
+  load in a web worker.
+
+The output directory or file can be computed from this command's [--output-dir],
+the initial [--parent-id] given when creating the [.odoc] file, as well as the
+unit name. In the case of a module, the output is a directory named with the
+name of the module. In the case of a page, the output is a file with the name of
+the page and the [.html] extension.
+
+An example of such command is:
+
+{@shell[
+  $ odoc html-generate _odoc/ppxlib/doc/page-index.odocl --index _odoc/ppxlib/index.odoc-index --search-uri ppxlib/sherlodoc_db.js --search-uri sherlodoc.js -o _html/
 ]}
 
-Many of the units will be 'hidden', meaning that Dune will mangle their name
-in order to namespace them. This is achieved by prefixing the namespace module and
-a double underscore, so we can tell by the existence of a double underscore that
-a module is intended to be hidden. The following predicate tests for that condition:
+{3 Source code}
 
-{[
-let is_hidden path = Astring.String.is_infix ~affix:"__" (Fpath.to_string path)
+{@shell[
+  $ odoc html-generate-source --output-dir <odir> --impl <path/to/impl-file.odocl> <path/to/source/file.ml>
 ]}
 
-To build the documentation, we start with these files. With the following function, we'll call [odoc compile-deps] on the file to
-find all other compilation units upon which it depends:
+- [--output-dir <odir>] has been covered already
 
-{[
-type compile_deps = { digest : Digest.t; deps : (string * Digest.t) list }
+- [--impl <path/to/impl-file.odocl>] allows to give the implementation file.
 
-let compile_deps f =
-  let cmd = Cmd.(odoc % "compile-deps" % Fpath.to_string f) in
-  let deps = run cmd in
-  let l = List.filter_map (Astring.String.cut ~sep:" ") deps in
-  let basename = Fpath.(basename (f |> rem_ext)) |> String.capitalize_ascii in
-  match List.partition (fun (n, _) -> basename = n) l with
-  | [ (_, digest) ], deps -> Ok { digest; deps }
-  | _ -> Error (`Msg "odd")
+- [<path/to/source/file.ml>] is the source file.
+
+The output file can be computed from this command's [--output-dir], and the
+initial [--source-id] and [--name] given when creating the [impl-*.odoc] file.
+
+An example of such command is:
+
+{@shell[
+  $ odoc html-generate-source --impl _odoc/ppxlib/lib/ppxlib/impl-ppxlib__Reconcile.odocl /home/panglesd/.opam/5.2.0/lib/ppxlib/reconcile.ml -o _html/
 ]}
 
-For each compiled [odoc] file, we'll need to remember some options given at [odoc
-compile]-time. An example of this is the source code rendering. When we compile
-an implementation unit, we need to provide the source file at HTML generation.
+{3 Generating docs for assets}
 
-{[
-type unit = {
-  file : Fpath.t;
-  ignore_output : bool;
-  source : Fpath.t option;
-  assets : string list;
-}
+This is the phase where we pass the actual asset. We pass it as a positional
+argument, and give the asset unit using [--asset-unit].
+
+{@shell[
+  $ odoc html-generate-asset --output-dir <odir> --asset-unit <path/to/asset-file.odocl> <path/to/asset/file.ext>
 ]}
 
-For [odoc] libraries, we infer the implementation and interface source file path
-from the library name. We list them in a file, passed to [odoc source-tree], to
-generate [src-source.odoc]. This file contains the source hierarchy. It will be
-linked and passed to [html-generate], just as other pages and compilation units.
+{1 Convention for installed packages}
 
-It is used as the [source-parent] for all units with provided
-sources.
+In order to build the documentation for installed package, the driver needs to
+give a meaning to various of the concept above. In particular, it needs to
+define the pages and libraries group, know where to find the pages and assets,
+what id to give them, when linking it needs to know to which group the artifact
+may be linking...
 
-{[
-let source_tree_output = ref [ "" ]
+So that the different drivers and installed packages play well together, we
+define here a convention for building installed packages. If both the package
+and the driver follow it, building the docs should go well!
 
-let source_tree ?(ignore_output = false) ~parent ~output file =
-  let open Cmd in
-  let parent = v "--parent" % ("page-\"" ^ parent ^ "\"") in
-  let cmd = odoc % "source-tree" % "-I" % "." %% parent % "-o" % p output % p file in
-  let lines = run cmd in
-  if not ignore_output then
-    add_prefixed_output cmd source_tree_output (Fpath.to_string file) lines
+{2 The [-P] and [-L] roots}
 
-let odoc_source_tree = Fpath.v "srctree-source.odoc"
+Each package define a set of root ids. These roots will be used in [--parent-id]
+and in [-P] and [-L].
 
-let source_dir_of_odoc_lib lib =
-  match String.split_on_char '_' lib with
-  | "odoc" :: s ->
-      let libname = Fpath.(v (String.concat "_" s)) in
-      Some Fpath.(v "src" // libname)
-  | _ -> None
+The driver can decide any set of mutually disjoint set of roots, without posing
+problem to the reference resolution. For instance, both [-P
+pkg:<output_dir>/pkg/doc] and [-P pkg:<output_dir>/pkg/version/doc] are
+acceptable versions. However, we define here "canonical" roots.
 
-let source_files_of_odoc_module lib module_ =
-  let filename =
-    let module_ =
-      match Astring.String.cut ~rev:true ~sep:"__" module_ with
-      | None -> module_
-      | Some (_, "") -> module_
-      | Some (_, module_) -> module_
-    in
-    (* ML.ml should not be renamed *)
-    if String.for_all (fun c -> Char.equal (Char.uppercase_ascii c) c) module_
-    then module_
-    else String.uncapitalize_ascii module_
-  in
-  match source_dir_of_odoc_lib lib with
-  | None -> None
-  | Some relpath ->
-      let add_filename path ext =
-        Fpath.( / ) path filename |> Fpath.add_ext ext
-      in
-      let find_by_extension path exts =
-        exts
-        |> List.map (fun ext -> add_filename path ext)
-        |> List.find_opt (fun f -> Bos.OS.File.exists (relativize f) |> get_ok)
-      in
-      find_by_extension relpath [ "pp.ml"; "ml"; "ml-gen" ]
+Each installed package [<p>] define a single page root id: [<p>/doc].
 
-let compile_source_tree units =
-  let sources =
-    List.filter_map (fun (_, _, _, file) -> Option.map Fpath.to_string file) units
-  in
-  let source_map = Fpath.v "source.map" in
-  let () = Bos.OS.File.write_lines source_map sources |> get_ok in
-  let () = source_tree ~parent:"odoc" ~output:odoc_source_tree source_map in
-  { file = odoc_source_tree ; ignore_output = false ; source = None ; assets = [] }
+For each package [<p>], each library [<l>] defines a library root id:
+[<p>/lib/<l>].
 
-]}
+{2 Reference dependencies}
 
-Let's now put together a list of all possible modules. We'll keep track of
-which library they're in and whether that library is a part of [odoc] or a dependency
-library.
+In addition to the [-I] dependencies, used by [odoc]'s internal model, an
+installed package needs to define the additional reference dependencies. Note
+that these dependencies can be circular without problem, as they happen during
+the link phase and only require the artifact from the compile phase.
 
-{[
-let odoc_all_unit_paths = find_units ".." |> get_ok
+An installed package [<p>] specifies its resolve dependencies in a file at
+[<opam root>/doc/<p>/odoc-config.sexp]. This file contains
+s-expressions.
 
-let odoc_units =
-  List.map
-    (fun lib ->
-      Fpath.Set.fold
-        (fun p acc ->
-          if Astring.String.is_infix ~affix:lib (Fpath.to_string p) then
-            let impl =
-              let module_ = Fpath.basename p in
-              source_files_of_odoc_module lib module_
-            in
-            ("odoc", lib, p, impl) :: acc
-          else acc)
-        odoc_all_unit_paths [])
-    odoc_libraries
-]}
+Stanzas of the form [(package p1 p2 ...)] specifies that packages [p1], [p2],
+..., should be added using the [-P] argument: with the canonical roots, it would
+be [-P p1:<output_dir>/p1/doc -P p2:<output_dir>/p2/doc -P ...].
 
-{[
-let all_units =
-  let lib_units =
-    List.map
-      (fun (lib, p) ->
-        Fpath.Set.fold
-          (fun p acc -> ("deps", lib, p, None) :: acc)
-          (find_units p |> get_ok)
-          [])
-      lib_paths in
-  odoc_units @ lib_units |> List.flatten
-]}
+Stanzas of the form [(libraries l1 l2 ...)] specifies that libraries [l1], [l2],
+..., should be added using the [-L] argument: with the canonical roots, it would
+be [-L l1:<output_dir>/p1/lib/l1 -L l2<output_dir>/p2/lib/l2 -L ...], where [p1]
+is the package [l1] is in, etc.
 
-Generate the {!api_reference} page to list [odoc]'s libraries:
+{2 The units}
 
-{[
-let update_api_reference_page () =
-  let libs =
-    List.sort String.compare odoc_libraries
-    |> List.map String.capitalize_ascii
-  in
-  OS.File.with_oc (Fpath.v "api_reference.mld") (fun oc () ->
-      let pf = Printf.fprintf in
-      pf oc "{0 API Reference}\n\n";
-      List.iter (pf oc "- {!%s}\n") libs;
-      Ok ()
-    ) ()
-  |> get_ok
-  |> get_ok
-]}
+The module units of a package [p] are all files installed by [p] that can be
+found in [<opam root>/lib/p/] or a subdirectory.
 
-Now we'll compile all of the parent [.mld] files. To ensure that the parents are compiled before the children, we start with [odoc.mld], then [deps.mld], and so on. The result of this file is a list of the resulting [odoc] files.
+The page units are those files that can be found in [<opam
+root>/doc/odoc-pages/] or a subdirectory, and that have an [.mld] extension.
 
-{[
-let search_file = "index.js"
+The asset units are those files that can be found in [<opam
+root>/doc/odoc-pages/] or a subdirectory, but that do not have an [.mld]
+extension. Additionally, they are all files found in [<opam
+root>/doc/odoc-assets/].
 
-let compile_mlds () =
-  update_api_reference_page ();
-  let mkpage x = "page-\"" ^ x ^ "\"" in
-  let mkmod x = "module-" ^ String.capitalize_ascii x in
-  let mkmld x =
-    let f = Fpath.(add_ext "mld" (v x)) in
-    if not (Bos.OS.File.exists f |> get_ok) then
-      (Bos.OS.File.write_lines f [Printf.sprintf "{0 %s}" x] |> get_ok);
-    f
-  in
-  ignore
-    (compile (mkmld "odoc")
-       ("srctree-source" :: "page-deps" :: List.map mkpage (odoc_libraries @ extra_docs)));
-  ignore (compile (mkmld "deps") ~parent:"odoc" (List.map mkpage dep_libraries));
-  let extra_odocs =
-    List.map
-      (fun p ->
-        ignore (compile (mkmld p) ~parent:"odoc" []);
-        "page-" ^ p ^ ".odoc")
-      extra_docs
-  in
-  let odocs =
-    List.map
-      (fun library ->
-        let parent = List.assoc library parents in
-        let children =
-          List.filter_map
-            (fun (parent, lib, child, _) ->
-              if lib = library then Some (Fpath.basename child |> mkmod)
-              else None)
-            all_units
-        in
-        ignore (compile (mkmld ("library_mlds/"^library)) ~parent children);
-        "page-" ^ library ^ ".odoc")
-      all_libraries
-  in
-  { file = Fpath.v "page-odoc.odoc" ; ignore_output = false ; source = None ; assets = [] } ::
-  List.map
-    (fun f -> { file = Fpath.v f ; ignore_output = false ; source = None; assets = [] })
-    ( "page-deps.odoc" :: odocs @ extra_odocs)
-]}
+{2 The [--parent-id] arguments}
 
-Now we get to the compilation phase. For each unit, we query its dependencies, then recursively call to compile these dependencies. Once completed, we compile the unit itself. If the unit has already been compiled, we don't do anything. Note that we aren't checking the hashes of the dependencies, which a build system should do to ensure that the module being compiled is the correct one. Again, we benefit from the fact that we're creating the docs for one leaf package and that there must be no module name clashes in its dependencies. The result of this function is a list of the resulting [odoc] files.
+Interface and implementation units have as parent id the root of the library
+they belong to: [<p>/lib/<l>].
 
-{[
-let compile_all () =
-  let mld_odocs = compile_mlds () in
-  let source_tree = compile_source_tree all_units in
-  let compile_src file ~ignore_output source_args () =
-    match source_args with
-    | None -> ()
-    | Some source_name ->
-        compile_src (Fpath.set_ext "cmt" file) ~source_name ~ignore_output
-          ~source_parent_file:odoc_source_tree ()
-  in
-  let rec rec_compile ?impl parent lib file =
-    let output = Fpath.(base (set_ext "odoc" file)) in
-    if OS.File.exists output |> get_ok then []
-    else
-      let deps = compile_deps file |> get_ok in
-      let files =
-        List.fold_left
-          (fun acc (dep_name, digest) ->
-            match
-              List.find_opt
-                (fun (_, _, f, _) ->
-                  Fpath.basename f |> String.capitalize_ascii = dep_name)
-                all_units
-            with
-            | None -> acc
-            | Some (parent, lib, dep_path, impl) ->
-                let file = best_file dep_path in
-                rec_compile ?impl parent lib file @ acc)
-          [] deps.deps
-      in
-      let ignore_output = parent = "deps" in
-      compile_src file impl ~ignore_output ();
-      compile file ~parent:lib ~ignore_output [];
-      { file = output; ignore_output; source = impl; assets = [] } :: files
-  in
-  source_tree
-  :: List.fold_left
-       (fun acc (parent, lib, dep, impl) ->
-         acc @ rec_compile ?impl parent lib (best_file dep))
-       [] all_units
-  @ mld_odocs
-]}
+Page units that are found in [<opam
+root>/doc/<p>/odoc-pages/<relpath>/<name>.mld] have the parent id
+[<p>/doc/<relpath>].
 
-Linking is now straightforward. We link all [odoc] files.
+Asset units that are found in [<opam
+root>/doc/<p>/odoc-pages/<relpath>/<name>.<ext>] have the parent id
+[<p>/doc/<relpath>].
 
-{[
-let src_file file =
-  let fdir, fname = Fpath.split_base file in
-  let fname = Fpath.v ("impl-" ^ Fpath.to_string fname) in
-  Fpath.( // ) fdir fname
+Asset units that are found in [<opam root>/doc/<p>/odoc-assets/<name>.<ext>]
+have the parent id [<p>/doc/_assets/<relpath>].
 
-let link_all odoc_files =
-  List.map
-    (fun ({ file = odoc_file; ignore_output; source; _ } as unit) ->
-      if Option.is_some source then ignore (link ~ignore_output (src_file odoc_file));
-      ignore (link ~ignore_output odoc_file);
-      { unit with file = Fpath.set_ext "odocl" odoc_file })
-    odoc_files
-]}
+{2 The [--source-id] arguments}
 
-Now we simply run [odoc html-generate] over all the resulting [odocl] files.
-This will generate sources, as well as documentation for non-hidden units.
-We notify the generator that the JavaScript file to use for search is [index.js].
-
-{[
-let generate_all odocl_files =
-  let search_uris = [ Fpath.v "minisearch.js"; Fpath.v "index.js" ] in
-  List.iter
-    (fun { file; ignore_output = _; source; assets } ->
-      ignore (html_generate ~assets ~search_uris file None);
-      match source with
-      | None -> ()
-      | Some source ->
-          ignore (html_generate (src_file file) (Some (relativize source))))
-    odocl_files;
-  support_files ()
-]}
-
-
-Finally, we generate an index of all values, types, etc. This index is meant to be consumed by search engines in order to create their own index. It is in JSON format. Generating the index is done via [odoc compile-index], which creates a JSON file.
-
-Some more details about the JSON format:
-
-{ul
-  {- The whole file is a JSON array.}
-  {- Each array entry corresponds to an item to search. An entry is a JSON object, with the following fields:
-     {ul
-       {- ["id"], which is a string. It corresponds to the entry's ID, for instance: ["Stdlib.List.map"].}
-       {- ["doc"], which is a string. It corresponds to a "searchable" version of the docstring, one which is stripped from any HTML or specific markup. This is to avoid having too many results when searching ["class"], for instance.}
-       {- ["kind"] is a JSON object. It contains the fields:
-          {ul
-            {- ["kind"], a string encoding the kind of the entry (type, value, module, standalone comment, etc.)}
-            {- Any information that is specific to it (for instance, a type has kind ["TypeDecl"] and also contains the constraints, manifest, and whether the type is private or not). For a comprehensive description of the information available in this field, please refer to the source file: src/search/json_index/json_search.ml}}}
-       {- ["display"], which is a JSON object. It contains two fields:
-          {ul
-            {- ["url"], a string. It is the URL to the entry in the documentation, relative to the base of the documentation}
-            {- ["html"], also a string. It is the HTML [odoc] uses to display the entry in the search results.}}}
-       {- Additionally, the ["occurrences"] field exists if and only if the [--occurrences] flag was given to the [odoc compile-index] command. When it exists, it contains a JSON object, with two fields:
-          {ul
-            {- ["direct"], an integer. It is the number of the entry's direct uses. For instance, [open M] and [Make(M)] contain direct uses of [M], while [1 + M.v] contains an indirect use of [M] and a direct use of [M.v].}
-            {- ["indirect"], an integer containing the number of the entry's indirect uses.}}}}}}
-
-Search engines written in OCaml can also call the [Odoc_model.Fold.unit] and [Odoc_model.Fold.page] function, in conjunction with [Odoc_search.Entry.entry_of_item] to get an OCaml value of each element to be indexed.
-
-{[
-let index_generate ?(ignore_output = false) occurrence_file =
-  let open Cmd in
-  let files =
-    OS.Dir.contents (Fpath.v ".")
-    |> get_ok
-    |> List.filter (Fpath.has_ext "odocl")
-    |> List.filter (fun p ->
-           String.starts_with ~prefix:"impl-" (Fpath.filename p))
-    |> List.map Fpath.to_string
-  in
-  let index_map = Fpath.v "index.map" in
-  let () = Bos.OS.File.write_lines index_map files |> get_ok in
-  let cmd =
-    odoc % "compile-index" % "-o" % "html/index.json" % "--occurrences" % p occurrence_file % "--file-list"
-    % p index_map
-  in
-  let lines = run cmd in
-  if not ignore_output then
-    add_prefixed_output cmd generate_output "index compilation" lines
-]}
-
-We turn the JSON index into a JavaScript file. In order to never block the UI, this file will be used as a web worker by [odoc] to perform searches:
-
-- The search query will be sent as a plain string to the web worker, using the standard mechanism of message passing.
-- The web worker has to send back the result as a message to the main thread, containing the list of results. Each entry of this list must have the same form it had in the original JSON file.
-- The file must be given to the [odoc-support] URI.
-
-In this driver, we use the MiniSearch JavaScript library. For more involved applications, we could use [index.js] to call a server-side search engine via an API call.
-
-{[
-  let js_index () =
-    let index = Bos.OS.File.read Fpath.(v "html" / "index.json") |> get_ok in
- Bos.OS.File.writef (Fpath.v search_file) {|
- let documents =
-   %s
- ;
-
- let miniSearch = new MiniSearch({
-  fields: ['id', 'doc', 'entry_id'], // fields to index for full-text search
-   storeFields: ['display'], // fields to return with search results
-   idField: 'entry_id',
-   extractField: (document, fieldName) => {
-     if (fieldName === 'id') {
-       return document.id.map(e => e.kind + "-" + e.name).join('.')
-     }
-     return document[fieldName]
-   }
- })
-
-
- // Use a unique ID since some entries' IDs are not unique (type extension or
- // standalone doc comments for instance)
- documents.forEach((entry,i) => entry.entry_id = i)
- miniSearch.addAll(documents);
-
- onmessage = (m) => {
-   let query = m.data;
-   let result = miniSearch.search(query);
-   postMessage(result.slice(0,200).map(a => a.display));
- }
- |} index |> get_ok ;
-    Bos.OS.Cmd.run Bos.Cmd.(v "cp" % search_file % "html/") |> get_ok;
-    Bos.OS.Cmd.run Bos.Cmd.(v "cp" % "minisearch.js" % "html/") |> get_ok;
-]}
-
-
-
-The following code executes all of the above, and we're done!
-
-{[
-let compiled = compile_all () in
-let linked = link_all compiled in
-let occurrence_file = Fpath.v "occurrences-odoc_and_deps.odoc" in
-let _ = count_occurrences occurrence_file in
-let () = index_generate occurrence_file in
-let _ = js_index () in
-let _ = count_occurrences (Fpath.v "occurrences-from-odoc.odoc") in
-generate_all linked
-]}
-
-Let's see if there was any output from the [odoc] invocations:
-
-{[
-# !compile_output;;
-- : string list = [""]
-# !compile_src_output;;
-- : string list = [""]
-# (* Not showing output from 'odoc link' as it is unstable. !link_output *);;
-# !source_tree_output;;
-- : string list = [""]
-# !generate_output;;
-- : string list = [""]
-]}
-
-We can have a look at the produced hierarchy of files, which matches the desired output. Note that source files with a [.ml.html] extension are generated for modules compiled with the [--source] option.
-
-{@sh[
-$ ls html/odoc
-api_reference.html
-deps
-driver.html
-dune.html
-features.html
-fonts
-highlight.pack.js
-index.html
-interface.html
-katex.min.css
-katex.min.js
-ocamlary
-ocamldoc_differences.html
-odoc.css
-odoc_document
-odoc_examples
-odoc_for_authors.html
-odoc_html
-odoc_html_frontend
-odoc_html_support_files
-odoc_json_index
-odoc_latex
-odoc_loader
-odoc_manpage
-odoc_model
-odoc_model_desc
-odoc_odoc
-odoc_parser
-odoc_search
-odoc_search.js
-odoc_xref2
-odoc_xref_test
-parent_child_spec.html
-source
-$ find html/odoc/odoc_html | sort
-html/odoc/odoc_html
-html/odoc/odoc_html/index.html
-html/odoc/odoc_html/Odoc_html
-html/odoc/odoc_html/Odoc_html/Config
-html/odoc/odoc_html/Odoc_html/Config/index.html
-html/odoc/odoc_html/Odoc_html_frontend
-html/odoc/odoc_html/Odoc_html_frontend/index.html
-html/odoc/odoc_html/Odoc_html/Generator
-html/odoc/odoc_html/Odoc_html/Generator/index.html
-html/odoc/odoc_html/Odoc_html/Html_fragment_json
-html/odoc/odoc_html/Odoc_html/Html_fragment_json/index.html
-html/odoc/odoc_html/Odoc_html/Html_page
-html/odoc/odoc_html/Odoc_html/Html_page/index.html
-html/odoc/odoc_html/Odoc_html/index.html
-html/odoc/odoc_html/Odoc_html/Json
-html/odoc/odoc_html/Odoc_html/Json/index.html
-html/odoc/odoc_html/Odoc_html/Link
-html/odoc/odoc_html/Odoc_html/Link/index.html
-html/odoc/odoc_html/Odoc_html/Link/Path
-html/odoc/odoc_html/Odoc_html/Link/Path/index.html
-html/odoc/odoc_html/Odoc_html/Types
-html/odoc/odoc_html/Odoc_html/Types/index.html
-]}
-
-Some code to analyse the list of executed commands:
-
-{[
-(** Return the list of executed commands where the first argument was [cmd]. *)
-let filter_commands cmd =
-  match
-    List.filter
-      (fun c ->
-        match Bos.Cmd.to_list c.cmd with
-        | _ :: cmd' :: _ -> cmd = cmd'
-        | _ -> false)
-      !commands
-  with
-  | [] -> failwith ("No commands run for " ^ cmd)
-  | (_ :: _) as cmds -> cmds
-
-(** Returns the [k] commands that took the most time for a given subcommand. *)
-let k_longest_commands cmd k =
-  filter_commands cmd |>
-  List.sort (fun a b -> Float.compare b.time a.time) |>
-  List.filteri (fun i _ -> i < k)
-
-(** Print an executed command and its time. *)
-let print_cmd c =
-  Printf.printf "[%4.2f] $ %s\n" c.time (Cmd.to_string c.cmd)
-]}
-
-If needed, the list of commands executed so far can be shown by de-commenting this block:
-
-{[
-# (* List.iter print_cmd (List.rev !commands);; *)
-]}
-
-If needed, the list of the slowest commands for each subcommand can be shown by de-commenting this block:
-(for the record, these commands are run from directory `_build/default/doc`)
-
-{[
-# (* List.iter print_cmd (k_longest_commands "compile" 5) *)
-# (* List.iter print_cmd (k_longest_commands "link" 5) *)
-# (* List.iter print_cmd (k_longest_commands "html-generate" 5) *)
-]}
-
-This last block analyses the running times so that they can be submitted to
-{{:https://github.com/ocurrent/current-bench}current-bench}.
-
-{[
-(* *)
-#require "yojson" ;;
-
-let rec compute_min_max_avg min_ max_ total count = function
-  | [] -> (min_, max_, total /. float count, count)
-  | hd :: tl ->
-      compute_min_max_avg (min min_ hd) (max max_ hd) (total +. hd) (count + 1)
-        tl
-
-let compute_min_max_avg = function
-  | [] -> assert false
-  | hd :: tl -> compute_min_max_avg hd hd hd 1 tl
-
-let compute_metric_int prefix suffix description values =
-  let min, max, avg, count = compute_min_max_avg values in
-  let min = int_of_float min in
-  let max = int_of_float max in
-  let avg = int_of_float avg in
-  [
-    `Assoc
-      [
-        ("name", `String (prefix ^ "-total-" ^ suffix));
-        ("value", `Int count);
-        ("description", `String ("Number of " ^ description));
-      ];
-    `Assoc
-      [
-        ("name", `String (prefix ^ "-size-" ^ suffix));
-        ( "value",
-          `Assoc [ ("min", `Int min); ("max", `Int max); ("avg", `Int avg) ] );
-        ("units", `String "b");
-        ("description", `String ("Size of " ^ description));
-        ("trend", `String "lower-is-better");
-      ];
-  ]
-
-(** Analyse the running time of a command. *)
-let compute_metric_cmd cmd =
-  let cmds = filter_commands cmd in
-  let times = List.map (fun c -> c.time) cmds in
-  let min, max, avg, count = compute_min_max_avg times in
-  [
-    `Assoc
-      [
-        ("name", `String ("total-" ^ cmd));
-        ("value", `Int count);
-        ("description", `String ("Number of time 'odoc " ^ cmd ^ "' has run."));
-      ];
-    `Assoc
-      [
-        ("name", `String ("time-" ^ cmd));
-        ( "value",
-          `Assoc
-            [ ("min", `Float min); ("max", `Float max); ("avg", `Float avg) ] );
-        ("units", `String "s");
-        ("description", `String ("Time taken by 'odoc " ^ cmd ^ "'"));
-        ("trend", `String "lower-is-better");
-      ];
-  ]
-
-(** Analyse the size of files produced by a command. *)
-let compute_produced_cmd cmd =
-  let output_file_size c =
-    match c.output_file with
-    | Some f -> (
-        match Bos.OS.Path.stat f with
-        | Ok st -> Some (float st.Unix.st_size)
-        | Error _ -> None)
-    | None -> None
-  in
-  let sizes = List.filter_map output_file_size (filter_commands cmd) in
-  compute_metric_int "produced" cmd
-    ("files produced by 'odoc " ^ cmd ^ "'")
-    sizes
-
-(** Analyse the file size outputed to the given directory. *)
-let compute_produced_tree cmd dir =
-  let acc_file_sizes path acc =
-    match Bos.OS.Path.stat path with
-    | Ok st -> float st.Unix.st_size :: acc
-    | Error _ -> acc
-  in
-  Bos.OS.Dir.fold_contents ~dotfiles:true ~elements:`Files acc_file_sizes []
-    (Fpath.v dir)
-  |> get_ok
-  |> compute_metric_int "produced" cmd ("files produced by 'odoc " ^ cmd ^ "'")
-
-(** Analyse the running time of the slowest commands. *)
-let compute_longest_cmd cmd =
-  let k = 5 in
-  let cmds = k_longest_commands cmd k in
-  let times = List.map (fun c -> c.time) cmds in
-  let min, max, avg, _count = compute_min_max_avg times in
-  [
-    `Assoc
-      [
-        ("name", `String ("longest-" ^ cmd));
-        ( "value",
-          `Assoc
-            [ ("min", `Float min); ("max", `Float max); ("avg", `Float avg) ] );
-        ("units", `String "s");
-        ( "description",
-          `String
-            (Printf.sprintf "Time taken by the %d longest calls to 'odoc %s'" k
-               cmd) );
-        ("trend", `String "lower-is-better");
-      ];
-  ]
-
-let metrics =
-  compute_metric_cmd "compile"
-  @ compute_metric_cmd "compile-deps"
-  @ compute_metric_cmd "link"
-  @ compute_metric_cmd "html-generate"
-  @ compute_longest_cmd "compile"
-  @ compute_longest_cmd "link"
-  @ compute_produced_cmd "compile"
-  @ compute_produced_cmd "link"
-  @ compute_produced_tree "html-generate" "html/"
-
-let bench_results =
-  `Assoc
-    [
-      ("name", `String "odoc");
-      ( "results",
-        `List
-          [
-            `Assoc
-              [ ("name", `String "driver.mld"); ("metrics", `List metrics) ];
-          ] );
-    ]
-
-(* Save the result in a file. This file won't be promoted into the
-   documentation. *)
-let () = Yojson.to_file "driver-benchmarks.json" bench_results
-]}
+The driver can chose the source id without breaking references. However, if it
+follows the canonical roots, implementation units have as source id:
+[<p>/src/<l>/<filename>.ml].

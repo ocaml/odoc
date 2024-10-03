@@ -1,5 +1,9 @@
 {0 [odoc]}
 
+{@meta[
+  children: dune odoc_for_authors cheatsheet features ocamldoc_differences interface parent_child_spec driver
+]}
+
 {b For a quick look at the [odoc] syntax, see the {{!cheatsheet}cheatsheet}!}
 
 {1:overview What is [odoc]?}
