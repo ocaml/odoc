@@ -1,5 +1,6 @@
 open Type_desc
 open Odoc_model
+open Odoc_utils
 open Paths_desc
 open Comment_desc
 module T = Type_desc
