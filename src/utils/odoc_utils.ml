@@ -75,20 +75,18 @@ module List = struct
     | [] -> None
     | x :: l -> (
         match f x with Some _ as result -> result | None -> find_map f l)
-
-  let partition_map p l =
-    let rec part left right = function
-      | [] -> (rev left, rev right)
-      | x :: l -> (
-          match p x with
-          | `Left v -> part (v :: left) right l
-          | `Right v -> part left (v :: right) l)
-    in
-    part [] [] l
 end
 
 module Option = struct
   let map f = function None -> None | Some x -> Some (f x)
+
+  let is_some = function None -> false | Some _ -> true
+end
+
+module Result = struct
+  include Result
+
+  let join = function Ok r -> r | Error _ as e -> e
 end
 
 module Fun = struct

@@ -168,7 +168,8 @@ module PageToc = struct
     in
     let ordered =
       ordered
-      |> List.sort (fun (i, _) (j, _) -> Int.compare i j)
+      |> List.sort (fun (i, _) (j, _) ->
+             (Stdlib.compare : int -> int -> int) i j)
       |> List.map snd
     in
     let unordered =
