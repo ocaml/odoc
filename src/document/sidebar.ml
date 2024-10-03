@@ -11,9 +11,6 @@ module Toc : sig
 
   val of_lang : Odoc_model.Sidebar.PageToc.t -> t
 
-  val remove_common_root : t -> t
-  (** Returns the deepest subdir containing all files. *)
-
   val to_sidebar :
     ?fallback:string -> (Url.Path.t * Inline.one -> Block.one) -> t -> Block.t
 end = struct
@@ -56,10 +53,6 @@ end = struct
     in
     of_lang ~parent_id:None dir
 
-  let rec remove_common_root = function
-    | Item (_, [ d ]) -> remove_common_root d
-    | x -> x
-
   let rec to_sidebar ?(fallback = "root") convert (Item (name, content)) =
     let name =
       match name with
@@ -83,7 +76,7 @@ type t = { pages : pages list; libraries : library list }
 let of_lang (v : Odoc_model.Sidebar.t) =
   let pages =
     let page_hierarchy { Odoc_model.Sidebar.hierarchy_name; pages } =
-      let hierarchy = Toc.of_lang pages |> Toc.remove_common_root in
+      let hierarchy = Toc.of_lang pages in
       Some { name = hierarchy_name; pages = hierarchy }
     in
     Odoc_utils.List.filter_map page_hierarchy v.pages
