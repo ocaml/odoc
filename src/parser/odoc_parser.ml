@@ -106,16 +106,30 @@ let extract_frontmatter ~location ~text =
   Lexing.set_position lexbuf location;
   let frontmatter = Frontmatter_lexer.parser (Buffer.create 64) lexbuf in
   match frontmatter with
-  | None -> (None, location, text)
-  | Some _ ->
+  | None -> (None, location, text, [])
+  | Some frontmatter ->
       let loc_end = Lexing.lexeme_end lexbuf in
+      let pos_end = Lexing.lexeme_end_p lexbuf in
+      let frontmatter_span =
+        {
+          Loc.file = location.Lexing.pos_fname;
+          start = Loc.point_of_position location;
+          end_ = Loc.point_of_position pos_end;
+        }
+      in
+      let frontmatter, warnings =
+        try (Some (Sexplib.Sexp.Annotated.of_string frontmatter), [])
+        with Failure message ->
+          (None, [ Warning.make "%s" message frontmatter_span ])
+      in
       let text = String.sub text loc_end (String.length text - loc_end) in
-
-      (frontmatter, Lexing.lexeme_end_p lexbuf, text)
+      (frontmatter, pos_end, text, warnings)
 
 let parse_comment ~location ~text =
-  let front_matter, location, text = extract_frontmatter ~location ~text in
-  let warnings = ref [] in
+  let front_matter, location, text, warnings =
+    extract_frontmatter ~location ~text
+  in
+  let warnings = ref warnings in
   let reversed_newlines = reversed_newlines ~input:text in
   let token_stream =
     let lexbuf = Lexing.from_string text in

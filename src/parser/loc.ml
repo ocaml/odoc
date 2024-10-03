@@ -8,6 +8,9 @@ let value { value; _ } = value
 let map f annotated = { annotated with value = f annotated.value }
 let same annotated value = { annotated with value }
 
+let point_of_position Lexing.{pos_fname = _; pos_lnum; pos_bol;pos_cnum} =
+  {line=pos_lnum; column=pos_cnum - pos_bol}
+
 let span spans =
   match spans with
   | [] ->

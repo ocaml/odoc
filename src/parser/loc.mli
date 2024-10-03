@@ -47,3 +47,5 @@ val same : _ with_location -> 'b -> 'b with_location
 val spans_multiple_lines : _ with_location -> bool
 (** [spans_multiple_lines x] checks to see whether [x] is located
     on a single line or whether it covers more than one. *)
+
+val point_of_position : Lexing.position -> point

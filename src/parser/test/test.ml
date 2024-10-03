@@ -22,6 +22,19 @@ module Ast_to_sexp = struct
   let str s = Atom s
   let opt f s = match s with Some s -> List [ f s ] | None -> List []
 
+  let rec bake_in_annotations asexp =
+    let open Sexplib in
+    let pos Sexp.Annotated.{ line; col; _ } =
+      Location_to_sexp.point Loc.{ line; column = col }
+    in
+    let range_sexp Sexp.Annotated.{ start_pos; end_pos } =
+      List [ pos start_pos; pos end_pos ]
+    in
+    match asexp with
+    | Sexp.Annotated.Atom (range, content) -> List [ range_sexp range; content ]
+    | Sexp.Annotated.List (range, li, _) ->
+        List [ range_sexp range; List (List.map bake_in_annotations li) ]
+
   let style : Ast.style -> sexp = function
     | `Bold -> Atom "bold"
     | `Italic -> Atom "italic"
@@ -176,11 +189,9 @@ module Ast_to_sexp = struct
 
   let docs_body at : Ast.body -> sexp =
    fun f -> List (List.map (at.at (block_element at)) f)
-let docs at : Ast.t -> sexp =
-  fun f ->
-    List [opt (fun a -> Atom a) f.front_matter;
-    (docs_body at f.content)]
-
+  let docs at : Ast.t -> sexp =
+   fun f ->
+    List [ opt bake_in_annotations f.front_matter; docs_body at f.content ]
 end
 
 let error err = Atom (Odoc_parser.Warning.to_string err)
@@ -4763,7 +4774,8 @@ let%expect_test _ =
   let module Return = struct
     let basic =
       test "@return";
-      [%expect {| ((output (() (((f.ml (1 0) (1 7)) (@return))))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) (@return))))) (warnings ())) |}]
 
     let words =
       test "@return foo bar";
@@ -5152,7 +5164,8 @@ let%expect_test _ =
   let module Inline = struct
     let basic =
       test "@inline";
-      [%expect {| ((output (() (((f.ml (1 0) (1 7)) @inline)))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) @inline)))) (warnings ())) |}]
 
     let prefix =
       test "@inlinefoo";
@@ -5168,7 +5181,8 @@ let%expect_test _ =
 
     let extra_whitespace =
       test "@inline";
-      [%expect {| ((output (() (((f.ml (1 0) (1 7)) @inline)))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) @inline)))) (warnings ())) |}]
 
     let followed_by_junk =
       test "@inline foo";
@@ -5306,7 +5320,8 @@ let%expect_test _ =
   let module Closed = struct
     let basic =
       test "@closed";
-      [%expect {| ((output (() (((f.ml (1 0) (1 7)) @closed)))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) @closed)))) (warnings ())) |}]
 
     let prefix =
       test "@closedfoo";
@@ -5322,7 +5337,8 @@ let%expect_test _ =
 
     let extra_whitespace =
       test "@closed";
-      [%expect {| ((output (() (((f.ml (1 0) (1 7)) @closed)))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) @closed)))) (warnings ())) |}]
 
     let followed_by_junk =
       test "@closed foo";
@@ -5384,7 +5400,8 @@ let%expect_test _ =
   let module Hidden = struct
     let basic =
       test "@hidden";
-      [%expect {| ((output (() (((f.ml (1 0) (1 7)) @hidden)))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) @hidden)))) (warnings ())) |}]
 
     let prefix =
       test "@hiddenfoo";
@@ -5400,7 +5417,8 @@ let%expect_test _ =
 
     let extra_whitespace =
       test "@hidden";
-      [%expect {| ((output (() (((f.ml (1 0) (1 7)) @hidden)))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) @hidden)))) (warnings ())) |}]
 
     let followed_by_junk =
       test "@hidden foo";

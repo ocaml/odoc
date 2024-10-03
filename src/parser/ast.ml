@@ -99,6 +99,8 @@ type block_element =
 
 type body = block_element with_location list
 
-type t = { front_matter : string option; content : body }
+type frontmatter = Sexplib.Sexp.Annotated.t
+
+type t = { front_matter : frontmatter option; content : body }
 
 let empty = { front_matter = None; content = [] }
