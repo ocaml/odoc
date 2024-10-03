@@ -2,13 +2,13 @@ open Paths.Identifier
 
 module PageToc : sig
   type title = Comment.link_content
-  type children_order = Frontmatter.child list Location_.with_location
 
   type index = Page.t * title
   type t = (Page.t * content) list * index option
   and content = Entry of title | Dir of t
 
-  val of_list : (LeafPage.t * title * children_order option) list -> t
+  val of_list :
+    (LeafPage.t * title * Frontmatter.children_order option) list -> t
   (** Uses the convention that the [index] children passes its payload to the
       container directory to output a payload *)
 end

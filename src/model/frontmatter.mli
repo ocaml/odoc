@@ -1,6 +1,8 @@
 type child = Page of string | Dir of string
 
-type t = { children_order : child list Location_.with_location option }
+type children_order = child Location_.with_location list Location_.with_location
+
+type t = { children_order : children_order option }
 
 val empty : t
 

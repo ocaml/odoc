@@ -14,6 +14,10 @@
 
   $ odoc compile-index -P test:_odoc/pkg/doc
   File "index.mld", line 5, character 7 to line 7, character 0:
+  Warning: Duplicate 'dir1/' in (children).
+  File "index.mld", line 5, character 7 to line 7, character 0:
+  Warning: 'typo' in (children) does not correspond to anything.
+  File "index.mld", line 5, character 7 to line 7, character 0:
   Warning: (children) doesn't include 'omitted'.
 
   $ odoc html-generate --indent --index index.odoc-index -o _html  _odoc/pkg/doc/page-index.odocl
@@ -30,6 +34,9 @@
       "Some": [
         {
           "Page": "content"
+        },
+        {
+          "Dir": "dir1"
         },
         {
           "Dir": "dir1"
