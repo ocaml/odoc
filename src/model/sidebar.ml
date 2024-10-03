@@ -8,6 +8,8 @@ type page = Id.Page.t
 type leaf_page = Id.LeafPage.t
 type container_page = Id.ContainerPage.t
 
+open Astring
+
 module PageToc = struct
   type title = Comment.link_content
 
@@ -34,7 +36,7 @@ module PageToc = struct
   let leafs (_, dir_content) =
     LPH.fold
       (fun id { title = payload; _ } acc ->
-        if Astring.String.equal "index" (Paths.Identifier.name id) then acc
+        if String.equal "index" (Paths.Identifier.name id) then acc
         else (id, payload) :: acc)
       dir_content.leafs []
 
