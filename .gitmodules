@@ -1,0 +1,4 @@
+[submodule "sherlodoc"]
+	path = sherlodoc
+	url = https://github.com/Julow/sherlodoc
+	branch = odoc3_compat

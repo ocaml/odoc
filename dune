@@ -23,3 +23,5 @@
   (progn
    (bash "diff doc/driver.mld doc/driver.mld.corrected >&2 || true")
    (cat doc/driver-benchmarks.json))))
+
+(vendored_dirs sherlodoc)
