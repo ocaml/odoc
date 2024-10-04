@@ -688,6 +688,7 @@ end = struct
           current_dir;
         }
     in
+    let directories = directories @ List.map ~f:snd lib_roots in
     let resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules ~roots
     in
