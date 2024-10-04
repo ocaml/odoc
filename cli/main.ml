@@ -69,7 +69,7 @@ let cmd_jsoo =
   in
   let emit_js_dep filename =
     let close, h = if filename = "" then false, stdout else true, open_out filename in
-    output_string h [%blob "jsoo/sherlodoc.js"] ;
+    output_string h [%blob "../jsoo/sherlodoc.js"] ;
     if close then close_out h
   in
   Cmd.v info Term.(const emit_js_dep $ target)
