@@ -225,7 +225,7 @@ let sherlodoc_index_one ~output_dir (index : Odoc_unit.index) =
   Sherlodoc.index ~format:`js ~inputs ~dst ();
   rel_path
 
-let html_generate output_dir linked =
+let html_generate ~occurrence_file output_dir linked =
   let tbl = Hashtbl.create 10 in
   let _ = OS.Dir.create output_dir |> Result.get_ok in
   Sherlodoc.js Fpath.(output_dir // Sherlodoc.js_file);
@@ -235,7 +235,10 @@ let html_generate output_dir linked =
         ({ pkg_args = { pages; libs }; output_file; json; search_dir = _ } as
          index :
           Odoc_unit.index) =
-      let () = Odoc.compile_index ~json ~output_file ~libs ~docs:pages () in
+      let () =
+        Odoc.compile_index ~json ~occurrence_file ~output_file ~libs ~docs:pages
+          ()
+      in
       sherlodoc_index_one ~output_dir index
     in
     match Hashtbl.find_opt tbl index.output_file with

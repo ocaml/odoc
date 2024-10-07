@@ -1438,16 +1438,10 @@ end
 module Occurrences = struct
   open Or_error
 
-  let has_occurrences_prefix input =
-    input |> Fs.File.basename |> Fs.File.to_string
-    |> Astring.String.is_prefix ~affix:"occurrences-"
-
   let dst_of_string s =
     let f = Fs.File.of_string s in
-    if not (Fs.File.has_ext ".odoc" f) then
-      Error (`Msg "Output file must have '.odoc' extension.")
-    else if not (has_occurrences_prefix f) then
-      Error (`Msg "Output file must be prefixed with 'occurrences-'.")
+    if not (Fs.File.has_ext ".odoc-occurrences" f) then
+      Error (`Msg "Output file must have '.odoc-occurrences' extension.")
     else Ok f
 
   module Count = struct
@@ -1467,10 +1461,19 @@ module Occurrences = struct
         let doc = "Include hidden identifiers in the table" in
         Arg.(value & flag & info ~docs ~doc [ "include-hidden" ])
       in
+      let input =
+        let doc =
+          "Directories to recursively traverse, agregating occurrences from \
+           $(i,impl-*.odocl) files. Can be present several times."
+        in
+        Arg.(
+          value
+          & pos_all (convert_directory ()) []
+          & info ~docs ~docv:"DIR" ~doc [])
+      in
       Term.(
         const handle_error
-        $ (const count $ odoc_file_directories $ dst $ warnings_options
-         $ include_hidden))
+        $ (const count $ input $ dst $ warnings_options $ include_hidden))
 
     let info ~docs =
       let doc =
