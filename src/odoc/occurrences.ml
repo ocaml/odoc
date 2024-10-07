@@ -1,18 +1,8 @@
 open Or_error
-
-(* Copied from ocaml 5.0 String module *)
-let string_starts_with ~prefix s =
-  let open String in
-  let len_s = length s and len_pre = length prefix in
-  let rec aux i =
-    if i = len_pre then true
-    else if unsafe_get s i <> unsafe_get prefix i then false
-    else aux (i + 1)
-  in
-  len_s >= len_pre && aux 0
+open Astring
 
 let handle_file file ~f =
-  if string_starts_with ~prefix:"impl-" (Fpath.filename file) then
+  if String.is_prefix ~affix:"impl-" (Fpath.filename file) then
     Odoc_file.load file |> function
     | Error _ as e -> e
     | Ok unit' -> (

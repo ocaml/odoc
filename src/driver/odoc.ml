@@ -138,13 +138,20 @@ let link ?(ignore_output = false) ~input_file:file ?output_file ~includes ~docs
     Cmd_outputs.(
       add_prefixed_output cmd link_output (Fpath.to_string file) lines)
 
-let compile_index ?(ignore_output = false) ~output_file ~json ~docs ~libs () =
+let compile_index ?(ignore_output = false) ~output_file ?occurrence_file ~json
+    ~docs ~libs () =
   let docs = doc_args docs in
   let libs = lib_args libs in
   let json = if json then Cmd.v "--json" else Cmd.empty in
+  let occ =
+    match occurrence_file with
+    | None -> Cmd.empty
+    | Some f -> Cmd.(v "--occurrences" % p f)
+  in
   let cmd =
     Cmd.(
-      !odoc % "compile-index" %% json %% v "-o" % p output_file %% docs %% libs)
+      !odoc % "compile-index" %% json %% v "-o" % p output_file %% docs %% libs
+      %% occ)
   in
   let desc =
     Printf.sprintf "Generating index for %s" (Fpath.to_string output_file)
@@ -212,11 +219,15 @@ let support_files path =
   let desc = "Generating support files" in
   Cmd_outputs.submit desc cmd None
 
-let count_occurrences output =
+let count_occurrences ~input ~output =
   let open Cmd in
-  let cmd = !odoc % "count-occurrences" % "-I" % "." % "-o" % p output in
+  let input = Cmd.of_values Fpath.to_string input in
+  let output_c = v "-o" % p output in
+  let cmd = !odoc % "count-occurrences" %% input %% output_c in
   let desc = "Counting occurrences" in
-  Cmd_outputs.submit desc cmd None
+  let lines = Cmd_outputs.submit desc cmd None in
+  Cmd_outputs.(
+    add_prefixed_output cmd generate_output (Fpath.to_string output) lines)
 
 let source_tree ?(ignore_output = false) ~parent ~output file =
   let open Cmd in
