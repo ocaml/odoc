@@ -562,7 +562,7 @@ let ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
     ~parent_of_sections ast alerts =
   Error.catch_warnings (fun () ->
       let front_matter = ast.Ast.front_matter in
-      let front_matter = Frontmatter.of_sexp_opt front_matter in
+      let front_matter = Frontmatter.of_ast_frontmatter front_matter in
       let front_matter =
         match front_matter with
         | Error err ->

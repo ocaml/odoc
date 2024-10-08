@@ -54,13 +54,13 @@ module Sexp_pattern = struct
   let point ({ line; col; offset = _ } : pos) : Location_.point =
     { line; column = col }
 
-  let span { start_pos; end_pos } =
-    Location_.{ file = "TODO"; start = point start_pos; end_ = point end_pos }
+  let span ~file { start_pos; end_pos } =
+    Location_.{ file; start = point start_pos; end_ = point end_pos }
 
-  let span_of_sexp sexp =
+  let span_of_sexp ~file sexp =
     match sexp with
-    | List (range, _, _) -> span range
-    | Atom (range, _) -> span range
+    | List (range, _, _) -> span ~file range
+    | Atom (range, _) -> span ~file range
 
   let ( let* ) = Result.bind
 
@@ -71,19 +71,19 @@ module Sexp_pattern = struct
   (* let ( ||| ) pat1 pat2 sexp =
      match pat1 sexp with Error _msg -> pat2 sexp | Ok v -> Ok v *)
 
-  let atom f sexp =
+  let atom ~file f sexp =
     match sexp with
     | Atom (range, Sexp.Atom str) ->
-        let span = span range in
+        let span = span ~file range in
         f (Location_.at span str)
-    | _ -> Error (Error.make "Expected list" (span_of_sexp sexp))
+    | _ -> Error (Error.make "Expected list" (span_of_sexp ~file sexp))
 
-  let list f sexp =
+  let list ~file f sexp =
     match sexp with
     | List (range, li, _) ->
-        let span = span range in
+        let span = span ~file range in
         f (Location_.at span li)
-    | _ -> Error (Error.make "Expected list" (span_of_sexp sexp))
+    | _ -> Error (Error.make "Expected list" (span_of_sexp ~file sexp))
 
   let rec result_list_map f li =
     match li with
@@ -102,20 +102,20 @@ end
 (children (a b c d))
 *)
 
-let of_sexp_opt sexp =
-  match sexp with
+let of_ast_frontmatter frontmatter =
+  match frontmatter with
   | None -> Ok empty
-  | Some sexp ->
+  | Some { Odoc_parser.Ast.sexp; filename = file } ->
       let open Sexp_pattern in
-      list
+      list ~file
         (function
           | { value = [ sexp1; sexp2 ]; location } ->
-              let* () = atom (str "children" accept) sexp1 in
+              let* () = atom ~file (str "children" accept) sexp1 in
               let* children =
-                list
+                list ~file
                   (fun { value = li; location = _ } ->
                     result_list_map
-                      (atom
+                      (atom ~file
                          (accept_map (fun Location_.{ value = str; location } ->
                               Location_.at location
                                 (if str.[String.length str - 1] = '/' then
@@ -128,5 +128,6 @@ let of_sexp_opt sexp =
               Ok { children_order = Some (Location_.at location children) }
           | _ ->
               Error
-                (Error.make "Expected two elements in list" (span_of_sexp sexp)))
+                (Error.make "Expected two elements in list"
+                   (span_of_sexp ~file sexp)))
         sexp

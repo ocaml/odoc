@@ -99,7 +99,7 @@ type block_element =
 
 type body = block_element with_location list
 
-type frontmatter = Sexplib.Sexp.Annotated.t
+type frontmatter = { sexp : Sexplib.Sexp.Annotated.t; filename : string }
 
 type t = { front_matter : frontmatter option; content : body }
 

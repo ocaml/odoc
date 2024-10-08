@@ -8,4 +8,5 @@ val empty : t
 
 val parse : string Location_.with_location -> t
 
-val of_sexp_opt : Sexplib.Sexp.Annotated.t option -> (t, Error.t) result
+val of_ast_frontmatter :
+  Odoc_parser.Ast.frontmatter option -> (t, Error.t) result

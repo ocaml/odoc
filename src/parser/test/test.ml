@@ -191,7 +191,18 @@ module Ast_to_sexp = struct
    fun f -> List (List.map (at.at (block_element at)) f)
   let docs at : Ast.t -> sexp =
    fun f ->
-    List [ opt bake_in_annotations f.front_matter; docs_body at f.content ]
+    List
+      [
+        opt
+          (fun frontmatter ->
+            List
+              [
+                bake_in_annotations frontmatter.Ast.sexp;
+                Atom frontmatter.Ast.filename;
+              ])
+          f.front_matter;
+        docs_body at f.content;
+      ]
 end
 
 let error err = Atom (Odoc_parser.Warning.to_string err)

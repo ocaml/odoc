@@ -118,7 +118,13 @@ let extract_frontmatter ~location ~text =
         }
       in
       let frontmatter, warnings =
-        try (Some (Sexplib.Sexp.Annotated.of_string frontmatter), [])
+        try
+          ( Some
+              {
+                Ast.sexp = Sexplib.Sexp.Annotated.of_string frontmatter;
+                filename = location.pos_fname;
+              },
+            [] )
         with Failure message ->
           (None, [ Warning.make "%s" message frontmatter_span ])
       in
