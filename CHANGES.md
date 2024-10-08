@@ -69,6 +69,8 @@
 - Fix misprinting of type variables from ml files for OCaml 4.14 and later
   (multiple occurences of the same type variable could be named differently)
   (@octachron, #1173)
+- Fix bug where source rendering would cause odoc to fail completely if it
+  encounters invalid syntax (@jonludlam #1208)
 
 
 # 2.4.0
