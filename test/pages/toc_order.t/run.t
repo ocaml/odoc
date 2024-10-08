@@ -13,11 +13,11 @@
   $ odoc link _odoc/pkg/doc/dir1/page-dontent.odoc
 
   $ odoc compile-index -P test:_odoc/pkg/doc
-  File "index.mld", line 5, character 7 to line 7, character 0:
+  File "TODO", line 1, characters 25-29:
   Warning: Duplicate 'dir1/' in (children).
-  File "index.mld", line 5, character 7 to line 7, character 0:
+  File "TODO", line 1, characters 31-34:
   Warning: 'typo' in (children) does not correspond to anything.
-  File "index.mld", line 5, character 7 to line 7, character 0:
+  File "TODO", line 1, characters 0-36:
   Warning: (children) doesn't include 'omitted'.
 
   $ odoc html-generate --indent --index index.odoc-index -o _html  _odoc/pkg/doc/page-index.odocl

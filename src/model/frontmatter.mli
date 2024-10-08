@@ -7,3 +7,5 @@ type t = { children_order : children_order option }
 val empty : t
 
 val parse : string Location_.with_location -> t
+
+val of_sexp_opt : Sexplib.Sexp.Annotated.t option -> (t, Error.t) result

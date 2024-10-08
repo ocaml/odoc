@@ -2,12 +2,13 @@
 open Test
 
 let%expect_test _ =
-    let empty_table_heavy =
-      test {|
+  let empty_table_heavy =
+    test {|
 (I am a frontmatter)
 ---
 I am a docs|};
-      [%expect{|
+    [%expect
+      {|
         ((output
           (((((2 0) (2 19))
              ((((2 1) (2 1)) I) (((2 3) (2 4)) am) (((2 6) (2 6)) a)
@@ -19,16 +20,17 @@ I am a docs|};
                (("" (2 5) (2 6)) (word a)) (("" (2 6) (2 7)) space)
                (("" (2 7) (2 11)) (word docs))))))))
          (warnings ())) |}]
-   in
+  in
   ()
 
 let%expect_test _ =
   let empty_table_heavy =
-      test {|
+    test {|
 (I am a frontmatter)
 ---
 I am a docs|};
-      [%expect{|
+    [%expect
+      {|
         ((output
           (((((2 0) (2 19))
              ((((2 1) (2 1)) I) (((2 3) (2 4)) am) (((2 6) (2 6)) a)
@@ -40,5 +42,5 @@ I am a docs|};
                (("" (2 5) (2 6)) (word a)) (("" (2 6) (2 7)) space)
                (("" (2 7) (2 11)) (word docs))))))))
          (warnings ())) |}]
-   in
+  in
   ()

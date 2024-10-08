@@ -1744,7 +1744,7 @@ module LocalIdents = struct
       self-consistent. Because we don't need _all_ of the
       identifiers we don't traverse the entire structure.
       Additionally, we stop at (class_)signature boundaries
-      since identifiers within these won't be referenced 
+      since identifiers within these won't be referenced
       except within them, so we only do that on demand. *)
 
   type t = {

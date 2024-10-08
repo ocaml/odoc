@@ -11,7 +11,7 @@ val read_string :
   Paths.Identifier.LabelParent.t ->
   string ->
   string ->
-  (Comment.docs_or_stop, Error.t) result Error.with_warnings
+  (Comment.docs_and_frontmatter_or_stop, Error.t) result Error.with_warnings
 
 val read_cmti :
   make_root:make_root ->
