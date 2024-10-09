@@ -118,6 +118,8 @@ module Deps = struct
           inner acc rest
     in
     let eq (l1 : t) (l2 : t) =
+      (* Note that the keys in l1 and l2 never change, only the values, so it's
+         safe to iterate over the keys of just one of l1 or l2 *)
       List.for_all
         (fun (x, deps) ->
           try

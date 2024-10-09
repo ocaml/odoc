@@ -17,6 +17,11 @@ type library = {
   deps : string list;
 }
 
+type t = {
+  meta_dir : Fpath.t;
+  libraries : library list;
+}
+
 let read_libraries_from_pkg_defs ~library_name pkg_defs =
   try
     let archive_filename =
@@ -43,6 +48,7 @@ let read_libraries_from_pkg_defs ~library_name pkg_defs =
 let process_meta_file file =
   let () = Format.eprintf "process_meta_file: %s\n%!" (Fpath.to_string file) in
   let ic = open_in (Fpath.to_string file) in
+  let meta_dir = Fpath.parent file in
   let meta = Fl_metascanner.parse ic in
   let base_library_name =
     if Fpath.basename file = "META" then Fpath.parent file |> Fpath.basename
@@ -76,4 +82,45 @@ let process_meta_file file =
       |> List.flatten)
     |> List.filter is_not_private
   in
-  libraries
+  { meta_dir; libraries }
+
+let libname_of_archive v =
+  let {meta_dir; libraries} = v in
+  List.fold_left
+  (fun acc (x : library) ->
+    match x.archive_name with
+    | None -> acc
+    | Some archive_name ->
+        let dir =
+          match x.dir with
+          | None -> meta_dir
+          | Some x -> Fpath.(meta_dir // v x)
+        in
+        Fpath.Map.update
+          Fpath.(dir / archive_name)
+          (function
+            | None -> Some x.name
+            | Some y ->
+                Logs.err (fun m ->
+                    m "Multiple libraries for archive %s: %s and %s."
+                      archive_name x.name y);
+                Some y)
+          acc)
+  Fpath.Map.empty libraries
+  
+
+let directories v =
+  let { meta_dir; libraries } = v in
+  List.fold_left
+    (fun acc x ->
+      match x.dir with
+      | None -> Fpath.Set.add meta_dir acc
+      | Some x -> (
+          let dir = Fpath.(meta_dir // v x) in
+          (* NB. topkg installs a META file that points to a ../topkg-care directory
+              that is installed by the topkg-care package. We filter that out here,
+              though I've not thought of a good way to sort out the `topkg-care` package *)
+          match Bos.OS.Dir.exists dir with
+          | Ok true -> Fpath.Set.add dir acc
+          | _ -> acc))
+    Fpath.Set.empty libraries

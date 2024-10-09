@@ -42,7 +42,7 @@ let run env cmd output_file =
     |> Array.of_list
   in
   (* Logs.debug (fun m -> m "Running cmd %a" Fmt.(list ~sep:sp string) cmd); *)
-  let r =
+  let (r, errors) =
     Eio.Switch.run ~name:"Process.parse_out" @@ fun sw ->
     let r, w = Eio.Process.pipe proc_mgr ~sw in
     let re, we = Eio.Process.pipe proc_mgr ~sw in
@@ -62,7 +62,7 @@ let run env cmd output_file =
       Eio.Flow.close r;
       Eio.Flow.close re;
       match Eio.Process.await child with
-      | `Exited 0 -> output
+      | `Exited 0 -> (output, err)
       | `Exited n ->
           Logs.err (fun m -> m "%d - Process exitted %d: stderr=%s" myn n err);
           failwith "Error"
@@ -79,7 +79,6 @@ let run env cmd output_file =
   let t_end = Unix.gettimeofday () in
   let r = String.split_on_char '\n' r in
   let time = t_end -. t_start in
-  let errors = "" in
   commands := { cmd; time; output_file; errors } :: !commands;
   r
 
