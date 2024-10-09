@@ -1,0 +1,39 @@
+name: "Driver"
+
+on:
+  - pull_request
+
+jobs:
+  build: # Check build on various OSes
+
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+        ocaml-compiler:
+          - 5.2.x
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      # Clone the project
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      # Setup
+      - name: Setup OCaml ${{ matrix.ocaml-version }}
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          opam-local-packages: odoc-parser.opam odoc.opam odoc-driver.opam sherlodoc/sherlodoc.opam
+
+      - name: Install dependencies
+        run: |
+          opam install -y --deps-only -t ./odoc-parser.opam ./odoc.opam ./odoc-driver.opam sherlodoc/sherlodoc.opam
+          opam install -y base # Input to the driver
+
+      - name: Run the driver
+        run: |
+          opam exec -- dune exec -- odoc_driver -p base
+          echo "Generated $(find _html -name '*.html' | wc -l) pages"
