@@ -561,22 +561,20 @@ let append_alerts_to_comment alerts
 let ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
     ~parent_of_sections ast alerts =
   Error.catch_warnings (fun () ->
-      let front_matter = ast.Ast.front_matter in
-      let front_matter = Frontmatter.of_ast_frontmatter front_matter in
-      let front_matter =
-        match front_matter with
-        | Error err ->
-            Error.raise_warning err;
-            Frontmatter.empty
-        | Ok front_matter -> front_matter
-      in
-      let ast = ast.content in
       let status = { sections_allowed; tags_allowed; parent_of_sections } in
       let ast, tags = strip_internal_tags ast in
       let elts =
         top_level_block_elements status ast |> append_alerts_to_comment alerts
       in
-      (elts, front_matter, handle_internal_tags tags internal_tags))
+      (elts, handle_internal_tags tags internal_tags))
+
+let parse_frontmatter ast_frontmatter =
+  let front_matter = Frontmatter.of_ast_frontmatter ast_frontmatter in
+  match front_matter with
+  | Error err ->
+      Error.raise_warning err;
+      Frontmatter.empty
+  | Ok front_matter -> front_matter
 
 let parse_comment ~internal_tags ~sections_allowed ~tags_allowed
     ~containing_definition ~location ~text =
@@ -584,9 +582,13 @@ let parse_comment ~internal_tags ~sections_allowed ~tags_allowed
       let ast =
         Odoc_parser.parse_comment ~location ~text |> Error.raise_parser_warnings
       in
-      ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
-        ~parent_of_sections:containing_definition ast []
-      |> Error.raise_warnings)
+      let frontmatter = parse_frontmatter ast.front_matter in
+      let a, b =
+        ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
+          ~parent_of_sections:containing_definition ast.content []
+        |> Error.raise_warnings
+      in
+      (a, frontmatter, b))
 
 let parse_reference text =
   let location =

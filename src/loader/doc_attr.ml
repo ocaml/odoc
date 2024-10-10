@@ -143,8 +143,7 @@ let attached internal_tags parent attrs =
     | [] -> (List.rev acc_docs, List.rev acc_alerts)
   in
   let ast_docs, alerts = loop [] [] attrs in
-  let ast_docs = {Odoc_parser.Ast.content=ast_docs; front_matter=None} in
-  let d,_frontmatter,a = ast_to_comment ~internal_tags parent ast_docs alerts in d,a
+  ast_to_comment ~internal_tags parent ast_docs alerts
 
 let attached_no_tag parent attrs =
   let x, () = attached Semantics.Expect_none parent attrs in
@@ -254,10 +253,10 @@ let extract_top_comment internal_tags ~classify parent items =
     | [] -> ([], Odoc_parser.Ast.empty, [])
   in
   let items, ast_docs, alerts = extract items in
-  let docs, _frontmatter, tags =
+  let docs, tags =
     ast_to_comment ~internal_tags
       (parent : Paths.Identifier.Signature.t :> Paths.Identifier.LabelParent.t)
-      ast_docs alerts
+      ast_docs.content alerts
   in
   (items, split_docs docs, tags)
 

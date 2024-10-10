@@ -15,9 +15,9 @@ val ast_to_comment :
   sections_allowed:sections_allowed ->
   tags_allowed:bool ->
   parent_of_sections:Paths.Identifier.LabelParent.t ->
-  Odoc_parser.Ast.t ->
+  Odoc_parser.Ast.body ->
   alerts ->
-  (Comment.docs * Frontmatter.t * 'tags) Error.with_warnings
+  (Comment.docs * 'tags) Error.with_warnings
 
 val parse_comment :
   internal_tags:'tags handle_internal_tags ->
@@ -29,3 +29,5 @@ val parse_comment :
   (Comment.docs * Frontmatter.t * 'tags) Error.with_warnings
 
 val parse_reference : string -> Paths.Reference.t Error.with_errors_and_warnings
+
+val parse_frontmatter :  Odoc_parser.Ast.frontmatter option -> Frontmatter.t
