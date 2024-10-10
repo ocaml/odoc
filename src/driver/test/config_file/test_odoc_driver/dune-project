@@ -1,4 +1,4 @@
-(lang dune 3.16)
+(lang dune 3.7)
 
 (name test_odoc_driver)
 
