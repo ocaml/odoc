@@ -29,5 +29,3 @@ val parse_comment :
   (Comment.docs * Frontmatter.t * 'tags) Error.with_warnings
 
 val parse_reference : string -> Paths.Reference.t Error.with_errors_and_warnings
-
-val parse_frontmatter :  Odoc_parser.Ast.frontmatter option -> Frontmatter.t
