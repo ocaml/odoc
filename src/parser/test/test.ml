@@ -22,6 +22,19 @@ module Ast_to_sexp = struct
   let str s = Atom s
   let opt f s = match s with Some s -> List [ f s ] | None -> List []
 
+  let rec bake_in_annotations asexp =
+    let open Sexplib in
+    let pos Sexp.Annotated.{ line; col; _ } =
+      Location_to_sexp.point Loc.{ line; column = col }
+    in
+    let range_sexp Sexp.Annotated.{ start_pos; end_pos } =
+      List [ pos start_pos; pos end_pos ]
+    in
+    match asexp with
+    | Sexp.Annotated.Atom (range, content) -> List [ range_sexp range; content ]
+    | Sexp.Annotated.List (range, li, _) ->
+        List [ range_sexp range; List (List.map bake_in_annotations li) ]
+
   let style : Ast.style -> sexp = function
     | `Bold -> Atom "bold"
     | `Italic -> Atom "italic"
@@ -174,8 +187,22 @@ module Ast_to_sexp = struct
           [ Atom level; label; List (List.map (at.at (inline_element at)) es) ]
     | `Tag t -> tag at t
 
-  let docs at : Ast.t -> sexp =
+  let docs_body at : Ast.body -> sexp =
    fun f -> List (List.map (at.at (block_element at)) f)
+  let docs at : Ast.t -> sexp =
+   fun f ->
+    List
+      [
+        opt
+          (fun frontmatter ->
+            List
+              [
+                bake_in_annotations frontmatter.Ast.sexp;
+                Atom frontmatter.Ast.filename;
+              ])
+          f.front_matter;
+        docs_body at f.content;
+      ]
 end
 
 let error err = Atom (Odoc_parser.Warning.to_string err)
@@ -209,35 +236,35 @@ let%expect_test _ =
   let module Trivial = struct
     let empty =
       test "";
-      [%expect "((output ()) (warnings ()))"]
+      [%expect "((output (() ())) (warnings ()))"]
 
     let space =
       test " ";
-      [%expect "((output ()) (warnings ()))"]
+      [%expect "((output (() ())) (warnings ()))"]
 
     let two_spaces =
       test "  ";
-      [%expect "((output ()) (warnings ()))"]
+      [%expect "((output (() ())) (warnings ()))"]
 
     let tab =
       test "\t";
-      [%expect "((output ()) (warnings ()))"]
+      [%expect "((output (() ())) (warnings ()))"]
 
     let mixed_space =
       test " \t \t";
-      [%expect "((output ()) (warnings ()))"]
+      [%expect "((output (() ())) (warnings ()))"]
 
     let newline =
       test "\n";
-      [%expect "((output ()) (warnings ()))"]
+      [%expect "((output (() ())) (warnings ()))"]
 
     let blank_line =
       test "\n\n";
-      [%expect "((output ()) (warnings ()))"]
+      [%expect "((output (() ())) (warnings ()))"]
 
     let cf_lf =
       test "\r\n";
-      [%expect "((output ()) (warnings ()))"]
+      [%expect "((output (() ())) (warnings ()))"]
   end in
   ()
 
@@ -248,7 +275,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))))
+          (() (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo))))))))
          (warnings ())) |}]
 
     let two_words =
@@ -256,10 +283,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space)
-              ((f.ml (1 4) (1 7)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space)
+               ((f.ml (1 4) (1 7)) (word bar))))))))
          (warnings ())) |}]
 
     let two_words =
@@ -267,10 +295,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space)
-              ((f.ml (1 4) (1 7)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space)
+               ((f.ml (1 4) (1 7)) (word bar))))))))
          (warnings ())) |}]
 
     let two_spaces =
@@ -278,10 +307,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 5)) space)
-              ((f.ml (1 5) (1 8)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (1 8))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 5)) space)
+               ((f.ml (1 5) (1 8)) (word bar))))))))
          (warnings ())) |}]
 
     let mixed_space =
@@ -289,10 +319,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 8)) space)
-              ((f.ml (1 8) (1 11)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 8)) space)
+               ((f.ml (1 8) (1 11)) (word bar))))))))
          (warnings ())) |}]
 
     let two_lines =
@@ -300,7 +331,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))))
+          (() (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo))))))))
          (warnings ())) |}]
 
     let two_lines_cr_lf =
@@ -308,10 +339,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 3))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (2 0)) space)
-              ((f.ml (2 0) (2 3)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (2 3))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (2 0)) space)
+               ((f.ml (2 0) (2 3)) (word bar))))))))
          (warnings ())) |}]
 
     let leading_space =
@@ -319,7 +351,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 1) (1 4)) (paragraph (((f.ml (1 1) (1 4)) (word foo)))))))
+          (() (((f.ml (1 1) (1 4)) (paragraph (((f.ml (1 1) (1 4)) (word foo))))))))
          (warnings ())) |}]
 
     let trailing_space =
@@ -327,7 +359,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))))
+          (() (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo))))))))
          (warnings ())) |}]
 
     let leading_space_on_line =
@@ -335,10 +367,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 4))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (2 1)) space)
-              ((f.ml (2 1) (2 4)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (2 4))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (2 1)) space)
+               ((f.ml (2 1) (2 4)) (word bar))))))))
          (warnings ())) |}]
 
     let trailing_space_on_line =
@@ -346,10 +379,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 3))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (2 0)) space)
-              ((f.ml (2 0) (2 3)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (2 3))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (2 0)) space)
+               ((f.ml (2 0) (2 3)) (word bar))))))))
          (warnings ())) |}]
 
     let leading_tab_on_line =
@@ -357,10 +391,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 4))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (2 1)) space)
-              ((f.ml (2 1) (2 4)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (2 4))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (2 1)) space)
+               ((f.ml (2 1) (2 4)) (word bar))))))))
          (warnings ())) |}]
 
     let trailing_tab_on_line =
@@ -368,10 +403,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 3))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (2 0)) space)
-              ((f.ml (2 0) (2 3)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (2 3))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (2 0)) space)
+               ((f.ml (2 0) (2 3)) (word bar))))))))
          (warnings ())) |}]
 
     let email =
@@ -379,8 +415,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (paragraph (((f.ml (1 0) (1 11)) (word foo@bar.com)))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (paragraph (((f.ml (1 0) (1 11)) (word foo@bar.com))))))))
          (warnings ())) |}]
   end in
   ()
@@ -392,8 +429,9 @@ let%expect_test _ =
       [%expect
         {|
       ((output
-        (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
-         ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar)))))))
+        (()
+         (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+          ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar))))))))
        (warnings ())) |}]
 
     let leading_space =
@@ -401,8 +439,9 @@ let%expect_test _ =
       [%expect
         {|
       ((output
-        (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
-         ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar)))))))
+        (()
+         (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+          ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar))))))))
        (warnings ())) |}]
 
     let trailing_space =
@@ -410,8 +449,9 @@ let%expect_test _ =
       [%expect
         {|
       ((output
-        (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
-         ((f.ml (3 1) (3 4)) (paragraph (((f.ml (3 1) (3 4)) (word bar)))))))
+        (()
+         (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+          ((f.ml (3 1) (3 4)) (paragraph (((f.ml (3 1) (3 4)) (word bar))))))))
        (warnings ())) |}]
 
     let cr_lf =
@@ -419,8 +459,9 @@ let%expect_test _ =
       [%expect
         {|
       ((output
-        (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
-         ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar)))))))
+        (()
+         (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+          ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar))))))))
        (warnings ())) |}]
 
     let mixed_cr_lf =
@@ -428,8 +469,9 @@ let%expect_test _ =
       [%expect
         {|
       ((output
-        (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
-         ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar)))))))
+        (()
+         (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+          ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar))))))))
        (warnings ())) |}]
   end in
   ()
@@ -441,7 +483,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word foo-bar)))))))
+          (()
+           (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word foo-bar))))))))
          (warnings ())) |}]
 
     let minus_as_word =
@@ -449,10 +492,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space)
-              ((f.ml (1 4) (1 5)) (word -)))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space)
+               ((f.ml (1 4) (1 5)) (word -))))))))
          (warnings ())) |}]
 
     let plus_in_word =
@@ -460,7 +504,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word foo+bar)))))))
+          (()
+           (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word foo+bar))))))))
          (warnings ())) |}]
 
     let plus_as_word =
@@ -468,10 +513,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space)
-              ((f.ml (1 4) (1 5)) (word +)))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space)
+               ((f.ml (1 4) (1 5)) (word +))))))))
          (warnings ())) |}]
 
     let bar_in_word =
@@ -479,10 +525,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) (word |))
-              ((f.ml (1 4) (1 7)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) (word |))
+               ((f.ml (1 4) (1 7)) (word bar))))))))
          (warnings ())) |}]
 
     let escaped_bar_in_word =
@@ -490,7 +537,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word "foo\\|bar")))))))
+          (()
+           (((f.ml (1 0) (1 8))
+             (paragraph (((f.ml (1 0) (1 8)) (word "foo\\|bar"))))))))
          (warnings ())) |}]
 
     let bar_as_word =
@@ -498,10 +547,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space)
-              ((f.ml (1 4) (1 5)) (word |)))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space)
+               ((f.ml (1 4) (1 5)) (word |))))))))
          (warnings ())) |}]
 
     let negative_number =
@@ -509,10 +559,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (paragraph
-             (((f.ml (1 0) (1 5)) (word -3.14)) ((f.ml (1 5) (1 6)) space)
-              ((f.ml (1 6) (1 11)) (word -1337)))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (paragraph
+              (((f.ml (1 0) (1 5)) (word -3.14)) ((f.ml (1 5) (1 6)) space)
+               ((f.ml (1 6) (1 11)) (word -1337))))))))
          (warnings ())) |}]
 
     let n_em_dash =
@@ -520,17 +571,19 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 6))
-            (paragraph
-             (((f.ml (1 0) (1 2)) (word --)) ((f.ml (1 2) (1 3)) space)
-              ((f.ml (1 3) (1 6)) (word ---)))))))
+          (()
+           (((f.ml (1 0) (1 6))
+             (paragraph
+              (((f.ml (1 0) (1 2)) (word --)) ((f.ml (1 2) (1 3)) space)
+               ((f.ml (1 3) (1 6)) (word ---))))))))
          (warnings ())) |}]
 
     let minus_at =
       test "-@";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word -@)))))))
+        ((output
+          (() (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word -@))))))))
          (warnings ())) |}]
 
     let at_minus =
@@ -538,7 +591,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word -@-)))))))
+          (() (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word -@-))))))))
          (warnings ())) |}]
 
     let option =
@@ -546,7 +599,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word --option)))))))
+          (()
+           (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word --option))))))))
          (warnings ())) |}]
   end in
   ()
@@ -557,7 +611,8 @@ let%expect_test _ =
       test "\\{";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word {)))))))
+        ((output
+          (() (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word {))))))))
          (warnings ())) |}]
 
     let left_brace_in_word =
@@ -565,14 +620,16 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo{bar)))))))
+          (()
+           (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo{bar))))))))
          (warnings ())) |}]
 
     let right_brace =
       test "\\}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word })))))))
+        ((output
+          (() (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word }))))))))
          (warnings ())) |}]
 
     let right_brace_in_word =
@@ -580,14 +637,16 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo{bar)))))))
+          (()
+           (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo{bar))))))))
          (warnings ())) |}]
 
     let left_bracket =
       test "\\[";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word [)))))))
+        ((output
+          (() (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word [))))))))
          (warnings ())) |}]
 
     let left_bracket_in_word =
@@ -595,14 +654,16 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo[bar)))))))
+          (()
+           (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo[bar))))))))
          (warnings ())) |}]
 
     let right_bracket =
       test "\\]";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word ])))))))
+        ((output
+          (() (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word ]))))))))
          (warnings ())) |}]
 
     let right_bracket_in_word =
@@ -610,14 +671,16 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo]bar)))))))
+          (()
+           (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo]bar))))))))
          (warnings ())) |}]
 
     let at =
       test "@";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word @)))))))
+        ((output
+          (() (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word @))))))))
          (warnings ( "File \"f.ml\", line 1, characters 0-1:\
                     \nStray '@'."))) |}]
 
@@ -626,7 +689,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word @author)))))))
+          (()
+           (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word @author))))))))
          (warnings ())) |}]
 
     let at_in_word =
@@ -634,7 +698,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo@bar)))))))
+          (()
+           (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo@bar))))))))
          (warnings ())) |}]
 
     let trailing_backslash =
@@ -642,7 +707,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word "foo\\")))))))
+          (()
+           (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word "foo\\"))))))))
          (warnings ())) |}]
 
     let none_escape =
@@ -650,7 +716,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word "foo\\bar")))))))
+          (()
+           (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word "foo\\bar"))))))))
          (warnings ())) |}]
 
     let backslash_not_escaped =
@@ -658,7 +725,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word "foo\\{bar")))))))
+          (()
+           (((f.ml (1 0) (1 9))
+             (paragraph (((f.ml (1 0) (1 9)) (word "foo\\{bar"))))))))
          (warnings ())) |}]
 
     let single_backslash =
@@ -666,7 +735,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word "\\")))))))
+          (() (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word "\\"))))))))
          (warnings ())) |}]
 
     let escape_minus =
@@ -674,10 +743,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word {-)) ((f.ml (1 3) (1 4)) space)
-              ((f.ml (1 4) (1 7)) (word foo)))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word {-)) ((f.ml (1 3) (1 4)) space)
+               ((f.ml (1 4) (1 7)) (word foo))))))))
          (warnings ())) |}]
 
     let escape_plus =
@@ -685,24 +755,27 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word {+)) ((f.ml (1 3) (1 4)) space)
-              ((f.ml (1 4) (1 7)) (word foo)))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word {+)) ((f.ml (1 3) (1 4)) space)
+               ((f.ml (1 4) (1 7)) (word foo))))))))
          (warnings ())) |}]
 
     let minus_escape =
       test "-\\{";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word -{)))))))
+        ((output
+          (() (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word -{))))))))
          (warnings ())) |}]
 
     let plus_escape =
       test "+\\{";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word +{)))))))
+        ((output
+          (() (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word +{))))))))
          (warnings ())) |}]
 
     let escape_at =
@@ -710,14 +783,16 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word {@author)))))))
+          (()
+           (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word {@author))))))))
          (warnings ())) |}]
 
     let two =
       test "\\{\\}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word {})))))))
+        ((output
+          (() (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word {}))))))))
          (warnings ())) |}]
   end in
   ()
@@ -729,7 +804,8 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (1 5)) (paragraph (((f.ml (1 0) (1 5)) (code_span foo)))))))
+      (()
+       (((f.ml (1 0) (1 5)) (paragraph (((f.ml (1 0) (1 5)) (code_span foo))))))))
      (warnings ())) |}]
 
     let empty =
@@ -737,7 +813,8 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (code_span "")))))))
+      (()
+       (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (code_span ""))))))))
      (warnings ())) |}]
 
     let list =
@@ -745,7 +822,8 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (code_span [])))))))
+      (()
+       (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (code_span []))))))))
      (warnings ())) |}]
     (* TODO The next two error messages are particularly unintuitive. *)
 
@@ -754,7 +832,8 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (code_span [])))))))
+      (()
+       (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (code_span []))))))))
      (warnings
       ( "File \"f.ml\", line 1, characters 3-3:\
        \nEnd of text is not allowed in '[...]' (code)."))) |}]
@@ -764,7 +843,8 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (code_span {b)))))))
+      (()
+       (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (code_span {b))))))))
      (warnings
       ( "File \"f.ml\", line 1, characters 3-3:\
        \nEnd of text is not allowed in '[...]' (code)."))) |}]
@@ -774,7 +854,8 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (code_span "\\{")))))))
+      (()
+       (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (code_span "\\{"))))))))
      (warnings ())) |}]
 
     let escaped_right_bracket =
@@ -782,7 +863,8 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (code_span ])))))))
+      (()
+       (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (code_span ]))))))))
      (warnings ())) |}]
 
     let escaped_left_bracket =
@@ -790,7 +872,8 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (code_span [)))))))
+      (()
+       (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (code_span [))))))))
      (warnings ())) |}]
 
     let whitespace_preserved =
@@ -798,8 +881,9 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (1 11))
-        (paragraph (((f.ml (1 0) (1 11)) (code_span " foo bar ")))))))
+      (()
+       (((f.ml (1 0) (1 11))
+         (paragraph (((f.ml (1 0) (1 11)) (code_span " foo bar "))))))))
      (warnings ())) |}]
 
     let no_new_lines =
@@ -807,8 +891,9 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (2 4))
-        (paragraph (((f.ml (1 0) (2 4)) (code_span "foo bar")))))))
+      (()
+       (((f.ml (1 0) (2 4))
+         (paragraph (((f.ml (1 0) (2 4)) (code_span "foo bar"))))))))
      (warnings ())) |}]
 
     let cr_lf_preserved =
@@ -816,8 +901,9 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (2 4))
-        (paragraph (((f.ml (1 0) (2 4)) (code_span "foo bar")))))))
+      (()
+       (((f.ml (1 0) (2 4))
+         (paragraph (((f.ml (1 0) (2 4)) (code_span "foo bar"))))))))
      (warnings ())) |}]
 
     let no_double_new_line =
@@ -825,8 +911,9 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (3 4))
-        (paragraph (((f.ml (1 0) (3 4)) (code_span "foo bar")))))))
+      (()
+       (((f.ml (1 0) (3 4))
+         (paragraph (((f.ml (1 0) (3 4)) (code_span "foo bar"))))))))
      (warnings
       ( "File \"f.ml\", line 1, character 4 to line 3, character 0:\
        \nBlank line is not allowed in '[...]' (code)."))) |}]
@@ -836,8 +923,9 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (3 4))
-        (paragraph (((f.ml (1 0) (3 4)) (code_span "foo bar")))))))
+      (()
+       (((f.ml (1 0) (3 4))
+         (paragraph (((f.ml (1 0) (3 4)) (code_span "foo bar"))))))))
      (warnings
       ( "File \"f.ml\", line 1, character 4 to line 3, character 0:\
        \nBlank line is not allowed in '[...]' (code)."))) |}]
@@ -847,10 +935,11 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (1 10))
-        (paragraph
-         (((f.ml (1 0) (1 5)) (code_span foo))
-          ((f.ml (1 5) (1 10)) (code_span bar)))))))
+      (()
+       (((f.ml (1 0) (1 10))
+         (paragraph
+          (((f.ml (1 0) (1 5)) (code_span foo))
+           ((f.ml (1 5) (1 10)) (code_span bar))))))))
      (warnings ())) |}]
 
     let explicit_space =
@@ -858,10 +947,11 @@ let%expect_test _ =
       [%expect
         {|
     ((output
-      (((f.ml (1 0) (1 11))
-        (paragraph
-         (((f.ml (1 0) (1 5)) (code_span foo)) ((f.ml (1 5) (1 6)) space)
-          ((f.ml (1 6) (1 11)) (code_span bar)))))))
+      (()
+       (((f.ml (1 0) (1 11))
+         (paragraph
+          (((f.ml (1 0) (1 5)) (code_span foo)) ((f.ml (1 5) (1 6)) space)
+           ((f.ml (1 6) (1 11)) (code_span bar))))))))
      (warnings ())) |}]
 
     let untermindated =
@@ -869,7 +959,8 @@ let%expect_test _ =
       [%expect
         {|
   ((output
-    (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (code_span foo)))))))
+    (()
+     (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (code_span foo))))))))
    (warnings
     ( "File \"f.ml\", line 1, characters 4-4:\
      \nEnd of text is not allowed in '[...]' (code)."))) |}]
@@ -883,9 +974,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph
-             (((f.ml (1 0) (1 7)) (bold (((f.ml (1 3) (1 6)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph
+              (((f.ml (1 0) (1 7)) (bold (((f.ml (1 3) (1 6)) (word foo)))))))))))
          (warnings ())) |}]
 
     let extra_leading_whitespace =
@@ -893,9 +985,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph
-             (((f.ml (1 0) (1 10)) (bold (((f.ml (1 6) (1 9)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph
+              (((f.ml (1 0) (1 10)) (bold (((f.ml (1 6) (1 9)) (word foo)))))))))))
          (warnings ())) |}]
 
     let leading_newline =
@@ -903,9 +996,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 4))
-            (paragraph
-             (((f.ml (1 0) (2 4)) (bold (((f.ml (2 0) (2 3)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 4))
+             (paragraph
+              (((f.ml (1 0) (2 4)) (bold (((f.ml (2 0) (2 3)) (word foo)))))))))))
          (warnings ())) |}]
 
     let leading_cr_lf =
@@ -913,9 +1007,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 4))
-            (paragraph
-             (((f.ml (1 0) (2 4)) (bold (((f.ml (2 0) (2 3)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 4))
+             (paragraph
+              (((f.ml (1 0) (2 4)) (bold (((f.ml (2 0) (2 3)) (word foo)))))))))))
          (warnings ())) |}]
 
     let leading_newline_and_whitespace =
@@ -923,9 +1018,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5))
-            (paragraph
-             (((f.ml (1 0) (2 5)) (bold (((f.ml (2 1) (2 4)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 5))
+             (paragraph
+              (((f.ml (1 0) (2 5)) (bold (((f.ml (2 1) (2 4)) (word foo)))))))))))
          (warnings ())) |}]
 
     let no_leading_whitespace =
@@ -933,9 +1029,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 6))
-            (paragraph
-             (((f.ml (1 0) (1 6)) (bold (((f.ml (1 2) (1 5)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 6))
+             (paragraph
+              (((f.ml (1 0) (1 6)) (bold (((f.ml (1 2) (1 5)) (word foo)))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-2:\
            \n'{b' should be followed by space, a tab, or a new line."))) |}]
@@ -945,9 +1042,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8))
-            (paragraph
-             (((f.ml (1 0) (1 8)) (bold (((f.ml (1 3) (1 6)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 8))
+             (paragraph
+              (((f.ml (1 0) (1 8)) (bold (((f.ml (1 3) (1 6)) (word foo)))))))))))
          (warnings ())) |}]
 
     let trailing_newline =
@@ -955,9 +1053,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 1))
-            (paragraph
-             (((f.ml (1 0) (2 1)) (bold (((f.ml (1 3) (1 6)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 1))
+             (paragraph
+              (((f.ml (1 0) (2 1)) (bold (((f.ml (1 3) (1 6)) (word foo)))))))))))
          (warnings ())) |}]
 
     let trailing_cr_lf =
@@ -965,9 +1064,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 1))
-            (paragraph
-             (((f.ml (1 0) (2 1)) (bold (((f.ml (1 3) (1 6)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 1))
+             (paragraph
+              (((f.ml (1 0) (2 1)) (bold (((f.ml (1 3) (1 6)) (word foo)))))))))))
          (warnings ())) |}]
 
     let two_words =
@@ -975,12 +1075,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (paragraph
-             (((f.ml (1 0) (1 11))
-               (bold
-                (((f.ml (1 3) (1 6)) (word foo)) ((f.ml (1 6) (1 7)) space)
-                 ((f.ml (1 7) (1 10)) (word bar))))))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (paragraph
+              (((f.ml (1 0) (1 11))
+                (bold
+                 (((f.ml (1 3) (1 6)) (word foo)) ((f.ml (1 6) (1 7)) space)
+                  ((f.ml (1 7) (1 10)) (word bar)))))))))))
          (warnings ())) |}]
 
     let not_merged =
@@ -988,10 +1089,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 14))
-            (paragraph
-             (((f.ml (1 0) (1 7)) (bold (((f.ml (1 3) (1 6)) (word foo)))))
-              ((f.ml (1 7) (1 14)) (bold (((f.ml (1 10) (1 13)) (word bar))))))))))
+          (()
+           (((f.ml (1 0) (1 14))
+             (paragraph
+              (((f.ml (1 0) (1 7)) (bold (((f.ml (1 3) (1 6)) (word foo)))))
+               ((f.ml (1 7) (1 14)) (bold (((f.ml (1 10) (1 13)) (word bar)))))))))))
          (warnings ())) |}]
 
     let nested =
@@ -999,12 +1101,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 14))
-            (paragraph
-             (((f.ml (1 0) (1 14))
-               (bold
-                (((f.ml (1 3) (1 6)) (word foo))
-                 ((f.ml (1 6) (1 13)) (bold (((f.ml (1 9) (1 12)) (word bar)))))))))))))
+          (()
+           (((f.ml (1 0) (1 14))
+             (paragraph
+              (((f.ml (1 0) (1 14))
+                (bold
+                 (((f.ml (1 3) (1 6)) (word foo))
+                  ((f.ml (1 6) (1 13)) (bold (((f.ml (1 9) (1 12)) (word bar))))))))))))))
          (warnings ())) |}]
 
     let newline =
@@ -1012,12 +1115,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 4))
-            (paragraph
-             (((f.ml (1 0) (2 4))
-               (bold
-                (((f.ml (1 3) (1 6)) (word foo)) ((f.ml (1 6) (2 0)) space)
-                 ((f.ml (2 0) (2 3)) (word bar))))))))))
+          (()
+           (((f.ml (1 0) (2 4))
+             (paragraph
+              (((f.ml (1 0) (2 4))
+                (bold
+                 (((f.ml (1 3) (1 6)) (word foo)) ((f.ml (1 6) (2 0)) space)
+                  ((f.ml (2 0) (2 3)) (word bar)))))))))))
          (warnings ())) |}]
 
     let cr_lf =
@@ -1025,12 +1129,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 4))
-            (paragraph
-             (((f.ml (1 0) (2 4))
-               (bold
-                (((f.ml (1 3) (1 6)) (word foo)) ((f.ml (1 6) (2 0)) space)
-                 ((f.ml (2 0) (2 3)) (word bar))))))))))
+          (()
+           (((f.ml (1 0) (2 4))
+             (paragraph
+              (((f.ml (1 0) (2 4))
+                (bold
+                 (((f.ml (1 3) (1 6)) (word foo)) ((f.ml (1 6) (2 0)) space)
+                  ((f.ml (2 0) (2 3)) (word bar)))))))))))
          (warnings ())) |}]
 
     let minus =
@@ -1038,8 +1143,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (paragraph (((f.ml (1 0) (1 5)) (bold (((f.ml (1 3) (1 4)) (word -))))))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (paragraph
+              (((f.ml (1 0) (1 5)) (bold (((f.ml (1 3) (1 4)) (word -)))))))))))
          (warnings ())) |}]
 
     let minus_list_item =
@@ -1047,13 +1154,14 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 7))
-            (paragraph
-             (((f.ml (1 0) (2 7))
-               (bold
-                (((f.ml (1 3) (1 6)) (word foo)) ((f.ml (1 6) (2 1)) space)
-                 ((f.ml (2 1) (2 2)) (word -)) ((f.ml (2 2) (2 3)) space)
-                 ((f.ml (2 3) (2 6)) (word bar))))))))))
+          (()
+           (((f.ml (1 0) (2 7))
+             (paragraph
+              (((f.ml (1 0) (2 7))
+                (bold
+                 (((f.ml (1 3) (1 6)) (word foo)) ((f.ml (1 6) (2 1)) space)
+                  ((f.ml (2 1) (2 2)) (word -)) ((f.ml (2 2) (2 3)) space)
+                  ((f.ml (2 3) (2 6)) (word bar)))))))))))
          (warnings
           ( "File \"f.ml\", line 2, characters 1-2:\
            \n'-' (bulleted list item) is not allowed in '{b ...}' (boldface text).\
@@ -1064,13 +1172,14 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 7))
-            (paragraph
-             (((f.ml (1 0) (2 7))
-               (bold
-                (((f.ml (1 3) (1 6)) (word foo)) ((f.ml (1 6) (2 1)) space)
-                 ((f.ml (2 1) (2 2)) (word +)) ((f.ml (2 2) (2 3)) space)
-                 ((f.ml (2 3) (2 6)) (word bar))))))))))
+          (()
+           (((f.ml (1 0) (2 7))
+             (paragraph
+              (((f.ml (1 0) (2 7))
+                (bold
+                 (((f.ml (1 3) (1 6)) (word foo)) ((f.ml (1 6) (2 1)) space)
+                  ((f.ml (2 1) (2 2)) (word +)) ((f.ml (2 2) (2 3)) space)
+                  ((f.ml (2 3) (2 6)) (word bar)))))))))))
          (warnings
           ( "File \"f.ml\", line 2, characters 1-2:\
            \n'+' (numbered list item) is not allowed in '{b ...}' (boldface text).\
@@ -1081,12 +1190,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6))
-            (paragraph
-             (((f.ml (1 0) (2 6))
-               (bold
-                (((f.ml (2 0) (2 1)) (word -)) ((f.ml (2 1) (2 2)) space)
-                 ((f.ml (2 2) (2 5)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 6))
+             (paragraph
+              (((f.ml (1 0) (2 6))
+                (bold
+                 (((f.ml (2 0) (2 1)) (word -)) ((f.ml (2 1) (2 2)) space)
+                  ((f.ml (2 2) (2 5)) (word foo)))))))))))
          (warnings
           ( "File \"f.ml\", line 2, characters 0-1:\
            \n'-' (bulleted list item) is not allowed in '{b ...}' (boldface text).\
@@ -1097,12 +1207,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6))
-            (paragraph
-             (((f.ml (1 0) (2 6))
-               (bold
-                (((f.ml (2 0) (2 1)) (word +)) ((f.ml (2 1) (2 2)) space)
-                 ((f.ml (2 2) (2 5)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 6))
+             (paragraph
+              (((f.ml (1 0) (2 6))
+                (bold
+                 (((f.ml (2 0) (2 1)) (word +)) ((f.ml (2 1) (2 2)) space)
+                  ((f.ml (2 2) (2 5)) (word foo)))))))))))
          (warnings
           ( "File \"f.ml\", line 2, characters 0-1:\
            \n'+' (numbered list item) is not allowed in '{b ...}' (boldface text).\
@@ -1113,12 +1224,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 4))
-            (paragraph
-             (((f.ml (1 0) (3 4))
-               (bold
-                (((f.ml (1 3) (1 6)) (word foo)) ((f.ml (2 0) (2 0)) space)
-                 ((f.ml (3 0) (3 3)) (word bar))))))))))
+          (()
+           (((f.ml (1 0) (3 4))
+             (paragraph
+              (((f.ml (1 0) (3 4))
+                (bold
+                 (((f.ml (1 3) (1 6)) (word foo)) ((f.ml (2 0) (2 0)) space)
+                  ((f.ml (3 0) (3 3)) (word bar)))))))))))
          (warnings
           ( "File \"f.ml\", line 2, characters 0-0:\
            \nBlank line is not allowed in '{b ...}' (boldface text)."))) |}]
@@ -1127,7 +1239,8 @@ let%expect_test _ =
       test "{b";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (bold ())))))))
+        ((output
+          (() (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (bold ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-2:\
            \n'{b' should be followed by space, a tab, or a new line."
@@ -1141,9 +1254,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 6))
-            (paragraph
-             (((f.ml (1 0) (1 6)) (bold (((f.ml (1 3) (1 6)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 6))
+             (paragraph
+              (((f.ml (1 0) (1 6)) (bold (((f.ml (1 3) (1 6)) (word foo)))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 6-6:\
            \nEnd of text is not allowed in '{b ...}' (boldface text)."))) |}]
@@ -1153,8 +1267,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (bold ())))))
-           ((f.ml (1 3) (1 10)) (code_block ((f.ml (1 5) (1 8)) foo)))))
+          (()
+           (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (bold ())))))
+            ((f.ml (1 3) (1 10)) (code_block ((f.ml (1 5) (1 8)) foo))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 3-10:\
            \n'{[...]}' (code block) is not allowed in '{b ...}' (boldface text)."
@@ -1167,7 +1282,8 @@ let%expect_test _ =
       test "{b}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (bold ())))))))
+        ((output
+          (() (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (bold ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-3:\
            \n'{b ...}' (boldface text) should not be empty."))) |}]
@@ -1176,7 +1292,8 @@ let%expect_test _ =
       test "{b }";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (bold ())))))))
+        ((output
+          (() (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (bold ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-4:\
            \n'{b ...}' (boldface text) should not be empty."))) |}]
@@ -1190,9 +1307,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph
-             (((f.ml (1 0) (1 7)) (italic (((f.ml (1 3) (1 6)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph
+              (((f.ml (1 0) (1 7)) (italic (((f.ml (1 3) (1 6)) (word foo)))))))))))
          (warnings ())) |}]
 
     let extra_leading_whitespace =
@@ -1200,9 +1318,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph
-             (((f.ml (1 0) (1 10)) (italic (((f.ml (1 6) (1 9)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph
+              (((f.ml (1 0) (1 10)) (italic (((f.ml (1 6) (1 9)) (word foo)))))))))))
          (warnings ())) |}]
 
     let leading_newline =
@@ -1210,9 +1329,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 4))
-            (paragraph
-             (((f.ml (1 0) (2 4)) (italic (((f.ml (2 0) (2 3)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 4))
+             (paragraph
+              (((f.ml (1 0) (2 4)) (italic (((f.ml (2 0) (2 3)) (word foo)))))))))))
          (warnings ())) |}]
 
     let leading_newline_and_whitespace =
@@ -1220,9 +1340,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5))
-            (paragraph
-             (((f.ml (1 0) (2 5)) (italic (((f.ml (2 1) (2 4)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 5))
+             (paragraph
+              (((f.ml (1 0) (2 5)) (italic (((f.ml (2 1) (2 4)) (word foo)))))))))))
          (warnings ())) |}]
   end in
   ()
@@ -1234,9 +1355,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph
-             (((f.ml (1 0) (1 7)) (emphasis (((f.ml (1 3) (1 6)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph
+              (((f.ml (1 0) (1 7)) (emphasis (((f.ml (1 3) (1 6)) (word foo)))))))))))
          (warnings ())) |}]
 
     let extra_leading_whitespace =
@@ -1244,9 +1366,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph
-             (((f.ml (1 0) (1 10)) (emphasis (((f.ml (1 6) (1 9)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph
+              (((f.ml (1 0) (1 10)) (emphasis (((f.ml (1 6) (1 9)) (word foo)))))))))))
          (warnings ())) |}]
 
     let leading_newline =
@@ -1254,9 +1377,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 4))
-            (paragraph
-             (((f.ml (1 0) (2 4)) (emphasis (((f.ml (2 0) (2 3)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 4))
+             (paragraph
+              (((f.ml (1 0) (2 4)) (emphasis (((f.ml (2 0) (2 3)) (word foo)))))))))))
          (warnings ())) |}]
 
     let leading_newline_and_whitespace =
@@ -1264,9 +1388,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5))
-            (paragraph
-             (((f.ml (1 0) (2 5)) (emphasis (((f.ml (2 1) (2 4)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 5))
+             (paragraph
+              (((f.ml (1 0) (2 5)) (emphasis (((f.ml (2 1) (2 4)) (word foo)))))))))))
          (warnings ())) |}]
   end in
   ()
@@ -1278,9 +1403,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph
-             (((f.ml (1 0) (1 7)) (superscript (((f.ml (1 3) (1 6)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph
+              (((f.ml (1 0) (1 7)) (superscript (((f.ml (1 3) (1 6)) (word foo)))))))))))
          (warnings ())) |}]
 
     let extra_leading_whitespace =
@@ -1288,9 +1414,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph
-             (((f.ml (1 0) (1 10)) (superscript (((f.ml (1 6) (1 9)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph
+              (((f.ml (1 0) (1 10)) (superscript (((f.ml (1 6) (1 9)) (word foo)))))))))))
          (warnings ())) |}]
 
     let leading_newline =
@@ -1298,9 +1425,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 4))
-            (paragraph
-             (((f.ml (1 0) (2 4)) (superscript (((f.ml (2 0) (2 3)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 4))
+             (paragraph
+              (((f.ml (1 0) (2 4)) (superscript (((f.ml (2 0) (2 3)) (word foo)))))))))))
          (warnings ())) |}]
 
     let leading_cr_lf =
@@ -1308,9 +1436,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 4))
-            (paragraph
-             (((f.ml (1 0) (2 4)) (superscript (((f.ml (2 0) (2 3)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 4))
+             (paragraph
+              (((f.ml (1 0) (2 4)) (superscript (((f.ml (2 0) (2 3)) (word foo)))))))))))
          (warnings ())) |}]
 
     let leading_newline_and_whitespace =
@@ -1318,9 +1447,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5))
-            (paragraph
-             (((f.ml (1 0) (2 5)) (superscript (((f.ml (2 1) (2 4)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 5))
+             (paragraph
+              (((f.ml (1 0) (2 5)) (superscript (((f.ml (2 1) (2 4)) (word foo)))))))))))
          (warnings ())) |}]
 
     let no_whitespace =
@@ -1328,9 +1458,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 6))
-            (paragraph
-             (((f.ml (1 0) (1 6)) (superscript (((f.ml (1 2) (1 5)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 6))
+             (paragraph
+              (((f.ml (1 0) (1 6)) (superscript (((f.ml (1 2) (1 5)) (word foo)))))))))))
          (warnings ())) |}]
 
     let degenerate =
@@ -1338,7 +1469,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (superscript ())))))))
+          (()
+           (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (superscript ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-3:\
            \n'{^...}' (superscript) should not be empty."))) |}]
@@ -1348,7 +1480,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (superscript ())))))))
+          (()
+           (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (superscript ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-4:\
            \n'{^...}' (superscript) should not be empty."))) |}]
@@ -1362,9 +1495,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph
-             (((f.ml (1 0) (1 7)) (subscript (((f.ml (1 3) (1 6)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph
+              (((f.ml (1 0) (1 7)) (subscript (((f.ml (1 3) (1 6)) (word foo)))))))))))
          (warnings ())) |}]
 
     let extra_leading_whitespace =
@@ -1372,9 +1506,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph
-             (((f.ml (1 0) (1 10)) (subscript (((f.ml (1 6) (1 9)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph
+              (((f.ml (1 0) (1 10)) (subscript (((f.ml (1 6) (1 9)) (word foo)))))))))))
          (warnings ())) |}]
 
     let leading_newline =
@@ -1382,9 +1517,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 4))
-            (paragraph
-             (((f.ml (1 0) (2 4)) (subscript (((f.ml (2 0) (2 3)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 4))
+             (paragraph
+              (((f.ml (1 0) (2 4)) (subscript (((f.ml (2 0) (2 3)) (word foo)))))))))))
          (warnings ())) |}]
 
     let leading_newline_and_whitespace =
@@ -1392,9 +1528,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5))
-            (paragraph
-             (((f.ml (1 0) (2 5)) (subscript (((f.ml (2 1) (2 4)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (2 5))
+             (paragraph
+              (((f.ml (1 0) (2 5)) (subscript (((f.ml (2 1) (2 4)) (word foo)))))))))))
          (warnings ())) |}]
 
     let no_whitespace =
@@ -1402,9 +1539,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 6))
-            (paragraph
-             (((f.ml (1 0) (1 6)) (subscript (((f.ml (1 2) (1 5)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 6))
+             (paragraph
+              (((f.ml (1 0) (1 6)) (subscript (((f.ml (1 2) (1 5)) (word foo)))))))))))
          (warnings ())) |}]
 
     let v_verbose =
@@ -1412,9 +1550,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (paragraph
-             (((f.ml (1 0) (1 5)) (subscript (((f.ml (1 2) (1 4)) (word uv))))))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (paragraph
+              (((f.ml (1 0) (1 5)) (subscript (((f.ml (1 2) (1 4)) (word uv)))))))))))
          (warnings ())) |}]
   end in
   ()
@@ -1426,8 +1565,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 6))
-            (paragraph (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) foo) ())))))))
+          (()
+           (((f.ml (1 0) (1 6))
+             (paragraph (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) foo) ()))))))))
          (warnings ())) |}]
 
     let leading_whitespace =
@@ -1435,9 +1575,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph
-             (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) " foo") ())))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph
+              (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) " foo") ()))))))))
          (warnings ())) |}]
 
     let trailing_whitespace =
@@ -1445,9 +1586,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph
-             (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) "foo ") ())))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph
+              (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) "foo ") ()))))))))
          (warnings ())) |}]
 
     let adjacent_word_leading =
@@ -1455,10 +1597,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word bar))
-              ((f.ml (1 3) (1 9)) (simple ((f.ml (1 5) (1 9)) foo) ())))))))
+          (()
+           (((f.ml (1 0) (1 9))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word bar))
+               ((f.ml (1 3) (1 9)) (simple ((f.ml (1 5) (1 9)) foo) ()))))))))
          (warnings ())) |}]
 
     let explicit_leading_space =
@@ -1466,10 +1609,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word bar)) ((f.ml (1 3) (1 4)) space)
-              ((f.ml (1 4) (1 10)) (simple ((f.ml (1 6) (1 10)) foo) ())))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word bar)) ((f.ml (1 3) (1 4)) space)
+               ((f.ml (1 4) (1 10)) (simple ((f.ml (1 6) (1 10)) foo) ()))))))))
          (warnings ())) |}]
 
     let adjacent_word_trailing =
@@ -1477,10 +1621,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9))
-            (paragraph
-             (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) foo) ()))
-              ((f.ml (1 6) (1 9)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (1 9))
+             (paragraph
+              (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) foo) ()))
+               ((f.ml (1 6) (1 9)) (word bar))))))))
          (warnings ())) |}]
 
     let explicit_trailing_space =
@@ -1488,10 +1633,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph
-             (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) foo) ()))
-              ((f.ml (1 6) (1 7)) space) ((f.ml (1 7) (1 10)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph
+              (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) foo) ()))
+               ((f.ml (1 6) (1 7)) space) ((f.ml (1 7) (1 10)) (word bar))))))))
          (warnings ())) |}]
 
     let kind =
@@ -1499,9 +1645,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph
-             (((f.ml (1 0) (1 10)) (simple ((f.ml (1 2) (1 10)) val:foo) ())))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph
+              (((f.ml (1 0) (1 10)) (simple ((f.ml (1 2) (1 10)) val:foo) ()))))))))
          (warnings ())) |}]
 
     let empty =
@@ -1509,8 +1656,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3))
-            (paragraph (((f.ml (1 0) (1 3)) (simple ((f.ml (1 2) (1 3)) "") ())))))))
+          (()
+           (((f.ml (1 0) (1 3))
+             (paragraph (((f.ml (1 0) (1 3)) (simple ((f.ml (1 2) (1 3)) "") ()))))))))
          (warnings ())) |}]
 
     let whitespace_only =
@@ -1518,8 +1666,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 4))
-            (paragraph (((f.ml (1 0) (1 4)) (simple ((f.ml (1 2) (1 4)) " ") ())))))))
+          (()
+           (((f.ml (1 0) (1 4))
+             (paragraph (((f.ml (1 0) (1 4)) (simple ((f.ml (1 2) (1 4)) " ") ()))))))))
          (warnings ())) |}]
 
     let internal_whitespace =
@@ -1527,9 +1676,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8))
-            (paragraph
-             (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "( * )") ())))))))
+          (()
+           (((f.ml (1 0) (1 8))
+             (paragraph
+              (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "( * )") ()))))))))
          (warnings ())) |}]
 
     (* TODO Limiting the character combinations allowed will make it easier to
@@ -1541,8 +1691,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (paragraph (((f.ml (1 0) (1 5)) (simple ((f.ml (1 2) (1 5)) foo) ())))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (paragraph (((f.ml (1 0) (1 5)) (simple ((f.ml (1 2) (1 5)) foo) ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-5:\
            \nOpen bracket '{!' is never closed."))) |}]
@@ -1552,8 +1703,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) :foo) ())))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) :foo) ()))))))))
          (warnings ())) |}]
 
     let whitespace_kind =
@@ -1561,9 +1713,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8))
-            (paragraph
-             (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) " :foo") ())))))))
+          (()
+           (((f.ml (1 0) (1 8))
+             (paragraph
+              (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) " :foo") ()))))))))
          (warnings ())) |}]
 
     let with_kind_but_empty =
@@ -1571,8 +1724,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) val:) ())))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) val:) ()))))))))
          (warnings ())) |}]
 
     let with_kind_but_whitespace =
@@ -1580,9 +1734,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8))
-            (paragraph
-             (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "val: ") ())))))))
+          (()
+           (((f.ml (1 0) (1 8))
+             (paragraph
+              (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "val: ") ()))))))))
          (warnings ())) |}]
 
     let leading_whitespace_in_kind =
@@ -1590,9 +1745,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (paragraph
-             (((f.ml (1 0) (1 11)) (simple ((f.ml (1 2) (1 11)) " val:foo") ())))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (paragraph
+              (((f.ml (1 0) (1 11)) (simple ((f.ml (1 2) (1 11)) " val:foo") ()))))))))
          (warnings ())) |}]
 
     let internal_whitespace_in_kind =
@@ -1600,9 +1756,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (paragraph
-             (((f.ml (1 0) (1 11)) (simple ((f.ml (1 2) (1 11)) "va l:foo") ())))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (paragraph
+              (((f.ml (1 0) (1 11)) (simple ((f.ml (1 2) (1 11)) "va l:foo") ()))))))))
          (warnings ())) |}]
 
     let internal_whitespace_in_referent =
@@ -1610,9 +1767,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 12))
-            (paragraph
-             (((f.ml (1 0) (1 12)) (simple ((f.ml (1 2) (1 12)) "val:( * )") ())))))))
+          (()
+           (((f.ml (1 0) (1 12))
+             (paragraph
+              (((f.ml (1 0) (1 12)) (simple ((f.ml (1 2) (1 12)) "val:( * )") ()))))))))
          (warnings ())) |}]
 
     let two_colons =
@@ -1620,9 +1778,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 14))
-            (paragraph
-             (((f.ml (1 0) (1 14)) (simple ((f.ml (1 2) (1 14)) val:foo:bar) ())))))))
+          (()
+           (((f.ml (1 0) (1 14))
+             (paragraph
+              (((f.ml (1 0) (1 14)) (simple ((f.ml (1 2) (1 14)) val:foo:bar) ()))))))))
          (warnings ())) |}]
 
     let space_before_colon =
@@ -1630,9 +1789,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (paragraph
-             (((f.ml (1 0) (1 11)) (simple ((f.ml (1 2) (1 11)) "val :foo") ())))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (paragraph
+              (((f.ml (1 0) (1 11)) (simple ((f.ml (1 2) (1 11)) "val :foo") ()))))))))
          (warnings ())) |}]
 
     let space_after_colon =
@@ -1640,9 +1800,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (paragraph
-             (((f.ml (1 0) (1 11)) (simple ((f.ml (1 2) (1 11)) "val: foo") ())))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (paragraph
+              (((f.ml (1 0) (1 11)) (simple ((f.ml (1 2) (1 11)) "val: foo") ()))))))))
          (warnings ())) |}]
 
     let unterminated_after_kind =
@@ -1650,9 +1811,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9))
-            (paragraph
-             (((f.ml (1 0) (1 9)) (simple ((f.ml (1 2) (1 9)) val:foo) ())))))))
+          (()
+           (((f.ml (1 0) (1 9))
+             (paragraph
+              (((f.ml (1 0) (1 9)) (simple ((f.ml (1 2) (1 9)) val:foo) ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-9:\
            \nOpen bracket '{!' is never closed."))) |}]
@@ -1662,9 +1824,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8))
-            (paragraph
-             (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(>>=)") ())))))))
+          (()
+           (((f.ml (1 0) (1 8))
+             (paragraph
+              (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(>>=)") ()))))))))
          (warnings ())) |}]
 
     let operator_with_dash =
@@ -1672,9 +1835,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8))
-            (paragraph
-             (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(@->)") ())))))))
+          (()
+           (((f.ml (1 0) (1 8))
+             (paragraph
+              (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(@->)") ()))))))))
          (warnings ())) |}]
 
     let operator_with_dot =
@@ -1682,9 +1846,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph
-             (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) "(*.)") ())))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph
+              (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) "(*.)") ()))))))))
          (warnings ())) |}]
 
     let operator_with_colon =
@@ -1692,9 +1857,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8))
-            (paragraph
-             (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(>::)") ())))))))
+          (()
+           (((f.ml (1 0) (1 8))
+             (paragraph
+              (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(>::)") ()))))))))
          (warnings ())) |}]
 
     let operator_with_curly_braces =
@@ -1702,9 +1868,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9))
-            (paragraph
-             (((f.ml (1 0) (1 9)) (simple ((f.ml (1 2) (1 9)) "(.*{})") ())))))))
+          (()
+           (((f.ml (1 0) (1 9))
+             (paragraph
+              (((f.ml (1 0) (1 9)) (simple ((f.ml (1 2) (1 9)) "(.*{})") ()))))))))
          (warnings ())) |}]
 
     let quotes_with_dash =
@@ -1712,9 +1879,10 @@ let%expect_test _ =
       [%expect
         {|
           ((output
-            (((f.ml (1 0) (1 12))
-              (paragraph
-               (((f.ml (1 0) (1 12)) (simple ((f.ml (1 2) (1 12)) "\"my-name\"") ())))))))
+            (()
+             (((f.ml (1 0) (1 12))
+               (paragraph
+                (((f.ml (1 0) (1 12)) (simple ((f.ml (1 2) (1 12)) "\"my-name\"") ()))))))))
            (warnings ())) |}]
 
     let quotes_with_curly_braces =
@@ -1722,9 +1890,10 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (1 6))
-               (paragraph
-                (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) "\"}\"") ())))))))
+             (()
+              (((f.ml (1 0) (1 6))
+                (paragraph
+                 (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) "\"}\"") ()))))))))
             (warnings ())) |}]
 
     let operator_with_curly_braces =
@@ -1732,9 +1901,10 @@ let%expect_test _ =
       [%expect
         {|
           ((output
-            (((f.ml (1 0) (1 8))
-              (paragraph
-               (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "( } )") ())))))))
+            (()
+             (((f.ml (1 0) (1 8))
+               (paragraph
+                (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "( } )") ()))))))))
            (warnings ())) |}]
 
     let operator_unbalanced =
@@ -1742,9 +1912,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8))
-            (paragraph
-             (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(.*()}") ())))))))
+          (()
+           (((f.ml (1 0) (1 8))
+             (paragraph
+              (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(.*()}") ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 2-8:\
            \nOpen bracket '(' is never closed."))) |}]
@@ -1754,9 +1925,10 @@ let%expect_test _ =
       [%expect
         {|
           ((output
-            (((f.ml (1 0) (1 7))
-              (paragraph
-               (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) "(.*()") ())))))))
+            (()
+             (((f.ml (1 0) (1 7))
+               (paragraph
+                (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) "(.*()") ()))))))))
            (warnings
             ( "File \"f.ml\", line 1, characters 2-7:\
              \nOpen bracket '(' is never closed."))) |}]
@@ -1770,11 +1942,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 12))
-            (paragraph
-             (((f.ml (1 0) (1 12))
-               (with_text ((f.ml (1 3) (1 7)) foo)
-                (((f.ml (1 8) (1 11)) (word bar))))))))))
+          (()
+           (((f.ml (1 0) (1 12))
+             (paragraph
+              (((f.ml (1 0) (1 12))
+                (with_text ((f.ml (1 3) (1 7)) foo)
+                 (((f.ml (1 8) (1 11)) (word bar)))))))))))
          (warnings ())) |}]
 
     let degenerate =
@@ -1782,9 +1955,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8))
-            (paragraph
-             (((f.ml (1 0) (1 8)) (with_text ((f.ml (1 3) (1 7)) foo) ())))))))
+          (()
+           (((f.ml (1 0) (1 8))
+             (paragraph
+              (((f.ml (1 0) (1 8)) (with_text ((f.ml (1 3) (1 7)) foo) ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-8:\
            \n'{{!...} ...}' (cross-reference) should not be empty."))) |}]
@@ -1794,9 +1968,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9))
-            (paragraph
-             (((f.ml (1 0) (1 9)) (with_text ((f.ml (1 3) (1 7)) foo) ())))))))
+          (()
+           (((f.ml (1 0) (1 9))
+             (paragraph
+              (((f.ml (1 0) (1 9)) (with_text ((f.ml (1 3) (1 7)) foo) ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-9:\
            \n'{{!...} ...}' (cross-reference) should not be empty."))) |}]
@@ -1806,11 +1981,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 16))
-            (paragraph
-             (((f.ml (1 0) (1 16))
-               (with_text ((f.ml (1 3) (1 7)) foo)
-                (((f.ml (1 8) (1 15)) (bold (((f.ml (1 11) (1 14)) (word bar)))))))))))))
+          (()
+           (((f.ml (1 0) (1 16))
+             (paragraph
+              (((f.ml (1 0) (1 16))
+                (with_text ((f.ml (1 3) (1 7)) foo)
+                 (((f.ml (1 8) (1 15)) (bold (((f.ml (1 11) (1 14)) (word bar))))))))))))))
          (warnings ())) |}]
 
     let in_markup =
@@ -1818,13 +1994,14 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 16))
-            (paragraph
-             (((f.ml (1 0) (1 16))
-               (emphasis
-                (((f.ml (1 3) (1 15))
-                  (with_text ((f.ml (1 6) (1 10)) foo)
-                   (((f.ml (1 11) (1 14)) (word bar)))))))))))))
+          (()
+           (((f.ml (1 0) (1 16))
+             (paragraph
+              (((f.ml (1 0) (1 16))
+                (emphasis
+                 (((f.ml (1 3) (1 15))
+                   (with_text ((f.ml (1 6) (1 10)) foo)
+                    (((f.ml (1 11) (1 14)) (word bar))))))))))))))
          (warnings ())) |}]
 
     let no_separating_space =
@@ -1832,11 +2009,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (paragraph
-             (((f.ml (1 0) (1 11))
-               (with_text ((f.ml (1 3) (1 7)) foo)
-                (((f.ml (1 7) (1 10)) (word bar))))))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (paragraph
+              (((f.ml (1 0) (1 11))
+                (with_text ((f.ml (1 3) (1 7)) foo)
+                 (((f.ml (1 7) (1 10)) (word bar)))))))))))
          (warnings ())) |}]
 
     let kind =
@@ -1844,11 +2022,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 16))
-            (paragraph
-             (((f.ml (1 0) (1 16))
-               (with_text ((f.ml (1 3) (1 11)) val:foo)
-                (((f.ml (1 12) (1 15)) (word bar))))))))))
+          (()
+           (((f.ml (1 0) (1 16))
+             (paragraph
+              (((f.ml (1 0) (1 16))
+                (with_text ((f.ml (1 3) (1 11)) val:foo)
+                 (((f.ml (1 12) (1 15)) (word bar)))))))))))
          (warnings ())) |}]
 
     let nested_reference =
@@ -1856,11 +2035,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 15))
-            (paragraph
-             (((f.ml (1 0) (1 15))
-               (with_text ((f.ml (1 3) (1 7)) foo)
-                (((f.ml (1 8) (1 14)) (simple ((f.ml (1 10) (1 14)) bar) ()))))))))))
+          (()
+           (((f.ml (1 0) (1 15))
+             (paragraph
+              (((f.ml (1 0) (1 15))
+                (with_text ((f.ml (1 3) (1 7)) foo)
+                 (((f.ml (1 8) (1 14)) (simple ((f.ml (1 10) (1 14)) bar) ())))))))))))
          (warnings ())) |}]
 
     let nested_empty =
@@ -1868,11 +2048,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 17))
-            (paragraph
-             (((f.ml (1 0) (1 17))
-               (with_text ((f.ml (1 3) (1 7)) foo)
-                (((f.ml (1 8) (1 16)) (with_text ((f.ml (1 11) (1 15)) bar) ()))))))))))
+          (()
+           (((f.ml (1 0) (1 17))
+             (paragraph
+              (((f.ml (1 0) (1 17))
+                (with_text ((f.ml (1 3) (1 7)) foo)
+                 (((f.ml (1 8) (1 16)) (with_text ((f.ml (1 11) (1 15)) bar) ())))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-16:\
            \n'{{!...} ...}' (cross-reference) should not be empty."))) |}]
@@ -1882,15 +2063,16 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 25))
-            (paragraph
-             (((f.ml (1 0) (1 25))
-               (with_text ((f.ml (1 3) (1 7)) foo)
-                (((f.ml (1 8) (1 24))
-                  (emphasis
-                   (((f.ml (1 11) (1 23))
-                     (with_text ((f.ml (1 14) (1 18)) bar)
-                      (((f.ml (1 19) (1 22)) (word baz))))))))))))))))
+          (()
+           (((f.ml (1 0) (1 25))
+             (paragraph
+              (((f.ml (1 0) (1 25))
+                (with_text ((f.ml (1 3) (1 7)) foo)
+                 (((f.ml (1 8) (1 24))
+                   (emphasis
+                    (((f.ml (1 11) (1 23))
+                      (with_text ((f.ml (1 14) (1 18)) bar)
+                       (((f.ml (1 19) (1 22)) (word baz)))))))))))))))))
          (warnings ())) |}]
 
     let simple_through_emphasis =
@@ -1898,13 +2080,14 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 19))
-            (paragraph
-             (((f.ml (1 0) (1 19))
-               (with_text ((f.ml (1 3) (1 7)) foo)
-                (((f.ml (1 8) (1 18))
-                  (emphasis
-                   (((f.ml (1 11) (1 17)) (simple ((f.ml (1 13) (1 17)) bar) ())))))))))))))
+          (()
+           (((f.ml (1 0) (1 19))
+             (paragraph
+              (((f.ml (1 0) (1 19))
+                (with_text ((f.ml (1 3) (1 7)) foo)
+                 (((f.ml (1 8) (1 18))
+                   (emphasis
+                    (((f.ml (1 11) (1 17)) (simple ((f.ml (1 13) (1 17)) bar) ()))))))))))))))
          (warnings ())) |}]
 
     let empty_target =
@@ -1912,10 +2095,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9))
-            (paragraph
-             (((f.ml (1 0) (1 9))
-               (with_text ((f.ml (1 3) (1 4)) "") (((f.ml (1 5) (1 8)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 9))
+             (paragraph
+              (((f.ml (1 0) (1 9))
+                (with_text ((f.ml (1 3) (1 4)) "") (((f.ml (1 5) (1 8)) (word foo)))))))))))
          (warnings ())) |}]
 
     let whitespace_only_in_target =
@@ -1923,10 +2107,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph
-             (((f.ml (1 0) (1 10))
-               (with_text ((f.ml (1 3) (1 5)) " ") (((f.ml (1 6) (1 9)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph
+              (((f.ml (1 0) (1 10))
+                (with_text ((f.ml (1 3) (1 5)) " ")
+                 (((f.ml (1 6) (1 9)) (word foo)))))))))))
          (warnings ())) |}]
 
     let internal_whitespace =
@@ -1934,11 +2120,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 14))
-            (paragraph
-             (((f.ml (1 0) (1 14))
-               (with_text ((f.ml (1 3) (1 9)) "( * )")
-                (((f.ml (1 10) (1 13)) (word baz))))))))))
+          (()
+           (((f.ml (1 0) (1 14))
+             (paragraph
+              (((f.ml (1 0) (1 14))
+                (with_text ((f.ml (1 3) (1 9)) "( * )")
+                 (((f.ml (1 10) (1 13)) (word baz)))))))))))
          (warnings ())) |}]
 
     let unterminated =
@@ -1946,9 +2133,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 6))
-            (paragraph
-             (((f.ml (1 0) (1 6)) (with_text ((f.ml (1 3) (1 6)) foo) ())))))))
+          (()
+           (((f.ml (1 0) (1 6))
+             (paragraph
+              (((f.ml (1 0) (1 6)) (with_text ((f.ml (1 3) (1 6)) foo) ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-6:\
            \nOpen bracket '{{!' is never closed."
@@ -1962,11 +2150,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (paragraph
-             (((f.ml (1 0) (1 11))
-               (with_text ((f.ml (1 3) (1 7)) foo)
-                (((f.ml (1 8) (1 11)) (word bar))))))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (paragraph
+              (((f.ml (1 0) (1 11))
+                (with_text ((f.ml (1 3) (1 7)) foo)
+                 (((f.ml (1 8) (1 11)) (word bar)))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 11-11:\
            \nEnd of text is not allowed in '{{!...} ...}' (cross-reference)."))) |}]
@@ -1986,16 +2175,17 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (simple ((f.ml (1 7) (1 10)) (Reference foo)) "" image))
-           ((f.ml (3 0) (3 11))
-            (simple ((f.ml (3 7) (3 10)) (Reference foo)) "" audio))
-           ((f.ml (5 0) (5 11))
-            (simple ((f.ml (5 7) (5 10)) (Reference foo)) "" video))
-           ((f.ml (7 0) (7 11)) (simple ((f.ml (7 7) (7 10)) (Link foo)) "" image))
-           ((f.ml (9 0) (9 11)) (simple ((f.ml (9 7) (9 10)) (Link foo)) "" audio))
-           ((f.ml (11 0) (11 11))
-            (simple ((f.ml (11 7) (11 10)) (Link foo)) "" video))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (simple ((f.ml (1 7) (1 10)) (Reference foo)) "" image))
+            ((f.ml (3 0) (3 11))
+             (simple ((f.ml (3 7) (3 10)) (Reference foo)) "" audio))
+            ((f.ml (5 0) (5 11))
+             (simple ((f.ml (5 7) (5 10)) (Reference foo)) "" video))
+            ((f.ml (7 0) (7 11)) (simple ((f.ml (7 7) (7 10)) (Link foo)) "" image))
+            ((f.ml (9 0) (9 11)) (simple ((f.ml (9 7) (9 10)) (Link foo)) "" audio))
+            ((f.ml (11 0) (11 11))
+             (simple ((f.ml (11 7) (11 10)) (Link foo)) "" video)))))
          (warnings ())) |}]
 
     let basic =
@@ -2009,16 +2199,17 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 16))
-            (simple ((f.ml (1 8) (1 12)) (Reference foo)) bar image))
-           ((f.ml (3 0) (3 16))
-            (simple ((f.ml (3 8) (3 12)) (Reference foo)) bar audio))
-           ((f.ml (5 0) (5 16))
-            (simple ((f.ml (5 8) (5 12)) (Reference foo)) bar video))
-           ((f.ml (7 0) (7 16)) (simple ((f.ml (7 8) (7 12)) (Link foo)) bar image))
-           ((f.ml (9 0) (9 16)) (simple ((f.ml (9 8) (9 12)) (Link foo)) bar audio))
-           ((f.ml (11 0) (11 16))
-            (simple ((f.ml (11 8) (11 12)) (Link foo)) bar video))))
+          (()
+           (((f.ml (1 0) (1 16))
+             (simple ((f.ml (1 8) (1 12)) (Reference foo)) bar image))
+            ((f.ml (3 0) (3 16))
+             (simple ((f.ml (3 8) (3 12)) (Reference foo)) bar audio))
+            ((f.ml (5 0) (5 16))
+             (simple ((f.ml (5 8) (5 12)) (Reference foo)) bar video))
+            ((f.ml (7 0) (7 16)) (simple ((f.ml (7 8) (7 12)) (Link foo)) bar image))
+            ((f.ml (9 0) (9 16)) (simple ((f.ml (9 8) (9 12)) (Link foo)) bar audio))
+            ((f.ml (11 0) (11 16))
+             (simple ((f.ml (11 8) (11 12)) (Link foo)) bar video)))))
          (warnings ())) |}]
 
     let empty =
@@ -2026,8 +2217,9 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (1 13))
-               (simple ((f.ml (1 8) (1 12)) (Reference foo)) "" image))))
+             (()
+              (((f.ml (1 0) (1 13))
+                (simple ((f.ml (1 8) (1 12)) (Reference foo)) "" image)))))
             (warnings
              ( "File \"f.ml\", line 1, characters 11-12:\
               \n'{{image!...} ...}' (image-reference) should not be empty."))) |}]
@@ -2037,8 +2229,9 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (1 16))
-               (simple ((f.ml (1 8) (1 12)) (Reference foo)) "" image))))
+             (()
+              (((f.ml (1 0) (1 16))
+                (simple ((f.ml (1 8) (1 12)) (Reference foo)) "" image)))))
             (warnings
              ( "File \"f.ml\", line 1, characters 11-15:\
               \n'{{image!...} ...}' (image-reference) should not be empty."))) |}]
@@ -2048,8 +2241,9 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (1 27))
-               (simple ((f.ml (1 8) (1 12)) (Reference foo)) hello image))))
+             (()
+              (((f.ml (1 0) (1 27))
+                (simple ((f.ml (1 8) (1 12)) (Reference foo)) hello image)))))
             (warnings ())) |}]
 
     let nested_markup_is_uninterpreted =
@@ -2057,8 +2251,9 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (1 20))
-               (simple ((f.ml (1 8) (1 12)) (Reference foo)) "{b bar}" image))))
+             (()
+              (((f.ml (1 0) (1 20))
+                (simple ((f.ml (1 8) (1 12)) (Reference foo)) "{b bar}" image)))))
             (warnings ())) |}]
 
     let in_markup =
@@ -2066,10 +2261,11 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (1 26))
-               (unordered heavy
-                ((((f.ml (1 8) (1 24))
-                   (simple ((f.ml (1 16) (1 20)) (Reference foo)) bar image))))))))
+             (()
+              (((f.ml (1 0) (1 26))
+                (unordered heavy
+                 ((((f.ml (1 8) (1 24))
+                    (simple ((f.ml (1 16) (1 20)) (Reference foo)) bar image)))))))))
             (warnings ())) |}]
 
     let unterminated_image =
@@ -2077,8 +2273,9 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (1 11))
-               (simple ((f.ml (1 8) (1 10)) (Reference foo)) "" image))))
+             (()
+              (((f.ml (1 0) (1 11))
+                (simple ((f.ml (1 8) (1 10)) (Reference foo)) "" image)))))
             (warnings
              ( "File \"f.ml\", line 1, characters 0-11:\
               \nOpen bracket '{{image!' is never closed."
@@ -2092,8 +2289,9 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (1 10))
-               (simple ((f.ml (1 7) (1 9)) (Reference foo)) "" image))))
+             (()
+              (((f.ml (1 0) (1 10))
+                (simple ((f.ml (1 7) (1 9)) (Reference foo)) "" image)))))
             (warnings
              ( "File \"f.ml\", line 1, characters 0-10:\
               \nOpen bracket '{image!' is never closed."))) |}]
@@ -2103,8 +2301,9 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (1 11))
-               (simple ((f.ml (1 8) (1 10)) (Reference foo)) "" video))))
+             (()
+              (((f.ml (1 0) (1 11))
+                (simple ((f.ml (1 8) (1 10)) (Reference foo)) "" video)))))
             (warnings
              ( "File \"f.ml\", line 1, characters 0-11:\
               \nOpen bracket '{{video!' is never closed."
@@ -2118,8 +2317,9 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (1 10))
-               (simple ((f.ml (1 7) (1 9)) (Reference foo)) "" video))))
+             (()
+              (((f.ml (1 0) (1 10))
+                (simple ((f.ml (1 7) (1 9)) (Reference foo)) "" video)))))
             (warnings
              ( "File \"f.ml\", line 1, characters 0-10:\
               \nOpen bracket '{video!' is never closed."))) |}]
@@ -2129,8 +2329,9 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (1 11))
-               (simple ((f.ml (1 8) (1 10)) (Reference foo)) "" audio))))
+             (()
+              (((f.ml (1 0) (1 11))
+                (simple ((f.ml (1 8) (1 10)) (Reference foo)) "" audio)))))
             (warnings
              ( "File \"f.ml\", line 1, characters 0-11:\
               \nOpen bracket '{{audio!' is never closed."
@@ -2144,8 +2345,9 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (1 10))
-               (simple ((f.ml (1 7) (1 9)) (Reference foo)) "" audio))))
+             (()
+              (((f.ml (1 0) (1 10))
+                (simple ((f.ml (1 7) (1 9)) (Reference foo)) "" audio)))))
             (warnings
              ( "File \"f.ml\", line 1, characters 0-10:\
               \nOpen bracket '{audio!' is never closed."))) |}]
@@ -2155,8 +2357,9 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (1 16))
-               (simple ((f.ml (1 8) (1 11)) (Reference foo)) bar image))))
+             (()
+              (((f.ml (1 0) (1 16))
+                (simple ((f.ml (1 8) (1 11)) (Reference foo)) bar image)))))
             (warnings
              ( "File \"f.ml\", line 1, characters 16-16:\
               \nEnd of text is not allowed in '{{image!...} ...}' (image-reference)."))) |}]
@@ -2166,8 +2369,9 @@ let%expect_test _ =
       [%expect
         {|
            ((output
-             (((f.ml (1 0) (2 5))
-               (simple ((f.ml (1 8) (2 -6)) (Reference foo)) "bar   baz" image))))
+             (()
+              (((f.ml (1 0) (2 5))
+                (simple ((f.ml (1 8) (2 -6)) (Reference foo)) "bar   baz" image)))))
             (warnings ())) |}]
   end in
   ()
@@ -2179,9 +2383,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 12))
-            (paragraph
-             (((f.ml (1 0) (1 12)) (foo (((f.ml (1 8) (1 11)) (word bar))))))))))
+          (()
+           (((f.ml (1 0) (1 12))
+             (paragraph
+              (((f.ml (1 0) (1 12)) (foo (((f.ml (1 8) (1 11)) (word bar)))))))))))
          (warnings ())) |}]
 
     let nested_markup =
@@ -2189,11 +2394,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 16))
-            (paragraph
-             (((f.ml (1 0) (1 16))
-               (foo
-                (((f.ml (1 8) (1 15)) (bold (((f.ml (1 11) (1 14)) (word bar)))))))))))))
+          (()
+           (((f.ml (1 0) (1 16))
+             (paragraph
+              (((f.ml (1 0) (1 16))
+                (foo
+                 (((f.ml (1 8) (1 15)) (bold (((f.ml (1 11) (1 14)) (word bar))))))))))))))
          (warnings ())) |}]
 
     let in_markup =
@@ -2201,11 +2407,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 16))
-            (paragraph
-             (((f.ml (1 0) (1 16))
-               (emphasis
-                (((f.ml (1 3) (1 15)) (foo (((f.ml (1 11) (1 14)) (word bar)))))))))))))
+          (()
+           (((f.ml (1 0) (1 16))
+             (paragraph
+              (((f.ml (1 0) (1 16))
+                (emphasis
+                 (((f.ml (1 3) (1 15)) (foo (((f.ml (1 11) (1 14)) (word bar))))))))))))))
          (warnings ())) |}]
 
     let no_separating_space =
@@ -2213,9 +2420,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (paragraph
-             (((f.ml (1 0) (1 11)) (foo (((f.ml (1 7) (1 10)) (word bar))))))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (paragraph
+              (((f.ml (1 0) (1 11)) (foo (((f.ml (1 7) (1 10)) (word bar)))))))))))
          (warnings ())) |}]
 
     let nested_link =
@@ -2223,11 +2431,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 21))
-            (paragraph
-             (((f.ml (1 0) (1 21))
-               (foo
-                (((f.ml (1 8) (1 20)) (bar (((f.ml (1 16) (1 19)) (word baz)))))))))))))
+          (()
+           (((f.ml (1 0) (1 21))
+             (paragraph
+              (((f.ml (1 0) (1 21))
+                (foo
+                 (((f.ml (1 8) (1 20)) (bar (((f.ml (1 16) (1 19)) (word baz))))))))))))))
          (warnings ())) |}]
 
     let nested_through_emphasis =
@@ -2235,13 +2444,14 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 25))
-            (paragraph
-             (((f.ml (1 0) (1 25))
-               (foo
-                (((f.ml (1 8) (1 24))
-                  (emphasis
-                   (((f.ml (1 11) (1 23)) (bar (((f.ml (1 19) (1 22)) (word baz))))))))))))))))
+          (()
+           (((f.ml (1 0) (1 25))
+             (paragraph
+              (((f.ml (1 0) (1 25))
+                (foo
+                 (((f.ml (1 8) (1 24))
+                   (emphasis
+                    (((f.ml (1 11) (1 23)) (bar (((f.ml (1 19) (1 22)) (word baz)))))))))))))))))
          (warnings ())) |}]
 
     let reference_through_emphasis =
@@ -2249,13 +2459,14 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 19))
-            (paragraph
-             (((f.ml (1 0) (1 19))
-               (foo
-                (((f.ml (1 8) (1 18))
-                  (emphasis
-                   (((f.ml (1 11) (1 17)) (simple ((f.ml (1 13) (1 17)) bar) ())))))))))))))
+          (()
+           (((f.ml (1 0) (1 19))
+             (paragraph
+              (((f.ml (1 0) (1 19))
+                (foo
+                 (((f.ml (1 8) (1 18))
+                   (emphasis
+                    (((f.ml (1 11) (1 17)) (simple ((f.ml (1 13) (1 17)) bar) ()))))))))))))))
          (warnings ())) |}]
 
     let nested_in_reference =
@@ -2263,13 +2474,14 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 25))
-            (paragraph
-             (((f.ml (1 0) (1 25))
-               (with_text ((f.ml (1 3) (1 7)) foo)
-                (((f.ml (1 8) (1 24))
-                  (emphasis
-                   (((f.ml (1 11) (1 23)) (bar (((f.ml (1 19) (1 22)) (word baz))))))))))))))))
+          (()
+           (((f.ml (1 0) (1 25))
+             (paragraph
+              (((f.ml (1 0) (1 25))
+                (with_text ((f.ml (1 3) (1 7)) foo)
+                 (((f.ml (1 8) (1 24))
+                   (emphasis
+                    (((f.ml (1 11) (1 23)) (bar (((f.ml (1 19) (1 22)) (word baz)))))))))))))))))
          (warnings ())) |}]
 
     let empty_target =
@@ -2277,8 +2489,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9))
-            (paragraph (((f.ml (1 0) (1 9)) ("" (((f.ml (1 5) (1 8)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 9))
+             (paragraph
+              (((f.ml (1 0) (1 9)) ("" (((f.ml (1 5) (1 8)) (word foo)))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-4:\
            \n'{{:...} ...}' (external link) should not be empty."))) |}]
@@ -2288,9 +2502,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph
-             (((f.ml (1 0) (1 10)) ("" (((f.ml (1 6) (1 9)) (word foo))))))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph
+              (((f.ml (1 0) (1 10)) ("" (((f.ml (1 6) (1 9)) (word foo)))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-5:\
            \n'{{:...} ...}' (external link) should not be empty."))) |}]
@@ -2299,7 +2514,8 @@ let%expect_test _ =
       test "{{:foo}}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (foo ())))))))
+        ((output
+          (() (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (foo ()))))))))
          (warnings ())) |}]
 
     let internal_whitespace =
@@ -2307,16 +2523,18 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 16))
-            (paragraph
-             (((f.ml (1 0) (1 16)) ("foo bar" (((f.ml (1 12) (1 15)) (word baz))))))))))
+          (()
+           (((f.ml (1 0) (1 16))
+             (paragraph
+              (((f.ml (1 0) (1 16)) ("foo bar" (((f.ml (1 12) (1 15)) (word baz)))))))))))
          (warnings ())) |}]
 
     let unterminated =
       test "{{:foo";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (foo ())))))))
+        ((output
+          (() (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (foo ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-6:\
            \nOpen bracket '{{:' is never closed."
@@ -2327,14 +2545,16 @@ let%expect_test _ =
       test "{:foo}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (foo ())))))))
+        ((output
+          (() (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (foo ()))))))))
          (warnings ())) |}]
 
     let unterminated_single_braces =
       test "{:foo";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 5)) (paragraph (((f.ml (1 0) (1 5)) (foo ())))))))
+        ((output
+          (() (((f.ml (1 0) (1 5)) (paragraph (((f.ml (1 0) (1 5)) (foo ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-5:\
            \nOpen bracket '{:' is never closed."))) |}]
@@ -2343,7 +2563,8 @@ let%expect_test _ =
       test "{:}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) ("" ())))))))
+        ((output
+          (() (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) ("" ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-3:\
            \n'{:...} (external link)' should not be empty."))) |}]
@@ -2352,7 +2573,8 @@ let%expect_test _ =
       test "{: }";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) ("" ())))))))
+        ((output
+          (() (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) ("" ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-4:\
            \n'{:...} (external link)' should not be empty."))) |}]
@@ -2365,7 +2587,7 @@ let%expect_test _ =
       test "{!modules:Foo}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 14)) (modules (((f.ml (1 0) (1 14)) Foo))))))
+        ((output (() (((f.ml (1 0) (1 14)) (modules (((f.ml (1 0) (1 14)) Foo)))))))
          (warnings ())) |}]
 
     let two =
@@ -2373,8 +2595,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 18))
-            (modules (((f.ml (1 0) (1 18)) Foo) ((f.ml (1 0) (1 18)) Bar))))))
+          (()
+           (((f.ml (1 0) (1 18))
+             (modules (((f.ml (1 0) (1 18)) Foo) ((f.ml (1 0) (1 18)) Bar)))))))
          (warnings ())) |}]
 
     let extra_whitespace =
@@ -2382,8 +2605,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 21))
-            (modules (((f.ml (1 0) (1 21)) Foo) ((f.ml (1 0) (1 21)) Bar))))))
+          (()
+           (((f.ml (1 0) (1 21))
+             (modules (((f.ml (1 0) (1 21)) Foo) ((f.ml (1 0) (1 21)) Bar)))))))
          (warnings ())) |}]
 
     let newline =
@@ -2391,8 +2615,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 4))
-            (modules (((f.ml (1 0) (2 4)) Foo) ((f.ml (1 0) (2 4)) Bar))))))
+          (()
+           (((f.ml (1 0) (2 4))
+             (modules (((f.ml (1 0) (2 4)) Foo) ((f.ml (1 0) (2 4)) Bar)))))))
          (warnings ())) |}]
 
     let cr_lf =
@@ -2400,15 +2625,16 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 4))
-            (modules (((f.ml (1 0) (2 4)) Foo) ((f.ml (1 0) (2 4)) Bar))))))
+          (()
+           (((f.ml (1 0) (2 4))
+             (modules (((f.ml (1 0) (2 4)) Foo) ((f.ml (1 0) (2 4)) Bar)))))))
          (warnings ())) |}]
 
     let empty =
       test "{!modules:}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 11)) (modules ()))))
+        ((output (() (((f.ml (1 0) (1 11)) (modules ())))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-11:\
            \n'{!modules ...}' should not be empty."))) |}]
@@ -2417,7 +2643,7 @@ let%expect_test _ =
       test "{!modules: }";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 12)) (modules ()))))
+        ((output (() (((f.ml (1 0) (1 12)) (modules ())))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-12:\
            \n'{!modules ...}' should not be empty."))) |}]
@@ -2426,7 +2652,7 @@ let%expect_test _ =
       test "{!modules:";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 10)) (modules ()))))
+        ((output (() (((f.ml (1 0) (1 10)) (modules ())))))
          (warnings
           ( "File \"f.ml\", line 1, characters 10-10:\
            \nEnd of text is not allowed in '{!modules ...}'."
@@ -2438,9 +2664,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 4))
-            (paragraph (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space))))
-           ((f.ml (1 4) (1 18)) (modules (((f.ml (1 4) (1 18)) Foo))))))
+          (()
+           (((f.ml (1 0) (1 4))
+             (paragraph (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space))))
+            ((f.ml (1 4) (1 18)) (modules (((f.ml (1 4) (1 18)) Foo)))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 4-18:\
            \n'{!modules ...}' should begin on its own line."))) |}]
@@ -2450,8 +2677,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 14)) (modules (((f.ml (1 0) (1 14)) Foo))))
-           ((f.ml (1 15) (1 18)) (paragraph (((f.ml (1 15) (1 18)) (word foo)))))))
+          (()
+           (((f.ml (1 0) (1 14)) (modules (((f.ml (1 0) (1 14)) Foo))))
+            ((f.ml (1 15) (1 18)) (paragraph (((f.ml (1 15) (1 18)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 15-18:\
            \nParagraph should begin on its own line."))) |}]
@@ -2461,9 +2689,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 16))
-            (unordered light
-             ((((f.ml (1 2) (1 16)) (modules (((f.ml (1 2) (1 16)) Foo))))))))))
+          (()
+           (((f.ml (1 0) (1 16))
+             (unordered light
+              ((((f.ml (1 2) (1 16)) (modules (((f.ml (1 2) (1 16)) Foo)))))))))))
          (warnings ())) |}]
   end in
   ()
@@ -2474,14 +2703,14 @@ let%expect_test _ =
       test "{[foo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))))
+          ((output (() (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo))))))
            (warnings ())) |}]
 
     let empty =
       test "{[]}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 4)) (code_block ((f.ml (1 2) (1 2)) "")))))
+        ((output (() (((f.ml (1 0) (1 4)) (code_block ((f.ml (1 2) (1 2)) ""))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-4:\
            \n'{[...]}' (code block) should not be empty."))) |}]
@@ -2490,7 +2719,7 @@ let%expect_test _ =
       test "{[ ]}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 3)) "")))))
+        ((output (() (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 3)) ""))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-5:\
            \n'{[...]}' (code block) should not be empty."))) |}]
@@ -2499,7 +2728,7 @@ let%expect_test _ =
       test "{[\n  \n]}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (3 2)) (code_block ((f.ml (1 2) (3 0)) "")))))
+        ((output (() (((f.ml (1 0) (3 2)) (code_block ((f.ml (1 2) (3 0)) ""))))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 3, character 2:\
            \n'{[...]}' (code block) should not be empty."))) |}]
@@ -2508,7 +2737,8 @@ let%expect_test _ =
       test "{[foo bar]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 11)) (code_block ((f.ml (1 2) (1 9)) "foo bar")))))
+          ((output
+            (() (((f.ml (1 0) (1 11)) (code_block ((f.ml (1 2) (1 9)) "foo bar"))))))
            (warnings ())) |}]
 
     let newline =
@@ -2516,8 +2746,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "foo\
-                                                               \nbar")))))
+          (() (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "foo\
+                                                                   \nbar"))))))
          (warnings ())) |}]
 
     let cr_lf =
@@ -2525,8 +2755,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "foo\r\
-                                                               \nbar")))))
+          (()
+           (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "foo\r\
+                                                                \nbar"))))))
          (warnings ())) |}]
 
     let blank_line =
@@ -2534,16 +2765,17 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 5)) (code_block ((f.ml (1 2) (3 3))  "foo\
-                                                               \n\
-                                                               \nbar")))))
+          (()
+           (((f.ml (1 0) (3 5)) (code_block ((f.ml (1 2) (3 3))  "foo\
+                                                                \n\
+                                                                \nbar"))))))
          (warnings ())) |}]
 
     let leading_whitespace =
       test "{[ foo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo)))))
+          ((output (() (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo))))))
            (warnings ())) |}]
 
     let leading_whitespace_two =
@@ -2551,8 +2783,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\
-                                                               \nbar")))))
+          (() (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\
+                                                                   \nbar"))))))
          (warnings ())) |}]
 
     let leading_whitespace_two_cr_lf =
@@ -2560,8 +2792,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\r\
-                                                               \nbar")))))
+          (()
+           (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\r\
+                                                                \nbar"))))))
          (warnings ())) |}]
 
     let leading_whitespace_two_different_indent =
@@ -2569,8 +2802,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 8)) (code_block ((f.ml (1 2) (2 6))  "foo\
-                                                               \nbar")))))
+          (() (((f.ml (1 0) (2 8)) (code_block ((f.ml (1 2) (2 6))  "foo\
+                                                                   \nbar"))))))
          (warnings ())) |}]
 
     let leading_whitespace_two_different_indent_rev =
@@ -2578,8 +2811,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "  foo\
-                                                               \nbar")))))
+          (()
+           (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "  foo\
+                                                                \nbar"))))))
          (warnings ())) |}]
 
     let leading_whitespace_two_different_indent_reloc =
@@ -2587,8 +2821,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 11)) (code_block ((f.ml (1 2) (2 9))  "foo\
-                                                                \n   bar")))))
+          (()
+           (((f.ml (1 0) (2 11)) (code_block ((f.ml (1 2) (2 9))  "foo\
+                                                                 \n   bar"))))))
          (warnings ())) |}]
 
     let leading_whitespace_with_empty_line =
@@ -2596,9 +2831,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 6)) (code_block ((f.ml (1 2) (3 4))  "foo\
-                                                               \n\
-                                                               \nbar")))))
+          (()
+           (((f.ml (1 0) (3 6)) (code_block ((f.ml (1 2) (3 4))  "foo\
+                                                                \n\
+                                                                \nbar"))))))
          (warnings ())) |}]
 
     let leading_whitespace_with_whitespace_line_short =
@@ -2606,9 +2842,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 7)) (code_block ((f.ml (1 2) (3 5))  "foo\
-                                                               \n \
-                                                               \nbar")))))
+          (()
+           (((f.ml (1 0) (3 7)) (code_block ((f.ml (1 2) (3 5))  "foo\
+                                                                \n \
+                                                                \nbar"))))))
          (warnings ())) |}]
 
     let leading_whitespace_with_whitespace_line_long =
@@ -2616,9 +2853,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 6)) (code_block ((f.ml (1 2) (3 4))  "foo\
-                                                               \n  \
-                                                               \nbar")))))
+          (()
+           (((f.ml (1 0) (3 6)) (code_block ((f.ml (1 2) (3 4))  "foo\
+                                                                \n  \
+                                                                \nbar"))))))
          (warnings ())) |}]
 
     let leading_whitespace_leading_newline =
@@ -2626,15 +2864,15 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (4 2)) (code_block ((f.ml (1 2) (4 0))  "foo\
-                                                               \nbar")))))
+          (() (((f.ml (1 0) (4 2)) (code_block ((f.ml (1 2) (4 0))  "foo\
+                                                                   \nbar"))))))
          (warnings ())) |}]
 
     let leading_tab =
       test "{[\tfoo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo)))))
+          ((output (() (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo))))))
            (warnings ())) |}]
 
     let leading_tab_two =
@@ -2642,8 +2880,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\
-                                                               \nbar")))))
+          (() (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\
+                                                                   \nbar"))))))
          (warnings ())) |}]
 
     let leading_tab_two_different_indent =
@@ -2651,127 +2889,130 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 7)) (code_block ((f.ml (1 2) (2 5))  "foo\
-                                                               \nbar")))))
+          (() (((f.ml (1 0) (2 7)) (code_block ((f.ml (1 2) (2 5))  "foo\
+                                                                   \nbar"))))))
          (warnings ())) |}]
 
     let leading_newline =
       test "{[\nfoo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo)))))
+          ((output (() (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo))))))
            (warnings ())) |}]
 
     let leading_cr_lf =
       test "{[\r\nfoo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo)))))
+          ((output (() (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo))))))
            (warnings ())) |}]
 
     let leading_newlines =
       test "{[\n\nfoo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (3 5)) (code_block ((f.ml (1 2) (3 3)) foo)))))
+          ((output (() (((f.ml (1 0) (3 5)) (code_block ((f.ml (1 2) (3 3)) foo))))))
            (warnings ())) |}]
 
     let leading_newline_with_space =
       test "{[\n foo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4)) foo)))))
+          ((output (() (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4)) foo))))))
            (warnings ())) |}]
 
     let leading_newline_with_trash =
       test "{[ \nfoo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo)))))
+          ((output (() (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo))))))
            (warnings ())) |}]
 
     let nested_opener =
       test "{[{[]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 4)) {[)))))
+          ((output (() (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 4)) {[))))))
            (warnings ())) |}]
 
     let nested_closer =
       test "{[foo]}]}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))))
+        ((output (() (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo))))))
          (warnings ())) |}]
 
     let nested_bracket =
       test "{[]]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 3)) ])))))
+          ((output (() (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 3)) ]))))))
            (warnings ())) |}]
 
     let two_nested_brackets =
       test "{[]]]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 4)) ]])))))
+          ((output (() (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 4)) ]]))))))
            (warnings ())) |}]
 
     let nested_brackets_in_text =
       test "{[foo]]bar]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 12)) (code_block ((f.ml (1 2) (1 10)) foo]]bar)))))
+          ((output
+            (() (((f.ml (1 0) (1 12)) (code_block ((f.ml (1 2) (1 10)) foo]]bar))))))
            (warnings ())) |}]
 
     let trailing_whitespace =
       test "{[foo ]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) "foo ")))))
+          ((output
+            (() (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) "foo "))))))
            (warnings ())) |}]
 
     let trailing_tab =
       test "{[foo\t]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) "foo\t")))))
+          ((output
+            (() (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) "foo\t"))))))
            (warnings ())) |}]
 
     let trailing_newline =
       test "{[foo\n]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (2 2)) (code_block ((f.ml (1 2) (2 0)) foo)))))
+          ((output (() (((f.ml (1 0) (2 2)) (code_block ((f.ml (1 2) (2 0)) foo))))))
            (warnings ())) |}]
 
     let trailing_cr_lf =
       test "{[foo\r\n]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (2 2)) (code_block ((f.ml (1 2) (2 0)) foo)))))
+          ((output (() (((f.ml (1 0) (2 2)) (code_block ((f.ml (1 2) (2 0)) foo))))))
            (warnings ())) |}]
 
     let trailing_newlines =
       test "{[foo\n\n]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (3 2)) (code_block ((f.ml (1 2) (3 0)) foo)))))
+          ((output (() (((f.ml (1 0) (3 2)) (code_block ((f.ml (1 2) (3 0)) foo))))))
            (warnings ())) |}]
 
     let preceded_by_whitespace =
       test "{[foo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))))
+          ((output (() (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo))))))
            (warnings ())) |}]
 
     let followed_by_whitespace =
       test "{[foo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))))
+          ((output (() (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo))))))
            (warnings ())) |}]
 
     let two_on_one_line =
@@ -2779,8 +3020,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
-           ((f.ml (1 8) (1 15)) (code_block ((f.ml (1 10) (1 13)) bar)))))
+          (()
+           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+            ((f.ml (1 8) (1 15)) (code_block ((f.ml (1 10) (1 13)) bar))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-15:\
            \n'{[...]}' (code block) should begin on its own line."))) |}]
@@ -2790,8 +3032,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
-           ((f.ml (2 0) (2 7)) (code_block ((f.ml (2 2) (2 5)) bar)))))
+          (()
+           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+            ((f.ml (2 0) (2 7)) (code_block ((f.ml (2 2) (2 5)) bar))))))
          (warnings ())) |}]
 
     let two_with_blank_line =
@@ -2799,8 +3042,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
-           ((f.ml (3 0) (3 7)) (code_block ((f.ml (3 2) (3 5)) bar)))))
+          (()
+           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+            ((f.ml (3 0) (3 7)) (code_block ((f.ml (3 2) (3 5)) bar))))))
          (warnings ())) |}]
 
     let followed_by_words =
@@ -2808,8 +3052,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
-           ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+            ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word bar))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-11:\
            \nParagraph should begin on its own line."))) |}]
@@ -2819,9 +3064,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 4))
-            (paragraph (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space))))
-           ((f.ml (1 4) (1 11)) (code_block ((f.ml (1 6) (1 9)) bar)))))
+          (()
+           (((f.ml (1 0) (1 4))
+             (paragraph (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space))))
+            ((f.ml (1 4) (1 11)) (code_block ((f.ml (1 6) (1 9)) bar))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 4-11:\
            \n'{[...]}' (code block) should begin on its own line."))) |}]
@@ -2831,8 +3077,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
-           ((f.ml (2 0) (2 7)) (code_block ((f.ml (2 2) (2 5)) bar)))))
+          (()
+           (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+            ((f.ml (2 0) (2 7)) (code_block ((f.ml (2 2) (2 5)) bar))))))
          (warnings ())) |}]
 
     let followed_by_paragraph =
@@ -2840,15 +3087,16 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
-           ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+            ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word bar))))))))
          (warnings ())) |}]
 
     let unterminated =
       test "{[foo";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 5)) foo)))))
+        ((output (() (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 5)) foo))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-5:\
            \nMissing end of code block.\
@@ -2858,7 +3106,7 @@ let%expect_test _ =
       test "{[foo]";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 6)) foo])))))
+        ((output (() (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 6)) foo]))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-6:\
            \nMissing end of code block.\
@@ -2868,7 +3116,8 @@ let%expect_test _ =
       test "{[foo\r]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) "foo\r")))))
+          ((output
+            (() (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) "foo\r"))))))
            (warnings ())) |}]
 
     let comment =
@@ -2876,9 +3125,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 14))
-            (code_block ((f.ml (1 2) (2 12))  "(* foo *)\
-                                             \nlet bar = ()")))))
+          (()
+           (((f.ml (1 0) (2 14))
+             (code_block ((f.ml (1 2) (2 12))  "(* foo *)\
+                                              \nlet bar = ()"))))))
          (warnings ())) |}]
 
     let docstring =
@@ -2886,9 +3136,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 14))
-            (code_block ((f.ml (1 2) (2 12))  "(** foo *)\
-                                             \nlet bar = ()")))))
+          (()
+           (((f.ml (1 0) (2 14))
+             (code_block ((f.ml (1 2) (2 12))  "(** foo *)\
+                                              \nlet bar = ()"))))))
          (warnings ())) |}]
 
     let docstring_with_code_block =
@@ -2896,14 +3147,15 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 13)) (code_block ((f.ml (1 2) (1 11)) "(** {[foo")))
-           ((f.ml (1 14) (2 12))
-            (paragraph
-             (((f.ml (1 14) (1 16)) (word "*)")) ((f.ml (1 16) (2 0)) space)
-              ((f.ml (2 0) (2 3)) (word let)) ((f.ml (2 3) (2 4)) space)
-              ((f.ml (2 4) (2 7)) (word bar)) ((f.ml (2 7) (2 8)) space)
-              ((f.ml (2 8) (2 9)) (word =)) ((f.ml (2 9) (2 10)) space)
-              ((f.ml (2 10) (2 12)) (word "()")))))))
+          (()
+           (((f.ml (1 0) (1 13)) (code_block ((f.ml (1 2) (1 11)) "(** {[foo")))
+            ((f.ml (1 14) (2 12))
+             (paragraph
+              (((f.ml (1 14) (1 16)) (word "*)")) ((f.ml (1 16) (2 0)) space)
+               ((f.ml (2 0) (2 3)) (word let)) ((f.ml (2 3) (2 4)) space)
+               ((f.ml (2 4) (2 7)) (word bar)) ((f.ml (2 7) (2 8)) space)
+               ((f.ml (2 8) (2 9)) (word =)) ((f.ml (2 9) (2 10)) space)
+               ((f.ml (2 10) (2 12)) (word "()"))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 14-16:\
            \nParagraph should begin on its own line."))) |}]
@@ -2913,11 +3165,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 46))
-            (code_block
-             (((f.ml (1 2) (1 7)) ocaml)
-              (((f.ml (1 8) (1 28)) "env=f1 version>=4.06")))
-             ((f.ml (1 30) (1 44)) "code goes here")))))
+          (()
+           (((f.ml (1 0) (1 46))
+             (code_block
+              (((f.ml (1 2) (1 7)) ocaml)
+               (((f.ml (1 8) (1 28)) "env=f1 version>=4.06")))
+              ((f.ml (1 30) (1 44)) "code goes here"))))))
          (warnings ())) |}]
 
     let code_block_with_output =
@@ -2925,11 +3178,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 39))
-            (code_block (((f.ml (1 7) (1 12)) ocaml) ()) ((f.ml (1 13) (1 16)) foo)
-             ((paragraph
-               (((f.ml (1 23) (1 29)) (word output)) ((f.ml (1 29) (1 30)) space)
-                ((f.ml (1 30) (1 37)) (bold (((f.ml (1 33) (1 36)) (word foo))))))))))))
+          (()
+           (((f.ml (1 0) (1 39))
+             (code_block (((f.ml (1 7) (1 12)) ocaml) ()) ((f.ml (1 13) (1 16)) foo)
+              ((paragraph
+                (((f.ml (1 23) (1 29)) (word output)) ((f.ml (1 29) (1 30)) space)
+                 ((f.ml (1 30) (1 37)) (bold (((f.ml (1 33) (1 36)) (word foo)))))))))))))
          (warnings ())) |}]
 
     (* Code block contains ']['. *)
@@ -2938,8 +3192,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 23))
-            (code_block ((f.ml (1 2) (1 21)) "foo][output {b foo}")))))
+          (()
+           (((f.ml (1 0) (1 23))
+             (code_block ((f.ml (1 2) (1 21)) "foo][output {b foo}"))))))
          (warnings ())) |}]
 
     (* Code block contains ']['. *)
@@ -2948,9 +3203,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 29))
-            (code_block (((f.ml (1 2) (1 7)) ocaml) ())
-             ((f.ml (1 8) (1 27)) "foo][output {b foo}")))))
+          (()
+           (((f.ml (1 0) (1 29))
+             (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+              ((f.ml (1 8) (1 27)) "foo][output {b foo}"))))))
          (warnings ())) |}]
 
     let code_block_with_output_unexpected_delim =
@@ -2958,8 +3214,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 33))
-            (code_block ((f.ml (1 2) (1 31)) "foo]unexpected[output {b foo}")))))
+          (()
+           (((f.ml (1 0) (1 33))
+             (code_block ((f.ml (1 2) (1 31)) "foo]unexpected[output {b foo}"))))))
          (warnings ())) |}]
 
     let code_block_with_output_lang_unexpected_delim =
@@ -2967,9 +3224,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 39))
-            (code_block (((f.ml (1 2) (1 7)) ocaml) ())
-             ((f.ml (1 8) (1 37)) "foo]unexpected[output {b foo}")))))
+          (()
+           (((f.ml (1 0) (1 39))
+             (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+              ((f.ml (1 8) (1 37)) "foo]unexpected[output {b foo}"))))))
          (warnings ())) |}]
 
     let code_block_with_output_wrong_delim =
@@ -2977,9 +3235,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 44))
-            (code_block (((f.ml (1 7) (1 12)) ocaml) ())
-             ((f.ml (1 13) (1 37)) "foo]wrong[output {b foo}")))))
+          (()
+           (((f.ml (1 0) (1 44))
+             (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+              ((f.ml (1 13) (1 37)) "foo]wrong[output {b foo}"))))))
          (warnings ())) |}]
 
     let code_block_empty_meta =
@@ -2987,7 +3246,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 19)) (code_block ((f.ml (1 3) (1 17)) "code goes here")))))
+          (()
+           (((f.ml (1 0) (1 19)) (code_block ((f.ml (1 3) (1 17)) "code goes here"))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-3:\
            \n'{@' should be followed by a language tag.\
@@ -2998,8 +3258,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (code_block (((f.ml (1 2) (1 6)) meta) ()) ((f.ml (1 7) (1 10)) foo)))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (code_block (((f.ml (1 2) (1 6)) meta) ()) ((f.ml (1 7) (1 10)) foo))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-10:\
            \nMissing end of code block.\
@@ -3010,8 +3271,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (code_block (((f.ml (1 2) (1 5)) met) ()) ((f.ml (1 5) (1 5)) "")))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (code_block (((f.ml (1 2) (1 5)) met) ()) ((f.ml (1 5) (1 5)) ""))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-5:\
            \nMissing end of code block.\
@@ -3024,8 +3286,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 9))
-            (code_block (((f.ml (1 2) (1 7)) ocaml) ()) ((f.ml (2 1) (2 7)) "code ")))))
+          (()
+           (((f.ml (1 0) (2 9))
+             (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+              ((f.ml (2 1) (2 7)) "code "))))))
          (warnings ())) |}]
 
     let newlines_after_meta =
@@ -3033,10 +3297,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 9))
-            (code_block
-             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
-             ((f.ml (2 1) (2 7)) "code ")))))
+          (()
+           (((f.ml (1 0) (2 9))
+             (code_block
+              (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
+              ((f.ml (2 1) (2 7)) "code "))))))
          (warnings ())) |}]
 
     let spaces_after_meta =
@@ -3044,10 +3309,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 31))
-            (code_block
-             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
-             ((f.ml (1 23) (1 29)) "code ")))))
+          (()
+           (((f.ml (1 0) (1 31))
+             (code_block
+              (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
+              ((f.ml (1 23) (1 29)) "code "))))))
          (warnings ())) |}]
 
     let spaces_and_newline_after_meta =
@@ -3055,10 +3321,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 11))
-            (code_block
-             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
-             ((f.ml (2 3) (2 9)) "code ")))))
+          (()
+           (((f.ml (1 0) (2 11))
+             (code_block
+              (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
+              ((f.ml (2 3) (2 9)) "code "))))))
          (warnings ())) |}]
 
     let newlines_inside_meta =
@@ -3066,12 +3333,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 15))
-            (code_block
-             (((f.ml (1 2) (1 7)) ocaml)
-              (((f.ml (1 8) (2 6))  "kind=toplevel\
-                                   \nenv=e1")))
-             ((f.ml (2 7) (2 13)) "code ")))))
+          (()
+           (((f.ml (1 0) (2 15))
+             (code_block
+              (((f.ml (1 2) (1 7)) ocaml)
+               (((f.ml (1 8) (2 6))  "kind=toplevel\
+                                    \nenv=e1")))
+              ((f.ml (2 7) (2 13)) "code "))))))
          (warnings ())) |}]
 
     let newlines_between_meta =
@@ -3079,10 +3347,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 22))
-            (code_block
-             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (2 0) (2 13)) kind=toplevel)))
-             ((f.ml (2 14) (2 20)) "code ")))))
+          (()
+           (((f.ml (1 0) (2 22))
+             (code_block
+              (((f.ml (1 2) (1 7)) ocaml) (((f.ml (2 0) (2 13)) kind=toplevel)))
+              ((f.ml (2 14) (2 20)) "code "))))))
          (warnings ())) |}]
 
     let langtag_non_word =
@@ -3090,9 +3359,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 20))
-            (code_block (((f.ml (1 2) (1 7)) ocaml) ())
-             ((f.ml (1 8) (1 18)) "top[ code ")))))
+          (()
+           (((f.ml (1 0) (1 20))
+             (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+              ((f.ml (1 8) (1 18)) "top[ code "))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-8:\
            \nInvalid character ',' in language tag.\
@@ -3103,9 +3373,10 @@ let%expect_test _ =
       [%expect
         {|
           ((output
-            (((f.ml (1 0) (1 48))
-              (code_block (((f.ml (1 7) (1 12)) ocaml) ())
-               ((f.ml (1 13) (1 41)) "all{}[2[{{]doo}}]]'''(* ]} ")))))
+            (()
+             (((f.ml (1 0) (1 48))
+               (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+                ((f.ml (1 13) (1 41)) "all{}[2[{{]doo}}]]'''(* ]} "))))))
            (warnings ())) |}]
 
     let code_block_with_output =
@@ -3115,13 +3386,14 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 15))
-            (code_block (((f.ml (1 7) (1 12)) ocaml) ())
-             ((f.ml (1 13) (1 22)) "let x = ")
-             ((code_block (((f.ml (1 35) (1 44)) mdx-error) ())
-               ((f.ml (1 45) (1 66)) "here's the error ]} "))
-              (paragraph
-               (((f.ml (2 8) (2 9)) (word ])) ((f.ml (2 9) (2 14)) (word delim)))))))))
+          (()
+           (((f.ml (1 0) (2 15))
+             (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+              ((f.ml (1 13) (1 22)) "let x = ")
+              ((code_block (((f.ml (1 35) (1 44)) mdx-error) ())
+                ((f.ml (1 45) (1 66)) "here's the error ]} "))
+               (paragraph
+                (((f.ml (2 8) (2 9)) (word ])) ((f.ml (2 9) (2 14)) (word delim))))))))))
          (warnings
           ( "File \"f.ml\", line 2, characters 8-9:\
            \nUnpaired ']' (end of code).\
@@ -3132,9 +3404,10 @@ let%expect_test _ =
       [%expect
         {|
           ((output
-            (((f.ml (1 0) (1 28))
-              (code_block (((f.ml (1 7) (1 12)) ocaml) ())
-               ((f.ml (1 13) (1 18)) "foo ") ()))))
+            (()
+             (((f.ml (1 0) (1 28))
+               (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+                ((f.ml (1 13) (1 18)) "foo ") ())))))
            (warnings ())) |}]
   end in
   ()
@@ -3144,13 +3417,13 @@ let%expect_test _ =
     let basic =
       test "{v foo v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 9)) (verbatim foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 9)) (verbatim foo))))) (warnings ())) |}]
 
     let empty =
       test "{v v}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 5)) (verbatim ""))))
+        ((output (() (((f.ml (1 0) (1 5)) (verbatim "")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-5:\
            \n'{v ... v}' (verbatim text) should not be empty."))) |}]
@@ -3159,7 +3432,7 @@ let%expect_test _ =
       test "{vv}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 4)) (verbatim v}))))
+        ((output (() (((f.ml (1 0) (1 4)) (verbatim v})))))
          (warnings
           ( "File \"f.ml\", line 1, characters 2-4:\
            \n'v}' should be preceded by whitespace."
@@ -3170,7 +3443,7 @@ let%expect_test _ =
       test "{v  v}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 6)) (verbatim ""))))
+        ((output (() (((f.ml (1 0) (1 6)) (verbatim "")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-6:\
            \n'{v ... v}' (verbatim text) should not be empty."))) |}]
@@ -3179,7 +3452,7 @@ let%expect_test _ =
       test "{v\n  \nv}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (3 2)) (verbatim ""))))
+        ((output (() (((f.ml (1 0) (3 2)) (verbatim "")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 3, character 2:\
            \n'{v ... v}' (verbatim text) should not be empty."))) |}]
@@ -3188,7 +3461,7 @@ let%expect_test _ =
       test "{vfoo v}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 8)) (verbatim foo))))
+        ((output (() (((f.ml (1 0) (1 8)) (verbatim foo)))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-2:\
            \n'{v' should be followed by whitespace."))) |}]
@@ -3197,7 +3470,7 @@ let%expect_test _ =
       test "{v foov}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 8)) (verbatim foov}))))
+        ((output (() (((f.ml (1 0) (1 8)) (verbatim foov})))))
          (warnings
           ( "File \"f.ml\", line 1, characters 6-8:\
            \n'v}' should be preceded by whitespace."))) |}]
@@ -3205,98 +3478,101 @@ let%expect_test _ =
     let multiple_leading_whitespace =
       test "{v  foo v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 10)) (verbatim " foo")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 10)) (verbatim " foo"))))) (warnings ())) |}]
 
     let multiple_trailing_whitespace =
       test "{v foo  v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 10)) (verbatim "foo ")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 10)) (verbatim "foo "))))) (warnings ())) |}]
 
     let leading_tab =
       test "{v\tfoo v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 9)) (verbatim "\tfoo")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 9)) (verbatim "\tfoo"))))) (warnings ())) |}]
 
     let leading_newline =
       test "{v\nfoo v}";
       [%expect
-        {| ((output (((f.ml (1 0) (2 6)) (verbatim foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (2 6)) (verbatim foo))))) (warnings ())) |}]
 
     let leading_cr_lf =
       test "{v\r\nfoo v}";
       [%expect
-        {| ((output (((f.ml (1 0) (2 6)) (verbatim foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (2 6)) (verbatim foo))))) (warnings ())) |}]
 
     let trailing_tab =
       test "{v foo\tv}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 9)) (verbatim "foo\t")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 9)) (verbatim "foo\t"))))) (warnings ())) |}]
 
     let trailing_newline =
       test "{v foo\nv}";
       [%expect
-        {| ((output (((f.ml (1 0) (2 2)) (verbatim foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (2 2)) (verbatim foo))))) (warnings ())) |}]
 
     let trailing_cr_lf =
       test "{v foo\r\nv}";
       [%expect
-        {| ((output (((f.ml (1 0) (2 2)) (verbatim foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (2 2)) (verbatim foo))))) (warnings ())) |}]
 
     let internal_whitespace =
       test "{v foo bar v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 13)) (verbatim "foo bar")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 13)) (verbatim "foo bar"))))) (warnings ())) |}]
 
     let newline =
       test "{v foo\nbar v}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (2 6)) (verbatim  "foo\
-                                                \nbar")))) (warnings ())) |}]
+        ((output (() (((f.ml (1 0) (2 6)) (verbatim  "foo\
+                                                    \nbar"))))) (warnings ())) |}]
 
     let cr_lf =
       test "{v foo\r\nbar v}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (2 6)) (verbatim  "foo\r\
-                                                \nbar")))) (warnings ())) |}]
+        ((output (() (((f.ml (1 0) (2 6)) (verbatim  "foo\r\
+                                                    \nbar")))))
+         (warnings ())) |}]
 
     let blank_line =
       test "{v foo\n\nbar v}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (3 6)) (verbatim  "foo\
-                                                \n\
-                                                \nbar")))) (warnings ())) |}]
+        ((output (() (((f.ml (1 0) (3 6)) (verbatim  "foo\
+                                                    \n\
+                                                    \nbar")))))
+         (warnings ())) |}]
 
     let leading_newlines =
       test "{v\n\nfoo v}";
       [%expect
-        {| ((output (((f.ml (1 0) (3 6)) (verbatim foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (3 6)) (verbatim foo))))) (warnings ())) |}]
 
     let leading_newline_with_space =
       test "{v\n foo v}";
       [%expect
-        {| ((output (((f.ml (1 0) (2 7)) (verbatim " foo")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (2 7)) (verbatim " foo"))))) (warnings ())) |}]
 
     let leading_newline_with_trash =
       test "{v \nfoo v}";
       [%expect
-        {| ((output (((f.ml (1 0) (2 6)) (verbatim foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (2 6)) (verbatim foo))))) (warnings ())) |}]
 
     let nested_opener =
       test "{v {v v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 8)) (verbatim {v)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 8)) (verbatim {v))))) (warnings ())) |}]
 
     let nested_closer =
       test "{v foo v} v}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9)) (verbatim foo))
-           ((f.ml (1 10) (1 11)) (paragraph (((f.ml (1 10) (1 11)) (word v)))))
-           ((f.ml (1 11) (1 12)) (paragraph (((f.ml (1 11) (1 12)) (word })))))))
+          (()
+           (((f.ml (1 0) (1 9)) (verbatim foo))
+            ((f.ml (1 10) (1 11)) (paragraph (((f.ml (1 10) (1 11)) (word v)))))
+            ((f.ml (1 11) (1 12)) (paragraph (((f.ml (1 11) (1 12)) (word }))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 10-11:\
            \nParagraph should begin on its own line."
@@ -3307,23 +3583,23 @@ let%expect_test _ =
     let nested_closer_with_word =
       test "{v {dev} v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 11)) (verbatim {dev})))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 11)) (verbatim {dev}))))) (warnings ())) |}]
 
     let nested_v =
       test "{v v v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 7)) (verbatim v)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 7)) (verbatim v))))) (warnings ())) |}]
 
     let two_nested_vs =
       test "{v vv v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 8)) (verbatim vv)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 8)) (verbatim vv))))) (warnings ())) |}]
 
     let nested_v_at_end =
       test "{v vv}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 6)) (verbatim vv}))))
+        ((output (() (((f.ml (1 0) (1 6)) (verbatim vv})))))
          (warnings
           ( "File \"f.ml\", line 1, characters 4-6:\
            \n'v}' should be preceded by whitespace."))) |}]
@@ -3332,7 +3608,7 @@ let%expect_test _ =
       test "{v vvv}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 7)) (verbatim vvv}))))
+        ((output (() (((f.ml (1 0) (1 7)) (verbatim vvv})))))
          (warnings
           ( "File \"f.ml\", line 1, characters 5-7:\
            \n'v}' should be preceded by whitespace."))) |}]
@@ -3340,29 +3616,31 @@ let%expect_test _ =
     let nested_vs_in_text =
       test "{v foovvbar v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 14)) (verbatim foovvbar)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 14)) (verbatim foovvbar))))) (warnings ())) |}]
 
     let trailing_newlines =
       test "{v foo\n\nv}";
       [%expect
-        {| ((output (((f.ml (1 0) (3 2)) (verbatim foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (3 2)) (verbatim foo))))) (warnings ())) |}]
 
     let preceded_by_whitespace =
       test "{v foo v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 9)) (verbatim foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 9)) (verbatim foo))))) (warnings ())) |}]
 
     let followed_by_whitespace =
       test "{v foo v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 9)) (verbatim foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 9)) (verbatim foo))))) (warnings ())) |}]
 
     let two_on_one_line =
       test "{v foo v} {v bar v}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9)) (verbatim foo)) ((f.ml (1 10) (1 19)) (verbatim bar))))
+          (()
+           (((f.ml (1 0) (1 9)) (verbatim foo))
+            ((f.ml (1 10) (1 19)) (verbatim bar)))))
          (warnings
           ( "File \"f.ml\", line 1, characters 10-19:\
            \n'{v ... v}' (verbatim text) should begin on its own line."))) |}]
@@ -3372,7 +3650,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9)) (verbatim foo)) ((f.ml (2 0) (2 9)) (verbatim bar))))
+          (()
+           (((f.ml (1 0) (1 9)) (verbatim foo)) ((f.ml (2 0) (2 9)) (verbatim bar)))))
          (warnings ())) |}]
 
     let two_with_blank_line =
@@ -3380,7 +3659,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9)) (verbatim foo)) ((f.ml (3 0) (3 9)) (verbatim bar))))
+          (()
+           (((f.ml (1 0) (1 9)) (verbatim foo)) ((f.ml (3 0) (3 9)) (verbatim bar)))))
          (warnings ())) |}]
 
     let followed_by_words =
@@ -3388,8 +3668,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9)) (verbatim foo))
-           ((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (1 9)) (verbatim foo))
+            ((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word bar))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 10-13:\
            \nParagraph should begin on its own line."))) |}]
@@ -3399,9 +3680,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 4))
-            (paragraph (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space))))
-           ((f.ml (1 4) (1 13)) (verbatim bar))))
+          (()
+           (((f.ml (1 0) (1 4))
+             (paragraph (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space))))
+            ((f.ml (1 4) (1 13)) (verbatim bar)))))
          (warnings
           ( "File \"f.ml\", line 1, characters 4-13:\
            \n'{v ... v}' (verbatim text) should begin on its own line."))) |}]
@@ -3411,8 +3693,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
-           ((f.ml (2 0) (2 9)) (verbatim bar))))
+          (()
+           (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+            ((f.ml (2 0) (2 9)) (verbatim bar)))))
          (warnings ())) |}]
 
     let followed_by_paragraph =
@@ -3420,15 +3703,16 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9)) (verbatim foo))
-           ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word bar)))))))
+          (()
+           (((f.ml (1 0) (1 9)) (verbatim foo))
+            ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word bar))))))))
          (warnings ())) |}]
 
     let unterminated =
       test "{v foo";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 6)) (verbatim foo))))
+        ((output (() (((f.ml (1 0) (1 6)) (verbatim foo)))))
          (warnings
           ( "File \"f.ml\", line 1, characters 6-6:\
            \nEnd of text is not allowed in '{v ... v}' (verbatim text)."))) |}]
@@ -3437,7 +3721,7 @@ let%expect_test _ =
       test "{v foo v";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 8)) (verbatim "foo v"))))
+        ((output (() (((f.ml (1 0) (1 8)) (verbatim "foo v")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-8:\
            \nEnd of text is not allowed in '{v ... v}' (verbatim text)."))) |}]
@@ -3446,7 +3730,7 @@ let%expect_test _ =
       test "{v";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 2)) (verbatim ""))))
+        ((output (() (((f.ml (1 0) (1 2)) (verbatim "")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 2-2:\
            \nEnd of text is not allowed in '{v ... v}' (verbatim text)."
@@ -3457,7 +3741,7 @@ let%expect_test _ =
       test "{v";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 2)) (verbatim ""))))
+        ((output (() (((f.ml (1 0) (1 2)) (verbatim "")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 2-2:\
            \nEnd of text is not allowed in '{v ... v}' (verbatim text)."
@@ -3468,7 +3752,7 @@ let%expect_test _ =
       test "{v";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 2)) (verbatim ""))))
+        ((output (() (((f.ml (1 0) (1 2)) (verbatim "")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 2-2:\
            \nEnd of text is not allowed in '{v ... v}' (verbatim text)."
@@ -3478,7 +3762,7 @@ let%expect_test _ =
     let trailing_cr =
       test "{v foo\rv}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 9)) (verbatim "foo\r")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 9)) (verbatim "foo\r"))))) (warnings ())) |}]
   end in
   ()
 
@@ -3489,9 +3773,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (unordered light
-             ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (unordered light
+              ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo))))))))))))
          (warnings ())) |}]
 
     let multiple_items =
@@ -3499,10 +3784,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5))
-            (unordered light
-             ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo))))))
-              (((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar)))))))))))
+          (()
+           (((f.ml (1 0) (2 5))
+             (unordered light
+              ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo))))))
+               (((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar))))))))))))
          (warnings ())) |}]
 
     let two_lists =
@@ -3510,12 +3796,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (unordered light
-             ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
-           ((f.ml (3 0) (3 5))
-            (unordered light
-             ((((f.ml (3 2) (3 5)) (paragraph (((f.ml (3 2) (3 5)) (word bar)))))))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (unordered light
+              ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
+            ((f.ml (3 0) (3 5))
+             (unordered light
+              ((((f.ml (3 2) (3 5)) (paragraph (((f.ml (3 2) (3 5)) (word bar))))))))))))
          (warnings ())) |}]
 
     let ordered =
@@ -3523,9 +3810,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (ordered light
-             ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (ordered light
+              ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo))))))))))))
          (warnings ())) |}]
 
     let leading_whitespace =
@@ -3533,9 +3821,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (unordered light
-             ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (unordered light
+              ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo))))))))))))
          (warnings ())) |}]
 
     let trailing_whitespace =
@@ -3543,9 +3832,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (unordered light
-             ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (unordered light
+              ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo))))))))))))
          (warnings ())) |}]
 
     let bullet_in_line =
@@ -3553,13 +3843,14 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (unordered light
-             ((((f.ml (1 2) (1 11))
-                (paragraph
-                 (((f.ml (1 2) (1 5)) (word foo)) ((f.ml (1 5) (1 6)) space)
-                  ((f.ml (1 6) (1 7)) (word -)) ((f.ml (1 7) (1 8)) space)
-                  ((f.ml (1 8) (1 11)) (word bar)))))))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (unordered light
+              ((((f.ml (1 2) (1 11))
+                 (paragraph
+                  (((f.ml (1 2) (1 5)) (word foo)) ((f.ml (1 5) (1 6)) space)
+                   ((f.ml (1 6) (1 7)) (word -)) ((f.ml (1 7) (1 8)) space)
+                   ((f.ml (1 8) (1 11)) (word bar))))))))))))
          (warnings ())) |}]
 
     let bullet_in_line_immediately =
@@ -3567,10 +3858,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (unordered light
-             (()
-              (((f.ml (1 4) (1 7)) (paragraph (((f.ml (1 4) (1 7)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (unordered light
+              (()
+               (((f.ml (1 4) (1 7)) (paragraph (((f.ml (1 4) (1 7)) (word foo))))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 2-3:\
            \n'-' (bulleted list item) should begin on its own line."
@@ -3582,9 +3874,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9))
-            (unordered light
-             ((((f.ml (1 2) (1 9)) (code_block ((f.ml (1 4) (1 7)) foo)))))))))
+          (()
+           (((f.ml (1 0) (1 9))
+             (unordered light
+              ((((f.ml (1 2) (1 9)) (code_block ((f.ml (1 4) (1 7)) foo))))))))))
          (warnings ())) |}]
 
     let verbatim =
@@ -3592,8 +3885,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (unordered light ((((f.ml (1 2) (1 11)) (verbatim foo))))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (unordered light ((((f.ml (1 2) (1 11)) (verbatim foo)))))))))
          (warnings ())) |}]
 
     let multiple_blocks =
@@ -3601,10 +3895,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 7))
-            (unordered light
-             ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))
-               ((f.ml (2 0) (2 7)) (code_block ((f.ml (2 2) (2 5)) bar)))))))))
+          (()
+           (((f.ml (1 0) (2 7))
+             (unordered light
+              ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))
+                ((f.ml (2 0) (2 7)) (code_block ((f.ml (2 2) (2 5)) bar))))))))))
          (warnings ())) |}]
 
     let followed_by_code_block =
@@ -3612,10 +3907,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (unordered light
-             ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
-           ((f.ml (3 0) (3 7)) (code_block ((f.ml (3 2) (3 5)) bar)))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (unordered light
+              ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
+            ((f.ml (3 0) (3 7)) (code_block ((f.ml (3 2) (3 5)) bar))))))
          (warnings ())) |}]
 
     let different_kinds =
@@ -3623,19 +3919,20 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (unordered light
-             ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
-           ((f.ml (2 0) (2 5))
-            (ordered light
-             ((((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar)))))))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (unordered light
+              ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
+            ((f.ml (2 0) (2 5))
+             (ordered light
+              ((((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar))))))))))))
          (warnings ())) |}]
 
     let no_content =
       test "-";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 1)) (unordered light (())))))
+        ((output (() (((f.ml (1 0) (1 1)) (unordered light (()))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-1:\
            \n'-' (bulleted list item) should not be empty."))) |}]
@@ -3645,9 +3942,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 3))
-            (unordered light
-             ((((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (2 3))
+             (unordered light
+              ((((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo))))))))))))
          (warnings ())) |}]
 
     let immediate_blank_line =
@@ -3655,8 +3953,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 1)) (unordered light (())))
-           ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word foo)))))))
+          (()
+           (((f.ml (1 0) (1 1)) (unordered light (())))
+            ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-1:\
            \n'-' (bulleted list item) should not be empty."))) |}]
@@ -3666,11 +3965,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8))
-            (unordered light
-             ((((f.ml (1 1) (1 8))
-                (paragraph
-                 (((f.ml (1 1) (1 8)) (bold (((f.ml (1 4) (1 7)) (word foo))))))))))))))
+          (()
+           (((f.ml (1 0) (1 8))
+             (unordered light
+              ((((f.ml (1 1) (1 8))
+                 (paragraph
+                  (((f.ml (1 1) (1 8)) (bold (((f.ml (1 4) (1 7)) (word foo)))))))))))))))
          (warnings ())) |}]
 
     let after_code_block =
@@ -3678,10 +3978,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
-           ((f.ml (1 8) (1 13))
-            (unordered light
-             ((((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word bar)))))))))))
+          (()
+           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+            ((f.ml (1 8) (1 13))
+             (unordered light
+              ((((f.ml (1 10) (1 13))
+                 (paragraph (((f.ml (1 10) (1 13)) (word bar))))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-9:\
            \n'-' (bulleted list item) should begin on its own line."))) |}]
@@ -3695,9 +3997,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 13))
-            (unordered heavy
-             ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 13))
+             (unordered heavy
+              ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))))))))
          (warnings ())) |}]
 
     let ordered =
@@ -3705,9 +4008,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 13))
-            (ordered heavy
-             ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 13))
+             (ordered heavy
+              ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))))))))
          (warnings ())) |}]
 
     let two_items =
@@ -3715,10 +4019,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 22))
-            (unordered heavy
-             ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))
-              (((f.ml (1 17) (1 20)) (paragraph (((f.ml (1 17) (1 20)) (word bar)))))))))))
+          (()
+           (((f.ml (1 0) (1 22))
+             (unordered heavy
+              ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))
+               (((f.ml (1 17) (1 20))
+                 (paragraph (((f.ml (1 17) (1 20)) (word bar))))))))))))
          (warnings ())) |}]
 
     let items_on_separate_lines =
@@ -3726,10 +4032,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 9))
-            (unordered heavy
-             ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))
-              (((f.ml (2 4) (2 7)) (paragraph (((f.ml (2 4) (2 7)) (word bar)))))))))))
+          (()
+           (((f.ml (1 0) (2 9))
+             (unordered heavy
+              ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))
+               (((f.ml (2 4) (2 7)) (paragraph (((f.ml (2 4) (2 7)) (word bar))))))))))))
          (warnings ())) |}]
 
     let blank_line =
@@ -3737,10 +4044,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 9))
-            (unordered heavy
-             ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))
-              (((f.ml (3 4) (3 7)) (paragraph (((f.ml (3 4) (3 7)) (word bar)))))))))))
+          (()
+           (((f.ml (1 0) (3 9))
+             (unordered heavy
+              ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))
+               (((f.ml (3 4) (3 7)) (paragraph (((f.ml (3 4) (3 7)) (word bar))))))))))))
          (warnings ())) |}]
 
     let blank_line_in_item =
@@ -3748,17 +4056,18 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 5))
-            (unordered heavy
-             ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))
-               ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar)))))))))))
+          (()
+           (((f.ml (1 0) (3 5))
+             (unordered heavy
+              ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))
+                ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar))))))))))))
          (warnings ())) |}]
 
     let junk =
       test "{ul foo}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 8)) (unordered heavy ()))))
+        ((output (() (((f.ml (1 0) (1 8)) (unordered heavy ())))))
          (warnings
           ( "File \"f.ml\", line 1, characters 4-7:\
            \n'foo' is not allowed in '{ul ...}' (bulleted list).\
@@ -3770,7 +4079,7 @@ let%expect_test _ =
       test "{ulfoo}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 7)) (unordered heavy ()))))
+        ((output (() (((f.ml (1 0) (1 7)) (unordered heavy ())))))
          (warnings
           ( "File \"f.ml\", line 1, characters 3-6:\
            \n'foo' is not allowed in '{ul ...}' (bulleted list).\
@@ -3782,7 +4091,7 @@ let%expect_test _ =
       test "{ul}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 4)) (unordered heavy ()))))
+        ((output (() (((f.ml (1 0) (1 4)) (unordered heavy ())))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-3:\
            \n'{ul ...}' (bulleted list) should not be empty."))) |}]
@@ -3791,7 +4100,7 @@ let%expect_test _ =
       test "{ul";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 3)) (unordered heavy ()))))
+        ((output (() (((f.ml (1 0) (1 3)) (unordered heavy ())))))
          (warnings
           ( "File \"f.ml\", line 1, characters 3-3:\
            \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
@@ -3804,9 +4113,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 12))
-            (unordered heavy
-             ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 12))
+             (unordered heavy
+              ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo))))))))))))
          (warnings ())) |}]
 
     let whitespace_at_end_of_item =
@@ -3814,9 +4124,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (4 2))
-            (unordered heavy
-             ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (4 2))
+             (unordered heavy
+              ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))))))))
          (warnings ())) |}]
 
     let unterminated_li_syntax =
@@ -3824,9 +4135,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (unordered heavy
-             ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (unordered heavy
+              ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 11-11:\
            \nEnd of text is not allowed in '{li ...}' (list item).\
@@ -3840,9 +4152,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (unordered heavy
-             ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (unordered heavy
+              ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo))))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 10-10:\
            \nEnd of text is not allowed in '{- ...}' (list item).\
@@ -3855,7 +4168,7 @@ let%expect_test _ =
       test "{ul {li }}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 10)) (unordered heavy (())))))
+        ((output (() (((f.ml (1 0) (1 10)) (unordered heavy (()))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 4-7:\
            \n'{li ...}' (list item) should not be empty."))) |}]
@@ -3864,7 +4177,7 @@ let%expect_test _ =
       test "{ul {- }}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 9)) (unordered heavy (())))))
+        ((output (() (((f.ml (1 0) (1 9)) (unordered heavy (()))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 4-6:\
            \n'{- ...}' (list item) should not be empty."))) |}]
@@ -3874,9 +4187,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 12))
-            (unordered heavy
-             ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 12))
+             (unordered heavy
+              ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo))))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 4-7:\
            \n'{li ...}' should be followed by space, a tab, or a new line."))) |}]
@@ -3886,9 +4200,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5))
-            (unordered heavy
-             ((((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (2 5))
+             (unordered heavy
+              ((((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo))))))))))))
          (warnings ())) |}]
 
     let li_syntax_followed_by_cr_lf =
@@ -3896,9 +4211,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5))
-            (unordered heavy
-             ((((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (2 5))
+             (unordered heavy
+              ((((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo))))))))))))
          (warnings ())) |}]
 
     let li_syntax_followed_by_blank_line =
@@ -3906,9 +4222,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 5))
-            (unordered heavy
-             ((((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (3 5))
+             (unordered heavy
+              ((((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word foo))))))))))))
          (warnings ())) |}]
 
     let left_curly_brace_without_whitespace =
@@ -3916,9 +4233,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (unordered heavy
-             ((((f.ml (1 6) (1 9)) (paragraph (((f.ml (1 6) (1 9)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (unordered heavy
+              ((((f.ml (1 6) (1 9)) (paragraph (((f.ml (1 6) (1 9)) (word foo))))))))))))
          (warnings ())) |}]
 
     let mixed_list_items =
@@ -3926,10 +4244,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 21))
-            (unordered heavy
-             ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))
-              (((f.ml (1 16) (1 19)) (paragraph (((f.ml (1 16) (1 19)) (word bar)))))))))))
+          (()
+           (((f.ml (1 0) (1 21))
+             (unordered heavy
+              ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))
+               (((f.ml (1 16) (1 19))
+                 (paragraph (((f.ml (1 16) (1 19)) (word bar))))))))))))
          (warnings ())) |}]
 
     let nested =
@@ -3937,12 +4257,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 23))
-            (unordered heavy
-             ((((f.ml (1 8) (1 21))
-                (unordered heavy
-                 ((((f.ml (1 16) (1 19))
-                    (paragraph (((f.ml (1 16) (1 19)) (word foo)))))))))))))))
+          (()
+           (((f.ml (1 0) (1 23))
+             (unordered heavy
+              ((((f.ml (1 8) (1 21))
+                 (unordered heavy
+                  ((((f.ml (1 16) (1 19))
+                     (paragraph (((f.ml (1 16) (1 19)) (word foo))))))))))))))))
          (warnings ())) |}]
 
     let shorthand_in_explicit =
@@ -3950,13 +4271,15 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 7))
-            (unordered heavy
-             ((((f.ml (1 8) (2 5))
-                (unordered light
-                 ((((f.ml (1 10) (1 13))
-                    (paragraph (((f.ml (1 10) (1 13)) (word foo))))))
-                  (((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar)))))))))))))))
+          (()
+           (((f.ml (1 0) (2 7))
+             (unordered heavy
+              ((((f.ml (1 8) (2 5))
+                 (unordered light
+                  ((((f.ml (1 10) (1 13))
+                     (paragraph (((f.ml (1 10) (1 13)) (word foo))))))
+                   (((f.ml (2 2) (2 5))
+                     (paragraph (((f.ml (2 2) (2 5)) (word bar))))))))))))))))
          (warnings ())) |}]
 
     let explicit_in_shorthand =
@@ -3964,12 +4287,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 15))
-            (unordered light
-             ((((f.ml (1 2) (1 15))
-                (unordered heavy
-                 ((((f.ml (1 10) (1 13))
-                    (paragraph (((f.ml (1 10) (1 13)) (word foo)))))))))))))))
+          (()
+           (((f.ml (1 0) (1 15))
+             (unordered light
+              ((((f.ml (1 2) (1 15))
+                 (unordered heavy
+                  ((((f.ml (1 10) (1 13))
+                     (paragraph (((f.ml (1 10) (1 13)) (word foo))))))))))))))))
          (warnings ())) |}]
 
     let bare_li_syntax =
@@ -3977,8 +4301,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 4) (1 7)) (paragraph (((f.ml (1 4) (1 7)) (word foo)))))
-           ((f.ml (1 7) (1 8)) (paragraph (((f.ml (1 7) (1 8)) (word })))))))
+          (()
+           (((f.ml (1 4) (1 7)) (paragraph (((f.ml (1 4) (1 7)) (word foo)))))
+            ((f.ml (1 7) (1 8)) (paragraph (((f.ml (1 7) (1 8)) (word }))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-3:\
            \n'{li ...}' (list item) is not allowed in top-level text.\
@@ -3992,7 +4317,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 3) (1 6)) (paragraph (((f.ml (1 3) (1 6)) (word foo)))))))
+          (() (((f.ml (1 3) (1 6)) (paragraph (((f.ml (1 3) (1 6)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-2:\
            \n'{- ...}' (list item) is not allowed in top-level text.\
@@ -4003,10 +4328,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
-           ((f.ml (1 8) (1 21))
-            (unordered heavy
-             ((((f.ml (1 16) (1 19)) (paragraph (((f.ml (1 16) (1 19)) (word bar)))))))))))
+          (()
+           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+            ((f.ml (1 8) (1 21))
+             (unordered heavy
+              ((((f.ml (1 16) (1 19))
+                 (paragraph (((f.ml (1 16) (1 19)) (word bar))))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-11:\
            \n'{ul ...}' (bulleted list) should begin on its own line."))) |}]
@@ -4018,19 +4345,20 @@ let%expect_test _ =
     let basic =
       test "@deprecated";
       [%expect
-        {| ((output (((f.ml (1 0) (1 11)) (@deprecated)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 11)) (@deprecated))))) (warnings ())) |}]
 
     let words =
       test "@deprecated foo bar";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 19))
-            (@deprecated
-             ((f.ml (1 12) (1 19))
-              (paragraph
-               (((f.ml (1 12) (1 15)) (word foo)) ((f.ml (1 15) (1 16)) space)
-                ((f.ml (1 16) (1 19)) (word bar)))))))))
+          (()
+           (((f.ml (1 0) (1 19))
+             (@deprecated
+              ((f.ml (1 12) (1 19))
+               (paragraph
+                (((f.ml (1 12) (1 15)) (word foo)) ((f.ml (1 15) (1 16)) space)
+                 ((f.ml (1 16) (1 19)) (word bar))))))))))
          (warnings ())) |}]
 
     let multiline =
@@ -4038,12 +4366,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 3))
-            (@deprecated
-             ((f.ml (1 12) (2 3))
-              (paragraph
-               (((f.ml (1 12) (1 15)) (word foo)) ((f.ml (1 15) (2 0)) space)
-                ((f.ml (2 0) (2 3)) (word bar)))))))))
+          (()
+           (((f.ml (1 0) (2 3))
+             (@deprecated
+              ((f.ml (1 12) (2 3))
+               (paragraph
+                (((f.ml (1 12) (1 15)) (word foo)) ((f.ml (1 15) (2 0)) space)
+                 ((f.ml (2 0) (2 3)) (word bar))))))))))
          (warnings ())) |}]
 
     let paragraphs =
@@ -4051,25 +4380,27 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 3))
-            (@deprecated
-             ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))
-             ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar)))))))))
+          (()
+           (((f.ml (1 0) (3 3))
+             (@deprecated
+              ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))
+              ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar))))))))))
          (warnings ())) |}]
 
     let whitespace_only =
       test "@deprecated";
       [%expect
-        {| ((output (((f.ml (1 0) (1 11)) (@deprecated)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 11)) (@deprecated))))) (warnings ())) |}]
 
     let immediate_newline =
       test "@deprecated\nfoo";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 3))
-            (@deprecated
-             ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))))
+          (()
+           (((f.ml (1 0) (2 3))
+             (@deprecated
+              ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo))))))))))
          (warnings ())) |}]
 
     let immediate_cr_lf =
@@ -4077,9 +4408,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 3))
-            (@deprecated
-             ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))))
+          (()
+           (((f.ml (1 0) (2 3))
+             (@deprecated
+              ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo))))))))))
          (warnings ())) |}]
 
     let immediate_blank_line =
@@ -4087,9 +4419,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 3))
-            (@deprecated
-             ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word foo)))))))))
+          (()
+           (((f.ml (1 0) (3 3))
+             (@deprecated
+              ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word foo))))))))))
          (warnings ())) |}]
 
     let extra_whitespace =
@@ -4097,9 +4430,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 16))
-            (@deprecated
-             ((f.ml (1 13) (1 16)) (paragraph (((f.ml (1 13) (1 16)) (word foo)))))))))
+          (()
+           (((f.ml (1 0) (1 16))
+             (@deprecated
+              ((f.ml (1 13) (1 16)) (paragraph (((f.ml (1 13) (1 16)) (word foo))))))))))
          (warnings ())) |}]
 
     let followed_by_deprecated =
@@ -4107,12 +4441,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 15))
-            (@deprecated
-             ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))))
-           ((f.ml (2 0) (2 15))
-            (@deprecated
-             ((f.ml (2 12) (2 15)) (paragraph (((f.ml (2 12) (2 15)) (word bar)))))))))
+          (()
+           (((f.ml (1 0) (1 15))
+             (@deprecated
+              ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))))
+            ((f.ml (2 0) (2 15))
+             (@deprecated
+              ((f.ml (2 12) (2 15)) (paragraph (((f.ml (2 12) (2 15)) (word bar))))))))))
          (warnings ())) |}]
 
     let followed_by_deprecated_cr_lf =
@@ -4120,12 +4455,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 15))
-            (@deprecated
-             ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))))
-           ((f.ml (2 0) (2 15))
-            (@deprecated
-             ((f.ml (2 12) (2 15)) (paragraph (((f.ml (2 12) (2 15)) (word bar)))))))))
+          (()
+           (((f.ml (1 0) (1 15))
+             (@deprecated
+              ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))))
+            ((f.ml (2 0) (2 15))
+             (@deprecated
+              ((f.ml (2 12) (2 15)) (paragraph (((f.ml (2 12) (2 15)) (word bar))))))))))
          (warnings ())) |}]
 
     let nested_in_self =
@@ -4133,14 +4469,15 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 31))
-            (@deprecated
-             ((f.ml (1 12) (1 16))
-              (paragraph
-               (((f.ml (1 12) (1 15)) (word foo)) ((f.ml (1 15) (1 16)) space))))
-             ((f.ml (1 16) (1 27))
-              (paragraph (((f.ml (1 16) (1 27)) (word @deprecated)))))
-             ((f.ml (1 28) (1 31)) (paragraph (((f.ml (1 28) (1 31)) (word bar)))))))))
+          (()
+           (((f.ml (1 0) (1 31))
+             (@deprecated
+              ((f.ml (1 12) (1 16))
+               (paragraph
+                (((f.ml (1 12) (1 15)) (word foo)) ((f.ml (1 15) (1 16)) space))))
+              ((f.ml (1 16) (1 27))
+               (paragraph (((f.ml (1 16) (1 27)) (word @deprecated)))))
+              ((f.ml (1 28) (1 31)) (paragraph (((f.ml (1 28) (1 31)) (word bar))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 16-27:\
            \n'@deprecated' is not allowed in '@deprecated'.\
@@ -4151,11 +4488,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 27))
-            (@deprecated
-             ((f.ml (1 12) (1 23))
-              (paragraph (((f.ml (1 12) (1 23)) (word @deprecated)))))
-             ((f.ml (1 24) (1 27)) (paragraph (((f.ml (1 24) (1 27)) (word foo)))))))))
+          (()
+           (((f.ml (1 0) (1 27))
+             (@deprecated
+              ((f.ml (1 12) (1 23))
+               (paragraph (((f.ml (1 12) (1 23)) (word @deprecated)))))
+              ((f.ml (1 24) (1 27)) (paragraph (((f.ml (1 24) (1 27)) (word foo))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 12-23:\
            \n'@deprecated' is not allowed in '@deprecated'.\
@@ -4166,8 +4504,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
-           ((f.ml (2 0) (2 11)) (@deprecated))))
+          (()
+           (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+            ((f.ml (2 0) (2 11)) (@deprecated)))))
          (warnings ())) |}]
 
     let preceded_by_shorthand_list =
@@ -4175,10 +4514,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (unordered light
-             ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
-           ((f.ml (2 0) (2 11)) (@deprecated))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (unordered light
+              ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
+            ((f.ml (2 0) (2 11)) (@deprecated)))))
          (warnings ())) |}]
 
     let with_shorthand_list =
@@ -4186,12 +4526,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 17))
-            (@deprecated
-             ((f.ml (1 12) (1 17))
-              (unordered light
-               ((((f.ml (1 14) (1 17))
-                  (paragraph (((f.ml (1 14) (1 17)) (word foo)))))))))))))
+          (()
+           (((f.ml (1 0) (1 17))
+             (@deprecated
+              ((f.ml (1 12) (1 17))
+               (unordered light
+                ((((f.ml (1 14) (1 17))
+                   (paragraph (((f.ml (1 14) (1 17)) (word foo))))))))))))))
          (warnings ())) |}]
 
     let with_shorthand_list_after_newline =
@@ -4199,11 +4540,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5))
-            (@deprecated
-             ((f.ml (2 0) (2 5))
-              (unordered light
-               ((((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word foo)))))))))))))
+          (()
+           (((f.ml (1 0) (2 5))
+             (@deprecated
+              ((f.ml (2 0) (2 5))
+               (unordered light
+                ((((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word foo))))))))))))))
          (warnings ())) |}]
 
     let prefix =
@@ -4211,8 +4553,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 14))
-            (paragraph (((f.ml (1 0) (1 14)) (word @deprecatedfoo)))))))
+          (()
+           (((f.ml (1 0) (1 14))
+             (paragraph (((f.ml (1 0) (1 14)) (word @deprecatedfoo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-14:\
            \nUnknown tag '@deprecatedfoo'."))) |}]
@@ -4222,8 +4565,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
-           ((f.ml (1 8) (1 19)) (@deprecated))))
+          (()
+           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+            ((f.ml (1 8) (1 19)) (@deprecated)))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-19:\
            \n'@deprecated' should begin on its own line."))) |}]
@@ -4233,10 +4577,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 7))
-            (@deprecated
-             ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))
-             ((f.ml (2 0) (2 7)) (paragraph (((f.ml (2 3) (2 6)) (word Bar)))))))))
+          (()
+           (((f.ml (1 0) (2 7))
+             (@deprecated
+              ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))
+              ((f.ml (2 0) (2 7)) (paragraph (((f.ml (2 3) (2 6)) (word Bar))))))))))
          (warnings
           ( "File \"f.ml\", line 2, characters 0-2:\
            \n'{2 ...}' (section heading) is not allowed in '@deprecated'.\
@@ -4249,13 +4594,13 @@ let%expect_test _ =
     let basic =
       test "@param foo";
       [%expect
-        {| ((output (((f.ml (1 0) (1 10)) (@param foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 10)) (@param foo))))) (warnings ())) |}]
 
     let bare =
       test "@param";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 6)) (@param ""))))
+        ((output (() (((f.ml (1 0) (1 6)) (@param "")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-6:\
            \n'@param' expects parameter name on the same line."))) |}]
@@ -4264,7 +4609,7 @@ let%expect_test _ =
       test "@param";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 6)) (@param ""))))
+        ((output (() (((f.ml (1 0) (1 6)) (@param "")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-6:\
            \n'@param' expects parameter name on the same line."))) |}]
@@ -4274,9 +4619,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 3))
-            (@param ""
-             ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))))
+          (()
+           (((f.ml (1 0) (2 3))
+             (@param ""
+              ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-6:\
            \n'@param' expects parameter name on the same line."))) |}]
@@ -4284,24 +4630,25 @@ let%expect_test _ =
     let followed_by_whitespace =
       test "@param foo";
       [%expect
-        {| ((output (((f.ml (1 0) (1 10)) (@param foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 10)) (@param foo))))) (warnings ())) |}]
 
     let extra_whitespace =
       test "@param  foo";
       [%expect
-        {| ((output (((f.ml (1 0) (1 11)) (@param foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 11)) (@param foo))))) (warnings ())) |}]
 
     let words =
       test "@param foo bar baz";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 18))
-            (@param foo
-             ((f.ml (1 11) (1 18))
-              (paragraph
-               (((f.ml (1 11) (1 14)) (word bar)) ((f.ml (1 14) (1 15)) space)
-                ((f.ml (1 15) (1 18)) (word baz)))))))))
+          (()
+           (((f.ml (1 0) (1 18))
+             (@param foo
+              ((f.ml (1 11) (1 18))
+               (paragraph
+                (((f.ml (1 11) (1 14)) (word bar)) ((f.ml (1 14) (1 15)) space)
+                 ((f.ml (1 15) (1 18)) (word baz))))))))))
          (warnings ())) |}]
 
     let multiline =
@@ -4309,12 +4656,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 3))
-            (@param foo
-             ((f.ml (2 0) (3 3))
-              (paragraph
-               (((f.ml (2 0) (2 3)) (word bar)) ((f.ml (2 3) (3 0)) space)
-                ((f.ml (3 0) (3 3)) (word baz)))))))))
+          (()
+           (((f.ml (1 0) (3 3))
+             (@param foo
+              ((f.ml (2 0) (3 3))
+               (paragraph
+                (((f.ml (2 0) (2 3)) (word bar)) ((f.ml (2 3) (3 0)) space)
+                 ((f.ml (3 0) (3 3)) (word baz))))))))))
          (warnings ())) |}]
 
     let paragraphs =
@@ -4322,10 +4670,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 3))
-            (@param foo
-             ((f.ml (1 11) (1 14)) (paragraph (((f.ml (1 11) (1 14)) (word bar)))))
-             ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word baz)))))))))
+          (()
+           (((f.ml (1 0) (3 3))
+             (@param foo
+              ((f.ml (1 11) (1 14)) (paragraph (((f.ml (1 11) (1 14)) (word bar)))))
+              ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word baz))))))))))
          (warnings ())) |}]
 
     let two =
@@ -4333,7 +4682,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10)) (@param foo)) ((f.ml (2 0) (2 10)) (@param bar))))
+          (()
+           (((f.ml (1 0) (1 10)) (@param foo)) ((f.ml (2 0) (2 10)) (@param bar)))))
          (warnings ())) |}]
 
     let nested =
@@ -4341,12 +4691,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 21))
-            (@param foo
-             ((f.ml (1 11) (1 21))
-              (paragraph
-               (((f.ml (1 11) (1 21)) (word @param)) ((f.ml (1 11) (1 21)) space)
-                ((f.ml (1 11) (1 21)) (word bar)))))))))
+          (()
+           (((f.ml (1 0) (1 21))
+             (@param foo
+              ((f.ml (1 11) (1 21))
+               (paragraph
+                (((f.ml (1 11) (1 21)) (word @param)) ((f.ml (1 11) (1 21)) space)
+                 ((f.ml (1 11) (1 21)) (word bar))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 11-21:\
            \n'@param' is not allowed in '@param'.\
@@ -4357,8 +4708,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
-           ((f.ml (2 0) (2 10)) (@param bar))))
+          (()
+           (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+            ((f.ml (2 0) (2 10)) (@param bar)))))
          (warnings ())) |}]
 
     let prefix =
@@ -4366,7 +4718,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word @paramfoo)))))))
+          (()
+           (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word @paramfoo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-9:\
            \nUnknown tag '@paramfoo'."))) |}]
@@ -4376,8 +4729,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
-           ((f.ml (1 8) (1 18)) (@param foo))))
+          (()
+           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+            ((f.ml (1 8) (1 18)) (@param foo)))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-18:\
            \n'@param' should begin on its own line."))) |}]
@@ -4389,13 +4743,13 @@ let%expect_test _ =
     let basic =
       test "@raise Foo";
       [%expect
-        {| ((output (((f.ml (1 0) (1 10)) (@raise Foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 10)) (@raise Foo))))) (warnings ())) |}]
 
     let bare =
       test "@raise";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 6)) (@raise ""))))
+        ((output (() (((f.ml (1 0) (1 6)) (@raise "")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-6:\
            \n'@raise' expects exception constructor on the same line."))) |}]
@@ -4405,12 +4759,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 18))
-            (@raise foo
-             ((f.ml (1 11) (1 18))
-              (paragraph
-               (((f.ml (1 11) (1 14)) (word bar)) ((f.ml (1 14) (1 15)) space)
-                ((f.ml (1 15) (1 18)) (word baz)))))))))
+          (()
+           (((f.ml (1 0) (1 18))
+             (@raise foo
+              ((f.ml (1 11) (1 18))
+               (paragraph
+                (((f.ml (1 11) (1 14)) (word bar)) ((f.ml (1 14) (1 15)) space)
+                 ((f.ml (1 15) (1 18)) (word baz))))))))))
          (warnings ())) |}]
 
     let prefix =
@@ -4418,7 +4773,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word @raisefoo)))))))
+          (()
+           (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word @raisefoo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-9:\
            \nUnknown tag '@raisefoo'."))) |}]
@@ -4429,19 +4785,21 @@ let%expect_test _ =
   let module Return = struct
     let basic =
       test "@return";
-      [%expect {| ((output (((f.ml (1 0) (1 7)) (@return)))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) (@return))))) (warnings ())) |}]
 
     let words =
       test "@return foo bar";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 15))
-            (@return
-             ((f.ml (1 8) (1 15))
-              (paragraph
-               (((f.ml (1 8) (1 11)) (word foo)) ((f.ml (1 11) (1 12)) space)
-                ((f.ml (1 12) (1 15)) (word bar)))))))))
+          (()
+           (((f.ml (1 0) (1 15))
+             (@return
+              ((f.ml (1 8) (1 15))
+               (paragraph
+                (((f.ml (1 8) (1 11)) (word foo)) ((f.ml (1 11) (1 12)) space)
+                 ((f.ml (1 12) (1 15)) (word bar))))))))))
          (warnings ())) |}]
 
     let prefix =
@@ -4449,8 +4807,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph (((f.ml (1 0) (1 10)) (word @returnfoo)))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph (((f.ml (1 0) (1 10)) (word @returnfoo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-10:\
            \nUnknown tag '@returnfoo'."))) |}]
@@ -4462,24 +4821,24 @@ let%expect_test _ =
     let url =
       test "@see <foo>";
       [%expect
-        {| ((output (((f.ml (1 0) (1 10)) (@see url foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 10)) (@see url foo))))) (warnings ())) |}]
 
     let file =
       test "@see 'foo'";
       [%expect
-        {| ((output (((f.ml (1 0) (1 10)) (@see file foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 10)) (@see file foo))))) (warnings ())) |}]
 
     let document =
       test "@see \"foo\"";
       [%expect
-        {| ((output (((f.ml (1 0) (1 10)) (@see document foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 10)) (@see document foo))))) (warnings ())) |}]
 
     let bare =
       test "@see";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word @see)))))))
+          (() (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word @see))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-4:\
            \n'@see' should be followed by <url>, 'file', or \"document title\"."))) |}]
@@ -4489,10 +4848,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9))
-            (paragraph
-             (((f.ml (1 0) (1 4)) (word @see)) ((f.ml (1 4) (1 5)) space)
-              ((f.ml (1 5) (1 9)) (word <foo)))))))
+          (()
+           (((f.ml (1 0) (1 9))
+             (paragraph
+              (((f.ml (1 0) (1 4)) (word @see)) ((f.ml (1 4) (1 5)) space)
+               ((f.ml (1 5) (1 9)) (word <foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-4:\
            \n'@see' should be followed by <url>, 'file', or \"document title\"."))) |}]
@@ -4502,10 +4862,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9))
-            (paragraph
-             (((f.ml (1 0) (1 4)) (word @see)) ((f.ml (1 4) (1 5)) space)
-              ((f.ml (1 5) (1 9)) (word 'foo)))))))
+          (()
+           (((f.ml (1 0) (1 9))
+             (paragraph
+              (((f.ml (1 0) (1 4)) (word @see)) ((f.ml (1 4) (1 5)) space)
+               ((f.ml (1 5) (1 9)) (word 'foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-4:\
            \n'@see' should be followed by <url>, 'file', or \"document title\"."))) |}]
@@ -4515,10 +4876,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8))
-            (paragraph
-             (((f.ml (1 0) (1 4)) (word @see)) ((f.ml (1 4) (1 5)) space)
-              ((f.ml (1 5) (1 8)) (word foo)))))))
+          (()
+           (((f.ml (1 0) (1 8))
+             (paragraph
+              (((f.ml (1 0) (1 4)) (word @see)) ((f.ml (1 4) (1 5)) space)
+               ((f.ml (1 5) (1 8)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-4:\
            \n'@see' should be followed by <url>, 'file', or \"document title\"."))) |}]
@@ -4526,16 +4888,17 @@ let%expect_test _ =
     let no_space =
       test "@see<foo>";
       [%expect
-        {| ((output (((f.ml (1 0) (1 9)) (@see url foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 9)) (@see url foo))))) (warnings ())) |}]
 
     let words =
       test "@see <foo> bar";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 14))
-            (@see url foo
-             ((f.ml (1 11) (1 14)) (paragraph (((f.ml (1 11) (1 14)) (word bar)))))))))
+          (()
+           (((f.ml (1 0) (1 14))
+             (@see url foo
+              ((f.ml (1 11) (1 14)) (paragraph (((f.ml (1 11) (1 14)) (word bar))))))))))
          (warnings ())) |}]
 
     let prefix =
@@ -4543,7 +4906,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word @seefoo)))))))
+          (()
+           (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word @seefoo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-7:\
            \nUnknown tag '@seefoo'."))) |}]
@@ -4553,8 +4917,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
-           ((f.ml (1 8) (1 18)) (@see url foo))))
+          (()
+           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+            ((f.ml (1 8) (1 18)) (@see url foo)))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-18:\
            \n'@see' should begin on its own line."))) |}]
@@ -4564,9 +4929,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 14))
-            (@see url foo
-             ((f.ml (1 10) (1 14)) (paragraph (((f.ml (1 10) (1 14)) (word bar>)))))))))
+          (()
+           (((f.ml (1 0) (1 14))
+             (@see url foo
+              ((f.ml (1 10) (1 14)) (paragraph (((f.ml (1 10) (1 14)) (word bar>))))))))))
          (warnings ())) |}]
 
     let file_attempted_nested_closer =
@@ -4574,9 +4940,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 14))
-            (@see file foo
-             ((f.ml (1 10) (1 14)) (paragraph (((f.ml (1 10) (1 14)) (word bar')))))))))
+          (()
+           (((f.ml (1 0) (1 14))
+             (@see file foo
+              ((f.ml (1 10) (1 14)) (paragraph (((f.ml (1 10) (1 14)) (word bar'))))))))))
          (warnings ())) |}]
 
     let document_attempted_nested_closer =
@@ -4584,10 +4951,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 14))
-            (@see document foo
-             ((f.ml (1 10) (1 14))
-              (paragraph (((f.ml (1 10) (1 14)) (word "bar\"")))))))))
+          (()
+           (((f.ml (1 0) (1 14))
+             (@see document foo
+              ((f.ml (1 10) (1 14))
+               (paragraph (((f.ml (1 10) (1 14)) (word "bar\""))))))))))
          (warnings ())) |}]
   end in
   ()
@@ -4597,13 +4965,13 @@ let%expect_test _ =
     let basic =
       test "@since foo";
       [%expect
-        {| ((output (((f.ml (1 0) (1 10)) (@since foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 10)) (@since foo))))) (warnings ())) |}]
 
     let bare =
       test "@since";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 6)) (@since ""))))
+        ((output (() (((f.ml (1 0) (1 6)) (@since "")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-6:\
            \n'@since' should not be empty."))) |}]
@@ -4613,7 +4981,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word @sincefoo)))))))
+          (()
+           (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word @sincefoo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-9:\
            \nUnknown tag '@sincefoo'."))) |}]
@@ -4621,23 +4990,23 @@ let%expect_test _ =
     let with_whitespace =
       test "@since foo bar";
       [%expect
-        {| ((output (((f.ml (1 0) (1 14)) (@since "foo bar")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 14)) (@since "foo bar"))))) (warnings ())) |}]
 
     let leading_whitespace =
       test "@since  foo";
       [%expect
-        {| ((output (((f.ml (1 0) (1 11)) (@since foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 11)) (@since foo))))) (warnings ())) |}]
 
     let trailing_whitespace =
       test "@since foo";
       [%expect
-        {| ((output (((f.ml (1 0) (1 10)) (@since foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 10)) (@since foo))))) (warnings ())) |}]
 
     let whitespace_only =
       test "@since";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 6)) (@since ""))))
+        ((output (() (((f.ml (1 0) (1 6)) (@since "")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-6:\
            \n'@since' should not be empty."))) |}]
@@ -4649,13 +5018,13 @@ let%expect_test _ =
     let basic =
       test "@before Foo";
       [%expect
-        {| ((output (((f.ml (1 0) (1 11)) (@before Foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 11)) (@before Foo))))) (warnings ())) |}]
 
     let bare =
       test "@before";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 7)) (@before ""))))
+        ((output (() (((f.ml (1 0) (1 7)) (@before "")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-7:\
            \n'@before' expects version number on the same line."))) |}]
@@ -4665,12 +5034,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 19))
-            (@before foo
-             ((f.ml (1 12) (1 19))
-              (paragraph
-               (((f.ml (1 12) (1 15)) (word bar)) ((f.ml (1 15) (1 16)) space)
-                ((f.ml (1 16) (1 19)) (word baz)))))))))
+          (()
+           (((f.ml (1 0) (1 19))
+             (@before foo
+              ((f.ml (1 12) (1 19))
+               (paragraph
+                (((f.ml (1 12) (1 15)) (word bar)) ((f.ml (1 15) (1 16)) space)
+                 ((f.ml (1 16) (1 19)) (word baz))))))))))
          (warnings ())) |}]
 
     let prefix =
@@ -4678,8 +5048,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph (((f.ml (1 0) (1 10)) (word @beforefoo)))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph (((f.ml (1 0) (1 10)) (word @beforefoo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-10:\
            \nUnknown tag '@beforefoo'."))) |}]
@@ -4691,13 +5062,13 @@ let%expect_test _ =
     let basic =
       test "@version foo";
       [%expect
-        {| ((output (((f.ml (1 0) (1 12)) (@version foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 12)) (@version foo))))) (warnings ())) |}]
 
     let bare =
       test "@version";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 8)) (@version ""))))
+        ((output (() (((f.ml (1 0) (1 8)) (@version "")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-8:\
            \n'@version' should not be empty."))) |}]
@@ -4707,8 +5078,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11))
-            (paragraph (((f.ml (1 0) (1 11)) (word @versionfoo)))))))
+          (()
+           (((f.ml (1 0) (1 11))
+             (paragraph (((f.ml (1 0) (1 11)) (word @versionfoo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-11:\
            \nUnknown tag '@versionfoo'."))) |}]
@@ -4716,23 +5088,23 @@ let%expect_test _ =
     let with_whitespace =
       test "@version foo bar";
       [%expect
-        {| ((output (((f.ml (1 0) (1 16)) (@version "foo bar")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 16)) (@version "foo bar"))))) (warnings ())) |}]
 
     let leading_whitespace =
       test "@version  foo";
       [%expect
-        {| ((output (((f.ml (1 0) (1 13)) (@version foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 13)) (@version foo))))) (warnings ())) |}]
 
     let trailing_whitespace =
       test "@version foo";
       [%expect
-        {| ((output (((f.ml (1 0) (1 12)) (@version foo)))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 12)) (@version foo))))) (warnings ())) |}]
 
     let whitespace_only =
       test "@version";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 8)) (@version ""))))
+        ((output (() (((f.ml (1 0) (1 8)) (@version "")))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-8:\
            \n'@version' should not be empty."))) |}]
@@ -4745,14 +5117,15 @@ let%expect_test _ =
       test "@canonical Foo";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 14)) (@canonical ((f.ml (1 11) (1 14)) Foo)))))
+        ((output
+          (() (((f.ml (1 0) (1 14)) (@canonical ((f.ml (1 11) (1 14)) Foo))))))
          (warnings ())) |}]
 
     let empty =
       test "@canonical";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 10)) (@canonical ((f.ml (1 11) (1 10)) "")))))
+        ((output (() (((f.ml (1 0) (1 10)) (@canonical ((f.ml (1 11) (1 10)) ""))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-10:\
            \n'@canonical' should not be empty."))) |}]
@@ -4761,7 +5134,7 @@ let%expect_test _ =
       test "@canonical";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 10)) (@canonical ((f.ml (1 11) (1 10)) "")))))
+        ((output (() (((f.ml (1 0) (1 10)) (@canonical ((f.ml (1 11) (1 10)) ""))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-10:\
            \n'@canonical' should not be empty."))) |}]
@@ -4770,7 +5143,8 @@ let%expect_test _ =
       test "@canonical  Foo";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 15)) (@canonical ((f.ml (1 11) (1 15)) Foo)))))
+        ((output
+          (() (((f.ml (1 0) (1 15)) (@canonical ((f.ml (1 11) (1 15)) Foo))))))
          (warnings ())) |}]
 
     let prefix =
@@ -4778,8 +5152,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 13))
-            (paragraph (((f.ml (1 0) (1 13)) (word @canonicalfoo)))))))
+          (()
+           (((f.ml (1 0) (1 13))
+             (paragraph (((f.ml (1 0) (1 13)) (word @canonicalfoo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-13:\
            \nUnknown tag '@canonicalfoo'."))) |}]
@@ -4791,7 +5166,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 18)) (@canonical ((f.ml (1 11) (1 18)) "Foo Bar")))))
+          (() (((f.ml (1 0) (1 18)) (@canonical ((f.ml (1 11) (1 18)) "Foo Bar"))))))
          (warnings ())) |}]
   end in
   ()
@@ -4800,30 +5175,34 @@ let%expect_test _ =
   let module Inline = struct
     let basic =
       test "@inline";
-      [%expect {| ((output (((f.ml (1 0) (1 7)) @inline))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) @inline)))) (warnings ())) |}]
 
     let prefix =
       test "@inlinefoo";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph (((f.ml (1 0) (1 10)) (word @inlinefoo)))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph (((f.ml (1 0) (1 10)) (word @inlinefoo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-10:\
            \nUnknown tag '@inlinefoo'."))) |}]
 
     let extra_whitespace =
       test "@inline";
-      [%expect {| ((output (((f.ml (1 0) (1 7)) @inline))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) @inline)))) (warnings ())) |}]
 
     let followed_by_junk =
       test "@inline foo";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) @inline)
-           ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))
+          (()
+           (((f.ml (1 0) (1 7)) @inline)
+            ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-11:\
            \nParagraph is not allowed in the tags section.\
@@ -4836,8 +5215,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) @inline)
-           ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))
+          (()
+           (((f.ml (1 0) (1 7)) @inline)
+            ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 2, characters 0-3:\
            \nParagraph is not allowed in the tags section.\
@@ -4847,7 +5227,8 @@ let%expect_test _ =
       test "@inline\n@deprecated";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 7)) @inline) ((f.ml (2 0) (2 11)) (@deprecated))))
+        ((output
+          (() (((f.ml (1 0) (1 7)) @inline) ((f.ml (2 0) (2 11)) (@deprecated)))))
          (warnings ())) |}]
 
     let with_list =
@@ -4855,10 +5236,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) @inline)
-           ((f.ml (1 8) (1 13))
-            (unordered light
-             ((((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 7)) @inline)
+            ((f.ml (1 8) (1 13))
+             (unordered light
+              ((((f.ml (1 10) (1 13))
+                 (paragraph (((f.ml (1 10) (1 13)) (word foo))))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-9:\
            \n'-' (bulleted list item) should begin on its own line."
@@ -4872,29 +5255,31 @@ let%expect_test _ =
   let module Open = struct
     let basic =
       test "@open";
-      [%expect {| ((output (((f.ml (1 0) (1 5)) @open))) (warnings ())) |}]
+      [%expect {| ((output (() (((f.ml (1 0) (1 5)) @open)))) (warnings ())) |}]
 
     let prefix =
       test "@openfoo";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word @openfoo)))))))
+          (()
+           (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word @openfoo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-8:\
            \nUnknown tag '@openfoo'."))) |}]
 
     let extra_whitespace =
       test "@open";
-      [%expect {| ((output (((f.ml (1 0) (1 5)) @open))) (warnings ())) |}]
+      [%expect {| ((output (() (((f.ml (1 0) (1 5)) @open)))) (warnings ())) |}]
 
     let followed_by_junk =
       test "@open foo";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5)) @open)
-           ((f.ml (1 6) (1 9)) (paragraph (((f.ml (1 6) (1 9)) (word foo)))))))
+          (()
+           (((f.ml (1 0) (1 5)) @open)
+            ((f.ml (1 6) (1 9)) (paragraph (((f.ml (1 6) (1 9)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 6-9:\
            \nParagraph is not allowed in the tags section.\
@@ -4907,8 +5292,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5)) @open)
-           ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))
+          (()
+           (((f.ml (1 0) (1 5)) @open)
+            ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 2, characters 0-3:\
            \nParagraph is not allowed in the tags section.\
@@ -4918,7 +5304,8 @@ let%expect_test _ =
       test "@open\n@deprecated";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 5)) @open) ((f.ml (2 0) (2 11)) (@deprecated))))
+        ((output
+          (() (((f.ml (1 0) (1 5)) @open) ((f.ml (2 0) (2 11)) (@deprecated)))))
          (warnings ())) |}]
 
     let with_list =
@@ -4926,10 +5313,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5)) @open)
-           ((f.ml (1 6) (1 11))
-            (unordered light
-             ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 5)) @open)
+            ((f.ml (1 6) (1 11))
+             (unordered light
+              ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 6-7:\
            \n'-' (bulleted list item) should begin on its own line."
@@ -4943,30 +5331,34 @@ let%expect_test _ =
   let module Closed = struct
     let basic =
       test "@closed";
-      [%expect {| ((output (((f.ml (1 0) (1 7)) @closed))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) @closed)))) (warnings ())) |}]
 
     let prefix =
       test "@closedfoo";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph (((f.ml (1 0) (1 10)) (word @closedfoo)))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph (((f.ml (1 0) (1 10)) (word @closedfoo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-10:\
            \nUnknown tag '@closedfoo'."))) |}]
 
     let extra_whitespace =
       test "@closed";
-      [%expect {| ((output (((f.ml (1 0) (1 7)) @closed))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) @closed)))) (warnings ())) |}]
 
     let followed_by_junk =
       test "@closed foo";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) @closed)
-           ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))
+          (()
+           (((f.ml (1 0) (1 7)) @closed)
+            ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-11:\
            \nParagraph is not allowed in the tags section.\
@@ -4979,8 +5371,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) @closed)
-           ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))
+          (()
+           (((f.ml (1 0) (1 7)) @closed)
+            ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 2, characters 0-3:\
            \nParagraph is not allowed in the tags section.\
@@ -4990,7 +5383,8 @@ let%expect_test _ =
       test "@closed\n@deprecated";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 7)) @closed) ((f.ml (2 0) (2 11)) (@deprecated))))
+        ((output
+          (() (((f.ml (1 0) (1 7)) @closed) ((f.ml (2 0) (2 11)) (@deprecated)))))
          (warnings ())) |}]
 
     let with_list =
@@ -4998,10 +5392,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) @closed)
-           ((f.ml (1 8) (1 13))
-            (unordered light
-             ((((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 7)) @closed)
+            ((f.ml (1 8) (1 13))
+             (unordered light
+              ((((f.ml (1 10) (1 13))
+                 (paragraph (((f.ml (1 10) (1 13)) (word foo))))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-9:\
            \n'-' (bulleted list item) should begin on its own line."
@@ -5015,30 +5411,34 @@ let%expect_test _ =
   let module Hidden = struct
     let basic =
       test "@hidden";
-      [%expect {| ((output (((f.ml (1 0) (1 7)) @hidden))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) @hidden)))) (warnings ())) |}]
 
     let prefix =
       test "@hiddenfoo";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph (((f.ml (1 0) (1 10)) (word @hiddenfoo)))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph (((f.ml (1 0) (1 10)) (word @hiddenfoo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-10:\
            \nUnknown tag '@hiddenfoo'."))) |}]
 
     let extra_whitespace =
       test "@hidden";
-      [%expect {| ((output (((f.ml (1 0) (1 7)) @hidden))) (warnings ())) |}]
+      [%expect
+        {| ((output (() (((f.ml (1 0) (1 7)) @hidden)))) (warnings ())) |}]
 
     let followed_by_junk =
       test "@hidden foo";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) @hidden)
-           ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))
+          (()
+           (((f.ml (1 0) (1 7)) @hidden)
+            ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-11:\
            \nParagraph is not allowed in the tags section.\
@@ -5051,8 +5451,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) @hidden)
-           ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))
+          (()
+           (((f.ml (1 0) (1 7)) @hidden)
+            ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 2, characters 0-3:\
            \nParagraph is not allowed in the tags section.\
@@ -5062,7 +5463,8 @@ let%expect_test _ =
       test "@hidden\n@deprecated";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 7)) @hidden) ((f.ml (2 0) (2 11)) (@deprecated))))
+        ((output
+          (() (((f.ml (1 0) (1 7)) @hidden) ((f.ml (2 0) (2 11)) (@deprecated)))))
          (warnings ())) |}]
 
     let with_list =
@@ -5070,10 +5472,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) @hidden)
-           ((f.ml (1 8) (1 13))
-            (unordered light
-             ((((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word foo)))))))))))
+          (()
+           (((f.ml (1 0) (1 7)) @hidden)
+            ((f.ml (1 8) (1 13))
+             (unordered light
+              ((((f.ml (1 10) (1 13))
+                 (paragraph (((f.ml (1 10) (1 13)) (word foo))))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-9:\
            \n'-' (bulleted list item) should begin on its own line."
@@ -5089,7 +5493,8 @@ let%expect_test _ =
       test "{";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word {)))))))
+        ((output
+          (() (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word {))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-1:\
            \n'{': bad markup.\
@@ -5100,8 +5505,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 2))
-            (paragraph (((f.ml (1 0) (1 1)) (word {)) ((f.ml (1 1) (1 2)) (word g)))))))
+          (()
+           (((f.ml (1 0) (1 2))
+             (paragraph
+              (((f.ml (1 0) (1 1)) (word {)) ((f.ml (1 1) (1 2)) (word g))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-1:\
            \n'{': bad markup.\
@@ -5112,9 +5519,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3))
-            (paragraph
-             (((f.ml (1 0) (1 1)) (word {)) ((f.ml (1 1) (1 3)) (word gg)))))))
+          (()
+           (((f.ml (1 0) (1 3))
+             (paragraph
+              (((f.ml (1 0) (1 1)) (word {)) ((f.ml (1 1) (1 3)) (word gg))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-1:\
            \n'{': bad markup.\
@@ -5125,8 +5533,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word {)))))
-           ((f.ml (1 1) (1 2)) (paragraph (((f.ml (1 1) (1 2)) (word })))))))
+          (()
+           (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word {)))))
+            ((f.ml (1 1) (1 2)) (paragraph (((f.ml (1 1) (1 2)) (word }))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-1:\
            \n'{': bad markup.\
@@ -5140,7 +5549,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (code_span " foo")))))))
+          (()
+           (((f.ml (1 0) (1 6))
+             (paragraph (((f.ml (1 0) (1 6)) (code_span " foo"))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-6:\
            \n'{ foo}': bad markup.\
@@ -5151,8 +5562,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph (((f.ml (1 0) (1 7)) (code_span "  foo")))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph (((f.ml (1 0) (1 7)) (code_span "  foo"))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-7:\
            \n'{  foo}': bad markup.\
@@ -5162,7 +5574,8 @@ let%expect_test _ =
       test "{";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word {)))))))
+        ((output
+          (() (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word {))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-1:\
            \n'{': bad markup.\
@@ -5173,7 +5586,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5)) (paragraph (((f.ml (1 0) (1 5)) (code_span foo)))))))
+          (()
+           (((f.ml (1 0) (1 5)) (paragraph (((f.ml (1 0) (1 5)) (code_span foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-5:\
            \n'{foo}': bad markup.\
@@ -5183,7 +5597,8 @@ let%expect_test _ =
       test "}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word })))))))
+        ((output
+          (() (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word }))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-1:\
            \nUnpaired '}' (end of markup).\
@@ -5194,8 +5609,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
-           ((f.ml (1 3) (1 4)) (paragraph (((f.ml (1 3) (1 4)) (word })))))))
+          (()
+           (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+            ((f.ml (1 3) (1 4)) (paragraph (((f.ml (1 3) (1 4)) (word }))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 3-4:\
            \nUnpaired '}' (end of markup).\
@@ -5206,11 +5622,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
-           ((f.ml (1 4) (1 5)) (paragraph (((f.ml (1 4) (1 5)) (word })))))
-           ((f.ml (1 6) (1 9)) (paragraph (((f.ml (1 6) (1 9)) (word bar)))))
-           ((f.ml (1 10) (1 11)) (paragraph (((f.ml (1 10) (1 11)) (word })))))
-           ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word baz)))))))
+          (()
+           (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+            ((f.ml (1 4) (1 5)) (paragraph (((f.ml (1 4) (1 5)) (word })))))
+            ((f.ml (1 6) (1 9)) (paragraph (((f.ml (1 6) (1 9)) (word bar)))))
+            ((f.ml (1 10) (1 11)) (paragraph (((f.ml (1 10) (1 11)) (word })))))
+            ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word baz))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 4-5:\
            \nUnpaired '}' (end of markup).\
@@ -5224,10 +5641,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (unordered light
-             ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
-           ((f.ml (1 5) (1 6)) (paragraph (((f.ml (1 5) (1 6)) (word })))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (unordered light
+              ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
+            ((f.ml (1 5) (1 6)) (paragraph (((f.ml (1 5) (1 6)) (word }))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 5-6:\
            \nUnpaired '}' (end of markup).\
@@ -5238,33 +5656,35 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (code_span foo})))))))
+          (()
+           (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (code_span foo}))))))))
          (warnings ())) |}]
 
     let right_brace_in_code_block =
       test "{[foo}]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo})))))
+          ((output (() (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo}))))))
            (warnings ())) |}]
 
     let right_brace_in_verbatim_text =
       test "{v foo} v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 10)) (verbatim foo})))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 10)) (verbatim foo}))))) (warnings ())) |}]
 
     let right_brace_in_author =
       test "@author Foo}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 12)) (@author Foo})))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 12)) (@author Foo}))))) (warnings ())) |}]
 
     let right_brace_in_deprecated =
       test "@deprecated }";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 11)) (@deprecated))
-           ((f.ml (1 12) (1 13)) (paragraph (((f.ml (1 12) (1 13)) (word })))))))
+          (()
+           (((f.ml (1 0) (1 11)) (@deprecated))
+            ((f.ml (1 12) (1 13)) (paragraph (((f.ml (1 12) (1 13)) (word }))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 12-13:\
            \nUnpaired '}' (end of markup).\
@@ -5274,7 +5694,8 @@ let%expect_test _ =
       test "]";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word ])))))))
+        ((output
+          (() (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word ]))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-1:\
            \nUnpaired ']' (end of code).\
@@ -5285,9 +5706,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 4))
-            (paragraph
-             (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) (word ])))))))
+          (()
+           (((f.ml (1 0) (1 4))
+             (paragraph
+              (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) (word ]))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 3-4:\
            \nUnpaired ']' (end of code).\
@@ -5298,11 +5720,12 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 6))
-            (unordered light
-             ((((f.ml (1 2) (1 6))
-                (paragraph
-                 (((f.ml (1 2) (1 5)) (word foo)) ((f.ml (1 5) (1 6)) (word ])))))))))))
+          (()
+           (((f.ml (1 0) (1 6))
+             (unordered light
+              ((((f.ml (1 2) (1 6))
+                 (paragraph
+                  (((f.ml (1 2) (1 5)) (word foo)) ((f.ml (1 5) (1 6)) (word ]))))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 5-6:\
            \nUnpaired ']' (end of code).\
@@ -5313,9 +5736,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 3))
-            (paragraph
-             (((f.ml (1 0) (1 2)) (code_span "")) ((f.ml (1 2) (1 3)) (word ])))))))
+          (()
+           (((f.ml (1 0) (1 3))
+             (paragraph
+              (((f.ml (1 0) (1 2)) (code_span "")) ((f.ml (1 2) (1 3)) (word ]))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 2-3:\
            \nUnpaired ']' (end of code).\
@@ -5325,7 +5749,8 @@ let%expect_test _ =
       test "{b]}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (bold ())))))))
+        ((output
+          (() (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (bold ()))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-2:\
            \n'{b' should be followed by space, a tab, or a new line."
@@ -5337,13 +5762,13 @@ let%expect_test _ =
     let right_bracket_in_verbatim =
       test "{v ] v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 7)) (verbatim ])))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 7)) (verbatim ]))))) (warnings ())) |}]
 
     let right_bracket_in_list =
       test "{ul ]}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 6)) (unordered heavy ()))))
+        ((output (() (((f.ml (1 0) (1 6)) (unordered heavy ())))))
          (warnings
           ( "File \"f.ml\", line 1, characters 4-6:\
            \n']}' is not allowed in '{ul ...}' (bulleted list).\
@@ -5358,7 +5783,7 @@ let%expect_test _ =
       test "{ul {li ]}}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 11)) (unordered heavy (())))))
+        ((output (() (((f.ml (1 0) (1 11)) (unordered heavy (()))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 4-7:\
            \n'{li ...}' (list item) should not be empty."
@@ -5370,7 +5795,7 @@ let%expect_test _ =
       test "{2 ]}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 2)) (2 (label ()) ()))))
+        ((output (() (((f.ml (1 0) (1 2)) (2 (label ()) ())))))
          (warnings
           ( "File \"f.ml\", line 1, characters 3-5:\
            \n']}' is not allowed in '{2 ...}' (section heading)."
@@ -5380,19 +5805,20 @@ let%expect_test _ =
     let right_bracket_in_author =
       test "@author Foo]";
       [%expect
-        {| ((output (((f.ml (1 0) (1 12)) (@author Foo])))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 12)) (@author Foo]))))) (warnings ())) |}]
 
     let at =
       test "@";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word @)))))))
+        ((output
+          (() (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word @))))))))
          (warnings ( "File \"f.ml\", line 1, characters 0-1:\
                     \nStray '@'."))) |}]
 
     let cr =
       test "";
-      [%expect {| ((output ()) (warnings ())) |}]
+      [%expect {| ((output (() ())) (warnings ())) |}]
   end in
   ()
 
@@ -5403,7 +5829,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word "\206\187")))))))
+          (()
+           (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word "\206\187"))))))))
          (warnings ())) |}]
 
     let words =
@@ -5411,10 +5838,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (paragraph
-             (((f.ml (1 0) (1 2)) (word "\206\187")) ((f.ml (1 2) (1 3)) space)
-              ((f.ml (1 3) (1 5)) (word "\206\187")))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (paragraph
+              (((f.ml (1 0) (1 2)) (word "\206\187")) ((f.ml (1 2) (1 3)) space)
+               ((f.ml (1 3) (1 5)) (word "\206\187"))))))))
          (warnings ())) |}]
 
     let no_validation =
@@ -5422,7 +5850,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word "\195\142")))))))
+          (()
+           (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word "\195\142"))))))))
          (warnings ())) |}]
 
     let escapes =
@@ -5430,7 +5859,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word "\206\187}")))))))
+          (()
+           (((f.ml (1 0) (1 4))
+             (paragraph (((f.ml (1 0) (1 4)) (word "\206\187}"))))))))
          (warnings ())) |}]
 
     let newline =
@@ -5438,10 +5869,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 3))
-            (paragraph
-             (((f.ml (1 0) (1 2)) (word "\206\187")) ((f.ml (1 2) (2 1)) space)
-              ((f.ml (2 1) (2 3)) (word "\206\187")))))))
+          (()
+           (((f.ml (1 0) (2 3))
+             (paragraph
+              (((f.ml (1 0) (1 2)) (word "\206\187")) ((f.ml (1 2) (2 1)) space)
+               ((f.ml (2 1) (2 3)) (word "\206\187"))))))))
          (warnings ())) |}]
 
     let paragraphs =
@@ -5449,8 +5881,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word "\206\187")))))
-           ((f.ml (3 1) (3 3)) (paragraph (((f.ml (3 1) (3 3)) (word "\206\187")))))))
+          (()
+           (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word "\206\187")))))
+            ((f.ml (3 1) (3 3)) (paragraph (((f.ml (3 1) (3 3)) (word "\206\187"))))))))
          (warnings ())) |}]
 
     let code_span =
@@ -5458,8 +5891,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 4))
-            (paragraph (((f.ml (1 0) (1 4)) (code_span "\206\187")))))))
+          (()
+           (((f.ml (1 0) (1 4))
+             (paragraph (((f.ml (1 0) (1 4)) (code_span "\206\187"))))))))
          (warnings ())) |}]
 
     let minus =
@@ -5467,8 +5901,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (paragraph (((f.ml (1 0) (1 5)) (word "\206\187-\206\187")))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (paragraph (((f.ml (1 0) (1 5)) (word "\206\187-\206\187"))))))))
          (warnings ())) |}]
 
     let shorthand_list =
@@ -5476,10 +5911,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 4))
-            (unordered light
-             ((((f.ml (1 2) (1 4))
-                (paragraph (((f.ml (1 2) (1 4)) (word "\206\187")))))))))))
+          (()
+           (((f.ml (1 0) (1 4))
+             (unordered light
+              ((((f.ml (1 2) (1 4))
+                 (paragraph (((f.ml (1 2) (1 4)) (word "\206\187"))))))))))))
          (warnings ())) |}]
 
     let styled =
@@ -5487,9 +5923,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 6))
-            (paragraph
-             (((f.ml (1 0) (1 6)) (bold (((f.ml (1 3) (1 5)) (word "\206\187"))))))))))
+          (()
+           (((f.ml (1 0) (1 6))
+             (paragraph
+              (((f.ml (1 0) (1 6)) (bold (((f.ml (1 3) (1 5)) (word "\206\187")))))))))))
          (warnings ())) |}]
 
     let reference_target =
@@ -5497,74 +5934,78 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 5))
-            (paragraph
-             (((f.ml (1 0) (1 5)) (simple ((f.ml (1 2) (1 5)) "\206\187") ())))))))
+          (()
+           (((f.ml (1 0) (1 5))
+             (paragraph
+              (((f.ml (1 0) (1 5)) (simple ((f.ml (1 2) (1 5)) "\206\187") ()))))))))
          (warnings ())) |}]
 
     let code_block =
       test "{[\xce\xbb]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 4)) "\206\187")))))
+          ((output
+            (() (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 4)) "\206\187"))))))
            (warnings ())) |}]
 
     let verbatim =
       test "{v \xce\xbb v}";
       [%expect
-        {| ((output (((f.ml (1 0) (1 8)) (verbatim "\206\187")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 8)) (verbatim "\206\187"))))) (warnings ())) |}]
 
     let label =
       test "{2:\xce\xbb Bar}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (2 (label ("\206\187")) (((f.ml (1 6) (1 9)) (word Bar)))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (2 (label ("\206\187")) (((f.ml (1 6) (1 9)) (word Bar))))))))
          (warnings ())) |}]
 
     let author =
       test "@author \xce\xbb";
       [%expect
-        {| ((output (((f.ml (1 0) (1 10)) (@author "\206\187")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 10)) (@author "\206\187"))))) (warnings ())) |}]
 
     let param =
       test "@param \xce\xbb";
       [%expect
-        {| ((output (((f.ml (1 0) (1 9)) (@param "\206\187")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 9)) (@param "\206\187"))))) (warnings ())) |}]
 
     let raise =
       test "@raise \xce\xbb";
       [%expect
-        {| ((output (((f.ml (1 0) (1 9)) (@raise "\206\187")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 9)) (@raise "\206\187"))))) (warnings ())) |}]
 
     let see =
       test "@see <\xce\xbb>";
       [%expect
-        {| ((output (((f.ml (1 0) (1 9)) (@see url "\206\187")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 9)) (@see url "\206\187"))))) (warnings ())) |}]
 
     let since =
       test "@since \xce\xbb";
       [%expect
-        {| ((output (((f.ml (1 0) (1 9)) (@since "\206\187")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 9)) (@since "\206\187"))))) (warnings ())) |}]
 
     let before =
       test "@before \xce\xbb";
       [%expect
-        {| ((output (((f.ml (1 0) (1 10)) (@before "\206\187")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 10)) (@before "\206\187"))))) (warnings ())) |}]
 
     let version =
       test "@version \xce\xbb";
       [%expect
-        {| ((output (((f.ml (1 0) (1 11)) (@version "\206\187")))) (warnings ())) |}]
+        {| ((output (() (((f.ml (1 0) (1 11)) (@version "\206\187"))))) (warnings ())) |}]
 
     let right_brace =
       test "\xce\xbb}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word "\206\187")))))
-           ((f.ml (1 2) (1 3)) (paragraph (((f.ml (1 2) (1 3)) (word })))))))
+          (()
+           (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word "\206\187")))))
+            ((f.ml (1 2) (1 3)) (paragraph (((f.ml (1 2) (1 3)) (word }))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 2-3:\
            \nUnpaired '}' (end of markup).\
@@ -5579,7 +6020,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word @foo)))))))
+          (() (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word @foo))))))))
          (warnings ( "File \"f.ml\", line 1, characters 0-4:\
                     \nUnknown tag '@foo'."))) |}]
 
@@ -5588,7 +6029,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (2 2) (2 6)) (paragraph (((f.ml (2 2) (2 6)) (word @foo)))))))
+          (() (((f.ml (2 2) (2 6)) (paragraph (((f.ml (2 2) (2 6)) (word @foo))))))))
          (warnings ( "File \"f.ml\", line 2, characters 2-6:\
                     \nUnknown tag '@foo'."))) |}]
   end in
@@ -5605,7 +6046,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 3) (1 6)) (word foo)))))))
+          (() (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 3) (1 6)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-7:\
            \n'{L ...}' (left alignment) should not be used because it has no effect."))) |}]
@@ -5615,7 +6056,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 3) (1 6)) (word foo)))))))
+          (() (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 3) (1 6)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-7:\
            \n'{C ...}' (center alignment) should not be used because it has no effect."))) |}]
@@ -5625,7 +6066,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 3) (1 6)) (word foo)))))))
+          (() (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 3) (1 6)) (word foo))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-7:\
            \n'{R ...}' (right alignment) should not be used because it has no effect."))) |}]
@@ -5635,8 +6076,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7))
-            (paragraph (((f.ml (1 0) (1 7)) (code_span "c foo")))))))
+          (()
+           (((f.ml (1 0) (1 7))
+             (paragraph (((f.ml (1 0) (1 7)) (code_span "c foo"))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-7:\
            \n'{c foo}': bad markup.\
@@ -5647,7 +6089,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word @custom)))))))
+          (()
+           (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word @custom))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 0-7:\
            \nUnknown tag '@custom'."))) |}]
@@ -5657,9 +6100,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 13))
-            (paragraph
-             (((f.ml (1 0) (1 13)) (simple ((f.ml (1 2) (1 13)) custom:foo) ())))))))
+          (()
+           (((f.ml (1 0) (1 13))
+             (paragraph
+              (((f.ml (1 0) (1 13)) (simple ((f.ml (1 2) (1 13)) custom:foo) ()))))))))
          (warnings ())) |}]
 
     let html_tag =
@@ -5667,8 +6111,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph (((f.ml (1 0) (1 10)) (word <b>foo</b>)))))))
+          (()
+           (((f.ml (1 0) (1 10))
+             (paragraph (((f.ml (1 0) (1 10)) (word <b>foo</b>))))))))
          (warnings ())) |}]
   end in
   ()
@@ -5732,32 +6177,33 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((start ((pos_fname none) (pos_bol 0) (pos_lnum 1) (pos_cnum 0)))
-            (start_loc (1 0))
-            (end ((pos_fname none) (pos_bol 9) (pos_lnum 3) (pos_cnum 16)))
-            (end_loc (3 7))
-            (value
-             (paragraph
-              (((start ((pos_fname none) (pos_bol 0) (pos_lnum 1) (pos_cnum 0)))
-                (start_loc (1 0))
-                (end ((pos_fname none) (pos_bol 0) (pos_lnum 1) (pos_cnum 3)))
-                (end_loc (1 3)) (value (word one)))
-               ((start ((pos_fname none) (pos_bol 0) (pos_lnum 1) (pos_cnum 3)))
-                (start_loc (1 3))
-                (end ((pos_fname none) (pos_bol 4) (pos_lnum 2) (pos_cnum 5)))
-                (end_loc (2 1)) (value space))
-               ((start ((pos_fname none) (pos_bol 4) (pos_lnum 2) (pos_cnum 5)))
-                (start_loc (2 1))
-                (end ((pos_fname none) (pos_bol 4) (pos_lnum 2) (pos_cnum 8)))
-                (end_loc (2 4)) (value (word two)))
-               ((start ((pos_fname none) (pos_bol 4) (pos_lnum 2) (pos_cnum 8)))
-                (start_loc (2 4))
-                (end ((pos_fname none) (pos_bol 9) (pos_lnum 3) (pos_cnum 11)))
-                (end_loc (3 2)) (value space))
-               ((start ((pos_fname none) (pos_bol 9) (pos_lnum 3) (pos_cnum 11)))
-                (start_loc (3 2))
-                (end ((pos_fname none) (pos_bol 9) (pos_lnum 3) (pos_cnum 16)))
-                (end_loc (3 7)) (value (word three)))))))))
+          (()
+           (((start ((pos_fname none) (pos_bol 0) (pos_lnum 1) (pos_cnum 0)))
+             (start_loc (1 0))
+             (end ((pos_fname none) (pos_bol 9) (pos_lnum 3) (pos_cnum 16)))
+             (end_loc (3 7))
+             (value
+              (paragraph
+               (((start ((pos_fname none) (pos_bol 0) (pos_lnum 1) (pos_cnum 0)))
+                 (start_loc (1 0))
+                 (end ((pos_fname none) (pos_bol 0) (pos_lnum 1) (pos_cnum 3)))
+                 (end_loc (1 3)) (value (word one)))
+                ((start ((pos_fname none) (pos_bol 0) (pos_lnum 1) (pos_cnum 3)))
+                 (start_loc (1 3))
+                 (end ((pos_fname none) (pos_bol 4) (pos_lnum 2) (pos_cnum 5)))
+                 (end_loc (2 1)) (value space))
+                ((start ((pos_fname none) (pos_bol 4) (pos_lnum 2) (pos_cnum 5)))
+                 (start_loc (2 1))
+                 (end ((pos_fname none) (pos_bol 4) (pos_lnum 2) (pos_cnum 8)))
+                 (end_loc (2 4)) (value (word two)))
+                ((start ((pos_fname none) (pos_bol 4) (pos_lnum 2) (pos_cnum 8)))
+                 (start_loc (2 4))
+                 (end ((pos_fname none) (pos_bol 9) (pos_lnum 3) (pos_cnum 11)))
+                 (end_loc (3 2)) (value space))
+                ((start ((pos_fname none) (pos_bol 9) (pos_lnum 3) (pos_cnum 11)))
+                 (start_loc (3 2))
+                 (end ((pos_fname none) (pos_bol 9) (pos_lnum 3) (pos_cnum 16)))
+                 (end_loc (3 7)) (value (word three))))))))))
          (warnings ())) |}]
 
     let offset_location =
@@ -5769,32 +6215,33 @@ let%expect_test _ =
       [%expect
         {|
           ((output
-            (((start ((pos_fname none) (pos_bol 10) (pos_lnum 2) (pos_cnum 20)))
-              (start_loc (2 10))
-              (end ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 36)))
-              (end_loc (4 7))
-              (value
-               (paragraph
-                (((start ((pos_fname none) (pos_bol 10) (pos_lnum 2) (pos_cnum 20)))
-                  (start_loc (2 10))
-                  (end ((pos_fname none) (pos_bol 10) (pos_lnum 2) (pos_cnum 23)))
-                  (end_loc (2 13)) (value (word one)))
-                 ((start ((pos_fname none) (pos_bol 10) (pos_lnum 2) (pos_cnum 23)))
-                  (start_loc (2 13))
-                  (end ((pos_fname none) (pos_bol 24) (pos_lnum 3) (pos_cnum 25)))
-                  (end_loc (3 1)) (value space))
-                 ((start ((pos_fname none) (pos_bol 24) (pos_lnum 3) (pos_cnum 25)))
-                  (start_loc (3 1))
-                  (end ((pos_fname none) (pos_bol 24) (pos_lnum 3) (pos_cnum 28)))
-                  (end_loc (3 4)) (value (word two)))
-                 ((start ((pos_fname none) (pos_bol 24) (pos_lnum 3) (pos_cnum 28)))
-                  (start_loc (3 4))
-                  (end ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 31)))
-                  (end_loc (4 2)) (value space))
-                 ((start ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 31)))
-                  (start_loc (4 2))
-                  (end ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 36)))
-                  (end_loc (4 7)) (value (word three)))))))))
+            (()
+             (((start ((pos_fname none) (pos_bol 10) (pos_lnum 2) (pos_cnum 20)))
+               (start_loc (2 10))
+               (end ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 36)))
+               (end_loc (4 7))
+               (value
+                (paragraph
+                 (((start ((pos_fname none) (pos_bol 10) (pos_lnum 2) (pos_cnum 20)))
+                   (start_loc (2 10))
+                   (end ((pos_fname none) (pos_bol 10) (pos_lnum 2) (pos_cnum 23)))
+                   (end_loc (2 13)) (value (word one)))
+                  ((start ((pos_fname none) (pos_bol 10) (pos_lnum 2) (pos_cnum 23)))
+                   (start_loc (2 13))
+                   (end ((pos_fname none) (pos_bol 24) (pos_lnum 3) (pos_cnum 25)))
+                   (end_loc (3 1)) (value space))
+                  ((start ((pos_fname none) (pos_bol 24) (pos_lnum 3) (pos_cnum 25)))
+                   (start_loc (3 1))
+                   (end ((pos_fname none) (pos_bol 24) (pos_lnum 3) (pos_cnum 28)))
+                   (end_loc (3 4)) (value (word two)))
+                  ((start ((pos_fname none) (pos_bol 24) (pos_lnum 3) (pos_cnum 28)))
+                   (start_loc (3 4))
+                   (end ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 31)))
+                   (end_loc (4 2)) (value space))
+                  ((start ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 31)))
+                   (start_loc (4 2))
+                   (end ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 36)))
+                   (end_loc (4 7)) (value (word three))))))))))
            (warnings ())) |}]
   end in
   ()
@@ -5805,7 +6252,7 @@ let%expect_test _ =
       test "{math \\sum_{i=0}^n x^i%}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 24)) (math_block "\\sum_{i=0}^n x^i%"))))
+        ((output (() (((f.ml (1 0) (1 24)) (math_block "\\sum_{i=0}^n x^i%")))))
          (warnings ())) |}]
 
     let complex_block =
@@ -5822,16 +6269,17 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (9 7))
-            (math_block
-              "      \\alpha(x)=\\left\\{\
-             \n                \\begin{array}{ll}                 % beginning of the array\
-             \n                  x \\% 4\\\\                        % some variable modulo 4\
-             \n                  \\frac{1}{1+e^{-kx}}\\\\           % something else\
-             \n                  \\frac{e^x-e^{-x}}{e^x+e^{-x}}   % another action\
-             \n                \\end{array}                       % end of the array\
-             \n              \\right.\
-             \n      "))))
+          (()
+           (((f.ml (1 0) (9 7))
+             (math_block
+               "      \\alpha(x)=\\left\\{\
+              \n                \\begin{array}{ll}                 % beginning of the array\
+              \n                  x \\% 4\\\\                        % some variable modulo 4\
+              \n                  \\frac{1}{1+e^{-kx}}\\\\           % something else\
+              \n                  \\frac{e^x-e^{-x}}{e^x+e^{-x}}   % another action\
+              \n                \\end{array}                       % end of the array\
+              \n              \\right.\
+              \n      ")))))
          (warnings ())) |}]
 
     let inline =
@@ -5839,8 +6287,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 9))
-            (paragraph (((f.ml (1 0) (1 9)) (math_span "x + 4")))))))
+          (()
+           (((f.ml (1 0) (1 9))
+             (paragraph (((f.ml (1 0) (1 9)) (math_span "x + 4"))))))))
          (warnings ())) |}]
 
     let inline_nested =
@@ -5848,8 +6297,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 20))
-            (paragraph (((f.ml (1 0) (1 20)) (math_span "\\sub_{i=0}^n x^i")))))))
+          (()
+           (((f.ml (1 0) (1 20))
+             (paragraph (((f.ml (1 0) (1 20)) (math_span "\\sub_{i=0}^n x^i"))))))))
          (warnings ())) |}]
 
     let inline_false_nesting =
@@ -5857,8 +6307,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 25))
-            (paragraph (((f.ml (1 0) (1 25)) (math_span "\\{ \\mathbb{only_left}")))))))
+          (()
+           (((f.ml (1 0) (1 25))
+             (paragraph
+              (((f.ml (1 0) (1 25)) (math_span "\\{ \\mathbb{only_left}"))))))))
          (warnings ())) |}]
 
     let inline_false_terminator =
@@ -5866,8 +6318,9 @@ let%expect_test _ =
       [%expect
         {|
       ((output
-        (((f.ml (1 0) (1 24))
-          (paragraph (((f.ml (1 0) (1 24)) (math_span "\\mathbb{only_left}\\}")))))))
+        (()
+         (((f.ml (1 0) (1 24))
+           (paragraph (((f.ml (1 0) (1 24)) (math_span "\\mathbb{only_left}\\}"))))))))
        (warnings ())) |}]
   end in
   ()

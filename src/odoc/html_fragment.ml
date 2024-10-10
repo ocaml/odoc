@@ -9,9 +9,8 @@ let from_mld ~xref_base_uri ~resolver ~output ~warnings_options input =
   in
   let input_s = Fs.File.to_string input in
   let digest = Digest.file input_s in
-  let to_html content =
+  let to_html content frontmatter =
     (* This is a mess. *)
-    let frontmatter, content = Odoc_model.Comment.extract_frontmatter content in
     let root =
       let file =
         Odoc_model.Root.Odoc_file.create_page page_name None frontmatter
@@ -53,7 +52,7 @@ let from_mld ~xref_base_uri ~resolver ~output ~warnings_options input =
       Odoc_loader.read_string id input_s str
       |> Odoc_model.Error.handle_errors_and_warnings ~warnings_options
       >>= function
-      | `Docs content -> to_html content
-      | `Stop -> to_html [])
+      | `Docs (content, frontmatter) -> to_html content frontmatter
+      | `Stop -> to_html [] Odoc_model.Frontmatter.empty)
 
 (* TODO: Error? *)

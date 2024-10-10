@@ -245,9 +245,8 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
      | None -> Ok (Paths.Identifier.Mk.page (parent_id, page_name)))
      >>= fun id -> Ok (id :> Paths.Identifier.Page.t))
   >>= fun name ->
-  let resolve content =
+  let resolve content frontmatter =
     let zero_heading = Comment.find_zero_heading content in
-    let frontmatter, content = Comment.extract_frontmatter content in
     if (not (is_index_page name)) && has_children_order frontmatter then
       Error.raise_warning
         (Error.filename_only
@@ -273,8 +272,8 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
   Odoc_loader.read_string (name :> Paths.Identifier.LabelParent.t) input_s str
   |> Error.raise_errors_and_warnings
   |> function
-  | `Stop -> resolve [] (* TODO: Error? *)
-  | `Docs content -> resolve content
+  | `Stop -> resolve [] Frontmatter.empty (* TODO: Error? *)
+  | `Docs (content, frontmatter) -> resolve content frontmatter
 
 let handle_file_ext ext =
   match ext with

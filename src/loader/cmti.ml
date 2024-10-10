@@ -572,10 +572,10 @@ and read_module_type env parent label_parent mty =
                 let p = Env.Path.read_module env p in
                 TypeOf {t_desc=StructInclude p; t_original_path = p; t_expansion = None}
             | None ->
-              !read_module_expr env parent label_parent mexpr 
+              !read_module_expr env parent label_parent mexpr
             end
           | _  ->
-            !read_module_expr env parent label_parent mexpr 
+            !read_module_expr env parent label_parent mexpr
           in
         decl
     | Tmty_alias _ -> assert false
@@ -760,7 +760,7 @@ and read_include env parent incl =
   let doc, status = Doc_attr.attached Odoc_model.Semantics.Expect_status container incl.incl_attributes in
   let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expr = read_module_type env parent container incl.incl_mod in
-  let umty = Odoc_model.Lang.umty_of_mty expr in 
+  let umty = Odoc_model.Lang.umty_of_mty expr in
   let expansion = { content; shadowed; } in
   match umty with
   | Some uexpr ->

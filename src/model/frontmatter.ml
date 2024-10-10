@@ -46,3 +46,88 @@ let parse s =
            Location_.same s v)
   in
   List.fold_left apply empty entries
+
+module Sexp_pattern = struct
+  open Sexplib
+  open Sexp.Annotated
+
+  let point ({ line; col; offset = _ } : pos) : Location_.point =
+    { line; column = col }
+
+  let span ~file { start_pos; end_pos } =
+    Location_.{ file; start = point start_pos; end_ = point end_pos }
+
+  let span_of_sexp ~file sexp =
+    match sexp with
+    | List (range, _, _) -> span ~file range
+    | Atom (range, _) -> span ~file range
+
+  let ( let* ) = Result.bind
+
+  let str expected f Location_.{ value = real; location } =
+    if expected = real then f ()
+    else Error (Error.make "Expected %S got %S" expected real location)
+
+  (* let ( ||| ) pat1 pat2 sexp =
+     match pat1 sexp with Error _msg -> pat2 sexp | Ok v -> Ok v *)
+
+  let atom ~file f sexp =
+    match sexp with
+    | Atom (range, Sexp.Atom str) ->
+        let span = span ~file range in
+        f (Location_.at span str)
+    | _ -> Error (Error.make "Expected list" (span_of_sexp ~file sexp))
+
+  let list ~file f sexp =
+    match sexp with
+    | List (range, li, _) ->
+        let span = span ~file range in
+        f (Location_.at span li)
+    | _ -> Error (Error.make "Expected list" (span_of_sexp ~file sexp))
+
+  let rec result_list_map f li =
+    match li with
+    | [] -> Ok []
+    | elt :: li ->
+        let* elt = f elt in
+        let* li = result_list_map f li in
+        Ok (elt :: li)
+
+  let accept = Result.ok
+
+  let accept_map f a = Result.ok (f a)
+end
+
+(*
+(children (a b c d))
+*)
+
+let of_ast_frontmatter frontmatter =
+  match frontmatter with
+  | None -> Ok empty
+  | Some { Odoc_parser.Ast.sexp; filename = file } ->
+      let open Sexp_pattern in
+      list ~file
+        (function
+          | { value = [ sexp1; sexp2 ]; location } ->
+              let* () = atom ~file (str "children" accept) sexp1 in
+              let* children =
+                list ~file
+                  (fun { value = li; location = _ } ->
+                    result_list_map
+                      (atom ~file
+                         (accept_map (fun Location_.{ value = str; location } ->
+                              Location_.at location
+                                (if str.[String.length str - 1] = '/' then
+                                   Dir
+                                     (String.sub str 0 (String.length str - 1))
+                                 else Page str))))
+                      li)
+                  sexp2
+              in
+              Ok { children_order = Some (Location_.at location children) }
+          | _ ->
+              Error
+                (Error.make "Expected two elements in list"
+                   (span_of_sexp ~file sexp)))
+        sexp

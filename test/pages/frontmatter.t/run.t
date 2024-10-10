@@ -92,5 +92,21 @@ When there is more than one frontmatter, they are all extracted from the content
           }
         ]
       ]
+    },
+    {
+      "`Code_block": [
+        {
+          "Some": "meta"
+        },
+        "bli1: bloblobloblo1\nbli2: bloblobloblo2"
+      ]
+    },
+    {
+      "`Code_block": [
+        {
+          "Some": "meta"
+        },
+        "bli3: bloblobloblo1"
+      ]
     }
   ]

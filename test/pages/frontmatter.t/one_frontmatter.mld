@@ -1,5 +1,4 @@
-{0 One frontmatter}
+(children (page1 page2))
+---
 
-{@meta[
-children: page1 page2
-]}
+{0 One frontmatter}

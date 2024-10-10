@@ -97,4 +97,10 @@ type heading = int * string option * inline_element with_location list
 type block_element =
   [ nestable_block_element | `Heading of heading | `Tag of tag ]
 
-type t = block_element with_location list
+type body = block_element with_location list
+
+type frontmatter = { sexp : Sexplib.Sexp.Annotated.t; filename : string }
+
+type t = { front_matter : frontmatter option; content : body }
+
+let empty = { front_matter = None; content = [] }

@@ -7,3 +7,6 @@ type t = { children_order : children_order option }
 val empty : t
 
 val parse : string Location_.with_location -> t
+
+val of_ast_frontmatter :
+  Odoc_parser.Ast.frontmatter option -> (t, Error.t) result
