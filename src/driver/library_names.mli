@@ -5,10 +5,7 @@ type library = {
   deps : string list;
 }
 
-type t = {
-  meta_dir : Fpath.t;
-  libraries : library list;
-}
+type t = { meta_dir : Fpath.t; libraries : library list }
 
 val process_meta_file : Fpath.t -> t
 (** From a path to a [Meta] file, returns the list of libraries defined in this

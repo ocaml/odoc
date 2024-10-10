@@ -50,9 +50,7 @@ let libname_of_archives_of_dir dir =
           let base = Fpath.basename file in
           if Astring.String.is_suffix ~affix:".cma" base then
             let libname = String.sub base 0 (String.length base - 4) in
-            Fpath.Map.add
-              Fpath.(dir / libname)
-              libname acc
+            Fpath.Map.add Fpath.(dir / libname) libname acc
           else acc)
         Fpath.Map.empty files
 
@@ -65,45 +63,44 @@ let metas_of_pkg pkg =
 
 (* Given a [pkg] and an output [pkg_path], returns a pair of lists of assets an mlds *)
 let assets_and_mlds_of_pkg pkg_path pkg =
-  pkg.files |>
-  List.filter_map
-    (fun p ->
-      let prefix = Fpath.(v "doc" / pkg.name / "odoc-pages") in
-      let asset_prefix = Fpath.(v "doc" / pkg.name / "odoc-assets") in
-      let check_name pkg_name =
-        if pkg_name <> pkg.name then (
-          Logs.err (fun k ->
-              k
-                "Error: name in 'doc' dir does not match package name: %s <> \
-                 %s"
-                pkg_name pkg.name);
-          None)
-        else Some ()
-      in
-      let ( >>= ) = Option.bind in
-      match Fpath.segs p with
-      | "doc" :: pkg_name :: "odoc-pages" :: _ :: _ -> (
-          check_name pkg_name >>= fun () ->
-          match Fpath.rem_prefix prefix p with
-          | None -> None
-          | Some rel_path ->
-              let path = Fpath.(pkg_path // p) in
-              if Fpath.has_ext "mld" p then
-                Some
-                  (`M { Packages.mld_path = path; mld_rel_path = rel_path })
-              else
-                Some
-                  (`A
-                    { Packages.asset_path = path; asset_rel_path = rel_path })
-          )
-      | "doc" :: pkg_name :: "odoc-assets" :: _ :: _ -> (
-          check_name pkg_name >>= fun () ->
-          match Fpath.rem_prefix asset_prefix p with
-          | None -> None
-          | Some asset_rel_path ->
-              let asset_path = Fpath.(pkg_path // p) in
-              Some (`A { Packages.asset_path; asset_rel_path }))
-      | _ -> None)
+  pkg.files
+  |> List.filter_map (fun p ->
+         let prefix = Fpath.(v "doc" / pkg.name / "odoc-pages") in
+         let asset_prefix = Fpath.(v "doc" / pkg.name / "odoc-assets") in
+         let check_name pkg_name =
+           if pkg_name <> pkg.name then (
+             Logs.err (fun k ->
+                 k
+                   "Error: name in 'doc' dir does not match package name: %s \
+                    <> %s"
+                   pkg_name pkg.name);
+             None)
+           else Some ()
+         in
+         let ( >>= ) = Option.bind in
+         match Fpath.segs p with
+         | "doc" :: pkg_name :: "odoc-pages" :: _ :: _ -> (
+             check_name pkg_name >>= fun () ->
+             match Fpath.rem_prefix prefix p with
+             | None -> None
+             | Some rel_path ->
+                 let path = Fpath.(pkg_path // p) in
+                 if Fpath.has_ext "mld" p then
+                   Some
+                     (`M { Packages.mld_path = path; mld_rel_path = rel_path })
+                 else
+                   Some
+                     (`A
+                       { Packages.asset_path = path; asset_rel_path = rel_path })
+             )
+         | "doc" :: pkg_name :: "odoc-assets" :: _ :: _ -> (
+             check_name pkg_name >>= fun () ->
+             match Fpath.rem_prefix asset_prefix p with
+             | None -> None
+             | Some asset_rel_path ->
+                 let asset_path = Fpath.(pkg_path // p) in
+                 Some (`A { Packages.asset_path; asset_rel_path }))
+         | _ -> None)
   |> List.partition_map (function
        | `A asset -> Either.Left asset
        | `M mld -> Either.Right mld)
@@ -140,25 +137,24 @@ let process_package pkg =
   in
 
   let meta_libraries : Packages.libty list =
-    metas |> 
-    List.filter_map
-      (fun meta_file ->
-        let full_meta_path = Fpath.(pkg_path // meta_file) in
-        let m = Library_names.process_meta_file full_meta_path in
-        let libname_of_archive = Library_names.libname_of_archive m in
-        Fpath.Map.iter
-          (fun k v -> Logs.debug (fun m -> m "%a,%s\n%!" Fpath.pp k v))
-          libname_of_archive;
+    metas
+    |> List.filter_map (fun meta_file ->
+           let full_meta_path = Fpath.(pkg_path // meta_file) in
+           let m = Library_names.process_meta_file full_meta_path in
+           let libname_of_archive = Library_names.libname_of_archive m in
+           Fpath.Map.iter
+             (fun k v -> Logs.debug (fun m -> m "%a,%s\n%!" Fpath.pp k v))
+             libname_of_archive;
 
-        let directories = Library_names.directories m in
-        Some
-          (List.concat_map
-             (fun directory ->
-               Logs.debug (fun m ->
-                   m "Processing directory: %a\n%!" Fpath.pp directory);
-               Packages.Lib.v ~libname_of_archive ~pkg_name:pkg.name
-                 ~dir:directory ~cmtidir:None ~all_lib_deps ~cmi_only_libs:[])
-             Fpath.(Set.to_list directories)))
+           let directories = Library_names.directories m in
+           Some
+             (List.concat_map
+                (fun directory ->
+                  Logs.debug (fun m ->
+                      m "Processing directory: %a\n%!" Fpath.pp directory);
+                  Packages.Lib.v ~libname_of_archive ~pkg_name:pkg.name
+                    ~dir:directory ~cmtidir:None ~all_lib_deps ~cmi_only_libs:[])
+                Fpath.(Set.to_list directories)))
     |> List.flatten
   in
 
@@ -174,8 +170,8 @@ let process_package pkg =
                 (List.exists
                    (fun lib ->
                      Fpath.equal
-                      Fpath.(to_dir_path lib.Packages.dir)
-                      Fpath.(to_dir_path (pkg_path // p)))
+                       Fpath.(to_dir_path lib.Packages.dir)
+                       Fpath.(to_dir_path (pkg_path // p)))
                    meta_libraries)
           | _ -> false)
         pkg.files
@@ -193,13 +189,16 @@ let process_package pkg =
 
     List.map
       (fun libdir ->
-        let libname_of_archive = libname_of_archives_of_dir Fpath.(pkg_path // libdir) in
+        let libname_of_archive =
+          libname_of_archives_of_dir Fpath.(pkg_path // libdir)
+        in
         Logs.debug (fun m ->
             m "Processing directory without META: %a" Fpath.pp libdir);
         Packages.Lib.v ~libname_of_archive ~pkg_name:pkg.name
           ~dir:Fpath.(pkg_path // libdir)
           ~cmtidir:None ~all_lib_deps ~cmi_only_libs:[])
-      libdirs_without_meta |> List.flatten
+      libdirs_without_meta
+    |> List.flatten
   in
   let libraries = meta_libraries @ non_meta_libraries in
   let result =
