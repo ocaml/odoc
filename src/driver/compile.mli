@@ -18,4 +18,4 @@ type linked
 
 val link : compiled list -> linked list
 
-val html_generate : Fpath.t -> linked list -> unit
+val html_generate : occurrence_file:Fpath.t -> Fpath.t -> linked list -> unit

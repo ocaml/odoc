@@ -42,6 +42,7 @@ val link :
 val compile_index :
   ?ignore_output:bool ->
   output_file:Fpath.t ->
+  ?occurrence_file:Fpath.t ->
   json:bool ->
   docs:(string * Fpath.t) list ->
   libs:(string * Fpath.t) list ->
@@ -76,6 +77,6 @@ val html_generate_source :
 
 val support_files : Fpath.t -> string list
 
-val count_occurrences : Fpath.t -> string list
+val count_occurrences : input:Fpath.t list -> output:Fpath.t -> unit
 val source_tree :
   ?ignore_output:bool -> parent:string -> output:Fpath.t -> Fpath.t -> unit
