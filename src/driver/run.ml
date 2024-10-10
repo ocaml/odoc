@@ -42,7 +42,7 @@ let run env cmd output_file =
     |> Array.of_list
   in
   (* Logs.debug (fun m -> m "Running cmd %a" Fmt.(list ~sep:sp string) cmd); *)
-  let (r, errors) =
+  let r, errors =
     Eio.Switch.run ~name:"Process.parse_out" @@ fun sw ->
     let r, w = Eio.Process.pipe proc_mgr ~sw in
     let re, we = Eio.Process.pipe proc_mgr ~sw in

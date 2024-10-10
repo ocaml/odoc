@@ -17,10 +17,7 @@ type library = {
   deps : string list;
 }
 
-type t = {
-  meta_dir : Fpath.t;
-  libraries : library list;
-}
+type t = { meta_dir : Fpath.t; libraries : library list }
 
 let read_libraries_from_pkg_defs ~library_name pkg_defs =
   try
@@ -85,29 +82,28 @@ let process_meta_file file =
   { meta_dir; libraries }
 
 let libname_of_archive v =
-  let {meta_dir; libraries} = v in
+  let { meta_dir; libraries } = v in
   List.fold_left
-  (fun acc (x : library) ->
-    match x.archive_name with
-    | None -> acc
-    | Some archive_name ->
-        let dir =
-          match x.dir with
-          | None -> meta_dir
-          | Some x -> Fpath.(meta_dir // v x)
-        in
-        Fpath.Map.update
-          Fpath.(dir / archive_name)
-          (function
-            | None -> Some x.name
-            | Some y ->
-                Logs.err (fun m ->
-                    m "Multiple libraries for archive %s: %s and %s."
-                      archive_name x.name y);
-                Some y)
-          acc)
-  Fpath.Map.empty libraries
-  
+    (fun acc (x : library) ->
+      match x.archive_name with
+      | None -> acc
+      | Some archive_name ->
+          let dir =
+            match x.dir with
+            | None -> meta_dir
+            | Some x -> Fpath.(meta_dir // v x)
+          in
+          Fpath.Map.update
+            Fpath.(dir / archive_name)
+            (function
+              | None -> Some x.name
+              | Some y ->
+                  Logs.err (fun m ->
+                      m "Multiple libraries for archive %s: %s and %s."
+                        archive_name x.name y);
+                  Some y)
+            acc)
+    Fpath.Map.empty libraries
 
 let directories v =
   let { meta_dir; libraries } = v in
