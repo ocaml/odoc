@@ -31,7 +31,7 @@ let mkdir_p dir =
     if Sys.file_exists (Fpath.to_string p) then acc
     else dirs_to_create (Fpath.parent p) (p :: acc)
   in
-  List.iter (dirs_to_create dir []) ~f:mkdir
+  List.iter (dirs_to_create (Fpath.normalize dir) []) ~f:mkdir
 
 module File = struct
   type t = file

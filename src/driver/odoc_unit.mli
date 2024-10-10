@@ -1,6 +1,8 @@
 type pkg_args = {
   pages : (string * Fpath.t) list;
   libs : (string * Fpath.t) list;
+  pages_linked : (string * Fpath.t) list;
+  libs_linked : (string * Fpath.t) list;
 }
 
 type index = {
@@ -19,7 +21,7 @@ type 'a unit = {
   odocl_file : Fpath.t;
   pkg_args : pkg_args;
   pkgname : string;
-  include_dirs : Fpath.t list;
+  include_dirs : Fpath.Set.t;
   index : index option;
   kind : 'a;
 }
@@ -36,9 +38,12 @@ type asset = [ `Asset ]
 
 type t = [ impl | intf | mld | asset ] unit
 
+val pp : t Fmt.t
+
 val of_packages :
   output_dir:Fpath.t ->
   linked_dir:Fpath.t option ->
   index_dir:Fpath.t option ->
+  extra_libs_paths:Fpath.t Util.StringMap.t ->
   Packages.t list ->
   t list

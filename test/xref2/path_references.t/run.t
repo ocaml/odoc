@@ -10,8 +10,6 @@
 
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/subdir/page-dup.odoc
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/subdir/page-bar.odoc
-  File "doc/subdir/bar.mld", line 12, characters 49-56:
-  Warning: Failed to resolve reference unresolvedroot(Test) Couldn't find "Test"
   File "doc/subdir/bar.mld", line 12, characters 39-48:
   Warning: Failed to resolve reference ./Test Path 'Test' not found
   File "doc/subdir/bar.mld", line 12, characters 18-38:
@@ -22,8 +20,6 @@
   Warning: Failed to resolve reference unresolvedroot(foo) Couldn't find "foo"
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/page-dup.odoc
   $ odoc link -P pkg:h/pkg/doc -L libname:h/pkg/lib/libname h/pkg/doc/page-foo.odoc
-  File "doc/foo.mld", line 12, characters 37-44:
-  Warning: Failed to resolve reference unresolvedroot(Test) Couldn't find "Test"
   File "doc/foo.mld", line 12, characters 27-36:
   Warning: Failed to resolve reference ./Test Path 'Test' not found
   File "doc/foo.mld", line 12, characters 0-9:
@@ -67,7 +63,7 @@ Helper that extracts references in a compact way. Headings help to interpret the
   {"`Reference":[{"`Any_path":["`TCurrentPackage",["Test"]]},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
   {"`Reference":[{"`Any_path":["`TRelativePath",["Test"]]},[]]}
-  {"`Reference":[{"`Root":["Test","`TUnknown"]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
   ["Asset"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`AssetFile":[{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]},"img.png"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`AssetFile":[{"`Page":[{"Some":{"`Page":["None","pkg"]}},"doc"]},"img.png"]}}},[]]}
@@ -95,7 +91,7 @@ Helper that extracts references in a compact way. Headings help to interpret the
   {"`Reference":[{"`Any_path":["`TCurrentPackage",["libname","Test"]]},[]]}
   {"`Reference":[{"`Any_path":["`TAbsolutePath",["pkg","libname","Test"]]},[]]}
   {"`Reference":[{"`Any_path":["`TRelativePath",["Test"]]},[]]}
-  {"`Reference":[{"`Root":["Test","`TUnknown"]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"lib"]}},"libname"]}},"Test"]}}},[]]}
 
   $ odoc_print ./h/pkg/lib/libname/test.odocl | jq_references
   ["Page","foo"]

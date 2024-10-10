@@ -10,28 +10,42 @@
     [archive_name], and that for this cma archive exists a corresponsing
     [archive_name].ocamlobjinfo file. *)
 
-type library = { name : string; archive_name : string; dir : string option }
+type library = {
+  name : string;
+  archive_name : string option;
+  dir : string option;
+  deps : string list;
+}
+
+type t = { meta_dir : Fpath.t; libraries : library list }
 
 let read_libraries_from_pkg_defs ~library_name pkg_defs =
   try
-    let cma_filename = Fl_metascanner.lookup "archive" [ "byte" ] pkg_defs in
+    let archive_filename =
+      try Some (Fl_metascanner.lookup "archive" [ "byte" ] pkg_defs)
+      with _ -> (
+        try Some (Fl_metascanner.lookup "archive" [ "native" ] pkg_defs)
+        with _ -> None)
+    in
+
+    let deps_str = Fl_metascanner.lookup "requires" [] pkg_defs in
+    let deps = Astring.String.fields deps_str in
     let dir =
       List.find_opt (fun d -> d.Fl_metascanner.def_var = "directory") pkg_defs
     in
     let dir = Option.map (fun d -> d.Fl_metascanner.def_value) dir in
     let archive_name =
-      let file_name_len = String.length cma_filename in
-      if file_name_len > 0 then String.sub cma_filename 0 (file_name_len - 4)
-      else cma_filename
+      Option.bind archive_filename (fun a ->
+          let file_name_len = String.length a in
+          if file_name_len > 0 then Some (Filename.chop_extension a) else None)
     in
-    if String.length archive_name > 0 then
-      [ { name = library_name; archive_name; dir } ]
-    else []
+    [ { name = library_name; archive_name; dir; deps } ]
   with Not_found -> []
 
 let process_meta_file file =
   let () = Format.eprintf "process_meta_file: %s\n%!" (Fpath.to_string file) in
   let ic = open_in (Fpath.to_string file) in
+  let meta_dir = Fpath.parent file in
   let meta = Fl_metascanner.parse ic in
   let base_library_name =
     if Fpath.basename file = "META" then Fpath.parent file |> Fpath.basename
@@ -65,4 +79,44 @@ let process_meta_file file =
       |> List.flatten)
     |> List.filter is_not_private
   in
-  libraries
+  { meta_dir; libraries }
+
+let libname_of_archive v =
+  let { meta_dir; libraries } = v in
+  List.fold_left
+    (fun acc (x : library) ->
+      match x.archive_name with
+      | None -> acc
+      | Some archive_name ->
+          let dir =
+            match x.dir with
+            | None -> meta_dir
+            | Some x -> Fpath.(meta_dir // v x)
+          in
+          Fpath.Map.update
+            Fpath.(dir / archive_name)
+            (function
+              | None -> Some x.name
+              | Some y ->
+                  Logs.err (fun m ->
+                      m "Multiple libraries for archive %s: %s and %s."
+                        archive_name x.name y);
+                  Some y)
+            acc)
+    Fpath.Map.empty libraries
+
+let directories v =
+  let { meta_dir; libraries } = v in
+  List.fold_left
+    (fun acc x ->
+      match x.dir with
+      | None -> Fpath.Set.add meta_dir acc
+      | Some x -> (
+          let dir = Fpath.(meta_dir // v x) in
+          (* NB. topkg installs a META file that points to a ../topkg-care directory
+              that is installed by the topkg-care package. We filter that out here,
+              though I've not thought of a good way to sort out the `topkg-care` package *)
+          match Bos.OS.Dir.exists dir with
+          | Ok true -> Fpath.Set.add dir acc
+          | _ -> acc))
+    Fpath.Set.empty libraries

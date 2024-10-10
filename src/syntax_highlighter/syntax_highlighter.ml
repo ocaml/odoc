@@ -153,22 +153,26 @@ let tag_of_token (tok : Parser.token) =
 #endif
 
 let syntax_highlighting_locs src =
-  let lexbuf = Lexing.from_string
-#if OCAML_VERSION >= (4,8,0)
-      ~with_positions:true
-#endif
-       src in
-  let rec collect lexbuf =
-    let tok = Lexer.token_with_comments lexbuf in
-    let loc_start, loc_end = (lexbuf.lex_start_p, lexbuf.lex_curr_p) in
-    let tag = tag_of_token tok in
-    match tok with
-    | EOF -> []
-    | COMMENT (_, loc) ->
-        (tag, (loc.loc_start.pos_cnum, loc.loc_end.pos_cnum)) :: collect lexbuf
-    | DOCSTRING doc ->
-        let loc = Docstrings.docstring_loc doc in
-        (tag, (loc.loc_start.pos_cnum, loc.loc_end.pos_cnum)) :: collect lexbuf
-    | _ -> (tag, (loc_start.pos_cnum, loc_end.pos_cnum)) :: collect lexbuf
-  in
-  collect lexbuf
+  try
+    let lexbuf = Lexing.from_string
+  #if OCAML_VERSION >= (4,8,0)
+        ~with_positions:true
+  #endif
+        src in
+    let rec collect lexbuf =
+      let tok = Lexer.token_with_comments lexbuf in
+      let loc_start, loc_end = (lexbuf.lex_start_p, lexbuf.lex_curr_p) in
+      let tag = tag_of_token tok in
+      match tok with
+      | EOF -> []
+      | COMMENT (_, loc) ->
+          (tag, (loc.loc_start.pos_cnum, loc.loc_end.pos_cnum)) :: collect lexbuf
+      | DOCSTRING doc ->
+          let loc = Docstrings.docstring_loc doc in
+          (tag, (loc.loc_start.pos_cnum, loc.loc_end.pos_cnum)) :: collect lexbuf
+      | _ -> (tag, (loc_start.pos_cnum, loc_end.pos_cnum)) :: collect lexbuf
+    in
+    collect lexbuf
+  with e ->
+    Format.eprintf "Error during syntax highlighting: %s\n%!" (Printexc.to_string e);
+    []
