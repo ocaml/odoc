@@ -49,16 +49,16 @@ let document_of_input ~resolver ~warnings_options ~syntax input =
 
 let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
     =
-  let url =
-    match doc with
-    | Odoc_document.Types.Document.Page { url; _ } -> url
-    | Source_page { url; _ } -> url
-  in
-  let sidebar =
-    Odoc_utils.Option.map
-      (fun sb -> Odoc_document.Sidebar.to_block sb url)
-      sidebar
-  in
+  (* let url = *)
+  (*   match doc with *)
+  (*   | Odoc_document.Types.Document.Page { url; _ } -> url *)
+  (*   | Source_page { url; _ } -> url *)
+  (* in *)
+  (* let sidebar = *)
+  (*   Odoc_utils.Option.map *)
+  (*     (fun sb -> Odoc_document.Sidebar.to_block sb url) *)
+  (*     sidebar *)
+  (* in *)
   let pages = renderer.Renderer.render extra sidebar doc in
   Renderer.traverse pages ~f:(fun filename content ->
       let filename = prepare ~extra_suffix ~output_dir:root_dir filename in
@@ -79,8 +79,8 @@ let generate_odoc ~syntax ~warnings_options:_ ~renderer ~output ~extra_suffix
   (match sidebar with
   | None -> Ok None
   | Some x ->
-      Odoc_file.load_index x >>= fun { sidebar; index = _ } ->
-      Ok (Some (Odoc_document.Sidebar.of_lang sidebar)))
+      Odoc_file.load_index x >>= fun index ->
+      Ok (Some (Odoc_document.Sidebar.of_lang index)))
   >>= fun sidebar ->
   document_of_odocl ~syntax file >>= fun doc ->
   render_document renderer ~output ~sidebar ~extra_suffix ~extra doc;

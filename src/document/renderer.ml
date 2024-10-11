@@ -6,6 +6,7 @@ let string_of_syntax = function OCaml -> "ml" | Reason -> "re"
 
 type page = {
   filename : Fpath.t;
+  path : Url.Path.t;
   content : Format.formatter -> unit;
   children : page list;
 }
@@ -23,7 +24,7 @@ type input =
 
 type 'a t = {
   name : string;
-  render : 'a -> Types.Block.t option -> Types.Document.t -> page list;
+  render : 'a -> Sidebar.t option -> Types.Document.t -> page list;
   filepath : 'a -> Url.Path.t -> Fpath.t;
 }
 

@@ -31,7 +31,7 @@
        </li>
       </ul><b>Libraries</b>
       <ul>
-       <li><b>libname</b>
+       <li><b>libname's Units</b>
         <ul><li><a href="../lib/libname/Unit/index.html">Unit</a></li></ul>
        </li>
       </ul>
@@ -50,7 +50,7 @@
        </li>
       </ul><b>Libraries</b>
       <ul>
-       <li><b>libname</b>
+       <li><b>libname's Units</b>
         <ul><li><a href="#" class="current_unit">Unit</a></li></ul>
        </li>
       </ul>

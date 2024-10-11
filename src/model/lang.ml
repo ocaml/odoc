@@ -539,11 +539,6 @@ module rec Page : sig
 end =
   Page
 
-module rec Index : sig
-  type 'a t = { sidebar : Sidebar.t; index : 'a Paths.Identifier.Hashtbl.Any.t }
-end =
-  Index
-
 module rec Asset : sig
   type t = { name : Identifier.AssetFile.t; root : Root.t }
 end =

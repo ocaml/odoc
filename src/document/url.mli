@@ -111,6 +111,24 @@ type t = Anchor.t
 val from_path : Path.t -> t
 
 val from_identifier : stop_before:bool -> Identifier.t -> (t, Error.t) result
+(** [from_identifier] turns an identifier to an url.
+
+     Some identifiers can be accessed in different ways. For instance,
+     submodules generate a dedicated page, but they can also be linked to at
+     their parent page, using a hash.
+
+     The [stop_before] boolean controls that: with [~stop_before:true], the url
+     will point to the parent page when applicable.
+
+     There are several wrong ways to use [from_identifier]:
+     - Using [~stop_before:false] with a module that does not contain an
+     expansion, such as a module alias. This will generate a 404 url.
+     - Using [~stop_before:true] with a module that does not contain a parent,
+     such as a root module. This will ouput return an [Error _] value.
+     - Calling it with an unlinkable id, such as a core type. This will ouput
+     return an [Error _] value.
+
+     Please, reader, go and fix this API. Thanks. *)
 
 val from_asset_identifier : Identifier.AssetFile.t -> t
 

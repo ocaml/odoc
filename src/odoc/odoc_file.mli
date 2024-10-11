@@ -51,11 +51,9 @@ val load : Fs.File.t -> (t, [> msg ]) result
 val load_root : Fs.File.t -> (Root.t, [> msg ]) result
 (** Only load the root. Faster than {!load}, used for looking up imports. *)
 
-val save_index :
-  Fs.File.t -> Odoc_search.Entry.t Odoc_model.Lang.Index.t -> unit
+val save_index : Fs.File.t -> Odoc_index.t -> unit
 
-val load_index :
-  Fs.File.t -> (Odoc_search.Entry.t Odoc_model.Lang.Index.t, [> msg ]) result
+val load_index : Fs.File.t -> (Odoc_index.t, [> msg ]) result
 (** Load a [.odoc-index] file. *)
 
 val save_asset : Fpath.t -> warnings:Error.t list -> Lang.Asset.t -> unit

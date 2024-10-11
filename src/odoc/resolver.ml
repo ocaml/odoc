@@ -493,14 +493,16 @@ let all_roots ?root named_roots =
     | Ok x -> x
     | Error (NoPackage | NoRoot) -> []
   in
-  let load page =
-    match Odoc_file.load_root page with Error _ -> None | Ok root -> Some root
+  let load file =
+    match Odoc_file.load_root file with
+    | Error _ -> None
+    | Ok root -> Some (file, root)
   in
   Odoc_utils.List.filter_map load all_files
 
 let all_pages ?root ({ pages; _ } : t) =
-  let filter (root : Odoc_model.Root.t) =
-    match root with
+  let filter (root : _ * Odoc_model.Root.t) =
+    match snd root with
     | {
      file = Page { title; frontmatter; _ };
      id = { iv = #Odoc_model.Paths.Identifier.Page.t_pv; _ } as id;
@@ -514,14 +516,21 @@ let all_pages ?root ({ pages; _ } : t) =
   | Some pages -> Odoc_utils.List.filter_map filter @@ all_roots ?root pages
 
 let all_units ~library ({ libs; _ } : t) =
-  let filter (root : Odoc_model.Root.t) =
+  let filter (root : _ * Odoc_model.Root.t) =
     match root with
-    | {
-     file = Compilation_unit _;
-     id = { iv = #Odoc_model.Paths.Identifier.RootModule.t_pv; _ } as id;
-     _;
-    } ->
-        Some id
+    | ( file,
+        {
+          file = Compilation_unit _;
+          id = { iv = #Odoc_model.Paths.Identifier.RootModule.t_pv; _ } as id;
+          _;
+        } ) ->
+        let file () =
+          match Odoc_file.load file with
+          | Ok { content = Odoc_file.Unit_content u; _ } -> Some u
+          | Ok { content = _; _ } -> assert false
+          | Error _ -> (* TODO: Report as warning or propagate error *) None
+        in
+        Some (file, id)
     | _ -> None
   in
   match libs with
