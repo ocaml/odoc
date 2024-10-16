@@ -1,3 +1,7 @@
+# Odoc driver output.
+_odoc
+_html
+
 # Dune output.
 _build
 *.install
