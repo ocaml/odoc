@@ -26,7 +26,30 @@ let make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir rel_path ~content
     kind = `Mld;
   }
 
+module PackageLibLanding = struct
+  let library_list ppf pkg =
+    let print_lib (lib : Packages.libty) =
+      fpf ppf "- {{!/%s/%s/index}%s}@\n" pkg.name lib.lib_name lib.lib_name
+    in
+    List.iter print_lib pkg.libraries
+  let content pkg ppf = fpf ppf "{0 %s}@\n%a" pkg.name library_list pkg
+  let page ~pkg ~odoc_dir ~odocl_dir ~mld_dir ~output_dir =
+    let content = content pkg in
+    let rel_path = Fpath.(v pkg.name / "lib") in
+    let pkg_args =
+      { pages = [ (pkg.name, Fpath.( // ) odoc_dir rel_path) ]; libs = [] }
+    in
+    make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir rel_path ~content
+      ~pkgname:pkg.name ~pkg_args ()
+end
+
 module PackageLanding = struct
+  let library_list ppf pkg =
+    let print_lib (lib : Packages.libty) =
+      fpf ppf "- {{!/%s/lib/%s/index}%s}@\n" pkg.name lib.lib_name lib.lib_name
+    in
+    List.iter print_lib pkg.libraries
+
   let content pkg ppf =
     fpf ppf "{0 %s}\n" pkg.name;
     if not (List.is_empty pkg.mlds) then
@@ -34,8 +57,7 @@ module PackageLanding = struct
         "{1 Documentation pages}@\n@\n{{!/%s/doc/index}Documentation for %s}@\n"
         pkg.name pkg.name;
     if not (List.is_empty pkg.libraries) then
-      fpf ppf "{1 Libraries}@\n@\n{{!/%s/lib/index}Libraries for %s}@\n"
-        pkg.name pkg.name
+      fpf ppf "{1 Libraries}@\n@\n%a@\n" library_list pkg
 
   let page ~odoc_dir ~odocl_dir ~mld_dir ~output_dir ~pkg =
     let content = content pkg in
@@ -86,24 +108,6 @@ module LibraryLanding = struct
     let include_dirs = [ Fpath.(odoc_dir // rel_path) ] in
     make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir rel_path ~content
       ~pkgname:pkg.name ~include_dirs ~pkg_args ()
-end
-
-module PackageLibLanding = struct
-  let content pkg ppf =
-    fpf ppf "{0 %s}@\n" pkg.name;
-    let print_lib (lib : Packages.libty) =
-      fpf ppf "- {{!/%s/%s/index}%s}@\n" pkg.name lib.lib_name lib.lib_name
-    in
-    List.iter print_lib pkg.libraries
-
-  let page ~pkg ~odoc_dir ~odocl_dir ~mld_dir ~output_dir =
-    let content = content pkg in
-    let rel_path = Fpath.(v pkg.name / "lib") in
-    let pkg_args =
-      { pages = [ (pkg.name, Fpath.( // ) odoc_dir rel_path) ]; libs = [] }
-    in
-    make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir rel_path ~content
-      ~pkgname:pkg.name ~pkg_args ()
 end
 
 let of_package ~mld_dir ~odoc_dir ~odocl_dir ~output_dir pkg =
