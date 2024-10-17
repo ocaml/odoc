@@ -568,15 +568,27 @@ let ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
       in
       (elts, handle_internal_tags tags internal_tags))
 
+let parse_frontmatter ast_frontmatter =
+  let front_matter = Frontmatter.of_ast_frontmatter ast_frontmatter in
+  match front_matter with
+  | Error err ->
+      Error.raise_warning err;
+      Frontmatter.empty
+  | Ok front_matter -> front_matter
+
 let parse_comment ~internal_tags ~sections_allowed ~tags_allowed
     ~containing_definition ~location ~text =
   Error.catch_warnings (fun () ->
       let ast =
         Odoc_parser.parse_comment ~location ~text |> Error.raise_parser_warnings
       in
-      ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
-        ~parent_of_sections:containing_definition ast []
-      |> Error.raise_warnings)
+      let frontmatter = parse_frontmatter ast.front_matter in
+      let a, b =
+        ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
+          ~parent_of_sections:containing_definition ast.content []
+        |> Error.raise_warnings
+      in
+      (a, frontmatter, b))
 
 let parse_reference text =
   let location =

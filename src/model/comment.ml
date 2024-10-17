@@ -117,6 +117,8 @@ type docs = block_element with_location list
 
 type docs_or_stop = [ `Docs of docs | `Stop ]
 
+type docs_and_frontmatter_or_stop = [ `Docs of docs * Frontmatter.t | `Stop ]
+
 (** The synopsis is the first element of a comment if it is a paragraph.
     Otherwise, there is no synopsis. *)
 let synopsis = function
@@ -145,15 +147,3 @@ let find_zero_heading docs : link_content option =
           Some (link_content_of_inline_elements h_content)
       | _ -> None)
     docs
-
-let extract_frontmatter docs : _ =
-  let fm, rev_content =
-    List.fold_left
-      (fun (fm_acc, content_acc) doc ->
-        match doc.Location_.value with
-        | `Code_block (Some "meta", content, None) ->
-            (Frontmatter.parse content, content_acc)
-        | _ -> (fm_acc, doc :: content_acc))
-      (Frontmatter.empty, []) docs
-  in
-  (fm, List.rev rev_content)

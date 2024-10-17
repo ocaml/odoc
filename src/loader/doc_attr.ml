@@ -133,6 +133,8 @@ let attached internal_tags parent attrs =
               Odoc_parser.parse_comment ~location:(pad_loc loc) ~text:str
               |> Error.raise_parser_warnings
             in
+            let Odoc_parser.Ast.{front_matter;content=ast_docs} = ast_docs in
+            (match front_matter with None -> () | Some _ -> assert false );
             loop (List.rev_append ast_docs acc_docs) acc_alerts rest
         | Some (`Alert (name, p, loc)) ->
             let elt = mk_alert_payload ~loc name p in
@@ -161,19 +163,20 @@ let read_string_comment internal_tags parent loc str =
   read_string ~tags_allowed:true internal_tags parent (pad_loc loc) str
 
 let page parent loc str =
-  let doc, () =
+  let doc, frontmatter, () =
     read_string ~tags_allowed:false Odoc_model.Semantics.Expect_none parent loc.Location.loc_start
       str
   in
-  `Docs doc
+  `Docs (doc,frontmatter)
 
 let standalone parent (attr : Parsetree.attribute) :
     Odoc_model.Comment.docs_or_stop option =
   match parse_attribute attr with
   | Some (`Stop _loc) -> Some `Stop
   | Some (`Text (str, loc)) ->
-      let doc, () = read_string_comment Semantics.Expect_none parent loc str in
-      Some (`Docs doc)
+      (* TODO : Here we need an error if the frontmatter is not empty *)
+      let doc, _frontmatter, () = read_string_comment Semantics.Expect_none parent loc str in
+      Some (`Docs (doc))
   | Some (`Doc _) -> None
   | Some (`Alert (name, _, attr_loc)) ->
       let w =
@@ -246,20 +249,20 @@ let extract_top_comment internal_tags ~classify parent items =
         | `Skip ->
             let items, ast_docs, alerts = extract tl in
             (hd :: items, ast_docs, alerts)
-        | `Return -> (items, [], []))
-    | [] -> ([], [], [])
+        | `Return -> (items, Odoc_parser.Ast.empty, []))
+    | [] -> ([], Odoc_parser.Ast.empty, [])
   in
   let items, ast_docs, alerts = extract items in
   let docs, tags =
     ast_to_comment ~internal_tags
       (parent : Paths.Identifier.Signature.t :> Paths.Identifier.LabelParent.t)
-      ast_docs alerts
+      ast_docs.content alerts
   in
   (items, split_docs docs, tags)
 
 let extract_top_comment_class items =
   match items with
-  | Lang.ClassSignature.Comment (`Docs doc) :: tl -> (tl, split_docs doc)
+  | Lang.ClassSignature.Comment (`Docs (doc)) :: tl -> (tl, split_docs doc)
   | _ -> items, (empty,empty)
 
 let rec conv_canonical_module : Odoc_model.Reference.path -> Paths.Path.Module.t = function
