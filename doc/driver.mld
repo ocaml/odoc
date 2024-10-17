@@ -25,7 +25,7 @@ interact with [odoc], or any curious passerby. This includes several subjects:
 
 In addition to the documentation, the reference driver is a good tool to
 understand how to build [odoc] projects. It can be useful to look at the
-implementation code, but it can also help to simply look at all invocation of
+implementation code, but it can also help to simply look at all invocations of
 [odoc] during a run of the driver.
 
 {1:units Units of documentation}
@@ -34,9 +34,9 @@ In its third major version, [odoc] has been improved so that a single
 documentation can work on multiple scenarios, from local switches to big
 monorepos, or the ocaml.org hub of documentation for all packages.
 
-The idea is that we have named units of documentation. We have two kind of them:
+The idea is that we have named units of documentation. We have two kinds of them:
 page units, and modules units. Inside the units, everything is managed by
-[odoc]. Outside of the unit, the driver is free to arranged them however they
+[odoc]. Outside of the unit, the driver is free to arrange them however they
 like. (Note that however, for building [opam] packages there is a convention to
 follow for the driver.) In order to reference another unit, a documentation
 author can use the name of the unit.
@@ -55,13 +55,13 @@ package is located in the hierarchy.
 Just like when compiling OCaml modules, generating docs for these modules need
 to be run in a specific order, as some information for generating docs for a
 file might reside in another one. However, [odoc] actually allows a particular
-file to reference a module that depend on it, creating a circular dependency.
+file to reference a module that depends on it, creating a circular dependency.
 
 This circular dependency problem is one of the reason we have several phases in
 [odoc]. Let's review them:
 
 - The [compile] phase, which is used to create the [.odoc] artifacts from
-  [.cm{i;t;ti}] and [.mld] files. This is where [odoc] does a similar work to
+  [.cm{i;t;ti}] and [.mld] files. This is where [odoc] does similar work to
   that of OCaml, computing expansions for each module types. The dependencies
   between are the same as the ones for the [.cm{i;t;ti}] input.
 
@@ -193,7 +193,7 @@ A generic link command is:
   references such as [{!/findlib.dynload/Fl_dynload}].
 
 - [-I <dir>] are used to resolve non-references, and should include the same set
-  of [.odoc] than in the compile phase.
+  of [.odoc] as in the compile phase.
 
 {2 The indexing phase}
 
