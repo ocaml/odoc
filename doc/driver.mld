@@ -28,34 +28,35 @@ understand how to build [odoc] projects. It can be useful to look at the
 implementation code, but it can also help to simply look at all invocations of
 [odoc] during a run of the driver.
 
-{1:units Units of documentation}
+{1:units Cluster of documentation}
 
-In its third major version, [odoc] has been improved so that a single
+In its third major version, [odoc] has been improved so that the same
 documentation can work on multiple scenarios, from local switches to big
-monorepos, or the ocaml.org hub of documentation for all packages.
+monorepos, or the ocaml.org hub of documentation for all packages, without
+anything breaking, especially references.
 
-The idea is that we have named units of documentation. We have two kinds of them:
-page units, and modules units. Inside the units, everything is managed by
-[odoc]. Outside of the unit, the driver is free to arrange them however they
-like. (Note that however, for building [opam] packages there is a convention to
-follow for the driver.) In order to reference another unit, a documentation
-author can use the name of the unit.
+The idea is that we have named group of documentation, that we'll call cluster
+here. We have two kinds of them: page clusters, and modules clusters. Inside the
+clusters, everything is managed by [odoc]. Outside of the cluster, the driver is
+free to arrange them however they like. In order to reference another cluster, a
+documentation author can use the name of the cluster in the reference.
 
-Different situations will give different meanings to the units. In the case of
-[opam] packages, though, there is a natural meaning to give to those units
+Different situations will give different meanings to the clusters. In the case
+of [opam] packages, though, there is a natural meaning to give to those clusters
 (you'll find more details in the convention for opam-installed packages). Any
-opam package will have an associated "documentation unit", with the name of the
-package. Any of its libraries will have an associated "module unit", with the
-name of the library. Another package can refer to the doc using the package
-name, or to any of its library using the library name, no matter where the
-package is located in the hierarchy.
+opam package will have an associated "documentation cluster", named with the
+name of the package. Any of its libraries will have an associated "module
+cluster", named with the name of the library. Another package can thus refer to
+the doc using the package name, or to any of its library using the library name,
+no matter where the package is located in the hierarchy.
 
 {1 The doc generation pipeline}
 
 Just like when compiling OCaml modules, generating docs for these modules need
 to be run in a specific order, as some information for generating docs for a
 file might reside in another one. However, [odoc] actually allows a particular
-file to reference a module that depends on it, creating a circular dependency.
+file to reference a module that depends on it, seemingly creating a circular
+dependency.
 
 This circular dependency problem is one of the reason we have several phases in
 [odoc]. Let's review them:
@@ -186,23 +187,25 @@ A generic link command is:
   [--parent-id] from the link phase, and it is important for the indexing phase
   that it stays in the same location.
 
-- [-P <name>:<dir>] are used to list the "named page-units", used to resolve
+- [-P <name>:<dir>] are used to list the "page clusters", used to resolve
   references such as [{!/ocamlfind/index}].
 
-- [-L <name>:<dir>] are used to list the "named module-units", used to resolve
-  references such as [{!/findlib.dynload/Fl_dynload}].
+- [-L <name>:<dir>] are used to list the "module clusters", used to resolve
+  references such as [{!/findlib.dynload/Fl_dynload}]. This also adds [<dir>] to
+  the search path.
 
-- [-I <dir>] are used to resolve non-references, and should include the same set
-  of [.odoc] as in the compile phase.
+- [-I <dir>] adds [<dir>] to the search path. The search path is used to resolve
+  references that do not use the cluster mechanism, such as [{!Module}] and
+  [{!page-pagename}].
 
 {2 The indexing phase}
 
-The indexing phase refers to the crunching of information found in several
+The indexing phase refers to the "crunching" of information split in several
 [.odocl] files. Currently, there are two use-cases for this phase:
 
 - Generating a search index. This requires all information from linked
   interfaces and pages, but also form linked implementations in order to sort
-  results.
+  results (by number of occurrence).
 
 - Generating a global sidebar.
 
@@ -255,9 +258,9 @@ Given an [.odocl] file, [odoc] might generate a single [.html] file, or a
 complete directory of [.html] files. The [--output-dir] option specifies the
 root for generating those output.
 
-{3 A js file for search requests}
+{3 A JavaScript file for search requests}
 
-[odoc] provides a way to plugin a javascript file, containing the code to answer
+[odoc] provides a way to plugin a JavaScript file, containing the code to answer
 user's queries. In order to never block the UI, this file will be loaded in a
 web worker to perform searches:
 
@@ -336,48 +339,63 @@ argument, and give the asset unit using [--asset-unit].
 
 In order to build the documentation for installed package, the driver needs to
 give a meaning to various of the concept above. In particular, it needs to
-define the pages and libraries group, know where to find the pages and assets,
-what id to give them, when linking it needs to know to which group the artifact
-may be linking...
+define the pages and libraries clusters, know where to find the pages and
+assets, what id to give them, when linking it needs to know to which clusters
+the artifact may be linking...
 
 So that the different drivers and installed packages play well together, we
 define here a convention for building installed packages. If both the package
 and the driver follow it, building the docs should go well!
 
-{2 The [-P] and [-L] roots}
+{2 The [-P] and [-L] clusters, and their root ids}
 
-Each package define a set of root ids. These roots will be used in [--parent-id]
-and in [-P] and [-L].
+Each package define a set of cluster, each of them having a root ids. These
+roots will be used in [--parent-id] and in [-P] and [-L].
 
 The driver can decide any set of mutually disjoint set of roots, without posing
 problem to the reference resolution. For instance, both [-P
 pkg:<output_dir>/pkg/doc] and [-P pkg:<output_dir>/pkg/version/doc] are
-acceptable versions. However, we define here "canonical" roots.
+acceptable versions. However, we define here "canonical" roots:
 
 Each installed package [<p>] define a single page root id: [<p>/doc].
 
 For each package [<p>], each library [<l>] defines a library root id:
 [<p>/lib/<l>].
 
-{2 Reference dependencies}
+For instance, a package [foo] with two libraries: [foo] and [foo.bar] will
+define three clusters:
 
-In addition to the [-I] dependencies, used by [odoc]'s internal model, an
-installed package needs to define the additional reference dependencies. Note
-that these dependencies can be circular without problem, as they happen during
-the link phase and only require the artifact from the compile phase.
+- A documentation cluster named [foo], with root id [foo/doc]. When referred
+  from other clusters, a [-P foo:<odoc_dir>/foo/doc] argument needs to be added
+  at the link phase.
 
-An installed package [<p>] specifies its resolve dependencies in a file at
-[<opam root>/doc/<p>/odoc-config.sexp]. This file contains
-s-expressions.
+- A module cluster named [foo], with root id [foo/lib/foo]. When referred from
+  other clusters, a [-L foo:<odoc_dir>/foo/lib/foo] argument needs to be added
+  at the link phase.
 
-Stanzas of the form [(package p1 p2 ...)] specifies that packages [p1], [p2],
-..., should be added using the [-P] argument: with the canonical roots, it would
-be [-P p1:<output_dir>/p1/doc -P p2:<output_dir>/p2/doc -P ...].
+- A module cluster named [foo.bar], with root id [foo/doc]. When referred from
+  other clusters, a [-L foo.bar:<odoc_dir>/foo/lib/foo.bar] argument needs to be
+  added at the link phase.
 
-Stanzas of the form [(libraries l1 l2 ...)] specifies that libraries [l1], [l2],
-..., should be added using the [-L] argument: with the canonical roots, it would
-be [-L l1:<output_dir>/p1/lib/l1 -L l2<output_dir>/p2/lib/l2 -L ...], where [p1]
-is the package [l1] is in, etc.
+{2 Link-time dependencies}
+
+Installed OPAM packages need to specify which clusters they may be referencing
+during the link phase, so that the proper [-P] and [-L] arguments are
+added. (Note that these dependencies can be circular without problem, as they
+happen during the link phase and only require the artifact from the compile
+phase.)
+
+An installed package [<p>] specifies its cluster dependencies in a file at
+[<opam root>/doc/<p>/odoc-config.sexp]. This file contains s-expressions.
+
+Stanzas of the form [(packages p1 p2 ...)] specifies that page clusters [p1],
+[p2], ..., should be added using the [-P] argument: with the canonical roots, it
+would be [-P p1:<output_dir>/p1/doc -P p2:<output_dir>/p2/doc -P ...].
+
+Stanzas of the form [(libraries l1 l2 ...)] specifies that module clusters [l1],
+[l2], ..., should be added using the [-L] argument: with the canonical roots, it
+would be [-L l1:<output_dir>/p1/lib/l1 -L l2<output_dir>/p2/lib/l2 -L ...],
+where [p1] is the package [l1] is in, etc.
 
 {2 The units}
 
@@ -395,21 +413,24 @@ root>/doc/odoc-assets/].
 {2 The [--parent-id] arguments}
 
 Interface and implementation units have as parent id the root of the library
-they belong to: [<p>/lib/<l>].
+cluster they belong to: with "canonical" roots, [<pkgname>/lib/<libname>].
 
 Page units that are found in [<opam
-root>/doc/<p>/odoc-pages/<relpath>/<name>.mld] have the parent id
-[<p>/doc/<relpath>].
+root>/doc/<pkgname>/odoc-pages/<relpath>/<name>.mld] have the parent id from their
+page cluster, followed by [<relpath>]. So, with canonical roots,
+[<pkgname>/doc/<relpath>].
 
 Asset units that are found in [<opam
-root>/doc/<p>/odoc-pages/<relpath>/<name>.<ext>] have the parent id
-[<p>/doc/<relpath>].
+root>/doc/<pkgname>/odoc-pages/<relpath>/<name>.<ext>] have the parent id from
+their page cluster, followed by [<relpath>]. With canonical roots,
+[<pkgname>/doc/<relpath>].
 
-Asset units that are found in [<opam root>/doc/<p>/odoc-assets/<name>.<ext>]
-have the parent id [<p>/doc/_assets/<relpath>].
+Asset units that are found in [<opam root>/doc/<pkgname>/odoc-assets/<filename>]
+have the parent id from their page cluster, followed by [_asset/<filename>]
+[<p>/doc/_assets/<filename>].
 
 {2 The [--source-id] arguments}
 
-The driver can chose the source id without breaking references. However, if it
-follows the canonical roots, implementation units have as source id:
-[<p>/src/<l>/<filename>.ml].
+The driver could chose the source id without breaking references. However,
+following the canonical roots convention, implementation units must have as
+source id: [<pkgname>/src/<libraryname>/<filename>.ml].
