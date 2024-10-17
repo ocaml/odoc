@@ -202,21 +202,28 @@ let located(rule) == inner = rule; { wrap_location $sloc inner }
 
 (* ENTRY-POINT *)
 
+(* A comment can either contain block elements, block elements and then tags, or
+   just tags, but not tags and then block elements *)
 let main :=  
-  | ~ = located(toplevel)+; END; <>
-  | _ = whitespace; END; { [] }
+  | ~ = located(toplevel)+; whitespace*; END; <>
+  | elements = located(toplevel)+; tags = located(tag)+; whitespace*; END; 
+    { elements @ tags } 
+  | ~ = located(tag)+; whitespace*; END; <>
+  | whitespace; END; { [] }
   | END; { [] }
 
 let toplevel :=
-  | ~ = tag; whitespace*; <>
-  | block = nestable_block_element; whitespace*; { (block :> Ast.block_element) }
-  | ~ = heading; whitespace*; <>
+  | block = nestable_block_element; { (block :> Ast.block_element) }
+  | ~ = heading; <>
 
-let whitespace := 
+let horizontal_whitespace := 
   | SPACE; { `Space " " } 
-  | NEWLINE; { `Space "\n" }
   | ~ = Space; <`Space>
   | ~ = Single_newline; <`Space>
+
+let whitespace := 
+  | horizontal_whitespace; {}
+  | NEWLINE; { () }
 
 let heading := 
   | (num, title) = Section_heading; children = list(located(inline_element)); RIGHT_BRACE; 
@@ -229,11 +236,11 @@ let tag :=
 (* INLINE ELEMENTS *)
 
 let inline_element := 
-  | ~ = whitespace; <>
+  | ~ = Space; <`Space>
   | ~ = Word; <`Word>
   | ~ = Code_span; <`Code_span>
   | ~ = Raw_markup; <`Raw_markup>
-  | style = Style; inner = located(inline_element)*; RIGHT_BRACE; { `Styled (style, inner) }
+  | style = Style; inner = located(inline_element)+; RIGHT_BRACE; { `Styled (style, inner) }
   | ~ = Math_span; <`Math_span>
   | ~ = ref; <>
   | ~ = link; <>
@@ -243,7 +250,7 @@ let ref :=
     { `Reference (`Simple, ref_body, children) }
 
   | ref_body = located(Ref_with_replacement); 
-    children = located(inline_element)*; 
+    children = located(inline_element)+; 
     RIGHT_BRACE;
     { `Reference (`With_text, ref_body, children) }
 
@@ -254,17 +261,17 @@ let link :=
 (* LIST *)
 
 let list_light := 
-  | MINUS; unordered_items = separated_list(NEWLINE; SPACE?; MINUS, located(nestable_block_element)); 
+  | MINUS; unordered_items = separated_list(NEWLINE; MINUS, located(nestable_block_element)); 
     { `List (`Unordered, `Light, [ unordered_items ]) }
 
   | PLUS; ordered_items = separated_list(NEWLINE; SPACE?; PLUS, located(nestable_block_element)); 
     { `List (`Ordered, `Light, [ ordered_items ]) }
 
 (* NOTE: (@FayCarsons) `List_item` is [ `Li | `Dash ], not sure how that's useful though. Can't find '{li' syntax in Odoc docs *)
-let item_heavy == _ = List_item; whitespace*; ~ = located(nestable_block_element)*; whitespace*; RIGHT_BRACE; whitespace*; <>
+let item_heavy == _ = List_item; whitespace*; ~ = located(nestable_block_element)+; whitespace*; RIGHT_BRACE; whitespace*; <>
 let list_heavy := 
     | list_kind = List; whitespace*; items = item_heavy*; whitespace*; RIGHT_BRACE;
-    { `List (list_kind, `Heavy, items) }
+      { `List (list_kind, `Heavy, items) }
 
 let list_element := 
   | ~ = list_light; <>
@@ -274,11 +281,7 @@ let list_element :=
 
 let cell_heavy := cell_kind = Table_cell; whitespace?; children = located(nestable_block_element)*; whitespace?; RIGHT_BRACE; whitespace?; { (children, cell_kind) }
 let row_heavy == TABLE_ROW; whitespace?; cells = list(cell_heavy); RIGHT_BRACE; whitespace?;  { cells } 
-let table_heavy == TABLE_HEAVY; whitespace?; grid = row_heavy*; RIGHT_BRACE; 
-  { 
-    let abstract = (grid, None) in 
-    (abstract, `Heavy) 
-  }
+let table_heavy == TABLE_HEAVY; whitespace?; grid = row_heavy+; RIGHT_BRACE; { ((grid, None), `Heavy) }
 
 let cell_light == BAR?; ~ = located(inline_element)+; <> (* Ast.cell *)
 let row_light := ~ = cell_light+; BAR?; NEWLINE; <>  (* Ast.row *)
