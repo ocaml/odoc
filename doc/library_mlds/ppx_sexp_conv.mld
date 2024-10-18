@@ -1,5 +1,0 @@
-{0 Ppx_sexp_conv_lib}
-
-{!module-Ppx_sexp_conv}
-{!module-Ppx_sexp_conv_lib}
-{!module-Ppx_sexp_conv_expander}

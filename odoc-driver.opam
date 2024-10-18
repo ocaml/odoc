@@ -45,6 +45,7 @@ depends: [
   "progress"
   "cmdliner"
   "sexplib"
+  "sherlodoc"
 ]
 
 build: [
