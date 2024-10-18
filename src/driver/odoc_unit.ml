@@ -184,29 +184,33 @@ let of_packages ~output_dir ~linked_dir ~index_dir (pkgs : Packages.t list) :
   in
 
   let of_impl pkg libname (impl : Packages.impl) : impl unit option =
-    match impl.mip_src_info with
-    | None -> None
-    | Some { src_path } ->
-        let rel_dir = lib_dir pkg libname in
-        let include_dirs =
-          let deps = build_deps impl.mip_deps in
-          List.map (fun u -> u.odoc_dir) deps
-        in
-        let kind =
-          let src_name = Fpath.filename src_path in
-          let src_id =
-            Fpath.(pkg.pkg_dir / "src" / libname / src_name) |> Odoc.Id.of_fpath
+    let _ =
+      match impl.mip_src_info with
+      | None -> None
+      | Some { src_path } ->
+          let rel_dir = lib_dir pkg libname in
+          let include_dirs =
+            let deps = build_deps impl.mip_deps in
+            List.map (fun u -> u.odoc_dir) deps
           in
-          `Impl { src_id; src_path }
-        in
-        let name =
-          impl.mip_path |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "impl-"
-        in
-        let unit =
-          make_unit ~name ~kind ~rel_dir ~input_file:impl.mip_path ~pkg
-            ~include_dirs
-        in
-        Some unit
+          let kind =
+            let src_name = Fpath.filename src_path in
+            let src_id =
+              Fpath.(pkg.pkg_dir / "src" / libname / src_name)
+              |> Odoc.Id.of_fpath
+            in
+            `Impl { src_id; src_path }
+          in
+          let name =
+            impl.mip_path |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "impl-"
+          in
+          let unit =
+            make_unit ~name ~kind ~rel_dir ~input_file:impl.mip_path ~pkg
+              ~include_dirs
+          in
+          Some unit
+    in
+    None
   in
 
   let of_module pkg libname (m : Packages.modulety) : [ impl | intf ] unit list

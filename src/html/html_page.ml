@@ -249,7 +249,7 @@ let make ~config ~url ~header ~breadcrumbs ~sidebar ~toc ~uses_katex content
     page_creator ~config ~url ~uses_katex ~global_toc:sidebar header breadcrumbs
       toc content
   in
-  { Odoc_document.Renderer.filename; content; children }
+  { Odoc_document.Renderer.filename; content; children; path = url }
 
 let path_of_module_of_source ppf url =
   match url.Url.Path.parent with
@@ -289,4 +289,4 @@ let make_src ~config ~url ~breadcrumbs ~header title content =
   let content =
     src_page_creator ~breadcrumbs ~config ~url ~header title content
   in
-  { Odoc_document.Renderer.filename; content; children = [] }
+  { Odoc_document.Renderer.filename; content; children = []; path = url }

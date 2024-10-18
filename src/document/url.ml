@@ -1,11 +1,11 @@
+open Odoc_model.Lang
 open Odoc_model.Paths
 open Odoc_model.Names
 module Root = Odoc_model.Root
 
-let render_path : Odoc_model.Paths.Path.t -> string =
-  let open Odoc_model.Paths.Path in
-  let rec render_resolved : Odoc_model.Paths.Path.Resolved.t -> string =
-    let open Resolved in
+let render_path : Path.t -> string =
+  let rec render_resolved : Path.Resolved.t -> string =
+    let open Path.Resolved in
     function
     | `Identifier id -> Identifier.name id
     | `OpaqueModule p -> render_resolved (p :> t)
@@ -13,16 +13,13 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `Subst (_, p) -> render_resolved (p :> t)
     | `SubstT (_, p) -> render_resolved (p :> t)
     | `Alias (dest, `Resolved src) ->
-        if Odoc_model.Paths.Path.Resolved.(is_hidden (src :> t)) then
-          render_resolved (dest :> t)
+        if Path.Resolved.(is_hidden (src :> t)) then render_resolved (dest :> t)
         else render_resolved (src :> t)
     | `Alias (dest, src) ->
-        if Odoc_model.Paths.Path.is_hidden (src :> Path.t) then
-          render_resolved (dest :> t)
+        if Path.is_hidden (src :> Path.t) then render_resolved (dest :> t)
         else render_path (src :> Path.t)
     | `AliasModuleType (p1, p2) ->
-        if Odoc_model.Paths.Path.Resolved.(is_hidden (p2 :> t)) then
-          render_resolved (p1 :> t)
+        if Path.Resolved.(is_hidden (p2 :> t)) then render_resolved (p1 :> t)
         else render_resolved (p2 :> t)
     | `Hidden p -> render_resolved (p :> t)
     | `Module (p, s) -> render_resolved (p :> t) ^ "." ^ ModuleName.to_string s
@@ -39,7 +36,7 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `Apply (rp, p) ->
         render_resolved (rp :> t)
         ^ "("
-        ^ render_resolved (p :> Odoc_model.Paths.Path.Resolved.t)
+        ^ render_resolved (p :> Path.Resolved.t)
         ^ ")"
     | `ModuleType (p, s) ->
         render_resolved (p :> t) ^ "." ^ ModuleTypeName.to_string s
@@ -47,10 +44,8 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `Value (p, s) -> render_resolved (p :> t) ^ "." ^ ValueName.to_string s
     | `Class (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
     | `ClassType (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
-  and dot p s =
-    render_path (p : Odoc_model.Paths.Path.Module.t :> Odoc_model.Paths.Path.t)
-    ^ "." ^ s
-  and render_path : Odoc_model.Paths.Path.t -> string =
+  and dot p s = render_path (p : Path.Module.t :> Path.t) ^ "." ^ s
+  and render_path : Path.t -> string =
    fun x ->
     match x with
     | `Identifier (id, _) -> Identifier.name id
@@ -61,12 +56,12 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `DotMT (p, s) -> dot p (ModuleTypeName.to_string s)
     | `DotV (p, s) -> dot p (ValueName.to_string s)
     | `Apply (p1, p2) ->
-        render_path (p1 :> t) ^ "(" ^ render_path (p2 :> t) ^ ")"
+        render_path (p1 :> Path.t) ^ "(" ^ render_path (p2 :> Path.t) ^ ")"
     | `Resolved rp -> render_resolved rp
-    | `Substituted m -> render_path (m :> t)
-    | `SubstitutedMT m -> render_path (m :> t)
-    | `SubstitutedT m -> render_path (m :> t)
-    | `SubstitutedCT m -> render_path (m :> t)
+    | `Substituted m -> render_path (m :> Path.t)
+    | `SubstitutedMT m -> render_path (m :> Path.t)
+    | `SubstitutedT m -> render_path (m :> Path.t)
+    | `SubstitutedCT m -> render_path (m :> Path.t)
   in
 
   render_path
@@ -95,7 +90,7 @@ module Path = struct
   type any_pv =
     [ nonsrc_pv | Identifier.SourcePage.t_pv | Identifier.AssetFile.t_pv ]
 
-  and any = any_pv Odoc_model.Paths.Identifier.id
+  and any = any_pv Identifier.id
 
   type kind =
     [ `Module
@@ -196,8 +191,7 @@ module Path = struct
         let name = AssetName.to_string name in
         mk ~parent kind name
 
-  let from_identifier p =
-    from_identifier (p : [< any_pv ] Odoc_model.Paths.Identifier.id :> any)
+  let from_identifier p = from_identifier (p : [< any_pv ] Identifier.id :> any)
 
   let to_list url =
     let rec loop acc { parent; name; kind } =
@@ -415,7 +409,7 @@ module Anchor = struct
   let polymorphic_variant ~type_ident elt =
     let name_of_type_constr te =
       match te with
-      | Odoc_model.Lang.TypeExpr.Constr (path, _) ->
+      | TypeExpr.Constr (path, _) ->
           render_path (path :> Odoc_model.Paths.Path.t)
       | _ ->
           invalid_arg
@@ -453,9 +447,9 @@ type t = Anchor.t
 let from_path page =
   { Anchor.page; anchor = ""; kind = (page.kind :> Anchor.kind) }
 
-let from_identifier ~stop_before = function
-  | { Odoc_model.Paths.Identifier.iv = #Path.any_pv; _ } as p
-    when not stop_before ->
+let from_identifier ~stop_before x =
+  match x with
+  | { Identifier.iv = #Path.any_pv; _ } as p when not stop_before ->
       Ok (from_path @@ Path.from_identifier p)
   | p -> Anchor.from_identifier p
 

@@ -36,22 +36,22 @@ type instance_variable_entry = {
   type_ : TypeExpr.t;
 }
 
-type doc_entry = Paragraph | Heading | CodeBlock | MathBlock | Verbatim
-
 type value_entry = { value : Value.value; type_ : TypeExpr.t }
+
+type module_entry = { has_expansion : bool }
 
 type kind =
   | TypeDecl of type_decl_entry
-  | Module
+  | Module of module_entry
   | Value of value_entry
-  | Doc of doc_entry
+  | Doc
   | Exception of constructor_entry
   | Class_type of class_type_entry
   | Method of method_entry
   | Class of class_entry
   | TypeExtension of type_extension_entry
   | ExtensionConstructor of constructor_entry
-  | ModuleType
+  | ModuleType of module_entry
   | Constructor of constructor_entry
   | Field of field_entry
 
@@ -61,4 +61,8 @@ type t = {
   kind : kind;
 }
 
-val entries_of_item : Odoc_model.Fold.item -> t list
+val entry :
+  id:[< Odoc_model.Paths.Identifier.Any.t_pv ] Odoc_model.Paths.Identifier.id ->
+  doc:Odoc_model.Comment.docs ->
+  kind:kind ->
+  t

@@ -1,5 +1,7 @@
 (** This module generates json intended to be consumed by search engines. *)
 
+open Odoc_index
+
 val unit :
   ?occurrences:Odoc_occurrences.Table.t ->
   Format.formatter ->
@@ -7,6 +9,7 @@ val unit :
   unit
 val page : Format.formatter -> Odoc_model.Lang.Page.t -> unit
 val index :
+  ?occurrences:Odoc_occurrences.Table.t ->
   Format.formatter ->
-  Odoc_search.Entry.t Odoc_model.Paths.Identifier.Hashtbl.Any.t ->
+  Skeleton.t list ->
   unit

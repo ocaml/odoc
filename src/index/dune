@@ -1,0 +1,4 @@
+(library
+ (name odoc_index)
+ (public_name odoc.index)
+ (libraries odoc_model odoc_html_frontend tyxml odoc_utils))

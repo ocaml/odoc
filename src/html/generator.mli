@@ -1,6 +1,6 @@
 val render :
   config:Config.t ->
-  sidebar:Odoc_document.Types.Block.t option ->
+  sidebar:Odoc_document.Sidebar.t option ->
   Odoc_document.Types.Document.t ->
   Odoc_document.Renderer.page list
 

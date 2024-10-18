@@ -1,4 +1,5 @@
 open Odoc_model
+open Odoc_index
 
 type html = Html_types.div_content Tyxml.Html.elt
 

@@ -7,5 +7,11 @@
 (library
  (name odoc_search)
  (public_name odoc.search)
- (libraries odoc_html odoc_model odoc_html_frontend tyxml odoc_utils)
+ (libraries
+  odoc_html
+  odoc_model
+  odoc_html_frontend
+  tyxml
+  odoc_utils
+  odoc_index)
  (modules :standard \ odoc_html_frontend))

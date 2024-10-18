@@ -1,4 +1,5 @@
 open Odoc_search
+open Odoc_index
 
 let json_of_args (args : Odoc_model.Lang.TypeDecl.Constructor.argument) =
   match args with
@@ -125,14 +126,10 @@ let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
             ("manifest", manifest);
             ("constraints", constraints);
           ]
-    | Module -> return "Module" []
+    | Module _ -> return "Module" []
     | Value { value = _; type_ } ->
         return "Value" [ ("type", `String (Text.of_type type_)) ]
-    | Doc Paragraph -> return "Doc" [ ("subkind", `String "Paragraph") ]
-    | Doc Heading -> return "Doc" [ ("subkind", `String "Heading") ]
-    | Doc CodeBlock -> return "Doc" [ ("subkind", `String "CodeBlock") ]
-    | Doc MathBlock -> return "Doc" [ ("subkind", `String "MathBlock") ]
-    | Doc Verbatim -> return "Doc" [ ("subkind", `String "Verbatim") ]
+    | Doc -> return "Doc" []
     | Exception { args; res } ->
         let args = json_of_args args in
         let res = `String (Text.of_type res) in
@@ -155,7 +152,7 @@ let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
         let args = json_of_args args in
         let res = `String (Text.of_type res) in
         return "ExtensionConstructor" [ ("args", args); ("res", res) ]
-    | ModuleType -> return "ModuleType" []
+    | ModuleType _ -> return "ModuleType" []
     | Constructor { args; res } ->
         let args = json_of_args args in
         let res = `String (Text.of_type res) in
@@ -189,23 +186,20 @@ let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
           @ occurrences))
   | Error _ as e -> e
 
-let output_json ppf first entries =
+let output_json ppf first (entry, html, occurrences) =
   let output_json json =
     let str = Odoc_html.Json.to_string json in
     Format.fprintf ppf "%s\n" str
   in
-  List.fold_left
-    (fun first (entry, html, occurrences) ->
-      let json = of_entry entry html occurrences in
-      if not first then Format.fprintf ppf ",";
-      match json with
-      | Ok json ->
-          output_json json;
-          false
-      | Error e ->
-          Printf.eprintf "%S" (Odoc_document.Url.Error.to_string e);
-          true)
-    first entries
+  let json = of_entry entry html occurrences in
+  if not first then Format.fprintf ppf ",";
+  match json with
+  | Ok json ->
+      output_json json;
+      false
+  | Error e ->
+      Printf.eprintf "%S" (Odoc_document.Url.Error.to_string e);
+      true
 
 let unit ?occurrences ppf u =
   let get_occ id =
@@ -216,38 +210,42 @@ let unit ?occurrences ppf u =
         | Some x -> Some x
         | None -> Some { direct = 0; indirect = 0 })
   in
-  let f first i =
-    let entries = Entry.entries_of_item i in
-    let entries =
-      List.map
-        (fun entry ->
-          let occ = get_occ entry.Entry.id in
-          (entry, Html.of_entry entry, occ))
-        entries
+  let f first entry =
+    let entry =
+      let occ = get_occ entry.Entry.id in
+      (entry, Html.of_entry entry, occ)
     in
-    let first = output_json ppf first entries in
+    let first = output_json ppf first entry in
     first
   in
-  let _first = Odoc_model.Fold.unit ~f true u in
+  let skel = Odoc_index.Skeleton.from_unit u in
+  let _first = Odoc_utils.Tree.fold_t f true skel in
   ()
 
 let page ppf (page : Odoc_model.Lang.Page.t) =
-  let f first i =
-    let entries = Entry.entries_of_item i in
-    let entries =
-      List.map (fun entry -> (entry, Html.of_entry entry, None)) entries
-    in
-    output_json ppf first entries
+  let f first entry =
+    let entry = (entry, Html.of_entry entry, None) in
+    output_json ppf first entry
   in
-  let _first = Odoc_model.Fold.page ~f true page in
+  let skel = Odoc_index.Skeleton.from_page page in
+  let _first = Odoc_utils.Tree.fold_t f true skel in
   ()
 
-let index ppf (index : Entry.t Odoc_model.Paths.Identifier.Hashtbl.Any.t) =
+let index ?occurrences ppf (index : Skeleton.t list) =
+  let get_occ id =
+    match occurrences with
+    | None -> None
+    | Some occurrences -> (
+        match Odoc_occurrences.Table.get occurrences id with
+        | Some x -> Some x
+        | None -> Some { direct = 0; indirect = 0 })
+  in
   let _first =
-    Odoc_model.Paths.Identifier.Hashtbl.Any.fold
-      (fun _id entry first ->
-        let entry = (entry, Html.of_entry entry, None) in
-        output_json ppf first [ entry ])
-      index true
+    Odoc_utils.Tree.fold_f
+      (fun first entry ->
+        let occ = get_occ entry.Entry.id in
+        let entry = (entry, Html.of_entry entry, occ) in
+        output_json ppf first entry)
+      true index
   in
   ()

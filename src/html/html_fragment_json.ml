@@ -62,7 +62,7 @@ let make ~config ~preamble ~url ~breadcrumbs ~sidebar ~toc ~uses_katex
              ("content", `String (json_of_html content));
            ]))
   in
-  { Odoc_document.Renderer.filename; content; children }
+  { Odoc_document.Renderer.filename; content; children; path = url }
 
 let make_src ~config ~url ~breadcrumbs content =
   let filename = Link.Path.as_filename ~config url in
@@ -82,4 +82,4 @@ let make_src ~config ~url ~breadcrumbs content =
                     (List.map (Format.asprintf "%a" htmlpp) content)) );
            ]))
   in
-  { Odoc_document.Renderer.filename; content; children = [] }
+  { Odoc_document.Renderer.filename; content; children = []; path = url }

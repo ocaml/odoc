@@ -52,7 +52,10 @@ val all_pages :
   (Paths.Identifier.Page.t * Comment.link_content option * Frontmatter.t) list
 
 val all_units :
-  library:string -> t -> Odoc_model.Paths.Identifier.RootModule.t list
+  library:string ->
+  t ->
+  ((unit -> Lang.Compilation_unit.t option) * Paths.Identifier.RootModule.t)
+  list
 
 (** Helpers for creating xref2 env. *)
 

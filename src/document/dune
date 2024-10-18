@@ -14,4 +14,10 @@
   (backend bisect_ppx))
  (instrumentation
   (backend landmarks --auto))
- (libraries odoc_model fpath astring syntax_highlighter odoc_utils))
+ (libraries
+  odoc_model
+  fpath
+  astring
+  syntax_highlighter
+  odoc_utils
+  odoc_index))
