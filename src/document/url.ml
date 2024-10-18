@@ -448,18 +448,10 @@ let from_path page =
   { Anchor.page; anchor = ""; kind = (page.kind :> Anchor.kind) }
 
 let from_identifier ~stop_before x =
-  if Identifier.is_hidden x then
-    Ok
-      {
-        Anchor.page = { parent = None; kind = `Module; name = "blooooooo" };
-        anchor = "bliiiiiiii";
-        kind = `Module;
-      }
-  else
-    match x with
-    | { Identifier.iv = #Path.any_pv; _ } as p when not stop_before ->
-        Ok (from_path @@ Path.from_identifier p)
-    | p -> Anchor.from_identifier p
+  match x with
+  | { Identifier.iv = #Path.any_pv; _ } as p when not stop_before ->
+      Ok (from_path @@ Path.from_identifier p)
+  | p -> Anchor.from_identifier p
 
 let from_asset_identifier p = from_path @@ Path.from_identifier p
 

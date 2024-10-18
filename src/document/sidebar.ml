@@ -2,12 +2,16 @@ open Odoc_utils
 open Types
 
 let sidebar_toc_entry id content =
-  let href =
-    (id :> Odoc_model.Paths.Identifier.t)
-    |> Url.from_identifier ~stop_before:false
-    |> Result.get_ok
+  let target =
+    match
+      (id :> Odoc_model.Paths.Identifier.t)
+      |> Url.from_identifier ~stop_before:false
+    with
+    | Ok href -> Target.Resolved href
+    | Error _ -> Target.Unresolved
+    (* This error case should never happen since [stop_before] is false *)
   in
-  let target = Target.Internal (Resolved href) in
+  let target = Target.Internal target in
   inline @@ Inline.Link { target; content; tooltip = None }
 
 module Toc : sig
@@ -30,8 +34,12 @@ end = struct
         | None -> None
         | Some (index_id, title) ->
             let path =
-              Url.from_identifier ~stop_before:false (index_id :> Id.t)
-              |> Result.get_ok
+              match
+                Url.from_identifier ~stop_before:false (index_id :> Id.t)
+              with
+              | Ok r -> r
+              | Error _ -> assert false
+              (* This error case should never happen since [stop_before] is false, and even less since it's a page id *)
             in
             let content = Comment.link_content title in
             Some (path, sidebar_toc_entry index_id content)
@@ -59,7 +67,7 @@ end = struct
          root. So we apply the filter_map starting from the first children. *)
       let convert ((url : Url.t), b) =
         let link =
-          if url.page = current_url && String.equal url.anchor "" then
+          if url.page = current_url && Astring.String.equal url.anchor "" then
             { b with Inline.attr = [ "current_unit" ] }
           else b
         in

@@ -1,3 +1,5 @@
+module List = Odoc_list
+
 type 'a t = { node : 'a; children : 'a forest }
 and 'a forest = 'a t list
 
