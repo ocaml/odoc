@@ -28,27 +28,27 @@ understand how to build [odoc] projects. It can be useful to look at the
 implementation code, but it can also help to simply look at all invocations of
 [odoc] during a run of the driver.
 
-{1:units Cluster of documentation}
+{1:units Trees of documentation}
 
 In its third major version, [odoc] has been improved so that the same
 documentation can work on multiple scenarios, from local switches to big
 monorepos, or the ocaml.org hub of documentation for all packages, without
 anything breaking, especially references.
 
-The idea is that we have named group of documentation, that we'll call cluster
-here. We have two kinds of them: page clusters, and modules clusters. Inside the
-clusters, everything is managed by [odoc]. Outside of the cluster, the driver is
-free to arrange them however they like. In order to reference another cluster, a
-documentation author can use the name of the cluster in the reference.
+The idea is that we have named group of documentation, that we'll call {e trees}
+here. We have two kinds of them: page trees, and modules trees. Inside the
+trees, everything is managed by [odoc]. The driver is free to root them however
+they like in the overall hierarchy. In order to reference another tree, a
+documentation author can use the name of the tree in the reference.
 
-Different situations will give different meanings to the clusters. In the case
-of [opam] packages, though, there is a natural meaning to give to those clusters
+Different situations will give different meanings to the trees. In the case of
+[opam] packages, though, there is a natural meaning to give to those trees
 (you'll find more details in the convention for opam-installed packages). Any
-opam package will have an associated "documentation cluster", named with the
-name of the package. Any of its libraries will have an associated "module
-cluster", named with the name of the library. Another package can thus refer to
-the doc using the package name, or to any of its library using the library name,
-no matter where the package is located in the hierarchy.
+opam package will have an associated "documentation tree", named with the name
+of the package. Any of its libraries will have an associated "module tree",
+named with the name of the library. Another package can thus refer to the doc
+using the package name, or to any of its library using the library name, no
+matter where the package is located in the hierarchy.
 
 {1 The doc generation pipeline}
 
@@ -187,15 +187,15 @@ A generic link command is:
   [--parent-id] from the link phase, and it is important for the indexing phase
   that it stays in the same location.
 
-- [-P <name>:<dir>] are used to list the "page clusters", used to resolve
+- [-P <name>:<dir>] are used to list the "page trees", used to resolve
   references such as [{!/ocamlfind/index}].
 
-- [-L <name>:<dir>] are used to list the "module clusters", used to resolve
+- [-L <name>:<dir>] are used to list the "module trees", used to resolve
   references such as [{!/findlib.dynload/Fl_dynload}]. This also adds [<dir>] to
   the search path.
 
 - [-I <dir>] adds [<dir>] to the search path. The search path is used to resolve
-  references that do not use the cluster mechanism, such as [{!Module}] and
+  references that do not use the "named tree" mechanism, such as [{!Module}] and
   [{!page-pagename}].
 
 {2 The indexing phase}
@@ -339,18 +339,18 @@ argument, and give the asset unit using [--asset-unit].
 
 In order to build the documentation for installed package, the driver needs to
 give a meaning to various of the concept above. In particular, it needs to
-define the pages and libraries clusters, know where to find the pages and
-assets, what id to give them, when linking it needs to know to which clusters
-the artifact may be linking...
+define the pages and libraries trees, know where to find the pages and assets,
+what id to give them, when linking it needs to know to which trees the artifact
+may be linking...
 
 So that the different drivers and installed packages play well together, we
 define here a convention for building installed packages. If both the package
 and the driver follow it, building the docs should go well!
 
-{2 The [-P] and [-L] clusters, and their root ids}
+{2 The [-P] and [-L] trees, and their root ids}
 
-Each package define a set of cluster, each of them having a root ids. These
-roots will be used in [--parent-id] and in [-P] and [-L].
+Each package define a set of trees, each of them having a root ids. These roots
+will be used in [--parent-id] and in [-P] and [-L].
 
 The driver can decide any set of mutually disjoint set of roots, without posing
 problem to the reference resolution. For instance, both [-P
@@ -363,36 +363,36 @@ For each package [<p>], each library [<l>] defines a library root id:
 [<p>/lib/<l>].
 
 For instance, a package [foo] with two libraries: [foo] and [foo.bar] will
-define three clusters:
+define three trees:
 
-- A documentation cluster named [foo], with root id [foo/doc]. When referred
-  from other clusters, a [-P foo:<odoc_dir>/foo/doc] argument needs to be added
+- A documentation tree named [foo], with root id [foo/doc]. When referred
+  from other trees, a [-P foo:<odoc_dir>/foo/doc] argument needs to be added
   at the link phase.
 
-- A module cluster named [foo], with root id [foo/lib/foo]. When referred from
-  other clusters, a [-L foo:<odoc_dir>/foo/lib/foo] argument needs to be added
+- A module tree named [foo], with root id [foo/lib/foo]. When referred from
+  other trees, a [-L foo:<odoc_dir>/foo/lib/foo] argument needs to be added
   at the link phase.
 
-- A module cluster named [foo.bar], with root id [foo/doc]. When referred from
-  other clusters, a [-L foo.bar:<odoc_dir>/foo/lib/foo.bar] argument needs to be
+- A module tree named [foo.bar], with root id [foo/doc]. When referred from
+  other trees, a [-L foo.bar:<odoc_dir>/foo/lib/foo.bar] argument needs to be
   added at the link phase.
 
 {2 Link-time dependencies}
 
-Installed OPAM packages need to specify which clusters they may be referencing
+Installed OPAM packages need to specify which trees they may be referencing
 during the link phase, so that the proper [-P] and [-L] arguments are
 added. (Note that these dependencies can be circular without problem, as they
 happen during the link phase and only require the artifact from the compile
 phase.)
 
-An installed package [<p>] specifies its cluster dependencies in a file at
+An installed package [<p>] specifies its tree dependencies in a file at
 [<opam root>/doc/<p>/odoc-config.sexp]. This file contains s-expressions.
 
-Stanzas of the form [(packages p1 p2 ...)] specifies that page clusters [p1],
+Stanzas of the form [(packages p1 p2 ...)] specifies that page trees [p1],
 [p2], ..., should be added using the [-P] argument: with the canonical roots, it
 would be [-P p1:<output_dir>/p1/doc -P p2:<output_dir>/p2/doc -P ...].
 
-Stanzas of the form [(libraries l1 l2 ...)] specifies that module clusters [l1],
+Stanzas of the form [(libraries l1 l2 ...)] specifies that module trees [l1],
 [l2], ..., should be added using the [-L] argument: with the canonical roots, it
 would be [-L l1:<output_dir>/p1/lib/l1 -L l2<output_dir>/p2/lib/l2 -L ...],
 where [p1] is the package [l1] is in, etc.
@@ -413,20 +413,20 @@ root>/doc/odoc-assets/].
 {2 The [--parent-id] arguments}
 
 Interface and implementation units have as parent id the root of the library
-cluster they belong to: with "canonical" roots, [<pkgname>/lib/<libname>].
+tree they belong to: with "canonical" roots, [<pkgname>/lib/<libname>].
 
 Page units that are found in [<opam
-root>/doc/<pkgname>/odoc-pages/<relpath>/<name>.mld] have the parent id from their
-page cluster, followed by [<relpath>]. So, with canonical roots,
+root>/doc/<pkgname>/odoc-pages/<relpath>/<name>.mld] have the parent id from
+their page tree, followed by [<relpath>]. So, with canonical roots,
 [<pkgname>/doc/<relpath>].
 
 Asset units that are found in [<opam
 root>/doc/<pkgname>/odoc-pages/<relpath>/<name>.<ext>] have the parent id from
-their page cluster, followed by [<relpath>]. With canonical roots,
+their page tree, followed by [<relpath>]. With canonical roots,
 [<pkgname>/doc/<relpath>].
 
 Asset units that are found in [<opam root>/doc/<pkgname>/odoc-assets/<filename>]
-have the parent id from their page cluster, followed by [_asset/<filename>]
+have the parent id from their page tree, followed by [_asset/<filename>]
 [<p>/doc/_assets/<filename>].
 
 {2 The [--source-id] arguments}
