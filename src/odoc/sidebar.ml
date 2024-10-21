@@ -6,14 +6,18 @@ let toc_to_json ((url, inline) : Odoc_document.Sidebar.entry) : Json.json =
     Odoc_html.Config.v ~semantic_uris:true ~indent:true ~flat:false
       ~open_details:false ~as_json:true ~remap:[] ()
   in
-  let url =
+  let url, kind =
     match url with
-    | None -> `Null
+    | None -> (`Null, `Null)
     | Some url ->
         let href =
           Odoc_html.Link.href ~config ~resolve:(Odoc_html.Link.Base "") url
         in
-        `String href
+        let kind =
+          Format.asprintf "%a" Odoc_document.Url.Anchor.pp_kind url.kind
+        in
+
+        (`String href, `String kind)
   in
   let inline =
     let inline =
@@ -25,7 +29,7 @@ let toc_to_json ((url, inline) : Odoc_document.Sidebar.entry) : Json.json =
     in
     `String inline
   in
-  `Object [ ("url", url); ("content", inline) ]
+  `Object [ ("url", url); ("kind", kind); ("content", inline) ]
 
 let pages_to_json ({ name; pages } : Odoc_document.Sidebar.pages) =
   `Object [ ("name", `String name); ("pages", Tree.to_json toc_to_json pages) ]
