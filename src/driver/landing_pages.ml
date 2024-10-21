@@ -78,10 +78,9 @@ module PackageLanding = struct
     let modules = List.filter (fun m -> not m.m_hidden) lib.modules in
     match modules with
     | [] -> fpf ppf " with no toplevel module."
-    | [ m ] -> fpf ppf " with toplevel module %a" module_link m
     | _ :: _ ->
         let print_module m = fpf ppf "     {- %a}@\n" module_link m in
-        fpf ppf " with toplevel modules : @\n   {ul@\n";
+        fpf ppf "{ul@\n";
         let modules =
           List.sort (fun m m' -> String.compare m.m_name m'.m_name) modules
         in
@@ -90,26 +89,22 @@ module PackageLanding = struct
 
   let library_list ppf pkg =
     let print_lib (lib : Packages.libty) =
-      fpf ppf "{- {{!/%s/lib/%s/index}%s}%a}@\n@\n" pkg.name lib.lib_name
-        lib.lib_name module_list lib
+      fpf ppf "{2 Library %s}@\n%a@\n" lib.lib_name module_list lib
     in
-    fpf ppf "{ul@\n";
     let libraries =
       List.sort
         (fun lib lib' -> String.compare lib.lib_name lib'.lib_name)
         pkg.libraries
     in
-    List.iter print_lib libraries;
-    fpf ppf "}@\n"
+    List.iter print_lib libraries
 
   let content pkg ppf =
     fpf ppf "{0 %s}\n" pkg.name;
     if not (List.is_empty pkg.mlds) then
-      fpf ppf
-        "{1 Documentation pages}@\n@\n{{!/%s/doc/index}Documentation for %s}@\n"
+      fpf ppf "{1 Documentation}@\n@\n{{!/%s/doc/index}Documentation for %s}@\n"
         pkg.name pkg.name;
     if not (List.is_empty pkg.libraries) then
-      fpf ppf "{1 Libraries}@\n@\n%a@\n" library_list pkg
+      fpf ppf "{1 API}@\n@\n%a@\n" library_list pkg
 
   let page ~odoc_dir ~odocl_dir ~mld_dir ~output_dir ~pkg =
     let content = content pkg in
