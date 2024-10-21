@@ -12,16 +12,18 @@
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/page-index.odoc
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/libname/unit.odoc
 
-  $ odoc compile-index -P pkg:_odoc/pkg/ -L libname:_odoc/pkg/libname -o sidebar.odoc-index
-  $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/page-file.odocl
-  $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/dir1/page-my_page.odocl
-  $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/dir1/page-index.odocl
-  $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/page-index.odocl
-  $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/libname/unit.odocl
+  $ odoc compile-index -P pkg:_odoc/pkg/ -L libname:_odoc/pkg/libname
+  $ odoc sidebar-generate index.odoc-index
+
+  $ odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o html _odoc/pkg/page-file.odocl
+  $ odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o html _odoc/pkg/dir1/page-my_page.odocl
+  $ odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o html _odoc/pkg/dir1/page-index.odocl
+  $ odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o html _odoc/pkg/page-index.odocl
+  $ odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o html _odoc/pkg/libname/unit.odocl
 
 A json version of a sidebar can be obtained using the sidebar-generate command:
 
-  $ odoc sidebar-generate --json sidebar.odoc-index
+  $ odoc sidebar-generate --json index.odoc-index
   $ cat sidebar.json | jq
   {
     "pages": [

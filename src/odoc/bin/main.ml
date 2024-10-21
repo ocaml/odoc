@@ -863,7 +863,7 @@ end = struct
       Arg.(
         value
         & opt (some convert_fpath) None
-        & info [ "index" ] ~doc ~docv:"FILE.odoc-index")
+        & info [ "sidebar" ] ~doc ~docv:"FILE.odoc-index")
 
     let cmd =
       let syntax =
