@@ -101,7 +101,7 @@ module PackageLanding = struct
   let content pkg ppf =
     fpf ppf "{0 %s}\n" pkg.name;
     if not (List.is_empty pkg.mlds) then
-      fpf ppf "{1 Documentation}@\n@\n{{!/%s/doc/index}Documentation for %s}@\n"
+      fpf ppf "@\n{{!/%s/doc/index}Documentation for %s}@\n"
         pkg.name pkg.name;
     if not (List.is_empty pkg.libraries) then
       fpf ppf "{1 API}@\n@\n%a@\n" library_list pkg
