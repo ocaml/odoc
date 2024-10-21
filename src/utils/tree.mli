@@ -9,6 +9,7 @@ module type S = sig
   val fold_left : f:('acc -> 'a -> 'acc) -> 'acc -> 'a t -> 'acc
   val iter : f:('a -> unit) -> 'a t -> unit
   val map : f:('a -> 'b) -> 'a t -> 'b t
+  val to_json : ('a -> Json.json) -> 'a t -> Json.json
 end
 
 include S with type 'a t = 'a tree

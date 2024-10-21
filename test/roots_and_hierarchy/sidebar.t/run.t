@@ -19,6 +19,85 @@
   $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/page-index.odocl
   $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/libname/unit.odocl
 
+A json version of a sidebar can be obtained using the sidebar-generate command:
+
+  $ odoc sidebar-generate --json sidebar.odoc-index
+  $ cat sidebar.json | jq
+  {
+    "pages": [
+      {
+        "name": "pkg",
+        "pages": {
+          "node": {
+            "url": "pkg/index.html",
+            "content": "<a href=\"pkg/index.html\">Package <code>pkg</code></a>"
+          },
+          "children": [
+            {
+              "node": {
+                "url": "pkg/dir1/index.html",
+                "content": "<a href=\"pkg/dir1/index.html\">A directory</a>"
+              },
+              "children": [
+                {
+                  "node": {
+                    "url": "pkg/dir1/my_page.html",
+                    "content": "<a href=\"pkg/dir1/my_page.html\">My page</a>"
+                  },
+                  "children": []
+                }
+              ]
+            },
+            {
+              "node": {
+                "url": "pkg/file.html",
+                "content": "<a href=\"pkg/file.html\">File</a>"
+              },
+              "children": []
+            }
+          ]
+        }
+      }
+    ],
+    "libraries": [
+      {
+        "name": "libname",
+        "modules": [
+          {
+            "node": {
+              "url": "pkg/libname/Unit/index.html",
+              "content": "<a href=\"pkg/libname/Unit/index.html\">Unit</a>"
+            },
+            "children": [
+              {
+                "node": {
+                  "url": "pkg/libname/Unit/X/index.html",
+                  "content": "<a href=\"pkg/libname/Unit/X/index.html\">X</a>"
+                },
+                "children": [
+                  {
+                    "node": {
+                      "url": "pkg/libname/Unit/X/Y/index.html",
+                      "content": "<a href=\"pkg/libname/Unit/X/Y/index.html\">Y</a>"
+                    },
+                    "children": []
+                  },
+                  {
+                    "node": {
+                      "url": "pkg/libname/Unit/X/index.html#module-Z",
+                      "content": "<a href=\"pkg/libname/Unit/X/index.html#module-Z\">Z</a>"
+                    },
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+
   $ cat html/pkg/index.html | grep odoc-global-toc -A 15
      <nav class="odoc-toc odoc-global-toc">
       <ul class="odoc-modules">

@@ -2,8 +2,10 @@ open Odoc_utils
 open Types
 module Id = Odoc_model.Paths.Identifier
 
+type entry = Url.t option * Inline.one
+
 module Toc : sig
-  type t
+  type t = entry Tree.t
 
   val of_page_hierarchy : Odoc_index.Page_hierarchy.t -> t
 
@@ -11,7 +13,7 @@ module Toc : sig
 
   val to_block : prune:bool -> Url.Path.t -> t -> Block.t
 end = struct
-  type t = (Url.t option * Inline.one) Tree.t
+  type t = entry Tree.t
 
   let of_page_hierarchy (dir : Odoc_index.Page_hierarchy.t) : t =
     let f index =

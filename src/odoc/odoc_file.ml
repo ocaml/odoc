@@ -116,3 +116,7 @@ let load_root file =
 let save_index dst idx = save_ dst (fun oc -> Marshal.to_channel oc idx [])
 
 let load_index file = load_ file (fun ic -> Ok (Marshal.from_channel ic))
+
+let save_sidebar dst idx = save_ dst (fun oc -> Marshal.to_channel oc idx [])
+
+let load_sidebar file = load_ file (fun ic -> Ok (Marshal.from_channel ic))

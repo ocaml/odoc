@@ -9,9 +9,15 @@ module type S = sig
   val fold_left : f:('acc -> 'a -> 'acc) -> 'acc -> 'a t -> 'acc
   val iter : f:('a -> unit) -> 'a t -> unit
   val map : f:('a -> 'b) -> 'a t -> 'b t
+  val to_json : ('a -> Json.json) -> 'a t -> Json.json
 end
 
 type 'a t = 'a tree
+
+let rec to_json json_of { node; children } : Json.json =
+  `Object [ ("node", json_of node); ("children", to_json_f json_of children) ]
+
+and to_json_f json_of f = `Array (List.map (to_json json_of) f)
 
 let leaf node = { node; children = [] }
 
@@ -50,4 +56,5 @@ module Forest = struct
   let iter = iter_forest
   let map = map_forest
   let filter_map = filter_map_forest
+  let to_json = to_json_f
 end
