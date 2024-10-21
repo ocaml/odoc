@@ -6,6 +6,7 @@ module Id : sig
 end
 
 val index_filename : string
+val sidebar_filename : string
 
 val odoc : Bos.Cmd.t ref
 
@@ -50,9 +51,17 @@ val compile_index :
   unit ->
   unit
 
+val sidebar_generate :
+  ?ignore_output:bool ->
+  output_file:Fpath.t ->
+  json:bool ->
+  Fpath.t ->
+  unit ->
+  unit
+
 val html_generate :
   output_dir:string ->
-  ?index:Fpath.t ->
+  ?sidebar:Fpath.t ->
   ?ignore_output:bool ->
   ?search_uris:Fpath.t list ->
   ?remap:Fpath.t ->

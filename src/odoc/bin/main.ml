@@ -553,14 +553,14 @@ module Sidebar = struct
     | Some file, `JSON when not (Fpath.has_ext "json" (Fpath.v file)) ->
         Error
           (`Msg
-            "When generating a json index, the output must have a .json file \
-             extension")
-    | Some file, `Marshall when not (Fpath.has_ext "odoc-index" (Fpath.v file))
-      ->
+            "When generating a sidebar with --json, the output must have a \
+             .json file extension")
+    | Some file, `Marshall
+      when not (Fpath.has_ext "odoc-sidebar" (Fpath.v file)) ->
         Error
           (`Msg
-            "When generating a binary index, the output must have a \
-             .odoc-sidebar file extension")
+            "When generating sidebar, the output must have a .odoc-sidebar \
+             file extension")
     | Some file, _ -> Ok (Fs.File.of_string file)
     | None, `JSON -> Ok (Fs.File.of_string "sidebar.json")
     | None, `Marshall -> Ok (Fs.File.of_string "sidebar.odoc-sidebar")

@@ -269,7 +269,7 @@ let html_generate ~occurrence_file ~remaps output_dir linked =
   let compile_index : Odoc_unit.index -> _ =
    fun index ->
     let compile_index_one
-        ({ pkg_args; output_file; json; search_dir = _ } as index :
+        ({ pkg_args; output_file; json; search_dir = _; sidebar } as index :
           Odoc_unit.index) =
       let libs_linked = Odoc_unit.Pkg_args.linked_libs pkg_args in
       let pages_linked = Odoc_unit.Pkg_args.linked_pages pkg_args in
@@ -277,7 +277,14 @@ let html_generate ~occurrence_file ~remaps output_dir linked =
         Odoc.compile_index ~json ~occurrence_file ~output_file ~libs:libs_linked
           ~docs:pages_linked ()
       in
-      sherlodoc_index_one ~output_dir index
+      let sidebar =
+        match sidebar with
+        | None -> None
+        | Some { output_file; json } ->
+            Odoc.sidebar_generate ~output_file ~json index.output_file ();
+            Some output_file
+      in
+      (sherlodoc_index_one ~output_dir index, sidebar)
     in
     match Hashtbl.find_opt tbl index.output_file with
     | None ->
@@ -306,18 +313,17 @@ let html_generate ~occurrence_file ~remaps output_dir linked =
            Odoc.html_generate_asset ~output_dir ~input_file:l.odoc_file
              ~asset_path:l.input_file ()
        | _ ->
-           let search_uris, index =
+           let search_uris, sidebar =
              match l.index with
              | None -> (None, None)
              | Some index ->
-                 let db_path = compile_index index in
+                 let db_path, sidebar = compile_index index in
                  let search_uris = [ db_path; Sherlodoc.js_file ] in
-                 let index = index.output_file in
-                 (Some search_uris, Some index)
+                 (Some search_uris, sidebar)
            in
-           Odoc.html_generate ?search_uris ?index ?remap:remap_file ~output_dir
-             ~input_file ();
-           Odoc.html_generate ?search_uris ?index ~output_dir ~input_file
+           Odoc.html_generate ?search_uris ?sidebar ?remap:remap_file
+             ~output_dir ~input_file ();
+           Odoc.html_generate ?search_uris ?sidebar ~output_dir ~input_file
              ~as_json:true ());
     Atomic.incr Stats.stats.generated_units
   in
