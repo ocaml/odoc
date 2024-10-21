@@ -1,17 +1,15 @@
 open Parser
 
 let media_description ref_kind media_kind =
-    let open Parser_aux in
-    let media_kind = match media_kind with
+  let open Parser_aux in
+  let media_kind =
+    match media_kind with
     | Audio -> "audio"
     | Video -> "video"
-    | Image -> "image" 
-    in
-    let ref_kind = match ref_kind with
-    | Reference _ ->  "!"
-    | Link _ -> ":"
-    in 
-    ref_kind, media_kind
+    | Image -> "image"
+  in
+  let ref_kind = match ref_kind with Reference _ -> "!" | Link _ -> ":" in
+  (ref_kind, media_kind)
 
 let print : Parser.token -> string = function
   | SPACE | Space _ -> "\t"
@@ -22,16 +20,14 @@ let print : Parser.token -> string = function
   | Simple_link _ -> "{:"
   | Link_with_replacement _ -> "{{:"
   | Modules _ -> "{!modules:"
-  | Media (ref_kind, media_kind) -> 
-    let (ref_kind, media_kind) = media_description ref_kind media_kind in
-    Printf.sprintf "{%s%s" media_kind ref_kind
-  | Media_with_replacement (ref_kind, media_kind, _) -> 
-    let (ref_kind, media_kind) = media_description ref_kind media_kind in
-    Printf.sprintf "{{%s%s" media_kind ref_kind
-  | Math_span _ -> 
-    "{m"
-  | Math_block _ -> 
-    "{math"
+  | Media (ref_kind, media_kind) ->
+      let ref_kind, media_kind = media_description ref_kind media_kind in
+      Printf.sprintf "{%s%s" media_kind ref_kind
+  | Media_with_replacement (ref_kind, media_kind, _) ->
+      let ref_kind, media_kind = media_description ref_kind media_kind in
+      Printf.sprintf "{{%s%s" media_kind ref_kind
+  | Math_span _ -> "{m"
+  | Math_block _ -> "{math"
   | Code_span _ -> "["
   | Code_block _ -> "{["
   | Word w -> w
@@ -61,20 +57,20 @@ let print : Parser.token -> string = function
   | Section_heading (level, label) ->
       let label = match label with None -> "" | Some label -> ":" ^ label in
       Printf.sprintf "'{%i%s'" level label
-  | Tag (Author _) -> "'@author'"
-  | Tag Deprecated -> "'@deprecated'"
-  | Tag (Param _) -> "'@param'"
-  | Tag (Raise _) -> "'@raise'"
-  | Tag Return -> "'@return'"
-  | Tag (See _) -> "'@see'"
-  | Tag (Since _) -> "'@since'"
-  | Tag (Before _) -> "'@before'"
-  | Tag (Version _) -> "'@version'"
-  | Tag (Canonical _) -> "'@canonical'"
-  | Tag Inline -> "'@inline'"
-  | Tag Open -> "'@open'"
-  | Tag Closed -> "'@closed'"
-  | Tag Hidden -> "'@hidden"
+  | Author _ -> "'@author'"
+  | DEPRECATED -> "'@deprecated'"
+  | Param _ -> "'@param'"
+  | Raise _ -> "'@raise'"
+  | RETURN -> "'@return'"
+  | See _ -> "'@see'"
+  | Since _ -> "'@since'"
+  | Before _ -> "'@before'"
+  | Version _ -> "'@version'"
+  | Canonical _ -> "'@canonical'"
+  | INLINE -> "'@inline'"
+  | OPEN -> "'@open'"
+  | CLOSED -> "'@closed'"
+  | HIDDEN -> "'@hidden"
   | Raw_markup (None, _) -> "'{%...%}'"
   | Raw_markup (Some target, _) -> "'{%" ^ target ^ ":...%}'"
   | END -> "EOI"
@@ -84,12 +80,12 @@ let print : Parser.token -> string = function
    [`Minus] and [`Plus] should always be plausibly list item bullets. *)
 let describe : Parser.token -> string = function
   | Space _ -> "(horizontal space)"
-  | Media (ref_kind, media_kind) -> 
-    let (ref_kind, media_kind) = media_description ref_kind media_kind in
-    Printf.sprintf "{%s%s" media_kind ref_kind
-  | Media_with_replacement (ref_kind, media_kind, _) -> 
-    let (ref_kind, media_kind) = media_description ref_kind media_kind in
-    Printf.sprintf "{{%s%s" media_kind ref_kind
+  | Media (ref_kind, media_kind) ->
+      let ref_kind, media_kind = media_description ref_kind media_kind in
+      Printf.sprintf "{%s%s" media_kind ref_kind
+  | Media_with_replacement (ref_kind, media_kind, _) ->
+      let ref_kind, media_kind = media_description ref_kind media_kind in
+      Printf.sprintf "{{%s%s" media_kind ref_kind
   | Word w -> Printf.sprintf "'%s'" w
   | Code_span _ -> "'[...]' (code)"
   | Raw_markup _ -> "'{%...%}' (raw markup)"
@@ -104,8 +100,7 @@ let describe : Parser.token -> string = function
   | Math_span _ -> "'{m ...}' (math span)"
   | Math_block _ -> "'{math ...}' (math block)"
   | Simple_ref _ -> "'{!...}' (cross-reference)"
-  | Ref_with_replacement _ ->
-      "'{{!...} ...}' (cross-reference)"
+  | Ref_with_replacement _ -> "'{{!...} ...}' (cross-reference)"
   | Simple_link _ -> "'{:...} (external link)'"
   | Link_with_replacement _ -> "'{{:...} ...}' (external link)"
   | END -> "end of text"
@@ -131,25 +126,24 @@ let describe : Parser.token -> string = function
   | BAR -> "'|'"
   | Section_heading (level, _) ->
       Printf.sprintf "'{%i ...}' (section heading)" level
-  | Tag (Author _) -> "'@author'"
-  | Tag Deprecated -> "'@deprecated'"
-  | Tag (Param _) -> "'@param'"
-  | Tag (Raise _) -> "'@raise'"
-  | Tag ( Return ) -> "'@return'"
-  | Tag (See _) -> "'@see'"
-  | Tag (Since _) -> "'@since'"
-  | Tag (Before _) -> "'@before'"
-  | Tag (Version _) -> "'@version'"
-  | Tag (Canonical _) -> "'@canonical'"
-  | Tag Inline -> "'@inline'"
-  | Tag Open -> "'@open'"
-  | Tag Closed -> "'@closed'"
-  | Tag Hidden -> "'@hidden"
+  | Author _ -> "'@author'"
+  | DEPRECATED -> "'@deprecated'"
+  | Param _ -> "'@param'"
+  | Raise _ -> "'@raise'"
+  | RETURN -> "'@return'"
+  | See _ -> "'@see'"
+  | Since _ -> "'@since'"
+  | Before _ -> "'@before'"
+  | Version _ -> "'@version'"
+  | Canonical _ -> "'@canonical'"
+  | INLINE -> "'@inline'"
+  | OPEN -> "'@open'"
+  | CLOSED -> "'@closed'"
+  | HIDDEN -> "'@hidden"
 
 (* NOTE : (@faycarsons) Should this be in Ast.ml? This takes an Ast.t no? *)
 let describe_element = function
   | `Reference (`Simple, _, _) -> describe (Simple_ref "")
-  | `Reference (`With_text, _, _) ->
-      describe (Ref_with_replacement "")
+  | `Reference (`With_text, _, _) -> describe (Ref_with_replacement "")
   | `Link _ -> describe (Link_with_replacement "")
   | `Heading (level, _, _) -> describe (Section_heading (level, None))

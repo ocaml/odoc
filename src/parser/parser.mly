@@ -1,58 +1,9 @@
 %{
   open Parser_aux
 
-  let point_of_position Lexing.{ pos_lnum; pos_cnum; pos_bol; _ } = 
-      Loc.{ line = pos_lnum; column = pos_cnum - pos_bol }
-
-  type lexspan = (Lexing.position * Lexing.position)
-  let to_location :  lexspan -> Loc.span =
-    fun (start, end_) -> 
-      let open Loc in
-      let start_point = point_of_position start 
-      and end_point = point_of_position end_ in 
-      { file = start.pos_fname; start = start_point; end_ = end_point } 
-
   let wrap_location : lexspan -> 'a -> 'a Loc.with_location = fun loc value -> 
-    let location = to_location loc in 
+    let location = Parser_aux.to_location loc in 
     { location; value }
-
-  let pp_tag : Parser_aux.tag -> string = function 
-  | Author _ -> "@author"
-  | Deprecated -> "@deprecated"
-  | Param _ -> "@param"
-  | Raise _ -> "@raise/@raises"
-  | Return -> "@return"
-  | See _ -> "@see"
-  | Since _ -> "@since"
-  | Before _ -> "@before"
-  | Version _ -> "@version"
-  | Canonical _ -> "@canonical"
-  | Inline | Open | Closed | Hidden -> "<internal>"
-
-  exception No_children of string Loc.with_location
-
-  let tag : Ast.tag -> Ast.block_element = fun tag -> `Tag tag 
-
-  let tag_with_element (children : Ast.nestable_block_element Loc.with_location list) : Parser_aux.tag -> Ast.block_element = function 
-  | Before version -> tag @@ `Before (version, children) 
-  | Deprecated -> tag @@ `Deprecated children
-  | Return -> tag @@ `Return children
-  | Param param_name -> tag @@ `Param (param_name, children)
-  | Raise exn -> tag @@ `Raise (exn, children)
-  | See (kind, href) -> tag @@ `See (kind, href, children)
-  | _ -> assert false (* Unreachable *)
-
-  let tag_bare loc = function 
-  | Version version -> tag @@ `Version version 
-  | Since version -> tag @@ `Since version 
-  | Canonical implementation -> tag @@ `Canonical (wrap_location loc implementation)
-  | Author author -> tag @@ `Author author
-  | Inline -> `Tag `Inline 
-  | Open -> `Tag `Open 
-  | Closed -> `Tag `Closed
-  | Hidden -> `Tag `Hidden
-  (* NOTE: (@FayCarsons) This should be unreachable, remove after dev *)
-  | tag -> raise @@ No_children (wrap_location loc @@ Printf.sprintf "Tag %s expects children" (pp_tag tag)) 
 
   type align_error = 
   | Invalid_align (* An invalid align cell *)
@@ -181,7 +132,18 @@
 
 %token <int * string option> Section_heading
 
-%token <Parser_aux.tag> Tag
+(* Tags *)
+%token <string> Author
+%token DEPRECATED
+%token <string> Param
+%token <string> Raise
+%token RETURN
+%token <[ `Url | `File | `Document ] * string> See
+%token <string> Since
+%token <string> Before
+%token <string> Version
+%token <string> Canonical
+%token INLINE OPEN CLOSED HIDDEN
 
 %token <string> Simple_ref 
 %token <string> Ref_with_replacement 
@@ -229,9 +191,33 @@ let heading :=
   | (num, title) = Section_heading; children = list(located(inline_element)); RIGHT_BRACE; 
     { `Heading (num, title, children) }
 
-let tag := 
-  | inner_tag = Tag; children = located(nestable_block_element)+; { tag_with_element children inner_tag }
-  | inner_tag = Tag; { tag_bare $loc inner_tag }
+let tag == 
+  | ~ = tag_with_content; <`Tag>
+  | ~ = tag_bare; <`Tag>
+
+let tag_with_content := 
+  | version = Before; children = located(nestable_block_element)+; 
+    { `Before (version, children) }
+  | DEPRECATED; children = located(nestable_block_element)+; 
+    { `Deprecated children }
+  | RETURN; children = located(nestable_block_element)+;
+    { `Return children }
+  | ident = Param; children = located(nestable_block_element)+;
+    { `Param (ident, children) }
+  | exn = Raise; children = located(nestable_block_element)+;
+    { `Raise (exn, children) }
+  | (kind, href) = See; children = located(nestable_block_element)+;
+    { `See (kind, href, children) }
+
+let tag_bare :=
+  | version = Version; { `Version version }
+  | version = Since; { `Since version }
+  | impl = located(Canonical); { `Canonical impl }
+  | version = Author; { `Author version }
+  | OPEN; { `Open }
+  | INLINE; { `Inline }
+  | CLOSED; { `Closed }
+  | HIDDEN; { `Hidden }
 
 (* INLINE ELEMENTS *)
 

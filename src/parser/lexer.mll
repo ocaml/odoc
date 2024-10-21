@@ -525,52 +525,52 @@ and token input = parse
     { emit lexbuf input (Section_heading (heading_level lexbuf input level, None)) }
 
   | "@author" ((horizontal_space+ [^ '\r' '\n']*)? as author)
-    { emit lexbuf input (Tag (Author author)) }
+    { emit lexbuf input (Author author) }
 
   | "@deprecated"
-    { emit lexbuf input (Tag Deprecated) }
+    { emit lexbuf input DEPRECATED }
 
   | "@param" horizontal_space+ ((_ # space_char)+ as name)
-    { emit lexbuf input (Tag (Param name)) }
+    { emit lexbuf input (Param name) }
 
   | ("@raise" | "@raises") horizontal_space+ ((_ # space_char)+ as name)
-    { emit lexbuf input (Tag (Raise name)) }
+    { emit lexbuf input (Raise name) }
 
   | ("@return" | "@returns")
-    { emit lexbuf input (Tag Return) }
+    { emit lexbuf input RETURN }
 
   | "@see" horizontal_space* '<' ([^ '>']* as url) '>'
-    { emit lexbuf input (Tag (See (`Url, url))) }
+    { emit lexbuf input (See (`Url, url)) }
 
   | "@see" horizontal_space* '\'' ([^ '\'']* as filename) '\''
-    { emit lexbuf input (Tag (See (`File, filename))) }
+    { emit lexbuf input (See (`File, filename)) }
 
   | "@see" horizontal_space* '"' ([^ '"']* as name) '"'
-    { emit lexbuf input (Tag (See (`Document, name))) }
+    { emit lexbuf input (See (`Document, name)) }
 
   | "@since" ((horizontal_space+ [^ '\r' '\n']*)? as version)
-    { emit lexbuf input (Tag (Since version)) }
+    { emit lexbuf input (Since version) }
 
   | "@before" horizontal_space+ ((_ # space_char)+ as version)
-    { emit lexbuf input (Tag (Before version)) }
+    { emit lexbuf input (Before version) }
 
   | "@version" ((horizontal_space+ [^ '\r' '\n']*)? as version)
-    { emit lexbuf input (Tag (Version version)) }
+    { emit lexbuf input (Version version) }
 
   | "@canonical" ((horizontal_space+ [^ '\r' '\n']*)? as identifier)
-    { emit lexbuf input (Tag (Canonical identifier)) }
+    { emit lexbuf input (Canonical identifier) }
 
   | "@inline"
-    { emit lexbuf input (Tag Inline) }
+    { emit lexbuf input INLINE }
 
   | "@open"
-    { emit lexbuf input (Tag Open) }
+    { emit lexbuf input OPEN }
 
   | "@closed"
-    { emit lexbuf input (Tag Closed) }
+    { emit lexbuf input CLOSED }
 
   | "@hidden"
-    { emit lexbuf input (Tag Hidden) }
+    { emit lexbuf input HIDDEN }
 
   | "]}"
     { emit lexbuf input RIGHT_CODE_DELIMITER}
@@ -590,15 +590,15 @@ and token input = parse
 
   | "@param"
     { warning lexbuf input Parse_error.truncated_param;
-      emit lexbuf input (Tag (Param "")) }
+      emit lexbuf input (Param "") }
 
   | ("@raise" | "@raises") as tag
     { warning lexbuf input (Parse_error.truncated_raise tag);
-      emit lexbuf input (Tag (Raise "")) }
+      emit lexbuf input (Raise "") }
 
   | "@before"
     { warning lexbuf input Parse_error.truncated_before;
-      emit lexbuf input (Tag (Before "")) }
+      emit lexbuf input (Before "") }
 
   | "@see"
     { warning lexbuf input Parse_error.truncated_see;
