@@ -159,18 +159,20 @@ let of_lang (v : Odoc_index.t) =
 
 let to_block (sidebar : t) path =
   let { pages; libraries } = sidebar in
-  let title t =
-    block
-      (Inline [ inline (Inline.Styled (`Bold, [ inline (Inline.Text t) ])) ])
-  in
+  let title t = block (Inline [ inline (Inline.Styled (`Bold, t)) ]) in
   let pages =
-    Odoc_utils.List.concat_map
-      ~f:(fun (p : pages) ->
-        let pages = Toc.to_block ~prune:false path p.pages in
-        let pages = [ block (Block.List (Block.Unordered, [ pages ])) ] in
-        let pages = [ title @@ p.name ^ "'s Pages" ] @ pages in
-        pages)
-      pages
+    let pages =
+      Odoc_utils.List.concat_map
+        ~f:(fun (p : pages) ->
+          let () = ignore p.name in
+          let pages = Toc.to_block ~prune:false path p.pages in
+          [
+            block ~attr:[ "odoc-pages" ]
+              (Block.List (Block.Unordered, [ pages ]));
+          ])
+        pages
+    in
+    [ title @@ [ inline (Inline.Text "Documentation") ] ] @ pages
   in
   let units =
     let units =
@@ -180,11 +182,19 @@ let to_block (sidebar : t) path =
             List.concat_map ~f:(Toc.to_block ~prune:true path) units
           in
           let units = [ block (Block.List (Block.Unordered, [ units ])) ] in
-          let units = [ title @@ name ^ "'s Units" ] @ units in
-          units)
+          [
+            title
+            @@ [
+                 inline (Inline.Text "Library ");
+                 inline (Inline.Source [ Elt [ inline @@ Text name ] ]);
+               ];
+          ]
+          @ units)
         libraries
     in
-    let units = block (Block.List (Block.Unordered, units)) in
-    [ title "Libraries"; units ]
+    let units =
+      block ~attr:[ "odoc-modules" ] (Block.List (Block.Unordered, units))
+    in
+    [ units ]
   in
-  pages @ units
+  units @ pages
