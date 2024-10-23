@@ -71,21 +71,16 @@ end
 
 module PackageLanding = struct
   let module_list ppf lib =
-    let module_link ppf m =
-      fpf ppf "{{:lib/%s/%s/index.html}[%s]}" lib.lib_name m.Packages.m_name
-        m.Packages.m_name
-    in
     let modules = List.filter (fun m -> not m.m_hidden) lib.modules in
     match modules with
     | [] -> fpf ppf " with no toplevel module."
     | _ :: _ ->
-        let print_module m = fpf ppf "     {- %a}@\n" module_link m in
-        fpf ppf "{ul@\n";
         let modules =
           List.sort (fun m m' -> String.compare m.m_name m'.m_name) modules
         in
-        List.iter print_module modules;
-        fpf ppf "   }@\n"
+        fpf ppf "     {!modules:";
+        List.iter (fun m -> fpf ppf " %s" m.m_name) modules;
+        fpf ppf "     }@\n"
 
   let library_list ppf pkg =
     let print_lib (lib : Packages.libty) =
@@ -101,10 +96,14 @@ module PackageLanding = struct
   let content pkg ppf =
     fpf ppf "{0 %s}\n" pkg.name;
     if not (List.is_empty pkg.mlds) then
-      fpf ppf "@\n{{!/%s/doc/index}Documentation for %s}@\n"
-        pkg.name pkg.name;
+      fpf ppf "@\n{{!/%s/doc/index}Documentation for %s}@\n" pkg.name pkg.name;
     if not (List.is_empty pkg.libraries) then
       fpf ppf "{1 API}@\n@\n%a@\n" library_list pkg
+
+  let include_dirs ~odoc_dir pkg =
+    List.map
+      (fun lib -> Fpath.(odoc_dir // pkg.pkg_dir / "lib" / lib.lib_name))
+      pkg.Packages.libraries
 
   let page ~odoc_dir ~odocl_dir ~mld_dir ~output_dir ~pkg =
     let content = content pkg in
@@ -112,8 +111,9 @@ module PackageLanding = struct
     let pkg_args =
       { pages = [ (pkg.name, Fpath.( // ) odoc_dir rel_path) ]; libs = [] }
     in
+    let include_dirs = include_dirs ~odoc_dir pkg in
     make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir rel_path ~content
-      ~pkgname:pkg.name ~pkg_args ()
+      ~pkgname:pkg.name ~pkg_args ~include_dirs ()
 end
 
 module PackageList = struct
