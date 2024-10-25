@@ -573,7 +573,7 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
         in
         List.iter
           (fun (path, content) ->
-            Format.eprintf "writing raw html to %a@." Fpath.pp path;
+            Logs.debug (fun m -> m "writing raw html to %a" Fpath.pp path);
             let path = Fpath.(v "_html" // path) in
             Out_channel.with_open_text (Fpath.to_string path) (fun ch ->
                 output_string ch content))
