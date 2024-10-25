@@ -4,4 +4,4 @@ val of_packages :
   odocl_dir:Fpath.t ->
   output_dir:Fpath.t ->
   Packages.t list ->
-  [> `Mld ] Odoc_unit.unit list
+  (Fpath.t * string) list * [ `Mld ] Odoc_unit.unit list
