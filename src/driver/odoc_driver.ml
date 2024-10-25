@@ -557,20 +557,27 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
   let () =
     Eio.Fiber.both
       (fun () ->
-        let all =
+        let htmls, all =
           let all = Util.StringMap.bindings all |> List.map snd in
           let internal =
             Odoc_unit.of_packages ~output_dir:odoc_dir ~linked_dir:odocl_dir
               ~index_dir:None all
           in
-          let external_ =
+          let htmls, external_ =
             let mld_dir = odoc_dir in
             let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
             Landing_pages.of_packages ~mld_dir ~odoc_dir ~odocl_dir
               ~output_dir:odoc_dir all
           in
-          internal @ external_
+          (htmls, internal @ (external_ :> Odoc_unit.t list))
         in
+        List.iter
+          (fun (path, content) ->
+            Format.eprintf "writing raw html to %a@." Fpath.pp path;
+            let path = Fpath.(v "_html" // path) in
+            Out_channel.with_open_text (Fpath.to_string path) (fun ch ->
+                output_string ch content))
+          htmls;
         Compile.init_stats all;
         let compiled =
           Compile.compile ?partial ~partial_dir:odoc_dir ?linked_dir:odocl_dir
