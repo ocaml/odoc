@@ -22,6 +22,8 @@ type compile_deps = { digest : Digest.t; deps : (string * Digest.t) list }
 
 let odoc = ref (Cmd.v "odoc")
 
+let odoc_md = ref (Cmd.v "odoc-md")
+
 let compile_deps f =
   let cmd = Cmd.(!odoc % "compile-deps" % Fpath.to_string f) in
   let desc = Printf.sprintf "Compile deps for %s" (Fpath.to_string f) in
@@ -54,6 +56,22 @@ let compile ~output_dir ~input_file:file ~includes ~parent_id =
        (Some (`Compile, Fpath.to_string file))
        desc cmd output_file
 
+let compile_md ~output_dir ~input_file:file ~parent_id =
+  let open Cmd in
+  let output_file =
+    let _, f = Fpath.split_base file in
+    Some Fpath.(output_dir // Id.to_fpath parent_id // set_ext "odoc" f)
+  in
+  let cmd =
+    !odoc_md % Fpath.to_string file % "--output-dir" % p output_dir
+  in
+  let cmd = cmd % "--parent-id" % Id.to_string parent_id in
+  let desc = Printf.sprintf "Compiling Markdown %s" (Fpath.to_string file) in
+  let lines = Cmd_outputs.submit desc cmd output_file in
+  Cmd_outputs.(
+    add_prefixed_output cmd compile_output (Fpath.to_string file) lines)
+
+        
 let compile_asset ~output_dir ~name ~parent_id =
   let open Cmd in
   let output_file =

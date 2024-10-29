@@ -44,10 +44,10 @@ type impl_extra = { src_id : Odoc.Id.t; src_path : Fpath.t }
 type impl = [ `Impl of impl_extra ]
 
 type mld = [ `Mld ]
-
+type md = [`Md]
 type asset = [ `Asset ]
 
-type t = [ impl | intf | mld | asset ] unit
+type t = [ impl | intf | mld | asset | md ] unit
 
 val pp : t Fmt.t
 
