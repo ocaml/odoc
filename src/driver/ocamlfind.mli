@@ -10,5 +10,18 @@ val archives : string -> string list
 val sub_libraries : string -> Util.StringSet.t
 (** Returns the list of sublibraries of a given library *)
 
-val deps : string list -> (string list, [> `Msg of string ]) result
+val deps : string list -> (Util.StringSet.t, [> `Msg of string ]) result
 (** Returns the list of transitive package dependencies of given libraries *)
+
+module Db : sig
+  type t = {
+    all_libs : Util.StringSet.t;
+    all_lib_deps : Util.StringSet.t Util.StringMap.t;
+    lib_dirs_and_archives : (string * Fpath.t * Util.StringSet.t) list;
+    archives_by_dir : Util.StringSet.t Fpath.map;
+    libname_of_archive : string Fpath.map;
+    cmi_only_libs : (Fpath.t * string) list;
+  }
+
+  val create : Util.StringSet.t -> t
+end

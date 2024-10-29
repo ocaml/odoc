@@ -43,3 +43,9 @@ let parse s =
   of_ast ast
 
 let empty = { deps = { libraries = []; packages = [] } }
+
+let load pkg_name =
+  let config_file =
+    Fpath.(v (Opam.prefix ()) / "doc" / pkg_name / "odoc-config.sexp")
+  in
+  match Bos.OS.File.read config_file with Error _ -> empty | Ok s -> parse s

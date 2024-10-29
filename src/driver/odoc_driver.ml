@@ -554,7 +554,11 @@ let remap_virtual_interfaces duplicate_hashes pkgs =
 type mode =
   | Voodoo of { package_name : string; blessed : bool }
   | Dune of { path : Fpath.t }
-  | Opam of { packages : string list; packages_dir : Fpath.t option }
+  | Opam of {
+      libs : string list;
+      packages : string list;
+      packages_dir : Fpath.t option;
+    }
 
 let run mode
     {
@@ -587,13 +591,19 @@ let run mode
         let extra_libs_paths = Voodoo.extra_libs_paths odoc_dir in
         (all, extra_libs_paths)
     | Dune { path } -> (Dune_style.of_dune_build path, Util.StringMap.empty)
-    | Opam { packages; packages_dir } ->
-        let libs = if packages = [] then Ocamlfind.all () else packages in
-        let libs =
-          List.map Ocamlfind.sub_libraries libs
-          |> List.fold_left Util.StringSet.union Util.StringSet.empty
-        in
-        (Packages.of_libs ~packages_dir libs, Util.StringMap.empty)
+    | Opam { libs; packages; packages_dir } -> (
+        match (libs, packages) with
+        | [], packages ->
+            (Packages.of_packages ~packages_dir packages, Util.StringMap.empty)
+        | libs, [] ->
+            let libs =
+              List.map Ocamlfind.sub_libraries libs
+              |> List.fold_left Util.StringSet.union Util.StringSet.empty
+            in
+            (Packages.of_libs ~packages_dir libs, Util.StringMap.empty)
+        | _, _ ->
+            failwith
+              "Please specify either packages (-p) or libraries (-l), not both")
   in
 
   let virtual_check =
@@ -705,12 +715,18 @@ module Dune_mode = struct
 end
 
 module Opam_mode = struct
-  let run packages packages_dir = run (Opam { packages; packages_dir })
+  let run libs packages packages_dir =
+    run (Opam { libs; packages; packages_dir })
 
   let packages =
     (* TODO: Is it package or library? *)
-    let doc = "The packages to document" in
+    let doc = "The packages to document (mutually exclusive with -l)" in
     Arg.(value & opt_all string [] & info [ "p" ] ~doc)
+
+  let libs =
+    (* TODO: Is it package or library? *)
+    let doc = "The libraries to document (mutually exclusive with -p)" in
+    Arg.(value & opt_all string [] & info [ "l" ] ~doc)
 
   let packages_dir =
     let doc = "Packages directory under which packages should be output." in
@@ -720,9 +736,10 @@ module Opam_mode = struct
       & info [ "packages-dir" ] ~doc)
 
   let cmd =
-    let doc = "Opam mode" in
+    let doc = "Documents the packages present in your opam switch." in
     let info = Cmd.info "opam" ~doc in
-    Cmd.v info Term.(const run $ packages $ packages_dir $ Common_args.term)
+    Cmd.v info
+      Term.(const run $ libs $ packages $ packages_dir $ Common_args.term)
 end
 
 let cmd =
