@@ -214,7 +214,8 @@ let link : compiled list -> _ =
   let link : compiled -> linked =
    fun c ->
     let link input_file output_file =
-      let { Odoc_unit.libs; pages; _ } = c.pkg_args in
+      let libs = Odoc_unit.Pkg_args.compiled_libs c.pkg_args in
+      let pages = Odoc_unit.Pkg_args.compiled_pages c.pkg_args in
       let includes = c.include_dirs in
       Odoc.link ~input_file ~output_file ~includes ~libs ~docs:pages
         ~current_package:c.pkgname ()
@@ -251,13 +252,10 @@ let html_generate ~occurrence_file output_dir linked =
   let compile_index : Odoc_unit.index -> _ =
    fun index ->
     let compile_index_one
-        ({
-           pkg_args = { pages_linked; libs_linked; _ };
-           output_file;
-           json;
-           search_dir = _;
-         } as index :
+        ({ pkg_args; output_file; json; search_dir = _ } as index :
           Odoc_unit.index) =
+      let libs_linked = Odoc_unit.Pkg_args.linked_libs pkg_args in
+      let pages_linked = Odoc_unit.Pkg_args.linked_pages pkg_args in
       let () =
         Odoc.compile_index ~json ~occurrence_file ~output_file ~libs:libs_linked
           ~docs:pages_linked ()

@@ -1,21 +1,43 @@
-type pkg_args = {
-  pages : (string * Fpath.t) list;
-  libs : (string * Fpath.t) list;
-  pages_linked : (string * Fpath.t) list;
-  libs_linked : (string * Fpath.t) list;
-}
+module Pkg_args = struct
+  type t = {
+    compile_dir : Fpath.t;
+    link_dir : Fpath.t;
+    pages : (string * Fpath.t) list;
+    libs : (string * Fpath.t) list;
+  }
 
-let pp_pkg_args fmt x =
-  let sfp_pp =
-    Fmt.(
-      list ~sep:comma (fun fmt (a, b) ->
-          Format.fprintf fmt "(%s, %a)" a Fpath.pp b))
-  in
-  Format.fprintf fmt "@[<hov>pages: [%a]@;libs: [%a]@]" sfp_pp x.pages sfp_pp
-    x.libs
+  let map_rel dir = List.map (fun (a, b) -> (a, Fpath.(dir // b)))
+
+  let compiled_pages v = map_rel v.compile_dir v.pages
+  let compiled_libs v = map_rel v.compile_dir v.libs
+  let linked_pages v = map_rel v.link_dir v.pages
+  let linked_libs v = map_rel v.link_dir v.libs
+
+  let combine v1 v2 =
+    if v1.compile_dir <> v2.compile_dir then
+      Fmt.invalid_arg "combine: compile_dir differs";
+    if v1.link_dir <> v2.link_dir then
+      Fmt.invalid_arg "combine: link_dir differs";
+    {
+      compile_dir = v1.compile_dir;
+      link_dir = v1.link_dir;
+      pages = v1.pages @ v2.pages;
+      libs = v1.libs @ v2.libs;
+    }
+
+  let pp fmt x =
+    let sfp_pp =
+      Fmt.(
+        list ~sep:comma (fun fmt (a, b) ->
+            Format.fprintf fmt "(%s, %a)" a Fpath.pp b))
+    in
+    Format.fprintf fmt
+      "@[<hov>compile_dir: %a@;link_dir: %a@;pages: [%a]@;libs: [%a]@]" Fpath.pp
+      x.compile_dir Fpath.pp x.link_dir sfp_pp x.pages sfp_pp x.libs
+end
 
 type index = {
-  pkg_args : pkg_args;
+  pkg_args : Pkg_args.t;
   output_file : Fpath.t;
   json : bool;
   search_dir : Fpath.t;
@@ -24,7 +46,7 @@ type index = {
 let pp_index fmt x =
   Format.fprintf fmt
     "@[<hov>pkg_args: %a@;output_file: %a@;json: %b@;search_dir: %a@]"
-    pp_pkg_args x.pkg_args Fpath.pp x.output_file x.json Fpath.pp x.search_dir
+    Pkg_args.pp x.pkg_args Fpath.pp x.output_file x.json Fpath.pp x.search_dir
 
 type 'a unit = {
   parent_id : Odoc.Id.t;
@@ -33,7 +55,7 @@ type 'a unit = {
   output_dir : Fpath.t;
   odoc_file : Fpath.t;
   odocl_file : Fpath.t;
-  pkg_args : pkg_args;
+  pkg_args : Pkg_args.t;
   pkgname : string;
   include_dirs : Fpath.Set.t;
   index : index option;
@@ -89,7 +111,7 @@ and pp : all_kinds unit Fmt.t =
      @]"
     (Odoc.Id.to_string x.parent_id)
     Fpath.pp x.odoc_dir Fpath.pp x.input_file Fpath.pp x.output_dir Fpath.pp
-    x.odoc_file Fpath.pp x.odocl_file pp_pkg_args x.pkg_args x.pkgname
+    x.odoc_file Fpath.pp x.odocl_file Pkg_args.pp x.pkg_args x.pkgname
     Fmt.(list ~sep:comma Fpath.pp)
     (Fpath.Set.to_list x.include_dirs)
     (Fmt.option pp_index) x.index pp_kind
@@ -143,17 +165,17 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
         []
   in
   (* Given a pkg,  *)
-  let base_args pkg lib_deps : pkg_args =
+  let base_args pkg lib_deps : Pkg_args.t =
     let own_page = dash_p pkg in
     let own_libs = List.concat_map dash_l (Util.StringSet.to_list lib_deps) in
-    let map_rel dir = List.map (fun (a, b) -> (a, Fpath.(dir // b))) in
-    let pages = map_rel output_dir [ own_page ] in
-    let libs = map_rel output_dir own_libs in
-    let pages_linked = map_rel linked_dir [ own_page ] in
-    let libs_linked = map_rel linked_dir own_libs in
-    { pages; libs; pages_linked; libs_linked }
+    {
+      pages = [ own_page ];
+      libs = own_libs;
+      compile_dir = output_dir;
+      link_dir = linked_dir;
+    }
   in
-  let args_of_config config : pkg_args =
+  let args_of_config config : Pkg_args.t =
     let { Global_config.deps = { packages; libraries } } = config in
     let pages_rel =
       List.filter_map
@@ -164,42 +186,22 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
         packages
     in
     let libs_rel = List.concat_map dash_l libraries in
-    let map_rel dir = List.map (fun (a, b) -> (a, Fpath.(dir // b))) in
-    let pages = map_rel output_dir pages_rel in
-    let libs = map_rel output_dir libs_rel in
-    let pages_linked = map_rel linked_dir pages_rel in
-    let libs_linked = map_rel linked_dir libs_rel in
-    { pages; libs; pages_linked; libs_linked }
+    {
+      pages = pages_rel;
+      libs = libs_rel;
+      compile_dir = output_dir;
+      link_dir = linked_dir;
+    }
   in
   let args_of =
     let cache = Hashtbl.create 10 in
-    fun pkg lib_deps : pkg_args ->
+    fun pkg lib_deps : Pkg_args.t ->
       match Hashtbl.find_opt cache (pkg, lib_deps) with
       | Some res -> res
       | None ->
-          let {
-            pages = own_page;
-            libs = own_libs;
-            pages_linked = own_p_l;
-            libs_linked = own_l_l;
-          } =
-            base_args pkg lib_deps
-          in
-          let {
-            pages = config_pages;
-            libs = config_libs;
-            pages_linked = cfg_p_l;
-            libs_linked = cfg_l_l;
-          } =
-            args_of_config pkg.Packages.config
-          in
           let result =
-            {
-              pages = own_page @ config_pages;
-              libs = own_libs @ config_libs;
-              pages_linked = own_p_l @ cfg_p_l;
-              libs_linked = own_l_l @ cfg_l_l;
-            }
+            Pkg_args.combine (base_args pkg lib_deps)
+              (args_of_config pkg.Packages.config)
           in
           Hashtbl.add cache (pkg, lib_deps) result;
           result

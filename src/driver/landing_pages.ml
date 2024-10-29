@@ -3,8 +3,6 @@ open Odoc_unit
 
 let fpf = Format.fprintf
 
-let make_rel dir l = List.map (fun (x, y) -> (x, Fpath.(dir // y))) l
-
 let make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir rel_path ~content
     ?(include_dirs = Fpath.Set.empty) ~pkgname ~pkg_args () =
   let input_file = Fpath.(mld_dir // rel_path / "index.mld") in
@@ -45,10 +43,10 @@ module PackageLanding = struct
     let pages_rel = [ (pkg.name, rel_path) ] in
     let pkg_args =
       {
-        pages = make_rel output_dir pages_rel;
+        Pkg_args.pages = pages_rel;
         libs = [];
-        pages_linked = make_rel odocl_dir pages_rel;
-        libs_linked = [];
+        compile_dir = output_dir;
+        link_dir = odocl_dir;
       }
     in
     make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir rel_path ~content
@@ -73,10 +71,10 @@ module PackageList = struct
     let pages_rel = [ (pkgname, rel_path) ] in
     let pkg_args =
       {
-        pages = make_rel odoc_dir pages_rel;
+        Pkg_args.pages = pages_rel;
         libs = [];
-        pages_linked = make_rel odocl_dir pages_rel;
-        libs_linked = [];
+        compile_dir = output_dir;
+        link_dir = odocl_dir;
       }
     in
     make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir ~content ~pkgname
@@ -97,10 +95,10 @@ module LibraryLanding = struct
     let pages_rel = [ (pkg.name, rel_path) ] in
     let pkg_args =
       {
-        pages = make_rel odoc_dir pages_rel;
+        Pkg_args.pages = pages_rel;
         libs = [];
-        pages_linked = make_rel odocl_dir pages_rel;
-        libs_linked = [];
+        link_dir = odocl_dir;
+        compile_dir = output_dir;
       }
     in
     let include_dirs = Fpath.Set.singleton Fpath.(odoc_dir // rel_path) in
@@ -122,10 +120,10 @@ module PackageLibLanding = struct
     let pages_rel = [ (pkg.name, rel_path) ] in
     let pkg_args =
       {
-        pages = make_rel odoc_dir pages_rel;
+        Pkg_args.pages = pages_rel;
         libs = [];
-        pages_linked = make_rel odocl_dir pages_rel;
-        libs_linked = [];
+        compile_dir = output_dir;
+        link_dir = odocl_dir;
       }
     in
     make_unit ~odoc_dir ~odocl_dir ~mld_dir ~output_dir rel_path ~content

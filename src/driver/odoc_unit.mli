@@ -1,12 +1,23 @@
-type pkg_args = {
-  pages : (string * Fpath.t) list;
-  libs : (string * Fpath.t) list;
-  pages_linked : (string * Fpath.t) list;
-  libs_linked : (string * Fpath.t) list;
-}
+module Pkg_args : sig
+  type t = {
+    compile_dir : Fpath.t;
+    link_dir : Fpath.t;
+    pages : (string * Fpath.t) list;
+    libs : (string * Fpath.t) list;
+  }
+
+  val compiled_pages : t -> (string * Fpath.t) list
+  val compiled_libs : t -> (string * Fpath.t) list
+  val linked_pages : t -> (string * Fpath.t) list
+  val linked_libs : t -> (string * Fpath.t) list
+
+  val combine : t -> t -> t
+
+  val pp : t Fmt.t
+end
 
 type index = {
-  pkg_args : pkg_args;
+  pkg_args : Pkg_args.t;
   output_file : Fpath.t;
   json : bool;
   search_dir : Fpath.t;
@@ -19,7 +30,7 @@ type 'a unit = {
   output_dir : Fpath.t;
   odoc_file : Fpath.t;
   odocl_file : Fpath.t;
-  pkg_args : pkg_args;
+  pkg_args : Pkg_args.t;
   pkgname : string;
   include_dirs : Fpath.Set.t;
   index : index option;
