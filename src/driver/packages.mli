@@ -84,3 +84,5 @@ type set = t Util.StringMap.t
 
 val of_libs : packages_dir:Fpath.t option -> Util.StringSet.t -> set
 (** Turns a set of libraries into a map from package name to package *)
+
+val of_packages : packages_dir:Fpath.t option -> string list -> set

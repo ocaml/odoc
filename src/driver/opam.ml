@@ -30,18 +30,31 @@ let prefix () =
       prefix := Some p;
       p
 
-let deps_of_opam_result line =
-  match Astring.String.fields ~empty:false line with
-  | [ name; version ] -> [ { name; version } ]
-  | _ -> []
-
-let all_opam_packages () =
-  Util.lines_of_process
-    Cmd.(
-      opam % "list" % "--switch" % get_switch () % "--columns=name,version"
-      % "--color=never" % "--short")
-  |> List.map deps_of_opam_result
-  |> List.flatten
+let all_opam_packages =
+  let result = ref None in
+  fun () ->
+    match !result with
+    | Some pkgs -> pkgs
+    | None -> (
+        let prefix = prefix () in
+        match
+          Bos.OS.Dir.contents Fpath.(v prefix / ".opam-switch" / "packages")
+        with
+        | Error (`Msg msg) ->
+            Logs.err (fun m -> m "Error listing opam packages: %s" msg);
+            []
+        | Ok contents ->
+            let r =
+              List.filter_map
+                (fun p ->
+                  let name = Fpath.basename p in
+                  match Astring.String.cut ~sep:"." name with
+                  | Some (name, version) -> Some { name; version }
+                  | None -> None)
+                contents
+            in
+            result := Some r;
+            r)
 
 let pkg_contents { name; _ } =
   let prefix = Fpath.v (prefix ()) in
@@ -83,20 +96,22 @@ let pkg_contents { name; _ } =
   in
   List.map Fpath.v added
 
-(* let opam_file { name; version } = *)
-(*   let prefix = Fpath.v (prefix ()) in *)
-(*   let opam_file = *)
-(*     Format.asprintf "%a/.opam-switch/packages/%s.%s/opam" Fpath.pp prefix name *)
-(*       version *)
-(*   in *)
-(*   let ic = open_in opam_file in *)
-(*   try *)
-(*     let lines = Util.lines_of_channel ic in *)
-(*     close_in ic; *)
-(*     Some lines *)
-(*   with _ -> *)
-(*     close_in ic; *)
-(*     None *)
+let deps pkgs =
+  let cmd =
+    Cmd.(
+      opam % "list" % "--recursive" % "-i" % "--columns" % "package" % "--color"
+      % "never" % "-s" % "--or")
+  in
+  let cmd =
+    List.fold_left (fun cmd pkg -> Cmd.(cmd % "--required-by" % pkg)) cmd pkgs
+  in
+  let out = Util.lines_of_process cmd in
+  List.filter_map
+    (fun x ->
+      match Astring.String.cut ~sep:"." x with
+      | Some (name, version) -> Some { name; version }
+      | None -> None)
+    out
 
 type installed_files = {
   libs : Fpath.set;

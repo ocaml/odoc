@@ -35,7 +35,7 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
     match Util.StringMap.find_opt lib_name lib_dirs with
     | Some dir -> [ (lib_name, dir) ]
     | None ->
-        Logs.err (fun m -> m "Library %s not found" lib_name);
+        Logs.debug (fun m -> m "Library %s not found" lib_name);
         []
   in
   let base_args pkg lib_deps : Pkg_args.t =

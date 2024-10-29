@@ -5,3 +5,5 @@ type t = { deps : deps }
 val empty : t
 
 val parse : string -> t
+
+val load : string -> t

@@ -91,6 +91,12 @@ let of_dune_build dir =
             | _ -> None)
           sorted
       in
+      let libname_of_archive =
+        List.fold_left
+          (fun acc (libname, path) ->
+            Fpath.Map.add Fpath.(path / libname) libname acc)
+          Fpath.Map.empty libs
+      in
       let libs =
         List.map
           (fun (libname, path) ->
@@ -99,11 +105,8 @@ let of_dune_build dir =
             in
             let pkg_dir = Fpath.rem_prefix dir path |> Option.get in
             ( pkg_dir,
-              Packages.Lib.v
-                ~libname_of_archive:
-                  (Fpath.Map.singleton Fpath.(path / libname) libname)
-                ~pkg_name:libname ~dir:path ~cmtidir:(Some cmtidir)
-                ~all_lib_deps ~cmi_only_libs:[] ))
+              Packages.Lib.v ~libname_of_archive ~pkg_name:libname ~dir:path
+                ~cmtidir:(Some cmtidir) ~all_lib_deps ~cmi_only_libs:[] ))
           libs
       in
       let packages =
