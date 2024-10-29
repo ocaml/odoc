@@ -1,11 +1,4 @@
-<h1 align="center">
-  <a href="https://ocaml.github.io/odoc/">
-    odoc
-  </a>
-</h1>
-
-<p align="center">
-  <strong>OCaml Documentation Generator.</strong>
+# **[odoc](https://ocaml.github.io/odoc/) : OCaml Documentation Generator**
 </p>
 
 <p align="center">
