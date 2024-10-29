@@ -70,10 +70,10 @@ type impl_extra = { src_id : Odoc.Id.t; src_path : Fpath.t }
 type impl = [ `Impl of impl_extra ]
 
 type mld = [ `Mld ]
-
+type md = [ `Md ]
 type asset = [ `Asset ]
 
-type all_kinds = [ impl | intf | mld | asset ]
+type all_kinds = [ impl | intf | mld | asset | md ]
 type t = all_kinds unit
 
 let rec pp_kind : all_kinds Fmt.t =
@@ -82,6 +82,7 @@ let rec pp_kind : all_kinds Fmt.t =
   | `Intf x -> Format.fprintf fmt "`Intf %a" pp_intf_extra x
   | `Impl x -> Format.fprintf fmt "`Impl %a" pp_impl_extra x
   | `Mld -> Format.fprintf fmt "`Mld"
+  | `Md -> Format.fprintf fmt "`Md"
   | `Asset -> Format.fprintf fmt "`Asset"
 
 and pp_intf_extra fmt x =

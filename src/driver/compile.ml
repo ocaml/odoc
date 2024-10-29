@@ -38,7 +38,7 @@ let init_stats (units : Odoc_unit.t list) =
           | `Intf { hidden = false; _ } -> non_hidden + 1
           | _ -> non_hidden
         in
-        let mlds = match unit.kind with `Mld -> mlds + 1 | _ -> mlds in
+        let mlds = match unit.kind with `Mld | `Md -> mlds + 1 | _ -> mlds in
         (total, total_impl, non_hidden, mlds, assets, indexes))
       (0, 0, 0, 0, 0, Fpath.Set.empty)
       units
@@ -182,6 +182,11 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
           ~includes ~parent_id:unit.parent_id;
         Atomic.incr Stats.stats.compiled_mlds;
         Ok [ unit ]
+    | `Md ->
+        Odoc.compile_md ~output_dir:unit.output_dir ~input_file:unit.input_file
+          ~parent_id:unit.parent_id;
+        Atomic.incr Stats.stats.compiled_mlds;
+        Ok [ unit ]
   in
   let res = Fiber.List.map compile all in
   (* For voodoo mode, we need to keep which modules successfully compiled *)
@@ -231,7 +236,8 @@ let link : compiled list -> _ =
         | `Intf _ -> Atomic.incr Stats.stats.linked_units
         | `Mld -> Atomic.incr Stats.stats.linked_mlds
         | `Asset -> ()
-        | `Impl _ -> Atomic.incr Stats.stats.linked_impls);
+        | `Impl _ -> Atomic.incr Stats.stats.linked_impls
+        | `Md -> Atomic.incr Stats.stats.linked_mlds);
         c
   in
   Fiber.List.map link compiled
