@@ -244,11 +244,11 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
          Ok (Paths.Identifier.Mk.page (parent_id, page_name))
      | None -> Ok (Paths.Identifier.Mk.page (parent_id, page_name)))
      >>= fun id -> Ok (id :> Paths.Identifier.Page.t))
-  >>= fun name ->
+  >>= fun id ->
   let resolve content =
     let zero_heading = Comment.find_zero_heading content in
     let frontmatter, content = Comment.extract_frontmatter content in
-    if (not (is_index_page name)) && has_children_order frontmatter then
+    if (not (is_index_page id)) && has_children_order frontmatter then
       Error.raise_warning
         (Error.filename_only
            "Non-index page cannot specify (children _) in the frontmatter."
@@ -257,11 +257,11 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
       let file =
         Root.Odoc_file.create_page root_name zero_heading frontmatter
       in
-      { Root.id = (name :> Paths.Identifier.OdocId.t); file; digest }
+      { Root.id = (id :> Paths.Identifier.OdocId.t); file; digest }
     in
     let page =
       Lang.Page.
-        { name; root; children; content; digest; linked = false; frontmatter }
+        { name=id; root; children; content; digest; linked = false; frontmatter }
     in
     Odoc_file.save_page output ~warnings:[] page;
     ()
@@ -270,11 +270,12 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
   Error.handle_errors_and_warnings ~warnings_options
   @@ Error.catch_errors_and_warnings
   @@ fun () ->
-  Odoc_loader.read_string (name :> Paths.Identifier.LabelParent.t) input_s str
+  Odoc_loader.read_string (id :> Paths.Identifier.LabelParent.t) input_s str
   |> Error.raise_errors_and_warnings
   |> function
   | `Stop -> resolve [] (* TODO: Error? *)
   | `Docs content -> resolve content
+      
 
 let handle_file_ext ext =
   match ext with
