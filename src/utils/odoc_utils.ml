@@ -104,3 +104,6 @@ module Fun = struct
         finally_no_exn ();
         raise work_exn
 end
+
+module Tree = Tree
+module Forest = Tree.Forest
