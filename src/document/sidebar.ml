@@ -14,7 +14,7 @@ module Toc : sig
   val to_sidebar :
     ?fallback:string -> (Url.Path.t * Inline.one -> Block.one) -> t -> Block.t
 end = struct
-  type t = Item of (Url.Path.t * Inline.one) option * t list
+  type t = (Url.Path.t * Inline.one) option Tree.t
 
   open Odoc_model.Sidebar
   open Odoc_model.Paths.Identifier
@@ -37,7 +37,7 @@ end = struct
                   let content = Comment.link_content title in
                   Some (path, sidebar_toc_entry id content)
                 in
-                Some (Item (payload, []))
+                Some { Tree.node = payload; children = [] }
             | id, PageToc.Dir dir -> Some (of_lang ~parent_id:(Some id) dir))
           content
       in
@@ -49,11 +49,12 @@ end = struct
             let content = Comment.link_content title in
             Some (path, sidebar_toc_entry parent_id content)
       in
-      Item (payload, entries)
+      { Tree.node = payload; children = entries }
     in
     of_lang ~parent_id:None dir
 
-  let rec to_sidebar ?(fallback = "root") convert (Item (name, content)) =
+  let rec to_sidebar ?(fallback = "root") convert
+      { Tree.node = name; children = content } =
     let name =
       match name with
       | Some v -> convert v
