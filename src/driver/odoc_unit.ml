@@ -338,9 +338,14 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
     in
     let kind = `Mld in
     let name = mld_path |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "page-" in
+    let lib_deps =
+      pkg.libraries
+      |> List.map (fun lib -> lib.Packages.lib_name)
+      |> Util.StringSet.of_list
+    in
     let unit =
       make_unit ~name ~kind ~rel_dir ~input_file:mld_path ~pkg ~include_dirs
-        ~lib_deps:Util.StringSet.empty
+        ~lib_deps
     in
     [ unit ]
   in
