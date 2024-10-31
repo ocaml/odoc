@@ -1,18 +1,18 @@
-  $ odoc compile --parent-id pkg/doc --output-dir _odoc index.mld
-  $ odoc compile --parent-id pkg/doc --output-dir _odoc content.mld
-  $ odoc compile --parent-id pkg/doc --output-dir _odoc omitted.mld
-  $ odoc compile --parent-id pkg/doc/dir1 --output-dir _odoc dir1/index.mld
-  $ odoc compile --parent-id pkg/doc/dir1 --output-dir _odoc dir1/content_in_dir.mld
-  $ odoc compile --parent-id pkg/doc/dir1 --output-dir _odoc dir1/dontent.mld
+  $ odoc compile --parent-id pkg --output-dir _odoc index.mld
+  $ odoc compile --parent-id pkg --output-dir _odoc content.mld
+  $ odoc compile --parent-id pkg --output-dir _odoc omitted.mld
+  $ odoc compile --parent-id pkg/dir1 --output-dir _odoc dir1/index.mld
+  $ odoc compile --parent-id pkg/dir1 --output-dir _odoc dir1/content_in_dir.mld
+  $ odoc compile --parent-id pkg/dir1 --output-dir _odoc dir1/dontent.mld
 
-  $ odoc link _odoc/pkg/doc/page-index.odoc
-  $ odoc link _odoc/pkg/doc/page-content.odoc
-  $ odoc link _odoc/pkg/doc/page-omitted.odoc
-  $ odoc link _odoc/pkg/doc/dir1/page-index.odoc
-  $ odoc link _odoc/pkg/doc/dir1/page-content_in_dir.odoc
-  $ odoc link _odoc/pkg/doc/dir1/page-dontent.odoc
+  $ odoc link _odoc/pkg/page-index.odoc
+  $ odoc link _odoc/pkg/page-content.odoc
+  $ odoc link _odoc/pkg/page-omitted.odoc
+  $ odoc link _odoc/pkg/dir1/page-index.odoc
+  $ odoc link _odoc/pkg/dir1/page-content_in_dir.odoc
+  $ odoc link _odoc/pkg/dir1/page-dontent.odoc
 
-  $ odoc compile-index -P test:_odoc/pkg/doc
+  $ odoc compile-index -P test:_odoc/pkg
   File "index.mld", line 5, character 7 to line 7, character 0:
   Warning: Duplicate 'dir1/' in (children).
   File "index.mld", line 5, character 7 to line 7, character 0:
@@ -20,15 +20,15 @@
   File "index.mld", line 5, character 7 to line 7, character 0:
   Warning: (children) doesn't include 'omitted'.
 
-  $ odoc html-generate --indent --index index.odoc-index -o _html  _odoc/pkg/doc/page-index.odocl
-  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/doc/page-content.odocl
-  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/doc/page-omitted.odocl
-  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/doc/dir1/page-index.odocl
-  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/doc/dir1/page-content_in_dir.odocl
-  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/doc/dir1/page-dontent.odocl
+  $ odoc html-generate --indent --index index.odoc-index -o _html  _odoc/pkg/page-index.odocl
+  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/page-content.odocl
+  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/page-omitted.odocl
+  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/dir1/page-index.odocl
+  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/dir1/page-content_in_dir.odocl
+  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/dir1/page-dontent.odocl
   $ odoc support-files -o _html
 
-  $ odoc_print _odoc/pkg/doc/page-index.odocl | jq .frontmatter
+  $ odoc_print _odoc/pkg/page-index.odocl | jq .frontmatter
   {
     "children": {
       "Some": [
@@ -57,7 +57,7 @@ Omitted has been added in the children of index, after the ones that were ordere
 Typo is in the children field of index, but does not exist. It is omitted to,
 but this should be a warning!
 
-  $ cat _html/pkg/doc/index.html | grep odoc-global-toc -A 11
+  $ cat _html/pkg/index.html | grep odoc-global-toc -A 11
      <nav class="odoc-toc odoc-global-toc"><b>test's Pages</b>
       <ul>
        <li><a href="#" class="current_unit">This is the main index</a>
