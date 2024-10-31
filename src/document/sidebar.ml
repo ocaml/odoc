@@ -20,26 +20,29 @@ end = struct
   open Odoc_model.Paths.Identifier
 
   let of_lang (dir : PageToc.t) =
-    let rec of_lang ~parent_id ((content, index) : PageToc.t) =
+    let rec of_lang ~parent_id (toc : PageToc.t) =
       let title, parent_id =
-        match index with
+        match toc.node with
         | Some (index_id, title) -> (Some title, Some (index_id :> Page.t))
         | None -> (None, (parent_id :> Page.t option))
       in
       let entries =
         List.filter_map
-          (fun id ->
-            match id with
-            | id, PageToc.Entry title ->
+          (fun tree ->
+            match tree.Tree.node with
+            | Some (id, title) ->
                 (* TODO warn on non empty children order if not index page somewhere *)
                 let payload =
                   let path = Url.Path.from_identifier id in
                   let content = Comment.link_content title in
                   Some (path, sidebar_toc_entry id content)
                 in
-                Some { Tree.node = payload; children = [] }
-            | id, PageToc.Dir dir -> Some (of_lang ~parent_id:(Some id) dir))
-          content
+                let children =
+                  List.map (of_lang ~parent_id:(Some id)) tree.children
+                in
+                Some { Tree.node = payload; children }
+            | None -> None)
+          toc.children
       in
       let payload =
         match (title, parent_id) with
