@@ -51,6 +51,9 @@ type t = [ impl | intf | mld | asset ] unit
 
 val pp : t Fmt.t
 
+val lib_dir : Packages.t -> Packages.libty -> Fpath.t
+val doc_dir : Packages.t -> Fpath.t
+
 val of_packages :
   output_dir:Fpath.t ->
   linked_dir:Fpath.t option ->

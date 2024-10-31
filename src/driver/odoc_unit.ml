@@ -117,16 +117,16 @@ and pp : all_kinds unit Fmt.t =
     (Fmt.option pp_index) x.index pp_kind
     (x.kind :> all_kinds)
 
+let doc_dir pkg = Fpath.(pkg.Packages.pkg_dir / "doc")
+let lib_dir pkg lib =
+  Fpath.(pkg.Packages.pkg_dir / "lib" / lib.Packages.lib_name)
+
 let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
     (pkgs : Packages.t list) : t list =
   let linked_dir =
     match linked_dir with None -> output_dir | Some dir -> dir
   in
   let index_dir = match index_dir with None -> output_dir | Some dir -> dir in
-
-  let doc_dir pkg = Fpath.(pkg.Packages.pkg_dir / "doc") in
-
-  let lib_dir pkg libname = Fpath.(pkg.Packages.pkg_dir / "lib" / libname) in
 
   (* [module_of_hash] Maps a hash to the corresponding [Package.t], library name and
      [Packages.modulety]. [lib_dirs] maps a library name to the odoc dir containing its
@@ -145,7 +145,7 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
                   Util.StringMap.add mod_.m_intf.mif_hash (pkg, lib, mod_) h)
                 h lib.modules
             in
-            let lib_dir = lib_dir pkg lib.lib_name in
+            let lib_dir = lib_dir pkg lib in
             let lds' = Util.StringMap.add lib.lib_name lib_dir lds in
             (h', lds'))
           (h, lds) pkg.libraries)
@@ -254,18 +254,17 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
             None
         | Some (pkg, lib, mod_) ->
             let lib_deps = Util.StringSet.add lib.lib_name lib.lib_deps in
-            let result =
-              of_intf mod_.m_hidden pkg lib.lib_name lib_deps mod_.m_intf
-            in
+            let result = of_intf mod_.m_hidden pkg lib lib_deps mod_.m_intf in
             Some result)
       deps
   and of_intf =
     (* Memoize (using the hash as the key) the creation of interface units, to
        avoid creating them twice *)
     let intf_cache : (string, intf unit) Hashtbl.t = Hashtbl.create 10 in
-    fun hidden pkg libname lib_deps (intf : Packages.intf) : intf unit ->
+    fun hidden pkg (lib : Packages.libty) lib_deps (intf : Packages.intf) :
+        intf unit ->
       let do_ () : intf unit =
-        let rel_dir = lib_dir pkg libname in
+        let rel_dir = lib_dir pkg lib in
         let include_dirs, kind =
           let deps = build_deps intf.mif_deps in
           let include_dirs =
@@ -285,11 +284,11 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
           Hashtbl.add intf_cache intf.mif_hash unit;
           unit
   in
-  let of_impl pkg libname lib_deps (impl : Packages.impl) : impl unit option =
+  let of_impl pkg lib lib_deps (impl : Packages.impl) : impl unit option =
     match impl.mip_src_info with
     | None -> None
     | Some { src_path } ->
-        let rel_dir = lib_dir pkg libname in
+        let rel_dir = lib_dir pkg lib in
         let include_dirs =
           let deps = build_deps impl.mip_deps in
           List.map (fun u -> u.odoc_dir) deps |> Fpath.Set.of_list
@@ -297,7 +296,8 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
         let kind =
           let src_name = Fpath.filename src_path in
           let src_id =
-            Fpath.(pkg.pkg_dir / "src" / libname / src_name) |> Odoc.Id.of_fpath
+            Fpath.(pkg.pkg_dir / "src" / lib.lib_name / src_name)
+            |> Odoc.Id.of_fpath
           in
           `Impl { src_id; src_path }
         in
@@ -312,28 +312,26 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
         Some unit
   in
 
-  let of_module pkg libname lib_deps (m : Packages.modulety) :
+  let of_module pkg (lib : Packages.libty) lib_deps (m : Packages.modulety) :
       [ impl | intf ] unit list =
     let i :> [ impl | intf ] unit =
-      of_intf m.m_hidden pkg libname lib_deps m.m_intf
+      of_intf m.m_hidden pkg lib lib_deps m.m_intf
     in
     let m :> [ impl | intf ] unit list =
-      Option.bind m.m_impl (of_impl pkg libname lib_deps) |> Option.to_list
+      Option.bind m.m_impl (of_impl pkg lib lib_deps) |> Option.to_list
     in
     i :: m
   in
   let of_lib pkg (lib : Packages.libty) : [ impl | intf ] unit list =
     let lib_deps = Util.StringSet.add lib.lib_name lib.lib_deps in
-    List.concat_map (of_module pkg lib.lib_name lib_deps) lib.modules
+    List.concat_map (of_module pkg lib lib_deps) lib.modules
   in
   let of_mld pkg (mld : Packages.mld) : mld unit list =
     let open Fpath in
     let { Packages.mld_path; mld_rel_path } = mld in
     let rel_dir = doc_dir pkg // Fpath.parent mld_rel_path |> Fpath.normalize in
     let include_dirs =
-      List.map
-        (fun (lib : Packages.libty) -> lib_dir pkg lib.lib_name)
-        pkg.libraries
+      List.map (fun (lib : Packages.libty) -> lib_dir pkg lib) pkg.libraries
     in
     let include_dirs =
       (output_dir // rel_dir) :: include_dirs |> Fpath.Set.of_list
