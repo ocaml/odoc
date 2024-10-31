@@ -111,12 +111,6 @@ let maybe_prepend_top top_dir dir =
 
 let pkg_dir top_dir pkg_name = maybe_prepend_top top_dir Fpath.(v pkg_name)
 
-(* let parent_of_lib pkg_dir lib_name = Fpath.(pkg_dir / "lib" / lib_name) *)
-
-let parent_of_pages pkg_dir = Fpath.(pkg_dir / "doc")
-
-(* let parent_of_src pkg_dir lib_name = Fpath.(pkg_dir / "src" / lib_name) *)
-
 module Module = struct
   type t = modulety
 
