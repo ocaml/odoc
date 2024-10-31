@@ -4,8 +4,7 @@ module PageToc : sig
   type title = Comment.link_content
 
   type index = Page.t * title
-  type t = (Page.t * content) list * index option
-  and content = Entry of title | Dir of t
+  type t = index option Odoc_utils.Tree.t
 
   val of_list :
     (LeafPage.t * title * Frontmatter.children_order option) list -> t
