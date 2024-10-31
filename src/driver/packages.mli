@@ -54,9 +54,6 @@ type libty = {
   modules : modulety list;
 }
 
-val parent_of_pages : Fpath.t -> Fpath.t
-(** Given a [pkg_dir], returns a [mld_odoc_dir]. *)
-
 module Lib : sig
   val v :
     libname_of_archive:string Fpath.Map.t ->
