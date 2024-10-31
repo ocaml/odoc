@@ -14,7 +14,7 @@ Testing the collision detection:
 
 Same directory used twice
   $ odoc link -P pkg:_odoc/pkg/doc -P pkg2:_odoc/pkg/doc _odoc/pkg/doc/page-file.odoc
-  ERROR: Arguments given to -P and -L cannot be included in each others
+  ERROR: Arguments given to -P cannot be included in each others
   [1]
 
 # Two directories given relatively
@@ -23,7 +23,7 @@ Same directory used twice
   $ odoc link -P pkg:_odoc/pkg/doc/ -P pkg2:_odoc/pkg2/ _odoc/pkg/doc/page-file.odoc
  Wrong input:
   $ odoc link -P pkg:_odoc/pkg/doc -P pkg2:_odoc/pkg _odoc/pkg/doc/page-file.odoc
-  ERROR: Arguments given to -P and -L cannot be included in each others
+  ERROR: Arguments given to -P cannot be included in each others
   [1]
 
 # Two directories given relatively with -L
@@ -32,15 +32,13 @@ Same directory used twice
   $ odoc link -P pkg:_odoc/pkg/doc/ -L mylib:_odoc/mylib/ _odoc/pkg/doc/page-file.odoc
  Wrong input:
   $ odoc link -P pkg:_odoc/pkg/doc -L pkg2:_odoc/pkg _odoc/pkg/doc/page-file.odoc
-  ERROR: Arguments given to -P and -L cannot be included in each others
-  [1]
 
 # One directory given relatively, the other absolutely
  Right input
   $ odoc link -P pkg:_odoc/pkg/doc/ -P pkg2:$PWD/_odoc/pkg2 _odoc/pkg/doc/page-file.odoc
  Wrong input
   $ odoc link -P pkg:_odoc/pkg/doc/ -P pkg2:$PWD/_odoc/pkg _odoc/pkg/doc/page-file.odoc
-  ERROR: Arguments given to -P and -L cannot be included in each others
+  ERROR: Arguments given to -P cannot be included in each others
   [1]
 
 # Two directories given absolutely
@@ -48,7 +46,7 @@ Same directory used twice
   $ odoc link -P pkg:$PWD/_odoc/pkg/doc/ -P pkg2:$PWD/_odoc/pkg2 _odoc/pkg/doc/page-file.odoc
  Wrong input
   $ odoc link -P pkg:$PWD/_odoc/pkg/doc/ -P pkg2:$PWD/_odoc/pkg _odoc/pkg/doc/page-file.odoc
-  ERROR: Arguments given to -P and -L cannot be included in each others
+  ERROR: Arguments given to -P cannot be included in each others
   [1]
 
 # With a bit of relative faff
@@ -56,7 +54,7 @@ Same directory used twice
   $ odoc link -P pkg:_odoc/../_odoc/pkg/doc/ -P pkg2:_odoc/../_odoc/pkg2 _odoc/pkg/doc/page-file.odoc
  Wrong input:
   $ odoc link -P pkg:_odoc/../_odoc/pkg/doc/ -P pkg2:_odoc/../_odoc/pkg _odoc/pkg/doc/page-file.odoc
-  ERROR: Arguments given to -P and -L cannot be included in each others
+  ERROR: Arguments given to -P cannot be included in each others
   [1]
 
 Testing detection of package:
