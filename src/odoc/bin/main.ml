@@ -467,11 +467,12 @@ module Indexing = struct
       occurrences =
     let marshall = if json then `JSON else `Marshall in
     output_file ~dst marshall >>= fun output ->
-    (if
-       not
-         (Antichain.check
-            (List.rev_append lib_roots page_roots |> List.map ~f:snd))
-     then Error (`Msg "Paths given to all -P and -L options must be disjoint")
+    (if not (Antichain.check (page_roots |> List.map ~f:snd)) then
+       Error (`Msg "Paths given to all -P options must be disjoint")
+     else Ok ())
+    >>= fun () ->
+    (if not (Antichain.check (lib_roots |> List.map ~f:snd)) then
+       Error (`Msg "Paths given to all -L options must be disjoint")
      else Ok ())
     >>= fun () ->
     Indexing.compile marshall ~output ~warnings_options ~occurrences ~lib_roots
@@ -601,81 +602,55 @@ end = struct
           match f x with Some _ as result -> result | None -> find_map ~f l)
     in
     match l with
-    | [] -> Ok None
-    | _ -> (
-        match
-          find_map
-            ~f:(fun (pkg, path) ->
-              if Fpath.is_prefix path o then Some pkg else None)
-            l
-        with
-        | Some _ as r -> Ok r
-        | None -> Error `Not_found)
+    | [] -> None
+    | _ ->
+        find_map
+          ~f:(fun (pkg, path) ->
+            if Fpath.is_prefix path o then Some pkg else None)
+          l
 
   let current_library_of_input lib_roots input =
-    match find_root_of_input lib_roots input with
-    | Ok _ as ok -> ok
-    | Error `Not_found ->
-        Error (`Msg "The input file must be part of a directory passed as -L")
+    find_root_of_input lib_roots input
 
-  (** Whether if the package specified with [--current-package] is consistent
+  (** Checks if the package specified with [--current-package] is consistent
       with the pages roots and with the output path for pages. *)
   let validate_current_package ?detected_package page_roots current_package =
-    match current_package with
-    | Some curpkgnane -> (
-        if
-          not
-            (List.exists
-               ~f:(fun (pkgname, _) -> pkgname = curpkgnane)
-               page_roots)
+    match (current_package, detected_package) with
+    | Some curpkgnane, Some detected_package when detected_package <> curpkgnane
+      ->
+        Error
+          (`Msg
+            "The package name specified with --current-package is not \
+             consistent with the packages passed as a -P")
+    | _, (Some _ as r) (* we have equality or only detected package *) -> Ok r
+    | (Some given as g), None ->
+        if not (List.exists ~f:(fun (pkgname, _) -> pkgname = given) page_roots)
         then
           Error
             (`Msg
               "The package name specified with --current-package do not match \
                any package passed as a -P")
-        else
-          match detected_package with
-          | Some dpkg when dpkg <> curpkgnane ->
-              Error
-                (`Msg
-                  "The package name specified with --current-package is not \
-                   consistent with the packages passed as a -P")
-          | _ -> Ok current_package)
-    | None -> Ok detected_package
+        else Ok g
+    | None, None -> Ok None
 
-  let current_package_of_page ~current_package page_roots input =
-    match find_root_of_input page_roots input with
-    | Ok detected_package ->
-        validate_current_package ?detected_package page_roots current_package
-    | Error `Not_found ->
-        Error (`Msg "The input file must be part of a directory passed as -P")
-
-  let is_page input =
-    input |> Fpath.filename |> Astring.String.is_prefix ~affix:"page-"
-
-  let is_asset input =
-    input |> Fpath.filename |> Astring.String.is_prefix ~affix:"asset-"
+  let find_current_package ~current_package page_roots input =
+    let detected_package = find_root_of_input page_roots input in
+    validate_current_package ?detected_package page_roots current_package
 
   let link directories page_roots lib_roots input_file output_file
       current_package warnings_options open_modules =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
-    (if
-       not
-         (Antichain.check
-            (List.rev_append lib_roots page_roots |> List.map ~f:snd))
-     then
-       Error
-         (`Msg "Arguments given to -P and -L cannot be included in each others")
+    (if not (Antichain.check (page_roots |> List.map ~f:snd)) then
+       Error (`Msg "Arguments given to -P cannot be included in each others")
      else Ok ())
     >>= fun () ->
-    let is_page_or_asset = is_page input || is_asset input in
-    (if is_page_or_asset then Ok None
-     else current_library_of_input lib_roots input)
-    >>= fun current_lib ->
-    (if is_page_or_asset then
-       current_package_of_page ~current_package page_roots input
-     else validate_current_package page_roots current_package)
+    (if not (Antichain.check (lib_roots |> List.map ~f:snd)) then
+       Error (`Msg "Arguments given to -L cannot be included in each others")
+     else Ok ())
+    >>= fun () ->
+    let current_lib = current_library_of_input lib_roots input in
+    find_current_package ~current_package page_roots input
     >>= fun current_package ->
     let current_dir = Fs.File.dirname output in
     let roots =
