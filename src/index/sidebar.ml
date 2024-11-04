@@ -1,4 +1,5 @@
 open Odoc_utils
+open Odoc_model
 module Id = Paths.Identifier
 
 module CPH = Id.Hashtbl.ContainerPage

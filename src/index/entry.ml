@@ -139,7 +139,7 @@ and entries_of_doc id d =
   | `Table _ -> []
   | `Media _ -> []
 
-let entries_of_item (x : Odoc_model.Fold.item) =
+let entries_of_item (x : Fold.item) =
   match x with
   | CompilationUnit u -> (
       match u.content with

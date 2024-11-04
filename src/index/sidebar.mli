@@ -1,3 +1,4 @@
+open Odoc_model
 open Paths.Identifier
 
 module PageToc : sig

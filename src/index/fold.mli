@@ -3,6 +3,7 @@
     in reality it is quite specialized to fold over searchable items, and not
     every kind of odoc value you could fold over.*)
 
+open Odoc_model
 open Lang
 
 (** The type of items you can fold over *)

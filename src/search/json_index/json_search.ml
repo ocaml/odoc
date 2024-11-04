@@ -1,4 +1,5 @@
 open Odoc_search
+open Odoc_index
 
 let json_of_args (args : Odoc_model.Lang.TypeDecl.Constructor.argument) =
   match args with
@@ -228,7 +229,7 @@ let unit ?occurrences ppf u =
     let first = output_json ppf first entries in
     first
   in
-  let _first = Odoc_model.Fold.unit ~f true u in
+  let _first = Fold.unit ~f true u in
   ()
 
 let page ppf (page : Odoc_model.Lang.Page.t) =
@@ -239,7 +240,7 @@ let page ppf (page : Odoc_model.Lang.Page.t) =
     in
     output_json ppf first entries
   in
-  let _first = Odoc_model.Fold.page ~f true page in
+  let _first = Fold.page ~f true page in
   ()
 
 let index ppf (index : Entry.t Odoc_model.Paths.Identifier.Hashtbl.Any.t) =
