@@ -423,6 +423,51 @@ let rec list_to_nestable_block_element ~locator defs l m (bs, warns) =
   let items, warns = List.fold_left (add_item ~locator) ([], warns) ritems in
   (Loc.at loc (`List (kind, style, items)) :: bs, warns)
 
+and table_to_nestable_block_element ~locator defs tbl m (bs, warns) =
+  let loc = meta_to_loc ~locator m in
+  let style = `Light (* Note this is a layout property of ocamldoc *) in
+  let col_count = Block.Table.col_count tbl in
+  let add_cell typ (n_cell, acc, warns) (cell, _) =
+    let content, warns =
+      inline_to_inline_elements ~locator defs ([], warns) cell
+    in
+    let loc = Loc.span (List.map Loc.location content) in
+    let cell = Loc.at loc (`Paragraph content) in
+    (n_cell + 1, ([ cell ], typ) :: acc, warns)
+  in
+  let add_cells (acc, warns) typ cells =
+    let n_cell, res, warns =
+      List.fold_left (add_cell typ) (0, [], warns) cells
+    in
+    let res =
+      (* Pad with empty entries to reach the number of columns *)
+      List.init (col_count - n_cell) (fun _ -> ([], `Data)) @ res |> List.rev
+    in
+    (res :: acc, warns)
+  in
+  let add_row ~locator:_ (acc, warns) (row, _meta) =
+    match row with
+    | `Header cells, _layout -> add_cells (acc, warns) `Header cells
+    | `Data cells, _ -> add_cells (acc, warns) `Data cells
+    | `Sep _, _ -> (acc, warns)
+  in
+  let rows = List.rev (Block.Table.rows tbl) in
+  let items, warns = List.fold_left (add_row ~locator) ([], warns) rows in
+  let alignment =
+    let rec find_sep rows =
+      match rows with
+      | [] -> None
+      | ((`Sep s, _layout), _meta) :: _ -> Some s
+      | _ :: q -> find_sep q
+    in
+    match find_sep rows with
+    | None -> None
+    | Some sep -> Some (List.map (function (align, _layout), _ -> align) sep)
+  in
+  let table = `Table ((items, alignment), style) in
+  let res = (Loc.at loc table :: bs, warns) in
+  res
+
 and block_to_nestable_block_elements ~locator defs acc b : nestable_ast_acc =
   match b with
   | Block.Blocks (bs, _) ->
@@ -442,10 +487,10 @@ and block_to_nestable_block_elements ~locator defs acc b : nestable_ast_acc =
       thematic_break_to_nestable_block_element ~locator m acc
   | Block.Blank_line _ | Block.Link_reference_definition _ ->
       (* layout cases *) acc
+  | Block.Ext_table (tbl, m) ->
+      table_to_nestable_block_element ~locator defs tbl m acc
   | Block.Ext_math_block (math, m) ->
       math_block_to_nestable_block_element ~locator math m acc
-  | Block.Ext_table (_, meta) ->
-      warn_unsupported_cmark ~locator "Tables" meta acc
   | Block.Ext_footnote_definition (_, meta) ->
       warn_unsupported_cmark ~locator "Footnotes" meta acc
   | _ -> assert false
