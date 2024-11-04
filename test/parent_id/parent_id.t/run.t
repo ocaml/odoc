@@ -14,7 +14,7 @@ Testing the collision detection:
 
 Same directory used twice
   $ odoc link -P pkg:_odoc/pkg -P pkg2:_odoc/pkg _odoc/pkg/page-file.odoc
-  ERROR: Arguments given to -P cannot be included in each others
+  ERROR: Paths given to all -P options must be disjoint
   [1]
 
 # Two directories given relatively
@@ -23,7 +23,7 @@ Same directory used twice
   $ odoc link -P pkg:_odoc/pkg/ -P pkg2:_odoc/pkg2/ _odoc/pkg/page-file.odoc
  Wrong input:
   $ odoc link -P pkg:_odoc/pkg -P pkg2:_odoc/pkg _odoc/pkg/page-file.odoc
-  ERROR: Arguments given to -P cannot be included in each others
+  ERROR: Paths given to all -P options must be disjoint
   [1]
 
 # Two directories given relatively with -L
@@ -38,7 +38,7 @@ Same directory used twice
   $ odoc link -P pkg:_odoc/pkg/ -P pkg2:$PWD/_odoc/pkg2 _odoc/pkg/page-file.odoc
  Wrong input
   $ odoc link -P pkg:_odoc/pkg/ -P pkg2:$PWD/_odoc/pkg _odoc/pkg/page-file.odoc
-  ERROR: Arguments given to -P cannot be included in each others
+  ERROR: Paths given to all -P options must be disjoint
   [1]
 
 # Two directories given absolutely
@@ -46,7 +46,7 @@ Same directory used twice
   $ odoc link -P pkg:$PWD/_odoc/pkg/ -P pkg2:$PWD/_odoc/pkg2 _odoc/pkg/page-file.odoc
  Wrong input
   $ odoc link -P pkg:$PWD/_odoc/pkg/ -P pkg2:$PWD/_odoc/pkg _odoc/pkg/page-file.odoc
-  ERROR: Arguments given to -P cannot be included in each others
+  ERROR: Paths given to all -P options must be disjoint
   [1]
 
 # With a bit of relative faff
@@ -54,7 +54,7 @@ Same directory used twice
   $ odoc link -P pkg:_odoc/../_odoc/pkg/ -P pkg2:_odoc/../_odoc/pkg2 _odoc/pkg/page-file.odoc
  Wrong input:
   $ odoc link -P pkg:_odoc/../_odoc/pkg/ -P pkg2:_odoc/../_odoc/pkg _odoc/pkg/page-file.odoc
-  ERROR: Arguments given to -P cannot be included in each others
+  ERROR: Paths given to all -P options must be disjoint
   [1]
 
 Testing detection of package:
