@@ -76,20 +76,20 @@ let compile_to_json ~output ~occurrences files =
 let compile_to_marshall ~output sidebar files =
   let final_index = H.create 10 in
   let unit u =
-    Odoc_model.Fold.unit
+    Odoc_index.Fold.unit
       ~f:(fun () item ->
-        let entries = Odoc_search.Entry.entries_of_item item in
+        let entries = Odoc_index.Entry.entries_of_item item in
         List.iter
-          (fun entry -> H.add final_index entry.Odoc_search.Entry.id entry)
+          (fun entry -> H.add final_index entry.Odoc_index.Entry.id entry)
           entries)
       () u
   in
   let page p =
-    Odoc_model.Fold.page
+    Odoc_index.Fold.page
       ~f:(fun () item ->
-        let entries = Odoc_search.Entry.entries_of_item item in
+        let entries = Odoc_index.Entry.entries_of_item item in
         List.iter
-          (fun entry -> H.add final_index entry.Odoc_search.Entry.id entry)
+          (fun entry -> H.add final_index entry.Odoc_index.Entry.id entry)
           entries)
       () p
   in
@@ -112,7 +112,7 @@ let read_occurrences file =
   let htbl : Odoc_occurrences.Table.t = Marshal.from_channel ic in
   htbl
 
-open Odoc_model.Sidebar
+open Odoc_index.Sidebar
 
 let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
     ~page_roots ~inputs_in_file ~odocls =

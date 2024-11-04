@@ -9,14 +9,14 @@ let sidebar_toc_entry id content =
 module Toc : sig
   type t
 
-  val of_lang : Odoc_model.Sidebar.PageToc.t -> t
+  val of_lang : Odoc_index.Sidebar.PageToc.t -> t
 
   val to_sidebar :
     ?fallback:string -> (Url.Path.t * Inline.one -> Block.one) -> t -> Block.t
 end = struct
   type t = (Url.Path.t * Inline.one) option Tree.t
 
-  open Odoc_model.Sidebar
+  open Odoc_index.Sidebar
 
   let of_lang (dir : PageToc.t) =
     Tree.map dir ~f:(function
@@ -47,9 +47,9 @@ type library = { name : string; units : (Url.Path.t * Inline.one) list }
 
 type t = { pages : pages list; libraries : library list }
 
-let of_lang (v : Odoc_model.Sidebar.t) =
+let of_lang (v : Odoc_index.Sidebar.t) =
   let pages =
-    let page_hierarchy { Odoc_model.Sidebar.hierarchy_name; pages } =
+    let page_hierarchy { Odoc_index.Sidebar.hierarchy_name; pages } =
       let hierarchy = Toc.of_lang pages in
       Some { name = hierarchy_name; pages = hierarchy }
     in
@@ -62,7 +62,7 @@ let of_lang (v : Odoc_model.Sidebar.t) =
     in
     let units =
       List.map
-        (fun { Odoc_model.Sidebar.units; name } ->
+        (fun { Odoc_index.Sidebar.units; name } ->
           let units = List.map item units in
           { name; units })
         v.libraries

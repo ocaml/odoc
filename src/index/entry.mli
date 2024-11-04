@@ -61,4 +61,4 @@ type t = {
   kind : kind;
 }
 
-val entries_of_item : Odoc_model.Fold.item -> t list
+val entries_of_item : Fold.item -> t list

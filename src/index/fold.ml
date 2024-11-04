@@ -1,3 +1,4 @@
+open Odoc_model
 open Lang
 
 type item =

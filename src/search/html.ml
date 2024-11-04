@@ -2,6 +2,7 @@ type html = Html_types.div_content Tyxml.Html.elt
 
 open Odoc_model
 open Lang
+open Odoc_index
 
 let url { Entry.id; kind; doc = _ } =
   let open Entry in
