@@ -17,15 +17,9 @@ end = struct
   type t = (Url.Path.t * Inline.one) option Tree.t
 
   open Odoc_model.Sidebar
-  open Odoc_model.Paths.Identifier
 
   let of_lang (dir : PageToc.t) =
-    let rec of_lang ~parent_id (toc : PageToc.t) =
-      let title, parent_id =
-        match toc.node with
-        | Some (index_id, title) -> (Some title, Some (index_id :> Page.t))
-        | None -> (None, (parent_id :> Page.t option))
-      in
+    let rec of_lang (toc : PageToc.t) =
       let entries =
         List.filter_map
           (fun tree ->
@@ -37,24 +31,22 @@ end = struct
                   let content = Comment.link_content title in
                   Some (path, sidebar_toc_entry id content)
                 in
-                let children =
-                  List.map (of_lang ~parent_id:(Some id)) tree.children
-                in
+                let children = List.map of_lang tree.children in
                 Some { Tree.node = payload; children }
             | None -> None)
           toc.children
       in
       let payload =
-        match (title, parent_id) with
-        | None, _ | _, None -> None
-        | Some title, Some parent_id ->
+        match toc.node with
+        | None -> None
+        | Some (parent_id, title) ->
             let path = Url.Path.from_identifier parent_id in
             let content = Comment.link_content title in
             Some (path, sidebar_toc_entry parent_id content)
       in
       { Tree.node = payload; children = entries }
     in
-    of_lang ~parent_id:None dir
+    of_lang dir
 
   let rec to_sidebar ?(fallback = "root") convert
       { Tree.node = name; children = content } =
