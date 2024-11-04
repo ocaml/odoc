@@ -37,13 +37,15 @@ anything breaking, especially references.
 
 The idea is that we have named groups of documentation, that we'll call {e trees}
 here. We have two kinds of trees: page trees, and modules trees. Inside the
-trees, everything is managed by [odoc]. The driver is free to root them however
-they like in the overall hierarchy. In order to reference another tree, a
-documentation author can use the name of the tree in the reference.
+trees, the hierarchy is managed by [odoc]. The driver is free to "root" them
+however they like in the overall hierarchy. So [odoc] is responsible for the
+hierarchy below the trees root, and the driver is responsible for the one
+outside of the trees. In order to reference another tree, a documentation author
+can use the name of the tree in the reference.
 
 Different situations will give different meanings to the trees. In the case of
 [opam] packages, though, there is a natural meaning to give to those trees
-(you'll find more details in the convention for opam-installed packages). Any
+(you'll find more details in the {{!label-conv}convention for opam-installed packages}). Any
 opam package will have an associated "documentation tree", named with the name
 of the package. Any of its libraries will have an associated "module tree",
 named with the name of the library. Another package can thus refer to the doc
@@ -110,11 +112,11 @@ Let's have a look at a generic invocation of [odoc] during the compile phase:
   for pages. Documentation artifacts that will be in the same {{!units}unit of
   documentation} need to hare a common root in their parent id.
 
-- [-I <dir>] corresponds to the search path for other [.odoc] files. It can be
-  given as many times as necessary, but should allow to access every [.odoc]
-  file generated from a [.cm{i;t;ti}] listed when calling [odoc compile-deps] on
-  the input file. [<dir>] are directories under the [<od>] directory, computed
-  from the [--parent-id] option given to previous calls to [odoc compile].
+- [-I <dir>] corresponds to the search path for other [.odoc] files. Multiple
+  directory can be added to the search path, so every required [.odoc] file is
+  in the search path. The required [.odoc] files are the one generated from a
+  [.cm{i;t;ti}] file listed when calling [odoc compile-deps] on the input
+  file.
 
 A concrete example for such command would be:
 
@@ -313,7 +315,10 @@ web worker to perform searches:
   standard mechanism of message passing.
 
 - The web worker has to send back the result as a message to the main thread,
-  containing the list of results. The format is defined in the TODO.
+  containing the results. The format for the result message is a string that can
+  be parsed as a list of JSON objects. Each object contain two keys-value pairs:
+  a key ["url"] which contains a relative URL from [--ouput-dir]; and a key
+  ["html"] which contain the html showing the search entry.
 
 - The JavaScript file must be manually put in the [--output-dir] values, the driver can
   decide where.
@@ -389,7 +394,7 @@ argument, and give the asset unit using [--asset-unit].
   $ odoc html-generate-asset --output-dir <odir> --asset-unit <path/to/asset-file.odocl> <path/to/asset/file.ext>
 ]}
 
-{1 Convention for installed packages}
+{1:conv Convention for installed packages}
 
 In order to build the documentation for installed packages, the driver needs to
 give a meaning to the various concepts above. In particular, it needs to
@@ -427,7 +432,7 @@ define three trees:
   other trees, a [-L foo:<odoc_dir>/foo/lib/foo] argument needs to be added
   at the link phase.
 
-- A module tree named [foo.bar], with root id [foo/doc]. When referred from
+- A module tree named [foo.bar], with root id [foo/lib/foo.bar]. When referred from
   other trees, a [-L foo.bar:<odoc_dir>/foo/lib/foo.bar] argument needs to be
   added at the link phase.
 
