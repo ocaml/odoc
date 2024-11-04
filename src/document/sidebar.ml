@@ -1,9 +1,18 @@
 open Odoc_utils
 open Types
+module Id = Odoc_model.Paths.Identifier
 
 let sidebar_toc_entry id content =
-  let href = id |> Url.Path.from_identifier |> Url.from_path in
-  let target = Target.Internal (Resolved href) in
+  let target =
+    match
+      (id :> Odoc_model.Paths.Identifier.t)
+      |> Url.from_identifier ~stop_before:false
+    with
+    | Ok href -> Target.Resolved href
+    | Error _ -> Target.Unresolved
+    (* This error case should never happen since [stop_before] is false *)
+  in
+  let target = Target.Internal target in
   inline @@ Inline.Link { target; content; tooltip = None }
 
 module Toc : sig
@@ -12,15 +21,22 @@ module Toc : sig
   val of_lang : Odoc_index.Page_hierarchy.t -> t
 
   val to_sidebar :
-    ?fallback:string -> (Url.Path.t * Inline.one -> Block.one) -> t -> Block.t
+    ?fallback:string -> (Url.t * Inline.one -> Block.one) -> t -> Block.t
 end = struct
-  type t = (Url.Path.t * Inline.one) option Tree.t
+  type t = (Url.t * Inline.one) option Tree.t
 
   let of_lang (dir : Odoc_index.Page_hierarchy.t) =
     Tree.map dir ~f:(function
       | None -> None
       | Some (parent_id, title) ->
-          let path = Url.Path.from_identifier parent_id in
+          let path =
+            match
+              Url.from_identifier ~stop_before:false (parent_id :> Id.t)
+            with
+            | Ok r -> r
+            | Error _ -> assert false
+            (* This error case should never happen since [stop_before] is false, and even less since it's a page id *)
+          in
           let content = Comment.link_content title in
           Some (path, sidebar_toc_entry parent_id content))
 
@@ -41,7 +57,7 @@ end = struct
     name :: content
 end
 type pages = { name : string; pages : Toc.t }
-type library = { name : string; units : (Url.Path.t * Inline.one) list }
+type library = { name : string; units : (Url.t * Inline.one) list }
 
 type t = { pages : pages list; libraries : library list }
 
@@ -56,12 +72,15 @@ let of_lang (v : Odoc_index.Sidebar.t) =
   let units =
     let item id =
       let content = [ inline @@ Text (Odoc_model.Paths.Identifier.name id) ] in
-      (Url.Path.from_identifier id, sidebar_toc_entry id content)
+      let path = Url.from_identifier ~stop_before:false (id :> Id.t) in
+      match path with
+      | Ok path -> Some (path, sidebar_toc_entry id content)
+      | Error _ -> None
     in
     let units =
       List.map
         (fun { Odoc_index.Sidebar.units; name } ->
-          let units = List.map item units in
+          let units = List.filter_map item units in
           { name; units })
         v.libraries
     in
@@ -77,7 +96,8 @@ let to_block (sidebar : t) url =
   in
   let render_entry (entry_path, b) =
     let link =
-      if entry_path = url then { b with Inline.attr = [ "current_unit" ] }
+      if entry_path = Url.from_path url then
+        { b with Inline.attr = [ "current_unit" ] }
       else b
     in
     Types.block @@ Inline [ link ]
