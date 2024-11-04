@@ -243,11 +243,21 @@ let page ppf (page : Odoc_model.Lang.Page.t) =
   let _first = Fold.page ~f true page in
   ()
 
-let index ppf (index : Entry.t Odoc_model.Paths.Identifier.Hashtbl.Any.t) =
+let index ?occurrences ppf
+    (index : Entry.t Odoc_model.Paths.Identifier.Hashtbl.Any.t) =
+  let get_occ id =
+    match occurrences with
+    | None -> None
+    | Some occurrences -> (
+        match Odoc_occurrences.Table.get occurrences id with
+        | Some x -> Some x
+        | None -> Some { direct = 0; indirect = 0 })
+  in
   let _first =
     Odoc_model.Paths.Identifier.Hashtbl.Any.fold
       (fun _id entry first ->
-        let entry = (entry, Html.of_entry entry, None) in
+        let occ = get_occ entry.Entry.id in
+        let entry = (entry, Html.of_entry entry, occ) in
         output_json ppf first [ entry ])
       index true
   in

@@ -60,7 +60,7 @@ let compile_to_json ~output ~occurrences files =
           handle_file
             ~unit:(print (Json_search.unit ?occurrences) acc)
             ~page:(print Json_search.page acc)
-            ~occ:(print Json_search.index acc)
+            ~occ:(print (Json_search.index ?occurrences) acc)
             file
         with
         | Ok acc -> acc
