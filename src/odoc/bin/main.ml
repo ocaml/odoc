@@ -66,7 +66,7 @@ module Antichain = struct
     Fpath.normalize p
 
   (** Check that a list of directories form an antichain: they are all disjoints *)
-  let check l =
+  let check ~opt l =
     let l =
       List.map
         ~f:(fun p -> p |> Fs.Directory.to_fpath |> absolute_normalization)
@@ -81,7 +81,12 @@ module Antichain = struct
             rest
           && check rest
     in
-    check l
+    if check l then Result.Ok ()
+    else
+      let msg =
+        Format.sprintf "Paths given to all %s options must be disjoint" opt
+      in
+      Error (`Msg msg)
 end
 
 let docs = "ARGUMENTS"
@@ -467,14 +472,8 @@ module Indexing = struct
       occurrences =
     let marshall = if json then `JSON else `Marshall in
     output_file ~dst marshall >>= fun output ->
-    (if not (Antichain.check (page_roots |> List.map ~f:snd)) then
-       Error (`Msg "Paths given to all -P options must be disjoint")
-     else Ok ())
-    >>= fun () ->
-    (if not (Antichain.check (lib_roots |> List.map ~f:snd)) then
-       Error (`Msg "Paths given to all -L options must be disjoint")
-     else Ok ())
-    >>= fun () ->
+    Antichain.check (page_roots |> List.map ~f:snd) ~opt:"-P" >>= fun () ->
+    Antichain.check (lib_roots |> List.map ~f:snd) ~opt:"-L" >>= fun () ->
     Indexing.compile marshall ~output ~warnings_options ~occurrences ~lib_roots
       ~page_roots ~inputs_in_file ~odocls:inputs
   let cmd =
@@ -641,14 +640,8 @@ end = struct
       current_package warnings_options open_modules =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
-    (if not (Antichain.check (page_roots |> List.map ~f:snd)) then
-       Error (`Msg "Arguments given to -P cannot be included in each others")
-     else Ok ())
-    >>= fun () ->
-    (if not (Antichain.check (lib_roots |> List.map ~f:snd)) then
-       Error (`Msg "Arguments given to -L cannot be included in each others")
-     else Ok ())
-    >>= fun () ->
+    Antichain.check (page_roots |> List.map ~f:snd) ~opt:"-P" >>= fun () ->
+    Antichain.check (lib_roots |> List.map ~f:snd) ~opt:"-L" >>= fun () ->
     let current_lib = current_library_of_input lib_roots input in
     find_current_package ~current_package page_roots input
     >>= fun current_package ->
