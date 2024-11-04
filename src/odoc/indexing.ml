@@ -170,7 +170,7 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
                    let children_order = fm.Frontmatter.children_order in
                    (id, title, children_order))
           in
-          PageToc.of_list pages
+          Odoc_index.Page_hierarchy.of_list pages
         in
         { hierarchy_name = page_root; pages })
       page_roots

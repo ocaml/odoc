@@ -9,16 +9,14 @@ let sidebar_toc_entry id content =
 module Toc : sig
   type t
 
-  val of_lang : Odoc_index.Sidebar.PageToc.t -> t
+  val of_lang : Odoc_index.Page_hierarchy.t -> t
 
   val to_sidebar :
     ?fallback:string -> (Url.Path.t * Inline.one -> Block.one) -> t -> Block.t
 end = struct
   type t = (Url.Path.t * Inline.one) option Tree.t
 
-  open Odoc_index.Sidebar
-
-  let of_lang (dir : PageToc.t) =
+  let of_lang (dir : Odoc_index.Page_hierarchy.t) =
     Tree.map dir ~f:(function
       | None -> None
       | Some (parent_id, title) ->
