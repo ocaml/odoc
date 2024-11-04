@@ -19,34 +19,12 @@ end = struct
   open Odoc_model.Sidebar
 
   let of_lang (dir : PageToc.t) =
-    let rec of_lang (toc : PageToc.t) =
-      let entries =
-        List.filter_map
-          (fun tree ->
-            match tree.Tree.node with
-            | Some (id, title) ->
-                (* TODO warn on non empty children order if not index page somewhere *)
-                let payload =
-                  let path = Url.Path.from_identifier id in
-                  let content = Comment.link_content title in
-                  Some (path, sidebar_toc_entry id content)
-                in
-                let children = List.map of_lang tree.children in
-                Some { Tree.node = payload; children }
-            | None -> None)
-          toc.children
-      in
-      let payload =
-        match toc.node with
-        | None -> None
-        | Some (parent_id, title) ->
-            let path = Url.Path.from_identifier parent_id in
-            let content = Comment.link_content title in
-            Some (path, sidebar_toc_entry parent_id content)
-      in
-      { Tree.node = payload; children = entries }
-    in
-    of_lang dir
+    Tree.map dir ~f:(function
+      | None -> None
+      | Some (parent_id, title) ->
+          let path = Url.Path.from_identifier parent_id in
+          let content = Comment.link_content title in
+          Some (path, sidebar_toc_entry parent_id content))
 
   let rec to_sidebar ?(fallback = "root") convert
       { Tree.node = name; children = content } =
