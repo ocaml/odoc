@@ -112,8 +112,6 @@ let read_occurrences file =
   let htbl : Odoc_occurrences.Table.t = Marshal.from_channel ic in
   htbl
 
-open Odoc_index.Sidebar
-
 let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
     ~page_roots ~inputs_in_file ~odocls =
   let handle_warnings f =
@@ -148,7 +146,7 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
     List.map
       (fun (page_root, _) ->
         let pages = Resolver.all_pages ~root:page_root resolver in
-        let pages =
+        let p_hierarchy =
           let pages =
             pages
             |> List.filter_map
@@ -172,13 +170,14 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
           in
           Odoc_index.Page_hierarchy.of_list pages
         in
-        { hierarchy_name = page_root; pages })
+        { Odoc_index.p_name = page_root; p_hierarchy })
       page_roots
   in
-  let libraries =
+  let libs =
     List.map
       (fun (library, _) ->
-        { name = library; units = Resolver.all_units ~library resolver })
+        let units = Resolver.all_units ~library resolver in
+        { Odoc_index.name = library; units })
       lib_roots
   in
   let includes_rec =
@@ -193,7 +192,7 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
                [] include_rec)
       |> List.concat)
   in
-  let content = { pages; libraries } in
+  let content = { Odoc_index.pages; libs } in
   match out_format with
   | `JSON -> compile_to_json ~output ~occurrences files
   | `Marshall -> compile_to_marshall ~output content files
