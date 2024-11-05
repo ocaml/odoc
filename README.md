@@ -1,5 +1,4 @@
 # **[odoc](https://ocaml.github.io/odoc/) : OCaml Documentation Generator**
-</p>
 
 <p align="center">
   <a href="https://ocaml.ci.dev/github/ocaml/odoc">

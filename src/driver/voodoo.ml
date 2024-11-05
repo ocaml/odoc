@@ -209,7 +209,7 @@ let process_package pkg =
       mlds;
       assets;
       enable_warnings = false;
-      other_docs = Fpath.Set.empty;
+      other_docs = [];
       pkg_dir = top_dir pkg;
       config;
     }
