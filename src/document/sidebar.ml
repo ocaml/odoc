@@ -27,22 +27,17 @@ end = struct
 
   let of_page_hierarchy (dir : Odoc_index.Page_hierarchy.t) =
     let f index =
-      let payload =
-        match index with
-        | None -> None
-        | Some (index_id, title) ->
-            let path =
-              match
-                Url.from_identifier ~stop_before:false (index_id :> Id.t)
-              with
-              | Ok r -> r
-              | Error _ -> assert false
-              (* This error case should never happen since [stop_before] is false, and even less since it's a page id *)
-            in
-            let content = Comment.link_content title in
-            Some (path, sidebar_toc_entry index_id content)
-      in
-      payload
+      match index with
+      | None -> None
+      | Some (index_id, title) ->
+          let path =
+            match Url.from_identifier ~stop_before:false (index_id :> Id.t) with
+            | Ok r -> r
+            | Error _ -> assert false
+            (* This error case should never happen since [stop_before] is false, and even less since it's a page id *)
+          in
+          let content = Comment.link_content title in
+          Some (path, sidebar_toc_entry index_id content)
     in
     Tree.map ~f dir
 
