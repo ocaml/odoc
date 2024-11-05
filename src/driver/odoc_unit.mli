@@ -1,7 +1,7 @@
 module Pkg_args : sig
   type t = {
-    compile_dir : Fpath.t;
-    link_dir : Fpath.t;
+    odoc_dir : Fpath.t;
+    odocl_dir : Fpath.t;
     pages : (string * Fpath.t) list;
     libs : (string * Fpath.t) list;
   }
@@ -25,7 +25,6 @@ type index = {
 
 type 'a unit = {
   parent_id : Odoc.Id.t;
-  odoc_dir : Fpath.t;
   input_file : Fpath.t;
   output_dir : Fpath.t;
   odoc_file : Fpath.t;
@@ -55,8 +54,8 @@ val lib_dir : Packages.t -> Packages.libty -> Fpath.t
 val doc_dir : Packages.t -> Fpath.t
 
 val of_packages :
-  output_dir:Fpath.t ->
-  linked_dir:Fpath.t option ->
+  odoc_dir:Fpath.t ->
+  odocl_dir:Fpath.t option ->
   index_dir:Fpath.t option ->
   extra_libs_paths:Fpath.t Util.StringMap.t ->
   Packages.t list ->

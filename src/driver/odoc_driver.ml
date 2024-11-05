@@ -625,22 +625,18 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
         let all =
           let all = Util.StringMap.bindings all |> List.map snd in
           let internal =
-            Odoc_unit.of_packages ~output_dir:odoc_dir ~linked_dir:odocl_dir
-              ~index_dir:None ~extra_libs_paths all
+            Odoc_unit.of_packages ~odoc_dir ~odocl_dir ~index_dir:None
+              ~extra_libs_paths all
           in
           let external_ =
             let mld_dir = odoc_dir in
             let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
-            Landing_pages.of_packages ~mld_dir ~odoc_dir ~odocl_dir
-              ~output_dir:odoc_dir all
+            Landing_pages.of_packages ~mld_dir ~odoc_dir ~odocl_dir all
           in
           internal @ external_
         in
         Compile.init_stats all;
-        let compiled =
-          Compile.compile ?partial ~partial_dir:odoc_dir ?linked_dir:odocl_dir
-            all
-        in
+        let compiled = Compile.compile ?partial ~partial_dir:odoc_dir all in
         let linked = Compile.link compiled in
         let occurrence_file =
           let output =

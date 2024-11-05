@@ -1,26 +1,26 @@
 module Pkg_args = struct
   type t = {
-    compile_dir : Fpath.t;
-    link_dir : Fpath.t;
+    odoc_dir : Fpath.t;
+    odocl_dir : Fpath.t;
     pages : (string * Fpath.t) list;
     libs : (string * Fpath.t) list;
   }
 
   let map_rel dir = List.map (fun (a, b) -> (a, Fpath.(dir // b)))
 
-  let compiled_pages v = map_rel v.compile_dir v.pages
-  let compiled_libs v = map_rel v.compile_dir v.libs
-  let linked_pages v = map_rel v.link_dir v.pages
-  let linked_libs v = map_rel v.link_dir v.libs
+  let compiled_pages v = map_rel v.odoc_dir v.pages
+  let compiled_libs v = map_rel v.odoc_dir v.libs
+  let linked_pages v = map_rel v.odocl_dir v.pages
+  let linked_libs v = map_rel v.odocl_dir v.libs
 
   let combine v1 v2 =
-    if v1.compile_dir <> v2.compile_dir then
-      Fmt.invalid_arg "combine: compile_dir differs";
-    if v1.link_dir <> v2.link_dir then
-      Fmt.invalid_arg "combine: link_dir differs";
+    if v1.odoc_dir <> v2.odoc_dir then
+      Fmt.invalid_arg "combine: odoc_dir differs";
+    if v1.odocl_dir <> v2.odocl_dir then
+      Fmt.invalid_arg "combine: odocl_dir differs";
     {
-      compile_dir = v1.compile_dir;
-      link_dir = v1.link_dir;
+      odoc_dir = v1.odoc_dir;
+      odocl_dir = v1.odocl_dir;
       pages = v1.pages @ v2.pages;
       libs = v1.libs @ v2.libs;
     }
@@ -32,8 +32,8 @@ module Pkg_args = struct
             Format.fprintf fmt "(%s, %a)" a Fpath.pp b))
     in
     Format.fprintf fmt
-      "@[<hov>compile_dir: %a@;link_dir: %a@;pages: [%a]@;libs: [%a]@]" Fpath.pp
-      x.compile_dir Fpath.pp x.link_dir sfp_pp x.pages sfp_pp x.libs
+      "@[<hov>odoc_dir: %a@;odocl_dir: %a@;pages: [%a]@;libs: [%a]@]" Fpath.pp
+      x.odoc_dir Fpath.pp x.odocl_dir sfp_pp x.pages sfp_pp x.libs
 end
 
 type index = {
@@ -50,7 +50,6 @@ let pp_index fmt x =
 
 type 'a unit = {
   parent_id : Odoc.Id.t;
-  odoc_dir : Fpath.t;
   input_file : Fpath.t;
   output_dir : Fpath.t;
   odoc_file : Fpath.t;
@@ -98,7 +97,6 @@ and pp : all_kinds unit Fmt.t =
  fun fmt x ->
   Format.fprintf fmt
     "@[<hov>parent_id: %s@;\
-     odoc_dir: %a@;\
      input_file: %a@;\
      output_dir: %a@;\
      odoc_file: %a@;\
@@ -110,8 +108,8 @@ and pp : all_kinds unit Fmt.t =
      kind:%a@;\
      @]"
     (Odoc.Id.to_string x.parent_id)
-    Fpath.pp x.odoc_dir Fpath.pp x.input_file Fpath.pp x.output_dir Fpath.pp
-    x.odoc_file Fpath.pp x.odocl_file Pkg_args.pp x.pkg_args x.pkgname
+    Fpath.pp x.input_file Fpath.pp x.output_dir Fpath.pp x.odoc_file Fpath.pp
+    x.odocl_file Pkg_args.pp x.pkg_args x.pkgname
     Fmt.(list ~sep:comma Fpath.pp)
     (Fpath.Set.to_list x.include_dirs)
     (Fmt.option pp_index) x.index pp_kind
@@ -121,12 +119,10 @@ let doc_dir pkg = Fpath.(pkg.Packages.pkg_dir / "doc")
 let lib_dir pkg lib =
   Fpath.(pkg.Packages.pkg_dir / "lib" / lib.Packages.lib_name)
 
-let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
+let of_packages ~odoc_dir ~odocl_dir ~index_dir ~extra_libs_paths
     (pkgs : Packages.t list) : t list =
-  let linked_dir =
-    match linked_dir with None -> output_dir | Some dir -> dir
-  in
-  let index_dir = match index_dir with None -> output_dir | Some dir -> dir in
+  let odocl_dir = match odocl_dir with None -> odoc_dir | Some dir -> dir in
+  let index_dir = match index_dir with None -> odoc_dir | Some dir -> dir in
 
   (* [module_of_hash] Maps a hash to the corresponding [Package.t], library name and
      [Packages.modulety]. [lib_dirs] maps a library name to the odoc dir containing its
@@ -168,12 +164,7 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
   let base_args pkg lib_deps : Pkg_args.t =
     let own_page = dash_p pkg in
     let own_libs = List.concat_map dash_l (Util.StringSet.to_list lib_deps) in
-    {
-      pages = [ own_page ];
-      libs = own_libs;
-      compile_dir = output_dir;
-      link_dir = linked_dir;
-    }
+    { pages = [ own_page ]; libs = own_libs; odoc_dir; odocl_dir }
   in
   let args_of_config config : Pkg_args.t =
     let { Global_config.deps = { packages; libraries } } = config in
@@ -186,12 +177,7 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
         packages
     in
     let libs_rel = List.concat_map dash_l libraries in
-    {
-      pages = pages_rel;
-      libs = libs_rel;
-      compile_dir = output_dir;
-      link_dir = linked_dir;
-    }
+    { pages = pages_rel; libs = libs_rel; odoc_dir; odocl_dir }
   in
   let args_of =
     let cache = Hashtbl.create 10 in
@@ -222,19 +208,19 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
     let ( // ) = Fpath.( // ) in
     let ( / ) = Fpath.( / ) in
     let pkg_args = args_of pkg lib_deps in
-    let odoc_dir = output_dir // rel_dir in
     let parent_id = rel_dir |> Odoc.Id.of_fpath in
-    let odoc_file = odoc_dir / (String.uncapitalize_ascii name ^ ".odoc") in
+    let odoc_file =
+      odoc_dir // rel_dir / (String.uncapitalize_ascii name ^ ".odoc")
+    in
     (* odoc will uncapitalise the output filename *)
     let odocl_file =
-      linked_dir // rel_dir / (String.uncapitalize_ascii name ^ ".odocl")
+      odocl_dir // rel_dir / (String.uncapitalize_ascii name ^ ".odocl")
     in
     {
-      output_dir;
+      output_dir = odoc_dir;
       pkgname = pkg.Packages.name;
       pkg_args;
       parent_id;
-      odoc_dir;
       input_file;
       odoc_file;
       odocl_file;
@@ -268,7 +254,8 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
         let include_dirs, kind =
           let deps = build_deps intf.mif_deps in
           let include_dirs =
-            List.map (fun u -> u.odoc_dir) deps |> Fpath.Set.of_list
+            List.map (fun u -> Fpath.parent u.odoc_file) deps
+            |> Fpath.Set.of_list
           in
           let kind = `Intf { hidden; hash = intf.mif_hash; deps } in
           (include_dirs, kind)
@@ -291,7 +278,7 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
         let rel_dir = lib_dir pkg lib in
         let include_dirs =
           let deps = build_deps impl.mip_deps in
-          List.map (fun u -> u.odoc_dir) deps |> Fpath.Set.of_list
+          List.map (fun u -> Fpath.parent u.odoc_file) deps |> Fpath.Set.of_list
         in
         let kind =
           let src_name = Fpath.filename src_path in
@@ -334,7 +321,7 @@ let of_packages ~output_dir ~linked_dir ~index_dir ~extra_libs_paths
       List.map (fun (lib : Packages.libty) -> lib_dir pkg lib) pkg.libraries
     in
     let include_dirs =
-      (output_dir // rel_dir) :: include_dirs |> Fpath.Set.of_list
+      (odoc_dir // rel_dir) :: include_dirs |> Fpath.Set.of_list
     in
     let kind = `Mld in
     let name = mld_path |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "page-" in
