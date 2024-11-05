@@ -74,7 +74,7 @@ type t = {
   mlds : mld list;
   assets : asset list;
   enable_warnings : bool;
-  other_docs : Fpath.Set.t;
+  other_docs : Fpath.t list;
   pkg_dir : Fpath.t;
   config : Global_config.t;
 }

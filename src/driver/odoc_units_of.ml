@@ -214,19 +214,23 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
     in
     [ unit ]
   in
-  let of_md pkg (md :Fpath.t) : md unit list =
+  let of_md pkg (md : Fpath.t) : md unit list =
     let ext = Fpath.get_ext md in
     match ext with
     | ".md" ->
-      let rel_dir = doc_dir pkg in
-      let kind = `Md in
-      let name = md |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "page-" in
-      let lib_deps = Util.StringSet.empty in
-      let unit = make_unit ~name ~kind ~rel_dir ~input_file:md ~pkg ~include_dirs:Fpath.Set.empty ~lib_deps in
-      [ unit ]
+        let rel_dir = doc_dir pkg in
+        let kind = `Md in
+        let name = md |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "page-" in
+        let lib_deps = Util.StringSet.empty in
+        let unit =
+          make_unit ~name ~kind ~rel_dir ~input_file:md ~pkg
+            ~include_dirs:Fpath.Set.empty ~lib_deps
+            ~enable_warnings:pkg.enable_warnings
+        in
+        [ unit ]
     | _ ->
-      Logs.debug (fun m -> m "Skipping non-markdown doc file %a" Fpath.pp md);
-      []
+        Logs.debug (fun m -> m "Skipping non-markdown doc file %a" Fpath.pp md);
+        []
   in
   let of_asset pkg (asset : Packages.asset) : asset unit list =
     let open Fpath in
@@ -248,7 +252,7 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
     let lib_units :> t list list = List.map (of_lib pkg) pkg.libraries in
     let mld_units :> t list list = List.map (of_mld pkg) pkg.mlds in
     let asset_units :> t list list = List.map (of_asset pkg) pkg.assets in
-    let md_units :> t list list = Fpath.Set.fold (fun md acc -> of_md pkg md :: acc) pkg.other_docs [] in
+    let md_units :> t list list = List.map (of_md pkg) pkg.other_docs in
     let pkg_index :> t list =
       let has_index_page =
         List.exists

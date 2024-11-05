@@ -9,15 +9,17 @@ let parse id input_s =
     Lexing.{ pos_fname = input_s; pos_lnum = 1; pos_cnum = 0; pos_bol = 0 }
   in
   let str = In_channel.(with_open_bin input_s input_all) in
-  let content, _warnings = Doc_of_md.parse_comment ~location ~text:str () in
-  let content, () =
+  let content, parser_warnings =
+    Doc_of_md.parse_comment ~location ~text:str ()
+  in
+  let (content, ()), semantics_warnings =
     Semantics.ast_to_comment ~internal_tags:Expect_none ~sections_allowed:`All
-      ~tags_allowed:true
+      ~tags_allowed:false
       ~parent_of_sections:(id :> Paths.Identifier.LabelParent.t)
       content []
-    |> Error.raise_warnings
+    |> Error.unpack_warnings
   in
-  content
+  (content, List.map Error.t_of_parser_t parser_warnings @ semantics_warnings)
 
 let mk_page input_s id content =
   (* Construct the output file representation *)
@@ -48,13 +50,13 @@ let run input_s parent_id_str odoc_dir =
       (parent_id, Odoc_model.Names.PageName.make_std page_name)
   in
 
-  let content = parse id input_s in
+  let content, warnings = parse id input_s in
   let page = mk_page input_s id content in
 
   let output =
     Fpath.(v odoc_dir // v parent_id_str / ("page-" ^ page_name ^ ".odoc"))
   in
-  Odoc_odoc.Odoc_file.save_page output ~warnings:[] page
+  Odoc_odoc.Odoc_file.save_page output ~warnings page
 
 open Cmdliner
 

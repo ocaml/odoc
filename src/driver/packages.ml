@@ -87,7 +87,7 @@ type t = {
   mlds : mld list;
   assets : asset list;
   enable_warnings : bool;
-  other_docs : Fpath.Set.t;
+  other_docs : Fpath.t list;
   pkg_dir : Fpath.t;
   config : Global_config.t;
 }
@@ -106,9 +106,7 @@ let pp fmt t =
      }@]"
     t.name t.version (Fmt.Dump.list pp_libty) t.libraries (Fmt.Dump.list pp_mld)
     t.mlds (Fmt.Dump.list pp_asset) t.assets t.enable_warnings
-    (Fmt.Dump.list Fpath.pp)
-    (Fpath.Set.elements t.other_docs)
-    Fpath.pp t.pkg_dir
+    (Fmt.Dump.list Fpath.pp) t.other_docs Fpath.pp t.pkg_dir
 
 let maybe_prepend_top top_dir dir =
   match top_dir with None -> dir | Some d -> Fpath.(d // dir)
@@ -405,6 +403,7 @@ let of_libs ~packages_dir libs =
                         docs
                       |> Fpath.Set.of_list
                     in
+                    let other_docs = Fpath.Set.elements other_docs in
                     Some
                       {
                         name = pkg.name;
@@ -470,8 +469,8 @@ let of_packages ~packages_dir packages =
             files.docs
           |> Fpath.Set.of_list
         in
-
         let enable_warnings = List.mem pkg.name packages in
+        let other_docs = Fpath.Set.elements other_docs in
         Util.StringMap.add pkg.name
           {
             name = pkg.name;

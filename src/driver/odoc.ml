@@ -62,12 +62,15 @@ let compile_md ~output_dir ~input_file:file ~parent_id =
     let _, f = Fpath.split_base file in
     Some Fpath.(output_dir // Id.to_fpath parent_id // set_ext "odoc" f)
   in
-  let cmd = !odoc_md % Fpath.to_string file % "--output-dir" % p output_dir in
+  let cmd = !odoc_md % p file % "--output-dir" % p output_dir in
   let cmd = cmd % "--parent-id" % Id.to_string parent_id in
   let desc = Printf.sprintf "Compiling Markdown %s" (Fpath.to_string file) in
-  let lines = Cmd_outputs.submit desc cmd output_file in
-  Cmd_outputs.(
-    add_prefixed_output cmd compile_output (Fpath.to_string file) lines)
+  let _lines =
+    Cmd_outputs.submit
+      (Some (`Compile, Fpath.to_string file))
+      desc cmd output_file
+  in
+  ()
 
 let compile_asset ~output_dir ~name ~parent_id =
   let open Cmd in
