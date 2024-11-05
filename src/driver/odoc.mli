@@ -25,7 +25,8 @@ val compile :
   includes:Fpath.set ->
   parent_id:Id.t ->
   unit
-val compile_md : output_dir:Fpath.t -> input_file:Fpath.t -> parent_id:Id.t -> unit
+val compile_md :
+  output_dir:Fpath.t -> input_file:Fpath.t -> parent_id:Id.t -> unit
 
 val compile_asset : output_dir:Fpath.t -> name:string -> parent_id:Id.t -> unit
 
