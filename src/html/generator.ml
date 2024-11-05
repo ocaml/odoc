@@ -542,7 +542,7 @@ module Page = struct
       match sidebar with
       | None -> None
       | Some sidebar ->
-          (* let sidebar = Odoc_document.Sidebar.to_block sidebar p in *)
+          let sidebar = Odoc_document.Sidebar.to_block sidebar url in
           (Some (block ~config ~resolve sidebar) :> any Html.elt list option)
     in
     let i = Doctree.Shift.compute ~on_sub i in

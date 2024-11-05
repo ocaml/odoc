@@ -49,16 +49,6 @@ let document_of_input ~resolver ~warnings_options ~syntax input =
 
 let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
     =
-  let url =
-    match doc with
-    | Odoc_document.Types.Document.Page { url; _ } -> url
-    | Source_page { url; _ } -> url
-  in
-  let sidebar =
-    Odoc_utils.Option.map
-      (fun sb -> Odoc_document.Sidebar.to_block sb url)
-      sidebar
-  in
   let pages = renderer.Renderer.render extra sidebar doc in
   Renderer.traverse pages ~f:(fun filename content ->
       let filename = prepare ~extra_suffix ~output_dir:root_dir filename in
