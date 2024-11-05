@@ -9,5 +9,5 @@ val page : Format.formatter -> Odoc_model.Lang.Page.t -> unit
 val index :
   ?occurrences:Odoc_occurrences.Table.t ->
   Format.formatter ->
-  Odoc_index.Entry.t Odoc_model.Paths.Identifier.Hashtbl.Any.t ->
+  Odoc_index.Skeleton.t list ->
   unit

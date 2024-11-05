@@ -17,7 +17,7 @@ let url { Entry.id; kind; doc = _ } =
 
        Values, types, ... are not sensitive to [stop_before], allowing us to
        shorten the match. *)
-    match kind with Doc _ -> false | _ -> true
+    match kind with Doc -> false | _ -> true
   in
   let url = Odoc_document.Url.from_identifier ~stop_before id in
   let config =
@@ -156,15 +156,15 @@ let string_of_kind =
   | Field _ -> kind_field
   | ExtensionConstructor _ -> kind_extension_constructor
   | TypeDecl _ -> kind_typedecl
-  | Module -> kind_module
+  | Module _ -> kind_module
   | Value _ -> kind_value
   | Exception _ -> kind_exception
   | Class_type _ -> kind_class_type
   | Method _ -> kind_method
   | Class _ -> kind_class
   | TypeExtension _ -> kind_extension
-  | ModuleType -> kind_module_type
-  | Doc _ -> kind_doc
+  | ModuleType _ -> kind_module_type
+  | Doc -> kind_doc
 
 let value_rhs (t : Entry.value_entry) = " : " ^ Text.of_type t.type_
 
@@ -181,8 +181,8 @@ let rhs_of_kind (entry : Entry.kind) =
   | Constructor t | ExtensionConstructor t | Exception t ->
       Some (constructor_rhs t)
   | Field f -> Some (field_rhs f)
-  | Module | Class_type _ | Method _ | Class _ | TypeExtension _ | ModuleType
-  | Doc _ ->
+  | Module _ | Class_type _ | Method _ | Class _ | TypeExtension _
+  | ModuleType _ | Doc ->
       None
 
 let names_of_id id =
