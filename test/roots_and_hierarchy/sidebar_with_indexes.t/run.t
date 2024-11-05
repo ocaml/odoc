@@ -1,6 +1,6 @@
 This is the same example as `sidebar.t`, but with an additional index page for the library.
 
-Adding this additional page makes it go into the sidebar.
+Since -L subfolders are omitted from -P roots, the index page should not be added to the sidebar
 
   $ ocamlc -c -bin-annot libname/unit.ml
 
@@ -34,7 +34,6 @@ Adding this additional page makes it go into the sidebar.
          <li><a href="dir1/index.html">A directory</a>
           <ul><li><a href="dir1/my_page.html">My page</a></li></ul>
          </li><li><a href="file.html">File</a></li>
-         <li><a href="libname/index.html">Library landing page</a></li>
         </ul>
        </li>
       </ul><b>Libraries</b>
@@ -43,5 +42,6 @@ Adding this additional page makes it go into the sidebar.
         <ul><li><a href="libname/Unit/index.html">Unit</a></li></ul>
        </li>
       </ul>
+     </nav>
 
-As we can see, "Library landing page" has been added to the sidebar, in the "documentation" side.
+As we can see, "Library landing page" has NOT been added to the sidebar, in the "documentation" side.
