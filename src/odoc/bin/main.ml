@@ -604,8 +604,8 @@ end = struct
     | [] -> None
     | _ ->
         find_map
-          ~f:(fun (pkg, path) ->
-            if Fpath.is_prefix path o then Some pkg else None)
+          ~f:(fun (root, path) ->
+            if Fpath.is_prefix path o then Some root else None)
           l
 
   let current_library_of_input lib_roots input =
