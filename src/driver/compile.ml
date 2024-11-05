@@ -92,7 +92,7 @@ let find_partials odoc_dir :
   | Ok h -> (h, tbl)
   | Error _ -> (* odoc_dir doesn't exist...? *) (Util.StringMap.empty, tbl)
 
-let compile ?partial ~partial_dir ?linked_dir:_ (all : Odoc_unit.t list) =
+let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
   let hashes = mk_byhash all in
   let compile_mod =
     (* Modules have a more complicated compilation because:
