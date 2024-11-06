@@ -59,9 +59,3 @@ type dirs = {
   index_dir : Fpath.t;
   mld_dir : Fpath.t;
 }
-
-val of_packages :
-  dirs:dirs ->
-  extra_libs_paths:Fpath.t Util.StringMap.t ->
-  Packages.t list ->
-  t list
