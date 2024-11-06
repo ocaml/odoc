@@ -626,15 +626,16 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
       (fun () ->
         let all =
           let all = Util.StringMap.bindings all |> List.map snd in
-          let internal =
-            Odoc_unit.of_packages ~odoc_dir ~odocl_dir ~index_dir:None
-              ~extra_libs_paths all
+          let dirs =
+            {
+              Odoc_unit.odoc_dir;
+              odocl_dir = Option.value odocl_dir ~default:odoc_dir;
+              index_dir = odoc_dir;
+              mld_dir = odoc_dir;
+            }
           in
-          let external_ =
-            let mld_dir = odoc_dir in
-            let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
-            Landing_pages.of_packages ~mld_dir ~odoc_dir ~odocl_dir all
-          in
+          let internal = Odoc_unit.of_packages ~dirs ~extra_libs_paths all in
+          let external_ = Landing_pages.of_packages ~dirs all in
           internal @ external_
         in
         Compile.init_stats all;
