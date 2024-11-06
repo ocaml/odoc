@@ -218,7 +218,7 @@ let link : compiled list -> _ =
       let pages = Odoc_unit.Pkg_args.compiled_pages c.pkg_args in
       let includes = c.include_dirs in
       Odoc.link ~input_file ~output_file ~includes ~libs ~docs:pages
-        ~current_package:c.pkgname ()
+        ?current_package:c.pkgname ()
     in
     match c.kind with
     | `Intf { hidden = true; _ } ->

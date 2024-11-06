@@ -44,7 +44,7 @@ module PackageLanding = struct
     let pkg_args =
       { Pkg_args.pages = pages_rel; libs = []; odoc_dir; odocl_dir }
     in
-    make_unit ~dirs rel_path ~content ~pkgname:pkg.name ~pkg_args ()
+    make_unit ~dirs rel_path ~content ~pkgname:(Some pkg.name) ~pkg_args ()
 end
 
 module PackageList = struct
@@ -53,21 +53,15 @@ module PackageList = struct
       all |> List.sort (fun n1 n2 -> String.compare n1.name n2.name)
     in
     fpf ppf "{0 List of all packages}@\n";
-    let print_pkg pkg =
-      fpf ppf "- {{!/__driver/%s/index}%s}@\n" pkg.name pkg.name
-    in
+    let print_pkg pkg = fpf ppf "- {{:%s/index.html}%s}@\n" pkg.name pkg.name in
     List.iter print_pkg sorted_packages
 
   let page ~dirs all =
     let { Odoc_unit.odoc_dir; odocl_dir; _ } = dirs in
     let content = content all in
     let rel_path = Fpath.v "./" in
-    let pkgname = "__driver" in
-    let pages_rel = [ (pkgname, rel_path) ] in
-    let pkg_args =
-      { Pkg_args.pages = pages_rel; libs = []; odoc_dir; odocl_dir }
-    in
-    make_unit ~dirs ~content ~pkgname ~pkg_args rel_path ()
+    let pkg_args = { Pkg_args.pages = []; libs = []; odoc_dir; odocl_dir } in
+    make_unit ~dirs ~content ~pkgname:None ~pkg_args rel_path ()
 end
 
 module LibraryLanding = struct
@@ -87,8 +81,8 @@ module LibraryLanding = struct
       { Pkg_args.pages = pages_rel; libs = []; odocl_dir; odoc_dir }
     in
     let include_dirs = Fpath.Set.singleton Fpath.(odoc_dir // rel_path) in
-    make_unit ~dirs rel_path ~content ~pkgname:pkg.name ~include_dirs ~pkg_args
-      ()
+    make_unit ~dirs rel_path ~content ~pkgname:(Some pkg.name) ~include_dirs
+      ~pkg_args ()
 end
 
 let of_package ~dirs pkg =

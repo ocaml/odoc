@@ -96,7 +96,7 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
     in
     {
       output_dir = odoc_dir;
-      pkgname = pkg.Packages.name;
+      pkgname = Some pkg.Packages.name;
       pkg_args;
       parent_id;
       input_file;
