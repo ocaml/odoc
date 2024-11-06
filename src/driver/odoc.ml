@@ -112,7 +112,7 @@ let lib_args libs =
     Cmd.empty libs
 
 let link ?(ignore_output = false) ~input_file:file ?output_file ~includes ~docs
-    ~libs ~current_package () =
+    ~libs ?current_package () =
   let open Cmd in
   let output_file =
     match output_file with Some f -> f | None -> Fpath.set_ext "odocl" file
@@ -124,9 +124,14 @@ let link ?(ignore_output = false) ~input_file:file ?output_file ~includes ~docs
   in
   let docs = doc_args docs in
   let libs = lib_args libs in
+  let current_package =
+    match current_package with
+    | None -> Cmd.empty
+    | Some c -> Cmd.(v "--current-package" % c)
+  in
   let cmd =
     !odoc % "link" % p file % "-o" % p output_file %% includes %% docs %% libs
-    % "--current-package" % current_package % "--enable-missing-root-warning"
+    %% current_package % "--enable-missing-root-warning"
   in
   let cmd =
     if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd
