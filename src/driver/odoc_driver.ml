@@ -551,9 +551,9 @@ let remap_virtual_interfaces duplicate_hashes pkgs =
       })
     pkgs
 
-let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
-    odoc_bin voodoo package_name blessed dune_style compile_grep link_grep
-    generate_grep =
+let run libs verbose packages_dir odoc_dir odocl_dir index_dir mld_dir html_dir
+    stats nb_workers odoc_bin voodoo package_name blessed dune_style
+    compile_grep link_grep generate_grep =
   Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
   let _ = Voodoo.find_universe_and_version "foo" in
   Eio_main.run @@ fun env ->
@@ -627,12 +627,8 @@ let run libs verbose packages_dir odoc_dir odocl_dir html_dir stats nb_workers
         let all =
           let all = Util.StringMap.bindings all |> List.map snd in
           let dirs =
-            {
-              Odoc_unit.odoc_dir;
-              odocl_dir = Option.value odocl_dir ~default:odoc_dir;
-              index_dir = odoc_dir;
-              mld_dir = odoc_dir;
-            }
+            let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
+            { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir }
           in
           let internal = Odoc_unit.of_packages ~dirs ~extra_libs_paths all in
           let external_ = Landing_pages.of_packages ~dirs all in
@@ -680,6 +676,14 @@ let odoc_dir =
 let odocl_dir =
   let doc = "Directory in which the intermediate odocl files go" in
   Arg.(value & opt (some fpath_arg) None & info [ "odocl-dir" ] ~doc)
+
+let index_dir =
+  let doc = "Directory in which the index files go" in
+  Arg.(value & opt fpath_arg (Fpath.v "_indexes/") & info [ "index-dir" ] ~doc)
+
+let mld_dir =
+  let doc = "Directory in which the auto-generated mld files go" in
+  Arg.(value & opt fpath_arg (Fpath.v "_mlds/") & info [ "mld-dir" ] ~doc)
 
 let html_dir =
   let doc = "Directory in which the generated HTML files go" in
@@ -744,8 +748,9 @@ let cmd =
   Cmd.v info
     Term.(
       const run $ packages $ verbose $ packages_dir $ odoc_dir $ odocl_dir
-      $ html_dir $ stats $ nb_workers $ odoc_bin $ voodoo $ package_name
-      $ blessed $ dune_style $ compile_grep $ link_grep $ generate_grep)
+      $ index_dir $ mld_dir $ html_dir $ stats $ nb_workers $ odoc_bin $ voodoo
+      $ package_name $ blessed $ dune_style $ compile_grep $ link_grep
+      $ generate_grep)
 
 (* let map = Ocamlfind.package_to_dir_map () in
    let _dirs = List.map (fun lib -> List.assoc lib map) deps in
