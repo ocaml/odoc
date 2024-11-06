@@ -630,9 +630,7 @@ let run libs verbose packages_dir odoc_dir odocl_dir index_dir mld_dir html_dir
             let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
             { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir }
           in
-          let internal = Odoc_units_of.packages ~dirs ~extra_libs_paths all in
-          let external_ = Landing_pages.of_packages ~dirs all in
-          internal @ external_
+          Odoc_units_of.packages ~dirs ~extra_libs_paths all
         in
         Compile.init_stats all;
         let compiled = Compile.compile ?partial ~partial_dir:odoc_dir all in
