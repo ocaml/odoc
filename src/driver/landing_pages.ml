@@ -80,7 +80,7 @@ module LibraryLanding = struct
 
   let page ~pkg ~odoc_dir ~odocl_dir ~mld_dir ~pkg_dir lib =
     let content = content lib in
-    let rel_path = Fpath.(pkg_dir / "lib" / lib.lib_name) in
+    let rel_path = Fpath.(pkg_dir / lib.lib_name) in
     let pages_rel = [ (pkg.name, rel_path) ] in
     let pkg_args =
       { Pkg_args.pages = pages_rel; libs = []; odocl_dir; odoc_dir }
@@ -88,25 +88,6 @@ module LibraryLanding = struct
     let include_dirs = Fpath.Set.singleton Fpath.(odoc_dir // rel_path) in
     make_unit ~odoc_dir ~odocl_dir ~mld_dir rel_path ~content ~pkgname:pkg.name
       ~include_dirs ~pkg_args ()
-end
-
-module PackageLibLanding = struct
-  let content pkg ppf =
-    fpf ppf "{0 %s}@\n" pkg.name;
-    let print_lib (lib : Packages.libty) =
-      fpf ppf "- {{!/%s/%s/index}%s}@\n" pkg.name lib.lib_name lib.lib_name
-    in
-    List.iter print_lib pkg.libraries
-
-  let page ~pkg ~odoc_dir ~odocl_dir ~mld_dir =
-    let content = content pkg in
-    let rel_path = Fpath.(pkg.pkg_dir / "lib") in
-    let pages_rel = [ (pkg.name, rel_path) ] in
-    let pkg_args =
-      { Pkg_args.pages = pages_rel; libs = []; odoc_dir; odocl_dir }
-    in
-    make_unit ~odoc_dir ~odocl_dir ~mld_dir rel_path ~content ~pkgname:pkg.name
-      ~pkg_args ()
 end
 
 let of_package ~mld_dir ~odoc_dir ~odocl_dir pkg =
@@ -119,10 +100,7 @@ let of_package ~mld_dir ~odoc_dir ~odocl_dir pkg =
   let package_landing_page =
     PackageLanding.page ~odoc_dir ~odocl_dir ~mld_dir ~pkg
   in
-  let library_list_page =
-    PackageLibLanding.page ~odoc_dir ~odocl_dir ~mld_dir ~pkg
-  in
-  package_landing_page :: library_list_page :: library_pages
+  package_landing_page :: library_pages
 
 let of_packages ~mld_dir ~odoc_dir ~odocl_dir all =
   PackageList.page ~mld_dir ~odoc_dir ~odocl_dir all
