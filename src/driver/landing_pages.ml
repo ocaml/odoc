@@ -32,7 +32,14 @@ let library ~dirs ~pkg ~index lib =
     List.iter print_module lib.modules
   in
   let rel_dir = lib_dir pkg lib in
-  make_index ~dirs ~rel_dir ?index ~content ()
+  make_index ~dirs ~rel_dir ~index ~content ()
+
+let package ~dirs ~pkg ~index =
+  let content ppf =
+    Format.fprintf ppf "{0 %s}@\nUse sidebar to navigate." pkg.Packages.name
+  in
+  let rel_dir = doc_dir pkg in
+  make_index ~dirs ~rel_dir ~index ~content ()
 
 let package_list ~dirs all =
   let content all ppf =

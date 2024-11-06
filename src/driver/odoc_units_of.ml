@@ -187,9 +187,7 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
   let of_lib pkg (lib : Packages.libty) =
     let lib_deps = Util.StringSet.add lib.lib_name lib.lib_deps in
     let index = index_of pkg in
-    let landing_page :> t =
-      Landing_pages.library ~dirs ~pkg ~index:(Some index) lib
-    in
+    let landing_page :> t = Landing_pages.library ~dirs ~pkg ~index lib in
     landing_page :: List.concat_map (of_module pkg lib lib_deps) lib.modules
   in
   let of_mld pkg (mld : Packages.mld) : mld unit list =
@@ -235,7 +233,22 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
     let lib_units :> t list list = List.map (of_lib pkg) pkg.libraries in
     let mld_units :> t list list = List.map (of_mld pkg) pkg.mlds in
     let asset_units :> t list list = List.map (of_asset pkg) pkg.assets in
-    List.concat (lib_units @ mld_units @ asset_units)
+    let pkg_index :> t list =
+      let has_index_page =
+        List.exists
+          (fun mld ->
+            Fpath.equal
+              (Fpath.normalize mld.Packages.mld_rel_path)
+              (Fpath.normalize (Fpath.v "./index.mld")))
+          pkg.mlds
+      in
+      if has_index_page then []
+      else
+        let index = index_of pkg in
+        [ Landing_pages.package ~dirs ~pkg ~index ]
+    in
+    List.concat ((pkg_index :: lib_units) @ mld_units @ asset_units)
   in
+
   let pkg_list :> t = Landing_pages.package_list ~dirs pkgs in
   pkg_list :: List.concat_map of_package pkgs
