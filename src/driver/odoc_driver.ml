@@ -667,17 +667,36 @@ let run mode
       (fun () -> render_stats env nb_workers)
   in
 
-  let grep_log l s =
+  let grep_log ty s =
     let open Astring in
     let do_ affix =
-      let grep l = if String.is_infix ~affix l then Format.printf "%s\n" l in
-      List.iter grep l
+      let grep (dst, _err, prefix, content) =
+        if dst = ty then
+          let lines = String.cuts ~sep:"\n" content in
+          List.iter
+            (fun l ->
+              if String.is_infix ~affix l then Format.printf "%s: %s\n" prefix l)
+            lines
+      in
+      List.iter grep !Cmd_outputs.outputs
     in
     Option.iter do_ s
   in
-  grep_log !Cmd_outputs.compile_output compile_grep;
-  grep_log !Cmd_outputs.link_output link_grep;
-  grep_log !Cmd_outputs.generate_output generate_grep;
+  grep_log `Compile compile_grep;
+  grep_log `Link link_grep;
+  grep_log `Generate generate_grep;
+
+  List.iter
+    (fun (dst, _err, prefix, content) ->
+      match dst with
+      | `Link ->
+          if String.length content = 0 then ()
+          else
+            let lines = String.split_on_char '\n' content in
+            List.iter (fun l -> Format.printf "%s: %s\n" prefix l) lines
+      | _ -> ())
+    !Cmd_outputs.outputs;
+
   Format.eprintf "Final stats: %a@.%!" Stats.pp_stats Stats.stats;
   Format.eprintf "Total time: %f@.%!" (Stats.total_time ());
   if stats then Stats.bench_results html_dir

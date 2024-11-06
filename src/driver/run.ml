@@ -9,10 +9,11 @@ let instrument_dir =
      OS.Dir.create dir |> Result.get_ok |> ignore;
      dir)
 
-type executed_command = {
+type t = {
   cmd : string list;
   time : float;  (** Running time in seconds. *)
   output_file : Fpath.t option;
+  output : string;
   errors : string;
 }
 
@@ -42,7 +43,7 @@ let run env cmd output_file =
     |> Array.of_list
   in
   (* Logs.debug (fun m -> m "Running cmd %a" Fmt.(list ~sep:sp string) cmd); *)
-  let r, errors =
+  let output, errors =
     Eio.Switch.run ~name:"Process.parse_out" @@ fun sw ->
     let r, w = Eio.Process.pipe proc_mgr ~sw in
     let re, we = Eio.Process.pipe proc_mgr ~sw in
@@ -77,10 +78,10 @@ let run env cmd output_file =
   (* Logs.debug (fun m ->
       m "Finished running cmd %a" Fmt.(list ~sep:sp string) cmd); *)
   let t_end = Unix.gettimeofday () in
-  let r = String.split_on_char '\n' r in
   let time = t_end -. t_start in
-  commands := { cmd; time; output_file; errors } :: !commands;
-  r
+  let result = { cmd; time; output_file; output; errors } in
+  commands := result :: !commands;
+  result
 
 (** Print an executed command and its time. *)
 

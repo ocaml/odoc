@@ -80,8 +80,8 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
     { pkg_args; output_file; json = false; search_dir = pkg.pkg_dir }
   in
 
-  let make_unit ~name ~kind ~rel_dir ~input_file ~pkg ~include_dirs ~lib_deps :
-      _ unit =
+  let make_unit ~name ~kind ~rel_dir ~input_file ~pkg ~include_dirs ~lib_deps
+      ~enable_warnings : _ unit =
     let ( // ) = Fpath.( // ) in
     let ( / ) = Fpath.( / ) in
     let pkg_args = args_of pkg lib_deps in
@@ -103,6 +103,7 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
       odocl_file;
       include_dirs;
       kind;
+      enable_warnings;
       index = Some (index_of pkg);
     }
   in
@@ -139,7 +140,7 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
         in
         let name = intf.mif_path |> Fpath.rem_ext |> Fpath.basename in
         make_unit ~name ~kind ~rel_dir ~input_file:intf.mif_path ~pkg
-          ~include_dirs ~lib_deps
+          ~include_dirs ~lib_deps ~enable_warnings:pkg.enable_warnings
       in
       match Hashtbl.find_opt intf_cache intf.mif_hash with
       | Some unit -> unit
@@ -171,7 +172,7 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
         in
         let unit =
           make_unit ~name ~kind ~rel_dir ~input_file:impl.mip_path ~pkg
-            ~include_dirs ~lib_deps
+            ~include_dirs ~lib_deps ~enable_warnings:pkg.enable_warnings
         in
         Some unit
   in
@@ -209,7 +210,7 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
     in
     let unit =
       make_unit ~name ~kind ~rel_dir ~input_file:mld_path ~pkg ~include_dirs
-        ~lib_deps
+        ~lib_deps ~enable_warnings:pkg.enable_warnings
     in
     [ unit ]
   in
@@ -224,7 +225,7 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
     let unit =
       let name = asset_path |> Fpath.basename |> ( ^ ) "asset-" in
       make_unit ~name ~kind ~rel_dir ~input_file:asset_path ~pkg ~include_dirs
-        ~lib_deps:Util.StringSet.empty
+        ~lib_deps:Util.StringSet.empty ~enable_warnings:false
     in
     [ unit ]
   in

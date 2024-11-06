@@ -16,6 +16,7 @@ type src_info = { src_path : Fpath.t }
 
 let pp_src_info fmt i =
   Format.fprintf fmt "@[<hov>{@,src_path: %a@,}@]" Fpath.pp i.src_path
+
 type impl = {
   mip_path : Fpath.t;
   mip_src_info : src_info option;
@@ -85,6 +86,7 @@ type t = {
   libraries : libty list;
   mlds : mld list;
   assets : asset list;
+  enable_warnings : bool;
   other_docs : Fpath.Set.t;
   pkg_dir : Fpath.t;
   config : Global_config.t;
@@ -98,11 +100,13 @@ let pp fmt t =
      libraries: %a;@,\
      mlds: %a;@,\
      assets: %a;@,\
+     enable_warnings: %b;@,\
      other_docs: %a;@,\
      pkg_dir: %a@,\
      }@]"
     t.name t.version (Fmt.Dump.list pp_libty) t.libraries (Fmt.Dump.list pp_mld)
-    t.mlds (Fmt.Dump.list pp_asset) t.assets (Fmt.Dump.list Fpath.pp)
+    t.mlds (Fmt.Dump.list pp_asset) t.assets t.enable_warnings
+    (Fmt.Dump.list Fpath.pp)
     (Fpath.Set.elements t.other_docs)
     Fpath.pp t.pkg_dir
 
@@ -295,6 +299,67 @@ let mk_mlds pkg_name odoc_pages =
   in
   (mlds, assets)
 
+let fix_missing_deps pkgs =
+  let lib_name_by_hash =
+    Util.StringMap.fold
+      (fun _pkg_name pkg acc ->
+        List.fold_left
+          (fun acc lib ->
+            List.fold_left
+              (fun acc m ->
+                Util.StringMap.update m.m_intf.mif_hash
+                  (function
+                    | None -> Some [ lib.lib_name ]
+                    | Some l -> Some (lib.lib_name :: l))
+                  acc)
+              acc lib.modules)
+          acc pkg.libraries)
+      pkgs Util.StringMap.empty
+  in
+  Util.StringMap.map
+    (fun pkg ->
+      let libraries =
+        List.map
+          (fun lib ->
+            let lib_deps = lib.lib_deps in
+            let new_lib_deps =
+              List.fold_left
+                (fun acc m ->
+                  let if_deps =
+                    Util.StringSet.of_list (List.map snd m.m_intf.mif_deps)
+                  in
+                  let impl_deps =
+                    match m.m_impl with
+                    | Some i -> Util.StringSet.of_list (List.map snd i.mip_deps)
+                    | None -> Util.StringSet.empty
+                  in
+                  let deps = Util.StringSet.union if_deps impl_deps in
+                  Util.StringSet.fold
+                    (fun hash acc ->
+                      match Util.StringMap.find hash lib_name_by_hash with
+                      | exception Not_found -> acc
+                      | deps ->
+                          if
+                            List.mem lib.lib_name deps
+                            || List.exists
+                                 (fun d -> Util.StringSet.mem d lib_deps)
+                                 deps
+                          then acc
+                          else Util.StringSet.add (List.hd deps) acc)
+                    deps acc)
+                Util.StringSet.empty lib.modules
+            in
+            if Util.StringSet.cardinal new_lib_deps > 0 then
+              Logs.debug (fun m ->
+                  m "Adding missing deps to %s: %a" lib.lib_name
+                    Fmt.(list string)
+                    (Util.StringSet.elements new_lib_deps));
+            { lib with lib_deps = Util.StringSet.union new_lib_deps lib_deps })
+          pkg.libraries
+      in
+      { pkg with libraries })
+    pkgs
+
 let of_libs ~packages_dir libs =
   let Ocamlfind.Db.
         { archives_by_dir; libname_of_archive; cmi_only_libs; all_lib_deps; _ }
@@ -306,59 +371,63 @@ let of_libs ~packages_dir libs =
   let opam_map, opam_rmap = Opam.pkg_to_dir_map () in
 
   (* Now we can construct the packages *)
-  Fpath.Map.fold
-    (fun dir archives acc ->
-      match Fpath.Map.find dir opam_rmap with
-      | None ->
-          Logs.debug (fun m -> m "No package for dir %a\n%!" Fpath.pp dir);
-          acc
-      | Some pkg ->
-          let libraries =
-            Lib.v ~libname_of_archive ~pkg_name:pkg.name ~dir ~cmtidir:None
-              ~all_lib_deps ~cmi_only_libs
-          in
-          let libraries =
-            List.filter
-              (fun l ->
-                match l.archive_name with
-                | None -> true
-                | Some a -> Util.StringSet.mem a archives)
-              libraries
-          in
-          Util.StringMap.update pkg.name
-            (function
-              | Some pkg ->
-                  let libraries = libraries @ pkg.libraries in
-                  Some { pkg with libraries }
-              | None ->
-                  let pkg_dir = pkg_dir packages_dir pkg.name in
-                  let config = Global_config.load pkg.name in
-                  let pkg', { Opam.odoc_pages; other_docs; _ } =
-                    List.find
-                      (fun (pkg', _) ->
-                        (* Logs.debug (fun m ->
-                            m "Checking %s against %s" pkg.Opam.name pkg'.Opam.name); *)
-                        pkg = pkg')
-                      opam_map
-                  in
-                  let mlds, assets = mk_mlds pkg'.name odoc_pages in
-                  Logs.debug (fun m ->
-                      m "%d mlds for package %s (from %d odoc_pages)"
-                        (List.length mlds) pkg.name
-                        (Fpath.Set.cardinal odoc_pages));
-                  Some
-                    {
-                      name = pkg.name;
-                      version = pkg.version;
-                      libraries;
-                      mlds;
-                      assets;
-                      other_docs;
-                      pkg_dir;
-                      config;
-                    })
-            acc)
-    archives_by_dir Util.StringMap.empty
+  let packages =
+    Fpath.Map.fold
+      (fun dir archives acc ->
+        match Fpath.Map.find dir opam_rmap with
+        | None ->
+            Logs.debug (fun m -> m "No package for dir %a\n%!" Fpath.pp dir);
+            acc
+        | Some pkg ->
+            let libraries =
+              Lib.v ~libname_of_archive ~pkg_name:pkg.name ~dir ~cmtidir:None
+                ~all_lib_deps ~cmi_only_libs
+            in
+            let libraries =
+              List.filter
+                (fun l ->
+                  match l.archive_name with
+                  | None -> true
+                  | Some a -> Util.StringSet.mem a archives)
+                libraries
+            in
+            Util.StringMap.update pkg.name
+              (function
+                | Some pkg ->
+                    let libraries = libraries @ pkg.libraries in
+                    Some { pkg with libraries }
+                | None ->
+                    let pkg_dir = pkg_dir packages_dir pkg.name in
+                    let config = Global_config.load pkg.name in
+                    let pkg', { Opam.odoc_pages; other_docs; _ } =
+                      List.find
+                        (fun (pkg', _) ->
+                          (* Logs.debug (fun m ->
+                              m "Checking %s against %s" pkg.Opam.name pkg'.Opam.name); *)
+                          pkg = pkg')
+                        opam_map
+                    in
+                    let mlds, assets = mk_mlds pkg'.name odoc_pages in
+                    Logs.debug (fun m ->
+                        m "%d mlds for package %s (from %d odoc_pages)"
+                          (List.length mlds) pkg.name
+                          (Fpath.Set.cardinal odoc_pages));
+                    Some
+                      {
+                        name = pkg.name;
+                        version = pkg.version;
+                        libraries;
+                        mlds;
+                        assets;
+                        enable_warnings = false;
+                        other_docs;
+                        pkg_dir;
+                        config;
+                      })
+              acc)
+      archives_by_dir Util.StringMap.empty
+  in
+  fix_missing_deps packages
 
 let of_packages ~packages_dir packages =
   let deps =
@@ -386,39 +455,44 @@ let of_packages ~packages_dir packages =
 
   let all = orig @ ps in
 
-  List.fold_left
-    (fun acc (pkg, files) ->
-      let libraries =
-        List.fold_left
-          (fun acc dir ->
-            Lib.v ~libname_of_archive ~pkg_name:pkg.Opam.name ~dir ~cmtidir:None
-              ~all_lib_deps ~cmi_only_libs
-            @ acc)
-          []
-          (files.Opam.libs |> Fpath.Set.to_list)
-      in
-      let pkg_dir = pkg_dir packages_dir pkg.name in
-      let config = Global_config.load pkg.name in
-      let odoc_pages = files.Opam.odoc_pages in
-      let other_docs = files.Opam.other_docs in
-      let mlds, assets = mk_mlds pkg.name odoc_pages in
-      Logs.debug (fun m ->
-          m "%d mlds for package %s (from %d odoc_pages)" (List.length mlds)
-            pkg.name
-            (Fpath.Set.cardinal odoc_pages));
-      Util.StringMap.add pkg.name
-        {
-          name = pkg.name;
-          version = pkg.version;
-          libraries;
-          mlds;
-          assets;
-          other_docs;
-          pkg_dir;
-          config;
-        }
-        acc)
-    Util.StringMap.empty all
+  let packages =
+    List.fold_left
+      (fun acc (pkg, files) ->
+        let libraries =
+          List.fold_left
+            (fun acc dir ->
+              Lib.v ~libname_of_archive ~pkg_name:pkg.Opam.name ~dir
+                ~cmtidir:None ~all_lib_deps ~cmi_only_libs
+              @ acc)
+            []
+            (files.Opam.libs |> Fpath.Set.to_list)
+        in
+        let pkg_dir = pkg_dir packages_dir pkg.name in
+        let config = Global_config.load pkg.name in
+        let odoc_pages = files.Opam.odoc_pages in
+        let other_docs = files.Opam.other_docs in
+        let mlds, assets = mk_mlds pkg.name odoc_pages in
+        Logs.debug (fun m ->
+            m "%d mlds for package %s (from %d odoc_pages)" (List.length mlds)
+              pkg.name
+              (Fpath.Set.cardinal odoc_pages));
+        let enable_warnings = List.mem pkg.name packages in
+        Util.StringMap.add pkg.name
+          {
+            name = pkg.name;
+            version = pkg.version;
+            libraries;
+            mlds;
+            assets;
+            enable_warnings;
+            other_docs;
+            pkg_dir;
+            config;
+          }
+          acc)
+      Util.StringMap.empty all
+  in
+  fix_missing_deps packages
 
 (* Now we can construct the packages *)
 

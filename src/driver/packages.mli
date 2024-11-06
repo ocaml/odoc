@@ -73,6 +73,7 @@ type t = {
   libraries : libty list;
   mlds : mld list;
   assets : asset list;
+  enable_warnings : bool;
   other_docs : Fpath.Set.t;
   pkg_dir : Fpath.t;
   config : Global_config.t;
