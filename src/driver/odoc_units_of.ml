@@ -38,7 +38,6 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
         Logs.err (fun m -> m "Library %s not found" lib_name);
         []
   in
-  (* Given a pkg,  *)
   let base_args pkg lib_deps : Pkg_args.t =
     let own_page = dash_p pkg in
     let own_libs = List.concat_map dash_l (Util.StringSet.to_list lib_deps) in
@@ -178,18 +177,20 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
   in
 
   let of_module pkg (lib : Packages.libty) lib_deps (m : Packages.modulety) :
-      [ impl | intf ] unit list =
-    let i :> [ impl | intf ] unit =
-      of_intf m.m_hidden pkg lib lib_deps m.m_intf
-    in
-    let m :> [ impl | intf ] unit list =
+      t list =
+    let i :> t = of_intf m.m_hidden pkg lib lib_deps m.m_intf in
+    let m :> t list =
       Option.bind m.m_impl (of_impl pkg lib lib_deps) |> Option.to_list
     in
     i :: m
   in
-  let of_lib pkg (lib : Packages.libty) : [ impl | intf ] unit list =
+  let of_lib pkg (lib : Packages.libty) =
     let lib_deps = Util.StringSet.add lib.lib_name lib.lib_deps in
-    List.concat_map (of_module pkg lib lib_deps) lib.modules
+    let index = index_of pkg in
+    let landing_page :> t =
+      Landing_pages.library ~dirs ~pkg ~index:(Some index) lib
+    in
+    landing_page :: List.concat_map (of_module pkg lib lib_deps) lib.modules
   in
   let of_mld pkg (mld : Packages.mld) : mld unit list =
     let open Fpath in
@@ -236,4 +237,5 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
     let asset_units :> t list list = List.map (of_asset pkg) pkg.assets in
     List.concat (lib_units @ mld_units @ asset_units)
   in
-  List.concat_map of_package pkgs
+  let pkg_list :> t = Landing_pages.package_list ~dirs pkgs in
+  pkg_list :: List.concat_map of_package pkgs
