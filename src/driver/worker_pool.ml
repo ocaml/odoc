@@ -7,7 +7,7 @@ type request = {
   output_file : Fpath.t option;
 }
 
-type response = (string list, exn) result
+type response = (Run.t, exn) result
 type resolver = response Eio.Promise.u
 
 type t = (request * resolver) Eio.Stream.t

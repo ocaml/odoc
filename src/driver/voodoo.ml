@@ -208,6 +208,7 @@ let process_package pkg =
       libraries;
       mlds;
       assets;
+      enable_warnings = false;
       other_docs = Fpath.Set.empty;
       pkg_dir = top_dir pkg;
       config;

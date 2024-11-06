@@ -33,6 +33,7 @@ type 'a unit = {
   pkgname : string option;
   include_dirs : Fpath.Set.t;
   index : index option;
+  enable_warnings : bool;
   kind : 'a;
 }
 

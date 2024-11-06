@@ -26,7 +26,7 @@ let get_source file srcdirs =
   in
   let lines =
     match lines_res with
-    | Ok l -> l
+    | Ok l -> String.split_on_char '\n' l.output
     | Error e ->
         Logs.err (fun m ->
             m "Error finding source for module %a: %s" Fpath.pp file

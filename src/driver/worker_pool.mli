@@ -1,4 +1,4 @@
-val submit : string -> Bos.Cmd.t -> Fpath.t option -> (string list, exn) result
+val submit : string -> Bos.Cmd.t -> Fpath.t option -> (Run.t, exn) result
 (** Submit a command to be executed by a worker.
 
     [submit desc cmd output_file] returns the list of output lines. [desc] is a

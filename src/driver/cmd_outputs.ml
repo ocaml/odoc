@@ -1,22 +1,27 @@
-let submit desc cmd output_file =
+type log_dest =
+  [ `Compile
+  | `Compile_src
+  | `Link
+  | `Count_occurrences
+  | `Generate
+  | `Index
+  | `Source_tree
+  | `Sherlodoc
+  | `Classify ]
+
+let outputs : (log_dest * [ `Out | `Err ] * string * string) list ref = ref []
+
+let maybe_log log_dest r =
+  match log_dest with
+  | Some (dest, prefix) ->
+      let add ty s = outputs := !outputs @ [ (dest, ty, prefix, s) ] in
+      add `Out r.Run.output;
+      add `Err r.Run.errors
+  | None -> ()
+
+let submit log_dest desc cmd output_file =
   match Worker_pool.submit desc cmd output_file with
-  | Ok x -> x
+  | Ok x ->
+      maybe_log log_dest x;
+      String.split_on_char '\n' x.output
   | Error exn -> raise exn
-
-let compile_output = ref [ "" ]
-
-let compile_src_output = ref [ "" ]
-
-let link_output = ref [ "" ]
-
-let generate_output = ref [ "" ]
-
-let index_output = ref [ "" ]
-
-let source_tree_output = ref [ "" ]
-
-let add_prefixed_output cmd list prefix lines =
-  if List.length lines > 0 then
-    list :=
-      !list
-      @ (Bos.Cmd.to_string cmd :: List.map (fun l -> prefix ^ ": " ^ l) lines)

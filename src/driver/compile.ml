@@ -213,12 +213,12 @@ let link : compiled list -> _ =
  fun compiled ->
   let link : compiled -> linked =
    fun c ->
-    let link input_file output_file =
+    let link input_file output_file enable_warnings =
       let libs = Odoc_unit.Pkg_args.compiled_libs c.pkg_args in
       let pages = Odoc_unit.Pkg_args.compiled_pages c.pkg_args in
       let includes = c.include_dirs in
       Odoc.link ~input_file ~output_file ~includes ~libs ~docs:pages
-        ?current_package:c.pkgname ()
+        ~ignore_output:(not enable_warnings) ?current_package:c.pkgname ()
     in
     match c.kind with
     | `Intf { hidden = true; _ } ->
@@ -226,7 +226,7 @@ let link : compiled list -> _ =
         c
     | _ ->
         Logs.debug (fun m -> m "linking %a" Fpath.pp c.odoc_file);
-        link c.odoc_file c.odocl_file;
+        link c.odoc_file c.odocl_file c.enable_warnings;
         (match c.kind with
         | `Intf _ -> Atomic.incr Stats.stats.linked_units
         | `Mld -> Atomic.incr Stats.stats.linked_mlds

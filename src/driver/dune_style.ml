@@ -35,9 +35,7 @@ let of_dune_describe txt =
 let dune_describe dir =
   let cmd = Cmd.(!dune % "describe" % "--root" % p dir) in
   let out = Worker_pool.submit "dune describe" cmd None in
-  match out with
-  | Error _ -> []
-  | Ok out -> of_dune_describe (String.concat "\n" out)
+  match out with Error _ -> [] | Ok out -> of_dune_describe out.Run.output
 
 let of_dune_build dir =
   let contents =
@@ -124,6 +122,7 @@ let of_dune_build dir =
                       assets =
                         []
                         (* When dune has a notion of doc assets, do something *);
+                      enable_warnings = false;
                       pkg_dir;
                       other_docs = Fpath.Set.empty;
                       config = Global_config.empty;

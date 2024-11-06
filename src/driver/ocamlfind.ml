@@ -77,7 +77,8 @@ let rec dep =
 let deps pkgs =
   let results = List.map dep pkgs in
   Ok
-    (List.fold_left Util.StringSet.union Util.StringSet.empty
+    (List.fold_left Util.StringSet.union
+       (Util.StringSet.singleton "stdlib")
        (List.map (Result.value ~default:Util.StringSet.empty) results))
 
 module Db = struct
