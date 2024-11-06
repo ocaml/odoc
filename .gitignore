@@ -1,6 +1,8 @@
 # Odoc driver output.
 _odoc
 _html
+_indexes
+_mlds
 
 # Dune output.
 _build
