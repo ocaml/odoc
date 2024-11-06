@@ -30,7 +30,7 @@ type 'a unit = {
   odoc_file : Fpath.t;
   odocl_file : Fpath.t;
   pkg_args : Pkg_args.t;
-  pkgname : string;
+  pkgname : string option;
   include_dirs : Fpath.Set.t;
   index : index option;
   kind : 'a;
