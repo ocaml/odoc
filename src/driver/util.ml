@@ -22,6 +22,7 @@ let lines_of_process cmd =
     if needed. *)
 let with_out_to filename f =
   let open ResultMonad in
+  let filename = Fpath.normalize filename in
   OS.Dir.create (Fpath.parent filename) >>= fun _ ->
   OS.File.with_oc filename
     (fun oc () ->
