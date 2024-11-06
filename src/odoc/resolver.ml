@@ -561,10 +561,9 @@ type roots = {
 }
 
 let create ~important_digests ~directories ~open_modules ~roots =
-  let ap = Accessible_paths.create ~directories in
-  let pages, libs, current_dir =
+  let pages, libs, current_dir, directories =
     match roots with
-    | None -> (None, None, None)
+    | None -> (None, None, None, directories)
     | Some { page_roots; lib_roots; current_lib; current_package; current_dir }
       ->
         let prepare roots omit =
@@ -580,13 +579,21 @@ let create ~important_digests ~directories ~open_modules ~roots =
               { Named_roots.name; dir; omit })
             roots
         in
+        let directories =
+          match current_package with
+          | None -> directories
+          | Some pkg -> (
+              try List.assoc pkg page_roots :: directories
+              with _ -> directories)
+        in
         let omit = List.map snd lib_roots in
-        let page_roots = prepare page_roots omit in
         let lib_roots = prepare lib_roots [] in
+        let page_roots = prepare page_roots omit in
         let pages = Named_roots.create ~current_root:current_package page_roots
         and libs = Named_roots.create ~current_root:current_lib lib_roots in
-        (Some pages, Some libs, Some current_dir)
+        (Some pages, Some libs, Some current_dir, directories)
   in
+  let ap = Accessible_paths.create ~directories in
   { important_digests; ap; open_modules; pages; libs; current_dir }
 
 (** Helpers for creating xref2 env. *)
