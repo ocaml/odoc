@@ -118,11 +118,15 @@ and pp : all_kinds unit Fmt.t =
 let doc_dir pkg = pkg.Packages.pkg_dir
 let lib_dir pkg lib = Fpath.(pkg.Packages.pkg_dir / lib.Packages.lib_name)
 
-let of_packages ~odoc_dir ~odocl_dir ~index_dir ~extra_libs_paths
-    (pkgs : Packages.t list) : t list =
-  let odocl_dir = match odocl_dir with None -> odoc_dir | Some dir -> dir in
-  let index_dir = match index_dir with None -> odoc_dir | Some dir -> dir in
+type dirs = {
+  odoc_dir : Fpath.t;
+  odocl_dir : Fpath.t;
+  index_dir : Fpath.t;
+  mld_dir : Fpath.t;
+}
 
+let of_packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
+  let { odoc_dir; odocl_dir; index_dir; mld_dir = _ } = dirs in
   (* [module_of_hash] Maps a hash to the corresponding [Package.t], library name and
      [Packages.modulety]. [lib_dirs] maps a library name to the odoc dir containing its
      odoc files. *)

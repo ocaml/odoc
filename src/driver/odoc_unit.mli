@@ -53,10 +53,15 @@ val pp : t Fmt.t
 val lib_dir : Packages.t -> Packages.libty -> Fpath.t
 val doc_dir : Packages.t -> Fpath.t
 
+type dirs = {
+  odoc_dir : Fpath.t;
+  odocl_dir : Fpath.t;
+  index_dir : Fpath.t;
+  mld_dir : Fpath.t;
+}
+
 val of_packages :
-  odoc_dir:Fpath.t ->
-  odocl_dir:Fpath.t option ->
-  index_dir:Fpath.t option ->
+  dirs:dirs ->
   extra_libs_paths:Fpath.t Util.StringMap.t ->
   Packages.t list ->
   t list
