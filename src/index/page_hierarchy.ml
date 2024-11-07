@@ -75,16 +75,18 @@ let dir_index ((parent_id, _) as dir) =
   | Some payload -> Some (payload, index_id, payload.title)
   | None -> None
 
-type index = Id.Page.t * title
+type index =
+  | Page of Id.Page.t * title
+  | Missing_index of Id.ContainerPage.t option
 
-type t = index option Odoc_utils.Tree.t
+type t = index Odoc_utils.Tree.t
 
 let rec t_of_in_progress (dir : in_progress) : t =
   let children_order, index =
     match dir_index dir with
     | Some ({ children_order; _ }, index_id, index_title) ->
-        (children_order, Some (index_id, index_title))
-    | None -> (None, None)
+        (children_order, Page (index_id, index_title))
+    | None -> (None, Missing_index (fst dir))
   in
   let pp_content fmt (id, _) =
     match id.Id.iv with
@@ -102,7 +104,7 @@ let rec t_of_in_progress (dir : in_progress) : t =
         leafs dir
         |> List.map (fun (id, payload) ->
                let id :> Id.Page.t = id in
-               (id, Tree.leaf (Some (id, payload))))
+               (id, Tree.leaf (Page (id, payload))))
       in
       let dirs =
         dirs dir
@@ -181,7 +183,7 @@ let rec t_of_in_progress (dir : in_progress) : t =
 
 let rec remove_common_root (v : t) =
   match v with
-  | { Tree.children = [ v ]; node = None } -> remove_common_root v
+  | { Tree.children = [ v ]; node = Missing_index _ } -> remove_common_root v
   | _ -> v
 
 let of_list l =

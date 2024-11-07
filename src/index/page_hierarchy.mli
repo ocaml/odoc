@@ -6,9 +6,11 @@ open Odoc_utils
 
 type title = Comment.link_content
 
-type index = Identifier.Page.t * title
+type index =
+  | Page of Paths.Identifier.Page.t * title
+  | Missing_index of Paths.Identifier.ContainerPage.t option
 
-type t = index option Tree.t
+type t = index Tree.t
 
 val of_list :
   (Identifier.LeafPage.t * title * Frontmatter.children_order option) list -> t
