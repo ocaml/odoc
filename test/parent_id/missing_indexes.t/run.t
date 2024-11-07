@@ -11,12 +11,14 @@
 
   $ odoc html-generate --index index.odoc-index --indent --output-dir _html _odoc/page-foo.odocl
 
-Baz is missing.
-  $ cat _html/foo.html | grep Documentation -A 7
+Missing index for Baz makes it unclickable but use the ID for the name.
+Root is used for the missing index in the unnamed root directory.
+  $ cat _html/foo.html | grep Documentation -A 8
       <b>Documentation</b>
       <ul class="odoc-pages">
-       <li>root
+       <li>Root
         <ul><li><a href="bar.html">Bar</a></li>
+         <li>baz<ul><li><a href="baz/bli.html">Bli</a></li></ul></li>
          <li><a href="#" class="current_unit">Foo</a></li>
         </ul>
        </li>

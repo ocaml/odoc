@@ -2,10 +2,6 @@ open Odoc_utils
 open Types
 module Id = Odoc_model.Paths.Identifier
 
-let sidebar_toc_entry href content =
-  let target = Target.(Internal (Resolved href)) in
-  inline @@ Inline.Link { target; content; tooltip = None }
-
 module Toc : sig
   type t
 
@@ -15,18 +11,22 @@ module Toc : sig
 
   val to_block : prune:bool -> Url.Path.t -> t -> Block.t
 end = struct
-  type t = (Url.t * Inline.one) option Tree.t
+  type t = (Url.t option * Inline.one) Tree.t
 
-  let of_page_hierarchy (dir : Odoc_index.Page_hierarchy.t) =
+  let of_page_hierarchy (dir : Odoc_index.Page_hierarchy.t) : t =
     let f index =
       match index with
-      | None -> None
-      | Some (index_id, title) ->
-          let path =
-            Url.from_identifier ~stop_before:false (index_id :> Id.t)
-          in
+      | Odoc_index.Page_hierarchy.Missing_index None ->
+          (None, inline @@ Text "Root")
+      | Odoc_index.Page_hierarchy.Missing_index (Some id) ->
+          let path = Url.from_identifier ~stop_before:false (id :> Id.t) in
+          (Some path, inline @@ Text (Id.name id))
+      | Page (id, title) ->
+          let path = Url.from_identifier ~stop_before:false (id :> Id.t) in
           let content = Comment.link_content title in
-          Some (path, sidebar_toc_entry path content)
+          let target = Target.Internal (Target.Resolved path) in
+          let i = inline @@ Inline.Link { target; content; tooltip = None } in
+          (Some path, i)
     in
     Tree.map ~f dir
 
@@ -42,31 +42,28 @@ end = struct
     | { anchor = ""; page = { parent = Some parent; _ }; _ } -> parent
     | { page; _ } -> page
 
-  let to_block ~prune (current_url : Url.Path.t) tree =
-    let block_tree_of_t (current_url : Url.Path.t) tree =
+  let to_block ~prune (current_url : Url.Path.t) (tree : t) =
+    let block_tree_of_t (current_url : Url.Path.t) (tree : t) =
       (* When transforming the tree, we use a filter_map to remove the nodes that
          are irrelevant for the current url. However, we always want to keep the
          root. So we apply the filter_map starting from the first children. *)
-      let convert ((url : Url.t), b) =
+      let convert ((url : Url.t option), b) =
         let link =
-          if url.page = current_url && Astring.String.equal url.anchor "" then
-            { b with Inline.attr = [ "current_unit" ] }
-          else b
+          match url with
+          | Some url ->
+              if url.page = current_url && Astring.String.equal url.anchor ""
+              then { b with Inline.attr = [ "current_unit" ] }
+              else b
+          | None -> b
         in
         Types.block @@ Inline [ link ]
       in
       let f name =
         match name with
-        | Some ((url, _) as v)
-          when (not prune) || is_prefix (parent url) current_url ->
-            Some (convert v)
-        | _ -> None
+        | Some url, _ when prune && is_prefix (parent url) current_url -> None
+        | v -> Some (convert v)
       in
-      let root_entry =
-        match tree.Tree.node with
-        | Some v -> convert v
-        | None -> block (Block.Inline [ inline (Text "root") ])
-      in
+      let root_entry = convert tree.Tree.node in
       { Tree.node = root_entry; children = Forest.filter_map ~f tree.children }
     in
     let rec block_of_block_tree { Tree.node = name; children = content } =
@@ -82,7 +79,7 @@ end = struct
     let block_tree = block_tree_of_t current_url tree in
     block_of_block_tree block_tree
 
-  let of_skeleton ({ node = entry; children } : Odoc_index.Entry.t Tree.t) =
+  let of_skeleton ({ node = entry; children } : Odoc_index.Entry.t Tree.t) : t =
     let map_entry entry =
       let stop_before =
         match entry.Odoc_index.Entry.kind with
@@ -90,14 +87,14 @@ end = struct
             not has_expansion
         | _ -> false
       in
-      let path = Url.from_identifier ~stop_before entry.id in
       let name = Odoc_model.Paths.Identifier.name entry.id in
+      let path = Url.from_identifier ~stop_before entry.id in
       let content =
         let target = Target.Internal (Resolved path) in
         inline
           (Link { target; content = [ inline (Text name) ]; tooltip = None })
       in
-      Some (path, content)
+      (Some path, content)
     in
     let f entry =
       match entry.Odoc_index.Entry.kind with
