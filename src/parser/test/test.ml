@@ -4051,10 +4051,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 3))
+          (((f.ml (1 0) (1 15))
             (@deprecated
-             ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))
-             ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar)))))))))
+             ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))))
+           ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar)))))))
          (warnings ())) |}]
 
     let whitespace_only =
@@ -4087,9 +4087,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 3))
-            (@deprecated
-             ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word foo)))))))))
+          (((f.ml (1 0) (1 11)) (@deprecated))
+           ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word foo)))))))
          (warnings ())) |}]
 
     let extra_whitespace =
@@ -4233,14 +4232,11 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 7))
+          (((f.ml (1 0) (1 15))
             (@deprecated
-             ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))
-             ((f.ml (2 0) (2 7)) (paragraph (((f.ml (2 3) (2 6)) (word Bar)))))))))
-         (warnings
-          ( "File \"f.ml\", line 2, characters 0-2:\
-           \n'{2 ...}' (section heading) is not allowed in '@deprecated'.\
-           \nSuggestion: move '{2' outside of any other markup."))) |}]
+             ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))))
+           ((f.ml (2 0) (2 7)) (2 (label ()) (((f.ml (2 3) (2 6)) (word Bar)))))))
+         (warnings ())) |}]
   end in
   ()
 
@@ -4322,10 +4318,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 3))
+          (((f.ml (1 0) (1 14))
             (@param foo
-             ((f.ml (1 11) (1 14)) (paragraph (((f.ml (1 11) (1 14)) (word bar)))))
-             ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word baz)))))))))
+             ((f.ml (1 11) (1 14)) (paragraph (((f.ml (1 11) (1 14)) (word bar)))))))
+           ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word baz)))))))
          (warnings ())) |}]
 
     let two =
@@ -4826,9 +4822,6 @@ let%expect_test _ =
            ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-11:\
-           \nParagraph is not allowed in the tags section.\
-           \nSuggestion: move 'foo' before any tags."
-            "File \"f.ml\", line 1, characters 8-11:\
            \nParagraph should begin on its own line."))) |}]
 
     let followed_by_paragraph =
@@ -4838,10 +4831,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 7)) @inline)
            ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))
-         (warnings
-          ( "File \"f.ml\", line 2, characters 0-3:\
-           \nParagraph is not allowed in the tags section.\
-           \nSuggestion: move 'foo' before any tags."))) |}]
+         (warnings ())) |}]
 
     let followed_by_tag =
       test "@inline\n@deprecated";
@@ -4861,10 +4851,7 @@ let%expect_test _ =
              ((((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word foo)))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-9:\
-           \n'-' (bulleted list item) should begin on its own line."
-            "File \"f.ml\", line 1, characters 8-9:\
-           \n'-' (bulleted list item) is not allowed in the tags section.\
-           \nSuggestion: move '-' (bulleted list item) before any tags."))) |}]
+           \n'-' (bulleted list item) should begin on its own line."))) |}]
   end in
   ()
 
@@ -4897,9 +4884,6 @@ let%expect_test _ =
            ((f.ml (1 6) (1 9)) (paragraph (((f.ml (1 6) (1 9)) (word foo)))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 6-9:\
-           \nParagraph is not allowed in the tags section.\
-           \nSuggestion: move 'foo' before any tags."
-            "File \"f.ml\", line 1, characters 6-9:\
            \nParagraph should begin on its own line."))) |}]
 
     let followed_by_paragraph =
@@ -4909,10 +4893,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 5)) @open)
            ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))
-         (warnings
-          ( "File \"f.ml\", line 2, characters 0-3:\
-           \nParagraph is not allowed in the tags section.\
-           \nSuggestion: move 'foo' before any tags."))) |}]
+         (warnings ())) |}]
 
     let followed_by_tag =
       test "@open\n@deprecated";
@@ -4932,10 +4913,7 @@ let%expect_test _ =
              ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 6-7:\
-           \n'-' (bulleted list item) should begin on its own line."
-            "File \"f.ml\", line 1, characters 6-7:\
-           \n'-' (bulleted list item) is not allowed in the tags section.\
-           \nSuggestion: move '-' (bulleted list item) before any tags."))) |}]
+           \n'-' (bulleted list item) should begin on its own line."))) |}]
   end in
   ()
 
@@ -4969,9 +4947,6 @@ let%expect_test _ =
            ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-11:\
-           \nParagraph is not allowed in the tags section.\
-           \nSuggestion: move 'foo' before any tags."
-            "File \"f.ml\", line 1, characters 8-11:\
            \nParagraph should begin on its own line."))) |}]
 
     let followed_by_paragraph =
@@ -4981,10 +4956,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 7)) @closed)
            ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))
-         (warnings
-          ( "File \"f.ml\", line 2, characters 0-3:\
-           \nParagraph is not allowed in the tags section.\
-           \nSuggestion: move 'foo' before any tags."))) |}]
+         (warnings ())) |}]
 
     let followed_by_tag =
       test "@closed\n@deprecated";
@@ -5004,10 +4976,7 @@ let%expect_test _ =
              ((((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word foo)))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-9:\
-           \n'-' (bulleted list item) should begin on its own line."
-            "File \"f.ml\", line 1, characters 8-9:\
-           \n'-' (bulleted list item) is not allowed in the tags section.\
-           \nSuggestion: move '-' (bulleted list item) before any tags."))) |}]
+           \n'-' (bulleted list item) should begin on its own line."))) |}]
   end in
   ()
 
@@ -5041,9 +5010,6 @@ let%expect_test _ =
            ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-11:\
-           \nParagraph is not allowed in the tags section.\
-           \nSuggestion: move 'foo' before any tags."
-            "File \"f.ml\", line 1, characters 8-11:\
            \nParagraph should begin on its own line."))) |}]
 
     let followed_by_paragraph =
@@ -5053,10 +5019,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 7)) @hidden)
            ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))
-         (warnings
-          ( "File \"f.ml\", line 2, characters 0-3:\
-           \nParagraph is not allowed in the tags section.\
-           \nSuggestion: move 'foo' before any tags."))) |}]
+         (warnings ())) |}]
 
     let followed_by_tag =
       test "@hidden\n@deprecated";
@@ -5076,10 +5039,7 @@ let%expect_test _ =
              ((((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word foo)))))))))))
          (warnings
           ( "File \"f.ml\", line 1, characters 8-9:\
-           \n'-' (bulleted list item) should begin on its own line."
-            "File \"f.ml\", line 1, characters 8-9:\
-           \n'-' (bulleted list item) is not allowed in the tags section.\
-           \nSuggestion: move '-' (bulleted list item) before any tags."))) |}]
+           \n'-' (bulleted list item) should begin on its own line."))) |}]
   end in
   ()
 
