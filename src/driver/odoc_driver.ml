@@ -551,9 +551,28 @@ let remap_virtual_interfaces duplicate_hashes pkgs =
       })
     pkgs
 
-let run libs verbose packages_dir odoc_dir odocl_dir index_dir mld_dir html_dir
-    stats nb_workers odoc_bin voodoo package_name blessed dune_style
-    compile_grep link_grep generate_grep =
+type mode =
+  | Voodoo of { package_name : string }
+  | Dune of { path : Fpath.t }
+  | Opam of { packages_dir : Fpath.t option }
+
+let run mode
+    {
+      Common_args.packages;
+      verbose;
+      odoc_dir;
+      odocl_dir;
+      index_dir;
+      mld_dir;
+      html_dir;
+      stats;
+      nb_workers;
+      odoc_bin;
+      blessed;
+      compile_grep;
+      link_grep;
+      generate_grep;
+    } =
   Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
   let _ = Voodoo.find_universe_and_version "foo" in
   Eio_main.run @@ fun env ->
@@ -564,26 +583,19 @@ let run libs verbose packages_dir odoc_dir odocl_dir index_dir mld_dir html_dir
   let () = Worker_pool.start_workers env sw nb_workers in
 
   let all, extra_libs_paths =
-    match (voodoo, package_name, dune_style, packages_dir) with
-    | true, Some p, None, None ->
+    match mode with
+    | Voodoo { package_name = p } ->
         let all = Voodoo.of_voodoo p ~blessed in
         let extra_libs_paths = Voodoo.extra_libs_paths odoc_dir in
         (all, extra_libs_paths)
-    | false, None, Some dir, None ->
-        (Dune_style.of_dune_build dir, Util.StringMap.empty)
-    | false, None, None, packages_dir ->
-        let libs = if libs = [] then Ocamlfind.all () else libs in
+    | Dune { path } -> (Dune_style.of_dune_build path, Util.StringMap.empty)
+    | Opam { packages_dir } ->
+        let libs = if packages = [] then Ocamlfind.all () else packages in
         let libs =
           List.map Ocamlfind.sub_libraries libs
           |> List.fold_left Util.StringSet.union Util.StringSet.empty
         in
         (Packages.of_libs ~packages_dir libs, Util.StringMap.empty)
-    | true, None, _, _ -> failwith "--voodoo requires --package"
-    | false, Some _, _, _ -> failwith "--package requires --voodoo"
-    | true, _, _, Some _ | false, _, Some _, Some _ ->
-        failwith "--packages-dir is only useful in opam mode"
-    | true, _, Some _, _ ->
-        failwith "--voodoo and --dune-style are mutually exclusive"
   in
 
   let virtual_check =
@@ -611,13 +623,14 @@ let run libs verbose packages_dir odoc_dir odocl_dir index_dir mld_dir html_dir
   let all = remap_virtual_interfaces virtual_check all in
 
   let partial =
-    if voodoo then
-      match Util.StringMap.to_list all with
-      | [ (_, p) ] ->
-          let output_path = Fpath.(odoc_dir // p.pkg_dir) in
-          Some output_path
-      | _ -> failwith "Error, expecting singleton library in voodoo mode"
-    else None
+    match mode with
+    | Voodoo _ -> (
+        match Util.StringMap.to_list all with
+        | [ (_, p) ] ->
+            let output_path = Fpath.(odoc_dir // p.pkg_dir) in
+            Some output_path
+        | _ -> failwith "Error, expecting singleton library in voodoo mode")
+    | _ -> None
   in
   let () =
     Eio.Fiber.both
@@ -661,92 +674,51 @@ let run libs verbose packages_dir odoc_dir odocl_dir index_dir mld_dir html_dir
   Format.eprintf "Total time: %f@.%!" (Stats.total_time ());
   if stats then Stats.bench_results html_dir
 
-let fpath_arg =
-  let print ppf v = Fpath.pp ppf v in
-  Arg.conv (Fpath.of_string, print)
+module Voodoo_mode = struct
+  let run package_name = run (Voodoo { package_name })
 
-let odoc_dir =
-  let doc = "Directory in which the intermediate odoc files go" in
-  Arg.(value & opt fpath_arg (Fpath.v "_odoc/") & info [ "odoc-dir" ] ~doc)
+  let package_name =
+    let doc = "Name of package to process with voodoo" in
+    Arg.(value & pos 0 string "" & info [] ~doc)
 
-let odocl_dir =
-  let doc = "Directory in which the intermediate odocl files go" in
-  Arg.(value & opt (some fpath_arg) None & info [ "odocl-dir" ] ~doc)
+  let cmd =
+    let doc = "Process output from voodoo-prep" in
+    let info = Cmd.info "voodoo" ~doc in
+    Cmd.v info Term.(const run $ package_name $ Common_args.term)
+end
 
-let index_dir =
-  let doc = "Directory in which the index files go" in
-  Arg.(value & opt fpath_arg (Fpath.v "_indexes/") & info [ "index-dir" ] ~doc)
+module Dune_mode = struct
+  let run path = run (Dune { path })
 
-let mld_dir =
-  let doc = "Directory in which the auto-generated mld files go" in
-  Arg.(value & opt fpath_arg (Fpath.v "_mlds/") & info [ "mld-dir" ] ~doc)
+  let dune_style =
+    Arg.(value & pos 0 Common_args.fpath_arg (Fpath.v ".") & info [])
 
-let html_dir =
-  let doc = "Directory in which the generated HTML files go" in
-  Arg.(value & opt fpath_arg (Fpath.v "_html/") & info [ "html-dir" ] ~doc)
+  let cmd =
+    let doc = "Dune mode" in
+    let info = Cmd.info "dune" ~doc in
+    Cmd.v info Term.(const run $ dune_style $ Common_args.term)
+end
 
-let packages =
-  (* TODO: Is it package or library? *)
-  let doc = "The packages to document" in
-  Arg.(value & opt_all string [] & info [ "p" ] ~doc)
+module Opam_mode = struct
+  let run packages_dir = run (Opam { packages_dir })
 
-let verbose =
-  let doc = "Enable verbose output" in
-  Arg.(value & flag & info [ "v"; "verbose" ] ~doc)
+  let packages_dir =
+    let doc = "Packages directory under which packages should be output." in
+    Arg.(
+      value
+      & opt (some Common_args.fpath_arg) None
+      & info [ "packages-dir" ] ~doc)
 
-let stats =
-  let doc = "Produce 'driver-benchmarks.json' with run stats" in
-  Arg.(value & flag & info [ "stats" ] ~doc)
-
-let nb_workers =
-  let doc = "Number of workers." in
-  Arg.(value & opt int 15 & info [ "j" ] ~doc)
-
-let odoc_bin =
-  let doc = "Odoc binary to use" in
-  Arg.(value & opt (some string) None & info [ "odoc" ] ~doc)
-
-let packages_dir =
-  let doc = "Packages directory under which packages should be output." in
-  Arg.(value & opt (some fpath_arg) None & info [ "packages-dir" ] ~doc)
-
-let voodoo =
-  let doc = "Process output from voodoo-prep" in
-  Arg.(value & flag & info [ "voodoo" ] ~doc)
-
-let package_name =
-  let doc = "Name of package to process with voodoo" in
-  Arg.(value & opt (some string) None & info [ "package" ] ~doc)
-
-let blessed =
-  let doc = "Blessed" in
-  Arg.(value & flag & info [ "blessed" ] ~doc)
-
-let dune_style =
-  let doc = "Dune style" in
-  Arg.(value & opt (some fpath_arg) None & info [ "dune-style" ] ~doc)
-
-let compile_grep =
-  let doc = "Show compile commands containing the string" in
-  Arg.(value & opt (some string) None & info [ "compile-grep" ] ~doc)
-
-let link_grep =
-  let doc = "Show link commands containing the string" in
-  Arg.(value & opt (some string) None & info [ "link-grep" ] ~doc)
-
-let generate_grep =
-  let doc = "Show html-generate commands containing the string" in
-  Arg.(value & opt (some string) None & info [ "html-grep" ] ~doc)
+  let cmd =
+    let doc = "Opam mode" in
+    let info = Cmd.info "opam" ~doc in
+    Cmd.v info Term.(const run $ packages_dir $ Common_args.term)
+end
 
 let cmd =
   let doc = "Generate odoc documentation" in
   let info = Cmd.info "odoc_driver" ~doc in
-  Cmd.v info
-    Term.(
-      const run $ packages $ verbose $ packages_dir $ odoc_dir $ odocl_dir
-      $ index_dir $ mld_dir $ html_dir $ stats $ nb_workers $ odoc_bin $ voodoo
-      $ package_name $ blessed $ dune_style $ compile_grep $ link_grep
-      $ generate_grep)
+  Cmd.group info [ Voodoo_mode.cmd; Dune_mode.cmd; Opam_mode.cmd ]
 
 (* let map = Ocamlfind.package_to_dir_map () in
    let _dirs = List.map (fun lib -> List.assoc lib map) deps in
