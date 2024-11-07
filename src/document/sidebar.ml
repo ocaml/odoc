@@ -2,17 +2,8 @@ open Odoc_utils
 open Types
 module Id = Odoc_model.Paths.Identifier
 
-let sidebar_toc_entry id content =
-  let target =
-    match
-      (id :> Odoc_model.Paths.Identifier.t)
-      |> Url.from_identifier ~stop_before:false
-    with
-    | Ok href -> Target.Resolved href
-    | Error _ -> Target.Unresolved
-    (* This error case should never happen since [stop_before] is false *)
-  in
-  let target = Target.Internal target in
+let sidebar_toc_entry href content =
+  let target = Target.(Internal (Resolved href)) in
   inline @@ Inline.Link { target; content; tooltip = None }
 
 module Toc : sig
@@ -37,7 +28,7 @@ end = struct
             (* This error case should never happen since [stop_before] is false, and even less since it's a page id *)
           in
           let content = Comment.link_content title in
-          Some (path, sidebar_toc_entry index_id content)
+          Some (path, sidebar_toc_entry path content)
     in
     Tree.map ~f dir
 
@@ -75,8 +66,9 @@ let of_lang (v : Odoc_index.sidebar) =
       let content = [ inline @@ Text (Odoc_model.Paths.Identifier.name id) ] in
       let path = Url.from_identifier ~stop_before:false (id :> Id.t) in
       match path with
-      | Ok path -> Some (path, sidebar_toc_entry id content)
+      | Ok path -> Some (path, sidebar_toc_entry path content)
       | Error _ -> None
+      (* This error case should never happen since [stop_before] is false *)
     in
     let units =
       List.map
