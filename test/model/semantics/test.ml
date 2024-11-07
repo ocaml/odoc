@@ -759,49 +759,49 @@ let%expect_test _ =
       test "@author Foo\nbar";
       [%expect
         {|
-        {"value":[{"`Tag":{"`Author":"Foo"}},{"`Paragraph":[{"`Word":"bar"}]}],"warnings":["File \"f.ml\", line 2, characters 0-3:\nParagraph is not allowed in the tags section.\nSuggestion: move 'bar' before any tags."]} |}]
+        {"value":[{"`Tag":{"`Author":"Foo"}},{"`Paragraph":[{"`Word":"bar"}]}],"warnings":[]} |}]
 
     let followed_by_code_span =
       test "@author Foo\n[bar]";
       [%expect
         {|
-        {"value":[{"`Tag":{"`Author":"Foo"}},{"`Paragraph":[{"`Code_span":"bar"}]}],"warnings":["File \"f.ml\", line 2, characters 0-5:\nParagraph is not allowed in the tags section.\nSuggestion: move '[...]' (code) before any tags."]} |}]
+        {"value":[{"`Tag":{"`Author":"Foo"}},{"`Paragraph":[{"`Code_span":"bar"}]}],"warnings":[]} |}]
 
     let followed_by_code_block =
       test "@author Foo\n{[bar]}";
       [%expect
         {|
-        {"value":[{"`Tag":{"`Author":"Foo"}},{"`Code_block":["None","bar"]}],"warnings":["File \"f.ml\", line 2, characters 0-7:\n'{[...]}' (code block) is not allowed in the tags section.\nSuggestion: move '{[...]}' (code block) before any tags."]} |}]
+        {"value":[{"`Tag":{"`Author":"Foo"}},{"`Code_block":["None","bar"]}],"warnings":[]} |}]
 
     let followed_by_verbatim =
       test "@author Foo\n{v bar v}";
       [%expect
         {|
-        {"value":[{"`Tag":{"`Author":"Foo"}},{"`Verbatim":"bar"}],"warnings":["File \"f.ml\", line 2, characters 0-9:\n'{v ... v}' (verbatim text) is not allowed in the tags section.\nSuggestion: move '{v ... v}' (verbatim text) before any tags."]} |}]
+        {"value":[{"`Tag":{"`Author":"Foo"}},{"`Verbatim":"bar"}],"warnings":[]} |}]
 
     let followed_by_modules =
       test "@author foo\n{!modules:Foo}";
       [%expect
         {|
-        {"value":[{"`Tag":{"`Author":"foo"}},{"`Modules":[[{"`Root":["Foo","`TUnknown"]},"None"]]}],"warnings":["File \"f.ml\", line 2, characters 0-14:\n'{!modules ...}' is not allowed in the tags section.\nSuggestion: move '{!modules ...}' before any tags."]} |}]
+        {"value":[{"`Tag":{"`Author":"foo"}},{"`Modules":[[{"`Root":["Foo","`TUnknown"]},"None"]]}],"warnings":[]} |}]
 
     let followed_by_list =
       test "@author Foo\n{ul {li bar}}";
       [%expect
         {|
-        {"value":[{"`Tag":{"`Author":"Foo"}},{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"bar"}]}]]]}],"warnings":["File \"f.ml\", line 2, characters 0-3:\n'{ul ...}' (bulleted list) is not allowed in the tags section.\nSuggestion: move '{ul ...}' (bulleted list) before any tags."]} |}]
+        {"value":[{"`Tag":{"`Author":"Foo"}},{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"bar"}]}]]]}],"warnings":[]} |}]
 
     let followed_by_shorthand_list =
       test "@author Foo\n- bar";
       [%expect
         {|
-        {"value":[{"`Tag":{"`Author":"Foo"}},{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"bar"}]}]]]}],"warnings":["File \"f.ml\", line 2, characters 0-1:\n'-' (bulleted list item) is not allowed in the tags section.\nSuggestion: move '-' (bulleted list item) before any tags."]} |}]
+        {"value":[{"`Tag":{"`Author":"Foo"}},{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"bar"}]}]]]}],"warnings":[]} |}]
 
     let followed_by_section_heading =
       test "@author Foo\n{2 Bar}";
       [%expect
         {|
-        {"value":[{"`Tag":{"`Author":"Foo"}},{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"bar"]},[{"`Word":"Bar"}]]}],"warnings":["File \"f.ml\", line 2, characters 0-2:\n'{2 ...}' (section heading) is not allowed in the tags section.\nSuggestion: move '{2 ...}' (section heading) before any tags."]} |}]
+        {"value":[{"`Tag":{"`Author":"Foo"}},{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"bar"]},[{"`Word":"Bar"}]]}],"warnings":[]} |}]
 
     let followed_by_author =
       test "@author Foo\n@author Bar";
