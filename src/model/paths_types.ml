@@ -77,8 +77,7 @@ module Identifier = struct
   and class_signature = class_signature_pv id
   (** @canonical Odoc_model.Paths.Identifier.ClassSignature.t *)
 
-  type datatype_pv =
-    [ `Type of signature * TypeName.t | `CoreType of TypeName.t ]
+  type datatype_pv = [ `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Identifier.DataType.t_pv *)
 
   and datatype = datatype_pv id
@@ -132,7 +131,7 @@ module Identifier = struct
   and module_type = module_type_pv id
   (** @canonical Odoc_model.Paths.Identifier.ModuleType.t *)
 
-  type type_pv = [ `Type of signature * TypeName.t | `CoreType of TypeName.t ]
+  type type_pv = [ `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Type.t_pv *)
 
   and type_ = type_pv id
@@ -327,11 +326,14 @@ module rec Path : sig
     | `DotMT of module_ * ModuleTypeName.t ]
   (** @canonical Odoc_model.Paths.Path.ModuleType.t *)
 
-  type type_ =
+  type non_core_type =
     [ `Resolved of Resolved_path.type_
-    | `SubstitutedT of type_
+    | `SubstitutedT of non_core_type
     | `Identifier of Identifier.path_type * bool
     | `DotT of module_ * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Path.NonCoreType.t *)
+
+  type type_ = [ non_core_type | `CoreType of TypeName.t ]
   (** @canonical Odoc_model.Paths.Path.Type.t *)
 
   type value =
@@ -349,8 +351,9 @@ module rec Path : sig
 
   type any =
     [ `Resolved of Resolved_path.any
-    | `SubstitutedT of type_
+    | `SubstitutedT of non_core_type
     | `SubstitutedMT of module_type
+    | `CoreType of TypeName.t
     | `Substituted of module_
     | `SubstitutedCT of class_type
     | `Identifier of Identifier.path_any * bool
@@ -402,7 +405,7 @@ and Resolved_path : sig
     [ `Identifier of Identifier.path_type
     | `SubstitutedT of type_
     | `SubstitutedCT of class_type
-    | `CanonicalType of type_ * Path.type_
+    | `CanonicalType of type_ * Path.non_core_type
     | `Type of module_ * TypeName.t
     | `Class of module_ * TypeName.t
     | `ClassType of module_ * TypeName.t ]

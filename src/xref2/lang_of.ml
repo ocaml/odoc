@@ -97,9 +97,10 @@ module Path = struct
     | `ModuleType (`Module p, n) -> `DotMT (`Resolved (resolved_module map p), n)
     | `ModuleType (_, _) -> failwith "Probably shouldn't happen"
 
-  and type_ map (p : Cpath.type_) : Odoc_model.Paths.Path.Type.t =
+  and non_core_type map (p : Cpath.non_core_type) :
+      Odoc_model.Paths.Path.NonCoreType.t =
     match p with
-    | `Substituted x -> `SubstitutedT (type_ map x)
+    | `Substituted x -> `SubstitutedT (non_core_type map x)
     | `Identifier
         (({ iv = #Odoc_model.Paths.Identifier.Path.Type.t_pv; _ } as y), b) ->
         `Identifier (y, b)
@@ -110,6 +111,12 @@ module Path = struct
     | `Class (`Module p, n) -> `DotT (`Resolved (resolved_module map p), n)
     | `ClassType (`Module p, n) -> `DotT (`Resolved (resolved_module map p), n)
     | `Type _ | `Class _ | `ClassType _ -> failwith "Probably shouldn't happen"
+
+  and type_ map (p : Cpath.type_) : Odoc_model.Paths.Path.Type.t =
+    match p with
+    | `CoreType x -> `CoreType x
+    | #Cpath.non_core_type as v ->
+        (non_core_type map v :> Odoc_model.Paths.Path.Type.t)
 
   and class_type map (p : Cpath.class_type) : Odoc_model.Paths.Path.ClassType.t
       =
@@ -695,7 +702,7 @@ and typ_ext map parent t =
   let open Component.Extension in
   {
     parent;
-    type_path = Path.type_ map t.type_path;
+    type_path = (Path.type_ map t.type_path :> Paths.Path.Type.t);
     doc = docs (parent :> Identifier.LabelParent.t) t.doc;
     type_params = t.type_params;
     private_ = t.private_;
@@ -991,7 +998,9 @@ and type_expr map (parent : Identifier.LabelParent.t) (t : Component.TypeExpr.t)
         Arrow (lbl, type_expr map parent t1, type_expr map parent t2)
     | Tuple ts -> Tuple (List.map (type_expr map parent) ts)
     | Constr (path, ts) ->
-        Constr (Path.type_ map path, List.map (type_expr map parent) ts)
+        Constr
+          ( (Path.type_ map path :> Paths.Path.Type.t),
+            List.map (type_expr map parent) ts )
     | Polymorphic_variant v ->
         Polymorphic_variant (type_expr_polyvar map parent v)
     | Object o -> Object (type_expr_object map parent o)

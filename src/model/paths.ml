@@ -39,7 +39,6 @@ module Identifier = struct
     | `Result x -> name_aux (x :> t)
     | `ModuleType (_, name) -> ModuleTypeName.to_string name
     | `Type (_, name) -> TypeName.to_string name
-    | `CoreType name -> TypeName.to_string name
     | `Constructor (_, name) -> ConstructorName.to_string name
     | `Field (_, name) -> FieldName.to_string name
     | `Extension (_, name) -> ExtensionName.to_string name
@@ -70,7 +69,6 @@ module Identifier = struct
     | `Result x -> is_hidden (x :> t)
     | `ModuleType (_, name) -> ModuleTypeName.is_hidden name
     | `Type (_, name) -> TypeName.is_hidden name
-    | `CoreType name -> TypeName.is_hidden name
     | `Constructor (parent, _) -> is_hidden (parent :> t)
     | `Field (parent, _) -> is_hidden (parent :> t)
     | `Extension (parent, _) -> is_hidden (parent :> t)
@@ -107,7 +105,6 @@ module Identifier = struct
         ModuleTypeName.to_string name :: full_name_aux (parent :> t)
     | `Type (parent, name) ->
         TypeName.to_string name :: full_name_aux (parent :> t)
-    | `CoreType name -> [ TypeName.to_string name ]
     | `Constructor (parent, name) ->
         ConstructorName.to_string name :: full_name_aux (parent :> t)
     | `Field (parent, name) ->
@@ -149,7 +146,6 @@ module Identifier = struct
     fun (n : non_src) ->
       match n with
       | { iv = `Result i; _ } -> label_parent_aux (i :> non_src)
-      | { iv = `CoreType _; _ } -> assert false
       | { iv = `Root _; _ } as p -> (p :> label_parent)
       | { iv = `Page _; _ } as p -> (p :> label_parent)
       | { iv = `LeafPage _; _ } as p -> (p :> label_parent)
@@ -689,6 +685,7 @@ module Path = struct
   and is_path_hidden : Paths_types.Path.any -> bool =
     let open Paths_types.Path in
     function
+    | `CoreType _ -> false
     | `Resolved r -> is_resolved_hidden ~weak_canonical_test:false r
     | `Identifier (_, hidden) -> hidden
     | `Substituted r -> is_path_hidden (r :> any)
@@ -815,6 +812,10 @@ module Path = struct
 
   module ModuleType = struct
     type t = Paths_types.Path.module_type
+  end
+
+  module NonCoreType = struct
+    type t = Paths_types.Path.non_core_type
   end
 
   module Type = struct

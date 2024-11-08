@@ -270,7 +270,7 @@ and TypeDecl : sig
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
-    canonical : Odoc_model.Paths.Path.Type.t option;
+    canonical : Odoc_model.Paths.Path.NonCoreType.t option;
     equation : Equation.t;
     representation : Representation.t option;
   }
@@ -429,7 +429,8 @@ and Substitution : sig
     | `Renamed of Ident.module_type ]
 
   type subst_type =
-    [ `Prefixed of Cpath.type_ * Cpath.Resolved.type_ | `Renamed of Ident.type_ ]
+    [ `Prefixed of Cpath.non_core_type * Cpath.Resolved.type_
+    | `Renamed of Ident.type_ ]
 
   type subst_class_type =
     [ `Prefixed of Cpath.class_type * Cpath.Resolved.class_type
@@ -665,7 +666,6 @@ module Fmt = struct
     | `Result parent ->
         if c.short_paths then model_identifier c ppf (parent :> id)
         else Format.fprintf ppf "%a.result" (model_identifier c) (parent :> id)
-    | `CoreType name -> Format.fprintf ppf "%s" (TypeName.to_string name)
     | `Constructor (ty, x) ->
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (ty :> id)
@@ -1253,14 +1253,15 @@ module Fmt = struct
         else Format.fprintf ppf ">>%a<<" (resolved_module_type_path c) m
     | `FragmentRoot -> Format.fprintf ppf "FragmentRoot"
 
-  and type_path : config -> Format.formatter -> Cpath.type_ -> unit =
+  and non_core_type_path :
+      config -> Format.formatter -> Cpath.non_core_type -> unit =
    fun c ppf p ->
     match p with
     | `Resolved r -> wrap c "resolved" resolved_type_path ppf r
     | `Identifier (id, b) ->
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
     | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
-    | `Substituted s -> wrap c "substituted" type_path ppf s
+    | `Substituted s -> wrap c "substituted" non_core_type_path ppf s
     | `DotT (m, s) ->
         Format.fprintf ppf "%a.%a" (module_path c) m TypeName.fmt s
     | `Class (p, t) ->
@@ -1272,6 +1273,12 @@ module Fmt = struct
     | `Type (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
           (TypeName.to_string t)
+
+  and type_path : config -> Format.formatter -> Cpath.type_ -> unit =
+   fun c ppf p ->
+    match p with
+    | `CoreType x -> Format.fprintf ppf "%s" (TypeName.to_string x)
+    | #Cpath.non_core_type as x -> non_core_type_path c ppf x
 
   and value_path : config -> Format.formatter -> Cpath.value -> unit =
    fun c ppf p ->
@@ -1325,6 +1332,7 @@ module Fmt = struct
     in
 
     match p with
+    | `CoreType n -> Format.fprintf ppf "%s" (TypeName.to_string n)
     | `Resolved rp -> wrap c "resolved" model_resolved_path ppf rp
     | `Identifier (id, b) ->
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
@@ -2020,16 +2028,24 @@ module Of_Lang = struct
         | `Local i -> `Local (i, b))
     | `DotMT (path', x) -> `DotMT (module_path ident_map path', x)
 
-  and type_path : _ -> Odoc_model.Paths.Path.Type.t -> Cpath.type_ =
+  and non_core_type_path :
+      _ -> Odoc_model.Paths.Path.NonCoreType.t -> Cpath.non_core_type =
    fun ident_map p ->
     match p with
     | `Resolved r -> `Resolved (resolved_type_path ident_map r)
-    | `SubstitutedT t -> `Substituted (type_path ident_map t)
+    | `SubstitutedT t -> `Substituted (non_core_type_path ident_map t)
     | `Identifier (i, b) -> (
         match identifier Maps.Path.Type.find ident_map.path_types i with
         | `Identifier i -> `Identifier (i, b)
         | `Local i -> `Local (i, b))
     | `DotT (path', x) -> `DotT (module_path ident_map path', x)
+
+  and type_path : _ -> Odoc_model.Paths.Path.Type.t -> Cpath.type_ =
+   fun ident_map p ->
+    match p with
+    | `CoreType x -> `CoreType x
+    | #Odoc_model.Paths.Path.NonCoreType.t as x ->
+        (non_core_type_path ident_map x :> Cpath.type_)
 
   and value_path : _ -> Odoc_model.Paths.Path.Value.t -> Cpath.value =
    fun ident_map p ->

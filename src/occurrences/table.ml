@@ -40,7 +40,6 @@ let add ?(quantity = 1) tbl id =
     | `Field (parent, _) -> do_ parent
     | `Extension (parent, _) -> do_ parent
     | `Type (parent, _) -> do_ parent
-    | `CoreType _ -> incr tbl id
     | `Constructor (parent, _) -> do_ parent
     | `Exception (parent, _) -> do_ parent
     | `ExtensionDecl (parent, _, _) -> do_ parent
@@ -78,9 +77,9 @@ let rec get t id =
   | `Value (parent, _) -> do_ parent
   | `ClassType (parent, _) -> do_ parent
   | `Root _ -> ( try Some (H.find t id) with Not_found -> None)
-  | `SourcePage _ | `Page _ | `LeafPage _ | `CoreType _ | `SourceLocation _
-  | `Label _ | `SourceLocationMod _ | `Result _ | `AssetFile _
-  | `SourceLocationInternal _ ->
+  | `SourcePage _ | `Page _ | `LeafPage _ | `SourceLocation _ | `Label _
+  | `SourceLocationMod _ | `Result _ | `AssetFile _ | `SourceLocationInternal _
+    ->
       None
 
 let get t id =

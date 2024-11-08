@@ -253,7 +253,7 @@ and TypeDecl : sig
     id : Identifier.Type.t;
     source_loc : Identifier.SourceLocation.t option;
     doc : Comment.docs;
-    canonical : Path.Type.t option;
+    canonical : Path.NonCoreType.t option;
     equation : Equation.t;
     representation : Representation.t option;
   }

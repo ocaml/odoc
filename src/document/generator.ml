@@ -106,6 +106,8 @@ module Make (Syntax : SYNTAX) = struct
       match path with
       | `Identifier (id, _) ->
           unresolved [ inline @@ Text (Identifier.name id) ]
+      | `CoreType n ->
+          O.elt [ inline @@ Text (Odoc_model.Names.TypeName.to_string n) ]
       | `Substituted m -> from_path (m :> Path.t)
       | `SubstitutedMT m -> from_path (m :> Path.t)
       | `SubstitutedT m -> from_path (m :> Path.t)

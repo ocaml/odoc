@@ -15,8 +15,9 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
  fun env p ->
   match p with
   | `Resolved _ -> p
-  | _ -> (
-      let cp = Component.Of_Lang.(type_path (empty ()) p) in
+  | `CoreType _ as x -> x
+  | #Paths.Path.NonCoreType.t as p -> (
+      let cp = Component.Of_Lang.(non_core_type_path (empty ()) p) in
       match Tools.resolve_type_path env cp with
       | Ok p' -> `Resolved Lang_of.(Path.resolved_type (empty ()) p')
       | Error _ -> p)
@@ -740,9 +741,7 @@ and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->
   let open TypeDecl in
   let container =
-    match t.id.iv with
-    | `Type (parent, _) -> (parent :> Id.LabelParent.t)
-    | `CoreType _ -> assert false
+    match t.id.iv with `Type (parent, _) -> (parent :> Id.LabelParent.t)
   in
   let equation = type_decl_equation env container t.equation in
   let representation =
@@ -865,8 +864,11 @@ and type_expression : Env.t -> Id.LabelParent.t -> _ -> _ =
   | Arrow (lbl, t1, t2) ->
       Arrow (lbl, type_expression env parent t1, type_expression env parent t2)
   | Tuple ts -> Tuple (List.map (type_expression env parent) ts)
-  | Constr (path, ts') -> (
-      let cp = Component.Of_Lang.(type_path (empty ()) path) in
+  | Constr ((`CoreType _ as x), ts) ->
+      let ts = List.map (type_expression env parent) ts in
+      Constr (x, ts)
+  | Constr ((#Odoc_model.Paths.Path.NonCoreType.t as path), ts') -> (
+      let cp = Component.Of_Lang.(non_core_type_path (empty ()) path) in
       let ts = List.map (type_expression env parent) ts' in
       match Tools.resolve_type env cp with
       | Ok (cp, (`FType _ | `FClass _ | `FClassType _)) ->
@@ -875,7 +877,10 @@ and type_expression : Env.t -> Id.LabelParent.t -> _ -> _ =
       | Ok (_cp, `FType_removed (_, x, _eq)) ->
           (* Substitute type variables ? *)
           Lang_of.(type_expr (empty ()) parent x)
-      | Error _e -> Constr (Lang_of.(Path.type_ (empty ()) cp), ts))
+      | Error _e ->
+          Constr
+            ( (Lang_of.(Path.non_core_type (empty ()) cp) :> Paths.Path.Type.t),
+              ts ))
   | Polymorphic_variant v ->
       Polymorphic_variant (type_expression_polyvar env parent v)
   | Object o -> Object (type_expression_object env parent o)

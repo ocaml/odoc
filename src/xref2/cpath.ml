@@ -31,7 +31,7 @@ module rec Resolved : sig
     [ `Local of Ident.type_
     | `Gpath of Path.Resolved.Type.t
     | `Substituted of type_
-    | `CanonicalType of type_ * Path.Type.t
+    | `CanonicalType of type_ * Path.NonCoreType.t
     | `Type of parent * TypeName.t
     | `Class of parent * TypeName.t
     | `ClassType of parent * TypeName.t ]
@@ -68,15 +68,17 @@ and Cpath : sig
     | `DotMT of module_ * ModuleTypeName.t
     | `ModuleType of Resolved.parent * ModuleTypeName.t ]
 
-  and type_ =
+  and non_core_type =
     [ `Resolved of Resolved.type_
-    | `Substituted of type_
+    | `Substituted of non_core_type
     | `Local of Ident.type_ * bool
     | `Identifier of Odoc_model.Paths.Identifier.Path.Type.t * bool
     | `DotT of module_ * TypeName.t
     | `Type of Resolved.parent * TypeName.t
     | `Class of Resolved.parent * TypeName.t
     | `ClassType of Resolved.parent * TypeName.t ]
+
+  type type_ = [ `CoreType of TypeName.t | non_core_type ]
 
   and value =
     [ `Resolved of Resolved.value
@@ -156,6 +158,7 @@ let is_module_type_substituted : module_type -> bool = function
   | `ModuleType (a, _) -> is_resolved_parent_substituted a
 
 let is_type_substituted : type_ -> bool = function
+  | `CoreType _ -> false
   | `Resolved a -> is_resolved_type_substituted a
   | `Identifier _ -> false
   | `Local _ -> false
@@ -244,9 +247,9 @@ and is_type_hidden : type_ -> bool = function
   | `Identifier ({ iv = `Type (_, t); _ }, b) -> b || TypeName.is_hidden t
   | `Identifier ({ iv = `ClassType (_, t); _ }, b) -> b || TypeName.is_hidden t
   | `Identifier ({ iv = `Class (_, t); _ }, b) -> b || TypeName.is_hidden t
-  | `Identifier ({ iv = `CoreType _; _ }, b) -> b
   | `Local (_, b) -> b
-  | `Substituted p -> is_type_hidden p
+  | `Substituted p -> is_type_hidden (p :> type_)
+  | `CoreType _ -> false
   | `DotT (p, _) -> is_module_hidden p
   | `Type (p, _) | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
@@ -361,7 +364,7 @@ and unresolve_resolved_parent_path : Resolved.parent -> module_ = function
   | `Module m -> unresolve_resolved_module_path m
   | `FragmentRoot | `ModuleType _ -> assert false
 
-and unresolve_resolved_type_path : Resolved.type_ -> type_ = function
+and unresolve_resolved_type_path : Resolved.type_ -> non_core_type = function
   | (`Gpath _ | `Local _) as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_type_path x
   | `CanonicalType (t1, _) -> unresolve_resolved_type_path t1
@@ -381,7 +384,7 @@ and unresolve_module_type_path : module_type -> module_type = function
   | y -> y
 
 and unresolve_type_path : type_ -> type_ = function
-  | `Resolved m -> unresolve_resolved_type_path m
+  | `Resolved m -> (unresolve_resolved_type_path m :> type_)
   | y -> y
 
 and unresolve_class_type_path : class_type -> class_type = function

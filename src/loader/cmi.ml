@@ -1052,11 +1052,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
           if Env.is_shadowed env id
           then
             let identifier = Env.find_type_identifier env id in
-            let name =
-              match identifier.iv with
-              | `CoreType n 
-              | `Type (_, n) -> n
-            in
+            let `Type (_, name) = identifier.iv in
             { shadowed with s_types = (Ident.name id, name) :: shadowed.s_types }
           else shadowed
         in

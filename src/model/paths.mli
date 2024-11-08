@@ -408,6 +408,10 @@ module rec Path : sig
     type t = Paths_types.Path.type_
   end
 
+  module NonCoreType : sig
+    type t = Paths_types.Path.non_core_type
+  end
+
   module Value : sig
     type t = Paths_types.Path.value
   end

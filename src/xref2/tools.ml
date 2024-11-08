@@ -744,20 +744,10 @@ and lookup_type_gpath :
   in
   let res =
     match p with
-    | `Identifier { iv = `CoreType name; _ } ->
-        (* CoreTypes aren't put into the environment, so they can't be handled
-           by the next clause. They are already resolved. *)
-        Ok
-          (`FType
-            ( name,
-              Component.Of_Lang.(
-                type_decl (empty ())
-                  (Odoc_model.Predefined.type_of_core_type
-                     (TypeName.to_string name))) ))
     | `Identifier ({ iv = `Type _; _ } as i) ->
         of_option ~error:(`Lookup_failureT i)
           (Env.(lookup_by_id s_datatype) i env)
-        >>= fun (`Type ({ iv = `CoreType name | `Type (_, name); _ }, t)) ->
+        >>= fun (`Type ({ iv = `Type (_, name); _ }, t)) ->
         Ok (`FType (name, t))
     | `Identifier ({ iv = `Class _; _ } as i) ->
         of_option ~error:(`Lookup_failureT i) (Env.(lookup_by_id s_class) i env)
@@ -1008,7 +998,7 @@ and resolve_module_type :
       |> map_error (fun e -> `Parent (`Parent_module_type e))
       >>= fun (p, m) -> Ok (`Substituted p, m)
 
-and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
+and resolve_type : Env.t -> Cpath.non_core_type -> resolve_type_result =
  fun env p ->
   let result =
     match p with
@@ -1416,7 +1406,7 @@ and handle_canonical_module_type env p2 =
   | Some (rp, _) -> `Resolved Lang_of.(Path.resolved_module_type (empty ()) rp)
 
 and handle_canonical_type env p2 =
-  let cp2 = Component.Of_Lang.(type_path (empty ()) p2) in
+  let cp2 = Component.Of_Lang.(non_core_type_path (empty ()) p2) in
   let lang_of cpath =
     (Lang_of.(Path.resolved_type (empty ()) cpath)
       :> Odoc_model.Paths.Path.Resolved.t)
@@ -2310,7 +2300,7 @@ and class_signature_of_class_type_expr :
   match e with
   | Signature s -> Some s
   | Constr (p, _) -> (
-      match resolve_type env (p :> Cpath.type_) with
+      match resolve_type env (p :> Cpath.non_core_type) with
       | Ok (_, `FClass (_, c)) -> class_signature_of_class env c
       | Ok (_, `FClassType (_, c)) -> class_signature_of_class_type env c
       | _ -> None)
