@@ -5,7 +5,7 @@ type html = Html_types.div_content Tyxml.Html.elt
 
 val of_entry : Entry.t -> html list
 
-val url : Entry.t -> (string, Odoc_document.Url.Error.t) Result.result
+val url : Entry.t -> string
 
 (** The below is intended for search engine that do not use the Json output but
     Odoc as a library. Most search engine will use their own representation

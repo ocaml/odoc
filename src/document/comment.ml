@@ -107,7 +107,7 @@ module Reference = struct
   let to_ir : ?text:Inline.t -> Reference.t -> Inline.t =
    fun ?text ref ->
     match ref with
-    | `Resolved r -> (
+    | `Resolved r ->
         (* IDENTIFIER MUST BE RENAMED TO DEFINITION. *)
         let id = Reference.Resolved.identifier r in
         let rendered = render_resolved r in
@@ -119,16 +119,10 @@ module Reference = struct
           (* Add a tooltip if the content is not the rendered reference. *)
           match text with None -> None | Some _ -> Some rendered
         in
-        match Url.from_identifier ~stop_before:false id with
-        | Ok url ->
-            let target = Target.Internal (Resolved url) in
-            let link = { Link.target; content; tooltip } in
-            [ inline @@ Inline.Link link ]
-        | Error (Not_linkable _) -> content
-        | Error exn ->
-            (* FIXME: better error message *)
-            Printf.eprintf "Id.href failed: %S\n%!" (Url.Error.to_string exn);
-            content)
+        let url = Url.from_identifier ~stop_before:false id in
+        let target = Target.Internal (Resolved url) in
+        let link = { Link.target; content; tooltip } in
+        [ inline @@ Inline.Link link ]
     | _ -> (
         let s = render_unresolved ref in
         match text with

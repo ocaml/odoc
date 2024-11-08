@@ -19,16 +19,12 @@ let url { Entry.id; kind; doc = _ } =
        shorten the match. *)
     match kind with Doc _ -> false | _ -> true
   in
-  match Odoc_document.Url.from_identifier ~stop_before id with
-  | Ok url ->
-      let config =
-        Odoc_html.Config.v ~search_result:true ~semantic_uris:false
-          ~indent:false ~flat:false ~open_details:false ~as_json:false ~remap:[]
-          ()
-      in
-      let url = Odoc_html.Link.href ~config ~resolve:(Base "") url in
-      Result.Ok url
-  | Error _ as e -> e
+  let url = Odoc_document.Url.from_identifier ~stop_before id in
+  let config =
+    Odoc_html.Config.v ~search_result:true ~semantic_uris:false ~indent:false
+      ~flat:false ~open_details:false ~as_json:false ~remap:[] ()
+  in
+  Odoc_html.Link.href ~config ~resolve:(Base "") url
 
 let map_option f = function Some x -> Some (f x) | None -> None
 

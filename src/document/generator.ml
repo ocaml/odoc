@@ -43,18 +43,15 @@ let unresolved content =
   O.elt [ inline @@ Link link ]
 
 let path_to_id path =
-  match Url.Anchor.from_identifier (path :> Paths.Identifier.t) with
-  | Error _ -> None
-  | Ok url -> Some url
+  let url = Url.Anchor.from_identifier (path :> Paths.Identifier.t) in
+  Some url
 
 let source_anchor source_loc =
-  (* Remove when dropping support for OCaml < 4.08 *)
-  let to_option = function Result.Ok x -> Some x | Result.Error _ -> None in
   match source_loc with
   | Some id ->
-      Url.Anchor.from_identifier
-        (id : Paths.Identifier.SourceLocation.t :> Paths.Identifier.t)
-      |> to_option
+      Some
+        (Url.Anchor.from_identifier
+           (id : Paths.Identifier.SourceLocation.t :> Paths.Identifier.t))
   | _ -> None
 
 let attach_expansion ?(status = `Default) (eq, o, e) page text =
@@ -133,7 +130,7 @@ module Make (Syntax : SYNTAX) = struct
       | `Resolved _ when Paths.Path.is_hidden path ->
           let txt = Url.render_path path in
           unresolved [ inline @@ Text txt ]
-      | `Resolved rp -> (
+      | `Resolved rp ->
           (* If the path is pointing to an opaque module or module type
              there won't be a page generated - so we stop before; at
              the parent page, and link instead to the anchor representing
@@ -145,12 +142,8 @@ module Make (Syntax : SYNTAX) = struct
           in
           let id = Paths.Path.Resolved.identifier rp in
           let txt = Url.render_path path in
-          match Url.from_identifier ~stop_before id with
-          | Ok href -> resolved href [ inline @@ Text txt ]
-          | Error (Url.Error.Not_linkable _) -> O.txt txt
-          | Error exn ->
-              Printf.eprintf "Id.href failed: %S\n%!" (Url.Error.to_string exn);
-              O.txt txt)
+          let href = Url.from_identifier ~stop_before id in
+          resolved href [ inline @@ Text txt ]
 
     let dot prefix suffix = prefix ^ "." ^ suffix
 
@@ -194,13 +187,8 @@ module Make (Syntax : SYNTAX) = struct
       let open Fragment in
       let id = Resolved.identifier (fragment :> Resolved.t) in
       let txt = render_resolved_fragment (fragment :> Resolved.t) in
-      match Url.from_identifier ~stop_before:false id with
-      | Ok href -> resolved href [ inline @@ Text txt ]
-      | Error (Not_linkable _) -> unresolved [ inline @@ Text txt ]
-      | Error exn ->
-          Printf.eprintf "[FRAG] Id.href failed: %S\n%!"
-            (Url.Error.to_string exn);
-          unresolved [ inline @@ Text txt ]
+      let href = Url.from_identifier ~stop_before:false id in
+      resolved href [ inline @@ Text txt ]
 
     let from_fragment : Fragment.leaf -> text = function
       | `Resolved r
@@ -276,10 +264,8 @@ module Make (Syntax : SYNTAX) = struct
       in
       let implementation =
         match implementation with
-        | Some (Odoc_model.Lang.Source_info.Resolved id) -> (
-            match Url.Anchor.from_identifier (id :> Paths.Identifier.t) with
-            | Ok url -> Some url
-            | Error _ -> None)
+        | Some (Odoc_model.Lang.Source_info.Resolved id) ->
+            Some (Url.Anchor.from_identifier (id :> Paths.Identifier.t))
         | _ -> None
       in
       Some (Source_page.Link { implementation; documentation })
@@ -519,26 +505,22 @@ module Make (Syntax : SYNTAX) = struct
   end = struct
     let record fields =
       let field mutable_ id typ =
-        match Url.from_identifier ~stop_before:true id with
-        | Error e -> failwith (Url.Error.to_string e)
-        | Ok url ->
-            let name = Paths.Identifier.name id in
-            let attrs =
-              [ "def"; "record"; Url.Anchor.string_of_kind url.kind ]
-            in
-            let cell =
-              (* O.td ~a:[ O.a_class ["def"; kind ] ]
-               *   [O.a ~a:[O.a_href ("#" ^ anchor); O.a_class ["anchor"]] []
-               *   ; *)
-              O.code
-                ((if mutable_ then O.keyword "mutable" ++ O.txt " " else O.noop)
-                ++ O.txt name
-                ++ O.txt Syntax.Type.annotation_separator
-                ++ type_expr typ
-                ++ O.txt Syntax.Type.Record.field_separator)
-              (* ] *)
-            in
-            (url, attrs, cell)
+        let url = Url.from_identifier ~stop_before:true id in
+        let name = Paths.Identifier.name id in
+        let attrs = [ "def"; "record"; Url.Anchor.string_of_kind url.kind ] in
+        let cell =
+          (* O.td ~a:[ O.a_class ["def"; kind ] ]
+           *   [O.a ~a:[O.a_href ("#" ^ anchor); O.a_class ["anchor"]] []
+           *   ; *)
+          O.code
+            ((if mutable_ then O.keyword "mutable" ++ O.txt " " else O.noop)
+            ++ O.txt name
+            ++ O.txt Syntax.Type.annotation_separator
+            ++ type_expr typ
+            ++ O.txt Syntax.Type.Record.field_separator)
+          (* ] *)
+        in
+        (url, attrs, cell)
       in
       let rows =
         fields
@@ -605,17 +587,13 @@ module Make (Syntax : SYNTAX) = struct
 
     let variant cstrs : DocumentedSrc.t =
       let constructor id args res =
-        match Url.from_identifier ~stop_before:true id with
-        | Error e -> failwith (Url.Error.to_string e)
-        | Ok url ->
-            let attrs =
-              [ "def"; "variant"; Url.Anchor.string_of_kind url.kind ]
-            in
-            let content =
-              let doc = constructor id args res in
-              O.documentedSrc (O.txt "| ") @ doc
-            in
-            (url, attrs, content)
+        let url = Url.from_identifier ~stop_before:true id in
+        let attrs = [ "def"; "variant"; Url.Anchor.string_of_kind url.kind ] in
+        let content =
+          let doc = constructor id args res in
+          O.documentedSrc (O.txt "| ") @ doc
+        in
+        (url, attrs, content)
       in
       match cstrs with
       | [] -> O.documentedSrc (O.txt "|")
@@ -641,19 +619,13 @@ module Make (Syntax : SYNTAX) = struct
 
     let extension_constructor (t : Odoc_model.Lang.Extension.Constructor.t) =
       let id = (t.id :> Paths.Identifier.t) in
-      match Url.from_identifier ~stop_before:true id with
-      | Error e -> failwith (Url.Error.to_string e)
-      | Ok url ->
-          let anchor = Some url in
-          let attrs =
-            [ "def"; "variant"; Url.Anchor.string_of_kind url.kind ]
-          in
-          let code =
-            O.documentedSrc (O.txt "| ") @ constructor id t.args t.res
-          in
-          let doc = Comment.to_ir t.doc in
-          let markers = Syntax.Comment.markers in
-          DocumentedSrc.Nested { anchor; attrs; code; doc; markers }
+      let url = Url.from_identifier ~stop_before:true id in
+      let anchor = Some url in
+      let attrs = [ "def"; "variant"; Url.Anchor.string_of_kind url.kind ] in
+      let code = O.documentedSrc (O.txt "| ") @ constructor id t.args t.res in
+      let doc = Comment.to_ir t.doc in
+      let markers = Syntax.Comment.markers in
+      DocumentedSrc.Nested { anchor; attrs; code; doc; markers }
 
     let extension (t : Odoc_model.Lang.Extension.t) =
       let prefix =
@@ -1386,8 +1358,8 @@ module Make (Syntax : SYNTAX) = struct
                 let content = functor_parameter arg in
                 let attr = [ "parameter" ] in
                 let anchor =
-                  Utils.option_of_result
-                  @@ Url.Anchor.from_identifier (arg.id :> Paths.Identifier.t)
+                  Some
+                    (Url.Anchor.from_identifier (arg.id :> Paths.Identifier.t))
                 in
                 let doc = [] in
                 [
@@ -1614,11 +1586,10 @@ module Make (Syntax : SYNTAX) = struct
             let name =
               let open Odoc_model.Lang.FunctorParameter in
               let name = Paths.Identifier.name arg.id in
-              match
+              let href =
                 Url.from_identifier ~stop_before (arg.id :> Paths.Identifier.t)
-              with
-              | Error _ -> O.txt name
-              | Ok href -> resolved href [ inline @@ Text name ]
+              in
+              resolved href [ inline @@ Text name ]
             in
             (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop)
             ++ (O.box_hv @@ O.span
@@ -1655,12 +1626,11 @@ module Make (Syntax : SYNTAX) = struct
                 let name =
                   let open Odoc_model.Lang.FunctorParameter in
                   let name = Paths.Identifier.name arg.id in
-                  match
+                  let href =
                     Url.from_identifier ~stop_before
                       (arg.id :> Paths.Identifier.t)
-                  with
-                  | Error _ -> O.txt name
-                  | Ok href -> resolved href [ inline @@ Text name ]
+                  in
+                  resolved href [ inline @@ Text name ]
                 in
                 O.box_hv
                 @@ O.txt "(" ++ name
@@ -1776,8 +1746,7 @@ module Make (Syntax : SYNTAX) = struct
         in
         let content = O.documentedSrc md_def in
         let anchor =
-          Utils.option_of_result
-          @@ Url.Anchor.from_identifier (id :> Paths.Identifier.t)
+          Some (Url.Anchor.from_identifier (id :> Paths.Identifier.t))
         in
         let attr = [ "modules" ] in
         let doc = [] in
