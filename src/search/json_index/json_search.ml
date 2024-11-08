@@ -179,13 +179,10 @@ let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
         ]
     | None -> []
   in
-  match Json_display.of_entry entry html with
-  | Result.Ok display ->
-      Result.Ok
-        (`Object
-          ([ ("id", j_id); ("doc", doc); ("kind", kind); ("display", display) ]
-          @ occurrences))
-  | Error _ as e -> e
+  let display = Json_display.of_entry entry html in
+  `Object
+    ([ ("id", j_id); ("doc", doc); ("kind", kind); ("display", display) ]
+    @ occurrences)
 
 let output_json ppf first entries =
   let output_json json =
@@ -196,13 +193,8 @@ let output_json ppf first entries =
     (fun first (entry, html, occurrences) ->
       let json = of_entry entry html occurrences in
       if not first then Format.fprintf ppf ",";
-      match json with
-      | Ok json ->
-          output_json json;
-          false
-      | Error e ->
-          Printf.eprintf "%S" (Odoc_document.Url.Error.to_string e);
-          true)
+      output_json json;
+      false)
     first entries
 
 let unit ?occurrences ppf u =

@@ -1,15 +1,4 @@
-open Result
 open Odoc_model.Paths
-
-module Error : sig
-  type nonrec t =
-    | Not_linkable of string
-    | Uncaught_exn of string
-    (* These should basicaly never happen *)
-    | Unexpected_anchor of string
-
-  val to_string : t -> string
-end
 
 module Path : sig
   type kind =
@@ -90,7 +79,7 @@ module Anchor : sig
         e.g. "module", "module-type", "exception", ... *)
   }
 
-  val from_identifier : Identifier.t -> (t, Error.t) result
+  val from_identifier : Identifier.t -> t
 
   val polymorphic_variant :
     type_ident:Identifier.t ->
@@ -110,7 +99,7 @@ type t = Anchor.t
 
 val from_path : Path.t -> t
 
-val from_identifier : stop_before:bool -> Identifier.t -> (t, Error.t) result
+val from_identifier : stop_before:bool -> Identifier.t -> t
 (** [from_identifier] turns an identifier to an url.
 
      Some identifiers can be accessed in different ways. For instance,
@@ -120,14 +109,11 @@ val from_identifier : stop_before:bool -> Identifier.t -> (t, Error.t) result
      The [stop_before] boolean controls that: with [~stop_before:true], the url
      will point to the parent page when applicable.
 
-     There are several wrong ways to use [from_identifier]:
-     - Using [~stop_before:false] with a module that does not contain an
-     expansion, such as a module alias. This will return [Ok url] but [url]
-     leads to a 404.
-     - Calling it with an unlinkable id, such as a core type. This will return
-     an [Error _] value.
+     There is a pitfall with [from_identifier]: Using [~stop_before:false] with
+     a module that does not contain an expansion, such as a module alias. This
+     will return a [url] leading to a 404 page.
 
-     Please, reader, go and fix this API. Thanks. *)
+     It would be nice to enforce no 404 by the type system. *)
 
 val from_asset_identifier : Identifier.AssetFile.t -> t
 

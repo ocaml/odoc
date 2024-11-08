@@ -22,10 +22,7 @@ end = struct
       | None -> None
       | Some (index_id, title) ->
           let path =
-            match Url.from_identifier ~stop_before:false (index_id :> Id.t) with
-            | Ok r -> r
-            | Error _ -> assert false
-            (* This error case should never happen since [stop_before] is false, and even less since it's a page id *)
+            Url.from_identifier ~stop_before:false (index_id :> Id.t)
           in
           let content = Comment.link_content title in
           Some (path, sidebar_toc_entry path content)
@@ -65,15 +62,12 @@ let of_lang (v : Odoc_index.sidebar) =
     let item id =
       let content = [ inline @@ Text (Odoc_model.Paths.Identifier.name id) ] in
       let path = Url.from_identifier ~stop_before:false (id :> Id.t) in
-      match path with
-      | Ok path -> Some (path, sidebar_toc_entry path content)
-      | Error _ -> None
-      (* This error case should never happen since [stop_before] is false *)
+      (path, sidebar_toc_entry path content)
     in
     let units =
       List.map
         (fun { Odoc_index.units; name } ->
-          let units = List.filter_map item units in
+          let units = List.map item units in
           { name; units })
         v.libs
     in

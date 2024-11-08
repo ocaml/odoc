@@ -66,21 +66,6 @@ let render_path : Path.t -> string =
 
   render_path
 
-module Error = struct
-  type nonrec t =
-    | Not_linkable of string
-    | Uncaught_exn of string
-    (* These should basicaly never happen *)
-    | Unexpected_anchor of string
-
-  let to_string = function
-    | Not_linkable s -> Printf.sprintf "Not_linkable %S" s
-    | Uncaught_exn s -> Printf.sprintf "Uncaught_exn %S" s
-    | Unexpected_anchor s -> Printf.sprintf "Unexpected_anchor %S" s
-end
-
-open Odoc_utils.ResultMonad
-
 module Path = struct
   type nonsrc_pv =
     [ Identifier.Page.t_pv
@@ -273,7 +258,7 @@ module Anchor = struct
      _constructor_ identifiers. *)
   let suffix_for_constructor x = x
 
-  let rec from_identifier : Identifier.t -> (t, Error.t) result = function
+  let rec from_identifier : Identifier.t -> t = function
     | { iv = `Module (parent, mod_name); _ } ->
         let parent = Path.from_identifier (parent :> Path.any) in
         let kind = `Module in
@@ -281,122 +266,111 @@ module Anchor = struct
           Printf.sprintf "%s-%s" (Path.string_of_kind kind)
             (ModuleName.to_string mod_name)
         in
-        Ok { page = parent; anchor; kind }
+        { page = parent; anchor; kind }
     | { iv = `Root _; _ } as p ->
         let page = Path.from_identifier (p :> Path.any) in
-        Ok { page; kind = `Module; anchor = "" }
+        { page; kind = `Module; anchor = "" }
     | { iv = `Page _; _ } as p ->
         let page = Path.from_identifier (p :> Path.any) in
-        Ok { page; kind = `Page; anchor = "" }
+        { page; kind = `Page; anchor = "" }
     | { iv = `LeafPage _; _ } as p ->
         let page = Path.from_identifier (p :> Path.any) in
-        Ok { page; kind = `LeafPage; anchor = "" }
+        { page; kind = `LeafPage; anchor = "" }
     (* For all these identifiers, page names and anchors are the same *)
     | {
         iv = `Parameter _ | `Result _ | `ModuleType _ | `Class _ | `ClassType _;
         _;
       } as p ->
-        Ok (anchorify_path @@ Path.from_identifier p)
+        anchorify_path @@ Path.from_identifier p
     | { iv = `Type (parent, type_name); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Type in
-        Ok
-          {
-            page;
-            anchor =
-              Format.asprintf "%a-%s" pp_kind kind
-                (TypeName.to_string type_name);
-            kind;
-          }
+        {
+          page;
+          anchor =
+            Format.asprintf "%a-%s" pp_kind kind (TypeName.to_string type_name);
+          kind;
+        }
     | { iv = `Extension (parent, name); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Extension in
-        Ok
-          {
-            page;
-            anchor =
-              Format.asprintf "%a-%s" pp_kind kind
-                (ExtensionName.to_string name);
-            kind;
-          }
+        {
+          page;
+          anchor =
+            Format.asprintf "%a-%s" pp_kind kind (ExtensionName.to_string name);
+          kind;
+        }
     | { iv = `ExtensionDecl (parent, name, _); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `ExtensionDecl in
-        Ok
-          {
-            page;
-            anchor =
-              Format.asprintf "%a-%s" pp_kind kind
-                (ExtensionName.to_string name);
-            kind;
-          }
+        {
+          page;
+          anchor =
+            Format.asprintf "%a-%s" pp_kind kind (ExtensionName.to_string name);
+          kind;
+        }
     | { iv = `Exception (parent, name); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Exception in
-        Ok
-          {
-            page;
-            anchor =
-              Format.asprintf "%a-%s" pp_kind kind
-                (ExceptionName.to_string name);
-            kind;
-          }
+        {
+          page;
+          anchor =
+            Format.asprintf "%a-%s" pp_kind kind (ExceptionName.to_string name);
+          kind;
+        }
     | { iv = `Value (parent, name); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Val in
-        Ok
-          {
-            page;
-            anchor =
-              Format.asprintf "%a-%s" pp_kind kind (ValueName.to_string name);
-            kind;
-          }
+        {
+          page;
+          anchor =
+            Format.asprintf "%a-%s" pp_kind kind (ValueName.to_string name);
+          kind;
+        }
     | { iv = `Method (parent, name); _ } ->
         let str_name = MethodName.to_string name in
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Method in
-        Ok
-          { page; anchor = Format.asprintf "%a-%s" pp_kind kind str_name; kind }
+        { page; anchor = Format.asprintf "%a-%s" pp_kind kind str_name; kind }
     | { iv = `InstanceVariable (parent, name); _ } ->
         let str_name = InstanceVariableName.to_string name in
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Val in
-        Ok
-          { page; anchor = Format.asprintf "%a-%s" pp_kind kind str_name; kind }
+        { page; anchor = Format.asprintf "%a-%s" pp_kind kind str_name; kind }
     | { iv = `Constructor (parent, name); _ } ->
-        from_identifier (parent :> Identifier.t) >>= fun page ->
+        let page = from_identifier (parent :> Identifier.t) in
         let kind = `Constructor in
         let suffix = suffix_for_constructor (ConstructorName.to_string name) in
-        Ok (add_suffix ~kind page suffix)
+        add_suffix ~kind page suffix
     | { iv = `Field (parent, name); _ } ->
-        from_identifier (parent :> Identifier.t) >>= fun page ->
+        let page = from_identifier (parent :> Identifier.t) in
         let kind = `Field in
         let suffix = FieldName.to_string name in
-        Ok (add_suffix ~kind page suffix)
+        add_suffix ~kind page suffix
     | { iv = `Label (parent, anchor); _ } -> (
         let str_name = LabelName.to_string anchor in
         (* [Identifier.LabelParent.t] contains datatypes. [`CoreType] can't
            happen, [`Type] may not happen either but just in case, use the
            grand-parent. *)
         match parent with
-        | { iv = `Type (gp, _); _ } -> Ok (mk ~kind:`Section gp str_name)
+        | { iv = `Type (gp, _); _ } -> mk ~kind:`Section gp str_name
         | { iv = #Path.nonsrc_pv; _ } as p ->
-            Ok (mk ~kind:`Section (p :> Path.any) str_name))
+            mk ~kind:`Section (p :> Path.any) str_name)
     | { iv = `SourceLocation (parent, loc); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
-        Ok { page; kind = `SourceAnchor; anchor = DefName.to_string loc }
+        { page; kind = `SourceAnchor; anchor = DefName.to_string loc }
     | { iv = `SourceLocationInternal (parent, loc); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
-        Ok { page; kind = `SourceAnchor; anchor = LocalName.to_string loc }
+        { page; kind = `SourceAnchor; anchor = LocalName.to_string loc }
     | { iv = `SourceLocationMod parent; _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
-        Ok { page; kind = `SourceAnchor; anchor = "" }
+        { page; kind = `SourceAnchor; anchor = "" }
     | { iv = `SourcePage _; _ } as p ->
         let page = Path.from_identifier (p :> Path.any) in
-        Ok { page; kind = `Page; anchor = "" }
+        { page; kind = `Page; anchor = "" }
     | { iv = `AssetFile _; _ } as p ->
         let page = Path.from_identifier p in
-        Ok { page; kind = `File; anchor = "" }
+        { page; kind = `File; anchor = "" }
 
   let polymorphic_variant ~type_ident elt =
     let name_of_type_constr te =
@@ -412,18 +386,16 @@ module Anchor = struct
           invalid_arg
             "DocOckHtml.Url.Polymorphic_variant_decl.name_of_type_constr"
     in
-    match from_identifier type_ident with
-    | Error e -> failwith (Error.to_string e)
-    | Ok url -> (
-        match elt with
-        | Odoc_model.Lang.TypeExpr.Polymorphic_variant.Type te ->
-            let kind = `Type in
-            let suffix = name_of_type_constr te in
-            add_suffix ~kind url suffix
-        | Constructor { name; _ } ->
-            let kind = `Constructor in
-            let suffix = suffix_for_constructor name in
-            add_suffix ~kind url suffix)
+    let url = from_identifier type_ident in
+    match elt with
+    | Odoc_model.Lang.TypeExpr.Polymorphic_variant.Type te ->
+        let kind = `Type in
+        let suffix = name_of_type_constr te in
+        add_suffix ~kind url suffix
+    | Constructor { name; _ } ->
+        let kind = `Constructor in
+        let suffix = suffix_for_constructor name in
+        add_suffix ~kind url suffix
 
   (** The anchor looks like
       [extension-decl-"Path.target_type"-FirstConstructor]. *)
@@ -447,12 +419,11 @@ let from_path page =
 let from_identifier ~stop_before x =
   match x with
   | { Identifier.iv = #Path.any_pv; _ } as p when not stop_before ->
-      Ok (from_path @@ Path.from_identifier p)
+      from_path @@ Path.from_identifier p
   | p -> Anchor.from_identifier p
 
 let from_asset_identifier p = from_path @@ Path.from_identifier p
 
 let kind id =
-  match Anchor.from_identifier id with
-  | Error e -> failwith (Error.to_string e)
-  | Ok { kind; _ } -> kind
+  let { Anchor.kind; _ } = Anchor.from_identifier id in
+  kind

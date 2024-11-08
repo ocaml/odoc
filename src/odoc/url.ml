@@ -26,19 +26,16 @@ let resolve url_to_string directories reference =
               Odoc_xref2.Errors.Tools_error.pp_reference_lookup_error e
           in
           Error (`Msg error)
-      | Ok (resolved_reference, _) -> (
+      | Ok (resolved_reference, _) ->
           let identifier =
             Odoc_model.Paths.Reference.Resolved.identifier resolved_reference
           in
           let url =
             Odoc_document.Url.from_identifier ~stop_before:false identifier
           in
-          match url with
-          | Error e -> Error (`Msg (Odoc_document.Url.Error.to_string e))
-          | Ok url ->
-              let href = url_to_string url in
-              print_endline href;
-              Ok ()))
+          let href = url_to_string url in
+          print_endline href;
+          Ok ())
 
 let reference_to_url_html { Html_page.html_config = config; _ } root_url =
   let url_to_string url =
