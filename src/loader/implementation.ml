@@ -232,7 +232,6 @@ let anchor_of_identifier id =
     | `Value (parent, name) ->
         let anchor = anchor `Val (ValueName.to_string name) in
         continue anchor parent
-    | `CoreException _ -> assert false
     | `Constructor (parent, name) ->
         let anchor = anchor `Constructor (ConstructorName.to_string name) in
         continue anchor parent

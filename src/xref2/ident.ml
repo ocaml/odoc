@@ -92,10 +92,7 @@ module Of_Identifier = struct
    fun e -> match e.iv with `Extension (_, n) -> `LExtension (n, fresh_int ())
 
   let exception_ : Exception.t -> exception_ =
-   fun e ->
-    match e.iv with
-    | `Exception (_, n) -> `LException (n, fresh_int ())
-    | `CoreException _ -> failwith "Bad"
+   fun e -> match e.iv with `Exception (_, n) -> `LException (n, fresh_int ())
 
   let value : Value.t -> value =
    fun v -> match v.iv with `Value (_, n) -> `LValue (n, fresh_int ())

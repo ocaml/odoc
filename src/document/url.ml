@@ -265,7 +265,7 @@ module Anchor = struct
 
   let mk ~kind parent str_name =
     let page = Path.from_identifier parent in
-    Ok { page; anchor = str_name; kind }
+    { page; anchor = str_name; kind }
 
   (* This is needed to ensure that references to polymorphic constructors have
      links that use the right suffix: those resolved references are turned into
@@ -344,8 +344,6 @@ module Anchor = struct
                 (ExceptionName.to_string name);
             kind;
           }
-    | { iv = `CoreException name; _ } ->
-        Error (Not_linkable ("core_exception:" ^ ExceptionName.to_string name))
     | { iv = `Value (parent, name); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Val in
@@ -386,9 +384,9 @@ module Anchor = struct
         match parent with
         | { iv = `CoreType _; _ } ->
             Error (Unexpected_anchor "core_type label parent")
-        | { iv = `Type (gp, _); _ } -> mk ~kind:`Section gp str_name
+        | { iv = `Type (gp, _); _ } -> Ok (mk ~kind:`Section gp str_name)
         | { iv = #Path.nonsrc_pv; _ } as p ->
-            mk ~kind:`Section (p :> Path.any) str_name)
+            Ok (mk ~kind:`Section (p :> Path.any) str_name))
     | { iv = `SourceLocation (parent, loc); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         Ok { page; kind = `SourceAnchor; anchor = DefName.to_string loc }

@@ -62,8 +62,6 @@ let rec of_id x =
       ret "ExtensionDecl" (ExtensionName.to_string name) :: of_id (parent :> t)
   | `Exception (parent, name) ->
       ret "Exception" (ExceptionName.to_string name) :: of_id (parent :> t)
-  | `CoreException name ->
-      [ ret "CoreException" (ExceptionName.to_string name) ]
   | `Value (parent, name) ->
       ret "Value" (ValueName.to_string name) :: of_id (parent :> t)
   | `Class (parent, name) ->

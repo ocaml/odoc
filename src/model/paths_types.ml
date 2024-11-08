@@ -163,9 +163,7 @@ module Identifier = struct
   and extension_decl = extension_decl_pv id
   (** @canonical Odoc_model.Paths.Identifier.ExtensionDecl.t *)
 
-  type exception_pv =
-    [ `Exception of signature * ExceptionName.t
-    | `CoreException of ExceptionName.t ]
+  type exception_pv = [ `Exception of signature * ExceptionName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Exception.t_pv *)
 
   and exception_ = exception_pv id

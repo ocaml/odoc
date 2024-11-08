@@ -674,8 +674,6 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (parent :> id)
           (ValueName.to_string name)
-    | `CoreException name ->
-        Format.fprintf ppf "%s" (ExceptionName.to_string name)
     | `Class (sg, name) ->
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (sg :> id)
