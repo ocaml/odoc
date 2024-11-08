@@ -45,10 +45,6 @@ let odoc_bin =
   let doc = "Odoc binary to use" in
   Arg.(value & opt (some string) None & info [ "odoc" ] ~doc)
 
-let blessed =
-  let doc = "Blessed" in
-  Arg.(value & flag & info [ "blessed" ] ~doc)
-
 let compile_grep =
   let doc = "Show compile commands containing the string" in
   Arg.(value & opt (some string) None & info [ "compile-grep" ] ~doc)
@@ -72,7 +68,6 @@ type t = {
   stats : bool;
   nb_workers : int;
   odoc_bin : string option;
-  blessed : bool;
   compile_grep : string option;
   link_grep : string option;
   generate_grep : string option;
@@ -92,7 +87,6 @@ let term =
   and+ stats = stats
   and+ nb_workers = nb_workers
   and+ odoc_bin = odoc_bin
-  and+ blessed = blessed
   and+ compile_grep = compile_grep
   and+ link_grep = link_grep
   and+ generate_grep = generate_grep in
@@ -107,7 +101,6 @@ let term =
     stats;
     nb_workers;
     odoc_bin;
-    blessed;
     compile_grep;
     link_grep;
     generate_grep;
