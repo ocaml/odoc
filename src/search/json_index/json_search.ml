@@ -51,7 +51,6 @@ let rec of_id x =
       ret "ModuleType" (ModuleTypeName.to_string name) :: of_id (parent :> t)
   | `Type (parent, name) ->
       ret "Type" (TypeName.to_string name) :: of_id (parent :> t)
-  | `CoreType name -> [ ret "CoreType" (TypeName.to_string name) ]
   | `Constructor (parent, name) ->
       ret "Constructor" (ConstructorName.to_string name) :: of_id (parent :> t)
   | `Field (parent, name) ->

@@ -259,7 +259,7 @@ and TypeDecl : sig
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
-    canonical : Odoc_model.Paths.Path.Type.t option;
+    canonical : Odoc_model.Paths.Path.NonCoreType.t option;
     equation : Equation.t;
     representation : Representation.t option;
   }
@@ -407,7 +407,8 @@ and Substitution : sig
     | `Renamed of Ident.module_type ]
 
   type subst_type =
-    [ `Prefixed of Cpath.type_ * Cpath.Resolved.type_ | `Renamed of Ident.type_ ]
+    [ `Prefixed of Cpath.non_core_type * Cpath.Resolved.type_
+    | `Renamed of Ident.type_ ]
 
   type subst_class_type =
     [ `Prefixed of Cpath.class_type * Cpath.Resolved.class_type
@@ -688,7 +689,8 @@ module Of_Lang : sig
   val module_type_path :
     map -> Odoc_model.Paths.Path.ModuleType.t -> Cpath.module_type
 
-  val type_path : map -> Odoc_model.Paths.Path.Type.t -> Cpath.type_
+  val non_core_type_path :
+    map -> Odoc_model.Paths.Path.NonCoreType.t -> Cpath.non_core_type
 
   val value_path : map -> Odoc_model.Paths.Path.Value.t -> Cpath.value
 

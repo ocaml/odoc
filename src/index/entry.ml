@@ -2,7 +2,7 @@ open Odoc_model.Lang
 open Odoc_model.Paths
 
 type type_decl_entry = {
-  canonical : Path.Type.t option;
+  canonical : Path.NonCoreType.t option;
   equation : TypeDecl.Equation.t;
   representation : TypeDecl.Representation.t option;
 }
@@ -172,7 +172,9 @@ let entries_of_item (x : Fold.item) =
   | Exception exc ->
       let res =
         match exc.res with
-        | None -> TypeExpr.Constr (Odoc_model.Predefined.exn_path, [])
+        | None ->
+            TypeExpr.Constr
+              (`CoreType (Odoc_model.Names.TypeName.make_std "exn"), [])
         | Some x -> x
       in
       let kind = Exception { args = exc.args; res } in

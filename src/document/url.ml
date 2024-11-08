@@ -61,6 +61,7 @@ let render_path : Path.t -> string =
     | `SubstitutedMT m -> render_path (m :> Path.t)
     | `SubstitutedT m -> render_path (m :> Path.t)
     | `SubstitutedCT m -> render_path (m :> Path.t)
+    | `CoreType n -> TypeName.to_string n
   in
 
   render_path
@@ -272,9 +273,7 @@ module Anchor = struct
      _constructor_ identifiers. *)
   let suffix_for_constructor x = x
 
-  let rec from_identifier : Identifier.t -> (t, Error.t) result =
-    let open Error in
-    function
+  let rec from_identifier : Identifier.t -> (t, Error.t) result = function
     | { iv = `Module (parent, mod_name); _ } ->
         let parent = Path.from_identifier (parent :> Path.any) in
         let kind = `Module in
@@ -309,8 +308,6 @@ module Anchor = struct
                 (TypeName.to_string type_name);
             kind;
           }
-    | { iv = `CoreType ty_name; _ } ->
-        Error (Not_linkable ("core_type:" ^ TypeName.to_string ty_name))
     | { iv = `Extension (parent, name); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Extension in
@@ -382,8 +379,6 @@ module Anchor = struct
            happen, [`Type] may not happen either but just in case, use the
            grand-parent. *)
         match parent with
-        | { iv = `CoreType _; _ } ->
-            Error (Unexpected_anchor "core_type label parent")
         | { iv = `Type (gp, _); _ } -> Ok (mk ~kind:`Section gp str_name)
         | { iv = #Path.nonsrc_pv; _ } as p ->
             Ok (mk ~kind:`Section (p :> Path.any) str_name))
@@ -406,8 +401,13 @@ module Anchor = struct
   let polymorphic_variant ~type_ident elt =
     let name_of_type_constr te =
       match te with
-      | Odoc_model.Lang.TypeExpr.Constr (path, _) ->
-          render_path (path :> Odoc_model.Paths.Path.t)
+      | Odoc_model.Lang.TypeExpr.Constr
+          ((#Odoc_model.Paths.Path.NonCoreType.t as path), _) ->
+          render_path
+            (path
+              : Odoc_model.Paths.Path.NonCoreType.t
+              :> Odoc_model.Paths.Path.t)
+      | Odoc_model.Lang.TypeExpr.Constr (`CoreType n, _) -> TypeName.to_string n
       | _ ->
           invalid_arg
             "DocOckHtml.Url.Polymorphic_variant_decl.name_of_type_constr"

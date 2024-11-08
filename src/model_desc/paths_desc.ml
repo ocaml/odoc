@@ -119,7 +119,6 @@ module General_paths = struct
               ( "`Type",
                 ((parent :> id_t), name),
                 Pair (identifier, Names.typename) )
-        | `CoreType name -> C ("`CoreType", name, Names.typename)
         | `Constructor (parent, name) ->
             C
               ( "`Constructor",
@@ -227,7 +226,8 @@ module General_paths = struct
       | `Substituted m -> C ("`Substituted", (m :> p), path)
       | `SubstitutedMT m -> C ("`SubstitutedMT", (m :> p), path)
       | `SubstitutedT m -> C ("`SubstitutedT", (m :> p), path)
-      | `SubstitutedCT m -> C ("`SubstitutedCT", (m :> p), path))
+      | `SubstitutedCT m -> C ("`SubstitutedCT", (m :> p), path)
+      | `CoreType n -> C ("`CoreType", n, Names.typename))
 
   and resolved_path : rp t =
     Variant

@@ -15,7 +15,8 @@ val add_module :
 val add_module_type :
   Ident.module_type -> Cpath.module_type -> Cpath.Resolved.module_type -> t -> t
 
-val add_type : Ident.type_ -> Cpath.type_ -> Cpath.Resolved.type_ -> t -> t
+val add_type :
+  Ident.type_ -> Cpath.non_core_type -> Cpath.Resolved.type_ -> t -> t
 
 val add_class :
   Ident.type_ -> Cpath.class_type -> Cpath.Resolved.class_type -> t -> t

@@ -48,7 +48,7 @@ let rec shape_of_id env :
     | `Class (parent, name) -> proj parent Kind.Class (TypeName.to_string_unsafe name)
     | `ClassType (parent, name) ->
         proj parent Kind.Class_type (TypeName.to_string_unsafe name)
-    | `Page _ | `LeafPage _ | `Label _ | `CoreType _
+    | `Page _ | `LeafPage _ | `Label _
     | `Constructor _ | `Field _ | `Method _ | `InstanceVariable _ | `Parameter _
       ->
         (* Not represented in shapes. *)
@@ -105,6 +105,7 @@ let rec shape_of_kind_path env kind :
     | `SubstitutedCT t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
     | `Identifier (id, _) -> shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
     | `Substituted t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
+    | `CoreType _
     | `Forward _
     | `Dot _
     | `Root _

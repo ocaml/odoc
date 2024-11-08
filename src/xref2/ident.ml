@@ -68,9 +68,7 @@ module Of_Identifier = struct
   let type_ : Type.t -> type_ =
    fun t ->
     let i = fresh_int () in
-    match t.iv with
-    | `Type (_, n) -> `LType (n, i)
-    | `CoreType _n -> failwith "Bad"
+    match t.iv with `Type (_, n) -> `LType (n, i)
 
   let module_ : Module.t -> module_ = function
     | { iv = `Module (_, n) | `Root (_, n); _ } ->

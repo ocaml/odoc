@@ -46,11 +46,7 @@ its RHS correctly replaced with an `int`
         "Some": {
           "Constr": [
             {
-              "`Resolved": {
-                "`Identifier": {
-                  "`CoreType": "int"
-                }
-              }
+              "`CoreType": "int"
             },
             []
           ]

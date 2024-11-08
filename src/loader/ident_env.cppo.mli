@@ -55,7 +55,7 @@ val find_module_type : t -> Ident.t -> Paths.Identifier.ModuleType.t
 
 val find_value_identifier : t -> Ident.t -> Paths.Identifier.Value.t
 
-val find_type : t -> Ident.t -> Paths.Identifier.Path.Type.t
+val find_type : t -> Ident.t -> Paths.Identifier.Path.Type.t option
 
 val find_constructor_identifier : t -> Ident.t -> Paths.Identifier.Constructor.t
 

@@ -16,7 +16,7 @@ module Path : sig
 
   val module_type : maps -> Cpath.module_type -> Path.ModuleType.t
 
-  val type_ : maps -> Cpath.type_ -> Path.Type.t
+  val non_core_type : maps -> Cpath.non_core_type -> Path.NonCoreType.t
 
   val class_type : maps -> Cpath.class_type -> Path.ClassType.t
 

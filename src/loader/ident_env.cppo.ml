@@ -20,8 +20,6 @@ open Names
 module Id = Paths.Identifier
 module P = Paths.Path
 
-type type_ident = Paths.Identifier.Path.Type.t
-
 module LocHashtbl = Hashtbl.Make(struct
     type t = Location.t
     let equal l1 l2 = l1 = l2
@@ -644,16 +642,15 @@ let find_extension_identifier env id =
 let find_value_identifier env id =
   Ident.find_same id env.values
 
-(** Lookup a type in the environment. If it isn't found, it's assumed to be a
-    core type. *)
+(** Lookup a type in the environment. If it isn't found, it means it's a core
+    type. *)
 let find_type env id =
-  try (Ident.find_same id env.types :> Id.Path.Type.t)
+  try Some (Ident.find_same id env.types :> Id.Path.Type.t)
   with Not_found -> (
-    try (Ident.find_same id env.classes :> Id.Path.Type.t)
+    try Some (Ident.find_same id env.classes :> Id.Path.Type.t)
     with Not_found -> (
-      try (Ident.find_same id env.class_types :> Id.Path.Type.t)
-      with Not_found ->
-        (Paths.Identifier.Mk.core_type (Ident.name id) :> type_ident)))
+      try Some (Ident.find_same id env.class_types :> Id.Path.Type.t)
+      with Not_found -> None))
 
 let find_class_type env id =
   try
@@ -684,7 +681,7 @@ module Path = struct
     with Not_found -> assert false
 
   let read_type_ident env id =
-    `Identifier (find_type env id, false)
+    match find_type env id with Some id -> `Identifier (id , false) | None -> `CoreType (TypeName.of_ident id)
 
   let read_value_ident env id : Paths.Path.Value.t =
     `Identifier (find_value_identifier env id, false)

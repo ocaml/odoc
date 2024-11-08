@@ -130,19 +130,22 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
  fun env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
   else
-    let cp = Component.Of_Lang.(type_path (empty ()) p) in
-    match cp with
-    | `Resolved p ->
-        let result = Tools.reresolve_type env p in
-        `Resolved Lang_of.(Path.resolved_type (empty ()) result)
-    | _ -> (
-        match Tools.resolve_type_path env cp with
-        | Ok p' ->
-            let result = Tools.reresolve_type env p' in
+    match p with
+    | `CoreType _ as x -> x
+    | #Paths.Path.NonCoreType.t as p -> (
+        let cp = Component.Of_Lang.(non_core_type_path (empty ()) p) in
+        match cp with
+        | `Resolved p ->
+            let result = Tools.reresolve_type env p in
             `Resolved Lang_of.(Path.resolved_type (empty ()) result)
-        | Error e ->
-            Errors.report ~what:(`Type_path cp) ~tools_error:e `Lookup;
-            p)
+        | #Cpath.non_core_type as cp -> (
+            match Tools.resolve_type_path env cp with
+            | Ok p' ->
+                let result = Tools.reresolve_type env p' in
+                `Resolved Lang_of.(Path.resolved_type (empty ()) result)
+            | Error e ->
+                Errors.report ~what:(`Type_path cp) ~tools_error:e `Lookup;
+                p))
 
 let value_path : Env.t -> Paths.Path.Value.t -> Paths.Path.Value.t =
  fun env p ->
@@ -1044,12 +1047,15 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
           type_expression env parent visited t1,
           type_expression env parent visited t2 )
   | Tuple ts -> Tuple (List.map (type_expression env parent visited) ts)
-  | Constr (path', ts') -> (
+  | Constr ((`CoreType _ as x), ts) ->
+      let ts = List.map (type_expression env parent visited) ts in
+      Constr (x, ts)
+  | Constr ((#Paths.Path.NonCoreType.t as path'), ts') -> (
       let path = type_path env path' in
       let ts = List.map (type_expression env parent visited) ts' in
       if not (Paths.Path.is_hidden (path :> Paths.Path.t)) then Constr (path, ts)
       else
-        let cp = Component.Of_Lang.(type_path (empty ()) path') in
+        let cp = Component.Of_Lang.(non_core_type_path (empty ()) path') in
         match Tools.resolve_type env cp with
         | Ok (cp', `FType (_, t)) ->
             let cp' = Tools.reresolve_type env cp' in
