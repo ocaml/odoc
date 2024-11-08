@@ -24,11 +24,6 @@ let html_dir =
   let doc = "Directory in which the generated HTML files go" in
   Arg.(value & opt fpath_arg (Fpath.v "_html/") & info [ "html-dir" ] ~doc)
 
-let packages =
-  (* TODO: Is it package or library? *)
-  let doc = "The packages to document" in
-  Arg.(value & opt_all string [] & info [ "p" ] ~doc)
-
 let verbose =
   let doc = "Enable verbose output" in
   Arg.(value & flag & info [ "v"; "verbose" ] ~doc)
@@ -58,7 +53,6 @@ let generate_grep =
   Arg.(value & opt (some string) None & info [ "html-grep" ] ~doc)
 
 type t = {
-  packages : string list;
   verbose : bool;
   odoc_dir : Fpath.t;
   odocl_dir : Fpath.t option;
@@ -77,8 +71,7 @@ let term =
   let open Term in
   let ( let+ ) t f = const f $ t in
   let ( and+ ) a b = const (fun x y -> (x, y)) $ a $ b in
-  let+ packages = packages
-  and+ verbose = verbose
+  let+ verbose = verbose
   and+ odoc_dir = odoc_dir
   and+ odocl_dir = odocl_dir
   and+ index_dir = index_dir
@@ -91,7 +84,6 @@ let term =
   and+ link_grep = link_grep
   and+ generate_grep = generate_grep in
   {
-    packages;
     verbose;
     odoc_dir;
     odocl_dir;

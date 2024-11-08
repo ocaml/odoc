@@ -554,12 +554,11 @@ let remap_virtual_interfaces duplicate_hashes pkgs =
 type mode =
   | Voodoo of { package_name : string; blessed : bool }
   | Dune of { path : Fpath.t }
-  | Opam of { packages_dir : Fpath.t option }
+  | Opam of { packages : string list; packages_dir : Fpath.t option }
 
 let run mode
     {
-      Common_args.packages;
-      verbose;
+      Common_args.verbose;
       odoc_dir;
       odocl_dir;
       index_dir;
@@ -588,7 +587,7 @@ let run mode
         let extra_libs_paths = Voodoo.extra_libs_paths odoc_dir in
         (all, extra_libs_paths)
     | Dune { path } -> (Dune_style.of_dune_build path, Util.StringMap.empty)
-    | Opam { packages_dir } ->
+    | Opam { packages; packages_dir } ->
         let libs = if packages = [] then Ocamlfind.all () else packages in
         let libs =
           List.map Ocamlfind.sub_libraries libs
@@ -706,7 +705,12 @@ module Dune_mode = struct
 end
 
 module Opam_mode = struct
-  let run packages_dir = run (Opam { packages_dir })
+  let run packages packages_dir = run (Opam { packages; packages_dir })
+
+  let packages =
+    (* TODO: Is it package or library? *)
+    let doc = "The packages to document" in
+    Arg.(value & opt_all string [] & info [ "p" ] ~doc)
 
   let packages_dir =
     let doc = "Packages directory under which packages should be output." in
@@ -718,7 +722,7 @@ module Opam_mode = struct
   let cmd =
     let doc = "Opam mode" in
     let info = Cmd.info "opam" ~doc in
-    Cmd.v info Term.(const run $ packages_dir $ Common_args.term)
+    Cmd.v info Term.(const run $ packages $ packages_dir $ Common_args.term)
 end
 
 let cmd =
