@@ -125,7 +125,7 @@ val from_identifier : stop_before:bool -> Identifier.t -> (t, Error.t) result
      expansion, such as a module alias. This will return [Ok url] but [url]
      leads to a 404.
      - Using [~stop_before:true] with a module that does not contain a parent,
-     such as a root module. This will ouput return an [Error _] value.
+     such as a root module. This will return an [Error _] value.
      - Calling it with an unlinkable id, such as a core type. This will return
      an [Error _] value.
 
