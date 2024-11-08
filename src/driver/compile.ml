@@ -4,6 +4,8 @@ open Bos
 
 type compiled = Odoc_unit.t
 
+let odoc_partial_filename = "__odoc_partial.m"
+
 let mk_byhash (pkgs : Odoc_unit.t list) =
   List.fold_left
     (fun acc (u : Odoc_unit.t) ->
@@ -76,7 +78,7 @@ let find_partials odoc_dir :
   let hashes_result =
     OS.Dir.fold_contents ~dotfiles:false ~elements:`Dirs
       (fun p hashes ->
-        let index_m = Fpath.( / ) p "index.m" in
+        let index_m = Fpath.( / ) p odoc_partial_filename in
         match OS.File.exists index_m with
         | Ok true ->
             let tbl', hashes' = unmarshal index_m in
@@ -208,7 +210,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
       res
   in
   (match partial with
-  | Some l -> marshal (zipped, hashes) Fpath.(l / "index.m")
+  | Some l -> marshal (zipped, hashes) Fpath.(l / odoc_partial_filename)
   | None -> ());
   all
 

@@ -1,4 +1,4 @@
-type compiled
+type compiled = Odoc_unit.t
 
 val init_stats : Odoc_unit.t list -> unit
 

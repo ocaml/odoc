@@ -111,8 +111,10 @@ let remap_virtual_interfaces duplicate_hashes pkgs =
       })
     pkgs
 
+type action_mode = CompileOnly | LinkAndGen | All
+
 type mode =
-  | Voodoo of { package_name : string; blessed : bool }
+  | Voodoo of { package_name : string; blessed : bool; actions : action_mode }
   | Dune of { path : Fpath.t }
   | OpamLibs of { libs : string list }
   | OpamPackages of { packages : string list }
@@ -141,18 +143,18 @@ let run mode
   Stats.init_nprocs nb_workers;
   let () = Worker_pool.start_workers env sw nb_workers in
 
-  let all, extra_libs_paths =
+  let all, extra_paths, actions =
     match mode with
-    | Voodoo { package_name = p; blessed } ->
+    | Voodoo { package_name = p; blessed; actions } ->
         let all = Voodoo.of_voodoo p ~blessed in
-        let extra_libs_paths = Voodoo.extra_libs_paths odoc_dir in
-        (all, extra_libs_paths)
-    | Dune { path } -> (Dune_style.of_dune_build path, Util.StringMap.empty)
+        let extra_paths = Voodoo.extra_paths odoc_dir in
+        (all, extra_paths, actions)
+    | Dune { path } -> (Dune_style.of_dune_build path, Util.StringMap.(empty, empty), All)
     | OpamLibs { libs } ->
         ( Packages.of_libs ~packages_dir:None (Util.StringSet.of_list libs),
-          Util.StringMap.empty )
+          Util.StringMap.(empty, empty), All )
     | OpamPackages { packages } ->
-        (Packages.of_packages ~packages_dir:None packages, Util.StringMap.empty)
+        (Packages.of_packages ~packages_dir:None packages, Util.StringMap.(empty, empty), All)
   in
 
   let virtual_check =
@@ -192,27 +194,37 @@ let run mode
   let () =
     Eio.Fiber.both
       (fun () ->
-        let all =
+        let units =
           let all = Util.StringMap.bindings all |> List.map snd in
           let dirs =
             let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
             { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir }
           in
-          Odoc_units_of.packages ~dirs ~extra_libs_paths all
+          Odoc_units_of.packages ~dirs ~extra_paths all
         in
-        Compile.init_stats all;
-        let compiled = Compile.compile ?partial ~partial_dir:odoc_dir all in
-        let linked = Compile.link compiled in
-        let occurrence_file =
-          let output =
-            Fpath.( / ) odoc_dir "occurrences-all.odoc-occurrences"
-          in
-          let () = Odoc.count_occurrences ~input:[ odoc_dir ] ~output in
-          output
+        Compile.init_stats units;
+        let compiled =
+          match actions with
+          | LinkAndGen -> units
+          | _ -> Compile.compile ?partial ~partial_dir:odoc_dir units
         in
-        let () = Compile.html_generate ~occurrence_file html_dir linked in
-        let _ = Odoc.support_files html_dir in
-        ())
+        (match mode with
+        | Voodoo _ -> Voodoo.write_lib_markers odoc_dir all
+        | _ -> ());
+        match actions with
+        | CompileOnly -> ()
+        | _ ->
+            let linked = Compile.link compiled in
+            let occurrence_file =
+              let output =
+                Fpath.( / ) odoc_dir "occurrences-all.odoc-occurrences"
+              in
+              let () = Odoc.count_occurrences ~input:[ odoc_dir ] ~output in
+              output
+            in
+            let () = Compile.html_generate ~occurrence_file html_dir linked in
+            let _ = Odoc.support_files html_dir in
+            ())
       (fun () -> render_stats env nb_workers)
   in
 
@@ -253,7 +265,8 @@ let run mode
 open Cmdliner
 
 module Voodoo_mode = struct
-  let run package_name blessed = run (Voodoo { package_name; blessed })
+  let run package_name blessed actions =
+    run (Voodoo { package_name; blessed; actions })
 
   let package_name =
     let doc = "Name of package to process with voodoo" in
@@ -263,10 +276,32 @@ module Voodoo_mode = struct
     let doc = "Blessed" in
     Arg.(value & flag & info [ "blessed" ] ~doc)
 
+  let action_of_string = function
+    | "compile-only" -> Ok CompileOnly
+    | "link-and-gen" -> Ok LinkAndGen
+    | "all" -> Ok All
+    | _ ->
+        Error
+          (`Msg
+            "Invalid action. Options are 'compile-only', 'link-and-gen' or \
+             'all'")
+
+  let string_of_action fmt = function
+    | CompileOnly -> Format.fprintf fmt "compile-only"
+    | LinkAndGen -> Format.fprintf fmt "link-and-gen"
+    | All -> Format.fprintf fmt "all"
+
+  let action_conv = Arg.conv (action_of_string, string_of_action)
+
+  let actions =
+    let doc = "Actions to perform" in
+    Arg.(value & opt action_conv All & info [ "actions" ] ~doc)
+
   let cmd =
     let doc = "Process output from voodoo-prep" in
     let info = Cmd.info "voodoo" ~doc in
-    Cmd.v info Term.(const run $ package_name $ blessed $ Common_args.term)
+    Cmd.v info
+      Term.(const run $ package_name $ blessed $ actions $ Common_args.term)
 end
 
 module Dune_mode = struct

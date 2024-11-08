@@ -1,6 +1,7 @@
 open Odoc_unit
 
-let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
+let packages ~dirs ~extra_paths:(extra_pkg_paths, extra_libs_paths)
+    (pkgs : Packages.t list) : t list =
   let { odoc_dir; odocl_dir; index_dir; mld_dir = _ } = dirs in
   (* [module_of_hash] Maps a hash to the corresponding [Package.t], library name and
      [Packages.modulety]. [lib_dirs] maps a library name to the odoc dir containing its
@@ -25,11 +26,13 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
           (h, lds) pkg.libraries)
       (h, lds) pkgs
   in
-  let pkg_map =
-    Util.StringMap.of_list (List.map (fun pkg -> (pkg.Packages.name, pkg)) pkgs)
+  let pkg_paths =
+    List.fold_left
+      (fun acc pkg -> Util.StringMap.add pkg.Packages.name (doc_dir pkg) acc)
+      extra_pkg_paths pkgs
   in
 
-  let dash_p pkg = (pkg.Packages.name, doc_dir pkg) in
+  let dash_p pkgname path = (pkgname, path) in
 
   let dash_l lib_name =
     match Util.StringMap.find_opt lib_name lib_dirs with
@@ -39,7 +42,7 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
         []
   in
   let base_args pkg lib_deps : Pkg_args.t =
-    let own_page = dash_p pkg in
+    let own_page = dash_p pkg.Packages.name (doc_dir pkg) in
     let own_libs = List.concat_map dash_l (Util.StringSet.to_list lib_deps) in
     { pages = [ own_page ]; libs = own_libs; odoc_dir; odocl_dir }
   in
@@ -48,9 +51,11 @@ let packages ~dirs ~extra_libs_paths (pkgs : Packages.t list) : t list =
     let pages_rel =
       List.filter_map
         (fun pkgname ->
-          match Util.StringMap.find_opt pkgname pkg_map with
-          | None -> None
-          | Some pkg -> Some (dash_p pkg))
+          match Util.StringMap.find_opt pkgname pkg_paths with
+          | None ->
+              Logs.debug (fun m -> m "Package '%s' not found" pkgname);
+              None
+          | Some path -> Some (dash_p pkgname path))
         packages
     in
     let libs_rel = List.concat_map dash_l libraries in
