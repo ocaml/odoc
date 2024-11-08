@@ -552,7 +552,7 @@ let remap_virtual_interfaces duplicate_hashes pkgs =
     pkgs
 
 type mode =
-  | Voodoo of { package_name : string }
+  | Voodoo of { package_name : string; blessed : bool }
   | Dune of { path : Fpath.t }
   | Opam of { packages_dir : Fpath.t option }
 
@@ -568,7 +568,6 @@ let run mode
       stats;
       nb_workers;
       odoc_bin;
-      blessed;
       compile_grep;
       link_grep;
       generate_grep;
@@ -584,7 +583,7 @@ let run mode
 
   let all, extra_libs_paths =
     match mode with
-    | Voodoo { package_name = p } ->
+    | Voodoo { package_name = p; blessed } ->
         let all = Voodoo.of_voodoo p ~blessed in
         let extra_libs_paths = Voodoo.extra_libs_paths odoc_dir in
         (all, extra_libs_paths)
@@ -675,16 +674,20 @@ let run mode
   if stats then Stats.bench_results html_dir
 
 module Voodoo_mode = struct
-  let run package_name = run (Voodoo { package_name })
+  let run package_name blessed = run (Voodoo { package_name; blessed })
 
   let package_name =
     let doc = "Name of package to process with voodoo" in
     Arg.(value & pos 0 string "" & info [] ~doc)
 
+  let blessed =
+    let doc = "Blessed" in
+    Arg.(value & flag & info [ "blessed" ] ~doc)
+
   let cmd =
     let doc = "Process output from voodoo-prep" in
     let info = Cmd.info "voodoo" ~doc in
-    Cmd.v info Term.(const run $ package_name $ Common_args.term)
+    Cmd.v info Term.(const run $ package_name $ blessed $ Common_args.term)
 end
 
 module Dune_mode = struct
