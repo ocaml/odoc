@@ -140,8 +140,6 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
            })
       ~open_modules:[]
   in
-  (* if files = [] && then Error (`Msg "No .odocl files were included") *)
-  (* else *)
   let pages =
     List.map
       (fun (page_root, _) ->
@@ -179,18 +177,6 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
         let units = Resolver.all_units ~library resolver in
         { Odoc_index.name = library; units })
       lib_roots
-  in
-  let includes_rec =
-    List.rev_append (List.map snd page_roots) (List.map snd lib_roots)
-  in
-  let files =
-    List.rev_append files
-      (includes_rec
-      |> List.map (fun include_rec ->
-             Fs.Directory.fold_files_rec ~ext:"odocl"
-               (fun files file -> file :: files)
-               [] include_rec)
-      |> List.concat)
   in
   let content = { Odoc_index.pages; libs } in
   match out_format with
