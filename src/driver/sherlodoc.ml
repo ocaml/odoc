@@ -33,10 +33,10 @@ let index ?(ignore_output = false) ~format ~inputs ~dst ?favored_prefixes () =
   let log =
     if ignore_output then None else Some (`Sherlodoc, Fpath.to_string dst)
   in
-  ignore @@ submit log desc cmd (Some dst)
+  ignore @@ submit_ignore_failures log desc cmd (Some dst)
 
 let js dst =
   let cmd = Cmd.(sherlodoc % "js" % p dst) in
   let desc = Printf.sprintf "Sherlodoc js at %s" (Fpath.to_string dst) in
-  let _lines = submit None desc cmd (Some dst) in
+  let _lines = submit_ignore_failures (Some (`Sherlodoc, Fpath.to_string dst))  desc cmd (Some dst) in
   ()
