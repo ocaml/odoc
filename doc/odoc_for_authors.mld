@@ -485,8 +485,7 @@ the {{!page-driver}driver}.
 {2:tags Tags}
 
 Tags are used to provide specific information for individual elements, such
-as author, version, parameters, etc. Tags start with an [@] symbol, appear
-at the end of documentation comments, and are not allowed elsewhere.
+as author, version, parameters, etc. Tags start with an [@] symbol.
 They should appear on their own lines with nothing but whitespace before them.
 
 There are three types of tags. Those with:
@@ -522,8 +521,8 @@ i.e., there shouldn't be any [odoc] markup.
 {3 Block Tags}
 
 These tags have a block of potentially marked-up text associated with them,
-and occasionally some more data too. The block of text concludes with the end
-of the comment or by another tag. They are:
+and occasionally some more data too. The block of text is implicitely ended by a
+new line, a heading or another tag.
 
 - [@deprecated <text>] - marks the element as deprecated. [text] should describe
 when the element was deprecated, what to use as a replacement, and possibly
