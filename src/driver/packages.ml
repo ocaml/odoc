@@ -75,7 +75,8 @@ let pp_libty fmt l =
      }@]"
     l.lib_name Fpath.pp l.dir
     (Fmt.Dump.option Fmt.string)
-    l.archive_name (Fmt.Dump.list Fmt.string)
+    l.archive_name
+    (Fmt.list ~sep:Fmt.comma Fmt.string)
     (Util.StringSet.elements l.lib_deps)
     (Fmt.Dump.list pp_modulety)
     l.modules
