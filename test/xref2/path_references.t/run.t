@@ -16,8 +16,6 @@
   Warning: Failed to resolve reference /pkg/libname/Test Path '/pkg/libname/Test' not found
   File "doc/subdir/bar.mld", line 12, characters 0-17:
   Warning: Failed to resolve reference //libname/Test Path '//libname/Test' not found
-  File "doc/subdir/bar.mld", line 4, characters 21-27:
-  Warning: Failed to resolve reference unresolvedroot(foo) Couldn't find "foo"
   $ odoc link -P pkg:h/pkg -L libname:h/pkg/libname h/pkg/page-dup.odoc
   $ odoc link -P pkg:h/pkg -L libname:h/pkg/libname h/pkg/page-foo.odoc
   File "doc/foo.mld", line 12, characters 27-36:
@@ -29,10 +27,6 @@
   $ odoc link -P pkg:h/pkg -L libname:h/pkg/libname h/pkg/libname/test.odoc
   File "test.ml", line 6, characters 38-44:
   Warning: Failed to resolve reference unresolvedroot(bar) Couldn't find "bar"
-  File "test.ml", line 4, characters 34-45:
-  Warning: Failed to resolve reference unresolvedroot(foo) Couldn't find page "foo"
-  File "test.ml", line 3, characters 24-30:
-  Warning: Failed to resolve reference unresolvedroot(foo) Couldn't find "foo"
 
 Helper that extracts references in a compact way. Headings help to interpret the result.
 
@@ -74,7 +68,7 @@ Helper that extracts references in a compact way. Headings help to interpret the
   ["Page","foo"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
-  {"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   ["Page","subdir/bar"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
@@ -97,10 +91,10 @@ Helper that extracts references in a compact way. Headings help to interpret the
   ["Page","foo"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
-  {"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
-  {"`Reference":[{"`Root":["foo","`TPage"]},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
+  {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   ["Page","subdir/bar"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
