@@ -130,16 +130,11 @@ let lib_args libs =
       v "-L" % s %% acc)
     Cmd.empty libs
 
-let link ?(ignore_output = false) ~input_file:file ?output_file ~includes ~docs
-    ~libs ?current_package () =
+let link ?(ignore_output = false) ~input_file:file ?output_file ~docs ~libs
+    ?current_package () =
   let open Cmd in
   let output_file =
     match output_file with Some f -> f | None -> Fpath.set_ext "odocl" file
-  in
-  let includes =
-    Fpath.Set.fold
-      (fun path acc -> Cmd.(acc % "-I" % p path))
-      includes Cmd.empty
   in
   let docs = doc_args docs in
   let libs = lib_args libs in
@@ -149,7 +144,7 @@ let link ?(ignore_output = false) ~input_file:file ?output_file ~includes ~docs
     | Some c -> Cmd.(v "--current-package" % c)
   in
   let cmd =
-    !odoc % "link" % p file % "-o" % p output_file %% includes %% docs %% libs
+    !odoc % "link" % p file % "-o" % p output_file %% docs %% libs
     %% current_package % "--enable-missing-root-warning"
   in
   let cmd =

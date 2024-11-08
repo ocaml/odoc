@@ -135,7 +135,12 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
                            None)
                      deps
                  in
-                 let includes = unit.include_dirs in
+                 let includes =
+                   List.fold_left
+                     (fun acc (_lib, path) -> Fpath.Set.add path acc)
+                     Fpath.Set.empty
+                     (Odoc_unit.Pkg_args.compiled_libs unit.pkg_args)
+                 in
                  Odoc.compile ~output_dir:unit.output_dir
                    ~input_file:unit.input_file ~includes
                    ~parent_id:unit.parent_id;
@@ -166,7 +171,12 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
     | `Intf _ as kind ->
         (compile_mod { unit with kind } :> (Odoc_unit.t list, _) Result.t)
     | `Impl src ->
-        let includes = unit.include_dirs in
+        let includes =
+          List.fold_left
+            (fun acc (_lib, path) -> Fpath.Set.add path acc)
+            Fpath.Set.empty
+            (Odoc_unit.Pkg_args.compiled_libs unit.pkg_args)
+        in
         let source_id = src.src_id in
         Odoc.compile_impl ~output_dir:unit.output_dir
           ~input_file:unit.input_file ~includes ~parent_id:unit.parent_id
@@ -179,7 +189,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
         Atomic.incr Stats.stats.compiled_assets;
         Ok [ unit ]
     | `Mld ->
-        let includes = unit.include_dirs in
+        let includes = Fpath.Set.empty in
         Odoc.compile ~output_dir:unit.output_dir ~input_file:unit.input_file
           ~includes ~parent_id:unit.parent_id;
         Atomic.incr Stats.stats.compiled_mlds;
@@ -223,8 +233,7 @@ let link : compiled list -> _ =
     let link input_file output_file enable_warnings =
       let libs = Odoc_unit.Pkg_args.compiled_libs c.pkg_args in
       let pages = Odoc_unit.Pkg_args.compiled_pages c.pkg_args in
-      let includes = c.include_dirs in
-      Odoc.link ~input_file ~output_file ~includes ~libs ~docs:pages
+      Odoc.link ~input_file ~output_file ~libs ~docs:pages
         ~ignore_output:(not enable_warnings) ?current_package:c.pkgname ()
     in
     match c.kind with

@@ -56,7 +56,6 @@ type 'a unit = {
   odocl_file : Fpath.t;
   pkg_args : Pkg_args.t;
   pkgname : string option;
-  include_dirs : Fpath.Set.t;
   index : index option;
   enable_warnings : bool;
   kind : 'a;
@@ -105,15 +104,12 @@ and pp : all_kinds unit Fmt.t =
      odocl_file: %a@;\
      pkg_args: %a@;\
      pkgname: %a@;\
-     include_dirs: [%a]@;\
      index: %a@;\
      kind:%a@;\
      @]"
     (Odoc.Id.to_string x.parent_id)
     Fpath.pp x.input_file Fpath.pp x.output_dir Fpath.pp x.odoc_file Fpath.pp
     x.odocl_file Pkg_args.pp x.pkg_args (Fmt.option Fmt.string) x.pkgname
-    Fmt.(list ~sep:comma Fpath.pp)
-    (Fpath.Set.to_list x.include_dirs)
     (Fmt.option pp_index) x.index pp_kind
     (x.kind :> all_kinds)
 
