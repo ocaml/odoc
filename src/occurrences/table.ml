@@ -48,9 +48,9 @@ let add ?(quantity = 1) tbl id =
     | `Value (parent, _) -> do_ parent
     | `ClassType (parent, _) -> do_ parent
     | `Root _ -> incr tbl id
-    | `SourcePage _ | `Page _ | `LeafPage _ | `SourceLocation _
-    | `CoreException _ | `Label _ | `SourceLocationMod _ | `Result _
-    | `AssetFile _ | `SourceLocationInternal _ ->
+    | `SourcePage _ | `Page _ | `LeafPage _ | `SourceLocation _ | `Label _
+    | `SourceLocationMod _ | `Result _ | `AssetFile _
+    | `SourceLocationInternal _ ->
         assert false
   in
   let _htbl = add ~kind:`Direct id in
@@ -79,8 +79,8 @@ let rec get t id =
   | `ClassType (parent, _) -> do_ parent
   | `Root _ -> ( try Some (H.find t id) with Not_found -> None)
   | `SourcePage _ | `Page _ | `LeafPage _ | `CoreType _ | `SourceLocation _
-  | `CoreException _ | `Label _ | `SourceLocationMod _ | `Result _
-  | `AssetFile _ | `SourceLocationInternal _ ->
+  | `Label _ | `SourceLocationMod _ | `Result _ | `AssetFile _
+  | `SourceLocationInternal _ ->
       None
 
 let get t id =

@@ -45,7 +45,6 @@ module Identifier = struct
     | `Extension (_, name) -> ExtensionName.to_string name
     | `ExtensionDecl (_, _, name) -> ExtensionName.to_string name
     | `Exception (_, name) -> ExceptionName.to_string name
-    | `CoreException name -> ExceptionName.to_string name
     | `Value (_, name) -> ValueName.to_string name
     | `Class (_, name) -> TypeName.to_string name
     | `ClassType (_, name) -> TypeName.to_string name
@@ -77,7 +76,6 @@ module Identifier = struct
     | `Extension (parent, _) -> is_hidden (parent :> t)
     | `ExtensionDecl (parent, _, _) -> is_hidden (parent :> t)
     | `Exception (parent, _) -> is_hidden (parent :> t)
-    | `CoreException _ -> false
     | `Value (_, name) -> ValueName.is_hidden name
     | `Class (_, name) -> TypeName.is_hidden name
     | `ClassType (_, name) -> TypeName.is_hidden name
@@ -120,7 +118,6 @@ module Identifier = struct
         ExtensionName.to_string name :: full_name_aux (parent :> t)
     | `Exception (parent, name) ->
         ExceptionName.to_string name :: full_name_aux (parent :> t)
-    | `CoreException name -> [ ExceptionName.to_string name ]
     | `Value (parent, name) ->
         ValueName.to_string name :: full_name_aux (parent :> t)
     | `Class (parent, name) ->
@@ -152,7 +149,7 @@ module Identifier = struct
     fun (n : non_src) ->
       match n with
       | { iv = `Result i; _ } -> label_parent_aux (i :> non_src)
-      | { iv = `CoreType _; _ } | { iv = `CoreException _; _ } -> assert false
+      | { iv = `CoreType _; _ } -> assert false
       | { iv = `Root _; _ } as p -> (p :> label_parent)
       | { iv = `Page _; _ } as p -> (p :> label_parent)
       | { iv = `LeafPage _; _ } as p -> (p :> label_parent)
@@ -585,12 +582,6 @@ module Identifier = struct
         Signature.t * ExceptionName.t ->
         [> `Exception of Signature.t * ExceptionName.t ] id =
       mk_parent ExceptionName.to_string "exn" (fun (p, n) -> `Exception (p, n))
-
-    let core_exception =
-      mk_fresh
-        (fun s -> s)
-        "coreexn"
-        (fun s -> `CoreException (ExceptionName.make_std s))
 
     let value :
         Signature.t * ValueName.t -> [> `Value of Signature.t * ValueName.t ] id

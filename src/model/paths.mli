@@ -316,8 +316,6 @@ module Identifier : sig
       Signature.t * ExceptionName.t ->
       [> `Exception of Signature.t * ExceptionName.t ] id
 
-    val core_exception : string -> [> `CoreException of ExceptionName.t ] id
-
     val value :
       Signature.t * ValueName.t -> [> `Value of Signature.t * ValueName.t ] id
 

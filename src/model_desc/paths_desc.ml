@@ -145,7 +145,6 @@ module General_paths = struct
               ( "`Exception",
                 ((parent :> id_t), name),
                 Pair (identifier, Names.exceptionname) )
-        | `CoreException name -> C ("`CoreException", name, Names.exceptionname)
         | `Value (parent, name) ->
             C
               ( "`Value",
