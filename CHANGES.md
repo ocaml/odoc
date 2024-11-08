@@ -49,6 +49,7 @@
   `{delim@lang[ code ]delim[ result ]}`
 - Output file paths and labels in the man and latex backends changed to avoid name clashes
   (@Julow, #1191)
+- Change the scoping and placement rules for tags. Fixed #1138. (@panglesd, #1239)
 
 ### Fixed
 
