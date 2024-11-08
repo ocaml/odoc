@@ -85,7 +85,7 @@ let packages ~dirs ~extra_paths:(extra_pkg_paths, extra_libs_paths)
     { pkg_args; output_file; json = false; search_dir = pkg.pkg_dir }
   in
 
-  let make_unit ~name ~kind ~rel_dir ~input_file ~pkg ~include_dirs ~lib_deps
+  let make_unit ~name ~kind ~rel_dir ~input_file ~pkg ~lib_deps
       ~enable_warnings : _ unit =
     let ( // ) = Fpath.( // ) in
     let ( / ) = Fpath.( / ) in
@@ -106,7 +106,6 @@ let packages ~dirs ~extra_paths:(extra_pkg_paths, extra_libs_paths)
       input_file;
       odoc_file;
       odocl_file;
-      include_dirs;
       kind;
       enable_warnings;
       index = Some (index_of pkg);
@@ -134,18 +133,15 @@ let packages ~dirs ~extra_paths:(extra_pkg_paths, extra_libs_paths)
         intf unit ->
       let do_ () : intf unit =
         let rel_dir = lib_dir pkg lib in
-        let include_dirs, kind =
+        let kind =
           let deps = build_deps intf.mif_deps in
-          let include_dirs =
-            List.map (fun u -> Fpath.parent u.odoc_file) deps
-            |> Fpath.Set.of_list
-          in
           let kind = `Intf { hidden; hash = intf.mif_hash; deps } in
-          (include_dirs, kind)
+          kind
         in
         let name = intf.mif_path |> Fpath.rem_ext |> Fpath.basename in
         make_unit ~name ~kind ~rel_dir ~input_file:intf.mif_path ~pkg
-          ~include_dirs ~lib_deps ~enable_warnings:pkg.enable_warnings
+         
+          ~lib_deps ~enable_warnings:pkg.enable_warnings
       in
       match Hashtbl.find_opt intf_cache intf.mif_hash with
       | Some unit -> unit
@@ -159,10 +155,6 @@ let packages ~dirs ~extra_paths:(extra_pkg_paths, extra_libs_paths)
     | None -> None
     | Some { src_path } ->
         let rel_dir = lib_dir pkg lib in
-        let include_dirs =
-          let deps = build_deps impl.mip_deps in
-          List.map (fun u -> Fpath.parent u.odoc_file) deps |> Fpath.Set.of_list
-        in
         let kind =
           let src_name = Fpath.filename src_path in
           let src_id =
@@ -177,7 +169,8 @@ let packages ~dirs ~extra_paths:(extra_pkg_paths, extra_libs_paths)
         in
         let unit =
           make_unit ~name ~kind ~rel_dir ~input_file:impl.mip_path ~pkg
-            ~include_dirs ~lib_deps ~enable_warnings:pkg.enable_warnings
+            
+~lib_deps ~enable_warnings:pkg.enable_warnings
         in
         Some unit
   in
@@ -200,12 +193,6 @@ let packages ~dirs ~extra_paths:(extra_pkg_paths, extra_libs_paths)
     let open Fpath in
     let { Packages.mld_path; mld_rel_path } = mld in
     let rel_dir = doc_dir pkg // Fpath.parent mld_rel_path |> Fpath.normalize in
-    let include_dirs =
-      List.map (fun (lib : Packages.libty) -> lib_dir pkg lib) pkg.libraries
-    in
-    let include_dirs =
-      (odoc_dir // rel_dir) :: include_dirs |> Fpath.Set.of_list
-    in
     let kind = `Mld in
     let name = mld_path |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "page-" in
     let lib_deps =
@@ -214,7 +201,7 @@ let packages ~dirs ~extra_paths:(extra_pkg_paths, extra_libs_paths)
       |> Util.StringSet.of_list
     in
     let unit =
-      make_unit ~name ~kind ~rel_dir ~input_file:mld_path ~pkg ~include_dirs
+      make_unit ~name ~kind ~rel_dir ~input_file:mld_path ~pkg
         ~lib_deps ~enable_warnings:pkg.enable_warnings
     in
     [ unit ]
@@ -229,7 +216,7 @@ let packages ~dirs ~extra_paths:(extra_pkg_paths, extra_libs_paths)
         let lib_deps = Util.StringSet.empty in
         let unit =
           make_unit ~name ~kind ~rel_dir ~input_file:md ~pkg
-            ~include_dirs:Fpath.Set.empty ~lib_deps
+            ~lib_deps
             ~enable_warnings:pkg.enable_warnings
         in
         [ unit ]
@@ -243,11 +230,10 @@ let packages ~dirs ~extra_paths:(extra_pkg_paths, extra_libs_paths)
     let rel_dir =
       doc_dir pkg // Fpath.parent asset_rel_path |> Fpath.normalize
     in
-    let include_dirs = Fpath.Set.empty in
     let kind = `Asset in
     let unit =
       let name = asset_path |> Fpath.basename |> ( ^ ) "asset-" in
-      make_unit ~name ~kind ~rel_dir ~input_file:asset_path ~pkg ~include_dirs
+      make_unit ~name ~kind ~rel_dir ~input_file:asset_path ~pkg 
         ~lib_deps:Util.StringSet.empty ~enable_warnings:false
     in
     [ unit ]

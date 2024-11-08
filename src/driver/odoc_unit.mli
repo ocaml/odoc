@@ -31,7 +31,6 @@ type 'a unit = {
   odocl_file : Fpath.t;
   pkg_args : Pkg_args.t;
   pkgname : string option;
-  include_dirs : Fpath.Set.t;
   index : index option;
   enable_warnings : bool;
   kind : 'a;

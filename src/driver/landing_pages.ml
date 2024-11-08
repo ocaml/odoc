@@ -17,7 +17,6 @@ let make_index ~dirs ~rel_dir ?index ~content () =
     input_file;
     odoc_file;
     odocl_file;
-    include_dirs = Fpath.Set.empty;
     enable_warnings = false;
     kind = `Mld;
     index;

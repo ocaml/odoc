@@ -34,7 +34,6 @@ val link :
   ?ignore_output:bool ->
   input_file:Fpath.t ->
   ?output_file:Fpath.t ->
-  includes:Fpath.set ->
   docs:(string * Fpath.t) list ->
   libs:(string * Fpath.t) list ->
   ?current_package:string ->
