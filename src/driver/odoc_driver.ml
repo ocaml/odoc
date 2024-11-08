@@ -694,7 +694,10 @@ module Dune_mode = struct
     Arg.(value & pos 0 Common_args.fpath_arg (Fpath.v ".") & info [])
 
   let cmd =
-    let doc = "Dune mode" in
+    let doc =
+      "Dune mode, which builds the documentation of the local libraries of a \
+       dune project."
+    in
     let info = Cmd.info "dune" ~doc in
     Cmd.v info Term.(const run $ dune_style $ Common_args.term)
 end
