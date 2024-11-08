@@ -27,19 +27,19 @@ Since -L subfolders are omitted from -P roots, the index page should not be adde
   $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/libname/page-index.odocl
 
   $ cat html/pkg/index.html | grep odoc-global-toc -A 15
-     <nav class="odoc-toc odoc-global-toc"><b>pkg's Pages</b>
-      <ul>
+     <nav class="odoc-toc odoc-global-toc">
+      <ul class="odoc-modules">
+       <li><b>Library <code>libname</code></b>
+        <ul><li><a href="libname/Unit/index.html">Unit</a></li></ul>
+       </li>
+      </ul><b>Documentation</b>
+      <ul class="odoc-pages">
        <li><a href="#" class="current_unit">Package <code>pkg</code></a>
         <ul>
          <li><a href="dir1/index.html">A directory</a>
           <ul><li><a href="dir1/my_page.html">My page</a></li></ul>
          </li><li><a href="file.html">File</a></li>
         </ul>
-       </li>
-      </ul><b>Libraries</b>
-      <ul>
-       <li><b>libname</b>
-        <ul><li><a href="libname/Unit/index.html">Unit</a></li></ul>
        </li>
       </ul>
      </nav>
