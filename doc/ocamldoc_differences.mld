@@ -15,6 +15,7 @@ The following describes the changes between what [odoc] understands and what’s
 - Heading levels are more restrictive. In the manual, it suggests any whole number is acceptable. In [odoc],
   similarly to the HTML spec, we allow headings from 1-5. Heading level [0] is for the title
   of [.mld] files. [odoc] emits a warning for heading levels outside this range and caps them.
+- Tags are restricted in scope and do not need to be put at the end of the docstring.
 
 {3 Omissions}
 - Comments describing class inheritance are not rendered ({{:https://github.com/ocaml/odoc/issues/574}GitHub issue}).
