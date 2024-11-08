@@ -594,17 +594,11 @@ end = struct
         l
     in
     let o = Antichain.absolute_normalization o in
-    (* Taken from OCaml 5.2 standard library *)
-    let rec find_map ~f = function
-      | [] -> None
-      | x :: l -> (
-          match f x with Some _ as result -> result | None -> find_map ~f l)
-    in
     match l with
     | [] -> None
     | _ ->
-        find_map
-          ~f:(fun (root, path) ->
+        Odoc_utils.List.find_map
+          (fun (root, path) ->
             if Fpath.is_prefix path o then Some root else None)
           l
 
