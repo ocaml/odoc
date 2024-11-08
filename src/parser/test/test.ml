@@ -4193,6 +4193,38 @@ let%expect_test _ =
                   (paragraph (((f.ml (1 14) (1 17)) (word foo)))))))))))))
          (warnings ())) |}]
 
+    let with_shorthand_list_double_item =
+      test "@deprecated - foo\n- bar";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (2 5))
+            (@deprecated
+             ((f.ml (1 12) (2 5))
+              (unordered light
+               ((((f.ml (1 14) (1 17))
+                  (paragraph (((f.ml (1 14) (1 17)) (word foo))))))
+                (((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar)))))))))))))
+         (warnings ())) |}]
+
+    let double_implicitely_ended =
+      test "@deprecated - foo\n- bar\n\nNew paragraph";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (2 5))
+            (@deprecated
+             ((f.ml (1 12) (2 5))
+              (unordered light
+               ((((f.ml (1 14) (1 17))
+                  (paragraph (((f.ml (1 14) (1 17)) (word foo))))))
+                (((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar)))))))))))
+           ((f.ml (4 0) (4 13))
+            (paragraph
+             (((f.ml (4 0) (4 3)) (word New)) ((f.ml (4 3) (4 4)) space)
+              ((f.ml (4 4) (4 13)) (word paragraph)))))))
+         (warnings ())) |}]
+
     let with_shorthand_list_after_newline =
       test "@deprecated\n- foo";
       [%expect
