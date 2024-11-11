@@ -1,11 +1,13 @@
 open Odoc_unit
 
-let packages ~dirs ~extra_paths:(extra_pkg_paths, extra_libs_paths)
-    (pkgs : Packages.t list) : t list =
+let packages ~dirs ~extra_paths (pkgs : Packages.t list) : t list =
   let { odoc_dir; odocl_dir; index_dir; mld_dir = _ } = dirs in
   (* [module_of_hash] Maps a hash to the corresponding [Package.t], library name and
      [Packages.modulety]. [lib_dirs] maps a library name to the odoc dir containing its
      odoc files. *)
+  let extra_libs_paths = extra_paths.Voodoo.libs in
+  let extra_pkg_paths = extra_paths.Voodoo.pkgs in
+
   let module_of_hash, lib_dirs =
     let open Packages in
     let h = Util.StringMap.empty in
