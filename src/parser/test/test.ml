@@ -4207,7 +4207,7 @@ let%expect_test _ =
                 (((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar)))))))))))))
          (warnings ())) |}]
 
-    let double_implicitely_ended =
+    let double_implicitly_ended =
       test "@deprecated - foo\n- bar\n\nNew paragraph";
       [%expect
         {|
