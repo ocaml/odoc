@@ -576,7 +576,7 @@ let _check_subset : stopped_implicitly -> Token.t = fun t -> (t :> Token.t)
    - The type of token that the block parser stops at. See discussion above. *)
 type ('block, 'stops_at_which_tokens) context =
   | Top_level : (Ast.block_element, stops_at_delimiters) context
-  | In_implicitely_ended :
+  | In_implicitly_ended :
       [ `Tag | `Shorthand_list ]
       -> (Ast.nestable_block_element, stopped_implicitly) context
   | In_explicit_list : (Ast.nestable_block_element, stops_at_delimiters) context
@@ -593,7 +593,7 @@ let accepted_in_all_contexts :
  fun context block ->
   match context with
   | Top_level -> (block :> Ast.block_element)
-  | In_implicitely_ended (`Tag | `Shorthand_list) -> block
+  | In_implicitly_ended (`Tag | `Shorthand_list) -> block
   | In_explicit_list -> block
   | In_table_cell -> block
   | In_code_results -> block
@@ -672,7 +672,7 @@ let rec block_element_list :
     | { value = `End; _ } as next_token -> (
         match context with
         | Top_level -> (List.rev acc, next_token, where_in_line)
-        | In_implicitely_ended (`Tag | `Shorthand_list) ->
+        | In_implicitly_ended (`Tag | `Shorthand_list) ->
             (List.rev acc, next_token, where_in_line)
         | In_explicit_list -> (List.rev acc, next_token, where_in_line)
         | In_table_cell -> (List.rev acc, next_token, where_in_line)
@@ -683,7 +683,7 @@ let rec block_element_list :
            possible values of [context]. *)
         match context with
         | Top_level -> (List.rev acc, next_token, where_in_line)
-        | In_implicitely_ended (`Tag | `Shorthand_list) ->
+        | In_implicitly_ended (`Tag | `Shorthand_list) ->
             (List.rev acc, next_token, where_in_line)
         | In_explicit_list -> (List.rev acc, next_token, where_in_line)
         | In_table_cell -> (List.rev acc, next_token, where_in_line)
@@ -710,7 +710,7 @@ let rec block_element_list :
         (* Blank lines terminate shorthand lists ([- foo]) and tags. They also
            terminate paragraphs, but the paragraph parser is aware of that
            internally. *)
-        | In_implicitely_ended (`Tag | `Shorthand_list) ->
+        | In_implicitly_ended (`Tag | `Shorthand_list) ->
             (List.rev acc, next_token, where_in_line)
         (* Otherwise, blank lines are pretty much like single newlines. *)
         | _ ->
@@ -778,7 +778,7 @@ let rec block_element_list :
         (* If a tag starts at the beginning of a line, it terminates the preceding
            tag and/or the current shorthand list. In this case, return to the
            caller, and let the caller decide how to interpret the tag token. *)
-        | In_implicitely_ended (`Tag | `Shorthand_list) ->
+        | In_implicitly_ended (`Tag | `Shorthand_list) ->
             if where_in_line = `At_start_of_line then
               (List.rev acc, next_token, where_in_line)
             else recover_when_not_at_top_level context
@@ -819,7 +819,7 @@ let rec block_element_list :
                 consume_block_elements `After_text (tag :: acc)
             | (`Deprecated | `Return) as tag ->
                 let content, _stream_head, where_in_line =
-                  block_element_list (In_implicitely_ended `Tag)
+                  block_element_list (In_implicitly_ended `Tag)
                     ~parent_markup:token input
                 in
                 let tag =
@@ -834,7 +834,7 @@ let rec block_element_list :
                 consume_block_elements where_in_line (tag :: acc)
             | (`Param _ | `Raise _ | `Before _) as tag ->
                 let content, _stream_head, where_in_line =
-                  block_element_list (In_implicitely_ended `Tag)
+                  block_element_list (In_implicitly_ended `Tag)
                     ~parent_markup:token input
                 in
                 let tag =
@@ -850,7 +850,7 @@ let rec block_element_list :
                 consume_block_elements where_in_line (tag :: acc)
             | `See (kind, target) ->
                 let content, _next_token, where_in_line =
-                  block_element_list (In_implicitely_ended `Tag)
+                  block_element_list (In_implicitly_ended `Tag)
                     ~parent_markup:token input
                 in
                 let location =
@@ -1023,7 +1023,7 @@ let rec block_element_list :
         | _ -> ());
 
         match context with
-        | In_implicitely_ended `Shorthand_list ->
+        | In_implicitly_ended `Shorthand_list ->
             (List.rev acc, next_token, where_in_line)
         | _ ->
             let items, where_in_line =
@@ -1060,7 +1060,7 @@ let rec block_element_list :
         in
 
         match context with
-        | In_implicitely_ended (`Tag | `Shorthand_list) ->
+        | In_implicitly_ended (`Tag | `Shorthand_list) ->
             if where_in_line = `At_start_of_line then
               (List.rev acc, next_token, where_in_line)
             else recover_when_not_at_top_level context
@@ -1171,11 +1171,11 @@ let rec block_element_list :
   let where_in_line =
     match context with
     | Top_level -> `At_start_of_line
-    | In_implicitely_ended `Shorthand_list -> `After_shorthand_bullet
+    | In_implicitly_ended `Shorthand_list -> `After_shorthand_bullet
     | In_explicit_list -> `After_explicit_list_bullet
     | In_table_cell -> `After_table_cell
     | In_code_results -> `After_tag
-    | In_implicitely_ended `Tag -> `After_tag
+    | In_implicitly_ended `Tag -> `After_tag
   in
 
   consume_block_elements where_in_line []
@@ -1215,7 +1215,7 @@ and shorthand_list_items :
           junk input;
 
           let content, stream_head, where_in_line =
-            block_element_list (In_implicitely_ended `Shorthand_list)
+            block_element_list (In_implicitly_ended `Shorthand_list)
               ~parent_markup:bullet input
           in
           if content = [] then

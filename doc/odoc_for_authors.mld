@@ -521,7 +521,7 @@ i.e., there shouldn't be any [odoc] markup.
 {3 Block Tags}
 
 These tags have a block of potentially marked-up text associated with them,
-and occasionally some more data too. The block of text is implicitely ended by a
+and occasionally some more data too. The block of text is implicitly ended by a
 new line, a heading or another tag.
 
 - [@deprecated <text>] - marks the element as deprecated. [text] should describe
