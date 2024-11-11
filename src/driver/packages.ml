@@ -270,32 +270,21 @@ module Lib = struct
 end
 
 (* Construct the list of mlds and assets from a package name and its list of pages *)
-let mk_mlds pkg_name odoc_pages =
-  let odig_convention asset_path =
-    let asset_prefix =
-      Fpath.(v (Opam.prefix ()) / "doc" / pkg_name / "odoc-assets")
-    in
-    let rel_path = Fpath.rem_prefix asset_prefix asset_path in
-    match rel_path with
-    | None -> []
-    | Some rel_path ->
-        [ { asset_path; asset_rel_path = Fpath.(v "_assets" // rel_path) } ]
-  in
-  let prefix = Fpath.(v (Opam.prefix ()) / "doc" / pkg_name / "odoc-pages") in
+let mk_mlds docs =
   let mlds, assets =
-    Fpath.Set.fold
-      (fun path (mld_acc, asset_acc) ->
-        let rel_path = Fpath.rem_prefix prefix path in
-        match rel_path with
-        | None -> (mld_acc, odig_convention path @ asset_acc)
-        | Some rel_path ->
-            if Fpath.has_ext "mld" path then
-              ( { mld_path = path; mld_rel_path = rel_path } :: mld_acc,
-                asset_acc )
-            else
-              ( mld_acc,
-                { asset_path = path; asset_rel_path = rel_path } :: asset_acc ))
-      odoc_pages ([], [])
+    List.fold_left
+      (fun (mlds, assets) doc ->
+        match doc.Opam.kind with
+        | `Mld ->
+            ( { mld_path = doc.Opam.file; mld_rel_path = doc.Opam.rel_path }
+              :: mlds,
+              assets )
+        | `Asset ->
+            ( mlds,
+              { asset_path = doc.Opam.file; asset_rel_path = doc.Opam.rel_path }
+              :: assets )
+        | `Other -> (mlds, assets))
+      ([], []) docs
   in
   (mlds, assets)
 
@@ -399,7 +388,7 @@ let of_libs ~packages_dir libs =
                 | None ->
                     let pkg_dir = pkg_dir packages_dir pkg.name in
                     let config = Global_config.load pkg.name in
-                    let pkg', { Opam.odoc_pages; other_docs; _ } =
+                    let _, { Opam.docs; _ } =
                       List.find
                         (fun (pkg', _) ->
                           (* Logs.debug (fun m ->
@@ -407,11 +396,15 @@ let of_libs ~packages_dir libs =
                           pkg = pkg')
                         opam_map
                     in
-                    let mlds, assets = mk_mlds pkg'.name odoc_pages in
-                    Logs.debug (fun m ->
-                        m "%d mlds for package %s (from %d odoc_pages)"
-                          (List.length mlds) pkg.name
-                          (Fpath.Set.cardinal odoc_pages));
+                    let mlds, assets = mk_mlds docs in
+                    let other_docs =
+                      List.filter_map
+                        (function
+                          | { Opam.kind = `Other; file; _ } -> Some file
+                          | _ -> None)
+                        docs
+                      |> Fpath.Set.of_list
+                    in
                     Some
                       {
                         name = pkg.name;
@@ -469,13 +462,15 @@ let of_packages ~packages_dir packages =
         in
         let pkg_dir = pkg_dir packages_dir pkg.name in
         let config = Global_config.load pkg.name in
-        let odoc_pages = files.Opam.odoc_pages in
-        let other_docs = files.Opam.other_docs in
-        let mlds, assets = mk_mlds pkg.name odoc_pages in
-        Logs.debug (fun m ->
-            m "%d mlds for package %s (from %d odoc_pages)" (List.length mlds)
-              pkg.name
-              (Fpath.Set.cardinal odoc_pages));
+        let mlds, assets = mk_mlds files.docs in
+        let other_docs =
+          List.filter_map
+            (function
+              | { Opam.kind = `Other; file; _ } -> Some file | _ -> None)
+            files.docs
+          |> Fpath.Set.of_list
+        in
+
         let enable_warnings = List.mem pkg.name packages in
         Util.StringMap.add pkg.name
           {
@@ -492,8 +487,11 @@ let of_packages ~packages_dir packages =
           acc)
       Util.StringMap.empty all
   in
-  fix_missing_deps packages
-
-(* Now we can construct the packages *)
+  let result = fix_missing_deps packages in
+  Logs.debug (fun m ->
+      m "ZZZZ Result: %a"
+        Fmt.(Dump.list (pair string pp))
+        (Util.StringMap.bindings result));
+  result
 
 type set = t Util.StringMap.t

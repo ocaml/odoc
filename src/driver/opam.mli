@@ -1,10 +1,12 @@
 type package = { name : string; version : string }
 
-type installed_files = {
-  libs : Fpath.set;
-  odoc_pages : Fpath.set;
-  other_docs : Fpath.set;
+type doc_file = {
+  kind : [ `Mld | `Asset | `Other ];
+  file : Fpath.t;
+  rel_path : Fpath.t;
 }
+
+type installed_files = { libs : Fpath.set; docs : doc_file list }
 
 type package_of_fpath = package Fpath.map
 
