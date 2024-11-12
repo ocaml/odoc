@@ -1,9 +1,6 @@
 type child = Page of string | Dir of string
 
-type line =
-  | Children_order of child Location_.with_location list
-  | KV of string * string
-  | V of string
+type line = Children_order of child Location_.with_location list
 
 type children_order = child Location_.with_location list Location_.with_location
 
@@ -17,7 +14,6 @@ let apply fm line =
       { children_order = Some (Location_.same line children_order) }
   | Children_order _, { children_order = Some _ } ->
       (* TODO raise warning about duplicate children field *) fm
-  | KV _, _ | V _, _ -> (* TODO raise warning *) fm
 
 let parse_child c =
   if Astring.String.is_suffix ~affix:"/" c then
@@ -25,24 +21,22 @@ let parse_child c =
     Dir c
   else Page c
 
-let parse s =
-  let entries =
-    s.Location_.value
-    |> Astring.String.cuts ~sep:"\n"
-    |> List.map (fun l ->
-           let v =
-             Astring.String.cut ~sep:":" l |> function
-             | Some ("children", v) ->
-                 let refs =
-                   v
-                   |> Astring.String.fields ~empty:false
-                   |> List.map parse_child
-                   |> List.map (Location_.same s)
-                 in
-                 Children_order refs
-             | Some (k, v) -> KV (k, v)
-             | None -> V l
-           in
-           Location_.same s v)
+let parse_children_order loc co =
+  let rec parse_words acc words =
+    match words with
+    | [] -> Ok (Location_.at loc (Children_order (List.rev acc)))
+    | ({ Location_.value = `Word word; _ } as w) :: tl ->
+        parse_words ({ w with value = parse_child word } :: acc) tl
+    | { Location_.value = `Space _; _ } :: tl -> parse_words acc tl
+    | { location; _ } :: _ ->
+        Error
+          (Error.make "Only words are accepted when specifying children order"
+             location)
   in
-  List.fold_left apply empty entries
+  match co with
+  | [ { Location_.value = `Paragraph words; _ } ] -> parse_words [] words
+  | _ ->
+      Error
+        (Error.make "Only words are accepted when specifying children order" loc)
+
+let of_lines lines = List.fold_left apply empty lines

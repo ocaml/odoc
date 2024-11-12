@@ -24,7 +24,7 @@ let parse id input_s =
 let mk_page input_s id content =
   (* Construct the output file representation *)
   let zero_heading = Comment.find_zero_heading content in
-  let frontmatter, content = Comment.extract_frontmatter content in
+  let frontmatter = Frontmatter.empty in
   let digest = Digest.file input_s in
   let root =
     let file = Root.Odoc_file.create_page input_s zero_heading frontmatter in

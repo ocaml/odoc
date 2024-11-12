@@ -617,6 +617,7 @@ let tag_to_words = function
   | `See (`Url, s) -> [ `Word "@see"; `Space " "; `Word ("<" ^ s ^ ">") ]
   | `Since s -> [ `Word "@since"; `Space " "; `Word s ]
   | `Version s -> [ `Word "@version"; `Space " "; `Word s ]
+  | `Children_order -> [ `Word "@children_order" ]
 
 (* {3 Block element lists} *)
 
@@ -817,7 +818,7 @@ let rec block_element_list :
 
                 let tag = Loc.at location (`Tag tag) in
                 consume_block_elements `After_text (tag :: acc)
-            | (`Deprecated | `Return) as tag ->
+            | (`Deprecated | `Return | `Children_order) as tag ->
                 let content, _stream_head, where_in_line =
                   block_element_list (In_implicitly_ended `Tag)
                     ~parent_markup:token input
@@ -826,6 +827,7 @@ let rec block_element_list :
                   match tag with
                   | `Deprecated -> `Deprecated content
                   | `Return -> `Return content
+                  | `Children_order -> `Children_order content
                 in
                 let location =
                   location :: List.map Loc.location content |> Loc.span
