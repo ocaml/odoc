@@ -1,3 +1,5 @@
+open Odoc_utils
+
 module Location = Location_
 module Ast = Odoc_parser.Ast
 
