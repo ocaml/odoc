@@ -45,7 +45,7 @@ module Named_roots : sig
     omit : Fs.Directory.t list;
   }
 
-  val create : input list -> current_root:string option -> t
+  val create : input list -> current_root:(string * Fs.Directory.t) option -> t
 
   val all_of : ?root:string -> ext:string -> t -> (Fs.File.t list, error) result
 
@@ -71,8 +71,7 @@ end = struct
 
   type t = {
     table : (string, pkg) Hashtbl.t;
-    current_root : string option;
-    current_root_dir : Fs.Directory.t option;
+    current_root : (string * Fs.Directory.t) option;
   }
 
   type input = {
@@ -96,18 +95,9 @@ end = struct
         and hierarchical = (Hashtbl.create 42, root) in
         Hashtbl.add cache pkgname { flat; hierarchical; omit })
       pkglist;
-    let current_root_dir =
-      match current_root with
-      | Some root ->
-          List.fold_left
-            (fun acc { name = x; dir; _ } ->
-              if Astring.String.equal x root then Some dir else acc)
-            None pkglist
-      | None -> None
-    in
-    { current_root; table = cache; current_root_dir }
+    { current_root; table = cache }
 
-  let current_root t = t.current_root_dir
+  let current_root t = Option.map snd t.current_root
 
   let check_omit ~omit path =
     List.for_all
@@ -118,7 +108,7 @@ end = struct
     let path = Fpath.normalize path in
     let root =
       match (root, current_root) with
-      | Some pkg, _ | None, Some pkg -> Ok pkg
+      | Some pkg, _ | None, Some (pkg, _) -> Ok pkg
       | None, None -> Error NoRoot
     in
     root >>= fun root ->
@@ -155,7 +145,7 @@ end = struct
   let find_by_name ?root { table = cache; current_root; _ } ~name =
     let package =
       match (root, current_root) with
-      | Some pkg, _ | None, Some pkg -> Ok pkg
+      | Some pkg, _ | None, Some (pkg, _) -> Ok pkg
       | None, None -> Error NoRoot
     in
     package >>= fun package ->
@@ -169,7 +159,7 @@ end = struct
 
   let all_of ?root ~ext { table; current_root; _ } =
     (match (root, current_root) with
-    | None, Some current_root -> Ok current_root
+    | None, Some (current_root, _) -> Ok current_root
     | Some pkg, _ -> Ok pkg
     | None, None -> Error NoRoot)
     >>= fun my_root ->
@@ -555,8 +545,8 @@ let all_units ~library ({ libs; _ } : t) =
 type roots = {
   page_roots : (string * Fs.Directory.t) list;
   lib_roots : (string * Fs.Directory.t) list;
-  current_lib : string option;
-  current_package : string option;
+  current_lib : (string * Fs.Directory.t) option;
+  current_package : (string * Fs.Directory.t) option;
   current_dir : Fs.Directory.t;
 }
 
@@ -582,9 +572,7 @@ let create ~important_digests ~directories ~open_modules ~roots =
         let directories =
           match current_package with
           | None -> directories
-          | Some pkg -> (
-              try List.assoc pkg page_roots :: directories
-              with _ -> directories)
+          | Some (_pkg, dir) -> dir :: directories
         in
         let omit = List.map snd lib_roots in
         let lib_roots = prepare lib_roots [] in
