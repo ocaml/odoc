@@ -10,7 +10,7 @@ When there is one frontmatter, it is extracted from the content:
 
   $ odoc compile one_frontmatter.mld
   File "one_frontmatter.mld":
-  Warning: Non-index page cannot specify (children _) in the frontmatter.
+  Warning: Non-index page cannot specify @children_order.
   $ odoc_print page-one_frontmatter.odoc | jq '.frontmatter'
   {
     "children": {
@@ -62,7 +62,7 @@ When there is more than one children order, we raise a warning and keep only the
   File "two_frontmatters.mld", line 2, characters 0-25:
   Warning: Duplicated @children_order entry
   File "two_frontmatters.mld":
-  Warning: Non-index page cannot specify (children _) in the frontmatter.
+  Warning: Non-index page cannot specify @children_order.
   $ odoc_print page-two_frontmatters.odoc | jq '.frontmatter'
   {
     "children": {

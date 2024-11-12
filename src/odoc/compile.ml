@@ -249,8 +249,7 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
     let zero_heading = Comment.find_zero_heading content in
     if (not (is_index_page id)) && has_children_order frontmatter then
       Error.raise_warning
-        (Error.filename_only
-           "Non-index page cannot specify (children _) in the frontmatter."
+        (Error.filename_only "Non-index page cannot specify @children_order."
            input_s);
     let root =
       let file =

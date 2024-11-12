@@ -105,4 +105,4 @@ Some more parsing test:
   > EOF
   $ odoc compile --parent-id pkg/doc --output-dir _odoc errors/not_index.mld
   File "errors/not_index.mld":
-  Warning: Non-index page cannot specify (children _) in the frontmatter.
+  Warning: Non-index page cannot specify @children_order.
