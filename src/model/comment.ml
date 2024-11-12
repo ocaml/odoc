@@ -145,15 +145,3 @@ let find_zero_heading docs : link_content option =
           Some (link_content_of_inline_elements h_content)
       | _ -> None)
     docs
-
-let extract_frontmatter docs : _ =
-  let fm, rev_content =
-    List.fold_left
-      (fun (fm_acc, content_acc) doc ->
-        match doc.Location_.value with
-        | `Code_block (Some "meta", content, None) ->
-            (Frontmatter.parse content, content_acc)
-        | _ -> (fm_acc, doc :: content_acc))
-      (Frontmatter.empty, []) docs
-  in
-  (fm, List.rev rev_content)

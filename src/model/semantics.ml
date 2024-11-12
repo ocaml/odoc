@@ -14,6 +14,7 @@ type _ handle_internal_tags =
       : [ `Default | `Inline | `Open | `Closed ] handle_internal_tags
   | Expect_canonical : Reference.path option handle_internal_tags
   | Expect_none : unit handle_internal_tags
+  | Expect_page_tags : Frontmatter.t handle_internal_tags
 
 let describe_internal_tag = function
   | `Canonical _ -> "@canonical"
@@ -21,6 +22,7 @@ let describe_internal_tag = function
   | `Open -> "@open"
   | `Closed -> "@closed"
   | `Hidden -> "@hidden"
+  | `Children_order _ -> "@children_order"
 
 let warn_unexpected_tag { Location.value; location } =
   Error.raise_warning
@@ -41,6 +43,15 @@ let rec find_tag f = function
           warn_unexpected_tag hd;
           find_tag f tl)
 
+let rec find_tags acc f = function
+  | [] -> acc
+  | hd :: tl -> (
+      match f hd.Location.value with
+      | Some x -> find_tags ((x, hd.location) :: acc) f tl
+      | None ->
+          warn_unexpected_tag hd;
+          find_tags acc f tl)
+
 let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
   | Expect_status -> (
       match
@@ -57,6 +68,24 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
           None
       | Some ((`Dot _ as p), _) -> Some p
       | None -> None)
+  | Expect_page_tags ->
+      let unparsed_lines =
+        find_tags []
+          (function `Children_order _ as p -> Some p | _ -> None)
+          tags
+      in
+      let lines =
+        List.filter_map
+          (function
+            | `Children_order co, loc -> (
+                match Frontmatter.parse_children_order loc co with
+                | Ok co -> Some co
+                | Error e ->
+                    Error.raise_warning e;
+                    None))
+          unparsed_lines
+      in
+      Frontmatter.of_lines lines
   | Expect_none ->
       (* Will raise warnings. *)
       ignore (find_tag (fun _ -> None) tags);
@@ -520,6 +549,7 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
         let next tag = loop ({ wloc with value = tag } :: tags) ast' tl in
         match tag with
         | (`Inline | `Open | `Closed | `Hidden) as tag -> next tag
+        | `Children_order co -> next (`Children_order co)
         | `Canonical { Location.value = s; location = r_location } -> (
             match
               Error.raise_warnings (Reference.read_path_longident r_location s)
@@ -559,7 +589,7 @@ let append_alerts_to_comment alerts
   comment @ (alerts : alerts :> Comment.docs)
 
 let ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
-    ~parent_of_sections ast alerts =
+    ~parent_of_sections (ast : Ast.t) alerts =
   Error.catch_warnings (fun () ->
       let status = { sections_allowed; tags_allowed; parent_of_sections } in
       let ast, tags = strip_internal_tags ast in

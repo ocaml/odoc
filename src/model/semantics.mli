@@ -4,6 +4,7 @@ type _ handle_internal_tags =
       : [ `Default | `Inline | `Open | `Closed ] handle_internal_tags
   | Expect_canonical : Reference.path option handle_internal_tags
   | Expect_none : unit handle_internal_tags
+  | Expect_page_tags : Frontmatter.t handle_internal_tags
 
 type sections_allowed = [ `All | `No_titles | `None ]
 

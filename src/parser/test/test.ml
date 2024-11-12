@@ -143,6 +143,8 @@ module Ast_to_sexp = struct
           @ List.map (at.at (nestable_block_element at)) es)
     | `Return es ->
         List (Atom "@return" :: List.map (at.at (nestable_block_element at)) es)
+    | `Children_order es ->
+        List (Atom "@return" :: List.map (at.at (nestable_block_element at)) es)
     | `See (kind, s, es) ->
         let kind =
           match kind with

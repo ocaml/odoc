@@ -37,7 +37,7 @@ val page :
   Paths.Identifier.LabelParent.t ->
   Location.t ->
   string ->
-  Odoc_model.Comment.docs_or_stop
+  Odoc_model.Comment.docs * Frontmatter.t
 (** The parent identifier is used to define labels in the given string (i.e.
     for things like [{1:some_section Some title}]) and the location is used for
     error messages.
