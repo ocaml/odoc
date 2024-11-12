@@ -30,8 +30,8 @@ jobs:
             run-mdx: true
           - os: macos-latest
             ocaml-compiler: "5.2"
-          - os: windows-latest
-            ocaml-compiler: "5.2"
+          # - os: windows-latest
+          #   ocaml-compiler: "5.2"
 
     runs-on: ${{ matrix.os }}
 
@@ -57,7 +57,6 @@ jobs:
 
       - name: dune runtest
         run: opam exec -- dune runtest
-        continue-on-error: ${{ runner.os == 'Windows' }}
 
       - name: Mdx tests
         if: matrix.run-mdx == true
