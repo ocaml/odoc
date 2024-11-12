@@ -590,7 +590,7 @@ end = struct
     let l =
       List.map
         ~f:(fun (x, p) ->
-          (x, p |> Fs.Directory.to_fpath |> Antichain.absolute_normalization))
+          (x, p, p |> Fs.Directory.to_fpath |> Antichain.absolute_normalization))
         l
     in
     let o = Antichain.absolute_normalization o in
@@ -598,8 +598,8 @@ end = struct
     | [] -> None
     | _ ->
         Odoc_utils.List.find_map
-          (fun (root, path) ->
-            if Fpath.is_prefix path o then Some root else None)
+          (fun (root, orig_path, norm_path) ->
+            if Fpath.is_prefix norm_path o then Some (root, orig_path) else None)
           l
 
   let current_library_of_input lib_roots input =
@@ -609,22 +609,21 @@ end = struct
       with the pages roots and with the output path for pages. *)
   let validate_current_package ?detected_package page_roots current_package =
     match (current_package, detected_package) with
-    | Some curpkgnane, Some detected_package when detected_package <> curpkgnane
-      ->
+    | Some curpkgnane, Some (detected_package, _)
+      when detected_package <> curpkgnane ->
         Error
           (`Msg
             "The package name specified with --current-package is not \
              consistent with the packages passed as a -P")
     | _, (Some _ as r) (* we have equality or only detected package *) -> Ok r
-    | (Some given as g), None ->
-        if not (List.exists ~f:(fun (pkgname, _) -> pkgname = given) page_roots)
-        then
+    | None, None -> Ok None
+    | Some given, None -> (
+        try Ok (Some (given, List.assoc given page_roots))
+        with Not_found ->
           Error
             (`Msg
               "The package name specified with --current-package do not match \
-               any package passed as a -P")
-        else Ok g
-    | None, None -> Ok None
+               any package passed as a -P"))
 
   let find_current_package ~current_package page_roots input =
     let detected_package = find_root_of_input page_roots input in
@@ -650,6 +649,7 @@ end = struct
           current_dir;
         }
     in
+
     let directories = directories @ List.map ~f:snd lib_roots in
     let resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules ~roots
