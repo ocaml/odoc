@@ -26,7 +26,7 @@ let parse_child c =
 let parse_children_order loc co =
   let rec parse_words acc words =
     match words with
-    | [] -> Ok (Location_.at loc (Children_order (List.rev acc)))
+    | [] -> Result.Ok (Location_.at loc (Children_order (List.rev acc)))
     | ({ Location_.value = `Word word; _ } as w) :: tl ->
         parse_words ({ w with value = parse_child word } :: acc) tl
     | { Location_.value = `Space _; _ } :: tl -> parse_words acc tl
