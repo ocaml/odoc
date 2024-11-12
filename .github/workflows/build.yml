@@ -1,53 +1,59 @@
-name: "Build"
+name: Build
 
 on:
   - push
   - pull_request
 
 jobs:
-  build: # Check build on various OSes
-
+  build:
     strategy:
+      fail-fast: false
       matrix:
         os:
           - ubuntu-latest
         ocaml-compiler:
-          - 4.02.x
-          - 4.04.x
-          - 4.06.x
-          - 4.08.x
-          - 4.10.x
-          - 4.12.x
-          - 4.14.x
-          - 5.0.x
-          - 5.1.x
+          - "4.02"
+          - "4.04"
+          - "4.06"
+          - "4.08"
+          - "4.10"
+          - "4.12"
+          - "4.14"
+          - "5.0"
+          - "5.2"
         include:
           - os: ubuntu-latest
-            ocaml-compiler: 5.1.x
+            ocaml-compiler: "5.2"
             # We don't need to compute coverage for more than one build
             send-coverage: true
             # Mdx tests Mdx tests
             run-mdx: true
-      fail-fast: false
+          - os: macos-latest
+            ocaml-compiler: "5.2"
+          # - os: windows-latest
+          #   ocaml-compiler: "5.2"
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      # Clone the project
-      - uses: actions/checkout@v2
+      - name: Set git to use LF
+        if: runner.os == 'Windows'
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
 
-      # Setup
-      - name: Setup OCaml ${{ matrix.ocaml-version }}
-        uses: ocaml/setup-ocaml@v2
+      - name: Checkout tree
+        uses: actions/checkout@v4
+
+      - name: Set-up OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v3
         with:
-          # Do not pin odoc to not break Mdx installation
-          opam-pin: false
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
-          opam-local-packages: |
-            odoc.opam
+          # Do not pin odoc to not break Mdx installation
+          opam-pin: ${{ matrix.run-mdx != true }}
 
       - name: Install dependencies
-        run: opam install -y --deps-only -t ./odoc.opam ./odoc-parser.opam
+        run: opam install --deps-only --with-test ./odoc.opam ./odoc-parser.opam
 
       - name: dune runtest
         run: opam exec -- dune runtest
@@ -55,7 +61,7 @@ jobs:
       - name: Mdx tests
         if: matrix.run-mdx == true
         run: |
-          opam install -y mdx
+          opam install mdx
           opam exec -- dune build @runmdx
 
       - name: Send coverage stats to Coveralls
@@ -67,5 +73,5 @@ jobs:
           opam exec -- bisect-ppx-report send-to Coveralls --coverage-path /tmp/coverage
         env:
           BISECT_FILE: /tmp/coverage/bisect
-          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ github.token }}
           PULL_REQUEST_NUMBER: ${{ github.event.number }}
