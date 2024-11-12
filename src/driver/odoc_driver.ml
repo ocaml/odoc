@@ -206,14 +206,17 @@ let run mode
         let compiled =
           match actions with
           | LinkAndGen -> units
-          | _ -> Compile.compile ?partial ~partial_dir:odoc_dir units
+          | CompileOnly | All ->
+              Compile.compile ?partial ~partial_dir:odoc_dir units
         in
-        (match mode with
-        | Voodoo _ -> Voodoo.write_lib_markers odoc_dir all
-        | _ -> ());
+        let () =
+          match mode with
+          | Voodoo _ -> Voodoo.write_lib_markers odoc_dir all
+          | Dune _ | Opam _ -> ()
+        in
         match actions with
         | CompileOnly -> ()
-        | _ ->
+        | LinkAndGen | All ->
             let linked = Compile.link compiled in
             let occurrence_file =
               let output =
