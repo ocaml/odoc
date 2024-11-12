@@ -1,60 +1,46 @@
 open Bos
 
 let opam = Cmd.v "opam"
-let switch = ref None
-let prefix = ref None
 
 type package = { name : string; version : string }
 
 let pp fmt p = Format.fprintf fmt "%s.%s" p.name p.version
 
-let rec get_switch () =
-  match !switch with
-  | None ->
-      let cur_switch =
-        Util.lines_of_process Cmd.(opam % "switch" % "show") |> List.hd
-      in
-      switch := Some cur_switch;
-      get_switch ()
-  | Some s -> s
-
-let prefix () =
-  match !prefix with
-  | Some p -> p
-  | None ->
-      let p =
-        Util.lines_of_process
-          Cmd.(opam % "var" % "--switch" % get_switch () % "prefix")
-        |> List.hd
-      in
-      prefix := Some p;
-      p
-
-let all_opam_packages =
-  let result = ref None in
+let memoize f =
+  let r = ref None in
   fun () ->
-    match !result with
-    | Some pkgs -> pkgs
-    | None -> (
-        let prefix = prefix () in
-        match
-          Bos.OS.Dir.contents Fpath.(v prefix / ".opam-switch" / "packages")
-        with
-        | Error (`Msg msg) ->
-            Logs.err (fun m -> m "Error listing opam packages: %s" msg);
-            []
-        | Ok contents ->
-            let r =
-              List.filter_map
-                (fun p ->
-                  let name = Fpath.basename p in
-                  match Astring.String.cut ~sep:"." name with
-                  | Some (name, version) -> Some { name; version }
-                  | None -> None)
-                contents
-            in
-            result := Some r;
-            r)
+    match !r with
+    | Some x -> x
+    | None ->
+        let x = f () in
+        r := Some x;
+        x
+
+let get_switch = memoize @@ fun () ->
+  Util.lines_of_process Cmd.(opam % "switch" % "show") |> List.hd
+
+
+let prefix = memoize @@ fun () ->
+  Util.lines_of_process
+    Cmd.(opam % "var" % "--switch" % get_switch () % "prefix")
+    |> List.hd
+
+let all_opam_packages = memoize @@ fun () ->
+  let prefix = prefix () in
+  match
+    Bos.OS.Dir.contents Fpath.(v prefix / ".opam-switch" / "packages")
+  with
+    | Error (`Msg msg) ->
+      Logs.err (fun m -> m "Error listing opam packages: %s" msg);
+      []
+    | Ok contents ->
+      List.filter_map
+        (fun p ->
+          let name = Fpath.basename p in
+          match Astring.String.cut ~sep:"." name with
+          | Some (name, version) -> Some { name; version }
+          | None -> None)
+        contents
 
 let pkg_contents { name; _ } =
   let prefix = Fpath.v (prefix ()) in
