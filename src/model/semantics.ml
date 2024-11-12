@@ -543,13 +543,20 @@ let top_level_block_elements status ast_elements =
   traverse ~top_heading_level [] ast_elements
 
 let strip_internal_tags ast : internal_tags_removed with_location list * _ =
-  let rec loop tags ast' = function
+  let rec loop ~start tags ast' = function
     | ({ Location.value = `Tag (#Ast.internal_tag as tag); _ } as wloc) :: tl
       -> (
-        let next tag = loop ({ wloc with value = tag } :: tags) ast' tl in
+        let next tag =
+          loop ~start ({ wloc with value = tag } :: tags) ast' tl
+        in
         match tag with
         | (`Inline | `Open | `Closed | `Hidden) as tag -> next tag
-        | `Children_order co -> next (`Children_order co)
+        | `Children_order co ->
+            if not start then
+              Error.raise_warning
+                (Error.make "@children_order tag has to be before any content"
+                   wloc.location);
+            next (`Children_order co)
         | `Canonical { Location.value = s; location = r_location } -> (
             match
               Error.raise_warnings (Reference.read_path_longident r_location s)
@@ -557,7 +564,7 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
             | Result.Ok path -> next (`Canonical path)
             | Result.Error e ->
                 Error.raise_warning e;
-                loop tags ast' tl))
+                loop ~start tags ast' tl))
     | ({
          value =
            ( `Tag #Ast.ocamldoc_tag
@@ -566,10 +573,10 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
          _;
        } as hd)
       :: tl ->
-        loop tags (hd :: ast') tl
+        loop ~start:false tags (hd :: ast') tl
     | [] -> (List.rev ast', List.rev tags)
   in
-  loop [] [] ast
+  loop ~start:true [] [] ast
 
 (** Append alerts at the end of the comment. Tags are favoured in case of alerts of the same name. *)
 let append_alerts_to_comment alerts

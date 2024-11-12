@@ -13,11 +13,11 @@
   $ odoc link _odoc/pkg/dir1/page-dontent.odoc
 
   $ odoc compile-index -P test:_odoc/pkg
-  File "index.mld", line 5, characters 30-35:
+  File "index.mld", line 1, characters 30-35:
   Warning: Duplicate 'dir1/' in (children).
-  File "index.mld", line 5, characters 36-40:
+  File "index.mld", line 1, characters 36-40:
   Warning: 'typo' in (children) does not correspond to anything.
-  File "index.mld", line 5, characters 0-40:
+  File "index.mld", line 1, characters 0-40:
   Warning: (children) doesn't include 'omitted'.
 
   $ odoc html-generate --indent --index index.odoc-index -o _html  _odoc/pkg/page-index.odocl
@@ -76,17 +76,33 @@ Some more parsing test:
 
   $ mkdir errors
   $ cat << EOF >> errors/index.mld
-  > {0 Test1}
   > @children_order [Some wrong content]
+  > {0 Test1}
   > EOF
   $ odoc compile --parent-id pkg/doc --output-dir _odoc errors/index.mld
-  File "errors/index.mld", line 2, characters 16-36:
+  File "errors/index.mld", line 1, characters 16-36:
   Warning: Only words are accepted when specifying children order
 
   $ mkdir valid
   $ cat << EOF > valid/index.mld
-  > {0 Test1}
   > @children_order a
   >            b                     c
+  > {0 Test1}
   > EOF
   $ odoc compile --parent-id pkg/doc --output-dir _odoc valid/index.mld
+
+  $ cat << EOF > errors/index.mld
+  > {0 Test1}
+  > @children_order a
+  > EOF
+  $ odoc compile --parent-id pkg/doc --output-dir _odoc errors/index.mld
+  File "errors/index.mld", line 2, characters 0-17:
+  Warning: @children_order tag has to be before any content
+
+  $ cat << EOF > errors/not_index.mld
+  > @children_order a
+  > {0 Test1}
+  > EOF
+  $ odoc compile --parent-id pkg/doc --output-dir _odoc errors/not_index.mld
+  File "errors/not_index.mld":
+  Warning: Non-index page cannot specify (children _) in the frontmatter.

@@ -1,5 +1,5 @@
+@children_order content dir1/ dir1/ typo
+
 {0 This is the main index}
 
 Hello
-
-@children_order content dir1/ dir1/ typo

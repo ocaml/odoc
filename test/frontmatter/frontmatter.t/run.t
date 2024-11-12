@@ -59,7 +59,7 @@ When there is one frontmatter, it is extracted from the content:
 When there is more than one children order, we raise a warning and keep only the first entry:
 
   $ odoc compile two_frontmatters.mld
-  File "two_frontmatters.mld", line 5, characters 0-25:
+  File "two_frontmatters.mld", line 2, characters 0-25:
   Warning: Duplicated @children_order entry
   File "two_frontmatters.mld":
   Warning: Non-index page cannot specify (children _) in the frontmatter.
