@@ -56,9 +56,11 @@ When there is one frontmatter, it is extracted from the content:
     }
   ]
 
-When there is more than one children order, the last one:
+When there is more than one children order, we raise a warning and keep only the first entry:
 
   $ odoc compile two_frontmatters.mld
+  File "two_frontmatters.mld", line 5, characters 0-25:
+  Warning: Duplicated @children_order entry
   File "two_frontmatters.mld":
   Warning: Non-index page cannot specify (children _) in the frontmatter.
   $ odoc_print page-two_frontmatters.odoc | jq '.frontmatter'
@@ -66,10 +68,10 @@ When there is more than one children order, the last one:
     "children": {
       "Some": [
         {
-          "Page": "bli3"
+          "Page": "bli1"
         },
         {
-          "Page": "bli4"
+          "Page": "bli2"
         }
       ]
     }

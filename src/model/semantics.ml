@@ -44,7 +44,7 @@ let rec find_tag f = function
           find_tag f tl)
 
 let rec find_tags acc f = function
-  | [] -> acc
+  | [] -> List.rev acc
   | hd :: tl -> (
       match f hd.Location.value with
       | Some x -> find_tags ((x, hd.location) :: acc) f tl
@@ -85,7 +85,7 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
                     None))
           unparsed_lines
       in
-      Frontmatter.of_lines lines
+      Frontmatter.of_lines lines |> Error.raise_warnings
   | Expect_none ->
       (* Will raise warnings. *)
       ignore (find_tag (fun _ -> None) tags);

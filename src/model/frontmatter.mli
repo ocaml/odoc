@@ -13,4 +13,4 @@ val parse_children_order :
   Odoc_parser.Ast.nestable_block_element Location_.with_location list ->
   (line Location_.with_location, Error.t) result
 
-val of_lines : line Location_.with_location list -> t
+val of_lines : line Location_.with_location list -> t Error.with_warnings

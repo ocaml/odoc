@@ -13,7 +13,9 @@ let apply fm line =
   | Children_order children_order, { children_order = None } ->
       { children_order = Some (Location_.same line children_order) }
   | Children_order _, { children_order = Some _ } ->
-      (* TODO raise warning about duplicate children field *) fm
+      Error.raise_warning
+        (Error.make "Duplicated @children_order entry" line.location);
+      fm
 
 let parse_child c =
   if Astring.String.is_suffix ~affix:"/" c then
@@ -39,4 +41,5 @@ let parse_children_order loc co =
       Error
         (Error.make "Only words are accepted when specifying children order" loc)
 
-let of_lines lines = List.fold_left apply empty lines
+let of_lines lines =
+  Error.catch_warnings @@ fun () -> List.fold_left apply empty lines
