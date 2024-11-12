@@ -1,7 +1,0 @@
-{0 This is the main index}
-
-Hello
-
-{@meta[
-children: content dir1/ dir1/ typo
-]}

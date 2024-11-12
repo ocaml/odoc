@@ -13,11 +13,11 @@
   $ odoc link _odoc/pkg/dir1/page-dontent.odoc
 
   $ odoc compile-index -P test:_odoc/pkg
-  File "index.mld", line 5, character 7 to line 7, character 0:
+  File "index.mld", line 5, characters 30-35:
   Warning: Duplicate 'dir1/' in (children).
-  File "index.mld", line 5, character 7 to line 7, character 0:
+  File "index.mld", line 5, characters 36-40:
   Warning: 'typo' in (children) does not correspond to anything.
-  File "index.mld", line 5, character 7 to line 7, character 0:
+  File "index.mld", line 5, characters 0-40:
   Warning: (children) doesn't include 'omitted'.
 
   $ odoc html-generate --indent --index index.odoc-index -o _html  _odoc/pkg/page-index.odocl
@@ -70,3 +70,23 @@ but this should be a warning!
            </li><li><a href="dir1/dontent.html">The name is dontent</a></li>
           </ul>
          </li><li><a href="omitted.html">This one is omitted</a></li>
+
+
+Some more parsing test:
+
+  $ mkdir errors
+  $ cat << EOF >> errors/index.mld
+  > {0 Test1}
+  > @children_order [Some wrong content]
+  > EOF
+  $ odoc compile --parent-id pkg/doc --output-dir _odoc errors/index.mld
+  File "errors/index.mld", line 2, characters 16-36:
+  Warning: Only words are accepted when specifying children order
+
+  $ mkdir valid
+  $ cat << EOF > valid/index.mld
+  > {0 Test1}
+  > @children_order a
+  >            b                     c
+  > EOF
+  $ odoc compile --parent-id pkg/doc --output-dir _odoc valid/index.mld

@@ -56,12 +56,23 @@ When there is one frontmatter, it is extracted from the content:
     }
   ]
 
-When there is more than one frontmatter, they are all extracted from the content:
+When there is more than one children order, the last one:
 
   $ odoc compile two_frontmatters.mld
+  File "two_frontmatters.mld":
+  Warning: Non-index page cannot specify (children _) in the frontmatter.
   $ odoc_print page-two_frontmatters.odoc | jq '.frontmatter'
   {
-    "children": "None"
+    "children": {
+      "Some": [
+        {
+          "Page": "bli3"
+        },
+        {
+          "Page": "bli4"
+        }
+      ]
+    }
   }
   $ odoc_print page-two_frontmatters.odoc | jq '.content'
   [
