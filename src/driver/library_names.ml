@@ -29,8 +29,7 @@ let read_libraries_from_pkg_defs ~library_name pkg_defs =
     in
 
     let deps_str = Fl_metascanner.lookup "requires" [] pkg_defs in
-    let deps = Astring.String.fields deps_str in
-    let deps = List.filter (fun x -> String.length x > 0) deps in
+    let deps = Astring.String.fields ~empty:false deps_str in
     let dir =
       List.find_opt (fun d -> d.Fl_metascanner.def_var = "directory") pkg_defs
     in
