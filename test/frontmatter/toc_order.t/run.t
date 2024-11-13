@@ -12,7 +12,7 @@
   $ odoc link _odoc/pkg/dir1/page-content_in_dir.odoc
   $ odoc link _odoc/pkg/dir1/page-dontent.odoc
 
-  $ odoc compile-index -P test:_odoc/pkg
+  $ odoc compile-index --root test:_odoc/pkg
   File "index.mld", line 1, characters 30-35:
   Warning: Duplicate 'dir1/' in (children).
   File "index.mld", line 1, characters 36-40:

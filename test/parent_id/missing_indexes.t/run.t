@@ -7,7 +7,7 @@
   $ odoc link _odoc/page-foo.odoc
   $ odoc link _odoc/page-bar.odoc
   $ odoc link _odoc/baz/page-bli.odoc
-  $ odoc compile-index -P _:_odoc
+  $ odoc compile-index --root _:_odoc
 
   $ odoc html-generate --index index.odoc-index --indent --output-dir _html _odoc/page-foo.odocl
 

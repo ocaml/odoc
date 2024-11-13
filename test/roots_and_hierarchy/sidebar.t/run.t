@@ -12,7 +12,7 @@
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/page-index.odoc
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/libname/unit.odoc
 
-  $ odoc compile-index -P pkg:_odoc/pkg/ -L libname:_odoc/pkg/libname -o sidebar.odoc-index
+  $ odoc compile-index --root libname:_odoc/pkg/ -o sidebar.odoc-index
   $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/page-file.odocl
   $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/dir1/page-my_page.odocl
   $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/dir1/page-index.odocl

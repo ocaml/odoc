@@ -188,5 +188,24 @@ let rec remove_common_root (v : t) =
 
 let of_list l =
   let dir = empty_t None in
+  let l =
+    List.filter_map
+      (fun (page : Lang.Page.t) ->
+        match page.name with
+        | { iv = #Paths.Identifier.LeafPage.t_pv; _ } as id ->
+            let title =
+              match Odoc_model.Comment.find_zero_heading page.content with
+              | None ->
+                  [
+                    Location_.at (Location_.span [])
+                      (`Word (Paths.Identifier.name id));
+                  ]
+              | Some title -> title
+            in
+            let children_order = page.frontmatter.Frontmatter.children_order in
+            Some (id, title, children_order)
+        | _ -> None)
+      l
+  in
   List.iter (add dir) l;
   t_of_in_progress dir |> remove_common_root

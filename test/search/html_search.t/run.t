@@ -65,9 +65,9 @@ the --marshall flag is passed.  Odocl files can be given either in a list (using
 passing directly the name of the files.
 
   $ printf "main.odocl\npage-page.odocl\nj.odocl\n" > index_map
-  $ odoc compile-index --json -o index.json -P pkgname:.
+  $ odoc compile-index --json -o index.json --root pkgname:.
 
-  $ odoc compile-index -o index-main.odoc-index -P pkgname:.
+  $ odoc compile-index -o index-main.odoc-index --root pkgname:.
 
 The json index file contains a json array, each element of the array corresponding to
 a search entry.
@@ -214,7 +214,7 @@ Testing the warnings/errors for the `compile-index` command:
 
 Passing an inexistent file:
 
-  $ odoc compile-index -P pkgname:babar
+  $ odoc compile-index --root pkgname:babar
   $ odoc compile-index --file-list babar
   odoc: option '--file-list': no 'babar' file or directory
   Usage: odoc compile-index [--file-list=FILE] [--json] [OPTION]… [FILE]…
@@ -224,7 +224,7 @@ Passing an inexistent file:
 Passing an empty folder is allowed:
 
   $ mkdir foo
-  $ odoc compile-index -P pkgname:foo
+  $ odoc compile-index --root pkgname:foo
 
 Wrong file extensions:
 
@@ -241,7 +241,7 @@ Wrong file extensions:
 Passing a file which is not a correctly marshalled one:
 
   $ echo hello > my_file.odocl
-  $ odoc compile-index -P pkgname:.
+  $ odoc compile-index --root pkgname:.
   File "./my_file.odocl":
   Warning: Error while unmarshalling "./my_file.odocl": End_of_file
   

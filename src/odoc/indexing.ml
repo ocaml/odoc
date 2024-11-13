@@ -98,58 +98,35 @@ let read_occurrences file =
   let htbl : Odoc_occurrences.Table.t = Marshal.from_channel ic in
   htbl
 
-let pages resolver page_roots =
-  List.map
-    (fun (page_root, _) ->
-      let pages = Resolver.all_pages ~root:page_root resolver in
-      let p_hierarchy =
-        let page_toc_input =
-          (* To create a page toc, we need a list with id, title and children
-             order. We generate this list from *)
-          let prepare_input (id, title, frontmatter) =
-            (* We filter non-leaf pages *)
-            match id with
-            | { Id.iv = #Id.LeafPage.t_pv; _ } as id ->
-                (* We generate a title if needed *)
-                let title =
-                  match title with
-                  | None -> Location_.[ at (span []) (`Word (Id.name id)) ]
-                  | Some x -> x
-                in
-                let children_order = frontmatter.Frontmatter.children_order in
-                Some (id, title, children_order)
-            | _ -> None
-          in
-          List.filter_map prepare_input pages
-        in
-        Odoc_index.Page_hierarchy.of_list page_toc_input
-      in
-      { Odoc_index.p_name = page_root; p_hierarchy })
-    page_roots
+let find_pages_and_units root =
+  Fs.Directory.fold_files_rec_result ~ext:".odocl"
+    (fun (pages, units) path ->
+      Odoc_file.load path >>= fun { Odoc_file.content; warnings = _ } ->
+      match content with
+      | Page_content p -> Ok (p :: pages, units)
+      | Impl_content _ | Asset_content _ -> Ok (pages, units)
+      | Unit_content u -> Ok (pages, u :: units))
+    ([], []) root
 
-let libs resolver lib_roots =
-  List.map
-    (fun (library, _) ->
-      let units = Resolver.all_units ~library resolver in
-      let l_hierarchies =
-        List.filter_map
-          (fun (file, _id) ->
-            match file () with
-            | Some unit -> Some (Odoc_index.Skeleton.from_unit unit)
-            | None -> None)
-          units
-      in
-      { Odoc_index.l_name = library; l_hierarchies })
-    lib_roots
+let page_index ~name = function
+  | [] -> None
+  | pages ->
+      let p_hierarchy = Odoc_index.Page_hierarchy.of_list pages in
+      Some { Odoc_index.p_name = name; p_hierarchy }
 
-let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
-    ~page_roots ~inputs_in_file ~odocls =
+let lib_index ~name = function
+  | [] -> None
+  | units ->
+      let l_hierarchies = List.map Odoc_index.Skeleton.from_unit units in
+      Some { Odoc_index.l_name = name; l_hierarchies }
+
+let compile out_format ~output ~warnings_options ~occurrences ~roots
+    ~inputs_in_file ~odocls =
   let handle_warnings f =
     let res = Error.catch_warnings f in
     Error.handle_warnings ~warnings_options res |> Result.join
   in
   handle_warnings @@ fun () ->
-  let current_dir = Fs.File.dirname output in
   parse_input_files inputs_in_file >>= fun files ->
   let files = List.rev_append odocls files in
   let occurrences =
@@ -157,9 +134,7 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
     | None -> None
     | Some occurrences -> Some (read_occurrences (Fpath.to_string occurrences))
   in
-  let includes_rec =
-    List.rev_append (List.map snd page_roots) (List.map snd lib_roots)
-  in
+  let includes_rec = List.map snd roots in
   let files =
     List.rev_append files
       (includes_rec
@@ -172,19 +147,15 @@ let compile out_format ~output ~warnings_options ~occurrences ~lib_roots
   match out_format with
   | `JSON -> compile_to_json ~output ~occurrences files
   | `Marshall ->
-      let resolver =
-        Resolver.create ~important_digests:false ~directories:[]
-          ~roots:
-            (Some
-               {
-                 page_roots;
-                 lib_roots;
-                 current_lib = None;
-                 current_package = None;
-                 current_dir;
-               })
-          ~open_modules:[]
+      let indexes =
+        List.fold_left
+          (fun (pages_acc, libs_acc) (name, root) ->
+            match find_pages_and_units root with
+            | Ok (p, m) ->
+                let p = Option.to_list @@ page_index ~name p in
+                let l = Option.to_list @@ lib_index ~name m in
+                (pages_acc @ p, libs_acc @ l)
+            | Error _ -> (pages_acc, libs_acc))
+          ([], []) roots
       in
-      let pages = pages resolver page_roots in
-      let libs = libs resolver lib_roots in
-      compile_to_marshall ~output (pages, libs) files
+      compile_to_marshall ~output indexes files

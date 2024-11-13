@@ -18,7 +18,7 @@ Since -L subfolders are omitted from -P roots, the index page should not be adde
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/libname/unit.odoc
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/libname/page-index.odoc
 
-  $ odoc compile-index -P pkg:_odoc/pkg/ -L libname:_odoc/pkg/libname -o sidebar.odoc-index
+  $ odoc compile-index --root libname:_odoc/pkg/ -o sidebar.odoc-index
   $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/page-file.odocl
   $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/dir1/page-my_page.odocl
   $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/dir1/page-index.odocl
@@ -26,7 +26,7 @@ Since -L subfolders are omitted from -P roots, the index page should not be adde
   $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/libname/unit.odocl
   $ odoc html-generate --indent --index sidebar.odoc-index -o html _odoc/pkg/libname/page-index.odocl
 
-  $ cat html/pkg/index.html | grep odoc-global-toc -A 15
+  $ cat html/pkg/index.html | grep odoc-global-toc -A 16
      <nav class="odoc-toc odoc-global-toc">
       <ul class="odoc-modules">
        <li><b>Library <code>libname</code></b>
@@ -39,6 +39,7 @@ Since -L subfolders are omitted from -P roots, the index page should not be adde
          <li><a href="dir1/index.html">A directory</a>
           <ul><li><a href="dir1/my_page.html">My page</a></li></ul>
          </li><li><a href="file.html">File</a></li>
+         <li><a href="libname/index.html">Library landing page</a></li>
         </ul>
        </li>
       </ul>

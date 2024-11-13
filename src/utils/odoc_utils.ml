@@ -51,6 +51,8 @@ module Option = struct
   let map f = function None -> None | Some x -> Some (f x)
 
   let is_some = function None -> false | Some _ -> true
+
+  let to_list = function None -> [] | Some x -> [ x ]
 end
 
 module Result = struct
