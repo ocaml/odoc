@@ -216,7 +216,7 @@ let run mode
         let () =
           match mode with
           | Voodoo _ -> Voodoo.write_lib_markers odoc_dir all
-          | Dune _ | Opam _ -> ()
+          | Dune _ | OpamLibs _ | OpamPackages _ -> ()
         in
         match actions with
         | CompileOnly -> ()
