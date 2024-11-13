@@ -28,10 +28,8 @@ type named_root = string * Fs.Directory.t
 type roots = {
   page_roots : named_root list;
   lib_roots : named_root list;
-  current_lib : named_root option;
-      (** The current [-L]. *)
-  current_package : named_root option;
-      (** The current [-P]. *)
+  current_lib : named_root option;  (** The current [-L]. *)
+  current_package : named_root option;  (** The current [-P]. *)
   current_dir : Fs.Directory.t;
       (** Directory containing the output for the current unit. *)
 }

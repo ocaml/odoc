@@ -70,10 +70,7 @@ end = struct
     omit : Fs.Directory.t list;
   }
 
-  type t = {
-    table : (string, pkg) Hashtbl.t;
-    current_root : named_root option;
-  }
+  type t = { table : (string, pkg) Hashtbl.t; current_root : named_root option }
 
   type input = {
     name : string;
@@ -542,7 +539,6 @@ let all_units ~library ({ libs; _ } : t) =
   | None -> []
   | Some libs ->
       Odoc_utils.List.filter_map filter @@ all_roots ~root:library libs
-
 
 type roots = {
   page_roots : named_root list;

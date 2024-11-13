@@ -215,8 +215,7 @@ let packages ~dirs ~extra_paths (pkgs : Packages.t list) : t list =
         let name = md |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "page-" in
         let lib_deps = Util.StringSet.empty in
         let unit =
-          make_unit ~name ~kind ~rel_dir ~input_file:md ~pkg
-            ~lib_deps
+          make_unit ~name ~kind ~rel_dir ~input_file:md ~pkg ~lib_deps
             ~enable_warnings:pkg.enable_warnings
         in
         [ unit ]
