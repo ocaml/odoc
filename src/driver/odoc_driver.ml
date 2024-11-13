@@ -149,12 +149,16 @@ let run mode
         let all = Voodoo.of_voodoo p ~blessed in
         let extra_paths = Voodoo.extra_paths odoc_dir in
         (all, extra_paths, actions)
-    | Dune { path } -> (Dune_style.of_dune_build path, Voodoo.empty_extra_paths, All)
+    | Dune { path } ->
+        (Dune_style.of_dune_build path, Voodoo.empty_extra_paths, All)
     | OpamLibs { libs } ->
         ( Packages.of_libs ~packages_dir:None (Util.StringSet.of_list libs),
-          Voodoo.empty_extra_paths, All )
+          Voodoo.empty_extra_paths,
+          All )
     | OpamPackages { packages } ->
-        (Packages.of_packages ~packages_dir:None packages, Voodoo.empty_extra_paths, All)
+        ( Packages.of_packages ~packages_dir:None packages,
+          Voodoo.empty_extra_paths,
+          All )
   in
 
   let virtual_check =
