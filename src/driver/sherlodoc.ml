@@ -38,5 +38,9 @@ let index ?(ignore_output = false) ~format ~inputs ~dst ?favored_prefixes () =
 let js dst =
   let cmd = Cmd.(sherlodoc % "js" % p dst) in
   let desc = Printf.sprintf "Sherlodoc js at %s" (Fpath.to_string dst) in
-  let _lines = submit_ignore_failures (Some (`Sherlodoc, Fpath.to_string dst))  desc cmd (Some dst) in
+  let _lines =
+    submit_ignore_failures
+      (Some (`Sherlodoc, Fpath.to_string dst))
+      desc cmd (Some dst)
+  in
   ()
