@@ -16,24 +16,24 @@ let memoize f =
         r := Some x;
         x
 
-let get_switch = memoize @@ fun () ->
+let get_switch =
+  memoize @@ fun () ->
   Util.lines_of_process Cmd.(opam % "switch" % "show") |> List.hd
 
-
-let prefix = memoize @@ fun () ->
+let prefix =
+  memoize @@ fun () ->
   Util.lines_of_process
     Cmd.(opam % "var" % "--switch" % get_switch () % "prefix")
-    |> List.hd
+  |> List.hd
 
-let all_opam_packages = memoize @@ fun () ->
+let all_opam_packages =
+  memoize @@ fun () ->
   let prefix = prefix () in
-  match
-    Bos.OS.Dir.contents Fpath.(v prefix / ".opam-switch" / "packages")
-  with
-    | Error (`Msg msg) ->
+  match Bos.OS.Dir.contents Fpath.(v prefix / ".opam-switch" / "packages") with
+  | Error (`Msg msg) ->
       Logs.err (fun m -> m "Error listing opam packages: %s" msg);
       []
-    | Ok contents ->
+  | Ok contents ->
       List.filter_map
         (fun p ->
           let name = Fpath.basename p in
