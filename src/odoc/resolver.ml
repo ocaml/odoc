@@ -34,6 +34,7 @@
 open Odoc_utils
 open Or_error
 
+type named_root = string * Fs.Directory.t
 module Named_roots : sig
   type t
 
@@ -45,7 +46,7 @@ module Named_roots : sig
     omit : Fs.Directory.t list;
   }
 
-  val create : input list -> current_root:(string * Fs.Directory.t) option -> t
+  val create : input list -> current_root:named_root option -> t
 
   val all_of : ?root:string -> ext:string -> t -> (Fs.File.t list, error) result
 
@@ -71,7 +72,7 @@ end = struct
 
   type t = {
     table : (string, pkg) Hashtbl.t;
-    current_root : (string * Fs.Directory.t) option;
+    current_root : named_root option;
   }
 
   type input = {
@@ -542,11 +543,12 @@ let all_units ~library ({ libs; _ } : t) =
   | Some libs ->
       Odoc_utils.List.filter_map filter @@ all_roots ~root:library libs
 
+
 type roots = {
-  page_roots : (string * Fs.Directory.t) list;
-  lib_roots : (string * Fs.Directory.t) list;
-  current_lib : (string * Fs.Directory.t) option;
-  current_package : (string * Fs.Directory.t) option;
+  page_roots : named_root list;
+  lib_roots : named_root list;
+  current_lib : named_root option;
+  current_package : named_root option;
   current_dir : Fs.Directory.t;
 }
 
