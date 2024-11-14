@@ -37,23 +37,22 @@
       </ul>
      </nav>
 
-  $ cat html/pkg/libname/Unit/index.html | grep odoc-global-toc -A 15
+  $ cat html/pkg/libname/Unit/X/index.html | grep odoc-global-toc -A 15
      <nav class="odoc-toc odoc-global-toc">
       <ul class="odoc-modules">
        <li><b>Library <code>libname</code></b>
-        <ul><li><a href="#" class="current_unit">Unit</a></li></ul>
-       </li>
-      </ul><b>Documentation</b>
-      <ul class="odoc-pages">
-       <li><a href="../../index.html">Package <code>pkg</code></a>
         <ul>
-         <li><a href="../../dir1/index.html">A directory</a>
-          <ul><li><a href="../../dir1/my_page.html">My page</a></li></ul>
-         </li><li><a href="../../file.html">File</a></li>
+         <li><a href="../index.html">Unit</a>
+          <ul>
+           <li><a href="#" class="current_unit">X</a>
+            <ul><li><a href="Y/index.html">Y</a></li>
+             <li><a href="#module-Z">Z</a></li>
+            </ul>
+           </li>
+          </ul>
+         </li>
         </ul>
        </li>
-      </ul>
-     </nav>
+      </ul><b>Documentation</b>
 
   $ odoc support-files -o html
-$ cp -r html /tmp/html
