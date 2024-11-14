@@ -60,7 +60,8 @@ end = struct
       in
       let f name =
         match name with
-        | Some url, _ when prune && is_prefix (parent url) current_url -> None
+        | Some url, _ when prune && not (is_prefix (parent url) current_url) ->
+            None
         | v -> Some (convert v)
       in
       let root_entry = convert tree.Tree.node in
