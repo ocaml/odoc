@@ -266,7 +266,7 @@ let rec conv_canonical_module : Odoc_model.Reference.path -> Paths.Path.Module.t
   | `Dot (parent, name) -> `Dot (conv_canonical_module parent, Names.ModuleName.make_std name)
   | `Root name -> `Root (Names.ModuleName.make_std name)
 
-let conv_canonical_type : Odoc_model.Reference.path -> Paths.Path.NonCoreType.t option = function
+let conv_canonical_type : Odoc_model.Reference.path -> Paths.Path.Type.t option = function
   | `Dot (parent, name) -> Some (`DotT (conv_canonical_module parent, Names.TypeName.make_std name))
   | _ -> None
 

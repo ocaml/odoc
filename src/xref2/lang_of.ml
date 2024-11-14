@@ -97,10 +97,9 @@ module Path = struct
     | `ModuleType (`Module p, n) -> `DotMT (`Resolved (resolved_module map p), n)
     | `ModuleType (_, _) -> failwith "Probably shouldn't happen"
 
-  and non_core_type map (p : Cpath.non_core_type) :
-      Odoc_model.Paths.Path.NonCoreType.t =
+  and type_ map (p : Cpath.type_) : Odoc_model.Paths.Path.Type.t =
     match p with
-    | `Substituted x -> `SubstitutedT (non_core_type map x)
+    | `Substituted x -> `SubstitutedT (type_ map x)
     | `Identifier
         (({ iv = #Odoc_model.Paths.Identifier.Path.Type.t_pv; _ } as y), b) ->
         `Identifier (y, b)
@@ -111,12 +110,6 @@ module Path = struct
     | `Class (`Module p, n) -> `DotT (`Resolved (resolved_module map p), n)
     | `ClassType (`Module p, n) -> `DotT (`Resolved (resolved_module map p), n)
     | `Type _ | `Class _ | `ClassType _ -> failwith "Probably shouldn't happen"
-
-  and type_ map (p : Cpath.type_) : Odoc_model.Paths.Path.Type.t =
-    match p with
-    | `CoreType x -> `CoreType x
-    | #Cpath.non_core_type as v ->
-        (non_core_type map v :> Odoc_model.Paths.Path.Type.t)
 
   and class_type map (p : Cpath.class_type) : Odoc_model.Paths.Path.ClassType.t
       =
@@ -185,6 +178,7 @@ module Path = struct
   and resolved_type map (p : Cpath.Resolved.type_) :
       Odoc_model.Paths.Path.Resolved.Type.t =
     match p with
+    | `CoreType _ as c -> c
     | `Gpath y -> y
     | `Local id -> `Identifier (Component.TypeMap.find id map.path_type)
     | `CanonicalType (t1, t2) -> `CanonicalType (resolved_type map t1, t2)

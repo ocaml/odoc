@@ -531,6 +531,7 @@ and handle_module_type_lookup env id p sg sub =
 and handle_type_lookup env id p sg =
   match Find.careful_type_in_sig sg id with
   | Some (`FClass (name, _) as t) -> Ok (`Class (p, name), t)
+  | Some (`CoreType _ as c) -> Ok (c, c)
   | Some (`FClassType (name, _) as t) -> Ok (`ClassType (p, name), t)
   | Some (`FType (name, _) as t) -> Ok (simplify_type env (`Type (p, name)), t)
   | Some (`FType_removed (name, _, _) as t) -> Ok (`Type (p, name), t)
@@ -740,10 +741,12 @@ and lookup_type_gpath :
     | Some (`FType (name, t)) -> Ok (`FType (name, Subst.type_ sub t))
     | Some (`FType_removed (name, texpr, eq)) ->
         Ok (`FType_removed (name, Subst.type_expr sub texpr, eq))
+    | Some (`CoreType _ as c) -> Ok c
     | None -> Error `Find_failure
   in
   let res =
     match p with
+    | `CoreType _ as c -> Ok c
     | `Identifier ({ iv = `Type _; _ } as i) ->
         of_option ~error:(`Lookup_failureT i)
           (Env.(lookup_by_id s_datatype) i env)
@@ -836,6 +839,7 @@ and lookup_type :
     handle_type_lookup env name p sg >>= fun (_, t') ->
     let t =
       match t' with
+      | `CoreType _ as c -> c
       | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
       | `FClassType (name, ct) -> `FClassType (name, Subst.class_type sub ct)
       | `FType (name, t) -> `FType (name, Subst.type_ sub t)
@@ -846,6 +850,7 @@ and lookup_type :
   in
   let res =
     match p with
+    | `CoreType _ as c -> Ok c
     | `Local id -> Error (`LocalType (env, id))
     | `Gpath p -> lookup_type_gpath env p
     | `CanonicalType (t1, _) -> lookup_type env t1
@@ -998,7 +1003,7 @@ and resolve_module_type :
       |> map_error (fun e -> `Parent (`Parent_module_type e))
       >>= fun (p, m) -> Ok (`Substituted p, m)
 
-and resolve_type : Env.t -> Cpath.non_core_type -> resolve_type_result =
+and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
  fun env p ->
   let result =
     match p with
@@ -1009,6 +1014,7 @@ and resolve_type : Env.t -> Cpath.non_core_type -> resolve_type_result =
         handle_type_lookup env id parent parent_sig >>= fun (p', t') ->
         let t =
           match t' with
+          | `CoreType _ as c -> c
           | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
           | `FClassType (name, ct) -> `FClassType (name, Subst.class_type sub ct)
           | `FType (name, t) -> `FType (name, Subst.type_ sub t)
@@ -1046,6 +1052,7 @@ and resolve_type : Env.t -> Cpath.non_core_type -> resolve_type_result =
         handle_type_lookup env id parent parent_sg >>= fun (p', t') ->
         let t =
           match t' with
+          | `CoreType _ as c -> c
           | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
           | `FClassType (name, ct) -> `FClassType (name, Subst.class_type sub ct)
           | `FType (name, t) -> `FType (name, Subst.type_ sub t)
@@ -1406,7 +1413,7 @@ and handle_canonical_module_type env p2 =
   | Some (rp, _) -> `Resolved Lang_of.(Path.resolved_module_type (empty ()) rp)
 
 and handle_canonical_type env p2 =
-  let cp2 = Component.Of_Lang.(non_core_type_path (empty ()) p2) in
+  let cp2 = Component.Of_Lang.(type_path (empty ()) p2) in
   let lang_of cpath =
     (Lang_of.(Path.resolved_type (empty ()) cpath)
       :> Odoc_model.Paths.Path.Resolved.t)
@@ -1476,7 +1483,7 @@ and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
  fun env path ->
   let result =
     match path with
-    | `Gpath _ | `Local _ -> path
+    | `Gpath _ | `Local _ | `CoreType _ -> path
     | `Substituted s -> `Substituted (reresolve_type env s)
     | `CanonicalType (p1, p2) ->
         `CanonicalType (reresolve_type env p1, handle_canonical_type env p2)
@@ -2300,7 +2307,7 @@ and class_signature_of_class_type_expr :
   match e with
   | Signature s -> Some s
   | Constr (p, _) -> (
-      match resolve_type env (p :> Cpath.non_core_type) with
+      match resolve_type env (p :> Cpath.type_) with
       | Ok (_, `FClass (_, c)) -> class_signature_of_class env c
       | Ok (_, `FClassType (_, c)) -> class_signature_of_class_type env c
       | _ -> None)

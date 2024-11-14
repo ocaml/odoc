@@ -136,7 +136,9 @@ resolve correctly. All of the 'Class' json objects should contain
       {
         "Constr": [
           {
-            "`CoreType": "unit"
+            "`Resolved": {
+              "`CoreType": "unit"
+            }
           },
           []
         ]

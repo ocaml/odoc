@@ -74,8 +74,9 @@ let expansion_needed self target =
   let hidden_alias = Paths.Path.Resolved.is_hidden self
   and self_canonical =
     let i = Paths.Path.Resolved.identifier self in
-    i = (target :> Paths.Identifier.t)
+    i = Some (target :> Paths.Identifier.t)
   in
+
   self_canonical || hidden_alias
 
 exception Loop
@@ -93,6 +94,7 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
  fun p ->
   let open Paths.Path.Resolved in
   match p with
+  | `CoreType _ -> false
   | `Identifier _ -> false
   | `Subst (x, y) -> should_reresolve (x :> t) || should_reresolve (y :> t)
   | `Hidden p -> should_reresolve (p :> t)
@@ -130,22 +132,19 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
  fun env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
   else
-    match p with
-    | `CoreType _ as x -> x
-    | #Paths.Path.NonCoreType.t as p -> (
-        let cp = Component.Of_Lang.(non_core_type_path (empty ()) p) in
-        match cp with
-        | `Resolved p ->
-            let result = Tools.reresolve_type env p in
+    let cp = Component.Of_Lang.(type_path (empty ()) p) in
+    match cp with
+    | `Resolved p ->
+        let result = Tools.reresolve_type env p in
+        `Resolved Lang_of.(Path.resolved_type (empty ()) result)
+    | _ -> (
+        match Tools.resolve_type_path env cp with
+        | Ok p' ->
+            let result = Tools.reresolve_type env p' in
             `Resolved Lang_of.(Path.resolved_type (empty ()) result)
-        | #Cpath.non_core_type as cp -> (
-            match Tools.resolve_type_path env cp with
-            | Ok p' ->
-                let result = Tools.reresolve_type env p' in
-                `Resolved Lang_of.(Path.resolved_type (empty ()) result)
-            | Error e ->
-                Errors.report ~what:(`Type_path cp) ~tools_error:e `Lookup;
-                p))
+        | Error e ->
+            Errors.report ~what:(`Type_path cp) ~tools_error:e `Lookup;
+            p)
 
 let value_path : Env.t -> Paths.Path.Value.t -> Paths.Path.Value.t =
  fun env p ->
@@ -925,7 +924,7 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
     | Some (Constr (`Resolved path, params))
       when Paths.Path.Resolved.(is_hidden (path :> t))
            || Paths.Path.Resolved.(identifier (path :> t))
-              = (t.id :> Paths.Identifier.t) ->
+              = Some (t.id :> Paths.Identifier.t) ->
         Some (path, params)
     | _ -> None
   in
@@ -953,7 +952,9 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
             with _ -> default.equation
           in
           { default with equation = type_decl_equation env parent equation }
-      | Ok (`FClass _ | `FClassType _ | `FType_removed _) | Error _ -> default)
+      | Ok (`FClass _ | `FClassType _ | `FType_removed _ | `CoreType _)
+      | Error _ ->
+          default)
   | None -> default
 
 and type_decl_equation env parent t =
@@ -1047,15 +1048,12 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
           type_expression env parent visited t1,
           type_expression env parent visited t2 )
   | Tuple ts -> Tuple (List.map (type_expression env parent visited) ts)
-  | Constr ((`CoreType _ as x), ts) ->
-      let ts = List.map (type_expression env parent visited) ts in
-      Constr (x, ts)
-  | Constr ((#Paths.Path.NonCoreType.t as path'), ts') -> (
+  | Constr (path', ts') -> (
       let path = type_path env path' in
       let ts = List.map (type_expression env parent visited) ts' in
       if not (Paths.Path.is_hidden (path :> Paths.Path.t)) then Constr (path, ts)
       else
-        let cp = Component.Of_Lang.(non_core_type_path (empty ()) path') in
+        let cp = Component.Of_Lang.(type_path (empty ()) path') in
         match Tools.resolve_type env cp with
         | Ok (cp', `FType (_, t)) ->
             let cp' = Tools.reresolve_type env cp' in
@@ -1090,7 +1088,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
                       Constr (`Resolved p, ts))
               | _ -> Constr (`Resolved p, ts)
             else Constr (`Resolved p, ts)
-        | Ok (cp', (`FClass _ | `FClassType _)) ->
+        | Ok (cp', (`FClass _ | `FClassType _ | `CoreType _)) ->
             let p = Lang_of.(Path.resolved_type (empty ()) cp') in
             Constr (`Resolved p, ts)
         | Ok (_cp, `FType_removed (_, x, _eq)) ->

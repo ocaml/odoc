@@ -103,8 +103,6 @@ module Make (Syntax : SYNTAX) = struct
       match path with
       | `Identifier (id, _) ->
           unresolved [ inline @@ Text (Identifier.name id) ]
-      | `CoreType n ->
-          O.elt [ inline @@ Text (Odoc_model.Names.TypeName.to_string n) ]
       | `Substituted m -> from_path (m :> Path.t)
       | `SubstitutedMT m -> from_path (m :> Path.t)
       | `SubstitutedT m -> from_path (m :> Path.t)
@@ -130,7 +128,7 @@ module Make (Syntax : SYNTAX) = struct
       | `Resolved _ when Paths.Path.is_hidden path ->
           let txt = Url.render_path path in
           unresolved [ inline @@ Text txt ]
-      | `Resolved rp ->
+      | `Resolved rp -> (
           (* If the path is pointing to an opaque module or module type
              there won't be a page generated - so we stop before; at
              the parent page, and link instead to the anchor representing
@@ -140,10 +138,12 @@ module Make (Syntax : SYNTAX) = struct
             | `OpaqueModule _ | `OpaqueModuleType _ -> true
             | _ -> false
           in
-          let id = Paths.Path.Resolved.identifier rp in
-          let txt = Url.render_path path in
-          let href = Url.from_identifier ~stop_before id in
-          resolved href [ inline @@ Text txt ]
+          let txt = [ inline @@ Text (Url.render_path path) ] in
+          match Paths.Path.Resolved.identifier rp with
+          | Some id ->
+              let href = Url.from_identifier ~stop_before id in
+              resolved href txt
+          | None -> O.elt txt)
 
     let dot prefix suffix = prefix ^ "." ^ suffix
 

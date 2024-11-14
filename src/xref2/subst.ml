@@ -43,8 +43,7 @@ let add_module_type id p rp t =
     module_type = ModuleTypeMap.add id (`Prefixed (p, rp)) t.module_type;
   }
 
-let add_type :
-    Ident.type_ -> Cpath.non_core_type -> Cpath.Resolved.type_ -> t -> t =
+let add_type : Ident.type_ -> Cpath.type_ -> Cpath.Resolved.type_ -> t -> t =
  fun id p rp t ->
   { t with type_ = TypeMap.add (id :> Ident.type_) (`Prefixed (p, rp)) t.type_ }
 
@@ -56,7 +55,7 @@ let add_class :
     type_ =
       TypeMap.add
         (id :> Ident.type_)
-        (`Prefixed ((p :> Cpath.non_core_type), (rp :> Cpath.Resolved.type_)))
+        (`Prefixed ((p :> Cpath.type_), (rp :> Cpath.Resolved.type_)))
         t.type_;
     class_type =
       TypeMap.add (id :> Ident.type_) (`Prefixed (p, rp)) t.class_type;
@@ -70,7 +69,7 @@ let add_class_type :
     type_ =
       TypeMap.add
         (id :> Ident.type_)
-        (`Prefixed ((p :> Cpath.non_core_type), (rp :> Cpath.Resolved.type_)))
+        (`Prefixed ((p :> Cpath.type_), (rp :> Cpath.Resolved.type_)))
         t.type_;
     class_type =
       TypeMap.add (id :> Ident.type_) (`Prefixed (p, rp)) t.class_type;
@@ -315,6 +314,7 @@ and resolved_type_path :
     (Cpath.Resolved.type_, TypeExpr.t * TypeDecl.Equation.t) or_replaced =
  fun s p ->
   match p with
+  | `CoreType _ as c -> Not_replaced c
   | `Local id -> (
       if TypeMap.mem id s.type_replacement then
         Replaced (TypeMap.find id s.type_replacement)
@@ -334,17 +334,15 @@ and resolved_type_path :
   | `ClassType (p, n) -> Not_replaced (`ClassType (resolved_parent_path s p, n))
   | `Class (p, n) -> Not_replaced (`Class (resolved_parent_path s p, n))
 
-and non_core_type_path :
-    t -> Cpath.non_core_type -> Cpath.non_core_type type_or_replaced =
+and type_path : t -> Cpath.type_ -> Cpath.type_ type_or_replaced =
  fun s p ->
   match p with
   | `Resolved r -> (
       try resolved_type_path s r |> map_replaced (fun r -> `Resolved r)
       with Invalidated ->
         let path' = Cpath.unresolve_resolved_type_path r in
-        non_core_type_path s path')
-  | `Substituted p ->
-      non_core_type_path s p |> map_replaced (fun r -> `Substituted r)
+        type_path s path')
+  | `Substituted p -> type_path s p |> map_replaced (fun r -> `Substituted r)
   | `Local (id, b) -> (
       if TypeMap.mem id s.type_replacement then
         Replaced (TypeMap.find id s.type_replacement)
@@ -358,13 +356,6 @@ and non_core_type_path :
   | `Type (p, n) -> Not_replaced (`Type (resolved_parent_path s p, n))
   | `Class (p, n) -> Not_replaced (`Class (resolved_parent_path s p, n))
   | `ClassType (p, n) -> Not_replaced (`ClassType (resolved_parent_path s p, n))
-
-and type_path : t -> Cpath.type_ -> Cpath.type_ type_or_replaced =
- fun s p ->
-  match p with
-  | `CoreType x -> Not_replaced (`CoreType x)
-  | #Cpath.non_core_type as x ->
-      (non_core_type_path s x :> Cpath.type_ type_or_replaced)
 
 and resolved_class_type_path :
     t -> Cpath.Resolved.class_type -> Cpath.Resolved.class_type =

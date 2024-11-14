@@ -226,13 +226,13 @@ module General_paths = struct
       | `Substituted m -> C ("`Substituted", (m :> p), path)
       | `SubstitutedMT m -> C ("`SubstitutedMT", (m :> p), path)
       | `SubstitutedT m -> C ("`SubstitutedT", (m :> p), path)
-      | `SubstitutedCT m -> C ("`SubstitutedCT", (m :> p), path)
-      | `CoreType n -> C ("`CoreType", n, Names.typename))
+      | `SubstitutedCT m -> C ("`SubstitutedCT", (m :> p), path))
 
   and resolved_path : rp t =
     Variant
       (function
       | `Identifier x -> C ("`Identifier", x, identifier)
+      | `CoreType n -> C ("`CoreType", n, Names.typename)
       | `Subst (x1, x2) ->
           C
             ( "`Subst",
