@@ -13,7 +13,6 @@ type alerts =
 
 val ast_to_comment :
   internal_tags:'tags handle_internal_tags ->
-  sections_allowed:sections_allowed ->
   tags_allowed:bool ->
   parent_of_sections:Paths.Identifier.LabelParent.t ->
   Odoc_parser.Ast.t ->
@@ -22,7 +21,6 @@ val ast_to_comment :
 
 val parse_comment :
   internal_tags:'tags handle_internal_tags ->
-  sections_allowed:sections_allowed ->
   tags_allowed:bool ->
   containing_definition:Paths.Identifier.LabelParent.t ->
   location:Lexing.position ->

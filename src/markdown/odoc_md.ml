@@ -13,8 +13,7 @@ let parse id input_s =
     Doc_of_md.parse_comment ~location ~text:str ()
   in
   let (content, ()), semantics_warnings =
-    Semantics.ast_to_comment ~internal_tags:Expect_none ~sections_allowed:`All
-      ~tags_allowed:false
+    Semantics.ast_to_comment ~internal_tags:Expect_none ~tags_allowed:false
       ~parent_of_sections:(id :> Paths.Identifier.LabelParent.t)
       content []
     |> Error.unpack_warnings

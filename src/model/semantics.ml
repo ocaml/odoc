@@ -105,12 +105,6 @@ let default_raw_markup_target_not_supported : Location.span -> Error.t =
   Error.make ~suggestion:"try '{%html:...%}'."
     "'{%%...%%}' (raw markup) needs a target language."
 
-let headings_not_allowed : Location.span -> Error.t =
-  Error.make "Headings not allowed in this comment."
-
-let titles_not_allowed : Location.span -> Error.t =
-  Error.make "Title-level headings {0 ...} are only allowed in pages."
-
 let bad_heading_level : int -> Location.span -> Error.t =
   Error.make "'%d': bad heading level (0-5 allowed)."
 
@@ -162,7 +156,6 @@ type alerts =
   [ `Tag of [ `Alert of string * string option ] ] Location_.with_location list
 
 type status = {
-  sections_allowed : sections_allowed;
   tags_allowed : bool;
   parent_of_sections : Paths.Identifier.LabelParent.t;
 }
@@ -453,42 +446,27 @@ let section_heading :
     in
     (top_heading_level, element)
   in
-
-  match (status.sections_allowed, level) with
-  | `None, _any_level ->
-      Error.raise_warning (headings_not_allowed location);
-      let text = (text :> Comment.inline_element with_location list) in
-      let element =
-        Location.at location
-          (`Paragraph [ Location.at location (`Styled (`Bold, text)) ])
-      in
-      (top_heading_level, element)
-  | `No_titles, 0 ->
-      Error.raise_warning (titles_not_allowed location);
-      mk_heading `Title
-  | _, level ->
-      let level' =
-        match level with
-        | 0 -> `Title
-        | 1 -> `Section
-        | 2 -> `Subsection
-        | 3 -> `Subsubsection
-        | 4 -> `Paragraph
-        | 5 -> `Subparagraph
-        | _ ->
-            Error.raise_warning (bad_heading_level level location);
-            (* Implicitly promote to level-5. *)
-            `Subparagraph
-      in
-      (match top_heading_level with
-      | Some top_level
-        when status.sections_allowed = `All && level <= top_level && level <= 5
-        ->
-          Error.raise_warning
-            (heading_level_should_be_lower_than_top_level level top_level
-               location)
-      | _ -> ());
-      mk_heading level'
+  let level' =
+    match level with
+    | 0 -> `Title
+    | 1 -> `Section
+    | 2 -> `Subsection
+    | 3 -> `Subsubsection
+    | 4 -> `Paragraph
+    | 5 -> `Subparagraph
+    | _ ->
+        Error.raise_warning (bad_heading_level level location);
+        (* Implicitly promote to level-5. *)
+        `Subparagraph
+  in
+  let () =
+    match top_heading_level with
+    | Some top_level when level <= top_level && level <= 5 ->
+        Error.raise_warning
+          (heading_level_should_be_lower_than_top_level level top_level location)
+    | _ -> ()
+  in
+  mk_heading level'
 
 let validate_first_page_heading status ast_element =
   match status.parent_of_sections.iv with
@@ -511,7 +489,7 @@ let top_level_block_elements status ast_elements =
     | [] -> List.rev comment_elements_acc
     | ast_element :: ast_elements -> (
         (* The first [ast_element] in pages must be a title or section heading. *)
-        if status.sections_allowed = `All && top_heading_level = None then
+        if top_heading_level = None then
           validate_first_page_heading status ast_element;
 
         match ast_element with
@@ -600,23 +578,23 @@ let append_alerts_to_comment alerts
   in
   comment @ (alerts : alerts :> Comment.docs)
 
-let ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
-    ~parent_of_sections (ast : Ast.t) alerts =
+let ast_to_comment ~internal_tags ~tags_allowed ~parent_of_sections
+    (ast : Ast.t) alerts =
   Error.catch_warnings (fun () ->
-      let status = { sections_allowed; tags_allowed; parent_of_sections } in
+      let status = { tags_allowed; parent_of_sections } in
       let ast, tags = strip_internal_tags ast in
       let elts =
         top_level_block_elements status ast |> append_alerts_to_comment alerts
       in
       (elts, handle_internal_tags tags internal_tags))
 
-let parse_comment ~internal_tags ~sections_allowed ~tags_allowed
-    ~containing_definition ~location ~text =
+let parse_comment ~internal_tags ~tags_allowed ~containing_definition ~location
+    ~text =
   Error.catch_warnings (fun () ->
       let ast =
         Odoc_parser.parse_comment ~location ~text |> Error.raise_parser_warnings
       in
-      ast_to_comment ~internal_tags ~sections_allowed ~tags_allowed
+      ast_to_comment ~internal_tags ~tags_allowed
         ~parent_of_sections:containing_definition ast []
       |> Error.raise_warnings)
 

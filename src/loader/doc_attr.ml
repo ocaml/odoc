@@ -114,7 +114,7 @@ let pad_loc loc =
   { loc.Location.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 }
 
 let ast_to_comment ~internal_tags parent ast_docs alerts =
-  Odoc_model.Semantics.ast_to_comment ~internal_tags ~sections_allowed:`All
+  Odoc_model.Semantics.ast_to_comment ~internal_tags
     ~tags_allowed:true ~parent_of_sections:parent ast_docs alerts
   |> Error.raise_warnings
 
@@ -150,7 +150,6 @@ let attached_no_tag parent attrs =
 let read_string ~tags_allowed internal_tags parent location str =
   Odoc_model.Semantics.parse_comment
     ~internal_tags
-    ~sections_allowed:`All
     ~tags_allowed
     ~containing_definition:parent
     ~location
