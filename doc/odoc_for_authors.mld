@@ -251,6 +251,10 @@ and ordered lists:
     {- <item 2>}
     {- <item 3>}}
 v}
+
+Lists can contain block elements, apart from {{!sections}headings} and
+{{!tags}tags}.
+
 There is also an abbreviated syntax for lists. The above could be written:
 {v
 - <item>
@@ -263,6 +267,9 @@ and
 + <item 2>
 + <item 3>
 v}
+
+In the abbreviated synyax, lists are ended by a blank line, or anything that
+cannot be part of a list item (a heading or a tag).
 
 {3:code_blocks Code Blocks}
 
@@ -520,9 +527,13 @@ i.e., there shouldn't be any [odoc] markup.
 
 {3 Block Tags}
 
-These tags have a block of potentially marked-up text associated with them,
-and occasionally some more data too. The block of text is implicitly ended by a
-new line, a heading or another tag.
+These tags have a block of potentially marked-up text associated with them, and
+occasionally some more data too.
+
+The content of a block tag can be any markup, apart from {{!sections}headings}
+and other tags. Note that compared to ocamldoc, block tags do not extend to the
+end of the docstring. Instead, they are ended by a blank line, or a block that
+cannot be included in (a heading or another tag).
 
 - [@deprecated <text>] - marks the element as deprecated. [text] should describe
 when the element was deprecated, what to use as a replacement, and possibly
