@@ -25,6 +25,7 @@ let describe_internal_tag = function
   | `Closed -> "@closed"
   | `Hidden -> "@hidden"
   | `Children_order _ -> "@children_order"
+  | `Short_title _ -> "@short_title"
 
 let warn_unexpected_tag { Location.value; location } =
   Error.raise_warning
@@ -53,48 +54,6 @@ let rec find_tags acc ~filter = function
       | None ->
           warn_unexpected_tag hd;
           find_tags acc ~filter tl)
-
-let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
-  | Expect_status -> (
-      match
-        find_tag
-          ~filter:(function
-            | (`Inline | `Open | `Closed) as t -> Some t | _ -> None)
-          tags
-      with
-      | Some (status, _) -> status
-      | None -> `Default)
-  | Expect_canonical -> (
-      match
-        find_tag ~filter:(function `Canonical p -> Some p | _ -> None) tags
-      with
-      | Some (`Root _, location) ->
-          warn_root_canonical location;
-          None
-      | Some ((`Dot _ as p), _) -> Some p
-      | None -> None)
-  | Expect_page_tags ->
-      let unparsed_lines =
-        find_tags []
-          ~filter:(function `Children_order _ as p -> Some p | _ -> None)
-          tags
-      in
-      let lines =
-        List.filter_map
-          (function
-            | `Children_order co, loc -> (
-                match Frontmatter.parse_children_order loc co with
-                | Ok co -> Some co
-                | Error e ->
-                    Error.raise_warning e;
-                    None))
-          unparsed_lines
-      in
-      Frontmatter.of_lines lines |> Error.raise_warnings
-  | Expect_none ->
-      (* Will raise warnings. *)
-      ignore (find_tag ~filter:(fun _ -> None) tags);
-      ()
 
 (* Errors *)
 let invalid_raw_markup_target : string -> Location.span -> Error.t =
@@ -138,6 +97,7 @@ let describe_element = function
   | `Link (_, _) -> "'{{:...} ...}' (external link)"
   | `Heading (level, _, _) ->
       Printf.sprintf "'{%i ...}' (section heading)" level
+  | `Specific s -> s
 
 (* End of errors *)
 
@@ -188,7 +148,8 @@ type surrounding =
   | `Reference of
     [ `Simple | `With_text ]
     * string Location_.with_location
-    * Odoc_parser.Ast.inline_element Location_.with_location list ]
+    * Odoc_parser.Ast.inline_element Location_.with_location list
+  | `Specific of string ]
 
 let rec non_link_inline_element :
     surrounding:surrounding ->
@@ -524,12 +485,13 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
         in
         match tag with
         | (`Inline | `Open | `Closed | `Hidden) as tag -> next tag
-        | `Children_order co ->
+        | (`Children_order _ | `Short_title _) as tag ->
+            let tag_name = describe_internal_tag tag in
             if not start then
               Error.raise_warning
-                (Error.make "@children_order tag has to be before any content"
+                (Error.make "%s tag has to be before any content" tag_name
                    wloc.location);
-            next (`Children_order co)
+            next tag
         | `Canonical { Location.value = s; location = r_location } -> (
             match
               Error.raise_warnings (Reference.read_path_longident r_location s)
@@ -568,6 +530,54 @@ let append_alerts_to_comment alerts
   in
   comment @ (alerts : alerts :> Comment.docs)
 
+let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
+  | Expect_status -> (
+      match
+        find_tag
+          ~filter:(function
+            | (`Inline | `Open | `Closed) as t -> Some t | _ -> None)
+          tags
+      with
+      | Some (status, _) -> status
+      | None -> `Default)
+  | Expect_canonical -> (
+      match
+        find_tag ~filter:(function `Canonical p -> Some p | _ -> None) tags
+      with
+      | Some (`Root _, location) ->
+          warn_root_canonical location;
+          None
+      | Some ((`Dot _ as p), _) -> Some p
+      | None -> None)
+  | Expect_page_tags ->
+      let unparsed_lines =
+        find_tags []
+          ~filter:(function
+            | (`Children_order _ | `Short_title _) as p -> Some p | _ -> None)
+          tags
+      in
+      let lines =
+        let do_ parse loc els =
+          let els = nestable_block_elements els in
+          match parse loc els with
+          | Ok res -> Some res
+          | Error e ->
+              Error.raise_warning e;
+              None
+        in
+        List.filter_map
+          (function
+            | `Children_order co, loc ->
+                do_ Frontmatter.parse_children_order loc co
+            | `Short_title t, loc -> do_ Frontmatter.parse_short_title loc t)
+          unparsed_lines
+      in
+      Frontmatter.of_lines lines |> Error.raise_warnings
+  | Expect_none ->
+      (* Will raise warnings. *)
+      ignore (find_tag ~filter:(fun _ -> None) tags);
+      ()
+
 let ast_to_comment ~internal_tags ~tags_allowed ~parent_of_sections
     (ast : Ast.t) alerts =
   Error.catch_warnings (fun () ->
@@ -598,3 +608,11 @@ let parse_reference text =
       }
   in
   Reference.parse location text
+
+let non_link_inline_element :
+    context:string ->
+    Odoc_parser.Ast.inline_element with_location list ->
+    Comment.non_link_inline_element with_location list =
+ fun ~context elements ->
+  let surrounding = `Specific context in
+  non_link_inline_elements ~surrounding elements

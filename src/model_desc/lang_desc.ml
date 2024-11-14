@@ -712,6 +712,12 @@ and frontmatter =
         ( "children",
           (fun t -> Option.map ignore_loc t.children_order),
           Option (List child) );
+      F
+        ( "short_title",
+          (fun t ->
+            (t.short_title
+              :> Comment.inline_element Location_.with_location list option)),
+          Option Comment_desc.inline_element );
     ]
 
 and child =

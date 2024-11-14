@@ -45,7 +45,8 @@
           "Page": "typo"
         }
       ]
-    }
+    },
+    "short_title": "None"
   }
 
 

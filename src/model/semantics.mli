@@ -19,6 +19,11 @@ val ast_to_comment :
   alerts ->
   (Comment.docs * 'tags) Error.with_warnings
 
+val non_link_inline_element :
+  context:string ->
+  Odoc_parser.Ast.inline_element Location_.with_location list ->
+  Comment.non_link_inline_element Location_.with_location list
+
 val parse_comment :
   internal_tags:'tags handle_internal_tags ->
   tags_allowed:bool ->
