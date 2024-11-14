@@ -187,3 +187,11 @@ let docs = Indirect ((fun n -> ((n :> docs) :> general_docs)), docs)
 
 let docs_or_stop : docs_or_stop t =
   Variant (function `Docs x -> C ("`Docs", x, docs) | `Stop -> C0 "`Stop")
+
+let inline_element : inline_element Location_.with_location list Type_desc.t =
+  List
+    (Indirect
+       ( (fun x ->
+           let x :> general_inline_element Location_.with_location = x in
+           ignore_loc x),
+         inline_element ))

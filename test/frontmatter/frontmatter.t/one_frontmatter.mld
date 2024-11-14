@@ -1,3 +1,4 @@
 @children_order page1 page2
+@short_title yes!
 
 {0 One frontmatter}

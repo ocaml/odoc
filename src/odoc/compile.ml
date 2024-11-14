@@ -207,7 +207,7 @@ let is_index_page = function
   | { iv = `LeafPage (_, p); _ } ->
       String.equal (Names.PageName.to_string p) "index"
 
-let has_children_order { Frontmatter.children_order } =
+let has_children_order { Frontmatter.children_order; _ } =
   Option.is_some children_order
 
 let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =

@@ -3,7 +3,8 @@ When there is no frontmatter, everything is normal
   $ odoc compile zero_frontmatter.mld
   $ odoc_print page-zero_frontmatter.odoc | jq '.frontmatter'
   {
-    "children": "None"
+    "children": "None",
+    "short_title": "None"
   }
 
 When there is one frontmatter, it is extracted from the content:
@@ -20,6 +21,13 @@ When there is one frontmatter, it is extracted from the content:
         },
         {
           "Page": "page2"
+        }
+      ]
+    },
+    "short_title": {
+      "Some": [
+        {
+          "`Word": "yes!"
         }
       ]
     }
@@ -74,7 +82,8 @@ When there is more than one children order, we raise a warning and keep only the
           "Page": "bli2"
         }
       ]
-    }
+    },
+    "short_title": "None"
   }
   $ odoc_print page-two_frontmatters.odoc | jq '.content'
   [
