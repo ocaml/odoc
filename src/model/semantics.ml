@@ -191,17 +191,16 @@ type surrounding =
     * Odoc_parser.Ast.inline_element Location_.with_location list ]
 
 let rec non_link_inline_element :
-    status ->
     surrounding:surrounding ->
     Odoc_parser.Ast.inline_element with_location ->
     Comment.non_link_inline_element with_location =
- fun status ~surrounding element ->
+ fun ~surrounding element ->
   match element with
   | { value = #ast_leaf_inline_element; _ } as element ->
       (leaf_inline_element element
         :> Comment.non_link_inline_element with_location)
   | { value = `Styled (style, content); _ } ->
-      `Styled (style, non_link_inline_elements status ~surrounding content)
+      `Styled (style, non_link_inline_elements ~surrounding content)
       |> Location.same element
   | ( { value = `Reference (_, _, content); _ }
     | { value = `Link (_, content); _ } ) as element ->
@@ -211,29 +210,26 @@ let rec non_link_inline_element :
         element.location
       |> Error.raise_warning;
 
-      `Styled (`Emphasis, non_link_inline_elements status ~surrounding content)
+      `Styled (`Emphasis, non_link_inline_elements ~surrounding content)
       |> Location.same element
 
-and non_link_inline_elements status ~surrounding elements =
-  List.map (non_link_inline_element status ~surrounding) elements
+and non_link_inline_elements ~surrounding elements =
+  List.map (non_link_inline_element ~surrounding) elements
 
 let rec inline_element :
-    status ->
     Odoc_parser.Ast.inline_element with_location ->
     Comment.inline_element with_location =
- fun status element ->
+ fun element ->
   match element with
   | { value = #ast_leaf_inline_element; _ } as element ->
       (leaf_inline_element element :> Comment.inline_element with_location)
   | { value = `Styled (style, content); location } ->
-      `Styled (style, inline_elements status content) |> Location.at location
+      `Styled (style, inline_elements content) |> Location.at location
   | { value = `Reference (kind, target, content) as value; location } -> (
       let { Location.value = target; location = target_location } = target in
       match Error.raise_warnings (Reference.parse target_location target) with
       | Result.Ok target ->
-          let content =
-            non_link_inline_elements status ~surrounding:value content
-          in
+          let content = non_link_inline_elements ~surrounding:value content in
           Location.at location (`Reference (target, content))
       | Result.Error error ->
           Error.raise_warning error;
@@ -242,21 +238,20 @@ let rec inline_element :
             | `Simple -> `Code_span target
             | `With_text -> `Styled (`Emphasis, content)
           in
-          inline_element status (Location.at location placeholder))
+          inline_element (Location.at location placeholder))
   | { value = `Link (target, content) as value; location } ->
-      `Link (target, non_link_inline_elements status ~surrounding:value content)
+      `Link (target, non_link_inline_elements ~surrounding:value content)
       |> Location.at location
 
-and inline_elements status elements = List.map (inline_element status) elements
+and inline_elements elements = List.map inline_element elements
 
 let rec nestable_block_element :
-    status ->
     Odoc_parser.Ast.nestable_block_element with_location ->
     Comment.nestable_block_element with_location =
- fun status element ->
+ fun element ->
   match element with
   | { value = `Paragraph content; location } ->
-      Location.at location (`Paragraph (inline_elements status content))
+      Location.at location (`Paragraph (inline_elements content))
   | { value = `Code_block { meta; delimiter = _; content; output }; location }
     ->
       let lang_tag =
@@ -267,7 +262,7 @@ let rec nestable_block_element :
       let outputs =
         match output with
         | None -> None
-        | Some l -> Some (List.map (nestable_block_element status) l)
+        | Some l -> Some (List.map nestable_block_element l)
       in
       Location.at location (`Code_block (lang_tag, content, outputs))
   | { value = `Math_block s; location } -> Location.at location (`Math_block s)
@@ -289,13 +284,13 @@ let rec nestable_block_element :
       in
       Location.at location (`Modules modules)
   | { value = `List (kind, _syntax, items); location } ->
-      `List (kind, List.map (nestable_block_elements status) items)
+      `List (kind, List.map nestable_block_elements items)
       |> Location.at location
   | { value = `Table ((grid, align), (`Heavy | `Light)); location } ->
       let data =
         List.map
           (List.map (fun (cell, cell_type) ->
-               (nestable_block_elements status cell, cell_type)))
+               (nestable_block_elements cell, cell_type)))
           grid
       in
       `Table { Comment.data; align } |> Location.at location
@@ -315,8 +310,7 @@ let rec nestable_block_element :
           | `With_text ->
               `Styled (`Emphasis, [ `Word content |> Location.at location ])
         in
-        `Paragraph
-          (inline_elements status [ placeholder |> Location.at location ])
+        `Paragraph (inline_elements [ placeholder |> Location.at location ])
         |> Location.at location
       in
       match Error.raise_warnings (Reference.parse_asset href_location href) with
@@ -324,8 +318,7 @@ let rec nestable_block_element :
           `Media (`Reference target, m, content) |> Location.at location
       | Result.Error error -> fallback error)
 
-and nestable_block_elements status elements =
-  List.map (nestable_block_element status) elements
+and nestable_block_elements elements = List.map nestable_block_element elements
 
 let tag :
     location:Location.span ->
@@ -342,26 +335,23 @@ let tag :
   let ok t = Result.Ok (Location.at location (`Tag t)) in
   match tag with
   | (`Author _ | `Since _ | `Version _) as tag -> ok tag
-  | `Deprecated content ->
-      ok (`Deprecated (nestable_block_elements status content))
+  | `Deprecated content -> ok (`Deprecated (nestable_block_elements content))
   | `Param (name, content) ->
-      ok (`Param (name, nestable_block_elements status content))
+      ok (`Param (name, nestable_block_elements content))
   | `Raise (name, content) -> (
       match Error.raise_warnings (Reference.parse location name) with
       (* TODO: location for just name *)
       | Result.Ok target ->
-          ok
-            (`Raise
-              (`Reference (target, []), nestable_block_elements status content))
+          ok (`Raise (`Reference (target, []), nestable_block_elements content))
       | Result.Error error ->
           Error.raise_warning error;
           let placeholder = `Code_span name in
-          ok (`Raise (placeholder, nestable_block_elements status content)))
-  | `Return content -> ok (`Return (nestable_block_elements status content))
+          ok (`Raise (placeholder, nestable_block_elements content)))
+  | `Return content -> ok (`Return (nestable_block_elements content))
   | `See (kind, target, content) ->
-      ok (`See (kind, target, nestable_block_elements status content))
+      ok (`See (kind, target, nestable_block_elements content))
   | `Before (version, content) ->
-      ok (`Before (version, nestable_block_elements status content))
+      ok (`Before (version, nestable_block_elements content))
 
 (* When the user does not give a section heading a label (anchor), we generate
    one from the text in the heading. This is the common case. This involves
@@ -426,7 +416,7 @@ let section_heading :
  fun status ~top_heading_level location heading ->
   let (`Heading (level, label, content)) = heading in
 
-  let text = inline_elements status content in
+  let text = inline_elements content in
 
   let heading_label_explicit, label =
     match label with
@@ -494,7 +484,7 @@ let top_level_block_elements status ast_elements =
 
         match ast_element with
         | { value = #Odoc_parser.Ast.nestable_block_element; _ } as element ->
-            let element = nestable_block_element status element in
+            let element = nestable_block_element element in
             let element = (element :> Comment.block_element with_location) in
             traverse ~top_heading_level
               (element :: comment_elements_acc)
