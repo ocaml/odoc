@@ -27,7 +27,8 @@
 - Added a `compile-asset` command (@EmileTrotignon, @panglesd, #1170)
 - Allow referencing assets (@panglesd, #1171)
 - Added a `--asset-path` arg to `html-generate` (@panglesd, #1185)
-- Add a frontmatter syntax for mld pages (@panglesd, #1187)
+- Add a `@children_order` tag to specify the order in the sidebar (@panglesd,
+  #1187, #1243)
 - Add a 'remap' option to HTML generation for partial docsets (@jonludlam, #1189)
 - Added an `html-generate-asset` command (@panglesd, #1185)
 - Added syntax for images, videos, audio (@panglesd, #1184)
