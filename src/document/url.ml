@@ -7,6 +7,7 @@ let render_path : Path.t -> string =
     let open Path.Resolved in
     function
     | `Identifier id -> Identifier.name id
+    | `CoreType n -> TypeName.to_string n
     | `OpaqueModule p -> render_resolved (p :> t)
     | `OpaqueModuleType p -> render_resolved (p :> t)
     | `Subst (_, p) -> render_resolved (p :> t)
@@ -61,7 +62,6 @@ let render_path : Path.t -> string =
     | `SubstitutedMT m -> render_path (m :> Path.t)
     | `SubstitutedT m -> render_path (m :> Path.t)
     | `SubstitutedCT m -> render_path (m :> Path.t)
-    | `CoreType n -> TypeName.to_string n
   in
 
   render_path
@@ -375,13 +375,8 @@ module Anchor = struct
   let polymorphic_variant ~type_ident elt =
     let name_of_type_constr te =
       match te with
-      | Odoc_model.Lang.TypeExpr.Constr
-          ((#Odoc_model.Paths.Path.NonCoreType.t as path), _) ->
-          render_path
-            (path
-              : Odoc_model.Paths.Path.NonCoreType.t
-              :> Odoc_model.Paths.Path.t)
-      | Odoc_model.Lang.TypeExpr.Constr (`CoreType n, _) -> TypeName.to_string n
+      | Odoc_model.Lang.TypeExpr.Constr (path, _) ->
+          render_path (path :> Odoc_model.Paths.Path.t)
       | _ ->
           invalid_arg
             "DocOckHtml.Url.Polymorphic_variant_decl.name_of_type_constr"

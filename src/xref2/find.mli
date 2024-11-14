@@ -113,7 +113,9 @@ type careful_module = [ module_ | `FModule_removed of Cpath.module_ ]
 type careful_module_type =
   [ module_type | `FModuleType_removed of ModuleType.expr ]
 
-type careful_type = [ type_ | removed_type ]
+type core_type = [ `CoreType of TypeName.t ]
+
+type careful_type = [ type_ | removed_type | core_type ]
 
 type careful_class = [ class_ | removed_type ]
 

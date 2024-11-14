@@ -656,6 +656,7 @@ module Path = struct
       | `ModuleType (_, m) when Names.ModuleTypeName.is_hidden m -> true
       | `ModuleType (p, _) -> inner (p : module_ :> any)
       | `Type (_, t) when Names.TypeName.is_hidden t -> true
+      | `CoreType t -> Names.TypeName.is_hidden t
       | `Type (p, _) -> inner (p : module_ :> any)
       | `Value (_, t) when Names.ValueName.is_hidden t -> true
       | `Value (p, _) -> inner (p : module_ :> any)
@@ -685,7 +686,6 @@ module Path = struct
   and is_path_hidden : Paths_types.Path.any -> bool =
     let open Paths_types.Path in
     function
-    | `CoreType _ -> false
     | `Resolved r -> is_resolved_hidden ~weak_canonical_test:false r
     | `Identifier (_, hidden) -> hidden
     | `Substituted r -> is_path_hidden (r :> any)
@@ -710,10 +710,9 @@ module Path = struct
     type t = Paths_types.Resolved_path.any
 
     let rec parent_module_type_identifier :
-        Paths_types.Resolved_path.module_type -> Identifier.Signature.t =
+        Paths_types.Resolved_path.module_type -> Identifier.ModuleType.t =
       function
-      | `Identifier id ->
-          (id : Identifier.ModuleType.t :> Identifier.Signature.t)
+      | `Identifier id -> (id : Identifier.ModuleType.t)
       | `ModuleType (m, n) ->
           Identifier.Mk.module_type (parent_module_identifier m, n)
       | `SubstT (m, _n) -> parent_module_type_identifier m
@@ -730,7 +729,8 @@ module Path = struct
         Paths_types.Resolved_path.module_ -> Identifier.Signature.t = function
       | `Identifier id ->
           (id : Identifier.Path.Module.t :> Identifier.Signature.t)
-      | `Subst (sub, _) -> parent_module_type_identifier sub
+      | `Subst (sub, _) ->
+          (parent_module_type_identifier sub :> Identifier.Signature.t)
       | `Hidden p -> parent_module_identifier p
       | `Module (m, n) -> Identifier.Mk.module_ (parent_module_identifier m, n)
       | `Canonical (_, `Resolved p) -> parent_module_identifier p
@@ -753,6 +753,9 @@ module Path = struct
 
     module ModuleType = struct
       type t = Paths_types.Resolved_path.module_type
+
+      let identifier : t -> Identifier.ModuleType.t =
+        parent_module_type_identifier
     end
 
     module Type = struct
@@ -767,21 +770,26 @@ module Path = struct
       type t = Paths_types.Resolved_path.class_type
     end
 
-    let rec identifier : t -> Identifier.t = function
-      | `Identifier id -> id
+    let rec identifier : t -> Identifier.t option = function
+      | `Identifier id -> Some id
+      | `CoreType _ -> None
       | `Subst (sub, _) -> identifier (sub :> t)
       | `Hidden p -> identifier (p :> t)
-      | `Module (m, n) -> Identifier.Mk.module_ (parent_module_identifier m, n)
+      | `Module (m, n) ->
+          Some (Identifier.Mk.module_ (parent_module_identifier m, n))
       | `Canonical (_, `Resolved p) -> identifier (p :> t)
       | `Canonical (p, _) -> identifier (p :> t)
       | `Apply (m, _) -> identifier (m :> t)
-      | `Type (m, n) -> Identifier.Mk.type_ (parent_module_identifier m, n)
-      | `Value (m, n) -> Identifier.Mk.value (parent_module_identifier m, n)
+      | `Type (m, n) ->
+          Some (Identifier.Mk.type_ (parent_module_identifier m, n))
+      | `Value (m, n) ->
+          Some (Identifier.Mk.value (parent_module_identifier m, n))
       | `ModuleType (m, n) ->
-          Identifier.Mk.module_type (parent_module_identifier m, n)
-      | `Class (m, n) -> Identifier.Mk.class_ (parent_module_identifier m, n)
+          Some (Identifier.Mk.module_type (parent_module_identifier m, n))
+      | `Class (m, n) ->
+          Some (Identifier.Mk.class_ (parent_module_identifier m, n))
       | `ClassType (m, n) ->
-          Identifier.Mk.class_type (parent_module_identifier m, n)
+          Some (Identifier.Mk.class_type (parent_module_identifier m, n))
       | `Alias (dest, `Resolved src) ->
           if is_resolved_hidden ~weak_canonical_test:false (dest :> t) then
             identifier (src :> t)
@@ -814,10 +822,6 @@ module Path = struct
     type t = Paths_types.Path.module_type
   end
 
-  module NonCoreType = struct
-    type t = Paths_types.Path.non_core_type
-  end
-
   module Type = struct
     type t = Paths_types.Path.type_
   end
@@ -843,9 +847,13 @@ module Fragment = struct
       type t = Paths_types.Resolved_fragment.signature
 
       let rec sgidentifier : t -> Identifier.Signature.t = function
-        | `Root (`ModuleType i) -> Path.Resolved.parent_module_type_identifier i
+        | `Root (`ModuleType i) ->
+            (Path.Resolved.parent_module_type_identifier i
+              :> Identifier.Signature.t)
         | `Root (`Module i) -> Path.Resolved.parent_module_identifier i
-        | `Subst (s, _) -> Path.Resolved.parent_module_type_identifier s
+        | `Subst (s, _) ->
+            (Path.Resolved.parent_module_type_identifier s
+              :> Identifier.Signature.t)
         | `Alias (i, _) -> Path.Resolved.parent_module_identifier i
         | `Module (m, n) -> Identifier.Mk.module_ (sgidentifier m, n)
         | `OpaqueModule m -> sgidentifier (m :> t)
@@ -868,7 +876,7 @@ module Fragment = struct
     let rec identifier : t -> Identifier.t = function
       | `Root (`ModuleType _r) -> assert false
       | `Root (`Module _r) -> assert false
-      | `Subst (s, _) -> Path.Resolved.identifier (s :> Path.Resolved.t)
+      | `Subst (s, _) -> (Path.Resolved.ModuleType.identifier s :> Identifier.t)
       | `Alias (p, _) ->
           (Path.Resolved.parent_module_identifier p :> Identifier.t)
       | `Module (m, n) -> Identifier.Mk.module_ (Signature.sgidentifier m, n)

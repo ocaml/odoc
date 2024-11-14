@@ -681,7 +681,9 @@ module Path = struct
     with Not_found -> assert false
 
   let read_type_ident env id =
-    match find_type env id with Some id -> `Identifier (id , false) | None -> `CoreType (TypeName.of_ident id)
+    match find_type env id with
+    | Some id -> `Identifier (id , false)
+    | None -> `Resolved (`CoreType (TypeName.of_ident id))
 
   let read_value_ident env id : Paths.Path.Value.t =
     `Identifier (find_value_identifier env id, false)

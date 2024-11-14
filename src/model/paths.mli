@@ -389,7 +389,8 @@ module rec Path : sig
 
     type t = Paths_types.Resolved_path.any
 
-    val identifier : t -> Identifier.t
+    val identifier : t -> Identifier.t option
+    (** If the path points to a core type, no identifier can be generated *)
 
     val is_hidden : t -> bool
   end
@@ -406,10 +407,6 @@ module rec Path : sig
 
   module Type : sig
     type t = Paths_types.Path.type_
-  end
-
-  module NonCoreType : sig
-    type t = Paths_types.Path.non_core_type
   end
 
   module Value : sig

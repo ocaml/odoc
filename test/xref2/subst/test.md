@@ -141,11 +141,11 @@ module SomeMonad/20 :
 module ComplexTypeExpr/19 :
   sig
     type t/28
-    include r(Monad/21) with [resolved(root(Monad/21).t) = ([int * a] resolved(t/28) * [a * int] resolved(t/28))]
+    include r(Monad/21) with [resolved(root(Monad/21).t) = ([resolved(int) * a] resolved(t/28) * [a * resolved(int)] resolved(t/28))]
       (sig :
-        val map/29 : (([int * a] resolved(t/28) * [a * int] resolved(t/28))) -> ((a) -> b) -> ([int * b] resolved(t/28) * [b * int] resolved(t/28))
-        val join/30 : (([int * ([int * a] resolved(t/28) * [a * int] resolved(t/28))] resolved(t/28) * [([int * a] resolved(t/28) * [a * int] resolved(t/28)) * int] resolved(t/28))) -> ([int * a] resolved(t/28) * [a * int] resolved(t/28))
-        (removed=type (a) t = (([int * a] local(t/28,false) * [a * int] local(t/28,false))))
+        val map/29 : (([resolved(int) * a] resolved(t/28) * [a * resolved(int)] resolved(t/28))) -> ((a) -> b) -> ([resolved(int) * b] resolved(t/28) * [b * resolved(int)] resolved(t/28))
+        val join/30 : (([resolved(int) * ([resolved(int) * a] resolved(t/28) * [a * resolved(int)] resolved(t/28))] resolved(t/28) * [([resolved(int) * a] resolved(t/28) * [a * resolved(int)] resolved(t/28)) * resolved(int)] resolved(t/28))) -> ([resolved(int) * a] resolved(t/28) * [a * resolved(int)] resolved(t/28))
+        (removed=type (a) t = (([resolved(int) * a] local(t/28,false) * [a * resolved(int)] local(t/28,false))))
        end)
   end (canonical=None)
 module Erase/18 :

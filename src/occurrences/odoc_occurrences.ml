@@ -5,7 +5,9 @@ let of_impl ~include_hidden unit htbl =
     let open Odoc_model.Paths.Path.Resolved in
     let p = (p :> t) in
     let id = identifier p in
-    if (not (is_hidden p)) || include_hidden then Table.add tbl id
+    match id with
+    | Some id when (not (is_hidden p)) || include_hidden -> Table.add tbl id
+    | _ -> ()
   in
   let open Odoc_model.Lang in
   List.iter

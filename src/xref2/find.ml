@@ -7,6 +7,8 @@ type module_type = [ `FModuleType of ModuleTypeName.t * ModuleType.t ]
 
 type datatype = [ `FType of TypeName.t * TypeDecl.t ]
 
+type core_type = [ `CoreType of TypeName.t ]
+
 type class_ =
   [ `FClass of TypeName.t * Class.t | `FClassType of TypeName.t * ClassType.t ]
 
@@ -127,7 +129,7 @@ type careful_module = [ module_ | `FModule_removed of Cpath.module_ ]
 type careful_module_type =
   [ module_type | `FModuleType_removed of ModuleType.expr ]
 
-type careful_type = [ type_ | removed_type ]
+type careful_type = [ type_ | removed_type | core_type ]
 
 type careful_class = [ class_ | removed_type ]
 

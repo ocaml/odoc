@@ -3260,7 +3260,7 @@ let sg = Common.signature_of_mli_string test_data;;
        ihash = 1011043008;
        ikey = "v_{x}6/shadowed/(XXXX).m_Foo3.r_Root.p_None"};
      source_loc = None; value = Odoc_model.Lang.Value.Abstract; doc = [];
-     type_ = Odoc_model.Lang.TypeExpr.Constr (`CoreType int, [])};
+     type_ = Odoc_model.Lang.TypeExpr.Constr (`Resolved (`CoreType int), [])};
    Odoc_model.Lang.Signature.Value
     {Odoc_model.Lang.Value.id =
       {Odoc_model__Paths_types.iv =

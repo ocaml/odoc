@@ -98,7 +98,7 @@ val resolve_module_type :
 
 val resolve_type :
   Env.t ->
-  Cpath.non_core_type ->
+  Cpath.type_ ->
   ( Cpath.Resolved.type_ * Find.careful_type,
     simple_type_lookup_error )
   Result.result
@@ -140,7 +140,7 @@ val resolve_module_type_path :
 
 val resolve_type_path :
   Env.t ->
-  Cpath.non_core_type ->
+  Cpath.type_ ->
   (Cpath.Resolved.type_, simple_type_lookup_error) Result.result
 
 val resolve_value_path :
