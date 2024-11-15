@@ -1,6 +1,6 @@
 open Odoc_unit
 
-let packages ~dirs ~extra_paths (pkgs : Packages.t list) : t list =
+let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
   let { odoc_dir; odocl_dir; index_dir; mld_dir = _ } = dirs in
   (* [module_of_hash] Maps a hash to the corresponding [Package.t], library name and
      [Packages.modulety]. [lib_dirs] maps a library name to the odoc dir containing its
@@ -88,7 +88,9 @@ let packages ~dirs ~extra_paths (pkgs : Packages.t list) : t list =
   in
 
   let make_unit ~name ~kind ~rel_dir ~input_file ~pkg ~lib_deps ~enable_warnings
-      : _ unit =
+      ~to_output : _ unit =
+    let to_output = to_output || not remap in
+    (* If we haven't got active remapping, we output everything *)
     let ( // ) = Fpath.( // ) in
     let ( / ) = Fpath.( / ) in
     let pkg_args = args_of pkg lib_deps in
@@ -109,6 +111,7 @@ let packages ~dirs ~extra_paths (pkgs : Packages.t list) : t list =
       odoc_file;
       odocl_file;
       kind;
+      to_output;
       enable_warnings;
       index = Some (index_of pkg);
     }
@@ -142,7 +145,7 @@ let packages ~dirs ~extra_paths (pkgs : Packages.t list) : t list =
         in
         let name = intf.mif_path |> Fpath.rem_ext |> Fpath.basename in
         make_unit ~name ~kind ~rel_dir ~input_file:intf.mif_path ~pkg ~lib_deps
-          ~enable_warnings:pkg.enable_warnings
+          ~enable_warnings:pkg.selected ~to_output:pkg.selected
       in
       match Hashtbl.find_opt intf_cache intf.mif_hash with
       | Some unit -> unit
@@ -170,7 +173,7 @@ let packages ~dirs ~extra_paths (pkgs : Packages.t list) : t list =
         in
         let unit =
           make_unit ~name ~kind ~rel_dir ~input_file:impl.mip_path ~pkg
-            ~lib_deps ~enable_warnings:pkg.enable_warnings
+            ~lib_deps ~enable_warnings:pkg.selected ~to_output:pkg.selected
         in
         Some unit
   in
@@ -185,9 +188,13 @@ let packages ~dirs ~extra_paths (pkgs : Packages.t list) : t list =
   in
   let of_lib pkg (lib : Packages.libty) =
     let lib_deps = Util.StringSet.add lib.lib_name lib.lib_deps in
-    let index = index_of pkg in
-    let landing_page :> t = Landing_pages.library ~dirs ~pkg ~index lib in
-    landing_page :: List.concat_map (of_module pkg lib lib_deps) lib.modules
+    let landing_page :> t list =
+      if pkg.Packages.selected then
+        let index = index_of pkg in
+        [ Landing_pages.library ~dirs ~pkg ~index lib ]
+      else []
+    in
+    landing_page @ List.concat_map (of_module pkg lib lib_deps) lib.modules
   in
   let of_mld pkg (mld : Packages.mld) : mld unit list =
     let open Fpath in
@@ -202,7 +209,7 @@ let packages ~dirs ~extra_paths (pkgs : Packages.t list) : t list =
     in
     let unit =
       make_unit ~name ~kind ~rel_dir ~input_file:mld_path ~pkg ~lib_deps
-        ~enable_warnings:pkg.enable_warnings
+        ~enable_warnings:pkg.selected ~to_output:pkg.selected
     in
     [ unit ]
   in
@@ -216,7 +223,7 @@ let packages ~dirs ~extra_paths (pkgs : Packages.t list) : t list =
         let lib_deps = Util.StringSet.empty in
         let unit =
           make_unit ~name ~kind ~rel_dir ~input_file:md ~pkg ~lib_deps
-            ~enable_warnings:pkg.enable_warnings
+            ~enable_warnings:pkg.selected ~to_output:pkg.selected
         in
         [ unit ]
     | _ ->
@@ -233,7 +240,7 @@ let packages ~dirs ~extra_paths (pkgs : Packages.t list) : t list =
     let unit =
       let name = asset_path |> Fpath.basename |> ( ^ ) "asset-" in
       make_unit ~name ~kind ~rel_dir ~input_file:asset_path ~pkg
-        ~lib_deps:Util.StringSet.empty ~enable_warnings:false
+        ~lib_deps:Util.StringSet.empty ~enable_warnings:false ~to_output:true
     in
     [ unit ]
   in
@@ -252,7 +259,7 @@ let packages ~dirs ~extra_paths (pkgs : Packages.t list) : t list =
               (Fpath.normalize (Fpath.v "./index.mld")))
           pkg.mlds
       in
-      if has_index_page then []
+      if has_index_page || not pkg.selected then []
       else
         let index = index_of pkg in
         [ Landing_pages.package ~dirs ~pkg ~index ]

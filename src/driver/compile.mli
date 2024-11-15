@@ -14,4 +14,9 @@ type linked
 
 val link : compiled list -> linked list
 
-val html_generate : occurrence_file:Fpath.t -> Fpath.t -> linked list -> unit
+val html_generate :
+  occurrence_file:Fpath.t ->
+  remaps:(string * string) list ->
+  Fpath.t ->
+  linked list ->
+  unit

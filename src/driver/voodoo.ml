@@ -229,7 +229,8 @@ let process_package pkg =
       libraries;
       mlds;
       assets;
-      enable_warnings = false;
+      selected = true;
+      remaps = [];
       other_docs = [];
       pkg_dir = top_dir pkg;
       config;

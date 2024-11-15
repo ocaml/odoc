@@ -33,6 +33,7 @@ type 'a unit = {
   pkgname : string option;
   index : index option;
   enable_warnings : bool;
+  to_output : bool;
   kind : 'a;
 }
 

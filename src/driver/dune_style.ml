@@ -122,7 +122,8 @@ let of_dune_build dir =
                       assets =
                         []
                         (* When dune has a notion of doc assets, do something *);
-                      enable_warnings = false;
+                      selected = false;
+                      remaps = [];
                       pkg_dir;
                       other_docs = [];
                       config = Global_config.empty;

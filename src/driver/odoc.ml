@@ -180,7 +180,7 @@ let compile_index ?(ignore_output = false) ~output_file ?occurrence_file ~json
   ignore @@ Cmd_outputs.submit log desc cmd (Some output_file)
 
 let html_generate ~output_dir ?index ?(ignore_output = false)
-    ?(search_uris = []) ?(as_json = false) ~input_file:file () =
+    ?(search_uris = []) ?(remap = None) ?(as_json = false) ~input_file:file () =
   let open Cmd in
   let index =
     match index with None -> empty | Some idx -> v "--index" % p idx
@@ -192,6 +192,9 @@ let html_generate ~output_dir ?index ?(ignore_output = false)
   in
   let cmd =
     !odoc % "html-generate" % p file %% index %% search_uris % "-o" % output_dir
+  in
+  let cmd =
+    match remap with None -> cmd | Some f -> cmd % "--remap-file" % p f
   in
   let cmd = if as_json then cmd % "--as-json" else cmd in
   let desc = Printf.sprintf "Generating HTML for %s" (Fpath.to_string file) in
