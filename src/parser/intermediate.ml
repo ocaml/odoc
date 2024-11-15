@@ -1,6 +1,7 @@
 (** Abstract syntax tree representing ocamldoc comments *)
 
-type +'a warning = [ `Warning of 'a * Warning.t ]
+type partial_warning = filename:string -> Warning.t
+type +'a warning = [ `Warning of 'a * partial_warning ]
 
 type inline_element =
   [ `Space of string
@@ -78,7 +79,7 @@ module Unpack = struct
           elt_warnings @ warnings ))
       ([], [])
 
-  let rec inline : inline_element -> Ast.inline_element * Warning.t list =
+  let rec inline : inline_element -> Ast.inline_element * partial_warning list =
     function
     | `Warning (node, warning) -> (node, [ warning ])
     | `Code_span s -> (`Code_span s, [])
@@ -97,8 +98,8 @@ module Unpack = struct
     | `Word s -> (`Word s, [])
 
   let rec nestable_block :
-      nestable_block_element -> Ast.nestable_block_element * Warning.t list =
-    function
+      nestable_block_element ->
+      Ast.nestable_block_element * partial_warning list = function
     | `Warning (node, warning) -> (node, [ warning ])
     | `Paragraph child_elts ->
         let child_elts, warnings = children inline child_elts in
@@ -113,11 +114,11 @@ module Unpack = struct
       node ->
         (node, [])
 
-  and table : table -> Ast.table * Warning.t list =
+  and table : table -> Ast.table * partial_warning list =
    fun ((grid, alignment), syntax) ->
     let rec go row_acc warning_acc :
         nestable_block_element grid ->
-        Ast.nestable_block_element grid * Warning.t list = function
+        Ast.nestable_block_element grid * partial_warning list = function
       | row :: rows ->
           let row, warnings =
             List.map
@@ -134,7 +135,7 @@ module Unpack = struct
     let grid, warnings = go [] [] grid in
     (((grid, alignment), syntax), warnings)
 
-  let tag : tag -> Ast.tag * Warning.t list = function
+  let tag : tag -> Ast.tag * partial_warning list = function
     | `Warning (node, warning) -> (node, [ warning ])
     | `Deprecated child_elts ->
         let child_elts, warnings = children nestable_block child_elts in
@@ -158,11 +159,11 @@ module Unpack = struct
         (t, [])
 end
 
-let unpack : t -> Ast.t * Warning.t list =
- fun self ->
+let unpack : filename:string -> t -> Ast.t * Warning.t list =
+ fun ~filename self ->
   let open Loc in
   let go (nodes, warnings) :
-      block_element with_location -> Ast.t * Warning.t list = function
+      block_element with_location -> Ast.t * partial_warning list = function
     | { value = `Heading (n, s, child_elts); _ } as loc ->
         let child_elts, warnings = Unpack.children Unpack.inline child_elts in
         let heading = `Heading (n, s, child_elts) in
@@ -175,4 +176,6 @@ let unpack : t -> Ast.t * Warning.t list =
         let node = (node :> Ast.block_element) in
         ({ loc with value = node } :: nodes, node_warnings @ warnings)
   in
-  List.fold_left go ([], []) self
+  let ast, warnings = List.fold_left go ([], []) self in
+  let warnings = List.map (fun mk_warning -> mk_warning ~filename) warnings in
+  (ast, warnings)

@@ -1,7 +1,64 @@
-open Parser
+type ref_kind = Simple | With_replacement
+
+type media = Reference of string | Link of string
+type media_target = Audio | Video | Image
+
+type paragraph_style = [ `Left | `Center | `Right ]
+
+type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
+type table_cell_kind = [ `Header | `Data ]
+
+type token =
+  | SPACE
+  | Space of string
+  | NEWLINE
+  | Single_newline of string
+  | Blank_line of string
+  | Simple_ref of string
+  | Ref_with_replacement of string
+  | Simple_link of string
+  | Link_with_replacement of string
+  | Modules of string
+  | Media of (media * media_target)
+  | Media_with_replacement of (media * media_target * string)
+  | Math_span of string
+  | Math_block of string
+  | Code_span of string
+  | Code_block of Ast.code_block
+  | Word of string
+  | Verbatim of string
+  | RIGHT_CODE_DELIMITER
+  | RIGHT_BRACE
+  | Paragraph_style of paragraph_style
+  | Style of style
+  | List of Ast.list_kind
+  | List_item of Ast.list_item
+  | TABLE_LIGHT
+  | TABLE_HEAVY
+  | TABLE_ROW
+  | Table_cell of Ast.table_cell_kind
+  | MINUS
+  | PLUS
+  | BAR
+  | Section_heading of (int * string option)
+  | Author of string
+  | DEPRECATED
+  | Param of string
+  | Raise of string
+  | RETURN
+  | See of ([ `Url | `File | `Document ] * string)
+  | Since of string
+  | Before of string
+  | Version of string
+  | Canonical of string
+  | INLINE
+  | OPEN
+  | CLOSED
+  | HIDDEN
+  | Raw_markup of (string option * string)
+  | END
 
 let media_description ref_kind media_kind =
-  let open Parser_aux in
   let media_kind =
     match media_kind with
     | Audio -> "audio"
@@ -11,7 +68,7 @@ let media_description ref_kind media_kind =
   let ref_kind = match ref_kind with Reference _ -> "!" | Link _ -> ":" in
   (ref_kind, media_kind)
 
-let print : Parser.token -> string = function
+let print : token -> string = function
   | SPACE | Space _ -> "\t"
   | NEWLINE | Single_newline _ -> "\n"
   | Blank_line _ -> "\n\n"
@@ -78,7 +135,7 @@ let print : Parser.token -> string = function
 (* [`Minus] and [`Plus] are interpreted as if they start list items. Therefore,
    for error messages based on [Token.describe] to be accurate, formatted
    [`Minus] and [`Plus] should always be plausibly list item bullets. *)
-let describe : Parser.token -> string = function
+let describe : token -> string = function
   | Space _ -> "(horizontal space)"
   | Media (ref_kind, media_kind) ->
       let ref_kind, media_kind = media_description ref_kind media_kind in
@@ -140,10 +197,3 @@ let describe : Parser.token -> string = function
   | OPEN -> "'@open'"
   | CLOSED -> "'@closed'"
   | HIDDEN -> "'@hidden"
-
-(* NOTE : (@faycarsons) Should this be in Ast.ml? This takes an Ast.t no? *)
-let describe_element = function
-  | `Reference (`Simple, _, _) -> describe (Simple_ref "")
-  | `Reference (`With_text, _, _) -> describe (Ref_with_replacement "")
-  | `Link _ -> describe (Link_with_replacement "")
-  | `Heading (level, _, _) -> describe (Section_heading (level, None))

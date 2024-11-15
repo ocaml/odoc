@@ -81,12 +81,16 @@
   let as_data = merged_tagged_row `Data
   let as_header = merged_tagged_row `Header
 
-  let media_kind_of_target = function
+  let media_kind_of_target = 
+    let open Tokens in 
+    function
     | Audio -> `Audio
     | Video -> `Video
     | Image -> `Image
 
-  let href_of_media = function
+  let href_of_media = 
+    let open Tokens in 
+    function
     | Reference name -> `Reference name
     | Link uri -> `Link uri
 
@@ -95,7 +99,6 @@
 
   let split_replacement_media Loc.{ location; value = (media, target, content) } =
     (Loc.at location media, target, content)
-
 %}
 
 %token SPACE NEWLINE
@@ -150,12 +153,11 @@
 %token <string> Ref_with_replacement 
 %token <string> Simple_link 
 %token <string> Link_with_replacement
-%token <Parser_aux.media * Parser_aux.media_target> Media 
-%token <Parser_aux.media * Parser_aux.media_target * string> Media_with_replacement
+%token <Tokens.media * Tokens.media_target> Media 
+%token <Tokens.media * Tokens.media_target * string> Media_with_replacement
 %token <string> Verbatim
 
 %token END
-
 %start <Intermediate.t> main 
 
 %%
@@ -228,6 +230,17 @@ let inline_element :=
   | ~ = Code_span; <`Code_span>
   | ~ = Raw_markup; <`Raw_markup>
   | style = Style; inner = located(inline_element)+; RIGHT_BRACE; { `Styled (style, inner) }
+  | style = Style; RIGHT_BRACE; 
+    {
+      let location = Parser_aux.to_location $sloc in
+      let node = `Styled (style, [Loc.at location (`Word "")]) in
+      let what = Tokens.describe @@ Style style in
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        Parse_error.should_not_be_empty ~what span 
+      in
+      `Warning (node, warning)
+    } 
   | ~ = Math_span; <`Math_span>
   | ~ = ref; <>
   | ~ = link; <>
