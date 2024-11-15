@@ -52,17 +52,22 @@ let pkg_contents { name; _ } =
     OpamFile.make @@ OpamFilename.raw @@ Filename.basename changes_file
   in
   let changed =
-    OpamFilename.with_contents
-      (fun str ->
-        OpamFile.Changes.read_from_string ~filename
-        @@
-        (* Field [opam-version] is invalid in [*.changes] files, displaying a warning. *)
-        if OpamStd.String.starts_with ~prefix:"opam-version" str then
-          match OpamStd.String.cut_at str '\n' with
-          | Some (_, str) -> str
-          | None -> assert false
-        else str)
-      file
+    try
+      OpamFilename.with_contents
+        (fun str ->
+          OpamFile.Changes.read_from_string ~filename
+          @@
+          (* Field [opam-version] is invalid in [*.changes] files, displaying a warning. *)
+          if OpamStd.String.starts_with ~prefix:"opam-version" str then
+            match OpamStd.String.cut_at str '\n' with
+            | Some (_, str) -> str
+            | None -> assert false
+          else str)
+        file
+    with _ ->
+      Logs.err (fun m ->
+          m "Error while reading: %s. Considering it empty." changes_file);
+      OpamStd.String.Map.empty
   in
   let added =
     OpamStd.String.Map.fold
