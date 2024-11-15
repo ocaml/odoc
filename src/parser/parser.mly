@@ -11,7 +11,7 @@
 
   (* This could be made a bit more specific by allowing Space elements only at
      the beginning and end *)
-  let valid_elements (cell : Ast.inline_element list): string option = 
+  let valid_elements (cell : Intermediate.inline_element list): string option = 
     let rec go acc = function
       | `Word _ :: _ when Option.is_some acc -> None 
       | `Word word :: rest ->
@@ -62,20 +62,21 @@
      When we get something that doesn't look like an align at all, we check to see if we've gotten 
      any valid aligns, if so we assume that the cell being considered is supposed to be an align and treat it as an error,
      otherwise we assume the row is not supposed to be an align row *)
-  let valid_align_row (row : Ast.inline_element Loc.with_location list list): (Ast.alignment option list, align_error) result =
+  let valid_align_row (row : Intermediate.inline_element Loc.with_location list
+  list): (Ast.alignment option list, align_error) result =
     let (align, not_align) = List.map valid_align_cell row |> List.partition (function Ok _ | Error Invalid_align -> true | _ -> false) in 
     match align, not_align with 
     | _ :: _, _ :: _ -> Error Invalid_align
     | _ :: _, [] -> sequence align
     | _ -> Error Not_align
 
-  let to_paragraph : Ast.inline_element Loc.with_location list -> Ast.nestable_block_element Loc.with_location list 
+  let to_paragraph : Intermediate.inline_element Loc.with_location list -> Intermediate.nestable_block_element Loc.with_location list 
     = fun words ->
         let span = Loc.span @@ List.map Loc.location words in 
         [ Loc.at span (`Paragraph words) ]
 
   (* Merges inline elements within a cell into a single paragraph element, and tags cells w/ tag *)
-  let merged_tagged_row tag : Ast.inline_element Loc.with_location list list -> Ast.nestable_block_element Ast.row  
+  let merged_tagged_row tag : Intermediate.inline_element Loc.with_location list list -> Intermediate.nestable_block_element Intermediate.row  
     = List.map (fun elts -> to_paragraph elts, tag)
   let as_data = merged_tagged_row `Data
   let as_header = merged_tagged_row `Header
@@ -155,7 +156,7 @@
 
 %token END
 
-%start <Ast.t> main 
+%start <Intermediate.t> main 
 
 %%
 
@@ -175,7 +176,7 @@ let main :=
   | END; { [] }
 
 let toplevel :=
-  | block = nestable_block_element; { (block :> Ast.block_element) }
+  | block = nestable_block_element; { ( block :> Intermediate.block_element) }
   | ~ = heading; <>
 
 let horizontal_whitespace := 
@@ -269,8 +270,8 @@ let cell_heavy := cell_kind = Table_cell; whitespace?; children = located(nestab
 let row_heavy == TABLE_ROW; whitespace?; cells = list(cell_heavy); RIGHT_BRACE; whitespace?;  { cells } 
 let table_heavy == TABLE_HEAVY; whitespace?; grid = row_heavy+; RIGHT_BRACE; { ((grid, None), `Heavy) }
 
-let cell_light == BAR?; ~ = located(inline_element)+; <> (* Ast.cell *)
-let row_light := ~ = cell_light+; BAR?; NEWLINE; <>  (* Ast.row *)
+let cell_light == BAR?; ~ = located(inline_element)+; <> (* Intermediate.cell *)
+let row_light := ~ = cell_light+; BAR?; NEWLINE; <>  (* Intermediate.row *)
 
 let table_light :=
   (* If the first row is the alignment row then the rest should be data *)
