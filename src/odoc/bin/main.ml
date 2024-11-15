@@ -1151,10 +1151,31 @@ module Odoc_html_args = struct
     let doc = "Remap an identifier to an external URL." in
     Arg.(value & opt_all convert_remap [] & info [ "R" ] ~doc)
 
+  let remap_file =
+    let doc = "File containing remap rules." in
+    Arg.(value & opt (some file) None & info ~docv:"FILE" ~doc [ "remap-file" ])
+
   let extra_args =
     let config semantic_uris closed_details indent theme_uri support_uri
-        search_uris flat as_json remap =
+        search_uris flat as_json remap remap_file =
       let open_details = not closed_details in
+      let remap =
+        match remap_file with
+        | None -> remap
+        | Some f ->
+            let ic = open_in f in
+            let rec loop acc =
+              match input_line ic with
+              | exception _ ->
+                  close_in ic;
+                  acc
+              | line -> (
+                  match Astring.String.cut ~sep:":" line with
+                  | Some (orig, mapped) -> loop ((orig, mapped) :: acc)
+                  | None -> loop acc)
+            in
+            loop []
+      in
       let html_config =
         Odoc_html.Config.v ~theme_uri ~support_uri ~search_uris ~semantic_uris
           ~indent ~flat ~open_details ~as_json ~remap ()
@@ -1163,7 +1184,7 @@ module Odoc_html_args = struct
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ search_uri $ flat $ as_json $ remap)
+      $ support_uri $ search_uri $ flat $ as_json $ remap $ remap_file)
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)

@@ -1,0 +1,3 @@
+prefix/otherpkg/:https://mysite.org/bar/
+prefix/:https://mysite.org/foo/
+

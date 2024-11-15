@@ -25,3 +25,9 @@ The order shouldn't matter, the longest prefix ought to win
   $ grep Otherlib/index.html _html3/prefix/mypkg/Test/index.html _html4/prefix/mypkg/Test/index.html
   _html3/prefix/mypkg/Test/index.html:       <a href="https://mysite.org/bar/Otherlib/index.html#type-t">Otherlib.t
   _html4/prefix/mypkg/Test/index.html:       <a href="https://mysite.org/bar/Otherlib/index.html#type-t">Otherlib.t
+
+  $ odoc html-generate -o _html5 --indent _odoc/prefix/mypkg/test.odocl --remap-file remap.txt
+  $ grep Otherlib/index.html _html5/prefix/mypkg/Test/index.html
+         <a href="https://mysite.org/bar/Otherlib/index.html#type-t">Otherlib.t
+
+
