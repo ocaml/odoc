@@ -52,6 +52,10 @@ let generate_grep =
   let doc = "Show html-generate commands containing the string" in
   Arg.(value & opt (some string) None & info [ "html-grep" ] ~doc)
 
+let remap =
+  let doc = "Remap paths in non-selected packages to ocaml.org" in
+  Arg.(value & flag & info [ "remap" ] ~doc)
+
 type t = {
   verbose : bool;
   odoc_dir : Fpath.t;
@@ -65,6 +69,7 @@ type t = {
   compile_grep : string option;
   link_grep : string option;
   generate_grep : string option;
+  remap : bool;
 }
 
 let term =
@@ -82,7 +87,8 @@ let term =
   and+ odoc_bin = odoc_bin
   and+ compile_grep = compile_grep
   and+ link_grep = link_grep
-  and+ generate_grep = generate_grep in
+  and+ generate_grep = generate_grep
+  and+ remap = remap in
   {
     verbose;
     odoc_dir;
@@ -96,4 +102,5 @@ let term =
     compile_grep;
     link_grep;
     generate_grep;
+    remap;
   }

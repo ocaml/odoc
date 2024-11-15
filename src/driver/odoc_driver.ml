@@ -133,6 +133,7 @@ let run mode
       compile_grep;
       link_grep;
       generate_grep;
+      remap;
     } =
   Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
   let _ = Voodoo.find_universe_and_version "foo" in
@@ -195,6 +196,14 @@ let run mode
         | _ -> failwith "Error, expecting singleton library in voodoo mode")
     | _ -> None
   in
+  let remaps =
+    if remap then
+      List.concat_map
+        (fun (_, pkg) -> pkg.Packages.remaps)
+        (Util.StringMap.bindings all)
+    else []
+  in
+  Logs.debug (fun m -> m "XXXX Remaps length: %d" (List.length remaps));
   let () =
     Eio.Fiber.both
       (fun () ->
@@ -204,7 +213,7 @@ let run mode
             let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
             { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir }
           in
-          Odoc_units_of.packages ~dirs ~extra_paths all
+          Odoc_units_of.packages ~dirs ~extra_paths ~remap all
         in
         Compile.init_stats units;
         let compiled =
@@ -229,7 +238,9 @@ let run mode
               let () = Odoc.count_occurrences ~input:[ odoc_dir ] ~output in
               output
             in
-            let () = Compile.html_generate ~occurrence_file html_dir linked in
+            let () =
+              Compile.html_generate ~occurrence_file ~remaps html_dir linked
+            in
             let _ = Odoc.support_files html_dir in
             ())
       (fun () -> render_stats env nb_workers)

@@ -18,6 +18,7 @@ let make_index ~dirs ~rel_dir ?index ~content () =
     odoc_file;
     odocl_file;
     enable_warnings = false;
+    to_output = true;
     kind = `Mld;
     index;
   }

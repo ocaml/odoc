@@ -87,7 +87,8 @@ type t = {
   libraries : libty list;
   mlds : mld list;
   assets : asset list;
-  enable_warnings : bool;
+  selected : bool;
+  remaps : (string * string) list;
   other_docs : Fpath.t list;
   pkg_dir : Fpath.t;
   config : Global_config.t;
@@ -101,13 +102,13 @@ let pp fmt t =
      libraries: %a;@,\
      mlds: %a;@,\
      assets: %a;@,\
-     enable_warnings: %b;@,\
+     selected: %b;@,\
      other_docs: %a;@,\
      pkg_dir: %a@,\
      }@]"
     t.name t.version (Fmt.Dump.list pp_libty) t.libraries (Fmt.Dump.list pp_mld)
-    t.mlds (Fmt.Dump.list pp_asset) t.assets t.enable_warnings
-    (Fmt.Dump.list Fpath.pp) t.other_docs Fpath.pp t.pkg_dir
+    t.mlds (Fmt.Dump.list pp_asset) t.assets t.selected (Fmt.Dump.list Fpath.pp)
+    t.other_docs Fpath.pp t.pkg_dir
 
 let maybe_prepend_top top_dir dir =
   match top_dir with None -> dir | Some d -> Fpath.(d // dir)
@@ -412,7 +413,8 @@ let of_libs ~packages_dir libs =
                         libraries;
                         mlds;
                         assets;
-                        enable_warnings = false;
+                        selected = false;
+                        remaps = [];
                         other_docs;
                         pkg_dir;
                         config;
@@ -470,7 +472,28 @@ let of_packages ~packages_dir packages =
             files.docs
           |> Fpath.Set.of_list
         in
-        let enable_warnings = List.mem pkg.name packages in
+        let selected = List.mem pkg.name packages in
+        let remaps =
+          if List.mem pkg.name packages then []
+          else
+            let local_pkg_path = Fpath.to_string (Fpath.to_dir_path pkg_dir) in
+            let pkg_path =
+              Printf.sprintf "https://ocaml.org/p/%s/%s/doc/" pkg.name
+                pkg.version
+            in
+            let lib_paths =
+              List.map
+                (fun libty ->
+                  let lib_name = libty.lib_name in
+                  let local_lib_path =
+                    Printf.sprintf "%s%s/" local_pkg_path lib_name
+                  in
+                  let lib_path = pkg_path in
+                  (local_lib_path, lib_path))
+                libraries
+            in
+            (local_pkg_path, pkg_path) :: lib_paths
+        in
         let other_docs = Fpath.Set.elements other_docs in
         Util.StringMap.add pkg.name
           {
@@ -479,7 +502,8 @@ let of_packages ~packages_dir packages =
             libraries;
             mlds;
             assets;
-            enable_warnings;
+            selected;
+            remaps;
             other_docs;
             pkg_dir;
             config;
@@ -487,11 +511,6 @@ let of_packages ~packages_dir packages =
           acc)
       Util.StringMap.empty all
   in
-  let result = fix_missing_deps packages in
-  Logs.debug (fun m ->
-      m "ZZZZ Result: %a"
-        Fmt.(Dump.list (pair string pp))
-        (Util.StringMap.bindings result));
-  result
+  fix_missing_deps packages
 
 type set = t Util.StringMap.t
