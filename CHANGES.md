@@ -31,7 +31,9 @@
   #1187, #1243)
 - Add a `@short_title` tag to specify the short title of a page for use in
   the sidebar / breadcrumbs (@panglesd, #1246)
-- Add a 'remap' option to HTML generation for partial docsets (@jonludlam, #1189)
+- Add a frontmatter syntax for mld pages (@panglesd, #1187)
+- Add 'remap' and 'remap-file' options to HTML generation for partial docsets
+  (@jonludlam, #1189, #1248)
 - Added an `html-generate-asset` command (@panglesd, #1185)
 - Added syntax for images, videos, audio (@panglesd, #1184)
 - Added the ability to order pages in the table of content (@panglesd, #1193)
