@@ -64,10 +64,20 @@ let pkg_contents { name; _ } =
             | None -> assert false
           else str)
         file
-    with _ ->
-      Logs.err (fun m ->
-          m "Error while reading: %s. Considering it empty." changes_file);
-      OpamStd.String.Map.empty
+    with
+    | OpamSystem.File_not_found s ->
+        Logs.err (fun m ->
+            m "File not found: %s.\n%s\nConsidering it empty." changes_file s);
+        OpamStd.String.Map.empty
+    | OpamPp.Bad_version _ ->
+        Logs.err (fun m ->
+            m "Bad version while parsing %s.\nConsidering it empty."
+              changes_file);
+        OpamStd.String.Map.empty
+    | OpamPp.Bad_format _ ->
+        Logs.err (fun m ->
+            m "Bad format while parsing %s.\nConsidering it empty." changes_file);
+        OpamStd.String.Map.empty
   in
   let added =
     OpamStd.String.Map.fold
