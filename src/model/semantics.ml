@@ -36,35 +36,38 @@ let warn_root_canonical location =
   Error.raise_warning
   @@ Error.make "Canonical paths must contain a dot, eg. X.Y." location
 
-let rec find_tag f = function
+let rec find_tag ~filter = function
   | [] -> None
   | hd :: tl -> (
-      match f hd.Location.value with
+      match filter hd.Location.value with
       | Some x -> Some (x, hd.location)
       | None ->
           warn_unexpected_tag hd;
-          find_tag f tl)
+          find_tag ~filter tl)
 
-let rec find_tags acc f = function
+let rec find_tags acc ~filter = function
   | [] -> List.rev acc
   | hd :: tl -> (
-      match f hd.Location.value with
-      | Some x -> find_tags ((x, hd.location) :: acc) f tl
+      match filter hd.Location.value with
+      | Some x -> find_tags ((x, hd.location) :: acc) ~filter tl
       | None ->
           warn_unexpected_tag hd;
-          find_tags acc f tl)
+          find_tags acc ~filter tl)
 
 let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
   | Expect_status -> (
       match
         find_tag
-          (function (`Inline | `Open | `Closed) as t -> Some t | _ -> None)
+          ~filter:(function
+            | (`Inline | `Open | `Closed) as t -> Some t | _ -> None)
           tags
       with
       | Some (status, _) -> status
       | None -> `Default)
   | Expect_canonical -> (
-      match find_tag (function `Canonical p -> Some p | _ -> None) tags with
+      match
+        find_tag ~filter:(function `Canonical p -> Some p | _ -> None) tags
+      with
       | Some (`Root _, location) ->
           warn_root_canonical location;
           None
@@ -73,7 +76,7 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
   | Expect_page_tags ->
       let unparsed_lines =
         find_tags []
-          (function `Children_order _ as p -> Some p | _ -> None)
+          ~filter:(function `Children_order _ as p -> Some p | _ -> None)
           tags
       in
       let lines =
@@ -90,7 +93,7 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
       Frontmatter.of_lines lines |> Error.raise_warnings
   | Expect_none ->
       (* Will raise warnings. *)
-      ignore (find_tag (fun _ -> None) tags);
+      ignore (find_tag ~filter:(fun _ -> None) tags);
       ()
 
 (* Errors *)
