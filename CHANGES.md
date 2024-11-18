@@ -29,6 +29,8 @@
 - Added a `--asset-path` arg to `html-generate` (@panglesd, #1185)
 - Add a `@children_order` tag to specify the order in the sidebar (@panglesd,
   #1187, #1243)
+- Add a `@short_title` tag to specify the short title of a page for use in
+  the sidebar / breadcrumbs (@panglesd, #1246)
 - Add a 'remap' option to HTML generation for partial docsets (@jonludlam, #1189)
 - Added an `html-generate-asset` command (@panglesd, #1185)
 - Added syntax for images, videos, audio (@panglesd, #1184)
