@@ -17,8 +17,10 @@
   Absolute (`{!/foo}`), relative (`{!./foo}`) and package-local (`{!//foo}`)
   are added.
 - Add a marshalled search index consumable by sherlodoc (@EmileTrotignon, @panglesd, #1084)
-- Add a `--index` argument to pass indexes to the document generation, currently
-  used for sidebar (@panglesd, #1145)
+- Add a `odoc sidebar-generate` command to generate a sidebar file (@panglesd,
+  #1250)
+- Add a `--sidebar` argument to pass sidebars to the document generation
+  (@panglesd, #1145, #1250)
 - Allow referencing of polymorphic constructors in polymorphic variant type
   aliases (@panglesd, #1115)
 - Added a `--occurrences` argument to the `compile-index` command to output the
