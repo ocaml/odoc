@@ -725,7 +725,8 @@ and child =
   Variant
     (function
     | { Location_.value = Page s; _ } -> C ("Page", s, string)
-    | { Location_.value = Dir s; _ } -> C ("Dir", s, string))
+    | { Location_.value = Dir s; _ } -> C ("Dir", s, string)
+    | { Location_.value = Module s; _ } -> C ("Module", s, string))
 
 and implementation_t =
   let open Lang.Implementation in

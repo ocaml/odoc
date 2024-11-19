@@ -1,4 +1,4 @@
-type child = Page of string | Dir of string
+type child = Page of string | Dir of string | Module of string
 
 type short_title = Comment.link_content
 
@@ -38,9 +38,14 @@ let apply fm line =
       { fm with children_order }
 
 let parse_child c =
+  let mod_prefix = "module-" in
   if Astring.String.is_suffix ~affix:"/" c then
     let c = String.sub c 0 (String.length c - 1) in
     Dir c
+  else if Astring.String.is_prefix ~affix:mod_prefix c then
+    let l = String.length mod_prefix in
+    let c = String.sub c l (String.length c - l) in
+    Module c
   else Page c
 
 let parse_children_order loc co =

@@ -1,4 +1,4 @@
-type child = Page of string | Dir of string
+type child = Page of string | Dir of string | Module of string
 
 type short_title = Comment.link_content
 

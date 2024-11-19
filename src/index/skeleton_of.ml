@@ -4,6 +4,7 @@ open Odoc_model
 (* Selective opens *)
 module Id = Odoc_model.Paths.Identifier
 module PageName = Odoc_model.Names.PageName
+module ModuleName = Odoc_model.Names.ModuleName
 
 type t = Entry.t Tree.t
 
@@ -42,28 +43,36 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
     match id.Id.iv with
     | `LeafPage (_, name) -> Format.fprintf fmt "'%s'" (PageName.to_string name)
     | `Page (_, name) -> Format.fprintf fmt "'%s/'" (PageName.to_string name)
+    | `Root (_, name) ->
+        Format.fprintf fmt "'module-%s'" (ModuleName.to_string name)
+    | _ -> Format.fprintf fmt "'unsupported'"
   in
   let pp_children fmt c =
     match c.Location_.value with
     | Frontmatter.Page s -> Format.fprintf fmt "'%s'" s
     | Dir s -> Format.fprintf fmt "'%s/'" s
+    | Module s -> Format.fprintf fmt "'module-%s'" s
   in
   let ordered, unordered =
     let contents =
       let leafs =
         In_progress.leafs dir
         |> List.map (fun (_, page) ->
-               let id :> Id.Page.t = page.Lang.Page.name in
+               let id :> Id.t = page.Lang.Page.name in
                let entry = entry_of_page page in
                (id, Tree.leaf entry))
       in
       let dirs =
         In_progress.dirs dir
         |> List.map (fun (id, payload) ->
-               let id :> Id.Page.t = id in
+               let id :> Id.t = id in
                (id, t_of_in_progress payload))
       in
-      leafs @ dirs
+      let modules =
+        In_progress.modules dir
+        |> List.map (fun (id, payload) -> ((id :> Id.t), payload))
+      in
+      leafs @ dirs @ modules
     in
     match children_order with
     | None -> ([], contents)
@@ -77,12 +86,14 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
               String.equal (PageName.to_string name) c
           | (_, { Location_.value = Page c; _ }), `LeafPage (_, name) ->
               String.equal (PageName.to_string name) c
+          | (_, { Location_.value = Module c; _ }), `Root (_, name) ->
+              String.equal (ModuleName.to_string name) c
           | _ -> false
         in
         let children_indexes, indexed_content, unindexed_content =
           List.fold_left
             (fun (children_indexes, indexed_content, unindexed_content)
-                 (((id : Id.Page.t), _) as entry) ->
+                 ((id, _) as entry) ->
               let indexes_for_entry, children_indexes =
                 List.partition (equal id) children_indexes
               in
@@ -129,9 +140,8 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
         String.compare (Paths.Identifier.name x) (Paths.Identifier.name y))
       unordered
   in
-  let modules = In_progress.modules dir |> List.map snd in
   let contents = ordered @ unordered |> List.map snd in
-  { Tree.node = index; children = contents @ modules }
+  { Tree.node = index; children = contents }
 
 let rec remove_common_root (v : t) =
   match v with
