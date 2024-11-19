@@ -12,7 +12,7 @@
   $ odoc link _odoc/pkg/dir1/page-content_in_dir.odoc
   $ odoc link _odoc/pkg/dir1/page-dontent.odoc
 
-  $ odoc compile-index -P test:_odoc/pkg
+  $ odoc compile-index --root _odoc/pkg
   File "index.mld", line 1, characters 30-35:
   Warning: Duplicate 'dir1/' in (children).
   File "index.mld", line 1, characters 36-40:
@@ -62,18 +62,16 @@ Typo is in the children field of index, but does not exist. It is omitted to,
 but this should be a warning!
 
   $ cat _html/pkg/index.html | grep odoc-global-toc -A 11
-     <nav class="odoc-toc odoc-global-toc"><ul class="odoc-modules"></ul>
-      <b>Documentation</b>
-      <ul class="odoc-pages">
-       <li><a href="#" class="current_unit">This is the main index</a>
-        <ul><li><a href="content.html">This is top level content</a></li>
-         <li><a href="dir1/index.html">This is dir1's index</a>
-          <ul>
-           <li>
-            <a href="dir1/content_in_dir.html">This is some content in dir1</a>
-           </li><li><a href="dir1/dontent.html">The name is dontent</a></li>
-          </ul>
-         </li><li><a href="omitted.html">This one is omitted</a></li>
+     <nav class="odoc-toc odoc-global-toc">
+      <a href="#" class="current_unit">index</a>
+      <ul><li><a href="content.html">This is top level content</a></li>
+       <li><a href="dir1/index.html">This is dir1's index</a></li>
+       <li><a href="omitted.html">This one is omitted</a></li>
+      </ul>
+     </nav>
+    </div><div class="odoc-content"></div>
+   </body>
+  </html>
 
 
 Some more parsing test:

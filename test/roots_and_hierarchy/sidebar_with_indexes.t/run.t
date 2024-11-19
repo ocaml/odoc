@@ -18,7 +18,7 @@ Since -L subfolders are omitted from -P roots, the index page should not be adde
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/libname/unit.odoc
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/libname/page-index.odoc
 
-  $ odoc compile-index -P pkg:_odoc/pkg/ -L libname:_odoc/pkg/libname
+  $ odoc compile-index --root _odoc/pkg/
   $ odoc sidebar-generate index.odoc-index
 
   $ odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o html _odoc/pkg/page-file.odocl
@@ -30,20 +30,14 @@ Since -L subfolders are omitted from -P roots, the index page should not be adde
 
   $ cat html/pkg/index.html | grep odoc-global-toc -A 15
      <nav class="odoc-toc odoc-global-toc">
-      <ul class="odoc-modules">
-       <li><b>Library <code>libname</code></b>
-        <ul><li><a href="libname/Unit/index.html">Unit</a></li></ul>
-       </li>
-      </ul><b>Documentation</b>
-      <ul class="odoc-pages">
-       <li><a href="#" class="current_unit">Package <code>pkg</code></a>
-        <ul>
-         <li><a href="dir1/index.html">A directory</a>
-          <ul><li><a href="dir1/my_page.html">My page</a></li></ul>
-         </li><li><a href="file.html">File</a></li>
-        </ul>
-       </li>
+      <a href="#" class="current_unit">index</a>
+      <ul><li><a href="dir1/index.html">A directory</a></li>
+       <li><a href="file.html">File</a></li>
+       <li><a href="libname/index.html">Library landing page</a></li>
       </ul>
      </nav>
+    </div><div class="odoc-content"></div>
+   </body>
+  </html>
 
 As we can see, "Library landing page" has NOT been added to the sidebar, in the "documentation" side.

@@ -468,14 +468,12 @@ module Indexing = struct
     | None, `JSON -> Ok (Fs.File.of_string "index.json")
     | None, `Marshall -> Ok (Fs.File.of_string "index.odoc-index")
 
-  let index dst json warnings_options page_roots lib_roots inputs_in_file inputs
-      occurrences =
+  let index dst json warnings_options roots inputs_in_file inputs occurrences =
     let marshall = if json then `JSON else `Marshall in
     output_file ~dst marshall >>= fun output ->
-    Antichain.check (page_roots |> List.map ~f:snd) ~opt:"-P" >>= fun () ->
-    Antichain.check (lib_roots |> List.map ~f:snd) ~opt:"-L" >>= fun () ->
-    Indexing.compile marshall ~output ~warnings_options ~occurrences ~lib_roots
-      ~page_roots ~inputs_in_file ~odocls:inputs
+    Antichain.check roots ~opt:"--root" >>= fun () ->
+    Indexing.compile marshall ~output ~warnings_options ~roots ~occurrences
+      ~inputs_in_file ~odocls:inputs
 
   let cmd =
     let dst =
@@ -511,31 +509,20 @@ module Indexing = struct
       let doc = ".odocl file to index" in
       Arg.(value & pos_all convert_fpath [] & info ~doc ~docv:"FILE" [])
     in
-    let page_roots =
+    let roots =
       let doc =
-        "Specifies a directory PATH containing pages that should be included \
-         in the sidebar, under the NAME section."
+        "Specifies a directory PATH containing pages or units that should be \
+         included in the sidebar."
       in
       Arg.(
         value
-        & opt_all convert_named_root []
-        & info ~docs ~docv:"NAME:PATH" ~doc [ "P" ])
-    in
-    let lib_roots =
-      let doc =
-        "Specifies a directory PATH containing units that should be included \
-         in the sidebar, as part of the LIBNAME library."
-      in
-
-      Arg.(
-        value
-        & opt_all convert_named_root []
-        & info ~docs ~docv:"LIBNAME:PATH" ~doc [ "L" ])
+        & opt_all (convert_directory ()) []
+        & info ~docs ~docv:"NAME:PATH" ~doc [ "root" ])
     in
     Term.(
       const handle_error
-      $ (const index $ dst $ json $ warnings_options $ page_roots $ lib_roots
-       $ inputs_in_file $ inputs $ occurrences))
+      $ (const index $ dst $ json $ warnings_options $ roots $ inputs_in_file
+       $ inputs $ occurrences))
 
   let info ~docs =
     let doc =

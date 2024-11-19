@@ -625,6 +625,7 @@ module Identifier = struct
     module Any = Hashtbl.Make (Any)
     module ContainerPage = Hashtbl.Make (ContainerPage)
     module LeafPage = Hashtbl.Make (LeafPage)
+    module RootModule = Hashtbl.Make (RootModule)
   end
 end
 

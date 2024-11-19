@@ -18,7 +18,7 @@ end
 
 type sidebar = { output_file : Fpath.t; json : bool }
 type index = {
-  pkg_args : Pkg_args.t;
+  roots : Fpath.t list;
   output_file : Fpath.t;
   json : bool;
   search_dir : Fpath.t;

@@ -9,28 +9,9 @@ module Toc : sig
 
   val of_page_hierarchy : Odoc_index.Page_hierarchy.t -> t
 
-  val of_skeleton : Odoc_index.Skeleton.t -> t
-
   val to_block : prune:bool -> Url.Path.t -> t -> Block.t
 end = struct
   type t = entry Tree.t
-
-  let of_page_hierarchy (dir : Odoc_index.Page_hierarchy.t) : t =
-    let f index =
-      match index with
-      | Odoc_index.Page_hierarchy.Missing_index None ->
-          (None, inline @@ Text "Root")
-      | Odoc_index.Page_hierarchy.Missing_index (Some id) ->
-          let path = Url.from_identifier ~stop_before:false (id :> Id.t) in
-          (Some path, inline @@ Text (Id.name id))
-      | Page (id, title) ->
-          let path = Url.from_identifier ~stop_before:false (id :> Id.t) in
-          let content = Comment.link_content title in
-          let target = Target.Internal (Target.Resolved path) in
-          let i = inline @@ Inline.Link { target; content; tooltip = None } in
-          (Some path, i)
-    in
-    Tree.map ~f dir
 
   let rec is_prefix (url1 : Url.Path.t) (url2 : Url.Path.t) =
     if url1 = url2 then true
@@ -41,7 +22,18 @@ end = struct
 
   let parent (url : Url.t) =
     match url with
-    | { anchor = ""; page = { parent = Some parent; _ }; _ } -> parent
+    | {
+        anchor = "";
+        page =
+          {
+            parent = Some { parent = Some parent; _ };
+            name = "index";
+            kind = `LeafPage;
+          };
+        _;
+      }
+    | { anchor = ""; page = { parent = Some parent; _ }; _ } ->
+        parent
     | { page; _ } -> page
 
   let to_block ~prune (current_url : Url.Path.t) (tree : t) =
@@ -82,7 +74,8 @@ end = struct
     let block_tree = block_tree_of_t current_url tree in
     block_of_block_tree block_tree
 
-  let of_skeleton ({ node = entry; children } : Odoc_index.Entry.t Tree.t) : t =
+  let of_page_hierarchy ({ node = entry; children } : Odoc_index.Entry.t Tree.t)
+      : t =
     let map_entry entry =
       let stop_before =
         match entry.Odoc_index.Entry.kind with
@@ -99,78 +92,38 @@ end = struct
       in
       (Some path, content)
     in
-    let f entry =
-      match entry.Odoc_index.Entry.kind with
+    let f index =
+      match index.Odoc_index.Entry.kind with
+      | Dir ->
+          let path = Url.from_identifier ~stop_before:false index.id in
+          Some (Some path, inline @@ Text (Id.name index.id))
+      | Page _frontmatter ->
+          let path =
+            Url.from_identifier ~stop_before:false (index.id :> Id.t)
+          in
+          let title =
+            match Odoc_model.Comment.find_zero_heading index.doc with
+            | Some t -> t
+            | None ->
+                Odoc_model.Location_.[ at (span []) (`Word (Id.name index.id)) ]
+          in
+          let content = Comment.link_content title in
+          let target = Target.Internal (Target.Resolved path) in
+          let i = inline @@ Inline.Link { target; content; tooltip = None } in
+          Some (Some path, i)
       | Module _ | Class_type _ | Class _ | ModuleType _ ->
-          Some (map_entry entry)
+          Some (map_entry index)
       | _ -> None
     in
     let entry = map_entry entry in
     let children = Forest.filter_map ~f children in
     { Tree.node = entry; children }
+  (* Tree.filter_map ~f dir *)
 end
 
-type pages = { name : string; pages : Toc.t }
-type library = { name : string; units : Toc.t list }
+type t = Toc.t list
 
-type t = { pages : pages list; libraries : library list }
-
-let of_lang (v : Odoc_index.t) =
-  let { Odoc_index.pages; libs; extra = _ } = v in
-  let pages =
-    let page_hierarchy { Odoc_index.p_name; p_hierarchy } =
-      let hierarchy = Toc.of_page_hierarchy p_hierarchy in
-      { name = p_name; pages = hierarchy }
-    in
-    Odoc_utils.List.map page_hierarchy pages
-  in
-  let libraries =
-    let lib_hierarchies { Odoc_index.l_name; l_hierarchies } =
-      let hierarchies = List.map Toc.of_skeleton l_hierarchies in
-      { units = hierarchies; name = l_name }
-    in
-    Odoc_utils.List.map lib_hierarchies libs
-  in
-  { pages; libraries }
+let of_lang (v : Odoc_index.t) = List.map Toc.of_page_hierarchy v
 
 let to_block (sidebar : t) path =
-  let { pages; libraries } = sidebar in
-  let title t = block (Inline [ inline (Inline.Styled (`Bold, t)) ]) in
-  let pages =
-    let pages =
-      Odoc_utils.List.concat_map
-        ~f:(fun (p : pages) ->
-          let () = ignore p.name in
-          let pages = Toc.to_block ~prune:false path p.pages in
-          [
-            block ~attr:[ "odoc-pages" ]
-              (Block.List (Block.Unordered, [ pages ]));
-          ])
-        pages
-    in
-    [ title @@ [ inline (Inline.Text "Documentation") ] ] @ pages
-  in
-  let units =
-    let units =
-      List.map
-        (fun { units; name } ->
-          let units =
-            List.concat_map ~f:(Toc.to_block ~prune:true path) units
-          in
-          let units = [ block (Block.List (Block.Unordered, [ units ])) ] in
-          [
-            title
-            @@ [
-                 inline (Inline.Text "Library ");
-                 inline (Inline.Source [ Elt [ inline @@ Text name ] ]);
-               ];
-          ]
-          @ units)
-        libraries
-    in
-    let units =
-      block ~attr:[ "odoc-modules" ] (Block.List (Block.Unordered, units))
-    in
-    [ units ]
-  in
-  units @ pages
+  List.map (Toc.to_block ~prune:true path) sidebar

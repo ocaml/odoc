@@ -39,7 +39,7 @@ end
 type sidebar = { output_file : Fpath.t; json : bool }
 
 type index = {
-  pkg_args : Pkg_args.t;
+  roots : Fpath.t list;
   output_file : Fpath.t;
   json : bool;
   search_dir : Fpath.t;
@@ -48,8 +48,9 @@ type index = {
 
 let pp_index fmt x =
   Format.fprintf fmt
-    "@[<hov>pkg_args: %a@;output_file: %a@;json: %b@;search_dir: %a@]"
-    Pkg_args.pp x.pkg_args Fpath.pp x.output_file x.json Fpath.pp x.search_dir
+    "@[<hov>roots: %a@;output_file: %a@;json: %b@;search_dir: %a@]"
+    (Fmt.list Fpath.pp) x.roots Fpath.pp x.output_file x.json Fpath.pp
+    x.search_dir
 
 type 'a unit = {
   parent_id : Odoc.Id.t;

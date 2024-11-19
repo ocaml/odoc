@@ -68,8 +68,12 @@ let run env cmd output_file =
           Logs.err (fun m -> m "%d - Process exitted %d: stderr=%s" myn n err);
           failwith "Error"
       | `Signaled n ->
-          Logs.err (fun m -> m "%d - Signalled %d: stderr=%s" myn n err);
-          failwith ("Signaled " ^ string_of_int n)
+          let err =
+            Format.sprintf "Error from %s\n%d - Signalled %d: stderr=%s"
+              (String.concat " " cmd) myn n err
+          in
+          Logs.err (fun m -> m "%s" err);
+          failwith err
     with Eio.Exn.Io _ as ex ->
       let bt = Printexc.get_raw_backtrace () in
       Eio.Exn.reraise_with_context ex bt "%d - running command: %a" myn

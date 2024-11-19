@@ -5,18 +5,17 @@ type log_dest =
   | `Count_occurrences
   | `Generate
   | `Index
-  | `Source_tree
   | `Sherlodoc
   | `Classify ]
 
-let outputs : (log_dest * [ `Out | `Err ] * string * string) list ref = ref []
+type log_line = { log_dest : log_dest; prefix : string; run : Run.t }
 
-let maybe_log log_dest r =
+let outputs : log_line list ref = ref []
+
+let maybe_log log_dest run =
   match log_dest with
-  | Some (dest, prefix) ->
-      let add ty s = outputs := !outputs @ [ (dest, ty, prefix, s) ] in
-      add `Out r.Run.output;
-      add `Err r.Run.errors
+  | Some (log_dest, prefix) ->
+      outputs := !outputs @ [ { log_dest; run; prefix } ]
   | None -> ()
 
 let submit log_dest desc cmd output_file =

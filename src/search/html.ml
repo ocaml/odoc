@@ -126,6 +126,10 @@ let constructor_rhs ({ args; res } : Entry.constructor_entry) =
 
 let kind_doc = "doc"
 
+let kind_page = "page"
+
+let kind_dir = "dir"
+
 let kind_typedecl = "type"
 
 let kind_module = "mod"
@@ -165,6 +169,8 @@ let string_of_kind =
   | TypeExtension _ -> kind_extension
   | ModuleType _ -> kind_module_type
   | Doc -> kind_doc
+  | Page _ -> kind_page
+  | Dir -> kind_dir
 
 let value_rhs (t : Entry.value_entry) = " : " ^ Text.of_type t.type_
 
@@ -182,7 +188,7 @@ let rhs_of_kind (entry : Entry.kind) =
       Some (constructor_rhs t)
   | Field f -> Some (field_rhs f)
   | Module _ | Class_type _ | Method _ | Class _ | TypeExtension _
-  | ModuleType _ | Doc ->
+  | ModuleType _ | Doc | Page _ | Dir ->
       None
 
 let names_of_id id =

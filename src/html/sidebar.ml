@@ -26,17 +26,5 @@ let toc_to_json ((url, inline) : Odoc_document.Sidebar.entry) : Json.json =
   in
   `Object [ ("url", url); ("kind", kind); ("content", inline) ]
 
-let pages_to_json ({ name; pages } : Odoc_document.Sidebar.pages) =
-  `Object [ ("name", `String name); ("pages", Tree.to_json toc_to_json pages) ]
-
-let libs_to_json ({ name; units } : Odoc_document.Sidebar.library) =
-  `Object
-    [
-      ("name", `String name);
-      ("modules", `Array (List.map (Tree.to_json toc_to_json) units));
-    ]
-
-let to_json ({ pages; libraries } : Odoc_document.Sidebar.t) =
-  let pages = List.map pages_to_json pages in
-  let libraries = List.map libs_to_json libraries in
-  `Object [ ("pages", `Array pages); ("libraries", `Array libraries) ]
+let to_json (sidebar : Odoc_document.Sidebar.t) =
+  `Array (List.map (Tree.to_json toc_to_json) sidebar)
