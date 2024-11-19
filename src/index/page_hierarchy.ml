@@ -14,9 +14,7 @@ type container_page = Id.ContainerPage.t
 
 open Astring
 
-type title = Comment.link_content
-
-type payload = (* { title : title; frontmatter : Frontmatter.t } *) Lang.Page.t
+type payload = Lang.Page.t
 
 type dir_content = {
   leafs : payload LPH.t;
