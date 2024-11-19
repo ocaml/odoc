@@ -161,6 +161,8 @@ let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
             ("type", `String (Text.of_type type_));
             ("parent_type", `String (Text.of_type parent_type));
           ]
+    | Page _ -> return "Page" []
+    | Dir -> return " Dir" []
   in
   let occurrences =
     match occurrences with

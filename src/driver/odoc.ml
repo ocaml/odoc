@@ -159,9 +159,10 @@ let link ?(ignore_output = false) ~input_file:file ?output_file ~docs ~libs
   ignore @@ Cmd_outputs.submit log desc cmd (Some output_file)
 
 let compile_index ?(ignore_output = false) ~output_file ?occurrence_file ~json
-    ~docs ~libs () =
-  let docs = doc_args docs in
-  let libs = lib_args libs in
+    ~roots () =
+  let roots =
+    List.fold_left (fun c r -> Cmd.(c % "--root" % p r)) Cmd.empty roots
+  in
   let json = if json then Cmd.v "--json" else Cmd.empty in
   let occ =
     match occurrence_file with
@@ -170,8 +171,7 @@ let compile_index ?(ignore_output = false) ~output_file ?occurrence_file ~json
   in
   let cmd =
     Cmd.(
-      !odoc % "compile-index" %% json %% v "-o" % p output_file %% docs %% libs
-      %% occ)
+      !odoc % "compile-index" %% json %% v "-o" % p output_file %% roots %% occ)
   in
   let desc =
     Printf.sprintf "Generating index for %s" (Fpath.to_string output_file)
@@ -267,18 +267,6 @@ let count_occurrences ~input ~output =
   let cmd = !odoc % "count-occurrences" %% input %% output_c in
   let desc = "Counting occurrences" in
   let log = Some (`Count_occurrences, Fpath.to_string output) in
-  ignore @@ Cmd_outputs.submit log desc cmd None
-
-let source_tree ?(ignore_output = false) ~parent ~output file =
-  let open Cmd in
-  let parent = v "--parent" % ("page-\"" ^ parent ^ "\"") in
-  let cmd =
-    !odoc % "source-tree" % "-I" % "." %% parent % "-o" % p output % p file
-  in
-  let desc = Printf.sprintf "Source tree for %s" (Fpath.to_string file) in
-  let log =
-    if ignore_output then None else Some (`Source_tree, Fpath.to_string file)
-  in
   ignore @@ Cmd_outputs.submit log desc cmd None
 
 let classify dirs =

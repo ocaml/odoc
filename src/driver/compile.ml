@@ -269,13 +269,10 @@ let html_generate ~occurrence_file ~remaps output_dir linked =
   let compile_index : Odoc_unit.index -> _ =
    fun index ->
     let compile_index_one
-        ({ pkg_args; output_file; json; search_dir = _; sidebar } as index :
+        ({ roots; output_file; json; search_dir = _; sidebar } as index :
           Odoc_unit.index) =
-      let libs_linked = Odoc_unit.Pkg_args.linked_libs pkg_args in
-      let pages_linked = Odoc_unit.Pkg_args.linked_pages pkg_args in
       let () =
-        Odoc.compile_index ~json ~occurrence_file ~output_file ~libs:libs_linked
-          ~docs:pages_linked ()
+        Odoc.compile_index ~json ~occurrence_file ~output_file ~roots ()
       in
       let sidebar =
         match sidebar with

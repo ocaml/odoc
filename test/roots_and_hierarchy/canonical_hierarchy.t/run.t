@@ -23,7 +23,7 @@ Let's link it:
 
 Let's html-generate it (with a sidebar):
 
-  $ odoc compile-index -P pkg:_odoc/pkg/ -L libname:_odoc/pkg/libname
+  $ odoc compile-index --root _odoc/pkg/
   $ odoc sidebar-generate index.odoc-index
 
   $ odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o html _odoc/pkg/page-file.odocl

@@ -9,6 +9,13 @@
  (libraries odoc_odoc type_desc_to_yojson odoc_model_desc compatcmdliner))
 
 (executable
+ (public_name odoc_print_index)
+  (package odoc)
+ (name print_index)
+ (modules print_index)
+ (libraries odoc_odoc type_desc_to_yojson odoc_model_desc compatcmdliner yojson odoc_json_index))
+
+(executable
  (name occurrences_print)
  (modules occurrences_print)
  (libraries odoc_model_desc compatcmdliner odoc_odoc))

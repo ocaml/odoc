@@ -14,8 +14,7 @@ val compile :
   output:Fs.file ->
   warnings_options:Odoc_model.Error.warnings_options ->
   occurrences:Fs.file option ->
-  lib_roots:(string * Fs.directory) list ->
-  page_roots:(string * Fs.directory) list ->
+  roots:Fs.Directory.t list ->
   inputs_in_file:Fs.file list ->
   odocls:Fs.file list ->
   (unit, [> msg ]) result

@@ -56,6 +56,8 @@ type kind =
   | ModuleType of module_entry
   | Constructor of constructor_entry
   | Field of field_entry
+  | Page of Odoc_model.Frontmatter.t
+  | Dir
 
 type t = {
   id : Odoc_model.Paths.Identifier.Any.t;

@@ -134,6 +134,7 @@ let run mode
       link_grep;
       generate_grep;
       remap;
+      index_grep;
     } =
   Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
   let _ = Voodoo.find_universe_and_version "foo" in
@@ -249,30 +250,37 @@ let run mode
   let grep_log ty s =
     let open Astring in
     let do_ affix =
-      let grep (dst, _err, prefix, content) =
-        if dst = ty then
-          let lines = String.cuts ~sep:"\n" content in
-          List.iter
-            (fun l ->
-              if String.is_infix ~affix l then Format.printf "%s: %s\n" prefix l)
-            lines
+      let grep { Cmd_outputs.log_dest; prefix; run } =
+        if log_dest = ty then
+          let l = run.Run.cmd |> String.concat ~sep:" " in
+          if String.is_infix ~affix l then Format.printf "%s: %s\n" prefix l
       in
       List.iter grep !Cmd_outputs.outputs
     in
     Option.iter do_ s
   in
+  (* Grep log compile and compile_src commands *)
   grep_log `Compile compile_grep;
+  grep_log `Compile_src compile_grep;
+  (* Grep log link commands *)
   grep_log `Link link_grep;
+  (* Grep log generate commands *)
   grep_log `Generate generate_grep;
+  (* Grep log index and co commands *)
+  grep_log `Count_occurrences index_grep;
+  grep_log `Count_occurrences index_grep;
+  grep_log `Index (* index_grep *) (Some "");
 
   List.iter
-    (fun (dst, _err, prefix, content) ->
-      match dst with
+    (fun { Cmd_outputs.log_dest; prefix; run } ->
+      match log_dest with
       | `Link ->
-          if String.length content = 0 then ()
-          else
-            let lines = String.split_on_char '\n' content in
-            List.iter (fun l -> Format.printf "%s: %s\n" prefix l) lines
+          [ run.Run.output; run.Run.errors ]
+          |> List.iter @@ fun content ->
+             if String.length content = 0 then ()
+             else
+               let lines = String.split_on_char '\n' content in
+               List.iter (fun l -> Format.printf "%s: %s\n" prefix l) lines
       | _ -> ())
     !Cmd_outputs.outputs;
 
