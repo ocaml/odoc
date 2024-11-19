@@ -1,5 +1,5 @@
 module Skeleton = Skeleton
 module Entry = Entry
-module Page_hierarchy = Page_hierarchy
+module Skeleton_of = Skeleton_of
 
 type t = Skeleton.t list

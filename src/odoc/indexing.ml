@@ -115,7 +115,7 @@ let compile out_format ~output ~warnings_options ~occurrences ~roots
     in
     List.fold_left read ([], []) files
   in
-  let hierarchy = Odoc_index.Page_hierarchy.of_list ~pages ~modules in
+  let hierarchy = Odoc_index.Skeleton_of.lang ~pages ~modules in
   match out_format with
   | `JSON -> compile_to_json ~output ~occurrences files
   | `Marshall -> compile_to_marshall ~output [ hierarchy ]
