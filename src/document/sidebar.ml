@@ -86,7 +86,16 @@ end = struct
                   match Comment.find_zero_heading entry.doc with
                   | Some t -> t
                   | None ->
-                      Location_.[ at (span []) (`Word (Id.name entry.id)) ]
+                      let name =
+                        match entry.id.iv with
+                        | `LeafPage (Some parent, name)
+                          when String.equal
+                                 (Names.PageName.to_string name)
+                                 "index" ->
+                            Id.name parent
+                        | _ -> Id.name entry.id
+                      in
+                      Location_.[ at (span []) (`Word name) ]
                 in
                 Comment.link_content title
             | _ ->
