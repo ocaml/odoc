@@ -269,7 +269,7 @@ let run mode
   (* Grep log index and co commands *)
   grep_log `Count_occurrences index_grep;
   grep_log `Count_occurrences index_grep;
-  grep_log `Index (* index_grep *) (Some "");
+  grep_log `Index index_grep;
 
   List.iter
     (fun { Cmd_outputs.log_dest; prefix; run } ->
