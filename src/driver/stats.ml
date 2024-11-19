@@ -174,7 +174,7 @@ let compute_produced_tree cmd dir =
     | Error _ -> acc
   in
   Bos.OS.Dir.fold_contents ~dotfiles:true ~elements:`Files acc_file_sizes [] dir
-  |> Result.get_ok
+  |> Result.value ~default:[]
   |> compute_metric_int "produced" cmd ("files produced by 'odoc " ^ cmd ^ "'")
 
 (** Analyze the running time of the slowest commands. *)
