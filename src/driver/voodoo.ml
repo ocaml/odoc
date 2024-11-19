@@ -284,7 +284,6 @@ let of_voodoo pkg_name ~blessed =
       match packages with
       | [ package ] ->
           let package = process_package package in
-          Logs.debug (fun m -> m "Package: %a\n%!" Packages.pp package);
           Util.StringMap.singleton pkg_name package
       | [] ->
           Logs.err (fun m -> m "No package found for %s" pkg_name);
