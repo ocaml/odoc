@@ -1,3 +1,6 @@
+  $ ocamlc -c -bin-annot unit.ml
+
+  $ odoc compile --parent-id pkg --output-dir _odoc unit.cmt
   $ odoc compile --parent-id pkg --output-dir _odoc index.mld
   $ odoc compile --parent-id pkg --output-dir _odoc content.mld
   $ odoc compile --parent-id pkg --output-dir _odoc omitted.mld
@@ -6,6 +9,7 @@
   $ odoc compile --parent-id pkg/dir1 --output-dir _odoc dir1/dontent.mld
 
   $ odoc link _odoc/pkg/page-index.odoc
+  $ odoc link _odoc/pkg/unit.odoc
   $ odoc link _odoc/pkg/page-content.odoc
   $ odoc link _odoc/pkg/page-omitted.odoc
   $ odoc link _odoc/pkg/dir1/page-index.odoc
@@ -13,11 +17,11 @@
   $ odoc link _odoc/pkg/dir1/page-dontent.odoc
 
   $ odoc compile-index --root _odoc/pkg
-  File "index.mld", line 1, characters 30-35:
+  File "index.mld", line 1, characters 42-47:
   Warning: Duplicate 'dir1/' in (children).
-  File "index.mld", line 1, characters 36-40:
+  File "index.mld", line 1, characters 48-52:
   Warning: 'typo' in (children) does not correspond to anything.
-  File "index.mld", line 1, characters 0-40:
+  File "index.mld", line 1, characters 0-52:
   Warning: (children) doesn't include 'omitted'.
 
 Turn the index into a sidebar (removes all unnecessary entries)
@@ -37,6 +41,9 @@ Turn the index into a sidebar (removes all unnecessary entries)
       "Some": [
         {
           "Page": "content"
+        },
+        {
+          "Module": "Unit"
         },
         {
           "Dir": "dir1"
@@ -65,6 +72,7 @@ but this should be a warning!
      <nav class="odoc-toc odoc-global-toc">
       <a href="#" class="current_unit">This is the main index</a>
       <ul><li><a href="content.html">This is top level content</a></li>
+       <li><a href="Unit/index.html">Unit</a></li>
        <li><a href="dir1/index.html">This is dir1's index</a></li>
        <li><a href="omitted.html">This one is omitted</a></li>
       </ul>
