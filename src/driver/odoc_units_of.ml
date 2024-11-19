@@ -1,6 +1,7 @@
 open Odoc_unit
 
-let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
+let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
+    t list =
   let { odoc_dir; odocl_dir; index_dir; mld_dir = _ } = dirs in
   (* [module_of_hash] Maps a hash to the corresponding [Package.t], library name and
      [Packages.modulety]. [lib_dirs] maps a library name to the odoc dir containing its
@@ -288,6 +289,7 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
       ((pkg_index :: src_index :: lib_units)
       @ mld_units @ asset_units @ md_units)
   in
-
-  let pkg_list :> t = Landing_pages.package_list ~dirs pkgs in
-  pkg_list :: List.concat_map of_package pkgs
+  if gen_indices then
+    let gen_indices :> t = Landing_pages.package_list ~dirs pkgs in
+    gen_indices :: List.concat_map of_package pkgs
+  else List.concat_map of_package pkgs
