@@ -9,7 +9,7 @@ open Odoc_index
 module Toc : sig
   type t = entry Tree.t
 
-  val of_page_hierarchy : Page_hierarchy.t -> t
+  val of_page_hierarchy : Skeleton.t -> t
 
   val to_block : prune:bool -> Url.Path.t -> t -> Block.t
 end = struct
