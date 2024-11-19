@@ -16,7 +16,9 @@ let run inp =
       ]
   in
   List.iter
-    (fun s -> s |> tree_to_yojson |> Format.printf "%a" Yojson.Safe.pp)
+    (fun s ->
+      s |> tree_to_yojson
+      |> Format.printf "%a" (fun f -> Yojson.Safe.pretty_print f))
     index
 
 let a_inp =

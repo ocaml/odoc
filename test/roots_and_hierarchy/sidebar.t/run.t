@@ -30,7 +30,7 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
       "node": {
         "url": "pkg/index.html",
         "kind": "leaf-page",
-        "content": "<a href=\"pkg/index.html\">index</a>"
+        "content": "<a href=\"pkg/index.html\">Package <code>pkg</code></a>"
       },
       "children": [
         {
@@ -60,8 +60,8 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
         },
         {
           "node": {
-            "url": "pkg/libname/index.html",
-            "kind": "page",
+            "url": null,
+            "kind": null,
             "content": "libname"
           },
           "children": [
@@ -115,9 +115,11 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
 
   $ cat html/pkg/index.html | grep odoc-global-toc -A 15
      <nav class="odoc-toc odoc-global-toc">
-      <a href="#" class="current_unit">index</a>
+      <a href="#" class="current_unit">Package <code>pkg</code></a>
       <ul><li><a href="dir1/index.html">A directory</a></li>
-       <li><a href="file.html">File</a></li><li>libname</li>
+       <li><a href="file.html">File</a></li>
+       <li>libname<ul><li><a href="libname/Unit/index.html">Unit</a></li></ul>
+       </li>
       </ul>
      </nav>
     </div><div class="odoc-content"></div>
@@ -126,7 +128,7 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
 
   $ cat html/pkg/libname/Unit/X/index.html | grep odoc-global-toc -A 15
      <nav class="odoc-toc odoc-global-toc">
-      <a href="../../../index.html">index</a>
+      <a href="../../../index.html">Package <code>pkg</code></a>
       <ul><li><a href="../../../dir1/index.html">A directory</a></li>
        <li><a href="../../../file.html">File</a></li>
        <li>libname

@@ -29,8 +29,11 @@ Root is used for the missing index in the unnamed root directory. TODO
      <h1 id="foo"><a href="#foo" class="anchor"></a>Foo</h1>
     </header>
     <div class="odoc-tocs">
-     <nav class="odoc-toc odoc-global-toc"><a href="index.html">index</a>
-      <ul><li><a href="#" class="current_unit">Foo</a></li></ul>
+     <nav class="odoc-toc odoc-global-toc">index
+      <ul><li><a href="bar.html">Bar</a></li>
+       <li>baz<ul><li><a href="baz/bli.html">Bli</a></li></ul></li>
+       <li><a href="#" class="current_unit">Foo</a></li>
+      </ul>
      </nav>
     </div><div class="odoc-content"></div>
    </body>
