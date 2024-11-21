@@ -278,8 +278,11 @@ let html_generate ~occurrence_file ~remaps ~generate_json output_dir linked =
       let sidebar =
         match sidebar with
         | None -> None
-        | Some { output_file; json } ->
+        | Some { output_file; json; pkg_dir } ->
             Odoc.sidebar_generate ~output_file ~json index.output_file ();
+            Odoc.sidebar_generate
+              ~output_file:Fpath.(output_dir // pkg_dir / "sidebar.json")
+              ~json:true index.output_file ();
             Some output_file
       in
       (sherlodoc_index_one ~output_dir index, sidebar)

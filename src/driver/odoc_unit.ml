@@ -44,7 +44,7 @@ module Pkg_args = struct
       (Util.StringMap.bindings x.libs)
 end
 
-type sidebar = { output_file : Fpath.t; json : bool }
+type sidebar = { output_file : Fpath.t; json : bool; pkg_dir : Fpath.t }
 
 type index = {
   roots : Fpath.t list;
