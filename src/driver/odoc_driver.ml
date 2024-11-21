@@ -135,6 +135,7 @@ let run mode
       stats;
       nb_workers;
       odoc_bin;
+      odoc_md_bin;
       compile_grep;
       link_grep;
       generate_grep;
@@ -143,6 +144,10 @@ let run mode
       generate_json;
     } =
   Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
+  Option.iter
+    (fun odoc_md_bin -> Odoc.odoc_md := Bos.Cmd.v odoc_md_bin)
+    odoc_md_bin;
+
   let _ = Voodoo.find_universe_and_version "foo" in
   Eio_main.run @@ fun env ->
   Eio.Switch.run @@ fun sw ->
