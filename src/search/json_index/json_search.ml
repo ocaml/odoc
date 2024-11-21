@@ -222,6 +222,22 @@ let page ppf (page : Odoc_model.Lang.Page.t) =
   let _first = Odoc_utils.Tree.fold_left ~f true skel in
   ()
 
+let of_entry ?occurrences ppf entry =
+  let get_occ id =
+    match occurrences with
+    | None -> None
+    | Some occurrences -> (
+        match Odoc_occurrences.Table.get occurrences id with
+        | Some x -> Some x
+        | None -> Some { direct = 0; indirect = 0 })
+  in
+  let entry =
+    let occ = get_occ entry.Entry.id in
+    (entry, Html.of_entry entry, occ)
+  in
+  let _ = output_json ppf true entry in
+  ()
+
 let index ?occurrences ppf (index : Skeleton.t list) =
   let get_occ id =
     match occurrences with

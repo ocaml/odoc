@@ -11,3 +11,9 @@ val index :
   Format.formatter ->
   Odoc_index.Skeleton.t list ->
   unit
+
+val of_entry :
+  ?occurrences:Odoc_occurrences.Table.t ->
+  Format.formatter ->
+  Odoc_index.Entry.t ->
+  unit
