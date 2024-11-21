@@ -40,15 +40,9 @@ module Named_roots : sig
 
   type error = NoPackage | NoRoot
 
-  type input = {
-    name : string;
-    dir : Fs.Directory.t;
-    omit : Fs.Directory.t list;
-  }
+  type input = { name : string; dir : Fs.Directory.t }
 
   val create : input list -> current_root:named_root option -> t
-
-  val all_of : ?root:string -> ext:string -> t -> (Fs.File.t list, error) result
 
   val current_root : t -> Fs.Directory.t option
 
@@ -64,19 +58,11 @@ end = struct
 
   type hierarchical = (Fs.File.t, Fs.File.t) Hashtbl.t * Fs.Directory.t
 
-  type pkg = {
-    flat : flat;
-    hierarchical : hierarchical;
-    omit : Fs.Directory.t list;
-  }
+  type pkg = { flat : flat; hierarchical : hierarchical }
 
   type t = { table : (string, pkg) Hashtbl.t; current_root : named_root option }
 
-  type input = {
-    name : string;
-    dir : Fs.Directory.t;
-    omit : Fs.Directory.t list;
-  }
+  type input = { name : string; dir : Fs.Directory.t }
 
   type error = NoPackage | NoRoot
 
@@ -88,19 +74,14 @@ end = struct
   let create (pkglist : input list) ~current_root =
     let cache = Hashtbl.create 42 in
     List.iter
-      (fun { name = pkgname; dir = root; omit } ->
+      (fun { name = pkgname; dir = root } ->
         let flat = Unvisited root
         and hierarchical = (Hashtbl.create 42, root) in
-        Hashtbl.add cache pkgname { flat; hierarchical; omit })
+        Hashtbl.add cache pkgname { flat; hierarchical })
       pkglist;
     { current_root; table = cache }
 
   let current_root t = Option.map snd t.current_root
-
-  let check_omit ~omit path =
-    List.for_all
-      (fun omit -> not @@ Fs.Directory.contains ~parentdir:omit path)
-      omit
 
   let find_by_path ?root { table = cache; current_root; _ } ~path =
     let path = Fpath.normalize path in
@@ -111,27 +92,25 @@ end = struct
     in
     root >>= fun root ->
     match hashtbl_find_opt cache root with
-    | Some { hierarchical = cache, root; omit; _ } -> (
+    | Some { hierarchical = cache, root; _ } -> (
         match hashtbl_find_opt cache path with
         | Some x -> Ok (Some x)
         | None ->
             let full_path = Fpath.( // ) (Fs.Directory.to_fpath root) path in
-            if Fs.File.exists full_path && check_omit ~omit full_path then (
+            if Fs.File.exists full_path then (
               Hashtbl.add cache path full_path;
               Ok (Some full_path))
             else Ok None)
     | None -> Error NoPackage
 
-  let populate_flat_namespace ~root ~omit =
+  let populate_flat_namespace ~root =
     let flat_namespace = Hashtbl.create 42 in
     let () =
       match
         Fs.Directory.fold_files_rec_result
           (fun () path ->
             let name = Fpath.filename path in
-            if check_omit ~omit path then
-              Ok (Hashtbl.add flat_namespace name path)
-            else Ok ())
+            Ok (Hashtbl.add flat_namespace name path))
           () root
       with
       | Ok () -> ()
@@ -149,30 +128,11 @@ end = struct
     package >>= fun package ->
     match hashtbl_find_opt cache package with
     | Some { flat = Visited flat; _ } -> Ok (Hashtbl.find_all flat name)
-    | Some ({ flat = Unvisited root; omit; _ } as p) ->
-        let flat = populate_flat_namespace ~omit ~root in
+    | Some ({ flat = Unvisited root; _ } as p) ->
+        let flat = populate_flat_namespace ~root in
         Hashtbl.replace cache package { p with flat = Visited flat };
         Ok (Hashtbl.find_all flat name)
     | None -> Error NoPackage
-
-  let all_of ?root ~ext { table; current_root; _ } =
-    (match (root, current_root) with
-    | None, Some (current_root, _) -> Ok current_root
-    | Some pkg, _ -> Ok pkg
-    | None, None -> Error NoRoot)
-    >>= fun my_root ->
-    let return flat =
-      let values = Hashtbl.fold (fun _ v acc -> v :: acc) flat [] in
-      let values = List.filter (Fpath.has_ext ext) values in
-      Ok values
-    in
-    match Hashtbl.find table my_root with
-    | { flat = Visited flat; _ } -> return flat
-    | { flat = Unvisited root; omit; _ } as p ->
-        let flat = populate_flat_namespace ~omit ~root in
-        Hashtbl.replace table my_root { p with flat = Visited flat };
-        return flat
-    | exception Not_found -> Error NoPackage
 end
 
 let () = (ignore Named_roots.find_by_name [@warning "-5"])
@@ -498,57 +458,6 @@ type t = {
   current_dir : Fs.Directory.t option;
 }
 
-let all_roots ?root named_roots =
-  let all_files =
-    match Named_roots.all_of ?root named_roots ~ext:"odocl" with
-    | Ok x -> x
-    | Error (NoPackage | NoRoot) -> []
-  in
-  let load file =
-    match Odoc_file.load_root file with
-    | Error _ -> None
-    | Ok root -> Some (file, root)
-  in
-  Odoc_utils.List.filter_map load all_files
-
-let all_pages ?root ({ pages; _ } : t) =
-  let filter (root : _ * Odoc_model.Root.t) =
-    match snd root with
-    | {
-     file = Page { title; frontmatter; _ };
-     id = { iv = #Odoc_model.Paths.Identifier.Page.t_pv; _ } as id;
-     _;
-    } ->
-        Some (id, title, frontmatter)
-    | _ -> None
-  in
-  match pages with
-  | None -> []
-  | Some pages -> Odoc_utils.List.filter_map filter @@ all_roots ?root pages
-
-let all_units ~library ({ libs; _ } : t) =
-  let filter (root : _ * Odoc_model.Root.t) =
-    match root with
-    | ( file,
-        {
-          file = Compilation_unit _;
-          id = { iv = #Odoc_model.Paths.Identifier.RootModule.t_pv; _ } as id;
-          _;
-        } ) ->
-        let file () =
-          match Odoc_file.load file with
-          | Ok { content = Odoc_file.Unit_content u; _ } -> Some u
-          | Ok { content = _; _ } -> assert false
-          | Error _ -> (* TODO: Report as warning or propagate error *) None
-        in
-        Some (file, id)
-    | _ -> None
-  in
-  match libs with
-  | None -> []
-  | Some libs ->
-      Odoc_utils.List.filter_map filter @@ all_roots ~root:library libs
-
 type roots = {
   page_roots : named_root list;
   lib_roots : named_root list;
@@ -563,27 +472,16 @@ let create ~important_digests ~directories ~open_modules ~roots =
     | None -> (None, None, None, directories)
     | Some { page_roots; lib_roots; current_lib; current_package; current_dir }
       ->
-        let prepare roots omit =
-          List.map
-            (fun (name, dir) ->
-              let omit =
-                List.filter
-                  (fun o ->
-                    Fs.Directory.contains ~parentdir:dir
-                      (Fs.Directory.to_fpath o))
-                  omit
-              in
-              { Named_roots.name; dir; omit })
-            roots
+        let prepare roots =
+          List.map (fun (name, dir) -> { Named_roots.name; dir }) roots
         in
         let directories =
           match current_package with
           | None -> directories
           | Some (_pkg, dir) -> dir :: directories
         in
-        let omit = List.map snd lib_roots in
-        let lib_roots = prepare lib_roots [] in
-        let page_roots = prepare page_roots omit in
+        let lib_roots = prepare lib_roots in
+        let page_roots = prepare page_roots in
         let pages = Named_roots.create ~current_root:current_package page_roots
         and libs = Named_roots.create ~current_root:current_lib lib_roots in
         (Some pages, Some libs, Some current_dir, directories)
