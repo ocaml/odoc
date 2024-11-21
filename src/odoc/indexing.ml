@@ -90,7 +90,9 @@ let compile out_format ~output ~warnings_options ~occurrences ~roots
              (fun files file -> file :: files)
              [] include_rec)
   in
-  let root_groups = files :: root_groups in
+  let root_groups =
+    match files with _ :: _ -> files :: root_groups | [] -> root_groups
+  in
   let hierarchy_of_group g =
     let pages, modules =
       let read (pages, modules) f =
