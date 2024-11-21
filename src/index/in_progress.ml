@@ -64,15 +64,18 @@ let rec get_or_create (dir : in_progress) (id : container_page) : in_progress =
       new_
 
 let add_page (dir : in_progress) page =
-  match page.Lang.Page.name with
-  | { iv = #Id.LeafPage.t_pv; _ } as id ->
-      let _, dir_content =
-        match get_parent id with
-        | Some parent -> get_or_create dir parent
-        | None -> dir
-      in
-      LPH.replace dir_content.leafs id page
-  | _ -> ()
+  let id =
+    match page.Lang.Page.name with
+    | { iv = #Id.ContainerPage.t_pv; _ } as id ->
+        Id.Mk.leaf_page (Some id, PageName.make_std "index")
+    | { iv = #Id.LeafPage.t_pv; _ } as id -> id
+  in
+  let _, dir_content =
+    match get_parent id with
+    | Some parent -> get_or_create dir parent
+    | None -> dir
+  in
+  LPH.replace dir_content.leafs id page
 
 let add_module (dir : in_progress) m =
   let _, dir_content =
