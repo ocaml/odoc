@@ -40,7 +40,7 @@ let parse_input_files input =
     (Ok []) input
   >>= fun files -> Ok (List.concat files)
 
-let compile_to_json ~output ~occurrences files =
+let compile_to_json ~output ~occurrences hierarchies =
   let output_channel =
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     open_out_bin (Fs.File.to_string output)
@@ -52,22 +52,14 @@ let compile_to_json ~output ~occurrences files =
     false
   in
   Format.fprintf output "[";
-  let _ : bool =
+  let _first =
     List.fold_left
-      (fun acc file ->
-        match
-          handle_file
-            ~unit:(print (Json_search.unit ?occurrences) acc)
-            ~page:(print Json_search.page acc)
-            ~occ:(print (Json_search.index ?occurrences) acc)
-            file
-        with
-        | Ok acc -> acc
-        | Error (`Msg m) ->
-            Error.raise_warning ~non_fatal:true
-              (Error.filename_only "%s" m (Fs.File.to_string file));
-            acc)
-      true files
+      (fun first hierarchy ->
+        Tree.fold_left
+          ~f:(fun first entry ->
+            print (Json_search.of_entry ?occurrences) first entry)
+          first hierarchy)
+      true hierarchies
   in
   Format.fprintf output "]";
   Ok ()
@@ -113,5 +105,5 @@ let compile out_format ~output ~warnings_options ~occurrences ~roots
   in
   let hierarchies = List.map hierarchy_of_group root_groups in
   match out_format with
-  | `JSON -> compile_to_json ~output ~occurrences files
+  | `JSON -> compile_to_json ~output ~occurrences hierarchies
   | `Marshall -> Ok (Odoc_file.save_index output hierarchies)
