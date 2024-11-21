@@ -10,16 +10,13 @@ module Id = Odoc_model.Paths.Identifier
 let handle_file file ~unit ~page ~occ =
   match Fpath.basename file with
   | s when String.is_prefix ~affix:"index-" s ->
-      Odoc_file.load_index file
-      >>= fun (* { extra (\* libs *\); _ } *) sidebar -> Ok (occ sidebar)
+      Odoc_file.load_index file >>= fun index -> Ok (occ index)
   | _ -> (
       Odoc_file.load file >>= fun unit' ->
       match unit' with
       | { Odoc_file.content = Unit_content unit'; _ } when unit'.hidden ->
           Error (`Msg "Hidden units are ignored when generating an index")
-      | { Odoc_file.content = Unit_content unit'; _ }
-      (* when not unit'.hidden *) ->
-          Ok (unit unit')
+      | { Odoc_file.content = Unit_content unit'; _ } -> Ok (unit unit')
       | { Odoc_file.content = Page_content page'; _ } -> Ok (page page')
       | _ ->
           Error
@@ -75,9 +72,6 @@ let compile_to_json ~output ~occurrences files =
   Format.fprintf output "]";
   Ok ()
 
-let compile_to_marshall ~output hierarchy =
-  Ok (Odoc_file.save_index output hierarchy)
-
 let read_occurrences file =
   let ic = open_in_bin file in
   let htbl : Odoc_occurrences.Table.t = Marshal.from_channel ic in
@@ -97,25 +91,27 @@ let compile out_format ~output ~warnings_options ~occurrences ~roots
     | None -> None
     | Some occurrences -> Some (read_occurrences (Fpath.to_string occurrences))
   in
-  let files =
-    List.rev_append files
-      (roots
-      |> List.map (fun include_rec ->
-             Fs.Directory.fold_files_rec ~ext:"odocl"
-               (fun files file -> file :: files)
-               [] include_rec)
-      |> List.concat)
+  let root_groups =
+    roots
+    |> List.map (fun include_rec ->
+           Fs.Directory.fold_files_rec ~ext:"odocl"
+             (fun files file -> file :: files)
+             [] include_rec)
   in
-  let pages, modules =
-    let read (pages, modules) f =
-      match Odoc_file.load f with
-      | Ok { content = Page_content p; _ } -> (p :: pages, modules)
-      | Ok { content = Unit_content m; _ } -> (pages, m :: modules)
-      | _ -> (pages, modules)
+  let root_groups = files :: root_groups in
+  let hierarchy_of_group g =
+    let pages, modules =
+      let read (pages, modules) f =
+        match Odoc_file.load f with
+        | Ok { content = Page_content p; _ } -> (p :: pages, modules)
+        | Ok { content = Unit_content m; _ } -> (pages, m :: modules)
+        | _ -> (pages, modules)
+      in
+      List.fold_left read ([], []) g
     in
-    List.fold_left read ([], []) files
+    Odoc_index.Skeleton_of.lang ~pages ~modules
   in
-  let hierarchy = Odoc_index.Skeleton_of.lang ~pages ~modules in
+  let hierarchies = List.map hierarchy_of_group root_groups in
   match out_format with
   | `JSON -> compile_to_json ~output ~occurrences files
-  | `Marshall -> compile_to_marshall ~output [ hierarchy ]
+  | `Marshall -> Ok (Odoc_file.save_index output hierarchies)
