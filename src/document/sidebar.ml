@@ -2,7 +2,11 @@ open Odoc_utils
 open Types
 module Id = Odoc_model.Paths.Identifier
 
-type entry = Url.t option * Inline.one
+type entry = {
+  url : Url.t option;
+  content : Inline.one;
+  toc_status : [ `Open ] option;
+}
 
 open Odoc_index
 
@@ -31,7 +35,7 @@ end = struct
       (* When transforming the tree, we use a filter_map to remove the nodes that
          are irrelevant for the current url. However, we always want to keep the
          root. So we apply the filter_map starting from the first children. *)
-      let convert_entry ((url : Url.t option), b) =
+      let convert_entry { url; content = b; _ } =
         let link =
           match url with
           | Some url ->
@@ -45,7 +49,8 @@ end = struct
       let rec convert n =
         let children =
           match n.Tree.node with
-          | Some url, _ when not (is_prefix url.Url.Anchor.page current_url) ->
+          | { url = Some url; toc_status = None; _ }
+            when not (is_prefix url.Url.Anchor.page current_url) ->
               []
           | _ -> List.map convert n.children
         in
@@ -69,7 +74,12 @@ end = struct
   let of_page_hierarchy ({ node = entry; children } : Entry.t Tree.t) : t =
     let map_entry entry =
       match entry.Entry.kind with
-      | Dir -> (None, inline @@ Text (Id.name entry.id))
+      | Dir ->
+          {
+            url = None;
+            content = inline @@ Text (Id.name entry.id);
+            toc_status = None;
+          }
       | _ ->
           let stop_before =
             match entry.Entry.kind with
@@ -78,6 +88,11 @@ end = struct
             | _ -> false
           in
           let path = Url.from_identifier ~stop_before (entry.id :> Id.t) in
+          let toc_status =
+            match entry.kind with
+            | Page { toc_status; _ } -> toc_status
+            | _ -> None
+          in
           let content =
             match entry.kind with
             | Page _ ->
@@ -104,7 +119,7 @@ end = struct
           in
           let target = Target.Internal (Target.Resolved path) in
           let i = inline @@ Inline.Link { target; content; tooltip = None } in
-          (Some path, i)
+          { url = Some path; content = i; toc_status }
     in
     let f x =
       match x.Entry.kind with

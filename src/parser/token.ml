@@ -19,6 +19,7 @@ type tag =
     | `Version of string
     | `Canonical of string
     | `Children_order
+    | `Toc_status
     | `Short_title
     | `Inline
     | `Open
@@ -133,6 +134,7 @@ let print : [< t ] -> string = function
   | `Tag (`Raise _) -> "'@raise'"
   | `Tag `Return -> "'@return'"
   | `Tag `Children_order -> "'@children_order'"
+  | `Tag `Toc_status -> "'@toc_status'"
   | `Tag `Short_title -> "'@short_title'"
   | `Tag (`See _) -> "'@see'"
   | `Tag (`Since _) -> "'@since'"
@@ -239,6 +241,7 @@ let describe : [< t | `Comment ] -> string = function
   | `Tag `Closed -> "'@closed'"
   | `Tag `Hidden -> "'@hidden"
   | `Tag `Children_order -> "'@children_order"
+  | `Tag `Toc_status -> "'@toc_status"
   | `Tag `Short_title -> "'@short_title"
   | `Comment -> "top-level text"
 

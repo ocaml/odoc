@@ -25,6 +25,7 @@ let make_index ~dirs ~rel_dir ?index ~content () =
 
 let library ~dirs ~pkg ~index lib =
   let content ppf =
+    Format.fprintf ppf "%@toc_status open\n";
     Format.fprintf ppf "{0 Library [%s]}@\n" lib.Packages.lib_name;
     let print_module m =
       if not m.Packages.m_hidden then

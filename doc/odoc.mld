@@ -1,8 +1,6 @@
-{0 [odoc]}
+@children_order dune odoc_for_authors cheatsheet features ocamldoc_differences interface parent_child_spec driver
 
-{@meta[
-  children: dune odoc_for_authors cheatsheet features ocamldoc_differences interface parent_child_spec driver
-]}
+{0 The [odoc] documentation generator}
 
 {b For a quick look at the [odoc] syntax, see the {{!cheatsheet}cheatsheet}!}
 

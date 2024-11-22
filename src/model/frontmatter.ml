@@ -5,15 +5,17 @@ type short_title = Comment.link_content
 type line =
   | Children_order of child Location_.with_location list
   | Short_title of short_title
+  | Toc_status of [ `Open ]
 
 type children_order = child Location_.with_location list Location_.with_location
 
 type t = {
   children_order : children_order option;
   short_title : short_title option;
+  toc_status : [ `Open ] option;
 }
 
-let empty = { children_order = None; short_title = None }
+let empty = { children_order = None; short_title = None; toc_status = None }
 
 let update ~tag_name ~loc v new_v =
   match v with
@@ -24,6 +26,11 @@ let update ~tag_name ~loc v new_v =
 
 let apply fm line =
   match line.Location_.value with
+  | Toc_status x ->
+      let toc_status =
+        update ~tag_name:"short_title" ~loc:line.location fm.toc_status x
+      in
+      { fm with toc_status }
   | Short_title t ->
       let short_title =
         update ~tag_name:"short_title" ~loc:line.location fm.short_title t
@@ -48,7 +55,9 @@ let parse_child c =
     Module c
   else Page c
 
-let parse_children_order loc co =
+type tag_payload = Comment.nestable_block_element Location_.with_location list
+
+let parse_children_order loc (co : tag_payload) =
   let rec parse_words acc words =
     match words with
     | [] -> Result.Ok (Location_.at loc (Children_order (List.rev acc)))
@@ -66,7 +75,7 @@ let parse_children_order loc co =
       Error
         (Error.make "Only words are accepted when specifying children order" loc)
 
-let parse_short_title loc t =
+let parse_short_title loc (t : tag_payload) =
   match t with
   | [ { Location_.value = `Paragraph words; _ } ] ->
       let short_title = Comment.link_content_of_inline_elements words in
@@ -75,6 +84,14 @@ let parse_short_title loc t =
       Error
         (Error.make
            "Short titles cannot contain other block than a single paragraph" loc)
+
+let parse_toc_status loc (t : tag_payload) =
+  match t with
+  | [
+   { Location_.value = `Paragraph [ { Location_.value = `Word "open"; _ } ]; _ };
+  ] ->
+      Result.Ok (Location_.at loc (Toc_status `Open))
+  | _ -> Error (Error.make "@toc_status can only take the 'open' value" loc)
 
 let of_lines lines =
   Error.catch_warnings @@ fun () -> List.fold_left apply empty lines
