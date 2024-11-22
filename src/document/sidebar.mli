@@ -1,7 +1,11 @@
 open Odoc_utils
 open Types
 
-type entry = Url.t option * Inline.one
+type entry = {
+  url : Url.t option;
+  content : Inline.one;
+  toc_status : [ `Open ] option;
+}
 
 type t = entry Tree.t list
 
