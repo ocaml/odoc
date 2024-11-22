@@ -69,6 +69,12 @@ let read_occurrences file =
   let htbl : Odoc_occurrences.Table.t = Marshal.from_channel ic in
   htbl
 
+let absolute_normalization p =
+  let p =
+    if Fpath.is_rel p then Fpath.( // ) (Fpath.v (Sys.getcwd ())) p else p
+  in
+  Fpath.normalize p
+
 let compile out_format ~output ~warnings_options ~occurrences ~roots
     ~inputs_in_file ~odocls =
   let handle_warnings f =
@@ -83,12 +89,39 @@ let compile out_format ~output ~warnings_options ~occurrences ~roots
     | None -> None
     | Some occurrences -> Some (read_occurrences (Fpath.to_string occurrences))
   in
-  let root_groups =
+  let all_files =
     roots
-    |> List.map (fun include_rec ->
+    |> List.fold_left
+         (fun set include_rec ->
            Fs.Directory.fold_files_rec ~ext:"odocl"
-             (fun files file -> file :: files)
-             [] include_rec)
+             (fun files file ->
+               Fpath.Set.add (absolute_normalization file) files)
+             set include_rec)
+         Fpath.Set.empty
+    |> Fpath.Set.to_list
+  in
+  (* let () = List.iter (Format.printf "%a\n" Fpath.pp) all_files in *)
+  let roots = List.map Fs.Directory.to_fpath roots in
+  let roots = List.map absolute_normalization roots in
+  (* Add an index to keep the original order *)
+  let roots = List.mapi (fun i c -> (i, c)) roots in
+  let roots =
+    (* Make sure that we treat first the "deepest" one *)
+    List.sort
+      (fun (_, p1) (_, p2) -> if Fpath.is_prefix p1 p2 then 1 else -1)
+      roots
+  in
+  let groups, _ =
+    List.fold_left
+      (fun (acc, remaining_files) (i, root) ->
+        let root_files, remaining_files =
+          List.partition (Fpath.is_prefix root) remaining_files
+        in
+        ((i, root_files) :: acc, remaining_files))
+      ([], all_files) roots
+  in
+  let root_groups =
+    List.sort (fun (i, _) (j, _) -> Int.compare i j) groups |> List.map snd
   in
   let root_groups =
     match files with _ :: _ -> files :: root_groups | [] -> root_groups

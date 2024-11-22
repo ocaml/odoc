@@ -471,7 +471,6 @@ module Indexing = struct
   let index dst json warnings_options roots inputs_in_file inputs occurrences =
     let marshall = if json then `JSON else `Marshall in
     output_file ~dst marshall >>= fun output ->
-    Antichain.check roots ~opt:"--root" >>= fun () ->
     Indexing.compile marshall ~output ~warnings_options ~roots ~occurrences
       ~inputs_in_file ~odocls:inputs
 
