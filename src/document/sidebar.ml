@@ -122,4 +122,5 @@ type t = Toc.t list
 let of_index (v : Odoc_index.t) = List.map Toc.of_page_hierarchy v
 
 let to_block (sidebar : t) path =
-  List.map (Toc.to_block ~prune:true path) sidebar
+  let sb = List.map (Toc.to_block ~prune:true path) sidebar in
+  [ block (Block.List (Block.Unordered, sb)) ]
