@@ -297,7 +297,7 @@ body {
 }
 
 body.odoc {
-  max-width: 160ex;
+  max-width: 167ex;
   display: grid;
   grid-template-columns: min-content 1fr min-content;
   grid-template-areas:
@@ -886,7 +886,7 @@ body.odoc:has( .odoc-search) .odoc-toc {
 
 .odoc-toc {
   --toc-top: 20px;
-  width: 28ex;
+  width: 35ex;
   background: var(--toc-background);
   overflow: auto;
   color: var(--toc-color);

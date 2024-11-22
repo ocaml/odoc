@@ -543,8 +543,7 @@ module Page = struct
       | None -> None
       | Some sidebar ->
           let sidebar = Odoc_document.Sidebar.to_block sidebar url in
-          (Some (List.concat_map (block ~config ~resolve) sidebar)
-            :> any Html.elt list option)
+          (Some (block ~config ~resolve sidebar) :> any Html.elt list option)
     in
     let i = Doctree.Shift.compute ~on_sub i in
     let uses_katex = Doctree.Math.has_math_elements p in
