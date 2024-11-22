@@ -78,7 +78,12 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
   in
 
   let index_of pkg =
-    let roots = [ Fpath.( // ) odocl_dir (doc_dir pkg) ] in
+    let roots =
+      Fpath.( // ) odocl_dir (doc_dir pkg)
+      :: List.map
+           (fun lib -> Fpath.( // ) odocl_dir (lib_dir pkg lib))
+           pkg.libraries
+    in
     let output_file = Fpath.(index_dir / pkg.name / Odoc.index_filename) in
     let sidebar =
       let output_file = Fpath.(index_dir / pkg.name / Odoc.sidebar_filename) in
