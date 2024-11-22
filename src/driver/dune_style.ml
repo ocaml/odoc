@@ -125,6 +125,7 @@ let of_dune_build dir =
                       selected = false;
                       remaps = [];
                       pkg_dir;
+                      doc_dir = pkg_dir;
                       other_docs = [];
                       config = Global_config.empty;
                     } )
