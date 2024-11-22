@@ -91,6 +91,7 @@ type t = {
   remaps : (string * string) list;
   other_docs : Fpath.t list;
   pkg_dir : Fpath.t;
+  doc_dir : Fpath.t;
   config : Global_config.t;
 }
 
@@ -407,6 +408,7 @@ let of_libs ~packages_dir libs =
                         remaps = [];
                         other_docs = [];
                         pkg_dir;
+                        doc_dir = pkg_dir;
                         config;
                       })
               acc)
@@ -490,6 +492,7 @@ let of_packages ~packages_dir packages =
             remaps;
             other_docs = [];
             pkg_dir;
+            doc_dir = pkg_dir;
             config;
           }
           acc)
