@@ -438,35 +438,43 @@ let item_heavy ==
         in
         Writer.ensure not_empty warning items 
       }
-    | LI; whitespace; items = sequence(locatedM(nestable_block_element)); END;
+    | LI; whitespace?; items = sequence(locatedM(nestable_block_element))?; END;
       {
-        let writer = 
-          let warning = fun ~filename -> 
-            let span = Parser_aux.to_location ~filename $sloc in 
-            Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span 
-          in
-          Writer.ensure not_empty warning items 
-        in
         let warning = fun ~filename -> 
           let span = Parser_aux.to_location ~filename $sloc in 
           Parse_error.end_not_allowed ~in_what:(Tokens.describe LI) span
         in
-        Writer.warning warning writer
-      }
-    | DASH; whitespace; items = sequence(locatedM(nestable_block_element)); END;
-      {
-        let writer = 
-          let warning = fun ~filename -> 
-            let span = Parser_aux.to_location ~filename $sloc in 
-            Parse_error.should_not_be_empty ~what:(Tokens.describe DASH) span 
+        match items with 
+        | Some items -> 
+          let writer = 
+            let warning = fun ~filename -> 
+              let span = Parser_aux.to_location ~filename $sloc in 
+              Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span 
+            in
+            Writer.ensure not_empty warning items 
           in
-          Writer.ensure not_empty warning items 
-        in
+          Writer.warning warning writer
+        | None ->
+          Writer.with_warning [] warning 
+      }
+    | DASH; whitespace?; items = sequence(locatedM(nestable_block_element))?; END;
+      {
         let warning = fun ~filename -> 
           let span = Parser_aux.to_location ~filename $sloc in 
           Parse_error.end_not_allowed ~in_what:(Tokens.describe DASH) span
         in
-        Writer.warning warning writer
+        match items with 
+        | Some items -> 
+          let writer = 
+            let warning = fun ~filename -> 
+              let span = Parser_aux.to_location ~filename $sloc in 
+              Parse_error.should_not_be_empty ~what:(Tokens.describe DASH) span 
+            in
+            Writer.ensure not_empty warning items 
+          in
+          Writer.warning warning writer
+        | None ->
+          Writer.with_warning [] warning 
       }
 
 let list_heavy := 
