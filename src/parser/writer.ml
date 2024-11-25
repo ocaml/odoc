@@ -45,6 +45,10 @@ let traverse : ('a -> 'b t) -> 'a list -> 'b list t =
 
 let with_warning node warning = Writer (node, [ warning ])
 
+let ensure : ('a -> bool) -> partial_warning -> 'a t -> 'a t =
+ fun pred warning (Writer (x, ws) as self) ->
+  if pred x then self else Writer (x, warning :: ws)
+
 let run : filename:string -> Ast.t t -> Ast.t * Warning.t list =
  fun ~filename (Writer (tree, warnings)) ->
   (tree, List.map (fun f -> f ~filename) warnings)

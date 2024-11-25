@@ -8,6 +8,8 @@
     let location = Parser_aux.to_location loc in
     { location; value }
 
+  let not_empty : 'a list -> bool = function _ :: _ -> true | _ -> false
+
   type align_error =
     | Invalid_align (* An invalid align cell *)
     | Not_align (* Not an align cell *)
@@ -405,8 +407,67 @@ let list_light :=
    handle the case where '{li' is *not* followed by whitespace in our Menhir
    rule as opposed to it's semantic action *)
 let item_heavy ==
-    | LI; whitespace*; ~ = sequence_nonempty(locatedM(nestable_block_element)); whitespace?; RIGHT_BRACE; whitespace?; <>
-    | DASH; whitespace*; ~ = sequence_nonempty(locatedM(nestable_block_element)); whitespace?; RIGHT_BRACE; whitespace?; <>
+    | LI; whitespace; items = sequence(locatedM(nestable_block_element)); RIGHT_BRACE; whitespace?; 
+      {
+        let warning = fun ~filename -> 
+          let span = Parser_aux.to_location ~filename $sloc in 
+          Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span 
+        in
+        Writer.ensure not_empty warning items 
+      }
+    | LI; items = sequence(locatedM(nestable_block_element)); RIGHT_BRACE; whitespace?; 
+      {
+        let warning = fun ~filename -> 
+          let span = Parser_aux.to_location ~filename $sloc in
+          Parse_error.should_be_followed_by_whitespace ~what:(Tokens.describe LI) span
+        in
+        let writer = 
+          let warning = fun ~filename -> 
+            let span = Parser_aux.to_location ~filename $sloc in 
+            Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span 
+          in
+          Writer.ensure not_empty warning items 
+        in
+        Writer.warning warning writer
+      }
+    | DASH; whitespace?; items = sequence(locatedM(nestable_block_element)); RIGHT_BRACE; whitespace?; 
+      {
+        let warning = fun ~filename -> 
+          let span = Parser_aux.to_location ~filename $sloc in 
+          Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span 
+        in
+        Writer.ensure not_empty warning items 
+      }
+    | LI; whitespace; items = sequence(locatedM(nestable_block_element)); END;
+      {
+        let writer = 
+          let warning = fun ~filename -> 
+            let span = Parser_aux.to_location ~filename $sloc in 
+            Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span 
+          in
+          Writer.ensure not_empty warning items 
+        in
+        let warning = fun ~filename -> 
+          let span = Parser_aux.to_location ~filename $sloc in 
+          Parse_error.end_not_allowed ~in_what:(Tokens.describe LI) span
+        in
+        Writer.warning warning writer
+      }
+    | DASH; whitespace; items = sequence(locatedM(nestable_block_element)); END;
+      {
+        let writer = 
+          let warning = fun ~filename -> 
+            let span = Parser_aux.to_location ~filename $sloc in 
+            Parse_error.should_not_be_empty ~what:(Tokens.describe DASH) span 
+          in
+          Writer.ensure not_empty warning items 
+        in
+        let warning = fun ~filename -> 
+          let span = Parser_aux.to_location ~filename $sloc in 
+          Parse_error.end_not_allowed ~in_what:(Tokens.describe DASH) span
+        in
+        Writer.warning warning writer
+      }
 
 let list_heavy := 
     | list_kind = List; whitespace?; items = sequence(item_heavy); whitespace?; RIGHT_BRACE;
