@@ -229,57 +229,6 @@ let main :=
   | nodes = sequence_nonempty(locatedM(toplevel)); whitespace?; END; { nodes }
   | whitespace?; END; { Writer.return @@ [] }
 
-let any ==
-  | SPACE; { SPACE }
-  | NEWLINE; { NEWLINE }
-  | RIGHT_BRACE; { RIGHT_BRACE }
-  | RIGHT_CODE_DELIMITER; { RIGHT_CODE_DELIMITER }
-  | b = Blank_line; { Blank_line b }
-  | s = Single_newline; { Single_newline s }
-  | s = Space; { Space s }
-  | w = Word; { Word w }
-  | MINUS; { MINUS }
-  | PLUS; { PLUS }
-  | BAR; { BAR }
-  | s = Style; { Style s }
-  | p = Paragraph_style; { Paragraph_style p }
-  | m = Modules; { Modules m }
-  | m = Math_span; { Math_span m }
-  | m = Math_block; { Math_block m }
-  | r = Raw_markup; { Raw_markup r }
-  | c = Code_block; { Code_block c }
-  | c = Code_span; { Code_span c }
-  | l = List; { List l }
-  | LI; { LI }
-  | DASH; { DASH }
-  | TABLE_LIGHT; { TABLE_LIGHT }
-  | TABLE_HEAVY; { TABLE_HEAVY }
-  | TABLE_ROW; { TABLE_ROW }
-  | t = Table_cell; { Table_cell t }
-  | s = Section_heading; { Section_heading s }
-  | a = Author; { Author a }
-  | DEPRECATED; { DEPRECATED }
-  | p = Param; { Param p }
-  | r = Raise; { Raise r }
-  | RETURN; { RETURN }
-  | s = See; { See s }
-  | s = Since; { Since s }
-  | b = Before; { Before b }
-  | v = Version; { Version v }
-  | c = Canonical; { Canonical c }
-  | INLINE; { INLINE }
-  | OPEN; { OPEN }
-  | CLOSED; { CLOSED }
-  | HIDDEN; { HIDDEN }
-  | r = Simple_ref; { Simple_ref r }
-  | r = Ref_with_replacement; { Ref_with_replacement r }
-  | l = Simple_link; { Simple_link l }
-  | l = Link_with_replacement; { Link_with_replacement l }
-  | m = Media; { Media m }
-  | m = Media_with_replacement; { Media_with_replacement m }
-  | v = Verbatim; { Verbatim v }
-  | END; { END }
-
 let toplevel :=
   | block = nestable_block_element; { Writer.map (fun b -> (b :> Ast.block_element) ) block }
   | ~ = tag; <>
@@ -558,6 +507,7 @@ let table_light :=
     { construct_table ~header ~align data }
   (* If there's only one row and it's not the align row, then it's data *)
   | TABLE_LIGHT; data = rows_light; whitespace?; RIGHT_BRACE; { construct_table data }
+    
   (* If there's nothing inside, return an empty table *)
   | TABLE_LIGHT; whitespace?; RIGHT_BRACE; 
     { return @@ `Table (([[]], None), `Light) }
