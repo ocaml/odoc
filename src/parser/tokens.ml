@@ -199,3 +199,60 @@ let describe : token -> string = function
   | OPEN -> "'@open'"
   | CLOSED -> "'@closed'"
   | HIDDEN -> "'@hidden"
+
+let empty_code_block =
+  Ast.
+    {
+      meta = None;
+      delimiter = None;
+      content =
+        Loc.
+          {
+            value = "";
+            location =
+              {
+                file = "";
+                start = { line = 0; column = 0 };
+                end_ = { line = 0; column = 0 };
+              };
+          };
+      output = None;
+    }
+
+let describe_inline : Ast.inline_element -> string = function
+  | `Word w -> describe @@ Word w
+  | `Space _ -> describe SPACE
+  | `Styled (style, _) -> describe @@ Style style
+  | `Code_span _ -> describe @@ Code_span ""
+  | `Math_span _ -> describe @@ Math_span ""
+  | `Raw_markup x -> describe @@ Raw_markup x
+  | `Link (l, []) -> describe @@ Simple_link l
+  | `Link (l, _ :: _) -> describe @@ Link_with_replacement l
+  | `Reference (`Simple, { value; _ }, _) -> describe @@ Simple_ref value
+  | `Reference (`With_text, { value; _ }, _) ->
+      describe @@ Ref_with_replacement value
+
+let of_href = function `Reference s -> Reference s | `Link s -> Link s
+
+let of_media_kind = function
+  | `Audio -> Audio
+  | `Image -> Image
+  | `Video -> Video
+
+let of_media = function
+  | `Media (_, Loc.{ value; _ }, _, kind) ->
+      Media (of_href value, of_media_kind kind)
+
+let describe_nestable_block : Ast.nestable_block_element -> string = function
+  | `Paragraph ws -> (
+      match ws with
+      | Loc.{ value; _ } :: _ -> describe_inline value
+      | [] -> describe @@ Word "")
+  | `Code_block _ -> describe @@ Code_block empty_code_block
+  | `Verbatim _ -> describe @@ Verbatim ""
+  | `Modules _ -> describe @@ Modules "" (* NOTE: Fix list *)
+  | `List (_, kind, _) -> describe @@ if kind = `Light then MINUS else DASH
+  | `Table (_, kind) ->
+      describe @@ if kind = `Light then TABLE_LIGHT else TABLE_HEAVY
+  | `Math_block _ -> describe @@ Math_block ""
+  | `Media _ as media -> describe @@ of_media media

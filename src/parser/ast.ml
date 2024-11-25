@@ -20,7 +20,6 @@ type alignment = [ `Left | `Center | `Right ]
 type reference_kind = [ `Simple | `With_text ]
 (** References in doc comments can be of two kinds: [{!simple}] or [{{!ref}With text}]. *)
 
-
 type inline_element =
   [ `Space of string
   | `Word of string
@@ -63,9 +62,7 @@ and nestable_block_element =
   | `Verbatim of string
   | `Modules of string with_location list
   | `List of
-    list_kind
-    * list_syntax
-    * nestable_block_element with_location list list
+    list_kind * list_syntax * nestable_block_element with_location list list
   | `Table of table
   | `Math_block of string  (** @since 2.0.0 *)
   | `Media of reference_kind * media_href with_location * string * media
@@ -76,8 +73,25 @@ and nestable_block_element =
     {{:https://ocaml.org/releases/4.12/htmlman/ocamldoc.html#sss:ocamldoc-list}manual}).
     *)
 
-
 and table = nestable_block_element abstract_table * [ `Light | `Heavy ]
+
+let empty_code_block =
+  {
+    meta = None;
+    delimiter = None;
+    content =
+      Loc.
+        {
+          value = "";
+          location =
+            {
+              file = "";
+              start = { line = 0; column = 0 };
+              end_ = { line = 0; column = 0 };
+            };
+        };
+    output = None;
+  }
 
 type internal_tag =
   [ `Canonical of string with_location | `Inline | `Open | `Closed | `Hidden ]
