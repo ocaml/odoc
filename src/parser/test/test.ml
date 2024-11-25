@@ -1,6 +1,8 @@
 open Odoc_parser
 open Serialize
 
+module Serialize = Serialize
+
 let error err = Atom (Odoc_parser.Warning.to_string err)
 
 let parser_output formatter v =

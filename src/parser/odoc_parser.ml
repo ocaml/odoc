@@ -79,6 +79,24 @@ let offset_to_location :
   in
   scan_to_last_newline reversed_newlines
 
+module Tester = struct
+  include Parser
+  let is_EOI = function Tokens.END -> true | _ -> false
+  let pp_warning = Warning.to_string
+  let run = Writer.run
+  let token =
+    let dummy_loc =
+      Lexer.
+        {
+          warnings = [];
+          file = "f.ml";
+          offset_to_location = Fun.const Loc.{ line = 1; column = 0 };
+        }
+    in
+    Lexer.token dummy_loc
+  let string_of_token = Tokens.describe
+end
+
 (* Given a Loc.point and the result of [parse_comment], this function returns
    a valid Lexing.position *)
 let position_of_point : t -> Loc.point -> Lexing.position =
@@ -118,13 +136,12 @@ let parse_comment ~location ~text =
   in
   (* Remove the `Loc.with_location` wrapping our token because Menhir cannot handle that *)
   let unwrapped_token lexbuf = Lexer.token lexer_state lexbuf |> Loc.value in
-  let ast, parser_warnings =
-    Parser.main unwrapped_token lexbuf
-    |> Intermediate.unpack ~filename:lexer_state.Lexer.file
+  let ast, warnings =
+    Writer.run ~filename:lexer_state.file @@ Parser.main unwrapped_token lexbuf
   in
   {
     ast;
-    warnings = parser_warnings @ lexer_state.warnings;
+    warnings = warnings @ lexer_state.warnings;
     reversed_newlines;
     original_pos = location;
   }

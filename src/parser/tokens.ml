@@ -32,7 +32,8 @@ type token =
   | Paragraph_style of paragraph_style
   | Style of style
   | List of Ast.list_kind
-  | List_item of Ast.list_item
+  | LI
+  | DASH
   | TABLE_LIGHT
   | TABLE_HEAVY
   | TABLE_ROW
@@ -101,8 +102,8 @@ let print : token -> string = function
   | Style `Subscript -> "'{_'"
   | List `Ordered -> "{ol"
   | List `Unordered -> "{ul"
-  | List_item `Li -> "'{li ...}'"
-  | List_item `Dash -> "'{- ...}'"
+  | LI -> "'{li ...}'"
+  | DASH -> "'{- ...}'"
   | TABLE_LIGHT -> "{t"
   | TABLE_HEAVY -> "{table"
   | TABLE_ROW -> "'{tr'"
@@ -162,7 +163,8 @@ let describe : token -> string = function
   | Link_with_replacement _ -> "'{{:...} ...}' (external link)"
   | END -> "end of text"
   | SPACE -> "whitespace"
-  | Single_newline _ | NEWLINE -> "line break"
+  | Single_newline _ -> "newline"
+  | NEWLINE -> "line break"
   | Blank_line _ -> "blank line"
   | RIGHT_BRACE -> "'}'"
   | RIGHT_CODE_DELIMITER -> "']}'"
@@ -171,8 +173,8 @@ let describe : token -> string = function
   | Modules _ -> "'{!modules ...}'"
   | List `Unordered -> "'{ul ...}' (bulleted list)"
   | List `Ordered -> "'{ol ...}' (numbered list)"
-  | List_item `Li -> "'{li ...}' (list item)"
-  | List_item `Dash -> "'{- ...}' (list item)"
+  | LI -> "'{li ...}' (list item)"
+  | DASH -> "'{- ...}' (list item)"
   | TABLE_LIGHT -> "'{t ...}' (table)"
   | TABLE_HEAVY -> "'{table ...}' (table)"
   | TABLE_ROW -> "'{tr ...}' (table row)"

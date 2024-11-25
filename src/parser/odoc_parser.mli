@@ -19,6 +19,16 @@ val parse_comment : location:Lexing.position -> text:string -> t
 module Ast = Ast
 module Loc = Loc
 
+module Tester : sig
+  type token
+  val is_EOI : token -> bool
+  val pp_warning : Warning.t -> string
+  val run : filename:string -> Ast.t Writer.t -> Ast.t * Warning.t list
+  val token : Lexing.lexbuf -> token Loc.with_location
+  val main : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Ast.t Writer.t
+  val string_of_token : token -> string
+end
+
 (** Warnings produced during parsing. *)
 module Warning : sig
   type t = Warning.t = { location : Loc.span; message : string }

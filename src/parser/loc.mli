@@ -28,6 +28,9 @@ val nudge_end : int -> span -> span
 type +'a with_location = { location : span; value : 'a }
 (** Describes values located at a particular span *)
 
+val nudge_map_start : int -> 'a with_location -> 'a with_location
+val nudge_map_end : int -> 'a with_location -> 'a with_location
+
 val at : span -> 'a -> 'a with_location
 (** Constructor for {!with_location} *)
 

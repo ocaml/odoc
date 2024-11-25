@@ -144,6 +144,7 @@ type input = {
   mutable warnings : Warning.t list;
 }
 
+(* TODO: Rewrite to add location inside tokens *)
 let with_location_adjustments
     k lexbuf input ?start_offset ?adjust_start_by ?end_offset ?adjust_end_by value =
 
@@ -496,10 +497,10 @@ and token input = parse
     { emit lexbuf input (List `Ordered) }
 
   | "{li"
-    { emit lexbuf input (List_item `Li) }
+    { emit lexbuf input LI }
 
   | "{-"
-    { emit lexbuf input (List_item `Dash) }
+    { emit lexbuf input DASH }
 
   | "{table"
     { emit lexbuf input TABLE_HEAVY }
