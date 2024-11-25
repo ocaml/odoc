@@ -101,44 +101,53 @@ let compile out_format ~output ~warnings_options ~occurrences ~roots
     |> Fpath.Set.to_list
   in
   (* let () = List.iter (Format.printf "%a\n" Fpath.pp) all_files in *)
-  let roots = List.map Fs.Directory.to_fpath roots in
-  let roots = List.map absolute_normalization roots in
-  (* Add an index to keep the original order *)
-  let roots = List.mapi (fun i c -> (i, c)) roots in
-  let roots =
-    (* Make sure that we treat first the "deepest" one *)
-    List.sort
-      (fun (_, p1) (_, p2) -> if Fpath.is_prefix p1 p2 then 1 else -1)
-      roots
-  in
-  let groups, _ =
-    List.fold_left
-      (fun (acc, remaining_files) (i, root) ->
-        let root_files, remaining_files =
-          List.partition (Fpath.is_prefix root) remaining_files
-        in
-        ((i, root_files) :: acc, remaining_files))
-      ([], all_files) roots
-  in
   let root_groups =
-    List.sort (fun (i, _) (j, _) -> Int.compare i j) groups |> List.map snd
-  in
-  let root_groups =
+    (* We group the files we have found by root.
+
+       Some files may belong to multiple roots. In this case, we associate the
+       file to the root that is the deepest in the hierarchy.
+    *)
+    let roots = List.map Fs.Directory.to_fpath roots in
+    let roots = List.map absolute_normalization roots in
+    (* Add an index to keep the original order *)
+    let roots = List.mapi (fun i c -> (i, c)) roots in
+    let roots =
+      (* Make sure that we treat first the "deepest" one *)
+      List.sort
+        (fun (_, p1) (_, p2) -> if Fpath.is_prefix p1 p2 then 1 else -1)
+        roots
+    in
+    let groups, _ =
+      List.fold_left
+        (fun (acc, remaining_files) (i, root) ->
+          let root_files, remaining_files =
+            List.partition (Fpath.is_prefix root) remaining_files
+          in
+          ((i, root_files) :: acc, remaining_files))
+        ([], all_files) roots
+    in
+    let root_groups =
+      List.sort (fun (i, _) (j, _) -> Int.compare i j) groups |> List.map snd
+    in
+    (* Files given without [--root] are grouped together *)
     match files with _ :: _ -> files :: root_groups | [] -> root_groups
   in
-  let hierarchy_of_group g =
-    let pages, modules =
-      let read (pages, modules) f =
-        match Odoc_file.load f with
-        | Ok { content = Page_content p; _ } -> (p :: pages, modules)
-        | Ok { content = Unit_content m; _ } -> (pages, m :: modules)
-        | _ -> (pages, modules)
+  let hierarchies =
+    (* For each group, we create a hierarchy. *)
+    let hierarchy_of_group g =
+      let pages, modules =
+        let read (pages, modules) f =
+          match Odoc_file.load f with
+          | Ok { content = Page_content p; _ } -> (p :: pages, modules)
+          | Ok { content = Unit_content m; _ } -> (pages, m :: modules)
+          | _ -> (pages, modules)
+        in
+        List.fold_left read ([], []) g
       in
-      List.fold_left read ([], []) g
+      Odoc_index.Skeleton_of.lang ~pages ~modules
     in
-    Odoc_index.Skeleton_of.lang ~pages ~modules
+    List.map hierarchy_of_group root_groups
   in
-  let hierarchies = List.map hierarchy_of_group root_groups in
   match out_format with
   | `JSON -> compile_to_json ~output ~occurrences hierarchies
   | `Marshall -> Ok (Odoc_file.save_index output hierarchies)
