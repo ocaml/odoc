@@ -205,19 +205,21 @@
 %%
 
 (* Utility which wraps the return value of a producer in `Loc.with_location` *)
-let locatedM(rule) == inner = rule; { Writer.map (wrap_location $loc)  inner }
-let located(rule) == | inner = rule; { wrap_location $sloc inner }
+let locatedM(rule) == inner = rule; { Writer.map (wrap_location $sloc)  inner }
+let located(rule) == inner = rule; { wrap_location $sloc inner }
 
 let sequence(rule) == xs = rule*; { Writer.sequence xs }
 let sequence_nonempty(rule) == xs = rule+; { Writer.sequence xs }
-let separated_sequence_nonempty(separator, X) := 
+let separated_sequence_nonempty_inner(separator, X) := 
   | x = X; { let* x = x in return [ x ] } 
-  | x = X; separator; xs = separated_sequence_nonempty(separator, X);
+  | xs = separated_sequence_nonempty_inner(separator, X); separator; x = X;
     {
       let* x = x in 
       let* xs = xs in
       return @@ x :: xs
     }
+
+let separated_sequence_nonempty(sep, rule) == xs = separated_sequence_nonempty_inner(sep, rule); { Writer.map List.rev xs }
 
 (* ENTRY-POINT *)
 
@@ -226,6 +228,57 @@ let separated_sequence_nonempty(separator, X) :=
 let main :=  
   | nodes = sequence_nonempty(locatedM(toplevel)); whitespace?; END; { nodes }
   | whitespace?; END; { Writer.return @@ [] }
+
+let any ==
+  | SPACE; { SPACE }
+  | NEWLINE; { NEWLINE }
+  | RIGHT_BRACE; { RIGHT_BRACE }
+  | RIGHT_CODE_DELIMITER; { RIGHT_CODE_DELIMITER }
+  | b = Blank_line; { Blank_line b }
+  | s = Single_newline; { Single_newline s }
+  | s = Space; { Space s }
+  | w = Word; { Word w }
+  | MINUS; { MINUS }
+  | PLUS; { PLUS }
+  | BAR; { BAR }
+  | s = Style; { Style s }
+  | p = Paragraph_style; { Paragraph_style p }
+  | m = Modules; { Modules m }
+  | m = Math_span; { Math_span m }
+  | m = Math_block; { Math_block m }
+  | r = Raw_markup; { Raw_markup r }
+  | c = Code_block; { Code_block c }
+  | c = Code_span; { Code_span c }
+  | l = List; { List l }
+  | LI; { LI }
+  | DASH; { DASH }
+  | TABLE_LIGHT; { TABLE_LIGHT }
+  | TABLE_HEAVY; { TABLE_HEAVY }
+  | TABLE_ROW; { TABLE_ROW }
+  | t = Table_cell; { Table_cell t }
+  | s = Section_heading; { Section_heading s }
+  | a = Author; { Author a }
+  | DEPRECATED; { DEPRECATED }
+  | p = Param; { Param p }
+  | r = Raise; { Raise r }
+  | RETURN; { RETURN }
+  | s = See; { See s }
+  | s = Since; { Since s }
+  | b = Before; { Before b }
+  | v = Version; { Version v }
+  | c = Canonical; { Canonical c }
+  | INLINE; { INLINE }
+  | OPEN; { OPEN }
+  | CLOSED; { CLOSED }
+  | HIDDEN; { HIDDEN }
+  | r = Simple_ref; { Simple_ref r }
+  | r = Ref_with_replacement; { Ref_with_replacement r }
+  | l = Simple_link; { Simple_link l }
+  | l = Link_with_replacement; { Link_with_replacement l }
+  | m = Media; { Media m }
+  | m = Media_with_replacement; { Media_with_replacement m }
+  | v = Verbatim; { Verbatim v }
+  | END; { END }
 
 let toplevel :=
   | block = nestable_block_element; { Writer.map (fun b -> (b :> Ast.block_element) ) block }
@@ -553,9 +606,11 @@ let media :=
 
 (* TOP-LEVEL ELEMENTS *)
 
-let nestable_block_element := 
+let nestable_block_element := ~ = nestable_block_element_inner; newline?; <>
+
+let nestable_block_element_inner := 
   | v = Verbatim; { return (`Verbatim v) }
-  | items = sequence_nonempty(locatedM(inline_element)); 
+  | items = sequence_nonempty(locatedM(inline_element));
     { Writer.map (fun i -> `Paragraph i) items }
   | c = Code_block; { return (`Code_block c) }
   | modules = located(Modules)+; { return (`Modules modules) }

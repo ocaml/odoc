@@ -27,10 +27,13 @@ let code_cases =
 
 let error_recovery =
   [
-    ("Empty Italic", "{i}");
-    ("Empty bold", "{b}");
-    ("Light\nlist", "- foo\n - bar\n- baz");
-    ("Empty ref w/ replacement", "{{!https://ocaml.org}}");
+    ("Empty style", "{i}");
+    ("Empty ref", "{{!www.google.com}}");
+    ("Empty link", "{{:www.google.com}}");
+    ("List item not at beginning of line", "- foo\n - bar\n- baz");
+    ("Empty list item", "{ol {li} }");
+    ("'{li' not followed by whitespace", "{ol {lifoo bar baz} }");
+    ("End not allowed in table", "{t ");
   ]
 
 let see = [ ("See", "@see <foo> bar baz quux\n") ]
@@ -106,26 +109,11 @@ let run_test (failed : failure list) (label, case) =
     let Loc.{ value; _ } = token lexbuf in
     value
   in
-  let rec get_tokens lexbuf acc =
-    let token = unwrap_token lexbuf in
-    if Odoc_parser.Tester.is_EOI token then List.rev (token :: acc)
-    else get_tokens lexbuf (token :: acc)
-  in
   let lexbuf = Lexing.from_string case in
-  let tokens_cached = get_tokens lexbuf [] in
-  let idx = ref @@ -1 in
+  Lexing.set_filename lexbuf "TESTER";
   try
-    let tokens = ref tokens_cached in
     let intermediate =
-      Odoc_parser.Tester.main
-        (fun _ ->
-          match !tokens with
-          | t :: ts ->
-              incr idx;
-              tokens := ts;
-              t
-          | [] -> failwith "No more tokens")
-        lexbuf
+      Odoc_parser.Tester.main (fun lexbuf -> unwrap_token lexbuf) lexbuf
     in
     let ast, warnings = Parser.run ~filename:"" intermediate in
     Format.printf "%a\n" parser_output (ast, warnings);
@@ -136,8 +124,7 @@ let run_test (failed : failure list) (label, case) =
          (fun acc warning -> acc ^ "\n" ^ Parser.pp_warning warning)
          "" warnings);
     failed
-  with _ ->
-    { case; label; tokens = tokens_cached; failed_at = !idx } :: failed
+  with _ -> { case; label; tokens = []; failed_at = 0 } :: failed
 
 let () =
   let cases =

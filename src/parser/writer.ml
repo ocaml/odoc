@@ -31,11 +31,9 @@ let warning warning (Writer (n, ws)) = Writer (n, warning :: ws)
 
 let sequence : 'a t list -> 'a list t =
  fun xs ->
-  let rec go nodes warnings = function
-    | Writer (n, ws) :: xs -> go (n :: nodes) (ws @ warnings) xs
-    | [] -> Writer (nodes, warnings)
-  in
-  go [] [] xs
+  let go (ns, ws) (Writer (n, w)) = (n :: ns, w @ ws) in
+  let xs, ws = List.fold_left go ([], []) xs in
+  Writer (List.rev xs, ws)
 
 let map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t =
  fun f (Writer (a, ws)) (Writer (b, wsb)) -> Writer (f a b, wsb @ ws)
