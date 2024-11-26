@@ -274,17 +274,17 @@ let extra_paths compile_dir =
           (fun (pkgs, libs) abs_path ->
             let path = Fpath.rem_prefix compile_dir abs_path |> Option.get in
             match Fpath.segs path with
-            | [ "p"; _pkg; _version; libname; l ] when l = lib_marker ->
+            | [ "p"; _pkg; _version; "doc"; libname; l ] when l = lib_marker ->
                 Logs.debug (fun m -> m "Found lib marker: %a" Fpath.pp path);
                 (pkgs, Util.StringMap.add libname (Fpath.parent path) libs)
-            | [ "p"; pkg; _version; l ] when l = pkg_marker ->
+            | [ "p"; pkg; _version; "doc"; l ] when l = pkg_marker ->
                 Logs.debug (fun m -> m "Found pkg marker: %a" Fpath.pp path);
                 (Util.StringMap.add pkg (Fpath.parent path) pkgs, libs)
-            | [ "u"; _universe; _pkg; _version; libname; l ] when l = lib_marker
-              ->
+            | [ "u"; _universe; _pkg; _version; "doc"; libname; l ]
+              when l = lib_marker ->
                 Logs.debug (fun m -> m "Found lib marker: %a" Fpath.pp path);
                 (pkgs, Util.StringMap.add libname (Fpath.parent path) libs)
-            | [ "u"; _universe; pkg; _version; l ] when l = pkg_marker ->
+            | [ "u"; _universe; pkg; _version; "doc"; l ] when l = pkg_marker ->
                 Logs.debug (fun m -> m "Found pkg marker: %a" Fpath.pp path);
                 (Util.StringMap.add pkg (Fpath.parent path) pkgs, libs)
             | _ -> (pkgs, libs))
