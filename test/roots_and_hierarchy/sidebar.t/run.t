@@ -115,10 +115,14 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
 
   $ cat html/pkg/index.html | grep odoc-global-toc -A 15
      <nav class="odoc-toc odoc-global-toc">
-      <a href="#" class="current_unit">Package <code>pkg</code></a>
-      <ul><li><a href="dir1/index.html">A directory</a></li>
-       <li><a href="file.html">File</a></li>
-       <li>libname<ul><li><a href="libname/Unit/index.html">Unit</a></li></ul>
+      <ul>
+       <li><a href="#" class="current_unit">Package <code>pkg</code></a>
+        <ul><li><a href="dir1/index.html">A directory</a></li>
+         <li><a href="file.html">File</a></li>
+         <li>libname
+          <ul><li><a href="libname/Unit/index.html">Unit</a></li></ul>
+         </li>
+        </ul>
        </li>
       </ul>
      </nav>
@@ -128,20 +132,20 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
 
   $ cat html/pkg/libname/Unit/X/index.html | grep odoc-global-toc -A 15
      <nav class="odoc-toc odoc-global-toc">
-      <a href="../../../index.html">Package <code>pkg</code></a>
-      <ul><li><a href="../../../dir1/index.html">A directory</a></li>
-       <li><a href="../../../file.html">File</a></li>
-       <li>libname
-        <ul>
-         <li><a href="../index.html">Unit</a>
+      <ul>
+       <li><a href="../../../index.html">Package <code>pkg</code></a>
+        <ul><li><a href="../../../dir1/index.html">A directory</a></li>
+         <li><a href="../../../file.html">File</a></li>
+         <li>libname
           <ul>
-           <li><a href="#" class="current_unit">X</a>
-            <ul><li><a href="Y/index.html">Y</a></li>
-             <li><a href="#module-Z">Z</a></li>
+           <li><a href="../index.html">Unit</a>
+            <ul>
+             <li><a href="#" class="current_unit">X</a>
+              <ul><li><a href="Y/index.html">Y</a></li>
+               <li><a href="#module-Z">Z</a></li>
+              </ul>
+             </li><li><a href="../module-type-Foo/index.html">Foo</a></li>
             </ul>
-           </li><li><a href="../module-type-Foo/index.html">Foo</a></li>
-          </ul>
-         </li>
-        </ul>
+           </li>
 
   $ odoc support-files -o html
