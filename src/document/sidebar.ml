@@ -4,7 +4,7 @@ module Id = Odoc_model.Paths.Identifier
 
 type entry = {
   url : Url.t option;
-  content : Inline.one;
+  content : Inline.t;
   toc_status : [ `Open ] option;
 }
 
@@ -35,16 +35,22 @@ end = struct
       (* When transforming the tree, we use a filter_map to remove the nodes that
          are irrelevant for the current url. However, we always want to keep the
          root. So we apply the filter_map starting from the first children. *)
-      let convert_entry { url; content = b; _ } =
+      let convert_entry { url; content; _ } =
         let link =
           match url with
           | Some url ->
-              if url.page = current_url && Astring.String.equal url.anchor ""
-              then { b with Inline.attr = [ "current_unit" ] }
-              else b
-          | None -> b
+              let target = Target.Internal (Target.Resolved url) in
+              let attr =
+                if url.page = current_url && Astring.String.equal url.anchor ""
+                then [ "current_unit" ]
+                else []
+              in
+              [
+                inline ~attr @@ Inline.Link { target; content; tooltip = None };
+              ]
+          | None -> content
         in
-        Types.block @@ Inline [ link ]
+        Types.block @@ Inline link
       in
       let rec convert n =
         let children =
@@ -77,7 +83,7 @@ end = struct
       | Dir ->
           {
             url = None;
-            content = inline @@ Text (Id.name entry.id);
+            content = [ inline @@ Text (Id.name entry.id) ];
             toc_status = None;
           }
       | _ ->
@@ -117,9 +123,7 @@ end = struct
                 let name = Odoc_model.Paths.Identifier.name entry.id in
                 [ inline (Text name) ]
           in
-          let target = Target.Internal (Target.Resolved path) in
-          let i = inline @@ Inline.Link { target; content; tooltip = None } in
-          { url = Some path; content = i; toc_status }
+          { url = Some path; content; toc_status }
     in
     let f x =
       match x.Entry.kind with

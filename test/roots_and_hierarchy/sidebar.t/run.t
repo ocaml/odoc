@@ -30,21 +30,21 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
       "node": {
         "url": "pkg/index.html",
         "kind": "leaf-page",
-        "content": "<a href=\"pkg/index.html\">Package <code>pkg</code></a>"
+        "content": "Package <code>pkg</code>"
       },
       "children": [
         {
           "node": {
             "url": "pkg/dir1/index.html",
             "kind": "leaf-page",
-            "content": "<a href=\"pkg/dir1/index.html\">A directory</a>"
+            "content": "A directory"
           },
           "children": [
             {
               "node": {
                 "url": "pkg/dir1/my_page.html",
                 "kind": "leaf-page",
-                "content": "<a href=\"pkg/dir1/my_page.html\">My page</a>"
+                "content": "My page"
               },
               "children": []
             }
@@ -54,7 +54,7 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
           "node": {
             "url": "pkg/file.html",
             "kind": "leaf-page",
-            "content": "<a href=\"pkg/file.html\">File</a>"
+            "content": "File"
           },
           "children": []
         },
@@ -69,21 +69,21 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
               "node": {
                 "url": "pkg/libname/Unit/index.html",
                 "kind": "module",
-                "content": "<a href=\"pkg/libname/Unit/index.html\">Unit</a>"
+                "content": "Unit"
               },
               "children": [
                 {
                   "node": {
                     "url": "pkg/libname/Unit/X/index.html",
                     "kind": "module",
-                    "content": "<a href=\"pkg/libname/Unit/X/index.html\">X</a>"
+                    "content": "X"
                   },
                   "children": [
                     {
                       "node": {
                         "url": "pkg/libname/Unit/X/Y/index.html",
                         "kind": "module",
-                        "content": "<a href=\"pkg/libname/Unit/X/Y/index.html\">Y</a>"
+                        "content": "Y"
                       },
                       "children": []
                     },
@@ -91,7 +91,7 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
                       "node": {
                         "url": "pkg/libname/Unit/X/index.html#module-Z",
                         "kind": "module",
-                        "content": "<a href=\"pkg/libname/Unit/X/index.html#module-Z\">Z</a>"
+                        "content": "Z"
                       },
                       "children": []
                     }
@@ -101,7 +101,7 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
                   "node": {
                     "url": "pkg/libname/Unit/module-type-Foo/index.html",
                     "kind": "module-type",
-                    "content": "<a href=\"pkg/libname/Unit/module-type-Foo/index.html\">Foo</a>"
+                    "content": "Foo"
                   },
                   "children": []
                 }
