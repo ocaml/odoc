@@ -18,7 +18,7 @@ let toc_to_json ({ url; content = inline; _ } : Odoc_document.Sidebar.entry) :
         (`String href, `String kind)
   in
   let inline =
-    let inline = Generator.inline ~config ~xref_base_uri:"" [ inline ] in
+    let inline = Generator.inline ~config ~xref_base_uri:"" inline in
     let inline =
       String.concat ""
       @@ List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ())) inline

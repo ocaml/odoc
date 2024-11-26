@@ -3,7 +3,7 @@ open Types
 
 type entry = {
   url : Url.t option;
-  content : Inline.one;
+  content : Inline.t;
   toc_status : [ `Open ] option;
 }
 
