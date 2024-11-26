@@ -70,16 +70,17 @@ but this should be a warning!
 
   $ cat _html/pkg/index.html | grep odoc-global-toc -A 11
      <nav class="odoc-toc odoc-global-toc">
-      <a href="#" class="current_unit">This is the main index</a>
-      <ul><li><a href="content.html">This is top level content</a></li>
-       <li><a href="Unit/index.html">Unit</a></li>
-       <li><a href="dir1/index.html">This is dir1's index</a></li>
-       <li><a href="omitted.html">This one is omitted</a></li>
+      <ul>
+       <li><a href="#" class="current_unit">This is the main index</a>
+        <ul><li><a href="content.html">This is top level content</a></li>
+         <li><a href="Unit/index.html">Unit</a></li>
+         <li><a href="dir1/index.html">This is dir1's index</a></li>
+         <li><a href="omitted.html">This one is omitted</a></li>
+        </ul>
+       </li>
       </ul>
      </nav>
     </div><div class="odoc-content"></div>
-   </body>
-  </html>
 
 
 Some more parsing test:
