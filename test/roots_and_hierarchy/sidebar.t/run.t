@@ -5,13 +5,14 @@
   $ odoc compile --output-dir _odoc/ --parent-id pkg file.mld
   $ odoc compile --output-dir _odoc/ --parent-id pkg index.mld
   $ odoc compile --output-dir _odoc/ --parent-id pkg/libname unit.cmt
-  $ odoc compile-impl --output-dir _odoc/ --parent-id pkg/src/libname unit.cmt
+  $ odoc compile-impl --output-dir _odoc/ --source-id pkg/src/libname/unit.ml --parent-id pkg/libname unit.cmt
 
   $ odoc link -P pkg:_odoc/pkg/ -L libname:_odoc/pkg/libname _odoc/pkg/page-file.odoc
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/dir1/page-my_page.odoc
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/dir1/page-index.odoc
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/page-index.odoc
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/libname/unit.odoc
+  $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/libname/impl-unit.odoc
 
   $ odoc compile-index --root _odoc/pkg/
   $ odoc sidebar-generate index.odoc-index
@@ -109,6 +110,32 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
               ]
             }
           ]
+        },
+        {
+          "node": {
+            "url": null,
+            "kind": null,
+            "content": "src"
+          },
+          "children": [
+            {
+              "node": {
+                "url": null,
+                "kind": null,
+                "content": "libname"
+              },
+              "children": [
+                {
+                  "node": {
+                    "url": "pkg/src/libname/unit.ml.html",
+                    "kind": "source",
+                    "content": "unit.ml"
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
         }
       ]
     }
@@ -123,13 +150,14 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
          <li>libname
           <ul><li><a href="libname/Unit/index.html">Unit</a></li></ul>
          </li>
+         <li>src
+          <ul>
+           <li>libname
+            <ul><li><a href="src/libname/unit.ml.html">unit.ml</a></li></ul>
+           </li>
+          </ul>
+         </li>
         </ul>
-       </li>
-      </ul>
-     </nav>
-    </div><div class="odoc-content"></div>
-   </body>
-  </html>
 
   $ cat html/pkg/libname/Unit/X/index.html | grep odoc-global-toc -A 15
      <nav class="odoc-toc odoc-global-toc">

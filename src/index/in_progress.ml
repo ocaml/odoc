@@ -54,6 +54,11 @@ let dirs (_, dir_content) =
 let modules (_, dir_content) =
   RMH.fold (fun id payload acc -> (id, payload) :: acc) dir_content.modules []
 
+let implementations (_, dir_content) =
+  SPH.fold
+    (fun id payload acc -> (id, payload) :: acc)
+    dir_content.implementations []
+
 let rec get_or_create (dir : in_progress) (id : container_page) : in_progress =
   let _, { dirs = parent_dirs; _ } =
     match get_parent id with

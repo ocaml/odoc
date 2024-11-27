@@ -55,6 +55,7 @@ type kind =
   | Constructor of constructor_entry
   | Field of field_entry
   | Page of Odoc_model.Frontmatter.t
+  | Impl
   | Dir
 
 type t = {

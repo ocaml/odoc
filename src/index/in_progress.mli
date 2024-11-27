@@ -36,5 +36,9 @@ val dirs : in_progress -> (Id.ContainerPage.t * in_progress) list
 val modules : in_progress -> (Id.RootModule.t * Skeleton.t) list
 (** [modules dir] returns the modules in [dir] *)
 
+val implementations :
+  in_progress -> (Id.SourcePage.t * Lang.Implementation.t) list
+(** [implementations dir] returns the implementations in [dir] *)
+
 val index : in_progress -> (Id.LeafPage.t * Lang.Page.t) option
 (** [index dir] returns the potential [index] leaf page in [dir] *)

@@ -127,7 +127,8 @@ end = struct
     in
     let f x =
       match x.Entry.kind with
-      | Dir | Page _ | Module _ | Class_type _ | Class _ | ModuleType _ ->
+      | Dir | Page _ | Module _ | Class_type _ | Class _ | ModuleType _ | Impl
+        ->
           Some (map_entry x)
       | _ -> None
     in
