@@ -205,7 +205,7 @@ let page_name_of_output output = name_of_output ~prefix:"page-" output
 let is_index_page = function
   | { Paths.Identifier.iv = `Page _; _ } -> false
   | { iv = `LeafPage (_, p); _ } ->
-      String.equal (Names.PageName.to_string p) "index"
+      Astring.String.equal (Names.PageName.to_string p) "index"
 
 let has_children_order { Frontmatter.children_order; _ } =
   Option.is_some children_order

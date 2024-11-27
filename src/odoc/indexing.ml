@@ -98,7 +98,7 @@ let compile out_format ~output ~warnings_options ~occurrences ~roots
                Fpath.Set.add (absolute_normalization file) files)
              set include_rec)
          Fpath.Set.empty
-    |> Fpath.Set.to_list
+    |> fun set -> Fpath.Set.fold (fun a l -> a :: l) set []
   in
   (* let () = List.iter (Format.printf "%a\n" Fpath.pp) all_files in *)
   let root_groups =
@@ -127,7 +127,7 @@ let compile out_format ~output ~warnings_options ~occurrences ~roots
         ([], all_files) roots
     in
     let root_groups =
-      List.sort (fun (i, _) (j, _) -> Int.compare i j) groups |> List.map snd
+      List.sort (fun (i, _) (j, _) -> compare i j) groups |> List.map snd
     in
     (* Files given without [--root] are grouped together *)
     match files with _ :: _ -> files :: root_groups | [] -> root_groups

@@ -93,11 +93,11 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
         let equal id ch =
           match (ch, id.Id.iv) with
           | (_, { Location_.value = Frontmatter.Dir c; _ }), `Page (_, name) ->
-              String.equal (PageName.to_string name) c
+              Astring.String.equal (PageName.to_string name) c
           | (_, { Location_.value = Page c; _ }), `LeafPage (_, name) ->
-              String.equal (PageName.to_string name) c
+              Astring.String.equal (PageName.to_string name) c
           | (_, { Location_.value = Module c; _ }), `Root (_, name) ->
-              String.equal (ModuleName.to_string name) c
+              Astring.String.equal (ModuleName.to_string name) c
           | _ -> false
         in
         let children_indexes, indexed_content, unindexed_content =
