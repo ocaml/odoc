@@ -43,6 +43,13 @@ let package ~dirs ~pkg ~index =
   let rel_dir = doc_dir pkg in
   make_index ~dirs ~rel_dir ~index ~content ()
 
+let src ~dirs ~pkg ~index =
+  let content ppf =
+    Format.fprintf ppf "{0 Sources}@\nUse sidebar to navigate."
+  in
+  let rel_dir = src_dir pkg in
+  make_index ~dirs ~rel_dir ~index ~content ()
+
 let package_list ~dirs all =
   let content all ppf =
     let sorted_packages =
