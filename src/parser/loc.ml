@@ -6,6 +6,7 @@ let at location value = { location; value }
 let location { location; _ } = location
 let value { value; _ } = value
 let map f annotated = { annotated with value = f annotated.value }
+let is predicate { value; _ } = predicate value
 let same annotated value = { annotated with value }
 
 let span spans =

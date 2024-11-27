@@ -34,6 +34,8 @@ let error_recovery =
     ("Empty list item", "{ol {li} }");
     ("'{li' not followed by whitespace", "{ol {lifoo bar baz} }");
     ("End not allowed in table", "{t ");
+    ("Empty @author", "@author");
+    ("Empty @version" , "@version")
   ]
 
 let see = [ ("See", "@see <foo> bar baz quux\n") ]
@@ -77,19 +79,6 @@ let documentation_cases =
     ("Code block", "{[\n let foo = 0 \n]}");
   ]
 
-type failure = {
-  label : string;
-  case : string;
-  tokens : Odoc_parser.Tester.token list;
-  failed_at : int;
-}
-
-let tokens_string tokens =
-  List.fold_left
-    (fun acc token -> acc ^ "\n" ^ token)
-    ""
-    (List.map Odoc_parser.Tester.string_of_token tokens)
-
 open Test.Serialize
 
 let error err = Atom (Odoc_parser.Warning.to_string err)
@@ -102,7 +91,7 @@ let parser_output formatter (ast, warnings) =
   Sexplib0.Sexp.pp_hum formatter output;
   Format.pp_print_flush formatter ()
 
-let run_test (failed : failure list) (label, case) =
+let run_test (failed : ( string * string ) list) (label, case) =
   let module Parser = Odoc_parser.Tester in
   let unwrap_token lexbuf =
     let open Parser in
@@ -124,7 +113,7 @@ let run_test (failed : failure list) (label, case) =
          (fun acc warning -> acc ^ "\n" ^ Parser.pp_warning warning)
          "" warnings);
     failed
-  with _ -> { case; label; tokens = []; failed_at = 0 } :: failed
+  with _ -> ( case, label ) :: failed
 
 let () =
   let cases =
@@ -140,9 +129,7 @@ let () =
     else documentation_cases
   in
   List.fold_left run_test [] cases
-  |> List.iter (fun { label; case; tokens; failed_at } ->
+  |> List.iter (fun (label, case) ->
          Printf.printf
-           "Failure: %s\nInput:\n%s\nOffending token:\n%d: %s\nTokens: %s\n\n"
-           label case failed_at
-           (List.nth tokens failed_at |> Odoc_parser.Tester.string_of_token)
-           (tokens_string tokens))
+           "Failure: %s\nInput:\n%s\n%!"
+           label case)

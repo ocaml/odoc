@@ -43,6 +43,9 @@ val value : 'a with_location -> 'a
 val map : ('a -> 'b) -> 'a with_location -> 'b with_location
 (** Map over a located value without changing its location *)
 
+val is : ('a -> bool) -> 'a with_location -> bool
+(** Test a located value with a predicate *)
+
 val same : _ with_location -> 'b -> 'b with_location
 (** [same x y] retuns the value y wrapped in a {!with_location} whose
     location is that of [x] *)

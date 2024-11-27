@@ -9,6 +9,7 @@
     { location; value }
 
   let not_empty : 'a list -> bool = function _ :: _ -> true | _ -> false
+  let has_content : string -> bool = fun s -> String.length s > 0
 
   type align_error =
     | Invalid_align (* An invalid align cell *)
@@ -273,10 +274,46 @@ let tag_with_content :=
     }
 
 let tag_bare :=
-  | version = Version; { return @@ `Version version }
-  | version = Since; { return @@ `Since version }
-  | impl = located(Canonical); { return @@ `Canonical impl }
-  | version = Author; { return @@ `Author version }
+  | version = Version; 
+    {
+      let what = Tokens.describe (Version version) in
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        Parse_error.should_not_be_empty ~what span
+      in
+      Writer.ensure has_content warning (return version) 
+      |> Writer.map (fun v -> `Version v) 
+    }
+  | version = Since; 
+    {
+      let what = Tokens.describe (Since version) in
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        Parse_error.should_not_be_empty ~what span
+      in
+      Writer.ensure has_content warning (return version) 
+      |> Writer.map (fun v -> `Since v) 
+    }
+  | impl = located(Canonical); 
+    {
+      let what = Tokens.describe @@ Canonical "" in
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        Parse_error.should_not_be_empty ~what span
+      in
+      Writer.ensure (Loc.is has_content) warning @@ return impl 
+      |> Writer.map (fun v -> `Canonical v) 
+    }
+  | author = Author; 
+    {
+      let what = Tokens.describe @@ Author author in
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        Parse_error.should_not_be_empty ~what span
+      in
+      Writer.ensure has_content warning @@ return author
+      |> Writer.map (fun a -> `Author a) 
+    }
   | OPEN; { return `Open }
   | INLINE; { return `Inline }
   | CLOSED; { return `Closed }
