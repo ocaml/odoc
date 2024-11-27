@@ -18,7 +18,7 @@ type token =
   | Ref_with_replacement of string
   | Simple_link of string
   | Link_with_replacement of string
-  | Modules of string
+  | Modules of string Loc.with_location list
   | Media of (media * media_target)
   | Media_with_replacement of (media * media_target * string)
   | Math_span of string
@@ -243,6 +243,7 @@ let of_media = function
   | `Media (_, Loc.{ value; _ }, _, kind) ->
       Media (of_href value, of_media_kind kind)
 
+(* NOTE: Fix list *)
 let describe_nestable_block : Ast.nestable_block_element -> string = function
   | `Paragraph ws -> (
       match ws with
@@ -250,8 +251,8 @@ let describe_nestable_block : Ast.nestable_block_element -> string = function
       | [] -> describe @@ Word "")
   | `Code_block _ -> describe @@ Code_block empty_code_block
   | `Verbatim _ -> describe @@ Verbatim ""
-  | `Modules _ -> describe @@ Modules "" (* NOTE: Fix list *)
-  | `List (_, kind, _) -> describe @@ if kind = `Light then MINUS else DASH
+  | `Modules _ -> describe @@ Modules [] 
+  | `List (_, _, _) -> "List"
   | `Table (_, kind) ->
       describe @@ if kind = `Light then TABLE_LIGHT else TABLE_HEAVY
   | `Math_block _ -> describe @@ Math_block ""

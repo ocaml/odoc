@@ -144,9 +144,11 @@ type input = {
   mutable warnings : Warning.t list;
 }
 
-(* TODO: Rewrite to add location inside tokens *)
-let with_location_adjustments
-    k lexbuf input ?start_offset ?adjust_start_by ?end_offset ?adjust_end_by value =
+let with_location_adjustments  
+  =
+  fun 
+    k lexbuf input ?start_offset ?adjust_start_by ?end_offset ?adjust_end_by
+    value ->
 
   let start =
     match start_offset with
@@ -176,7 +178,16 @@ let with_location_adjustments
   in
   k input location value
 
-let emit =
+(* TODO: Fix this so it can take things besides tokens *)
+let emit : 
+  Lexing.lexbuf -> 
+  input ->  
+  ?start_offset:int ->
+  ?adjust_start_by:string -> 
+  ?end_offset:int ->
+  ?adjust_end_by:string -> 
+  'a -> 
+  'a Loc.with_location =
   with_location_adjustments (fun _ -> Loc.at)
 
 let warning =
@@ -429,8 +440,8 @@ and token input = parse
     { math Inline (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
 
 
-  | "{!modules:" ([^ '}']* as modules) '}'
-    { emit lexbuf input (Modules modules) }
+  | "{!modules:"
+        { modules input [] lexbuf }
 
 | (media_start as start)
     {
@@ -616,16 +627,6 @@ and token input = parse
     { warning lexbuf input Parse_error.stray_cr;
       token input lexbuf }
 
-  | "{!modules:" ([^ '}']* as modules) eof
-    { warning 
-        lexbuf
-        input
-        ~start_offset:(Lexing.lexeme_end lexbuf)
-        (Parse_error.not_allowed
-          ~what:(Tokens.describe END)
-          ~in_what:(Tokens.describe (Modules "")));
-      emit lexbuf input (Modules modules) }
-
 and code_span buffer nesting_level start_offset input = parse
   | ']'
     { if nesting_level = 0 then
@@ -711,6 +712,29 @@ and math kind buffer nesting_level start_offset input = parse
   | _ as c
     { Buffer.add_char buffer c;
       math kind buffer nesting_level start_offset input lexbuf }
+
+and modules input acc = parse
+  | delim_char* as c 
+    {
+        let start = Lexing.lexeme_start lexbuf 
+        and end_ = Lexing.lexeme_end lexbuf in
+        let location = Loc.{ 
+          file = input.file;
+          start = input.offset_to_location start;
+          end_ = input.offset_to_location end_;
+        } in
+      let c = Loc.at location c in
+      modules input (c :: acc) lexbuf
+    }
+  | (' ' | '\t' | '\r' | '\n') 
+    {
+      modules input acc lexbuf
+    }
+  | '}'
+    {
+      let ms = List.rev acc in
+      emit lexbuf input (Modules ms)
+    }
 
 and media tok_descr buffer nesting_level start_offset input = parse
   | '}'

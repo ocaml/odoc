@@ -159,7 +159,7 @@
 %token <Ast.style> Style
 %token <Ast.alignment> Paragraph_style
 
-%token <string> Modules
+%token <string Loc.with_location list> Modules
 
 %token <string> Math_span 
 %token <string> Math_block
@@ -618,25 +618,14 @@ let nestable_block_element_inner :=
   | items = sequence_nonempty(locatedM(inline_element));
     { Writer.map (fun i -> `Paragraph i) items }
   | c = Code_block; { return (`Code_block c) }
-  (* TODO: HANDLE THIS IN LEXER - `Modules` should be a series of tokens *)
-  | modules = located(Modules); 
-    { 
-      let what = Tokens.describe @@ Modules (Loc.value modules) in
-      let warning = fun ~filename -> 
-        let span = Parser_aux.to_location ~filename $sloc in
-        Parse_error.should_not_be_empty ~what span 
-      in 
-      let Loc.{ value; location } = modules in
-      Astring.String.fields value
-      |> List.map (Loc.at location)
-      |> return 
-      |> Writer.ensure not_empty warning 
-      |> Writer.map (fun ms -> `Modules ms)
-    }
+  | ~ = modules; <> 
   | ~ = list_element; <>
   | ~ = table; <> 
   | ~ = media; <>
-  | m = Math_block; 
+  | ~ = math_block; <> 
+    
+
+  let math_block := m = Math_block; 
     { 
       let what = Tokens.describe @@ Math_block m in
       let warning = fun ~filename -> 
@@ -645,5 +634,17 @@ let nestable_block_element_inner :=
       in 
       Writer.ensure has_content warning (return m) 
       |> Writer.map (fun m -> `Math_block m)
+    }
+
+  let modules := modules = Modules; 
+    { 
+      let what = Tokens.describe @@ Modules [] in
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        Parse_error.should_not_be_empty ~what span 
+      in 
+      return modules
+      |> Writer.ensure not_empty warning 
+      |> Writer.map (fun ms -> `Modules ms)
     }
 
