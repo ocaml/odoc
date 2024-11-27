@@ -358,13 +358,13 @@ let reference :=
     }
   | ref_body = located(Ref_with_replacement); RIGHT_BRACE;
     {
-      let span = 
-        Parser_aux.to_location $sloc
-        |> Loc.nudge_start (String.length "{{!") 
-      in
       let node = `Reference (`With_text, ref_body, []) in
       let what = Tokens.describe @@ Ref_with_replacement (Loc.value ref_body) in
-      let warning = fun ~filename:_f -> 
+      let warning = fun ~filename -> 
+        let span = 
+          Parser_aux.to_location ~filename $sloc
+          |> Loc.nudge_start (String.length "{{!") 
+        in
         Parse_error.should_not_be_empty ~what span 
       in
       Writer.with_warning node warning
@@ -377,8 +377,8 @@ let link :=
       let url = String.trim link_body in
       if "" = url then 
         let what = Tokens.describe @@ Simple_link link_body in
-        let span = Parser_aux.to_location $sloc in
-        let warning = fun ~filename:_f -> 
+        let warning = fun ~filename -> 
+          let span = Parser_aux.to_location ~filename $sloc in
           Parse_error.should_not_be_empty ~what span
         in
         Writer.with_warning node warning
@@ -516,7 +516,15 @@ let item_heavy ==
 
 let list_heavy := 
     | list_kind = List; whitespace?; items = sequence(item_heavy); whitespace?; RIGHT_BRACE;
-      { Writer.map (fun items -> `List (list_kind, `Heavy, items)) items }
+      { 
+        let warning = fun ~filename -> 
+          let what = Tokens.describe @@ List list_kind in
+          let span = Parser_aux.to_location ~filename $sloc in
+          Parse_error.should_not_be_empty ~what span 
+        in
+        Writer.ensure not_empty warning items 
+        |> Writer.map (fun items -> `List (list_kind, `Heavy, items))  
+      }
 
 let list_element := 
   | ~ = list_light; <>
@@ -597,13 +605,45 @@ let media :=
 let nestable_block_element := ~ = nestable_block_element_inner; newline?; <>
 
 let nestable_block_element_inner := 
-  | v = Verbatim; { return (`Verbatim v) }
+  | v = Verbatim; 
+    { 
+      let what = Tokens.describe @@ Verbatim v in
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        Parse_error.should_not_be_empty ~what span 
+      in 
+      Writer.ensure has_content warning (return v) 
+      |> Writer.map (fun v -> `Verbatim v)
+    }
   | items = sequence_nonempty(locatedM(inline_element));
     { Writer.map (fun i -> `Paragraph i) items }
   | c = Code_block; { return (`Code_block c) }
-  | modules = located(Modules)+; { return (`Modules modules) }
+  (* TODO: HANDLE THIS IN LEXER - `Modules` should be a series of tokens *)
+  | modules = located(Modules); 
+    { 
+      let what = Tokens.describe @@ Modules (Loc.value modules) in
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        Parse_error.should_not_be_empty ~what span 
+      in 
+      let Loc.{ value; location } = modules in
+      Astring.String.fields value
+      |> List.map (Loc.at location)
+      |> return 
+      |> Writer.ensure not_empty warning 
+      |> Writer.map (fun ms -> `Modules ms)
+    }
   | ~ = list_element; <>
   | ~ = table; <> 
   | ~ = media; <>
-  | m = Math_block; { return (`Math_block m) }
+  | m = Math_block; 
+    { 
+      let what = Tokens.describe @@ Math_block m in
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        Parse_error.should_not_be_empty ~what span 
+      in 
+      Writer.ensure has_content warning (return m) 
+      |> Writer.map (fun m -> `Math_block m)
+    }
 
