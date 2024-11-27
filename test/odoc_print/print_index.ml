@@ -2,7 +2,11 @@ open Compatcmdliner
 
 let run inp =
   let inp = Fpath.v inp in
-  let index = Odoc_odoc.Odoc_file.load_index inp |> Result.get_ok in
+  let index =
+    Odoc_odoc.Odoc_file.load_index inp |> function
+    | Result.Ok x -> x
+    | _ -> failwith "failed to load index"
+  in
   let rec tree_to_yojson
       ({ node; children } : Odoc_index.Entry.t Odoc_utils.Tree.t) :
       Yojson.Safe.t =
