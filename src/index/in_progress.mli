@@ -19,6 +19,9 @@ val add_page : in_progress -> Lang.Page.t -> unit
 val add_module : in_progress -> Lang.Compilation_unit.t -> unit
 (** Add a mpodule in the given dir *)
 
+val add_implementation : in_progress -> Lang.Implementation.t -> unit
+(** Add a mpodule in the given dir *)
+
 (** {1 Getters} *)
 
 val root_dir : in_progress -> Id.ContainerPage.t option
