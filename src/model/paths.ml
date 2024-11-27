@@ -382,6 +382,9 @@ module Identifier = struct
   module SourcePage = struct
     type t = Id.source_page
     type t_pv = Id.source_page_pv
+
+    let equal = equal
+    let hash = hash
   end
 
   module SourceLocation = struct
@@ -626,6 +629,7 @@ module Identifier = struct
     module ContainerPage = Hashtbl.Make (ContainerPage)
     module LeafPage = Hashtbl.Make (LeafPage)
     module RootModule = Hashtbl.Make (RootModule)
+    module SourcePage = Hashtbl.Make (SourcePage)
   end
 end
 

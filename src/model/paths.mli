@@ -245,6 +245,7 @@ module Identifier : sig
     module ContainerPage : Hashtbl.S with type key = ContainerPage.t
     module LeafPage : Hashtbl.S with type key = LeafPage.t
     module RootModule : Hashtbl.S with type key = RootModule.t
+    module SourcePage : Hashtbl.S with type key = SourcePage.t
   end
 
   module Mk : sig

@@ -135,16 +135,17 @@ let compile out_format ~output ~warnings_options ~occurrences ~roots
   let hierarchies =
     (* For each group, we create a hierarchy. *)
     let hierarchy_of_group g =
-      let pages, modules =
-        let read (pages, modules) f =
+      let pages, modules, implementations =
+        let read (pages, modules, impls) f =
           match Odoc_file.load f with
-          | Ok { content = Page_content p; _ } -> (p :: pages, modules)
-          | Ok { content = Unit_content m; _ } -> (pages, m :: modules)
-          | _ -> (pages, modules)
+          | Ok { content = Page_content p; _ } -> (p :: pages, modules, impls)
+          | Ok { content = Unit_content m; _ } -> (pages, m :: modules, impls)
+          | Ok { content = Impl_content i; _ } -> (pages, modules, i :: impls)
+          | _ -> (pages, modules, impls)
         in
-        List.fold_left read ([], []) g
+        List.fold_left read ([], [], []) g
       in
-      Odoc_index.Skeleton_of.lang ~pages ~modules
+      Odoc_index.Skeleton_of.lang ~pages ~modules ~implementations
     in
     List.map hierarchy_of_group root_groups
   in

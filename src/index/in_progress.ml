@@ -6,6 +6,7 @@ module PageName = Odoc_model.Names.PageName
 module CPH = Id.Hashtbl.ContainerPage
 module LPH = Id.Hashtbl.LeafPage
 module RMH = Id.Hashtbl.RootModule
+module SPH = Id.Hashtbl.SourcePage
 
 type page = Id.Page.t
 type container_page = Id.ContainerPage.t
@@ -18,12 +19,18 @@ type dir_content = {
   leafs : payload LPH.t;
   dirs : in_progress CPH.t;
   modules : Skeleton.t RMH.t;
+  implementations : Lang.Implementation.t SPH.t;
 }
 and in_progress = container_page option * dir_content
 
 let empty_t dir_id =
   ( dir_id,
-    { leafs = LPH.create 10; dirs = CPH.create 10; modules = RMH.create 10 } )
+    {
+      leafs = LPH.create 10;
+      dirs = CPH.create 10;
+      modules = RMH.create 10;
+      implementations = SPH.create 10;
+    } )
 
 let get_parent id : container_page option =
   let id :> page = id in
@@ -85,6 +92,13 @@ let add_module (dir : in_progress) m =
   in
   let skel = Skeleton.from_unit m in
   RMH.replace dir_content.modules m.id skel
+
+let add_implementation (dir : in_progress) (i : Lang.Implementation.t) =
+  match i.id with
+  | None -> ()
+  | Some ({ iv = `SourcePage (parent, _); _ } as id) ->
+      let _, dir_content = get_or_create dir parent in
+      SPH.replace dir_content.implementations id i
 
 let index ((parent_id, _) as dir) =
   let index_id = Id.Mk.leaf_page (parent_id, PageName.make_std "index") in

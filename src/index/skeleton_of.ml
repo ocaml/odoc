@@ -148,8 +148,9 @@ let rec remove_common_root (v : t) =
   | { Tree.children = [ v ]; node = { kind = Dir; _ } } -> remove_common_root v
   | _ -> v
 
-let lang ~pages ~modules =
+let lang ~pages ~modules ~implementations =
   let dir = In_progress.empty_t None in
   List.iter (In_progress.add_page dir) pages;
   List.iter (In_progress.add_module dir) modules;
+  List.iter (In_progress.add_implementation dir) implementations;
   t_of_in_progress dir |> remove_common_root
