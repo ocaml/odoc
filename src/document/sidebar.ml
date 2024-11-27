@@ -101,7 +101,8 @@ end = struct
           in
           let content =
             match entry.kind with
-            | Page _ ->
+            | Page { short_title = Some st; _ } -> Comment.link_content st
+            | Page { short_title = None; _ } ->
                 let title =
                   let open Odoc_model in
                   match Comment.find_zero_heading entry.doc with
