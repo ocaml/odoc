@@ -40,6 +40,7 @@ val make_src :
   url:Odoc_document.Url.Path.t ->
   breadcrumbs:Types.breadcrumb list ->
   header:Html_types.flow5_without_header_footer Html.elt list ->
+  sidebar:Html_types.div_content Html.elt list option ->
   string ->
   Html_types.div_content Html.elt list ->
   Odoc_document.Renderer.page

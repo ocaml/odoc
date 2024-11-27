@@ -258,7 +258,7 @@ let path_of_module_of_source ppf url =
       Format.fprintf ppf " (%s)" (String.concat "." path)
   | None -> ()
 
-let src_page_creator ~breadcrumbs ~config ~url ~header name content =
+let src_page_creator ~breadcrumbs ~config ~url ~header ~sidebar name content =
   let head : Html_types.head Html.elt =
     let title_string =
       Format.asprintf "Source: %s%a" name path_of_module_of_source url
@@ -269,6 +269,7 @@ let src_page_creator ~breadcrumbs ~config ~url ~header name content =
   let body =
     html_of_breadcrumbs breadcrumbs
     @ [ Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header ]
+    @ sidebars ~global_toc:sidebar ~local_toc:[]
     @ content
   in
   (* We never indent as there is a bug in tyxml and it would break lines inside
@@ -284,9 +285,9 @@ let src_page_creator ~breadcrumbs ~config ~url ~header name content =
   in
   content
 
-let make_src ~config ~url ~breadcrumbs ~header title content =
+let make_src ~config ~url ~breadcrumbs ~header ~sidebar title content =
   let filename = Link.Path.as_filename ~config url in
   let content =
-    src_page_creator ~breadcrumbs ~config ~url ~header title content
+    src_page_creator ~breadcrumbs ~config ~url ~header ~sidebar title content
   in
   { Odoc_document.Renderer.filename; content; children = []; path = url }

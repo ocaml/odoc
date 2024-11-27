@@ -81,6 +81,7 @@ val html_generate_source :
   output_dir:string ->
   ?ignore_output:bool ->
   source:Fpath.t ->
+  ?sidebar:Fpath.t ->
   ?search_uris:Fpath.t list ->
   ?as_json:bool ->
   input_file:Fpath.t ->
