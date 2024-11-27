@@ -118,6 +118,24 @@ end
 let if_non_hidden id f =
   if Identifier.is_hidden (id :> Identifier.t) then [] else f ()
 
+let filter_signature items =
+  List.fold_left
+    (fun (keep, acc) item ->
+      match item with
+      | Signature.Comment `Stop -> (not keep, acc)
+      | _ -> if keep then (keep, item :: acc) else (keep, acc))
+    (true, []) items
+  |> snd |> List.rev
+
+let filter_class_signature items =
+  List.fold_left
+    (fun (keep, acc) item ->
+      match item with
+      | ClassSignature.Comment `Stop -> (not keep, acc)
+      | _ -> if keep then (keep, item :: acc) else (keep, acc))
+    (true, []) items
+  |> snd |> List.rev
+
 let rec unit (u : Compilation_unit.t) =
   let entry = Entry.of_comp_unit u in
   let children =
@@ -128,7 +146,8 @@ let rec unit (u : Compilation_unit.t) =
   { Tree.node = entry; children }
 
 and signature id (s : Signature.t) =
-  List.concat_map ~f:(signature_item (id :> Identifier.LabelParent.t)) s.items
+  let items = filter_signature s.items in
+  List.concat_map ~f:(signature_item (id :> Identifier.LabelParent.t)) items
 
 and signature_item id s_item =
   match s_item with
@@ -249,7 +268,8 @@ and module_type_expr id mte =
   | TypeOf { t_expansion = None; _ } -> []
 
 and class_signature id ct_expr =
-  List.concat_map ~f:(class_signature_item id) ct_expr.items
+  let items = filter_class_signature ct_expr.items in
+  List.concat_map ~f:(class_signature_item id) items
 
 and class_signature_item id item =
   match item with
