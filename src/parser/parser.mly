@@ -323,25 +323,33 @@ let tag_bare :=
 
 let inline_element := 
   | s = horizontal_whitespace; { return s } 
-  | w = Word; { return @@ `Word w }
-  | c = Code_span; { return @@ `Code_span c }
-  | m = Raw_markup; { return @@ `Raw_markup m }
-  | style = Style; children = sequence_nonempty(locatedM(inline_element)); RIGHT_BRACE; 
-    { Writer.map (fun c -> `Styled (style, c)) children }
-  | style = Style; RIGHT_BRACE; 
-    {
-      let location = Parser_aux.to_location $sloc in
-      let node = `Styled (style, [ Loc.at location (`Word "") ]) in
-      let what = Tokens.describe @@ Style style in
-      let warning = fun ~filename -> 
-        let span = Parser_aux.to_location ~filename $sloc in
-        Parse_error.should_not_be_empty ~what span 
-      in
-      Writer.with_warning node warning
-    } 
-  | m = Math_span; { return @@ `Math_span m }
+  | ~ = code_span; <>
+  | ~ = raw_markup; <>
+  | ~ = word; <>
+  | ~ = style; <>
+  | ~ = math_span; <>
   | ~ = reference; <>
   | ~ = link; <>
+
+
+let code_span := c = Code_span; { return @@ `Code_span c }
+let raw_markup := m = Raw_markup; { return @@ `Raw_markup m }
+let word := w = Word; { return @@ `Word w }
+
+let style := style = Style; children = sequence(locatedM(inline_element)); RIGHT_BRACE; 
+    { 
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        let what = Tokens.describe @@ Style style in
+        Parse_error.should_not_be_empty ~what span 
+      in
+      Writer.ensure not_empty warning children
+      |> Writer.map (fun c -> `Styled (style, c)) 
+    }
+
+let math_span := m = Math_span; { return @@ `Math_span m }
+
+(* LINKS + REFS *)
 
 let reference := 
   | ref_body = located(Simple_ref); children = sequence(locatedM(inline_element)); 
@@ -605,46 +613,50 @@ let media :=
 let nestable_block_element := ~ = nestable_block_element_inner; newline?; <>
 
 let nestable_block_element_inner := 
-  | v = Verbatim; 
-    { 
-      let what = Tokens.describe @@ Verbatim v in
-      let warning = fun ~filename -> 
-        let span = Parser_aux.to_location ~filename $sloc in
-        Parse_error.should_not_be_empty ~what span 
-      in 
-      Writer.ensure has_content warning (return v) 
-      |> Writer.map (fun v -> `Verbatim v)
-    }
-  | items = sequence_nonempty(locatedM(inline_element));
-    { Writer.map (fun i -> `Paragraph i) items }
-  | c = Code_block; { return (`Code_block c) }
+  | ~ = verbatim; <>
+  | ~ = code_block; <> 
   | ~ = modules; <> 
   | ~ = list_element; <>
   | ~ = table; <> 
   | ~ = media; <>
   | ~ = math_block; <> 
-    
 
-  let math_block := m = Math_block; 
-    { 
-      let what = Tokens.describe @@ Math_block m in
-      let warning = fun ~filename -> 
-        let span = Parser_aux.to_location ~filename $sloc in
-        Parse_error.should_not_be_empty ~what span 
-      in 
-      Writer.ensure has_content warning (return m) 
-      |> Writer.map (fun m -> `Math_block m)
-    }
+let verbatim := v = Verbatim; 
+  { 
+    let what = Tokens.describe @@ Verbatim v in
+    let warning = fun ~filename -> 
+      let span = Parser_aux.to_location ~filename $sloc in
+      Parse_error.should_not_be_empty ~what span 
+    in 
+    Writer.ensure has_content warning (return v) 
+    |> Writer.map (fun v -> `Verbatim v)
+  }
 
-  let modules := modules = Modules; 
-    { 
-      let what = Tokens.describe @@ Modules [] in
-      let warning = fun ~filename -> 
-        let span = Parser_aux.to_location ~filename $sloc in
-        Parse_error.should_not_be_empty ~what span 
-      in 
-      return modules
-      |> Writer.ensure not_empty warning 
-      |> Writer.map (fun ms -> `Modules ms)
-    }
+let paragraph := items = sequence_nonempty(locatedM(inline_element));
+  { Writer.map (fun i -> `Paragraph i) items }
+
+let code_block := c = Code_block; { return (`Code_block c) }
+
+let math_block := m = Math_block; 
+  { 
+    let what = Tokens.describe @@ Math_block m in
+    let warning = fun ~filename -> 
+      let span = Parser_aux.to_location ~filename $sloc in
+      Parse_error.should_not_be_empty ~what span 
+    in 
+    Writer.ensure has_content warning (return m) 
+    |> Writer.map (fun m -> `Math_block m)
+  }
+
+let modules := modules = Modules; 
+  { 
+    let what = Tokens.describe @@ Modules [] in
+    let warning = fun ~filename -> 
+      let span = Parser_aux.to_location ~filename $sloc in
+      Parse_error.should_not_be_empty ~what span 
+    in 
+    return modules
+    |> Writer.ensure not_empty warning 
+    |> Writer.map (fun ms -> `Modules ms)
+  }
 
