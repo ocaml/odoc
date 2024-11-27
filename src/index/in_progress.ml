@@ -11,8 +11,6 @@ module SPH = Id.Hashtbl.SourcePage
 type page = Id.Page.t
 type container_page = Id.ContainerPage.t
 
-open Astring
-
 type payload = Lang.Page.t
 
 type dir_content = {
@@ -45,7 +43,8 @@ let find_leaf ((_, dir_content) : in_progress) leaf_page =
 let leafs (_, dir_content) =
   LPH.fold
     (fun id page acc ->
-      if String.equal "index" (Id.name id) then acc else (id, page) :: acc)
+      if Astring.String.equal "index" (Id.name id) then acc
+      else (id, page) :: acc)
     dir_content.leafs []
 
 let dirs (_, dir_content) =

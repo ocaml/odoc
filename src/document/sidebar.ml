@@ -110,7 +110,7 @@ end = struct
                       let name =
                         match entry.id.iv with
                         | `LeafPage (Some parent, name)
-                          when String.equal
+                          when Astring.String.equal
                                  (Names.PageName.to_string name)
                                  "index" ->
                             Id.name parent
