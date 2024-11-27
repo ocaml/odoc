@@ -615,14 +615,17 @@ and read_object env fi nm =
     | _ -> assert false
   end
 
-let read_value_description ({ident_env ; suppress_warnings} as env) parent id vd =
+let read_value_description ({ ident_env; suppress_warnings } as env) parent id
+    vd =
   let open Signature in
   let id = Env.find_value_identifier ident_env id in
   let source_loc = None in
   let container =
     (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
   in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings container vd.val_attributes in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings container vd.val_attributes
+  in
   mark_value_description vd;
   let type_ = read_type_expr env vd.val_type in
   let value =
@@ -642,14 +645,17 @@ let read_value_description ({ident_env ; suppress_warnings} as env) parent id vd
 let read_label_declaration env parent ld =
   let open TypeDecl.Field in
   let name = Ident.name ld.ld_id in
-  let id = Identifier.Mk.field (parent, Odoc_model.Names.FieldName.make_std name) in
-  let doc =
-    Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings
-      (parent :> Identifier.LabelParent.t) ld.ld_attributes
+  let id =
+    Identifier.Mk.field (parent, Odoc_model.Names.FieldName.make_std name)
   in
-  let mutable_ = (ld.ld_mutable = Mutable) in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      (parent :> Identifier.LabelParent.t)
+      ld.ld_attributes
+  in
+  let mutable_ = ld.ld_mutable = Mutable in
   let type_ = read_type_expr env ld.ld_type in
-    {id; doc; mutable_; type_}
+  { id; doc; mutable_; type_ }
 
 let read_constructor_declaration_arguments env parent arg =
 #if OCAML_VERSION < (4,3,0)
@@ -669,13 +675,17 @@ let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
   let id = Ident_env.find_constructor_identifier env.ident_env cd.cd_id in
   let container = (parent :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container cd.cd_attributes in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container cd.cd_attributes
+  in
   let args =
     read_constructor_declaration_arguments env
-      (parent :> Identifier.FieldParent.t) cd.cd_args
+      (parent :> Identifier.FieldParent.t)
+      cd.cd_args
   in
   let res = opt_map (read_type_expr env) cd.cd_res in
-    {id; doc; args; res}
+  { id; doc; args; res }
 
 let read_type_kind env parent =
   let open TypeDecl.Representation in function
@@ -752,7 +762,8 @@ let read_type_declaration env parent id decl =
   let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical =
-    Doc_attr.attached ~suppress_warnings:env.suppress_warnings Odoc_model.Semantics.Expect_canonical container decl.type_attributes
+    Doc_attr.attached ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      Odoc_model.Semantics.Expect_canonical container decl.type_attributes
   in
   let canonical = match canonical with | None -> None | Some s -> Doc_attr.conv_canonical_type s in
   let params = mark_type_declaration decl in
@@ -790,14 +801,20 @@ let read_extension_constructor env parent id ext =
   let open Extension.Constructor in
   let id = Env.find_extension_identifier env.ident_env id in
   let source_loc = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container ext.ext_attributes in
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container ext.ext_attributes
+  in
   let args =
     read_constructor_declaration_arguments env
-      (parent : Identifier.Signature.t :> Identifier.FieldParent.t) ext.ext_args
+      (parent : Identifier.Signature.t :> Identifier.FieldParent.t)
+      ext.ext_args
   in
   let res = opt_map (read_type_expr env) ext.ext_ret_type in
-  {id; source_loc; doc; args; res}
+  { id; source_loc; doc; args; res }
 
 let read_type_extension env parent id ext rest =
   let open Extension in
@@ -823,15 +840,21 @@ let read_exception env parent id ext =
   let open Exception in
   let id = Env.find_exception_identifier env.ident_env id in
   let source_loc = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container ext.ext_attributes in
-    mark_exception ext;
-    let args =
-      read_constructor_declaration_arguments env
-        (parent : Identifier.Signature.t :> Identifier.FieldParent.t) ext.ext_args
-    in
-    let res = opt_map (read_type_expr env) ext.ext_ret_type in
-    {id; source_loc; doc; args; res}
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container ext.ext_attributes
+  in
+  mark_exception ext;
+  let args =
+    read_constructor_declaration_arguments env
+      (parent : Identifier.Signature.t :> Identifier.FieldParent.t)
+      ext.ext_args
+  in
+  let res = opt_map (read_type_expr env) ext.ext_ret_type in
+  { id; source_loc; doc; args; res }
 
 let read_method env parent concrete (name, kind, typ) =
   let open Method in
@@ -917,19 +940,24 @@ let read_class_type_declaration env parent id cltd =
   let open ClassType in
   let id = Env.find_class_type_identifier env.ident_env id in
   let source_loc = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container cltd.clty_attributes in
-    mark_class_type_declaration cltd;
-    let params =
-      List.map2
-        (read_type_parameter false)
-        cltd.clty_variance cltd.clty_params
-    in
-    let expr =
-      read_class_signature env (id :> Identifier.ClassSignature.t) cltd.clty_params cltd.clty_type
-    in
-    let virtual_ = read_virtual cltd.clty_type in
-    { id; source_loc; doc; virtual_; params; expr; expansion = None }
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container cltd.clty_attributes
+  in
+  mark_class_type_declaration cltd;
+  let params =
+    List.map2 (read_type_parameter false) cltd.clty_variance cltd.clty_params
+  in
+  let expr =
+    read_class_signature env
+      (id :> Identifier.ClassSignature.t)
+      cltd.clty_params cltd.clty_type
+  in
+  let virtual_ = read_virtual cltd.clty_type in
+  { id; source_loc; doc; virtual_; params; expr; expansion = None }
 
 let rec read_class_type env parent params =
   let open Class in function
@@ -953,19 +981,24 @@ let read_class_declaration env parent id cld =
   let open Class in
   let id = Env.find_class_identifier env.ident_env id in
   let source_loc = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container cld.cty_attributes in
-    mark_class_declaration cld;
-    let params =
-      List.map2
-        (read_type_parameter false)
-        cld.cty_variance cld.cty_params
-    in
-    let type_ =
-      read_class_type env (id :> Identifier.ClassSignature.t) cld.cty_params cld.cty_type
-    in
-    let virtual_ = cld.cty_new = None in
-    { id; source_loc; doc; virtual_; params; type_; expansion = None }
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container cld.cty_attributes
+  in
+  mark_class_declaration cld;
+  let params =
+    List.map2 (read_type_parameter false) cld.cty_variance cld.cty_params
+  in
+  let type_ =
+    read_class_type env
+      (id :> Identifier.ClassSignature.t)
+      cld.cty_params cld.cty_type
+  in
+  let virtual_ = cld.cty_new = None in
+  { id; source_loc; doc; virtual_; params; type_; expansion = None }
 
 let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
   let open ModuleType in
@@ -992,34 +1025,60 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
         let t_desc = ModPath t_original_path in
         TypeOf { t_desc; t_expansion = None; t_original_path }
 
-and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_declaration) =
+and read_module_type_declaration env parent id
+    (mtd : Odoc_model.Compat.modtype_declaration) =
   let open ModuleType in
   let id = Env.find_module_type env.ident_env id in
   let source_loc = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, canonical = Doc_attr.attached ~suppress_warnings:env.suppress_warnings Odoc_model.Semantics.Expect_canonical container mtd.mtd_attributes in
-  let canonical = match canonical with | None -> None | Some s -> Doc_attr.conv_canonical_module_type s in
-  let expr = opt_map (read_module_type env (id :> Identifier.Signature.t)) mtd.mtd_type in
-  {id; source_loc; doc; canonical; expr }
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc, canonical =
+    Doc_attr.attached ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      Odoc_model.Semantics.Expect_canonical container mtd.mtd_attributes
+  in
+  let canonical =
+    match canonical with
+    | None -> None
+    | Some s -> Doc_attr.conv_canonical_module_type s
+  in
+  let expr =
+    opt_map (read_module_type env (id :> Identifier.Signature.t)) mtd.mtd_type
+  in
+  { id; source_loc; doc; canonical; expr }
 
-and read_module_declaration env parent ident (md : Odoc_model.Compat.module_declaration) =
+and read_module_declaration env parent ident
+    (md : Odoc_model.Compat.module_declaration) =
   let open Module in
-  let id = (Env.find_module_identifier env.ident_env ident :> Identifier.Module.t) in
+  let id =
+    (Env.find_module_identifier env.ident_env ident :> Identifier.Module.t)
+  in
   let source_loc = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, canonical = Doc_attr.attached ~suppress_warnings:env.suppress_warnings Odoc_model.Semantics.Expect_canonical container md.md_attributes in
-  let canonical = match canonical with | None -> None | Some s -> Some (Doc_attr.conv_canonical_module s) in
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc, canonical =
+    Doc_attr.attached ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      Odoc_model.Semantics.Expect_canonical container md.md_attributes
+  in
+  let canonical =
+    match canonical with
+    | None -> None
+    | Some s -> Some (Doc_attr.conv_canonical_module s)
+  in
   let type_ =
     match md.md_type with
     | Mty_alias p -> Alias (Env.Path.read_module env.ident_env p, None)
-    | _ -> ModuleType (read_module_type env (id :> Identifier.Signature.t) md.md_type)
+    | _ ->
+        ModuleType
+          (read_module_type env (id :> Identifier.Signature.t) md.md_type)
   in
   let hidden =
     match canonical with
     | Some _ -> false
     | None -> Odoc_model.Names.contains_double_underscore (Ident.name ident)
   in
-  {id; source_loc; doc; type_; canonical; hidden }
+  { id; source_loc; doc; type_; canonical; hidden }
 
 and read_type_rec_status rec_status =
   let open Signature in

@@ -224,6 +224,18 @@ module M = struct
         Error
           (`Parent
             (`Parent_module (`Lookup_failure_root (ModuleName.make_std name))))
+
+  let rec in_env_by_id env id =
+    match Env.lookup_by_id Env.s_module id env with
+    | Some e -> Ok (of_element env e)
+    | None -> match id.iv with
+      | `Module (p, name) ->
+          in_env_by_id env p >>=
+          module_lookup_to_signature_lookup env >>=
+          fun x -> in_signature env x name
+     | _ -> Error
+       (`Parent
+         (`Parent_module (`Lookup_failure_root (ModuleName.make_std (Identifier.name id)))))
 end
 
 module Path = struct
@@ -291,6 +303,19 @@ module MT = struct
   let in_env env name =
     env_lookup_by_name Env.s_module_type name env >>= fun e ->
     Ok (of_element env e)
+
+  let in_env_by_id env id =
+    match Env.lookup_by_id Env.s_module_type id env with
+    | Some e -> Ok (of_element env e)
+    | None -> match id.iv with
+      | `ModuleType (p, name) ->
+          M.in_env_by_id env p >>=
+          module_lookup_to_signature_lookup env >>=
+          fun x -> in_signature env x name
+      | _ -> Error
+        (`Parent
+          (`Parent_module (`Lookup_failure_root (ModuleName.make_std (Identifier.name id)))))
+  
 end
 
 module CL = struct
@@ -697,7 +722,9 @@ let rec resolve_label_parent_reference env (r : LabelParent.t) =
    fun r -> Ok (r :> label_parent_lookup_result)
   in
   match r with
-  | `Resolved _ -> failwith "unimplemented"
+  | `Resolved (`Identifier {iv=(`Module _ | `ModuleType _); _}) as sr ->
+    resolve_signature_reference env sr >>= fun s -> Ok (`S s)
+  | `Resolved _ -> failwith "Unimplemented"
   | `Root (name, `TUnknown) -> LP.in_env env name
   | (`Module _ | `ModuleType _ | `Root (_, (`TModule | `TModuleType))) as sr ->
       resolve_signature_reference env sr >>= fun s -> Ok (`S s)
@@ -760,9 +787,6 @@ and resolve_signature_reference :
  fun env' r ->
   let resolve env =
     match r with
-    | `Resolved _r ->
-        failwith "What's going on here then?"
-        (* Some (resolve_resolved_signature_reference env r ~add_canonical) *)
     | `Root (name, `TModule) ->
         M.in_env env name >>= module_lookup_to_signature_lookup env
     | `Module (parent, name) ->
@@ -799,6 +823,15 @@ and resolve_signature_reference :
                  (`ModuleType (parent, name))))
     | `Module_path p ->
         Path.module_in_env env p >>= module_lookup_to_signature_lookup env
+    | `Resolved (`Identifier ({iv=`Module _; _} as ident)) -> (
+        let m = M.in_env_by_id env ident in
+        m >>= module_lookup_to_signature_lookup env)
+    | `Resolved (`Identifier ({iv=`ModuleType _; _} as ident)) -> (
+        let m = MT.in_env_by_id env ident in
+        m >>= module_type_lookup_to_signature_lookup env)
+    | `Resolved _ -> failwith "What's going on!?"
+          (* Some (resolve_resolved_signature_reference env r ~add_canonical) *)
+
   in
   resolve env'
 

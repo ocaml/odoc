@@ -113,10 +113,11 @@ let is_stop_comment attr =
 let pad_loc loc =
   { loc.Location.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 }
 
-let ast_to_comment ~internal_tags parent ast_docs alerts =
+let ast_to_comment ~env ~internal_tags parent ast_docs alerts =
   Odoc_model.Semantics.ast_to_comment ~internal_tags
     ~tags_allowed:true ~parent_of_sections:parent ast_docs alerts
   |> Error.raise_warnings
+  |> (fun (x, b) -> (Resolve_init.resolve env x, b))
 
 let mk_alert_payload ~loc name p =
   let p = match p with Some (p, _) -> Some p | None -> None in
@@ -124,7 +125,7 @@ let mk_alert_payload ~loc name p =
   let span = read_location loc in
   Location_.at span elt
 
-let attached ~suppress_warnings internal_tags parent attrs =
+let attached ~suppress_warnings ~env internal_tags parent attrs =
   let rec loop acc_docs acc_alerts = function
     | attr :: rest -> (
         match parse_attribute attr with
@@ -141,11 +142,11 @@ let attached ~suppress_warnings internal_tags parent attrs =
     | [] -> (List.rev acc_docs, List.rev acc_alerts)
   in
   let ast_docs, alerts = loop [] [] attrs in
-  let elements, warnings = ast_to_comment ~internal_tags parent ast_docs alerts in
+  let elements, warnings = ast_to_comment ~env ~internal_tags parent ast_docs alerts in
   { Comment.elements; suppress_warnings }, warnings
 
-let attached_no_tag ~suppress_warnings parent attrs =
-  let x, () = attached ~suppress_warnings Semantics.Expect_none parent attrs in
+let attached_no_tag ~suppress_warnings ~env parent attrs =
+  let x, () = attached ~env ~suppress_warnings Semantics.Expect_none parent attrs in
   x
 
 let read_string ~tags_allowed internal_tags parent location str =
@@ -202,7 +203,7 @@ let split_docs docs =
   in
   inner [] docs
 
-let extract_top_comment internal_tags ~classify parent items =
+let extract_top_comment ~env internal_tags ~classify parent items =
   let classify x =
     match classify x with
     | Some (`Attribute attr) -> (
@@ -249,7 +250,7 @@ let extract_top_comment internal_tags ~classify parent items =
   in
   let items, ast_docs, alerts = extract items in
   let docs, tags =
-    ast_to_comment ~internal_tags
+    ast_to_comment ~env ~internal_tags
       (parent : Paths.Identifier.Signature.t :> Paths.Identifier.LabelParent.t)
       ast_docs alerts
   in

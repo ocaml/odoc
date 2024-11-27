@@ -87,3 +87,31 @@ val identifier_of_loc : t -> Location.t -> Paths.Identifier.t option
 val iter_located_identifier :
   t -> (Location.t -> Paths.Identifier.t -> unit) -> unit
 (** Iter on all stored pair [location]-[identifier]. *)
+
+val lookup_module_by_name : t -> string -> Paths.Identifier.Module.t list
+(** Lookup a module by its name. *)
+
+val lookup_module_type_by_name :
+  t -> string -> Paths.Identifier.ModuleType.t list
+(** Lookup a module type by its name. *)
+
+val lookup_type_by_name : t -> string -> Paths.Identifier.Type.t list
+(** Lookup a type by its name. *)
+
+val lookup_value_by_name : t -> string -> Paths.Identifier.Value.t list
+(** Lookup a value by its name. *)
+
+val lookup_exception_by_name :
+  t -> string -> Paths.Identifier.Exception.t list
+(** Lookup an exception by its name. *)
+
+val lookup_constructor_by_name :
+  t -> string -> Paths.Identifier.Constructor.t list
+(** Lookup a constructor by its name. *)
+
+val lookup_class_by_name : t -> string -> Paths.Identifier.Class.t list
+(** Lookup a class by its name *)
+
+val lookup_class_type_by_name :
+  t -> string -> Paths.Identifier.ClassType.t list
+(** Lookup a class type by its name *)

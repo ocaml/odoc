@@ -90,9 +90,14 @@ let rec read_pattern env parent doc pat =
 #endif
 
 let read_value_binding env parent vb =
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container vb.vb_attributes in
-    read_pattern env parent doc vb.vb_pat
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container vb.vb_attributes
+  in
+  read_pattern env parent doc vb.vb_pat
 
 let read_value_bindings env parent vbs =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -112,31 +117,31 @@ let read_value_bindings env parent vbs =
 let read_type_extension env parent tyext =
   let open Extension in
   let type_path = Env.Path.read_type env.ident_env tyext.tyext_path in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container tyext.tyext_attributes in
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container tyext.tyext_attributes
+  in
   let type_params =
     List.map (fun (ctyp, _) -> ctyp.ctyp_type) tyext.tyext_params
   in
   let constructors =
     List.map (fun ext -> ext.ext_type) tyext.tyext_constructors
   in
+  let type_params = Cmi.mark_type_extension type_params constructors in
   let type_params =
-    Cmi.mark_type_extension type_params constructors
+    List.map (Cmi.read_type_parameter false Types.Variance.null) type_params
   in
-  let type_params =
-    List.map
-      (Cmi.read_type_parameter false Types.Variance.null)
-      type_params
-  in
-  let private_ = (tyext.tyext_private = Private) in
+  let private_ = tyext.tyext_private = Private in
   let constructors =
     List.map
       (fun ext ->
-         Cmi.read_extension_constructor
-           env parent ext.ext_id ext.ext_type)
+        Cmi.read_extension_constructor env parent ext.ext_id ext.ext_type)
       tyext.tyext_constructors
   in
-  { parent; type_path; doc; type_params; private_; constructors; }
+  { parent; type_path; doc; type_params; private_; constructors }
 
 (** Make a standalone comment out of a comment attached to an item that isn't
     rendered. For example, [constraint] items are read separately and not
@@ -148,31 +153,42 @@ let mk_class_comment = function
 let rec read_class_type_field env parent ctf =
   let open ClassSignature in
   let open Odoc_model.Names in
-  let container = (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container ctf.ctf_attributes in
+  let container =
+    (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container ctf.ctf_attributes
+  in
   match ctf.ctf_desc with
-  | Tctf_val(name, mutable_, virtual_, typ) ->
+  | Tctf_val (name, mutable_, virtual_, typ) ->
       let open InstanceVariable in
-      let id = Identifier.Mk.instance_variable(parent, InstanceVariableName.make_std name) in
-      let mutable_ = (mutable_ = Mutable) in
-      let virtual_ = (virtual_ = Virtual) in
+      let id =
+        Identifier.Mk.instance_variable
+          (parent, InstanceVariableName.make_std name)
+      in
+      let mutable_ = mutable_ = Mutable in
+      let virtual_ = virtual_ = Virtual in
       let type_ = read_core_type env typ in
-        Some (InstanceVariable {id; doc; mutable_; virtual_; type_})
-  | Tctf_method(name, private_, virtual_, typ) ->
+      Some (InstanceVariable { id; doc; mutable_; virtual_; type_ })
+  | Tctf_method (name, private_, virtual_, typ) ->
       let open Method in
-      let id = Identifier.Mk.method_(parent, MethodName.make_std name) in
-      let private_ = (private_ = Private) in
-      let virtual_ = (virtual_ = Virtual) in
+      let id = Identifier.Mk.method_ (parent, MethodName.make_std name) in
+      let private_ = private_ = Private in
+      let virtual_ = virtual_ = Virtual in
       let type_ = read_core_type env typ in
-        Some (Method {id; doc; private_; virtual_; type_})
-  | Tctf_constraint(_, _) -> mk_class_comment doc
+      Some (Method { id; doc; private_; virtual_; type_ })
+  | Tctf_constraint (_, _) -> mk_class_comment doc
   | Tctf_inherit cltyp ->
       let expr = read_class_signature env parent [] cltyp in
-      Some (Inherit {Inherit.expr; doc})
-  | Tctf_attribute attr ->
-      match Doc_attr.standalone container ~suppress_warnings:env.suppress_warnings attr with
+      Some (Inherit { Inherit.expr; doc })
+  | Tctf_attribute attr -> (
+      match
+        Doc_attr.standalone container ~suppress_warnings:env.suppress_warnings
+          attr
+      with
       | None -> None
-      | Some doc -> Some (Comment doc)
+      | Some doc -> Some (Comment doc))
 
 and read_class_signature env parent params cltyp =
   let open ClassType in
@@ -229,30 +245,36 @@ let rec read_class_type env parent params cty =
 let rec read_class_field env parent cf =
   let open ClassSignature in
   let open Odoc_model.Names in
-  let container = (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container (cf.cf_attributes) in
+  let container =
+    (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container cf.cf_attributes
+  in
   match cf.cf_desc with
-  | Tcf_val({txt = name; _}, mutable_, _, kind, _) ->
+  | Tcf_val ({ txt = name; _ }, mutable_, _, kind, _) ->
       let open InstanceVariable in
-      let id = Identifier.Mk.instance_variable(parent, InstanceVariableName.make_std name) in
-      let mutable_ = (mutable_ = Mutable) in
-      let virtual_, type_ =
-        match kind with
-        | Tcfk_virtual typ ->
-            true, read_core_type env typ
-        | Tcfk_concrete(_, expr) ->
-            false, Cmi.read_type_expr env expr.exp_type
+      let id =
+        Identifier.Mk.instance_variable
+          (parent, InstanceVariableName.make_std name)
       in
-        Some (InstanceVariable {id; doc; mutable_; virtual_; type_})
-  | Tcf_method({txt = name; _}, private_, kind) ->
-      let open Method in
-      let id = Identifier.Mk.method_(parent, MethodName.make_std name) in
-      let private_ = (private_ = Private) in
+      let mutable_ = mutable_ = Mutable in
       let virtual_, type_ =
         match kind with
-        | Tcfk_virtual typ ->
-            true, read_core_type env typ
-        | Tcfk_concrete(_, expr) ->
+        | Tcfk_virtual typ -> (true, read_core_type env typ)
+        | Tcfk_concrete (_, expr) ->
+            (false, Cmi.read_type_expr env expr.exp_type)
+      in
+      Some (InstanceVariable { id; doc; mutable_; virtual_; type_ })
+  | Tcf_method ({ txt = name; _ }, private_, kind) ->
+      let open Method in
+      let id = Identifier.Mk.method_ (parent, MethodName.make_std name) in
+      let private_ = private_ = Private in
+      let virtual_, type_ =
+        match kind with
+        | Tcfk_virtual typ -> (true, read_core_type env typ)
+        | Tcfk_concrete (_, expr) ->
             (* Types of concrete methods in class implementation begin
                with the object as first (implicit) argument, so we
                must keep only the type after the first arrow. *)
@@ -261,18 +283,21 @@ let rec read_class_field env parent cf =
               | Arrow (_, _, t) -> t
               | t -> t
             in
-            false, type_
+            (false, type_)
       in
-        Some (Method {id; doc; private_; virtual_; type_})
-  | Tcf_constraint(_, _) -> mk_class_comment doc
-  | Tcf_inherit(_, cl, _, _, _) ->
+      Some (Method { id; doc; private_; virtual_; type_ })
+  | Tcf_constraint (_, _) -> mk_class_comment doc
+  | Tcf_inherit (_, cl, _, _, _) ->
       let expr = read_class_structure env parent [] cl in
-      Some (Inherit {Inherit.expr; doc})
+      Some (Inherit { Inherit.expr; doc })
   | Tcf_initializer _ -> mk_class_comment doc
-  | Tcf_attribute attr ->
-      match Doc_attr.standalone container ~suppress_warnings:env.suppress_warnings attr with
+  | Tcf_attribute attr -> (
+      match
+        Doc_attr.standalone container ~suppress_warnings:env.suppress_warnings
+          attr
+      with
       | None -> None
-      | Some doc -> Some (Comment doc)
+      | Some doc -> Some (Comment doc))
 
 and read_class_structure env parent params cl =
   let open ClassType in
@@ -339,20 +364,23 @@ let read_class_declaration env parent cld =
   let open Class in
   let id = Env.find_class_identifier env.ident_env cld.ci_id_class in
   let source_loc = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container cld.ci_attributes in
-    Cmi.mark_class_declaration cld.ci_decl;
-    let virtual_ = (cld.ci_virt = Virtual) in
-    let clparams =
-      List.map (fun (ctyp, _) -> ctyp.ctyp_type) cld.ci_params
-    in
-    let params =
-      List.map
-        (Cmi.read_type_parameter false Types.Variance.null)
-        clparams
-    in
-    let type_ = read_class_expr env (id :> Identifier.ClassSignature.t) clparams cld.ci_expr in
-    { id; source_loc; doc; virtual_; params; type_; expansion = None }
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container cld.ci_attributes
+  in
+  Cmi.mark_class_declaration cld.ci_decl;
+  let virtual_ = cld.ci_virt = Virtual in
+  let clparams = List.map (fun (ctyp, _) -> ctyp.ctyp_type) cld.ci_params in
+  let params =
+    List.map (Cmi.read_type_parameter false Types.Variance.null) clparams
+  in
+  let type_ =
+    read_class_expr env (id :> Identifier.ClassSignature.t) clparams cld.ci_expr
+  in
+  { id; source_loc; doc; virtual_; params; type_; expansion = None }
 
 let read_class_declarations env parent clds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -448,7 +476,10 @@ and read_module_binding env parent mb =
   let id = (mid :> Identifier.Module.t) in
   let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, canonical = Doc_attr.attached ~suppress_warnings:env.suppress_warnings Odoc_model.Semantics.Expect_canonical container mb.mb_attributes in
+  let doc, canonical =
+    Doc_attr.attached ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      Odoc_model.Semantics.Expect_canonical container mb.mb_attributes
+  in
   let type_, canonical =
     match unwrap_module_expr_desc mb.mb_expr.mod_desc with
     | Tmod_ident (p, _) -> (Alias (Env.Path.read_module env.ident_env p, None), canonical)
@@ -556,29 +587,39 @@ and read_structure_item env parent item =
 and read_include env parent incl =
   let open Include in
   let loc = Doc_attr.read_location incl.incl_loc in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, status = Doc_attr.attached ~suppress_warnings:env.suppress_warnings Odoc_model.Semantics.Expect_status container incl.incl_attributes in
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc, status =
+    Doc_attr.attached ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      Odoc_model.Semantics.Expect_status container incl.incl_attributes
+  in
   let decl_modty =
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
-    | Tmod_ident(p, _) ->
-      let p = Env.Path.read_module env.ident_env p in
-      Some (ModuleType.U.TypeOf (ModuleType.StructInclude p, p))
+    | Tmod_ident (p, _) ->
+        let p = Env.Path.read_module env.ident_env p in
+        Some (ModuleType.U.TypeOf (ModuleType.StructInclude p, p))
     | _ ->
-      let mty = read_module_expr env parent container incl.incl_mod in
-      umty_of_mty mty
+        let mty = read_module_expr env parent container incl.incl_mod in
+        umty_of_mty mty
   in
-  let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
-  let expansion = { content; shadowed; } in
+  let content, shadowed =
+    Cmi.read_signature_noenv env parent
+      (Odoc_model.Compat.signature incl.incl_type)
+  in
+  let expansion = { content; shadowed } in
   match decl_modty with
   | Some m ->
-    let decl = ModuleType m in
-    [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
-  | _ ->
-    content.items
+      let decl = ModuleType m in
+      [
+        Include
+          { parent; doc; decl; expansion; status; strengthened = None; loc };
+      ]
+  | _ -> content.items
 
 and read_open env parent o =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container o.open_attributes in
+  let doc = Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings container o.open_attributes in
   #if OCAML_VERSION >= (4,8,0)
   let signature = o.open_bound_items in
   #else
@@ -600,7 +641,7 @@ and read_structure :
       | Tstr_attribute attr -> Some (`Attribute attr)
       | _ -> None
     in
-    Doc_attr.extract_top_comment internal_tags ~classify parent str.str_items
+    Doc_attr.extract_top_comment ~env:env.ident_env internal_tags ~classify parent str.str_items
   in
   let items =
     List.fold_left
