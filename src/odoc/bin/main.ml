@@ -849,7 +849,7 @@ end = struct
       Arg.(
         value
         & opt (some convert_fpath) None
-        & info [ "sidebar" ] ~doc ~docv:"FILE.odoc-index")
+        & info [ "sidebar" ] ~doc ~docv:"FILE.odoc-sidebar")
 
     let cmd =
       let syntax =
@@ -876,9 +876,10 @@ end = struct
 
   module Generate_source = struct
     let generate extra output_dir syntax extra_suffix input_file
-        warnings_options source_file =
+        warnings_options source_file sidebar =
       Rendering.generate_source_odoc ~renderer:R.renderer ~warnings_options
-        ~syntax ~output:output_dir ~extra_suffix ~source_file extra input_file
+        ~syntax ~output:output_dir ~extra_suffix ~source_file ~sidebar extra
+        input_file
 
     let input_odocl =
       let doc = "Linked implementation file." in
@@ -903,10 +904,12 @@ end = struct
           & opt (pconv convert_syntax) Odoc_document.Renderer.OCaml
             @@ info ~docv:"SYNTAX" ~doc ~env [ "syntax" ])
       in
+      let sidebar = Generate.sidebar in
       Term.(
         const handle_error
         $ (const generate $ R.extra_args $ dst ~create:true () $ syntax
-         $ extra_suffix $ input_odocl $ warnings_options $ source_file))
+         $ extra_suffix $ input_odocl $ warnings_options $ source_file $ sidebar
+          ))
 
     let info ~docs =
       let doc =

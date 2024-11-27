@@ -567,9 +567,16 @@ module Page = struct
       Html_page.make ~sidebar ~config ~header ~toc ~breadcrumbs ~url ~uses_katex
         content subpages
 
-  and source_page ~config sp =
+  and source_page ~config ~sidebar sp =
     let { Source_page.url; contents } = sp in
     let resolve = Link.Current sp.url in
+    let sidebar =
+      match sidebar with
+      | None -> None
+      | Some sidebar ->
+          let sidebar = Odoc_document.Sidebar.to_block sidebar url in
+          (Some (block ~config ~resolve sidebar) :> any Html.elt list option)
+    in
     let title = url.Url.Path.name
     and doc = Html_source.html_of_doc ~config ~resolve contents in
     let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
@@ -577,13 +584,15 @@ module Page = struct
       items ~config ~resolve (Doctree.PageTitle.render_src_title sp)
     in
     if Config.as_json config then
-      Html_fragment_json.make_src ~config ~url ~breadcrumbs [ doc ]
-    else Html_page.make_src ~breadcrumbs ~header ~config ~url title [ doc ]
+      Html_fragment_json.make_src ~config ~url ~breadcrumbs ~sidebar [ doc ]
+    else
+      Html_page.make_src ~breadcrumbs ~header ~config ~url ~sidebar title
+        [ doc ]
 end
 
 let render ~config ~sidebar = function
   | Document.Page page -> [ Page.page ~config ~sidebar page ]
-  | Source_page src -> [ Page.source_page ~config src ]
+  | Source_page src -> [ Page.source_page ~config ~sidebar src ]
 
 let filepath ~config url = Link.Path.as_filename ~config url
 

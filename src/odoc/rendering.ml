@@ -93,14 +93,18 @@ let documents_of_implementation ~warnings_options:_ ~syntax impl source_file =
       Error (`Msg "The implementation unit was not compiled with --source-id.")
 
 let generate_source_odoc ~syntax ~warnings_options ~renderer ~output
-    ~source_file ~extra_suffix extra file =
+    ~source_file ~extra_suffix ~sidebar extra file =
   Odoc_file.load file >>= fun unit ->
+  (match sidebar with
+  | None -> Ok None
+  | Some x -> Odoc_file.load_sidebar x >>= fun sidebar -> Ok (Some sidebar))
+  >>= fun sidebar ->
   match unit.content with
   | Odoc_file.Impl_content impl ->
       documents_of_implementation ~warnings_options ~syntax impl source_file
       >>= fun docs ->
       List.iter
-        (render_document renderer ~output ~sidebar:None ~extra_suffix ~extra)
+        (render_document renderer ~output ~sidebar ~extra_suffix ~extra)
         docs;
       Ok ()
   | Page_content _ | Unit_content _ | Asset_content _ ->

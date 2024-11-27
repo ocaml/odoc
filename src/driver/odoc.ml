@@ -233,18 +233,21 @@ let html_generate_asset ~output_dir ?(ignore_output = false) ~input_file:file
   in
   ignore @@ Cmd_outputs.submit log desc cmd None
 
-let html_generate_source ~output_dir ?(ignore_output = false) ~source
+let html_generate_source ~output_dir ?(ignore_output = false) ~source ?sidebar
     ?(search_uris = []) ?(as_json = false) ~input_file:file () =
   let open Cmd in
   let file = v "--impl" % p file in
+  let sidebar =
+    match sidebar with None -> empty | Some idx -> v "--sidebar" % p idx
+  in
   let search_uris =
     List.fold_left
       (fun acc filename -> acc % "--search-uri" % p filename)
       empty search_uris
   in
   let cmd =
-    !odoc % "html-generate-source" %% file % p source %% search_uris % "-o"
-    % output_dir
+    !odoc % "html-generate-source" %% file %% sidebar % p source %% search_uris
+    % "-o" % output_dir
   in
   let cmd = if as_json then cmd % "--as-json" else cmd in
 

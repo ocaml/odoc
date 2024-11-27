@@ -340,7 +340,14 @@ nav.odoc-nav:has(+ .odoc-search:focus-within) {
 }
 
 body.odoc-src {
-  margin-right: calc(10vw + 20ex);
+  display: grid;
+  grid-template-columns: min-content 1fr;
+  grid-template-areas:
+    "search-bar nav      "
+    "toc-global preamble"
+    "toc-global content ";
+  column-gap: 4ex;
+  grid-template-rows: auto auto 1fr;
 }
 
 .odoc-content {
@@ -1362,6 +1369,7 @@ body.odoc:has( .odoc-search) .odoc-toc {
 
 .source_container {
   display: flex;
+  grid-area: content;
 }
 
 .source_line_column {
