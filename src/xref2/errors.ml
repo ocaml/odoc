@@ -121,7 +121,8 @@ module Tools_error = struct
       [ `Not_found | `Is_directory | `Wrong_kind of path_kind list * path_kind ]
       * Reference.tag_hierarchy
       * string list
-    | `Parent of parent_lookup_error ]
+    | `Parent of parent_lookup_error
+    | `Lookup_by_id of Identifier.t ]
 
   type any =
     [ simple_type_lookup_error
@@ -252,6 +253,8 @@ module Tools_error = struct
         )
     | `Path_error (err, tag, path) -> pp_path_error fmt err tag path
     | `Parent e -> pp fmt (e :> any)
+    | `Lookup_by_id id -> Format.fprintf fmt "Couldn't find identifier %s"
+        (String.concat "." (Identifier.fullname id))
 end
 
 type kind = [ `OpaqueModule | `Root of string ]
