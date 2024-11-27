@@ -55,6 +55,8 @@ val pp : t Fmt.t
 
 val lib_dir : Packages.t -> Packages.libty -> Fpath.t
 val doc_dir : Packages.t -> Fpath.t
+val src_lib_dir : Packages.t -> Packages.libty -> Fpath.t
+val src_dir : Packages.t -> Fpath.t
 
 type dirs = {
   odoc_dir : Fpath.t;

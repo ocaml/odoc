@@ -168,8 +168,7 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
         let kind =
           let src_name = Fpath.filename src_path in
           let src_id =
-            Fpath.(pkg.pkg_dir / "src" / lib.lib_name / src_name)
-            |> Odoc.Id.of_fpath
+            Fpath.(src_lib_dir pkg lib / src_name) |> Odoc.Id.of_fpath
           in
           `Impl { src_id; src_path }
         in
@@ -270,7 +269,15 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
         let index = index_of pkg in
         [ Landing_pages.package ~dirs ~pkg ~index ]
     in
-    List.concat ((pkg_index :: lib_units) @ mld_units @ asset_units @ md_units)
+    let src_index :> t list =
+      if List.length pkg.libraries > 0 then
+        let index = index_of pkg in
+        [ Landing_pages.src ~dirs ~pkg ~index ]
+      else []
+    in
+    List.concat
+      ((pkg_index :: src_index :: lib_units)
+      @ mld_units @ asset_units @ md_units)
   in
 
   let pkg_list :> t = Landing_pages.package_list ~dirs pkgs in

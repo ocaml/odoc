@@ -120,6 +120,8 @@ and pp : all_kinds unit Fmt.t =
 
 let doc_dir pkg = pkg.Packages.pkg_dir
 let lib_dir pkg lib = Fpath.(pkg.Packages.pkg_dir / lib.Packages.lib_name)
+let src_dir pkg = Fpath.(pkg.Packages.pkg_dir / "src")
+let src_lib_dir pkg lib = Fpath.(src_dir pkg / lib.Packages.lib_name)
 
 type dirs = {
   odoc_dir : Fpath.t;
