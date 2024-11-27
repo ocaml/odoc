@@ -333,7 +333,8 @@ let reference :=
       Writer.with_warning node warning
     }
 
-let link := | link_body = Simple_link; RIGHT_BRACE; 
+let link := 
+  | link_body = Simple_link; RIGHT_BRACE; 
     { 
       let node = `Link (link_body, []) in
       let url = String.trim link_body in
@@ -405,9 +406,6 @@ let list_light :=
   | children = separated_nonempty_list(newline, list_light_item_unordered); 
     { let* children = Writer.sequence children in return @@ `List (`Unordered, `Light, [ children ]) }
 
-(* TODO: Refactor `List_item` into two tokens - Li and Dash - so that we can
-   handle the case where '{li' is *not* followed by whitespace in our Menhir
-   rule as opposed to it's semantic action *)
 let item_heavy ==
     | LI; whitespace; items = sequence(locatedM(nestable_block_element)); RIGHT_BRACE; whitespace?; 
       {
@@ -491,8 +489,11 @@ let list_element :=
 
 let cell_heavy := cell_kind = Table_cell; whitespace?; children = sequence(locatedM(nestable_block_element)); whitespace?; RIGHT_BRACE;
   { Writer.map (fun c -> (c, cell_kind)) children }
-let row_heavy == TABLE_ROW; whitespace?; ~ = sequence_nonempty(cell_heavy); RIGHT_BRACE; <>
-let table_heavy == TABLE_HEAVY; whitespace?; grid = sequence_nonempty(row_heavy); RIGHT_BRACE; 
+
+let row_heavy := 
+  | TABLE_ROW; whitespace?; ~ = sequence_nonempty(cell_heavy); RIGHT_BRACE; <>
+
+let table_heavy := TABLE_HEAVY; whitespace?; grid = sequence_nonempty(row_heavy); RIGHT_BRACE; 
   { Writer.map (fun g -> `Table ((g, None), `Heavy)) grid }
 
 let cell_light := ~ = sequence_nonempty(locatedM(inline_element)); <>

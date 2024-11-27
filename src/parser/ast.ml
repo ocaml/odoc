@@ -75,24 +75,6 @@ and nestable_block_element =
 
 and table = nestable_block_element abstract_table * [ `Light | `Heavy ]
 
-let empty_code_block =
-  {
-    meta = None;
-    delimiter = None;
-    content =
-      Loc.
-        {
-          value = "";
-          location =
-            {
-              file = "";
-              start = { line = 0; column = 0 };
-              end_ = { line = 0; column = 0 };
-            };
-        };
-    output = None;
-  }
-
 type internal_tag =
   [ `Canonical of string with_location | `Inline | `Open | `Closed | `Hidden ]
 (** Internal tags are used to exercise fine control over the output of odoc. They
