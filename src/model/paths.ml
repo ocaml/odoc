@@ -50,7 +50,7 @@ module Identifier = struct
     | `Method (_, name) -> MethodName.to_string name
     | `InstanceVariable (_, name) -> InstanceVariableName.to_string name
     | `Label (_, name) -> LabelName.to_string name
-    | `SourcePage (dir, name) -> name_aux (dir :> t) ^ name
+    | `SourcePage (_, name) -> name
     | `SourceLocation (x, anchor) ->
         name_aux (x :> t) ^ "#" ^ DefName.to_string anchor
     | `SourceLocationMod x -> name_aux (x :> t)

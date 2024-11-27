@@ -15,6 +15,11 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
     let id = page.name in
     Entry.entry ~kind ~doc ~id
   in
+  let entry_of_impl id =
+    let kind = Entry.Impl in
+    let doc = [] in
+    Entry.entry ~kind ~doc ~id
+  in
   let children_order, index =
     match In_progress.index dir with
     | Some (_, page) ->
@@ -72,7 +77,12 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
         In_progress.modules dir
         |> List.map (fun (id, payload) -> ((id :> Id.t), payload))
       in
-      leafs @ dirs @ modules
+      let implementations =
+        In_progress.implementations dir
+        |> List.map (fun (id, _impl) ->
+               ((id :> Id.t), Tree.leaf @@ entry_of_impl id))
+      in
+      leafs @ dirs @ modules @ implementations
     in
     match children_order with
     | None -> ([], contents)

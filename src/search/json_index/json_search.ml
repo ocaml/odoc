@@ -162,6 +162,7 @@ let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
             ("parent_type", `String (Text.of_type parent_type));
           ]
     | Page _ -> return "Page" []
+    | Impl -> return "Impl" []
     | Dir -> return "Dir" []
   in
   let occurrences =
