@@ -5,6 +5,7 @@
   $ odoc compile --output-dir _odoc/ --parent-id pkg file.mld
   $ odoc compile --output-dir _odoc/ --parent-id pkg index.mld
   $ odoc compile --output-dir _odoc/ --parent-id pkg/libname unit.cmt
+  $ odoc compile-impl --output-dir _odoc/ --parent-id pkg/src/libname unit.cmt
 
   $ odoc link -P pkg:_odoc/pkg/ -L libname:_odoc/pkg/libname _odoc/pkg/page-file.odoc
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/dir1/page-my_page.odoc
