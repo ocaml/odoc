@@ -36,7 +36,8 @@ let compile_deps f =
   | [ (_, digest) ], deps -> Ok { digest; deps }
   | _ -> Error (`Msg "odd")
 
-let compile ~output_dir ~input_file:file ~includes ~parent_id =
+let compile ~output_dir ~input_file:file ~includes ~suppress_warnings ~parent_id
+    =
   let open Cmd in
   let includes =
     Fpath.Set.fold
@@ -52,6 +53,7 @@ let compile ~output_dir ~input_file:file ~includes ~parent_id =
     %% includes % "--enable-missing-root-warning"
   in
   let cmd = cmd % "--parent-id" % Id.to_string parent_id in
+  let cmd = if suppress_warnings then cmd % "--suppress-warnings" else cmd in
   let desc = Printf.sprintf "Compiling %s" (Fpath.to_string file) in
   ignore
   @@ Cmd_outputs.submit

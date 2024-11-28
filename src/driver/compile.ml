@@ -143,6 +143,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
                  in
                  Odoc.compile ~output_dir:unit.output_dir
                    ~input_file:unit.input_file ~includes
+                   ~suppress_warnings:(not unit.enable_warnings)
                    ~parent_id:unit.parent_id;
                  Atomic.incr Stats.stats.compiled_units;
 
@@ -191,7 +192,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
     | `Mld ->
         let includes = Fpath.Set.empty in
         Odoc.compile ~output_dir:unit.output_dir ~input_file:unit.input_file
-          ~includes ~parent_id:unit.parent_id;
+          ~includes ~suppress_warnings:false ~parent_id:unit.parent_id;
         Atomic.incr Stats.stats.compiled_mlds;
         Ok [ unit ]
     | `Md ->
