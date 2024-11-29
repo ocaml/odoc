@@ -18,13 +18,14 @@ let make_index ~dirs ?pkg ~rel_dir ?index ~content () =
   let odoc_file = Fpath.(odoc_dir // rel_dir / "page-index.odoc") in
   let odocl_file = Fpath.(odocl_dir // rel_dir / "page-index.odocl") in
   let parent_id = rel_dir |> Odoc.Id.of_fpath in
+  let pkg_args = Pkg_args.v ~pages ~libs ~odoc_dir ~odocl_dir in
   Util.with_out_to input_file (fun oc ->
       fpf (Format.formatter_of_out_channel oc) "%t@?" content)
   |> Result.get_ok;
   {
     output_dir = dirs.odoc_dir;
     pkgname = None;
-    pkg_args = { Pkg_args.pages; libs; odoc_dir; odocl_dir };
+    pkg_args;
     parent_id;
     input_file;
     odoc_file;

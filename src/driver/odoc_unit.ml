@@ -2,11 +2,15 @@ module Pkg_args = struct
   type t = {
     odoc_dir : Fpath.t;
     odocl_dir : Fpath.t;
-    pages : (string * Fpath.t) list;
-    libs : (string * Fpath.t) list;
+    pages : Fpath.t Util.StringMap.t;
+    libs : Fpath.t Util.StringMap.t;
   }
 
-  let map_rel dir = List.map (fun (a, b) -> (a, Fpath.(dir // b)))
+  let v ~odoc_dir ~odocl_dir ~pages ~libs =
+    let pages, libs = Util.StringMap.(of_list pages, of_list libs) in
+    { odoc_dir; odocl_dir; pages; libs }
+
+  let map_rel dir m = Util.StringMap.fold (fun a b acc -> (a, Fpath.(dir // b)) :: acc) m []
 
   let compiled_pages v = map_rel v.odoc_dir v.pages
   let compiled_libs v = map_rel v.odoc_dir v.libs
@@ -21,8 +25,8 @@ module Pkg_args = struct
     {
       odoc_dir = v1.odoc_dir;
       odocl_dir = v1.odocl_dir;
-      pages = v1.pages @ v2.pages;
-      libs = v1.libs @ v2.libs;
+      pages = Util.StringMap.union (fun _ x _ -> Some x) v1.pages v2.pages;
+      libs = Util.StringMap.union (fun _ x _ -> Some x) v1.libs v2.libs;
     }
 
   let pp fmt x =
@@ -33,7 +37,7 @@ module Pkg_args = struct
     in
     Format.fprintf fmt
       "@[<hov>odoc_dir: %a@;odocl_dir: %a@;pages: [%a]@;libs: [%a]@]" Fpath.pp
-      x.odoc_dir Fpath.pp x.odocl_dir sfp_pp x.pages sfp_pp x.libs
+      x.odoc_dir Fpath.pp x.odocl_dir sfp_pp (Util.StringMap.bindings x.pages) sfp_pp (Util.StringMap.bindings x.libs)
 end
 
 type sidebar = { output_file : Fpath.t; json : bool }
