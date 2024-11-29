@@ -16,7 +16,7 @@ let rec filter_map acc f = function
 
 let filter_map f x = filter_map [] f x
 
-(** @raise [Failure] if the list is empty. *)
+(** @raise Failure if the list is empty. *)
 let rec last = function
   | [] -> failwith "Odoc_utils.List.last"
   | [ x ] -> x
