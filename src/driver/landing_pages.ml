@@ -21,10 +21,11 @@ let make_index ~dirs ?pkg ~rel_dir ?index ~content () =
   Util.with_out_to input_file (fun oc ->
       fpf (Format.formatter_of_out_channel oc) "%t@?" content)
   |> Result.get_ok;
+  let pkg_args = Pkg_args.v ~pages ~libs ~odoc_dir ~odocl_dir in
   {
     output_dir = dirs.odoc_dir;
     pkgname = None;
-    pkg_args = { Pkg_args.pages; libs; odoc_dir; odocl_dir };
+    pkg_args;
     parent_id;
     input_file;
     odoc_file;

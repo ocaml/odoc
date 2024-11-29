@@ -47,7 +47,7 @@ let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
   let base_args pkg lib_deps : Pkg_args.t =
     let own_page = dash_p pkg.Packages.name (doc_dir pkg) in
     let own_libs = List.concat_map dash_l (Util.StringSet.to_list lib_deps) in
-    { pages = [ own_page ]; libs = own_libs; odoc_dir; odocl_dir }
+    Pkg_args.v ~pages:[ own_page ] ~libs:own_libs ~odoc_dir ~odocl_dir
   in
   let args_of_config config : Pkg_args.t =
     let { Global_config.deps = { packages; libraries } } = config in
@@ -62,7 +62,7 @@ let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
         packages
     in
     let libs_rel = List.concat_map dash_l libraries in
-    { pages = pages_rel; libs = libs_rel; odoc_dir; odocl_dir }
+    Pkg_args.v ~pages:pages_rel ~libs:libs_rel ~odoc_dir ~odocl_dir
   in
   let args_of =
     let cache = Hashtbl.create 10 in
