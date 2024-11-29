@@ -22,6 +22,7 @@
   $ odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o html _odoc/pkg/dir1/page-index.odocl
   $ odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o html _odoc/pkg/page-index.odocl
   $ odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o html _odoc/pkg/libname/unit.odocl
+  $ odoc html-generate-source --indent --impl _odoc/pkg/libname/impl-unit.odocl --sidebar sidebar.odoc-sidebar -o html unit.ml
 
 A json version of a sidebar can be obtained using the sidebar-generate command:
 

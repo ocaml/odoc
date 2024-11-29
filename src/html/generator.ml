@@ -497,8 +497,7 @@ end
 
 module Breadcrumbs = struct
   open Types
-
-  let gen_breadcrumbs ~config ~url =
+  let gen_breadcrumbs_no_sidebar ~config ~url =
     let rec get_parent_paths x =
       match x with
       | [] -> []
@@ -509,13 +508,50 @@ module Breadcrumbs = struct
     in
     let to_breadcrumb path =
       let href =
-        Link.href ~config ~resolve:(Current url)
-          (Odoc_document.Url.from_path path)
+        Some
+          (Link.href ~config ~resolve:(Current url)
+             (Odoc_document.Url.from_path path))
       in
-      { href; name = path.name; kind = path.kind }
+      { href; name = [ Html.txt path.name ]; kind = path.kind }
     in
     get_parent_paths (List.rev (Odoc_document.Url.Path.to_list url))
     |> List.rev |> List.map to_breadcrumb
+
+  let gen_breadcrumbs ~config ~sidebar ~url:current_url =
+    match sidebar with
+    | None -> gen_breadcrumbs_no_sidebar ~config ~url:current_url
+    | Some sidebar ->
+        let rec extract acc (tree : Odoc_document.Sidebar.t) =
+          match
+            List.find_map
+              (function
+                | ({
+                     node =
+                       {
+                         url = { page; anchor = ""; _ } as url;
+                         valid_link;
+                         content;
+                         _;
+                       };
+                     children;
+                   } :
+                    Odoc_document.Sidebar.entry Odoc_utils.Tree.t)
+                  when Url.Path.is_prefix page current_url ->
+                    let href =
+                      if valid_link then
+                        Some
+                          (Link.href ~config ~resolve:(Current current_url) url)
+                      else None
+                    in
+                    let name = inline_nolink content in
+                    Some ({ href; name; kind = page.kind }, children)
+                | _ -> None)
+              tree
+          with
+          | None -> List.rev acc
+          | Some (bc, children) -> extract (bc :: acc) children
+        in
+        extract [] sidebar
 end
 
 module Page = struct
@@ -538,6 +574,7 @@ module Page = struct
     in
     let subpages = subpages ~config ~sidebar @@ Doctree.Subpages.compute p in
     let resolve = Link.Current url in
+    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~sidebar ~url in
     let sidebar =
       match sidebar with
       | None -> None
@@ -548,7 +585,6 @@ module Page = struct
     let i = Doctree.Shift.compute ~on_sub i in
     let uses_katex = Doctree.Math.has_math_elements p in
     let toc = Toc.gen_toc ~config ~resolve ~path:url i in
-    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
     let content = (items ~config ~resolve i :> any Html.elt list) in
     if Config.as_json config then
       let source_anchor =
@@ -570,6 +606,7 @@ module Page = struct
   and source_page ~config ~sidebar sp =
     let { Source_page.url; contents } = sp in
     let resolve = Link.Current sp.url in
+    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~sidebar ~url in
     let sidebar =
       match sidebar with
       | None -> None
@@ -579,7 +616,6 @@ module Page = struct
     in
     let title = url.Url.Path.name
     and doc = Html_source.html_of_doc ~config ~resolve contents in
-    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
     let header =
       items ~config ~resolve (Doctree.PageTitle.render_src_title sp)
     in

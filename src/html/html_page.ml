@@ -64,42 +64,52 @@ let sidebars ~global_toc ~local_toc =
 
 let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
   let make_navigation ~up_url rest =
-    [
-      Html.nav
-        ~a:[ Html.a_class [ "odoc-nav" ] ]
-        ([ Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ]; Html.txt " – " ]
-        @ rest);
-    ]
+    let up =
+      match up_url with
+      | None -> []
+      | Some up_url ->
+          [ Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ]; Html.txt " – " ]
+    in
+    [ Html.nav ~a:[ Html.a_class [ "odoc-nav" ] ] (up @ rest) ]
   in
   match List.rev breadcrumbs with
-  | [] -> [] (* Can't happen - there's always the current page's breadcrumb. *)
-  | [ _ ] -> [] (* No parents *)
-  | [ { name = "index"; _ }; x ] ->
-      (* Special case leaf pages called 'index' with one parent. This is for files called
-          index.mld that would otherwise clash with their parent. In particular,
-          dune and odig both cause this situation right now. *)
-      let up_url = "../index.html" in
-      let parent_name = x.name in
-      make_navigation ~up_url [ Html.txt parent_name ]
-  | current :: up :: bs ->
+  | [] ->
+      [ Html.nav ~a:[ Html.a_class [ "odoc-nav" ] ] [ Html.txt "yooooooo" ] ]
+      (* Can't happen - there's always the current page's breadcrumb. *)
+  | current :: rest ->
       let space = Html.txt " " in
-      let sep = [ space; Html.entity "#x00BB"; space ] in
+      let sep :> Html_types.nav_content_fun Html.elt list =
+        [ space; Html.entity "#x00BB"; space ]
+      in
       let html =
         (* Create breadcrumbs *)
-        Odoc_utils.List.concat_map ?sep:(Some sep)
+        Odoc_utils.List.concat_map ~sep
           ~f:(fun (breadcrumb : Types.breadcrumb) ->
-            [
-              [
-                Html.a
-                  ~a:[ Html.a_href breadcrumb.href ]
-                  [ Html.txt breadcrumb.name ];
-              ];
-            ])
-          (up :: bs)
+            match breadcrumb.href with
+            | Some href ->
+                [
+                  [
+                    Html.a
+                      ~a:[ Html.a_href href ]
+                      (breadcrumb.name
+                        :> Html_types.flow5_without_interactive Html.elt list);
+                  ];
+                ]
+            | None ->
+                [
+                  (breadcrumb.name :> Html_types.nav_content_fun Html.elt list);
+                ])
+          rest
         |> List.flatten
       in
-      make_navigation ~up_url:up.href
-        (List.rev html @ sep @ [ Html.txt current.name ])
+      let current_name :> Html_types.nav_content_fun Html.elt list =
+        current.name
+      in
+      let up_url = List.find_map (fun (b : Types.breadcrumb) -> b.href) rest in
+      let rest = List.rev html @ sep @ current_name in
+      make_navigation ~up_url
+        (rest
+          :> [< Html_types.nav_content_fun > `A `PCDATA `Wbr ] Html.elt list)
 
 let file_uri ~config ~url (base : Types.uri) file =
   match base with

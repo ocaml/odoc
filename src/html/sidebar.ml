@@ -1,15 +1,16 @@
 open Odoc_utils
 
-let toc_to_json ({ url; content = inline; _ } : Odoc_document.Sidebar.entry) :
+let toc_to_json
+    ({ url; valid_link; content = inline; _ } : Odoc_document.Sidebar.entry) :
     Json.json =
   let config =
     Config.v ~semantic_uris:true ~indent:true ~flat:false ~open_details:false
       ~as_json:true ~remap:[] ()
   in
   let url, kind =
-    match url with
-    | None -> (`Null, `Null)
-    | Some url ->
+    match valid_link with
+    | false -> (`Null, `Null)
+    | true ->
         let href = Link.href ~config ~resolve:(Link.Base "") url in
         let kind =
           Format.asprintf "%a" Odoc_document.Url.Anchor.pp_kind url.kind

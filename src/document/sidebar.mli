@@ -2,12 +2,13 @@ open Odoc_utils
 open Types
 
 type entry = {
-  url : Url.t option;
+  url : Url.t;
+  valid_link : bool;
   content : Inline.t;
   toc_status : [ `Open ] option;
 }
 
-type t = entry Tree.t list
+type t = entry Tree.forest
 
 val of_index : Odoc_index.t -> t
 

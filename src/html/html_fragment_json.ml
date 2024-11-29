@@ -6,12 +6,17 @@ open Odoc_utils
 module Html = Tyxml.Html
 module Url = Odoc_document.Url
 
-let json_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) : Json.json =
+let json_of_html config h =
+  let htmlpp = Html.pp_elt ~indent:(Config.indent config) () in
+  String.concat "" (List.map (Format.asprintf "%a" htmlpp) h)
+
+let json_of_breadcrumbs config (breadcrumbs : Types.breadcrumb list) : Json.json
+    =
   let breadcrumb (b : Types.breadcrumb) =
     `Object
       [
-        ("name", `String b.name);
-        ("href", `String b.href);
+        ("name", `String (json_of_html config b.name));
+        ("href", match b.href with None -> `Null | Some href -> `String href);
         ("kind", `String (Url.Path.string_of_kind b.kind));
       ]
   in
@@ -29,10 +34,6 @@ let json_of_toc (toc : Types.toc list) : Json.json =
   in
   let toc_json_list = toc |> List.map section in
   `Array toc_json_list
-
-let json_of_html config h =
-  let htmlpp = Html.pp_elt ~indent:(Config.indent config) () in
-  String.concat "" (List.map (Format.asprintf "%a" htmlpp) h)
 
 let json_of_sidebar config sidebar =
   match sidebar with
@@ -55,7 +56,7 @@ let make ~config ~preamble ~url ~breadcrumbs ~sidebar ~toc ~uses_katex
            [
              ("type", `String "documentation");
              ("uses_katex", `Bool uses_katex);
-             ("breadcrumbs", json_of_breadcrumbs breadcrumbs);
+             ("breadcrumbs", json_of_breadcrumbs config breadcrumbs);
              ("toc", json_of_toc toc);
              ("global_toc", global_toc);
              ("source_anchor", source_anchor);
@@ -77,7 +78,7 @@ let make_src ~config ~url ~breadcrumbs ~sidebar content =
          (`Object
            [
              ("type", `String "source");
-             ("breadcrumbs", json_of_breadcrumbs breadcrumbs);
+             ("breadcrumbs", json_of_breadcrumbs config breadcrumbs);
              ("global_toc", global_toc);
              ( "content",
                `String

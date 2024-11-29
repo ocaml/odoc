@@ -25,6 +25,7 @@ Root is used for the missing index in the unnamed root directory. TODO
     <script>hljs.initHighlightingOnLoad();</script>
    </head>
    <body class="odoc">
+    <nav class="odoc-nav"><a href="../index.html">Up</a> – foo</nav>
     <header class="odoc-preamble">
      <h1 id="foo"><a href="#foo" class="anchor"></a>Foo</h1>
     </header>
