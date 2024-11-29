@@ -206,6 +206,17 @@ module Path = struct
       | xs -> (List.rev dirs, xs)
     in
     inner [] l
+
+  let rec is_prefix (url1 : t) (url2 : t) =
+    match url1 with
+    | { kind = `LeafPage; parent = None; name = "index" } -> true
+    | { kind = `LeafPage; parent = Some p; name = "index" } -> is_prefix p url2
+    | _ -> (
+        if url1 = url2 then true
+        else
+          match url2 with
+          | { parent = Some parent; _ } -> is_prefix url1 parent
+          | { parent = None; _ } -> false)
 end
 
 module Anchor = struct

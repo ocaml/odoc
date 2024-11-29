@@ -3,7 +3,8 @@ open Types
 module Id = Odoc_model.Paths.Identifier
 
 type entry = {
-  url : Url.t option;
+  url : Url.t;
+  valid_link : bool;
   content : Inline.t;
   toc_status : [ `Open ] option;
 }
@@ -19,44 +20,30 @@ module Toc : sig
 end = struct
   type t = entry Tree.t
 
-  let rec is_prefix (url1 : Url.Path.t) (url2 : Url.Path.t) =
-    match url1 with
-    | { kind = `LeafPage; parent = None; name = "index" } -> true
-    | { kind = `LeafPage; parent = Some p; name = "index" } -> is_prefix p url2
-    | _ -> (
-        if url1 = url2 then true
-        else
-          match url2 with
-          | { parent = Some parent; _ } -> is_prefix url1 parent
-          | { parent = None; _ } -> false)
-
   let to_block ~prune:_ (current_url : Url.Path.t) (tree : t) =
     let block_tree_of_t (current_url : Url.Path.t) (tree : t) =
       (* When transforming the tree, we use a filter_map to remove the nodes that
          are irrelevant for the current url. However, we always want to keep the
          root. So we apply the filter_map starting from the first children. *)
-      let convert_entry { url; content; _ } =
+      let convert_entry { url; valid_link; content; _ } =
         let link =
-          match url with
-          | Some url ->
-              let target = Target.Internal (Target.Resolved url) in
-              let attr =
-                if url.page = current_url && Astring.String.equal url.anchor ""
-                then [ "current_unit" ]
-                else []
-              in
-              [
-                inline ~attr @@ Inline.Link { target; content; tooltip = None };
-              ]
-          | None -> content
+          if valid_link then
+            let target = Target.Internal (Target.Resolved url) in
+            let attr =
+              if url.page = current_url && Astring.String.equal url.anchor ""
+              then [ "current_unit" ]
+              else []
+            in
+            [ inline ~attr @@ Inline.Link { target; content; tooltip = None } ]
+          else content
         in
         Types.block @@ Inline link
       in
       let rec convert n =
         let children =
           match n.Tree.node with
-          | { url = Some url; toc_status = None; _ }
-            when not (is_prefix url.Url.Anchor.page current_url) ->
+          | { url; valid_link = true; toc_status = None; _ }
+            when not (Url.Path.is_prefix url.Url.Anchor.page current_url) ->
               []
           | _ -> List.map convert n.children
         in
@@ -81,8 +68,10 @@ end = struct
     let map_entry entry =
       match entry.Entry.kind with
       | Dir ->
+          let url = Url.from_identifier ~stop_before:false (entry.id :> Id.t) in
           {
-            url = None;
+            url;
+            valid_link = false;
             content = [ inline @@ Text (Id.name entry.id) ];
             toc_status = None;
           }
@@ -93,7 +82,7 @@ end = struct
                 not has_expansion
             | _ -> false
           in
-          let path = Url.from_identifier ~stop_before (entry.id :> Id.t) in
+          let url = Url.from_identifier ~stop_before (entry.id :> Id.t) in
           let toc_status =
             match entry.kind with
             | Page { toc_status; _ } -> toc_status
@@ -124,7 +113,7 @@ end = struct
                 let name = Odoc_model.Paths.Identifier.name entry.id in
                 [ inline (Text name) ]
           in
-          { url = Some path; content; toc_status }
+          { url; content; toc_status; valid_link = true }
     in
     let f x =
       match x.Entry.kind with
