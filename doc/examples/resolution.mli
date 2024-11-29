@@ -85,8 +85,6 @@ module Hidden : sig
   (**/**)
 
   type v = T of t
-
-  type w = U of u
 end
 
 module References : sig

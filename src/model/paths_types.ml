@@ -551,9 +551,9 @@ module rec Reference : sig
   type tag_only_child_module = [ `TChildModule ]
 
   type tag_hierarchy =
-    [ `TRelativePath  (** {!identifier/} *)
-    | `TAbsolutePath  (** {!/identifier} *)
-    | `TCurrentPackage  (** {!//identifier} *) ]
+    [ `TRelativePath  (** [{!identifier/}] *)
+    | `TAbsolutePath  (** [{!/identifier}] *)
+    | `TCurrentPackage  (** [{!//identifier}] *) ]
   (** @canonical Odoc_model.Paths.Reference.tag_hierarchy *)
 
   type tag_any =

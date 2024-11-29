@@ -9,7 +9,7 @@ val url : Entry.t -> string
 
 (** The below is intended for search engine that do not use the Json output but
     Odoc as a library. Most search engine will use their own representation
-    instead of {!Entry.t}, and may not want to store the whole HTML in their
+    instead of {!Odoc_index.Entry.t}, and may not want to store the whole HTML in their
     database. The following functions help give correct values to store in a
     search database. *)
 
