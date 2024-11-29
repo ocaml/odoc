@@ -59,5 +59,3 @@ The main other pages of this site:
 - {!page-dune} shows how to create docs using Dune.
 - {!page-parent_child_spec} delineates parent/child specifications.
 - {!page-interface} describes [odoc]'s public-facing interface and their support guarantees.
-- {!page-ocamlary} demonstrates the rendering of most of the OCaml constructs.
-- {!page-api_reference} lists [odoc]'s API reference library.
