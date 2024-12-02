@@ -145,60 +145,71 @@
 %}
 
 %token SPACE NEWLINE
-%token RIGHT_BRACE
-%token RIGHT_CODE_DELIMITER
+%token RIGHT_BRACE "{"
+%token RIGHT_CODE_DELIMITER "{["
 
 %token <string> Blank_line
 %token <string> Single_newline
-%token <string> Space
+%token <string> Space " "
 
-%token <string> Word
+%token <string> Word (* Any space-delmited text *)
 
-%token MINUS PLUS BAR
+%token MINUS "-" 
+%token PLUS "+"
 
-%token <Ast.style> Style
-%token <Ast.alignment> Paragraph_style
+%token <Ast.style> Style "{i" (* or '{b' etc *)
 
-%token <string Loc.with_location list> Modules
+(* or '{C' or '{R', but this syntax has been deprecated and is only kept around so legacy codebases don't break :p *)
+%token <Ast.alignment> Paragraph_style "{L" 
 
-%token <string> Math_span 
-%token <string> Math_block
+%token <string Loc.with_location list> Modules "{!modules:"
 
-%token <string option * string> Raw_markup
+%token <string> Math_span "{m"
+%token <string> Math_block "{math"
 
-%token <Ast.code_block> Code_block
-%token <string> Code_span 
+%token <string option * string> Raw_markup "{%%}"
 
-%token <Ast.list_kind> List
-%token LI DASH
+%token <Ast.code_block> Code_block "{[]}"
+%token <string> Code_span "[]" 
 
-%token TABLE_LIGHT
-%token TABLE_HEAVY 
-%token TABLE_ROW 
-%token <Ast.table_cell_kind> Table_cell
+%token <Ast.list_kind> List "{ol" (* or '{ul' *)
+%token LI "{li" 
+%token DASH "{-"
 
-%token <int * string option> Section_heading
+%token TABLE_LIGHT "{t"
+%token TABLE_HEAVY "{table"
+%token TABLE_ROW "{tr"
+%token BAR "|"
+
+%token <Ast.table_cell_kind> Table_cell "{td" (* or '{th' for header *)
+
+(* Where N is an integer *)
+%token <int * string option> Section_heading "{N:"
 
 (* Tags *)
-%token <string> Author
-%token DEPRECATED
-%token <string> Param
-%token <string> Raise
-%token RETURN
-%token <[ `Url | `File | `Document ] * string> See
-%token <string> Since
-%token <string> Before
-%token <string> Version
-%token <string> Canonical
-%token INLINE OPEN CLOSED HIDDEN
+%token <string> Author "@author"
+%token DEPRECATED "@deprecated"
+%token <string> Param "@param"
+%token <string> Raise "@raise(s)"
+%token RETURN "@return"
+%token <[ `Url | `File | `Document ] * string> See "@see"
+%token <string> Since "@since"
+%token <string> Before "@before"
+%token <string> Version "@version"
+%token <string> Canonical "@canonical"
+%token INLINE "@inline" 
+%token OPEN "@open" 
+%token CLOSED "@closed"
+%token HIDDEN "@hidden"
 
-%token <string> Simple_ref 
-%token <string> Ref_with_replacement 
-%token <string> Simple_link 
-%token <string> Link_with_replacement
-%token <Tokens.media * Tokens.media_target> Media 
-%token <Tokens.media * Tokens.media_target * string> Media_with_replacement
-%token <string> Verbatim
+%token <string> Simple_ref "{!" 
+%token <string> Ref_with_replacement "{{!" 
+%token <string> Simple_link "{:"
+%token <string> Link_with_replacement "{{:"
+%token <Tokens.media * Tokens.media_target> Media "{(format)!" 
+(* where 'format' is audio, video, image *)
+%token <Tokens.media * Tokens.media_target * string> Media_with_replacement "{(format):"
+%token <string> Verbatim "{v"
 
 %token END
 %start <Ast.t Writer.t> main 

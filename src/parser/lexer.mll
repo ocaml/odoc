@@ -529,8 +529,7 @@ and token input = parse
     { emit lexbuf input (Table_cell `Data) }
 
   | '{' (['0'-'9']+ as level) ':' (([^ '}'] # space_char)* as label)
-      { emit lexbuf
-        input (Section_heading (heading_level lexbuf input level, Some label)) }
+      { emit lexbuf input (Section_heading (heading_level lexbuf input level, Some label)) }
 
   | '{' (['0'-'9']+ as level)
     { emit lexbuf input (Section_heading (heading_level lexbuf input level, None)) }
@@ -645,12 +644,11 @@ and code_span buffer nesting_level start_offset input = parse
       code_span buffer nesting_level start_offset input lexbuf }
 
   | newline horizontal_space* (newline horizontal_space*)+
-    { warning
-        lexbuf
-        input
-        (Parse_error.not_allowed
+    { let w = (Parse_error.not_allowed
           ~what:(Tokens.describe (Blank_line "\n\n"))
-          ~in_what:(Tokens.describe (Code_span "")));
+          ~in_what:(Tokens.describe (Code_span ""))) 
+      in
+      warning lexbuf input w;
       Buffer.add_char buffer ' ';
       code_span buffer nesting_level start_offset input lexbuf }
   | newline horizontal_space*
