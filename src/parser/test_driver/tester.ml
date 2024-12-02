@@ -28,6 +28,9 @@ let code_cases =
 
 let error_recovery =
   [
+    ("Empty @author", "@author");
+    ("Empty @version", "@version");
+    ("Code block w/ blank line", "[\n\n]");
     ("Empty style", "{i}");
     ("Empty ref", "{{!www.google.com}}");
     ("Empty link", "{{:www.google.com}}");
@@ -35,9 +38,7 @@ let error_recovery =
     ("Empty list item", "{ol {li} }");
     ("'{li' not followed by whitespace", "{ol {lifoo bar baz} }");
     ("End not allowed in table", "{t ");
-    ("Empty @author", "@author");
-    ("Empty @version", "@version");
-    ("Code block w/ blank line", "[\n\n]");
+    ("Nothing", "{i");
   ]
 
 let see = [ ("See", "@see <foo> bar baz quux\n") ]
@@ -98,6 +99,7 @@ type failure = {
   label : string;
   offending_token : Parser.token;
   area : string;
+  tokens : Parser.token list;
 }
 
 let get_area Loc.{ start; end_; _ } input =
@@ -119,19 +121,34 @@ module TokBuf = struct
       let (Loc.{ value; _ } as loc) = Parser.Lexer.token input lexbuf in
       if Parser.is_EOI value then List.rev @@ (loc :: acc) else fill (loc :: acc)
     in
-
     let tokens = fill [] in
     { tokens = Stream.of_list tokens; idx = 0; cache = [] }
 
   let next self =
-    let (Loc.{ value = token; _ } as loc) = Stream.next self.tokens in
+    print_endline "Attempting to get next token";
+    let (Loc.{ value = token; _ } as loc) =
+      try Stream.next self.tokens with _ -> List.hd self.cache
+    in
+    print_endline @@ "Got token: " ^ Parser.string_of_token token;
     self.idx <- succ self.idx;
     cache loc self;
     token
 
   let failure self label input exn =
     let Loc.{ value; location } = List.hd self.cache in
-    { exn; label; offending_token = value; area = get_area location input }
+    let tokens =
+      let rec go acc =
+        try go @@ (Stream.next self.tokens :: acc) with _ -> acc
+      in
+      List.map Loc.value @@ List.rev @@ go [] @ self.cache
+    in
+    {
+      exn;
+      label;
+      offending_token = value;
+      tokens;
+      area = get_area location input;
+    }
 end
 
 let run_test (label, case) =
@@ -171,15 +188,21 @@ let format_successes =
   in
   List.fold_left go ""
 
-let failure_string { exn; label; offending_token; area } =
-  Printf.sprintf {|%s failed with exn: %s
-failed on token:
+let failure_string { exn; label; offending_token; tokens; area } =
+  Printf.sprintf
+    {|>>> Case '%s' failed with exn: <<<
+%s
+offending token:
 '%s'
 input:
-"%s"|}
+"%s"
+tokens:%s|}
     label exn
     (Parser.string_of_token offending_token)
     area
+    (List.fold_left
+       (fun acc t -> Printf.sprintf "%s\n<%s>" acc (Parser.string_of_token t))
+       "" tokens)
 
 let format_failures =
   let go acc x = acc ^ "\n" ^ sep ^ "\n" ^ x in
@@ -202,10 +225,10 @@ let () =
   let sucesses = format_successes sucesses in
   let failures = format_failures @@ List.map failure_string failures in
   Printf.printf
-    {| ----SUCCESS---- 
+    {|<<<<----SUCCESS---->>>> 
 %s
 
-    ----FAILURE----
+<<<<----FAILURE---->>>>
     %s
     |}
     sucesses failures

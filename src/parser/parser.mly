@@ -373,6 +373,15 @@ let style :=
       in
       Writer.with_warning (`Styled (style, [])) warning
     }
+  | style = Style; END;
+    {
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        let in_what = Tokens.describe @@ Style style in
+        Parse_error.end_not_allowed ~in_what span 
+      in
+      Writer.with_warning (`Styled (style, [])) warning
+    }
 
 let math_span := m = Math_span; { return @@ `Math_span m }
 
@@ -592,7 +601,7 @@ let table_light :=
   (* If there's nothing inside, return an empty table *)
   | TABLE_LIGHT; whitespace?; RIGHT_BRACE; 
     { return @@ `Table (([[]], None), `Light) }
-  | TABLE_LIGHT; whitespace?; END; 
+  | TABLE_LIGHT; END; 
     {
       let in_what = Tokens.describe TABLE_LIGHT in
       let warning = fun ~filename -> 
