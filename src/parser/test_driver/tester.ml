@@ -1,6 +1,7 @@
 open! Odoc_parser_test
 
 module Loc = Odoc_parser.Loc
+module Parser = Odoc_parser.Tester
 
 (*
     NOTE (@FayCarsons): for anyone working on this parser - this is probably
@@ -35,7 +36,7 @@ let error_recovery =
     ("'{li' not followed by whitespace", "{ol {lifoo bar baz} }");
     ("End not allowed in table", "{t ");
     ("Empty @author", "@author");
-    ("Empty @version" , "@version")
+    ("Empty @version", "@version");
   ]
 
 let see = [ ("See", "@see <foo> bar baz quux\n") ]
@@ -91,29 +92,84 @@ let parser_output formatter (ast, warnings) =
   Sexplib0.Sexp.pp_hum formatter output;
   Format.pp_print_flush formatter ()
 
-let run_test (failed : ( string * string ) list) (label, case) =
-  let module Parser = Odoc_parser.Tester in
-  let unwrap_token lexbuf =
-    let open Parser in
-    let Loc.{ value; _ } = token lexbuf in
-    value
-  in
-  let lexbuf = Lexing.from_string case in
-  Lexing.set_filename lexbuf "TESTER";
-  try
-    let intermediate =
-      Odoc_parser.Tester.main (fun lexbuf -> unwrap_token lexbuf) lexbuf
+type failure = {
+  exn : string;
+  label : string;
+  offending_token : Parser.token;
+  area : string;
+}
+
+let get_area Loc.{ start; end_; _ } input =
+  String.split_on_char '\n' input
+  |> List.filteri (fun idx _ -> idx >= pred start.line && idx <= pred end_.line)
+  |> List.fold_left ( ^ ) ""
+
+module TokBuf = struct
+  type t = {
+    tokens : Parser.token Loc.with_location Stream.t;
+    mutable idx : int;
+    mutable cache : Parser.token Loc.with_location list;
+  }
+
+  let cache x self = self.cache <- x :: self.cache
+
+  let create lexbuf =
+    let rec fill acc =
+      let (Loc.{ value; _ } as loc) = Parser.token lexbuf in
+      if Parser.is_EOI value then List.rev @@ (loc :: acc) else fill (loc :: acc)
     in
-    let ast, warnings = Parser.run ~filename:"" intermediate in
-    Format.printf "%a\n" parser_output (ast, warnings);
-    print_newline ();
-    Printf.printf "Got %d warnings \n%!" (List.length warnings);
-    Printf.printf "Warnings:\n%s\n%!"
-      (List.fold_left
-         (fun acc warning -> acc ^ "\n" ^ Parser.pp_warning warning)
-         "" warnings);
-    failed
-  with _ -> ( case, label ) :: failed
+
+    let tokens = fill [] in
+    { tokens = Stream.of_list tokens; idx = 0; cache = [] }
+
+  let next self =
+    let (Loc.{ value = token; _ } as loc) = Stream.next self.tokens in
+    self.idx <- succ self.idx;
+    cache loc self;
+    token
+
+  let failure self label input exn =
+    let Loc.{ value; location } = List.hd self.cache in
+    { exn; label; offending_token = value; area = get_area location input }
+end
+
+let run_test (label, case) =
+  let open Either in
+  let lexbuf = Lexing.from_string case in
+  Lexing.set_filename lexbuf "Tester";
+  let tokens = TokBuf.create lexbuf in
+  try
+    let ast, warnings =
+      Parser.run ~filename:"Tester"
+      @@ Parser.main (fun _ -> TokBuf.next tokens) lexbuf
+    in
+    let output = Format.asprintf "%a" parser_output (ast, warnings) in
+    Left (label, output)
+  with e ->
+    let exns = Printexc.to_string e in
+    Right (TokBuf.failure tokens label case exns)
+
+let sep = String.init 80 @@ Fun.const '-'
+
+let format_successes =
+  let go acc (label, output) =
+    Printf.sprintf "%s%s:\n%s\n%s\n" acc label output sep
+  in
+  List.fold_left go ""
+
+let failure_string { exn; label; offending_token; area } =
+  Printf.sprintf {|%s failed with exn: %s
+failed on token:
+'%s'
+input:
+"%s"|}
+    label exn
+    (Parser.string_of_token offending_token)
+    area
+
+let format_failures =
+  let go acc x = acc ^ "\n" ^ sep ^ "\n" ^ x in
+  List.fold_left go ""
 
 let () =
   let cases =
@@ -128,8 +184,14 @@ let () =
           documentation_cases)
     else documentation_cases
   in
-  List.fold_left run_test [] cases
-  |> List.iter (fun (label, case) ->
-         Printf.printf
-           "Failure: %s\nInput:\n%s\n%!"
-           label case)
+  let sucesses, failures = List.partition_map run_test cases in
+  let sucesses = format_successes sucesses in
+  let failures = format_failures @@ List.map failure_string failures in
+  Printf.printf
+    {| ----SUCCESS---- 
+%s
+
+    ----FAILURE----
+    %s
+    |}
+    sucesses failures

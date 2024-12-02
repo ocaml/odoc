@@ -222,10 +222,18 @@ let separated_sequence_nonempty_inner(separator, X) :=
 
 let separated_sequence_nonempty(sep, rule) == xs = separated_sequence_nonempty_inner(sep, rule); { Writer.map List.rev xs }
 
-(* ENTRY-POINT *)
+let horizontal_whitespace := 
+  | SPACE; { `Space " " } 
+  | ~ = Space; <`Space>
 
-(* A comment can either contain block elements, block elements and then tags, or
-   just tags, but not tags and then block elements *)
+let newline := NEWLINE; { "\n" } | ~ = Single_newline; <> 
+
+let whitespace := 
+  | ~ = horizontal_whitespace; <>
+  | ~ = newline; <`Space>
+
+(* ENTRY *)
+
 let main :=  
   | nodes = sequence_nonempty(locatedM(toplevel)); whitespace?; END; { nodes }
   | whitespace?; END; { Writer.return @@ [] }
@@ -235,22 +243,21 @@ let toplevel :=
   | ~ = tag; <>
   | ~ = heading; <>
 
-let horizontal_whitespace := 
-  | SPACE; { `Space " " } 
-  | ~ = Space; <`Space>
-
-let newline := NEWLINE; {} | Single_newline; {} 
-
-let whitespace := 
-  | horizontal_whitespace; {}
-  | newline; {}
+(* SECTION HEADING *)
 
 let heading := 
-  | (num, title) = Section_heading; children = sequence_nonempty(locatedM(inline_element)); RIGHT_BRACE; 
+  | (num, title) = Section_heading; children = sequence(locatedM(inline_element)); RIGHT_BRACE; 
     { 
-      let* children = children in 
-      return @@ `Heading (num, title, children) 
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        let what = Tokens.describe @@ Section_heading (num, title) in
+        Parse_error.should_not_be_empty ~what span
+      in
+      Writer.ensure not_empty warning children
+      |> Writer.map (fun c -> `Heading (num, title, c))
     }
+
+(* TAGS *)
 
 let tag == 
   | t = tag_with_content; { Writer.map tag t }
@@ -331,12 +338,12 @@ let inline_element :=
   | ~ = reference; <>
   | ~ = link; <>
 
-
 let code_span := c = Code_span; { return @@ `Code_span c }
 let raw_markup := m = Raw_markup; { return @@ `Raw_markup m }
 let word := w = Word; { return @@ `Word w }
 
-let style := style = Style; children = sequence(locatedM(inline_element)); RIGHT_BRACE; 
+let style := 
+  | style = Style; children = sequence(locatedM(inline_element)); RIGHT_BRACE; 
     { 
       let warning = fun ~filename -> 
         let span = Parser_aux.to_location ~filename $sloc in
@@ -345,6 +352,15 @@ let style := style = Style; children = sequence(locatedM(inline_element)); RIGHT
       in
       Writer.ensure not_empty warning children
       |> Writer.map (fun c -> `Styled (style, c)) 
+    }
+  | style = Style; RIGHT_BRACE;
+    {
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        let what = Tokens.describe @@ Style style in
+        Parse_error.should_not_be_empty ~what span 
+      in
+      Writer.with_warning (`Styled (style, [])) warning
     }
 
 let math_span := m = Math_span; { return @@ `Math_span m }
@@ -619,7 +635,8 @@ let nestable_block_element_inner :=
   | ~ = list_element; <>
   | ~ = table; <> 
   | ~ = media; <>
-  | ~ = math_block; <> 
+  | ~ = math_block; <>
+  | ~ = paragraph; <>
 
 let verbatim := v = Verbatim; 
   { 
@@ -632,8 +649,11 @@ let verbatim := v = Verbatim;
     |> Writer.map (fun v -> `Verbatim v)
   }
 
-let paragraph := items = sequence_nonempty(locatedM(inline_element));
-  { Writer.map (fun i -> `Paragraph i) items }
+let paragraph := 
+  | items = sequence_nonempty(locatedM(inline_element));
+    { Writer.map (fun i -> `Paragraph i) items }
+  | located(error);
+    { return @@ `Paragraph [] }
 
 let code_block := c = Code_block; { return (`Code_block c) }
 
