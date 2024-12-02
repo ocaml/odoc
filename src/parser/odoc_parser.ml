@@ -81,19 +81,13 @@ let offset_to_location :
 
 module Tester = struct
   include Parser
+  module Lexer = Lexer
+  type token = Tokens.token
   let is_EOI = function Tokens.END -> true | _ -> false
   let pp_warning = Warning.to_string
   let run = Writer.run
-  let token =
-    let dummy_loc =
-      Lexer.
-        {
-          warnings = [];
-          file = "f.ml";
-          offset_to_location = Fun.const Loc.{ line = 1; column = 0 };
-        }
-    in
-    Lexer.token dummy_loc
+  let reversed_newlines = reversed_newlines
+  let offset_to_location = offset_to_location
   let string_of_token = Tokens.describe
 end
 
@@ -118,13 +112,14 @@ let position_of_point : t -> Loc.point -> Lexing.position =
   { Lexing.pos_bol; pos_lnum; pos_cnum; pos_fname }
 
 (* The main entry point for this module *)
-let parse_comment ~location ~text =
+let parse_comment : location:Lexing.position -> text:string -> t =
+ fun ~location ~text ->
   let reversed_newlines = reversed_newlines ~input:text in
   let lexbuf = Lexing.from_string text in
   (* We cannot directly pass parameters to Menhir without converting our parser
      to a module functor. So we pass our current filename to the lexbuf here *)
   lexbuf.lex_curr_p <-
-    { lexbuf.lex_curr_p with pos_fname = Lexing.(location.pos_fname) };
+    { lexbuf.lex_curr_p with pos_fname = location.Lexing.pos_fname };
   let lexer_state =
     Lexer.
       {

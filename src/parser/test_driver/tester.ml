@@ -37,6 +37,7 @@ let error_recovery =
     ("End not allowed in table", "{t ");
     ("Empty @author", "@author");
     ("Empty @version", "@version");
+    ("Code block w/ blank line", "[\n\n]");
   ]
 
 let see = [ ("See", "@see <foo> bar baz quux\n") ]
@@ -113,9 +114,9 @@ module TokBuf = struct
 
   let cache x self = self.cache <- x :: self.cache
 
-  let create lexbuf =
+  let create ~input ~lexbuf =
     let rec fill acc =
-      let (Loc.{ value; _ } as loc) = Parser.token lexbuf in
+      let (Loc.{ value; _ } as loc) = Parser.Lexer.token input lexbuf in
       if Parser.is_EOI value then List.rev @@ (loc :: acc) else fill (loc :: acc)
     in
 
@@ -135,14 +136,27 @@ end
 
 let run_test (label, case) =
   let open Either in
+  let reversed_newlines = Parser.reversed_newlines ~input:case in
   let lexbuf = Lexing.from_string case in
-  Lexing.set_filename lexbuf "Tester";
-  let tokens = TokBuf.create lexbuf in
+  let file = "Tester" in
+  lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = file };
+  let input =
+    Parser.Lexer.
+      {
+        warnings = [];
+        offset_to_location =
+          Parser.offset_to_location ~reversed_newlines
+            ~comment_location:lexbuf.lex_curr_p;
+        file;
+      }
+  in
+  let tokens = TokBuf.create ~input ~lexbuf in
   try
     let ast, warnings =
       Parser.run ~filename:"Tester"
       @@ Parser.main (fun _ -> TokBuf.next tokens) lexbuf
     in
+    let warnings = warnings @ input.warnings in
     let output = Format.asprintf "%a" parser_output (ast, warnings) in
     Left (label, output)
   with e ->

@@ -644,10 +644,11 @@ and code_span buffer nesting_level start_offset input = parse
       code_span buffer nesting_level start_offset input lexbuf }
 
   | newline horizontal_space* (newline horizontal_space*)+
-    { let w = (Parse_error.not_allowed
+    { let w = Parse_error.not_allowed
           ~what:(Tokens.describe (Blank_line "\n\n"))
-          ~in_what:(Tokens.describe (Code_span ""))) 
+          ~in_what:(Tokens.describe (Code_span ""))
       in
+      print_endline "In CODE_BLOCK_BLANK_LINE";
       warning lexbuf input w;
       Buffer.add_char buffer ' ';
       code_span buffer nesting_level start_offset input lexbuf }
