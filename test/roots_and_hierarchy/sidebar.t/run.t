@@ -38,6 +38,14 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
       "children": [
         {
           "node": {
+            "url": "pkg/file.html",
+            "kind": "leaf-page",
+            "content": "File"
+          },
+          "children": []
+        },
+        {
+          "node": {
             "url": "pkg/dir1/index.html",
             "kind": "leaf-page",
             "content": "A directory"
@@ -52,14 +60,6 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
               "children": []
             }
           ]
-        },
-        {
-          "node": {
-            "url": "pkg/file.html",
-            "kind": "leaf-page",
-            "content": "File"
-          },
-          "children": []
         },
         {
           "node": {
@@ -146,8 +146,8 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
      <nav class="odoc-toc odoc-global-toc">
       <ul>
        <li><a href="#" class="current_unit">Package <code>pkg</code></a>
-        <ul><li><a href="dir1/index.html">A directory</a></li>
-         <li><a href="file.html">File</a></li>
+        <ul><li><a href="file.html">File</a></li>
+         <li><a href="dir1/index.html">A directory</a></li>
          <li>libname
           <ul><li><a href="libname/Unit/index.html">Unit</a></li></ul>
          </li>
@@ -164,8 +164,8 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
      <nav class="odoc-toc odoc-global-toc">
       <ul>
        <li><a href="../../../index.html">Package <code>pkg</code></a>
-        <ul><li><a href="../../../dir1/index.html">A directory</a></li>
-         <li><a href="../../../file.html">File</a></li>
+        <ul><li><a href="../../../file.html">File</a></li>
+         <li><a href="../../../dir1/index.html">A directory</a></li>
          <li>libname
           <ul>
            <li><a href="../index.html">Unit</a>

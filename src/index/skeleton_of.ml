@@ -8,6 +8,19 @@ module ModuleName = Odoc_model.Names.ModuleName
 
 type t = Entry.t Tree.t
 
+let compare_entry (e1 : Entry.t) (e2 : Entry.t) =
+  let int_of_kind (kind : Entry.kind) =
+    match kind with
+    | Page _ -> -10
+    | Dir -> 0
+    | Module _ -> 10
+    | Impl -> 20
+    | _ -> 30
+  in
+  match Int.compare (int_of_kind e1.kind) (int_of_kind e2.kind) with
+  | 0 -> Astring.String.compare (Id.name e1.id) (Id.name e2.id)
+  | i -> i
+
 let rec t_of_in_progress (dir : In_progress.in_progress) : t =
   let entry_of_page page =
     let kind = Entry.Page page.Lang.Page.frontmatter in
@@ -145,10 +158,7 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
     |> List.map snd
   in
   let unordered =
-    List.sort
-      (fun (x, _) (y, _) ->
-        String.compare (Paths.Identifier.name x) (Paths.Identifier.name y))
-      unordered
+    List.sort (fun (_, x) (_, y) -> compare_entry x.Tree.node y.node) unordered
   in
   let contents = ordered @ unordered |> List.map snd in
   { Tree.node = index; children = contents }
