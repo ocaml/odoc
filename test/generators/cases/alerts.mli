@@ -17,6 +17,9 @@ val c : int
 (* At the top-level of a module. *)
 
 module Top1 : sig
+
+  (* On OCaml 4.04 to 4.06, this top-comment is lost by the parser if there's
+     no empty line before it. *)
   (** Top-comment. *)
 end
 [@@deprecated "A"]
