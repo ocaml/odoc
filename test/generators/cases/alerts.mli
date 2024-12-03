@@ -17,16 +17,9 @@ val c : int
 (* At the top-level of a module. *)
 
 module Top1 : sig
-  [@@@deprecated "A"]
-
   (** Top-comment. *)
 end
-
-module Top2 : sig
-  [@@@deprecated "A"]
-
-  (** Top-comment. *)
-end
+[@@deprecated "A"]
 
 (* Deprecated alert tag. *)
 

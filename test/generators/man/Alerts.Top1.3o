@@ -9,11 +9,11 @@ Alerts\.Top1
 .in 
 .sp 
 .fi 
-Top-comment\.
+@deprecated: A
 .nf 
 .sp 
 .fi 
-@deprecated: A
+Top-comment\.
 .nf 
 .SH Documentation
 .sp 
