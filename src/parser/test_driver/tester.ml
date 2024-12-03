@@ -37,7 +37,7 @@ let error_recovery =
     ("List item not at beginning of line", "- foo\n - bar\n- baz");
     ("Empty list item", "{ol {li} }");
     ("'{li' not followed by whitespace", "{ol {lifoo bar baz} }");
-    ("End not allowed in table", "{t ");
+    ("End not allowed in table", "{t \n| -- | :--: |\n| a | b \n");
     ("Nothing", "{i");
   ]
 
@@ -99,7 +99,6 @@ type failure = {
   label : string;
   offending_token : Parser.token;
   area : string;
-  tokens : Parser.token list;
 }
 
 let get_area Loc.{ start; end_; _ } input =
@@ -107,56 +106,16 @@ let get_area Loc.{ start; end_; _ } input =
   |> List.filteri (fun idx _ -> idx >= pred start.line && idx <= pred end_.line)
   |> List.fold_left ( ^ ) ""
 
-module TokBuf = struct
-  type t = {
-    tokens : Parser.token Loc.with_location Stream.t;
-    mutable idx : int;
-    mutable cache : Parser.token Loc.with_location list;
-  }
-
-  let cache x self = self.cache <- x :: self.cache
-
-  let create ~input ~lexbuf =
-    let rec fill acc =
-      let (Loc.{ value; _ } as loc) = Parser.Lexer.token input lexbuf in
-      if Parser.is_EOI value then List.rev @@ (loc :: acc) else fill (loc :: acc)
-    in
-    let tokens = fill [] in
-    { tokens = Stream.of_list tokens; idx = 0; cache = [] }
-
-  let next self =
-    print_endline "Attempting to get next token";
-    let (Loc.{ value = token; _ } as loc) =
-      try Stream.next self.tokens with _ -> List.hd self.cache
-    in
-    print_endline @@ "Got token: " ^ Parser.string_of_token token;
-    self.idx <- succ self.idx;
-    cache loc self;
-    token
-
-  let failure self label input exn =
-    let Loc.{ value; location } = List.hd self.cache in
-    let tokens =
-      let rec go acc =
-        try go @@ (Stream.next self.tokens :: acc) with _ -> acc
-      in
-      List.map Loc.value @@ List.rev @@ go [] @ self.cache
-    in
-    {
-      exn;
-      label;
-      offending_token = value;
-      tokens;
-      area = get_area location input;
-    }
-end
+let mkfailure label input exn last =
+  let Loc.{ value; location } = last in
+  { offending_token = value; exn; label; area = get_area location input }
 
 let run_test (label, case) =
   let open Either in
   let reversed_newlines = Parser.reversed_newlines ~input:case in
   let lexbuf = Lexing.from_string case in
   let file = "Tester" in
-  lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = file };
+  Lexing.set_filename lexbuf file;
   let input =
     Parser.Lexer.
       {
@@ -167,18 +126,22 @@ let run_test (label, case) =
         file;
       }
   in
-  let tokens = TokBuf.create ~input ~lexbuf in
+  let last_tok = ref None in
+  let get_tok lexbuf =
+    let tok = Parser.Lexer.token input lexbuf in
+    last_tok := Some tok;
+    Loc.value tok
+  in
   try
     let ast, warnings =
-      Parser.run ~filename:"Tester"
-      @@ Parser.main (fun _ -> TokBuf.next tokens) lexbuf
+      Parser.run ~filename:"Tester" @@ Parser.main get_tok lexbuf
     in
     let warnings = warnings @ input.warnings in
     let output = Format.asprintf "%a" parser_output (ast, warnings) in
     Left (label, output)
   with e ->
     let exns = Printexc.to_string e in
-    Right (TokBuf.failure tokens label case exns)
+    Right (mkfailure label case exns @@ Option.get !last_tok)
 
 let sep = String.init 80 @@ Fun.const '-'
 
@@ -188,21 +151,17 @@ let format_successes =
   in
   List.fold_left go ""
 
-let failure_string { exn; label; offending_token; tokens; area } =
+let failure_string { exn; label; offending_token; area } =
   Printf.sprintf
     {|>>> Case '%s' failed with exn: <<<
 %s
 offending token:
 '%s'
 input:
-"%s"
-tokens:%s|}
+"%s"|}
     label exn
     (Parser.string_of_token offending_token)
     area
-    (List.fold_left
-       (fun acc t -> Printf.sprintf "%s\n<%s>" acc (Parser.string_of_token t))
-       "" tokens)
 
 let format_failures =
   let go acc x = acc ^ "\n" ^ sep ^ "\n" ^ x in
