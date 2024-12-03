@@ -1,3 +1,9 @@
+# 2.4.4
+
+### Added
+
+- OCaml 5.3.0 compatibility (@Julow, #1202, #1254)
+
 # 2.4.3
 
 ### Fixed
