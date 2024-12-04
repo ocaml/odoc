@@ -180,7 +180,7 @@ let compile_index ?(ignore_output = false) ~output_file ?occurrence_file ~json
   ignore @@ Cmd_outputs.submit log desc cmd (Some output_file)
 
 let html_generate ~output_dir ?index ?(ignore_output = false)
-    ?(search_uris = []) ?(remap = None) ?(as_json = false) ~input_file:file () =
+    ?(search_uris = []) ?remap ?(as_json = false) ~input_file:file () =
   let open Cmd in
   let index =
     match index with None -> empty | Some idx -> v "--index" % p idx
