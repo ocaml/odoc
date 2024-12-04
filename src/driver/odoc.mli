@@ -51,6 +51,8 @@ val compile_index :
   ?occurrence_file:Fpath.t ->
   json:bool ->
   roots:Fpath.t list ->
+  simplified:bool ->
+  wrap:bool ->
   unit ->
   unit
 

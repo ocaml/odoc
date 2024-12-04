@@ -282,7 +282,8 @@ let sherlodoc_index_one ~output_dir (index : Odoc_unit.index) =
   Sherlodoc.index ~format:`js ~inputs ~dst ();
   rel_path
 
-let html_generate ~occurrence_file ~remaps ~generate_json output_dir linked =
+let html_generate ~occurrence_file ~remaps ~generate_json
+    ~simplified_search_output output_dir linked =
   let tbl = Hashtbl.create 10 in
   let _ = OS.Dir.create output_dir |> Result.get_ok in
   Sherlodoc.js Fpath.(output_dir // Sherlodoc.js_file);
@@ -292,7 +293,8 @@ let html_generate ~occurrence_file ~remaps ~generate_json output_dir linked =
         ({ roots; output_file; json; search_dir = _; sidebar } as index :
           Odoc_unit.index) =
       let () =
-        Odoc.compile_index ~json ~occurrence_file ~output_file ~roots ()
+        Odoc.compile_index ~json ~occurrence_file ~output_file ~roots
+          ~simplified:false ~wrap:false ()
       in
       let sidebar =
         match sidebar with
@@ -302,6 +304,11 @@ let html_generate ~occurrence_file ~remaps ~generate_json output_dir linked =
             Odoc.sidebar_generate
               ~output_file:Fpath.(output_dir // pkg_dir / "sidebar.json")
               ~json:true index.output_file ();
+            if simplified_search_output then
+              Odoc.compile_index ~json:true ~occurrence_file
+                ~output_file:Fpath.(output_dir // pkg_dir / "index.js")
+                ~simplified:true ~wrap:true ~roots ();
+
             Some output_file
       in
       (sherlodoc_index_one ~output_dir index, sidebar)
