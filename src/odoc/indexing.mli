@@ -7,5 +7,7 @@ val compile :
   occurrences:Fs.file option ->
   roots:Fs.Directory.t list ->
   inputs_in_file:Fs.file list ->
+  simplified_json:bool ->
+  wrap_json:bool ->
   odocls:Fs.file list ->
   (unit, [> msg ]) result
