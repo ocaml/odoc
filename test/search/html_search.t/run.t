@@ -217,7 +217,7 @@ Passing an inexistent file:
   $ odoc compile-index --root babar
   $ odoc compile-index --file-list babar
   odoc: option '--file-list': no 'babar' file or directory
-  Usage: odoc compile-index [--file-list=FILE] [--json] [OPTION]… [FILE]…
+  Usage: odoc compile-index [OPTION]… [FILE]…
   Try 'odoc compile-index --help' or 'odoc --help' for more information.
   [2]
 

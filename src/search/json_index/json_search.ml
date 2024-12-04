@@ -81,6 +81,56 @@ let rec of_id x =
 
 let of_id n = `Array (List.rev @@ of_id (n :> Odoc_model.Paths.Identifier.t))
 
+let rec prefix_name_kind_of_id (n : Odoc_model.Paths.Identifier.t) =
+  let open Odoc_model.Names in
+  let prefix_of_parent parent =
+    let prefix, pname, _kind =
+      prefix_name_kind_of_id (parent :> Odoc_model.Paths.Identifier.t)
+    in
+    if prefix = "" then pname else prefix ^ "." ^ pname
+  in
+  match n.iv with
+  | `Root (_, name) -> ("", ModuleName.to_string name, "module")
+  | `Page (_, name) -> ("", PageName.to_string name, "page")
+  | `AssetFile (_, name) -> ("", AssetName.to_string name, "asset")
+  | `LeafPage (_, name) -> ("", PageName.to_string name, "page")
+  | `Module (parent, name) ->
+      (prefix_of_parent parent, ModuleName.to_string name, "module")
+  | `Parameter (parent, name) ->
+      (prefix_of_parent parent, ModuleName.to_string name, "parameter")
+  | `Result x -> prefix_name_kind_of_id (x :> Odoc_model.Paths.Identifier.t)
+  | `ModuleType (parent, name) ->
+      (prefix_of_parent parent, ModuleTypeName.to_string name, "module_type")
+  | `Type (parent, name) ->
+      (prefix_of_parent parent, TypeName.to_string name, "type")
+  | `Constructor (parent, name) ->
+      (prefix_of_parent parent, ConstructorName.to_string name, "constructor")
+  | `Field (parent, name) ->
+      (prefix_of_parent parent, FieldName.to_string name, "field")
+  | `Extension (parent, name) ->
+      (prefix_of_parent parent, ExtensionName.to_string name, "extension")
+  | `ExtensionDecl (parent, _, name) ->
+      (prefix_of_parent parent, ExtensionName.to_string name, "extension_decl")
+  | `Exception (parent, name) ->
+      (prefix_of_parent parent, ExceptionName.to_string name, "exception")
+  | `Value (parent, name) ->
+      (prefix_of_parent parent, ValueName.to_string name, "value")
+  | `Class (parent, name) ->
+      (prefix_of_parent parent, TypeName.to_string name, "class")
+  | `ClassType (parent, name) ->
+      (prefix_of_parent parent, TypeName.to_string name, "class_type")
+  | `Method (parent, name) ->
+      (prefix_of_parent parent, MethodName.to_string name, "method")
+  | `InstanceVariable (parent, name) ->
+      ( prefix_of_parent parent,
+        InstanceVariableName.to_string name,
+        "instance_variable" )
+  | `Label (parent, name) ->
+      (prefix_of_parent parent, LabelName.to_string name, "label")
+  | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
+  | `SourceLocationInternal _ ->
+      ("", "", "")
+
 let of_doc (doc : Odoc_model.Comment.elements) =
   let txt = Text.of_doc doc in
   `String txt
@@ -183,7 +233,27 @@ let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
     ([ ("id", j_id); ("doc", doc); ("kind", kind); ("display", display) ]
     @ occurrences)
 
-let of_entry ?occurrences entry =
+let simplified_of_entry { Entry.id; doc; _ } =
+  let prefix, name, kind = prefix_name_kind_of_id id in
+  let config =
+    Odoc_html.Config.v ~flat:false ~semantic_uris:false ~indent:false
+      ~open_details:false ~as_json:false ~remap:[] ()
+  in
+  let url =
+    Odoc_html.Link.href ~config ~resolve:(Base "/")
+      (Odoc_document.Url.from_identifier ~stop_before:false id)
+  in
+  let doc = of_doc doc in
+  `Object
+    [
+      ("name", `String name);
+      ("prefixname", `String prefix);
+      ("kind", `String kind);
+      ("url", `String url);
+      ("comment", doc);
+    ]
+
+let of_entry ~simplified ?occurrences entry =
   let get_occ id =
     match occurrences with
     | None -> None
@@ -196,4 +266,5 @@ let of_entry ?occurrences entry =
     let occ = get_occ entry.Entry.id in
     (entry, Html.of_entry entry, occ)
   in
-  of_entry entry html occurrences
+  if simplified then simplified_of_entry entry
+  else of_entry entry html occurrences

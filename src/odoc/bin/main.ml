@@ -478,7 +478,10 @@ module Indexing = struct
 
   let output_file ~dst marshall =
     match (dst, marshall) with
-    | Some file, `JSON when not (Fpath.has_ext "json" (Fpath.v file)) ->
+    | Some file, `JSON
+      when not
+             (Fpath.has_ext "json" (Fpath.v file)
+             || Fpath.has_ext "js" (Fpath.v file)) ->
         Error
           (`Msg
             "When generating a json index, the output must have a .json file \
@@ -493,11 +496,12 @@ module Indexing = struct
     | None, `JSON -> Ok (Fs.File.of_string "index.json")
     | None, `Marshall -> Ok (Fs.File.of_string "index.odoc-index")
 
-  let index dst json warnings_options roots inputs_in_file inputs occurrences =
+  let index dst json warnings_options roots inputs_in_file inputs occurrences
+      simplified_json wrap_json =
     let marshall = if json then `JSON else `Marshall in
     output_file ~dst marshall >>= fun output ->
     Indexing.compile marshall ~output ~warnings_options ~roots ~occurrences
-      ~inputs_in_file ~odocls:inputs
+      ~inputs_in_file ~simplified_json ~wrap_json ~odocls:inputs
 
   let cmd =
     let dst =
@@ -529,6 +533,20 @@ module Indexing = struct
       let doc = "whether to output a json file, or a binary .odoc-index file" in
       Arg.(value & flag & info ~doc [ "json" ])
     in
+    let simplified_json =
+      let doc =
+        "whether to simplify the json file. Only has an effect in json output \
+         mode."
+      in
+      Arg.(value & flag & info ~doc [ "simplified-json" ])
+    in
+    let wrap_json =
+      let doc =
+        "whether to wrap the json file. Only has an effect in json output mode."
+      in
+      Arg.(value & flag & info ~doc [ "wrap-json" ])
+    in
+
     let inputs =
       let doc = ".odocl file to index" in
       Arg.(value & pos_all convert_fpath [] & info ~doc ~docv:"FILE" [])
@@ -546,7 +564,7 @@ module Indexing = struct
     Term.(
       const handle_error
       $ (const index $ dst $ json $ warnings_options $ roots $ inputs_in_file
-       $ inputs $ occurrences))
+       $ inputs $ occurrences $ simplified_json $ wrap_json))
 
   let info ~docs =
     let doc =
