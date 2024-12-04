@@ -66,7 +66,7 @@ let run package_name blessed actions odoc_dir odocl_dir
         in
         let () =
           Compile.html_generate ~occurrence_file ~remaps:[] ~generate_json
-            html_dir linked
+            ~simplified_search_output:true html_dir linked
         in
         let _ = Odoc.support_files html_dir in
         ()

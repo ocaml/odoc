@@ -168,11 +168,15 @@ let link ?(ignore_output = false) ~custom_layout ~input_file:file ?output_file
   ignore @@ Cmd_outputs.submit log desc cmd (Some output_file)
 
 let compile_index ?(ignore_output = false) ~output_file ?occurrence_file ~json
-    ~roots () =
+    ~roots ~simplified ~wrap () =
   let roots =
     List.fold_left (fun c r -> Cmd.(c % "--root" % p r)) Cmd.empty roots
   in
   let json = if json then Cmd.v "--json" else Cmd.empty in
+  let simplified =
+    if simplified then Cmd.v "--simplified-json" else Cmd.empty
+  in
+  let wrap = if wrap then Cmd.v "--wrap-json" else Cmd.empty in
   let occ =
     match occurrence_file with
     | None -> Cmd.empty
@@ -180,7 +184,8 @@ let compile_index ?(ignore_output = false) ~output_file ?occurrence_file ~json
   in
   let cmd =
     Cmd.(
-      !odoc % "compile-index" %% json %% v "-o" % p output_file %% roots %% occ)
+      !odoc % "compile-index" %% json %% simplified %% wrap %% v "-o"
+      % p output_file %% roots %% occ)
   in
   let desc =
     Printf.sprintf "Generating index for %s" (Fpath.to_string output_file)

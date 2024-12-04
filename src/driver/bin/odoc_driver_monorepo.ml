@@ -63,7 +63,7 @@ let run path extra_pkgs extra_libs
         in
         let () =
           Compile.html_generate ~occurrence_file ~remaps:[] ~generate_json
-            html_dir linked
+            ~simplified_search_output:false html_dir linked
         in
         let _ = Odoc.support_files html_dir in
         Stats.stats.finished <- true;
