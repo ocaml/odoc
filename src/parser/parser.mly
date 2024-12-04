@@ -142,6 +142,10 @@
     (Loc.at location media, target, content)
 
   let tag t = `Tag t
+
+  let trim_start = function
+    | Loc.{value = `Space _; _ } :: xs -> xs
+    | xs -> xs 
 %}
 
 %token SPACE NEWLINE
@@ -265,7 +269,7 @@ let heading :=
         Parse_error.should_not_be_empty ~what span
       in
       Writer.ensure not_empty warning children
-      |> Writer.map (fun c -> `Heading (num, title, c))
+      |> Writer.map (fun c -> `Heading (num, title, trim_start c))
     }
 
 (* TAGS *)
@@ -362,7 +366,7 @@ let style :=
         Parse_error.should_not_be_empty ~what span 
       in
       Writer.ensure not_empty warning children
-      |> Writer.map (fun c -> `Styled (style, c)) 
+      |> Writer.map (fun c -> `Styled (style, trim_start c)) 
     }
   | style = Style; RIGHT_BRACE;
     {
@@ -392,13 +396,13 @@ let reference :=
     {
       let+ children = children in
       let ref_body = Loc.nudge_map_start (String.length "{!") ref_body in
-      `Reference (`Simple, ref_body, children)
+      `Reference (`Simple, ref_body, trim_start children)
     }
   | ref_body = located(Ref_with_replacement); children = sequence_nonempty(locatedM(inline_element)); RIGHT_BRACE;
     { 
       let+ children = children in 
       let ref_body = Loc.nudge_map_start (String.length "{{!") ref_body in
-      `Reference (`With_text, ref_body, children)
+      `Reference (`With_text, ref_body, trim_start children)
     }
   | ref_body = located(Ref_with_replacement); RIGHT_BRACE;
     {
@@ -671,7 +675,7 @@ let verbatim := v = Verbatim;
 
 let paragraph := 
   | items = sequence_nonempty(locatedM(inline_element));
-    { Writer.map (fun i -> `Paragraph i) items }
+    { Writer.map (fun i -> `Paragraph (trim_start i)) items }
   | located(error);
     { return @@ `Paragraph [] }
 

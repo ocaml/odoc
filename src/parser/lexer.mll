@@ -648,7 +648,6 @@ and code_span buffer nesting_level start_offset input = parse
           ~what:(Tokens.describe (Blank_line "\n\n"))
           ~in_what:(Tokens.describe (Code_span ""))
       in
-      print_endline "In CODE_BLOCK_BLANK_LINE";
       warning lexbuf input w;
       Buffer.add_char buffer ' ';
       code_span buffer nesting_level start_offset input lexbuf }
@@ -733,6 +732,12 @@ and modules input acc = parse
     {
       let ms = List.rev acc in
       emit lexbuf input (Modules ms)
+    }
+  | eof 
+    {
+      let wg = Parse_error.end_not_allowed ~in_what:(Tokens.describe @@ Modules []) in
+      warning lexbuf input wg;
+      emit lexbuf input (Modules (List.rev acc))
     }
 
 and media tok_descr buffer nesting_level start_offset input = parse
