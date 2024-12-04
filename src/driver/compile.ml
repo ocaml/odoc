@@ -315,7 +315,7 @@ let html_generate ~occurrence_file ~remaps output_dir linked =
                  let index = index.output_file in
                  (Some search_uris, Some index)
            in
-           Odoc.html_generate ?search_uris ?index ~remap:remap_file ~output_dir
+           Odoc.html_generate ?search_uris ?index ?remap:remap_file ~output_dir
              ~input_file ();
            Odoc.html_generate ?search_uris ?index ~output_dir ~input_file
              ~as_json:true ());

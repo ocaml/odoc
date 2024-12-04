@@ -474,7 +474,7 @@ let of_packages ~packages_dir packages =
         in
         let selected = List.mem pkg.name packages in
         let remaps =
-          if List.mem pkg.name packages then []
+          if selected then []
           else
             let local_pkg_path = Fpath.to_string (Fpath.to_dir_path pkg_dir) in
             let pkg_path =

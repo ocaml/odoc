@@ -55,7 +55,7 @@ val html_generate :
   ?index:Fpath.t ->
   ?ignore_output:bool ->
   ?search_uris:Fpath.t list ->
-  ?remap:Fpath.t option ->
+  ?remap:Fpath.t ->
   ?as_json:bool ->
   input_file:Fpath.t ->
   unit ->
