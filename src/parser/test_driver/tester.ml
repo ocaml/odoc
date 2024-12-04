@@ -38,10 +38,9 @@ let error_recovery =
     ("Empty list item", "{ol {li} }");
     ("'{li' not followed by whitespace", "{ol {lifoo bar baz} }");
     ("End not allowed in table", "{t \n| -- | :--: |\n| a | b \n");
-    ("Nothing", "{i");
+    ("Empty modules", "{!modules: }");
+    ("EOI in modules", "{!modules: Foo Bar");
   ]
-
-let see = [ ("See", "@see <foo> bar baz quux\n") ]
 
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
 let documentation_cases =
@@ -50,7 +49,7 @@ let documentation_cases =
     ("Heavy list", "{ul {li foo} {li bar} {li baz}}");
     ("Simple ref", "{!Stdlib.Buffer}");
     ("Ref w/ replacement", "{{: https://ocaml.org/ }the OCaml website}");
-    ("Modules", "{!modules: Foo Bar Baz}");
+    ("Modules", "{!modules: Foo Bar Baz }");
     ("Block tag", "@see <foo.ml> bar baz quux\n");
     ("Inline tag", "@author Fay Carsons");
     ("Simple tag", "@open");
@@ -81,6 +80,8 @@ let documentation_cases =
     ("Inline code", "[fmap Fun.id None]");
     ("Code block", "{[\n let foo = 0 \n]}");
   ]
+
+let modules = [ ("Modules", "{!modules: Foo Bar Baz }") ]
 
 open Test.Serialize
 
@@ -129,6 +130,7 @@ let run_test (label, case) =
   let last_tok = ref None in
   let get_tok lexbuf =
     let tok = Parser.Lexer.token input lexbuf in
+    print_endline @@ "Got tok: " ^ Parser.string_of_token (Loc.value tok);
     last_tok := Some tok;
     Loc.value tok
   in
@@ -174,11 +176,10 @@ let () =
       | "code" -> code_cases
       | "recovery" | "r" -> error_recovery
       | "docs" | "d" -> documentation_cases
-      | "see" | "s" -> see
       | _ ->
           print_endline "unrecognized argument - running documentation_cases";
           documentation_cases)
-    else documentation_cases
+    else modules
   in
   let sucesses, failures = List.partition_map run_test cases in
   let sucesses = format_successes sucesses in

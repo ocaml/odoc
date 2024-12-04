@@ -145,7 +145,28 @@
 
   let trim_start = function
     | Loc.{value = `Space _; _ } :: xs -> xs
-    | xs -> xs 
+    | xs -> xs
+
+  let loc_is_some = function 
+    | Loc.{ value = Some x; _ } as loc -> Some { loc with value = x }
+    | _ -> None
+(*
+  let rec inline_element_inner : Ast.inline_element -> string = function 
+    | `Space s -> s 
+    | `Word s -> s
+    | `Styled (_, s) -> children s 
+    | `Code_span s -> s
+    | `Raw_markup (_, s) -> s
+    | `Reference (_, _, s) -> children s
+    | `Link (_, s) -> children s
+    | `Math_span s -> s
+  and children s = 
+    List.fold_left 
+      (fun acc elt -> acc ^ inline_element_inner (Loc.value elt)) 
+      "" 
+      s
+
+*)
 %}
 
 %token SPACE NEWLINE
@@ -166,7 +187,7 @@
 (* or '{C' or '{R', but this syntax has been deprecated and is only kept around so legacy codebases don't break :p *)
 %token <Ast.alignment> Paragraph_style "{L" 
 
-%token <string Loc.with_location list> Modules "{!modules:"
+%token MODULES "{!modules:"
 
 %token <string> Math_span "{m"
 %token <string> Math_block "{math"
@@ -580,11 +601,11 @@ let list_element :=
 
 (* TABLES *)
 
-let cell_heavy := cell_kind = Table_cell; whitespace?; children = sequence(locatedM(nestable_block_element)); whitespace?; RIGHT_BRACE;
+let cell_heavy := cell_kind = Table_cell; whitespace?; children = sequence(locatedM(nestable_block_element)); newline?; RIGHT_BRACE; whitespace?;
   { Writer.map (fun c -> (c, cell_kind)) children }
 
 let row_heavy := 
-  | TABLE_ROW; whitespace?; ~ = sequence_nonempty(cell_heavy); RIGHT_BRACE; <>
+  | TABLE_ROW; whitespace?; ~ = sequence_nonempty(cell_heavy); RIGHT_BRACE; whitespace?; <>
 
 let table_heavy := TABLE_HEAVY; whitespace?; grid = sequence_nonempty(row_heavy); RIGHT_BRACE; 
   { Writer.map (fun g -> `Table ((g, None), `Heavy)) grid }
@@ -655,12 +676,12 @@ let nestable_block_element := ~ = nestable_block_element_inner; newline?; <>
 let nestable_block_element_inner := 
   | ~ = verbatim; <>
   | ~ = code_block; <> 
-  | ~ = modules; <> 
   | ~ = list_element; <>
   | ~ = table; <> 
   | ~ = media; <>
   | ~ = math_block; <>
   | ~ = paragraph; <>
+  | ~ = modules; <> 
 
 let verbatim := v = Verbatim; 
   { 
@@ -676,31 +697,93 @@ let verbatim := v = Verbatim;
 let paragraph := 
   | items = sequence_nonempty(locatedM(inline_element));
     { Writer.map (fun i -> `Paragraph (trim_start i)) items }
-  | located(error);
-    { return @@ `Paragraph [] }
 
 let code_block := c = Code_block; { return (`Code_block c) }
 
 let math_block := m = Math_block; 
-  { 
-    let what = Tokens.describe @@ Math_block m in
-    let warning = fun ~filename -> 
-      let span = Parser_aux.to_location ~filename $sloc in
-      Parse_error.should_not_be_empty ~what span 
-    in 
-    Writer.ensure has_content warning (return m) 
-    |> Writer.map (fun m -> `Math_block m)
-  }
+    { 
+      let what = Tokens.describe @@ Math_block m in
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        Parse_error.should_not_be_empty ~what span 
+      in 
+      Writer.ensure has_content warning (return m) 
+      |> Writer.map (fun m -> `Math_block m)
+    }
 
-let modules := modules = Modules; 
-  { 
-    let what = Tokens.describe @@ Modules [] in
-    let warning = fun ~filename -> 
-      let span = Parser_aux.to_location ~filename $sloc in
-      Parse_error.should_not_be_empty ~what span 
-    in 
-    return modules
-    |> Writer.ensure not_empty warning 
-    |> Writer.map (fun ms -> `Modules ms)
-  }
+let module_list_element := 
+  | ~ = Word; <Some>
+  | horizontal_whitespace; { None }
 
+let modules := 
+  | MODULES; modules = located(module_list_element)+; RIGHT_BRACE; 
+    { 
+      let modules = List.filter_map loc_is_some modules in
+      return @@ `Modules modules
+    }
+  | MODULES; RIGHT_BRACE;
+    {
+      let what = Tokens.describe MODULES in
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        Parse_error.should_not_be_empty ~what span 
+      in 
+      Writer.with_warning (`Modules []) warning
+    }
+  | MODULES; modules = located(module_list_element)+; END;
+    {
+      let in_what = Tokens.describe MODULES in
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        Parse_error.end_not_allowed ~in_what span
+      in 
+      let modules = List.filter_map loc_is_some modules in
+      Writer.with_warning (`Modules modules) warning
+    }
+(*
+
+  | MODULES; modules = sequence_nonempty(locatedM(inline_element)); RIGHT_BRACE;
+    {
+      print_endline "INLINE";
+      let in_what = Tokens.describe MODULES in
+      let* modules = modules in
+      let warning = fun ~filename:_ -> 
+        let span = Loc.span @@ List.map Loc.location modules in
+        let first_offending : Ast.inline_element = 
+          List.find 
+            (function 
+              | `Word _ | `Space _ -> false 
+              | _ -> true) 
+            (List.map Loc.value modules : Ast.inline_element list) 
+        in
+        let what = Tokens.describe_inline first_offending in
+        Parse_error.not_allowed ~what ~in_what span 
+      in
+      let inner = `Modules (List.map (Loc.map inline_element_inner) modules) in
+      Writer.with_warning inner warning 
+    }
+
+  | MODULES; modules = sequence_nonempty(locatedM(inline_element)); END;
+    {
+      print_endline "INLINE + EOI";
+      let in_what = Tokens.describe MODULES in
+      let* modules = modules in
+      let span = Loc.span @@ List.map Loc.location modules in
+      let not_allowed = fun ~filename:_ -> 
+        let first_offending : Ast.inline_element = 
+          List.find 
+            (function 
+              | `Word _ | `Space _ -> false 
+              | _ -> true) 
+            (List.map Loc.value modules : Ast.inline_element list) 
+        in
+        let what = Tokens.describe_inline first_offending in
+        Parse_error.not_allowed ~what ~in_what span 
+      in
+      let unexpected_end = fun ~filename:_ -> 
+        Parse_error.end_not_allowed ~in_what:(Tokens.describe MODULES) span
+      in
+      let inner = `Modules (List.map (Loc.map inline_element_inner) modules) in
+      Writer.with_warning inner not_allowed |> Writer.warning unexpected_end 
+    }
+*)

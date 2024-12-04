@@ -18,7 +18,7 @@ type token =
   | Ref_with_replacement of string
   | Simple_link of string
   | Link_with_replacement of string
-  | Modules of string Loc.with_location list
+  | MODULES
   | Media of (media * media_target)
   | Media_with_replacement of (media * media_target * string)
   | Math_span of string
@@ -77,7 +77,7 @@ let print : token -> string = function
   | Ref_with_replacement _ -> "{{!"
   | Simple_link _ -> "{:"
   | Link_with_replacement _ -> "{{:"
-  | Modules _ -> "{!modules:"
+  | MODULES -> "{!modules:"
   | Media (ref_kind, media_kind) ->
       let ref_kind, media_kind = media_description ref_kind media_kind in
       Printf.sprintf "{%s%s" media_kind ref_kind
@@ -170,7 +170,7 @@ let describe : token -> string = function
   | RIGHT_CODE_DELIMITER -> "']}'"
   | Code_block _ -> "'{[...]}' (code block)"
   | Verbatim _ -> "'{v ... v}' (verbatim text)"
-  | Modules _ -> "'{!modules ...}'"
+  | MODULES -> "'{!modules ...}'"
   | List `Unordered -> "'{ul ...}' (bulleted list)"
   | List `Ordered -> "'{ol ...}' (numbered list)"
   | LI -> "'{li ...}' (list item)"
@@ -251,7 +251,7 @@ let describe_nestable_block : Ast.nestable_block_element -> string = function
       | [] -> describe @@ Word "")
   | `Code_block _ -> describe @@ Code_block empty_code_block
   | `Verbatim _ -> describe @@ Verbatim ""
-  | `Modules _ -> describe @@ Modules [] 
+  | `Modules _ -> describe MODULES
   | `List (_, _, _) -> "List"
   | `Table (_, kind) ->
       describe @@ if kind = `Light then TABLE_LIGHT else TABLE_HEAVY

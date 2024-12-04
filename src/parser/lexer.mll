@@ -441,7 +441,7 @@ and token input = parse
 
 
   | "{!modules:"
-        { modules input [] lexbuf }
+    { emit lexbuf input MODULES }
 
 | (media_start as start)
     {
@@ -710,35 +710,6 @@ and math kind buffer nesting_level start_offset input = parse
   | _ as c
     { Buffer.add_char buffer c;
       math kind buffer nesting_level start_offset input lexbuf }
-
-and modules input acc = parse
-  | delim_char* as c 
-    {
-        let start = Lexing.lexeme_start lexbuf 
-        and end_ = Lexing.lexeme_end lexbuf in
-        let location = Loc.{ 
-          file = input.file;
-          start = input.offset_to_location start;
-          end_ = input.offset_to_location end_;
-        } in
-      let c = Loc.at location c in
-      modules input (c :: acc) lexbuf
-    }
-  | (' ' | '\t' | '\r' | '\n') 
-    {
-      modules input acc lexbuf
-    }
-  | '}'
-    {
-      let ms = List.rev acc in
-      emit lexbuf input (Modules ms)
-    }
-  | eof 
-    {
-      let wg = Parse_error.end_not_allowed ~in_what:(Tokens.describe @@ Modules []) in
-      warning lexbuf input wg;
-      emit lexbuf input (Modules (List.rev acc))
-    }
 
 and media tok_descr buffer nesting_level start_offset input = parse
   | '}'
