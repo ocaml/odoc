@@ -69,19 +69,25 @@ let documentation_cases =
       \                    }\n\
       \                  }" );
     ( "Light table",
-      {|{t\n\
-        | Header 1 | Header 2 | Header 3 | Header 4|\n
-        | :------: | --------:|:---------|---------|\n
-        | centered | right    | left     | default |\n
-          omitted  | bar at   | start and| finish\n
-        | {e emph} | and | unaligned | bars |\n}|}
+      {|{t
+       | Header 1 | Header 2 | Header 3 | Header 4|
+       | :------: | --------:|:---------|---------|
+       | centered | right    | left     | default |
+       omitted  | bar at   | start and| finish
+       | {e emph} | and | unaligned | bars |
+      }|}
     );
     ("Styled", "{i italicized}");
     ("Inline code", "[fmap Fun.id None]");
     ("Code block", "{[\n let foo = 0 \n]}");
   ]
 
-let modules = [ ("Modules", "{!modules: Foo Bar Baz }") ]
+let light_table =
+  [ ("Light table", {|
+      {t
+        |--|--|
+      }
+      |}) ]
 
 open Test.Serialize
 
@@ -179,7 +185,7 @@ let () =
       | _ ->
           print_endline "unrecognized argument - running documentation_cases";
           documentation_cases)
-    else modules
+    else light_table
   in
   let sucesses, failures = List.partition_map run_test cases in
   let sucesses = format_successes sucesses in

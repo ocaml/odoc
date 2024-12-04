@@ -90,13 +90,34 @@
   let as_data = merged_tagged_row `Data
   let as_header = merged_tagged_row `Header
 
-  let mktable data header align =
-    match valid_align_row align with
-    | Ok alignment -> `Table ((header :: data, Some alignment), `Light)
-    | Error Invalid_align -> `Table ((header :: data, None), `Light)
-    | Error Not_align ->
-        let rows = header :: as_data align :: data in
-        `Table ((rows, None), `Light)
+  let is_valid_align row = Result.is_ok @@ valid_align_row row
+
+(*
+
+  - If the first row is the alignment row then the rest should be data 
+  - Otherwise the first should be the headers, the second align, and the rest data 
+  - If there's only one row and it's not the align row, then it's data 
+*)
+
+  let construct_table 
+    : Ast.inline_element Loc.with_location list list list ->
+      Ast.nestable_block_element = 
+    function 
+    | [only_row] -> (
+      match valid_align_row only_row with
+      | Ok align -> 
+        `Table (([[]], Some align), `Light)
+      | _ ->
+        `Table (([as_data only_row], None), `Light))
+    | align :: data when is_valid_align align -> 
+      let align = Result.get_ok @@ valid_align_row align in
+      `Table ( (List.map as_data data, Some align) , `Light)
+    | header :: align :: data when is_valid_align align ->
+      let align = Result.get_ok @@ valid_align_row align in
+      `Table ((as_header header :: List.map as_data data, Some align), `Light)
+    | data -> `Table ((List.map as_data data, None), `Light)
+
+(*
 
   let construct_table :
       ?header:Ast.inline_element Loc.with_location list list Writer.t ->
@@ -112,7 +133,7 @@
         let* table = Writer.map (mktable data header) align in
         Writer.return table
     | None -> Writer.return @@ mktable data header []
-
+*)
   let unclosed_table
       ?(data :
         Ast.inline_element Loc.with_location list list list Writer.t option)
@@ -268,11 +289,15 @@ let whitespace :=
   | ~ = horizontal_whitespace; <>
   | ~ = newline; <`Space>
 
+let any_whitespace := 
+  | ~ = whitespace; <>
+  | ~ = Blank_line; <`Space>
+
 (* ENTRY *)
 
 let main :=  
-  | nodes = sequence_nonempty(locatedM(toplevel)); whitespace?; END; { nodes }
-  | whitespace?; END; { Writer.return @@ [] }
+  | any_whitespace*; nodes = sequence_nonempty(locatedM(toplevel)); whitespace?; END; { nodes }
+  | any_whitespace*; END; { Writer.return @@ [] }
 
 let toplevel :=
   | block = nestable_block_element; { Writer.map (fun b -> (b :> Ast.block_element) ) block }
@@ -601,7 +626,7 @@ let list_element :=
 
 (* TABLES *)
 
-let cell_heavy := cell_kind = Table_cell; whitespace?; children = sequence(locatedM(nestable_block_element)); newline?; RIGHT_BRACE; whitespace?;
+let cell_heavy := cell_kind = Table_cell; whitespace?; children = sequence(locatedM(nestable_block_element)); whitespace?; RIGHT_BRACE; whitespace?;
   { Writer.map (fun c -> (c, cell_kind)) children }
 
 let row_heavy := 
@@ -610,18 +635,18 @@ let row_heavy :=
 let table_heavy := TABLE_HEAVY; whitespace?; grid = sequence_nonempty(row_heavy); RIGHT_BRACE; 
   { Writer.map (fun g -> `Table ((g, None), `Heavy)) grid }
 
+
 let cell_light := ~ = sequence_nonempty(locatedM(inline_element)); <>
-let row_light := BAR?; cells = separated_sequence_nonempty(BAR, cell_light); BAR?; <> 
-let rows_light := ~ = separated_sequence_nonempty(newline, row_light); <>
+(* This is crucial because we cannot have multiple optionals in sequence *)
+let row_prefix := 
+  | whitespace; {}
+  | BAR; {}
+  | whitespace; BAR; {}
+let row_light := row_prefix?; cells = separated_sequence_nonempty(BAR, cell_light); BAR?; <> 
+let rows_light := ~ = separated_sequence_nonempty(newline,row_light); <>
 let table_light :=
-  (* If the first row is the alignment row then the rest should be data *)
-  | TABLE_LIGHT; align = row_light; newline; data = rows_light; whitespace?; RIGHT_BRACE;
-    { construct_table ~align data }
-  (* Otherwise the first should be the headers, the second align, and the rest data *)
-  | TABLE_LIGHT; header = row_light; newline; align = row_light; newline; data = rows_light; whitespace?; RIGHT_BRACE;
-    { construct_table ~header ~align data }
   (* If there's only one row and it's not the align row, then it's data *)
-  | TABLE_LIGHT; data = rows_light; whitespace?; RIGHT_BRACE; { construct_table data }
+  | TABLE_LIGHT; data = rows_light; whitespace?; RIGHT_BRACE; { Writer.map construct_table data }
     
   (* If there's nothing inside, return an empty table *)
   | TABLE_LIGHT; whitespace?; RIGHT_BRACE; 
