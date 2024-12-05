@@ -270,7 +270,18 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
         [ Landing_pages.package ~dirs ~pkg ~index ]
     in
     let src_index :> t list =
-      if List.length pkg.libraries > 0 then
+      if
+        (* Some library has a module which has an implementation which has a source *)
+        List.exists
+          (fun lib ->
+            List.exists
+              (fun m ->
+                match m.Packages.m_impl with
+                | Some { mip_src_info = Some _; _ } -> true
+                | _ -> false)
+              lib.Packages.modules)
+          pkg.libraries
+      then
         let index = index_of pkg in
         [ Landing_pages.src ~dirs ~pkg ~index ]
       else []
