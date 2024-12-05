@@ -33,8 +33,8 @@ Since -L subfolders are omitted from -P roots, the index page should not be adde
       <ul>
        <li><a href="#" class="current_unit">Package <code>pkg</code></a>
         <ul><li><a href="file.html">File</a></li>
-         <li><a href="libname/index.html">Library landing page</a></li>
          <li><a href="dir1/index.html">A directory</a></li>
+         <li><a href="libname/index.html">Library landing page</a></li>
         </ul>
        </li>
       </ul>

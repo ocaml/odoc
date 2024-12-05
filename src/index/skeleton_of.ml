@@ -8,18 +8,41 @@ module ModuleName = Odoc_model.Names.ModuleName
 
 type t = Entry.t Tree.t
 
-let compare_entry (e1 : Entry.t) (e2 : Entry.t) =
-  let int_of_kind (kind : Entry.kind) =
-    match kind with
-    | Page _ -> -10
-    | Dir -> 0
+let compare_entry (t1 : t) (t2 : t) =
+  let by_kind (t : t) =
+    match t.node.kind with
+    | Page _ when List.is_empty t.children -> -10
+    | Page _ | Dir -> 0
     | Module _ -> 10
     | Impl -> 20
     | _ -> 30
   in
-  match Int.compare (int_of_kind e1.kind) (int_of_kind e2.kind) with
-  | 0 -> Astring.String.compare (Id.name e1.id) (Id.name e2.id)
-  | i -> i
+  (* Heuristic: If a dir contains only pages, place it before. *)
+  let by_content (t : t) =
+    if
+      List.for_all
+        (fun x ->
+          match x.Tree.node.Entry.kind with Page _ -> true | _ -> false)
+        t.children
+    then -10
+    else 10
+  in
+  let by_name (t : t) =
+    match t.node.kind with
+    | Page { short_title = Some title; _ } -> Comment.to_string title
+    | _ -> (
+        match t.node.id.iv with
+        | `LeafPage (Some parent, name)
+          when Names.PageName.to_string name = "index" ->
+            Id.name parent
+        | _ -> Id.name t.node.id)
+  in
+  let try_ comp f fallback =
+    match comp (f t1) (f t2) with 0 -> fallback () | i -> i
+  in
+  try_ (compare : int -> int -> int) by_kind @@ fun () ->
+  try_ (compare : int -> int -> int) by_content @@ fun () ->
+  try_ Astring.String.compare by_name @@ fun () -> 0
 
 let rec t_of_in_progress (dir : In_progress.in_progress) : t =
   let entry_of_page page =
@@ -158,7 +181,7 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
     |> List.map snd
   in
   let unordered =
-    List.sort (fun (_, x) (_, y) -> compare_entry x.Tree.node y.node) unordered
+    List.sort (fun (_, x) (_, y) -> compare_entry x y) unordered
   in
   let contents = ordered @ unordered |> List.map snd in
   { Tree.node = index; children = contents }
