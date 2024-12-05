@@ -10,7 +10,6 @@
 - Add clock emoji before `@since` tag (@yawaramin, #1089)
 - Navigation for the search bar : use '/' to enter search, up and down arrows to
   select a result, and enter to follow the selected link. (@EmileTrotignon, #1088)
-- OCaml 5.2.0 compatibility (@Octachron, #1094, #1112)
 - New driver package (@jonludlam, #1121)
 - Fix a big gap between the preamble and the content of a page (@EmileTrotignon, #1147)
 - Path-references to hierarchical pages and modules (@Julow, #1142, #1150, #1151, #1164)
@@ -50,20 +49,12 @@
 - `Odoc_html_frontend` does not use tyxml, for smaller javascript sizes.
   (@EmileTrotignon, #1072)
 - Overhaul of module-type-of expansions and shadowing code (@jonludlam, #1081)
-- Allow `][` in code blocks (@Julow, #1149)
-  This was interpreted as "code blocks with result", which now mandate a delimiter:
-  `{delim@lang[ code ]delim[ result ]}`
 - Output file paths and labels in the man and latex backends changed to avoid name clashes
   (@Julow, #1191)
 - Change the scoping and placement rules for tags. Fixed #1138. (@panglesd, #1239)
 
 ### Fixed
 
-- Revert to outputing a file (without content) when rendering a hidden
-  compilation unit. This fixes cases where the dune rules would
-  fail. (@panglesd, #1069)
-- Fix issues #1066 and #1095 with extended opens (@jonludlam, #1082, #1100)
-- Fix missing katex headers (@panglesd, #1096)
 - Fix resolution of module synopses in {!modules} lists that require
   --open (@jonludlam, #1104}
 - Fix top comment not being taken from includes often enough (@panglesd, #1117)
@@ -73,12 +64,44 @@
 - Fix wrong links to standalone comments in search results (#1118, @panglesd)
 - Remove duplicated or unwanted comments (@Julow, #1133)
   This could happen with inline includes.
-- Fix misprinting of type variables from ml files for OCaml 4.14 and later
-  (multiple occurences of the same type variable could be named differently)
-  (@octachron, #1173)
 - Fix bug where source rendering would cause odoc to fail completely if it
   encounters invalid syntax (@jonludlam #1208)
 
+# 2.4.4
+
+### Added
+
+- OCaml 5.3.0 compatibility (@Julow, #1202, #1254)
+
+# 2.4.3
+
+### Fixed
+
+- Fix missing katex headers (@panglesd, #1096)
+- Allow `][` in code blocks, fixing issue #1137 (@Julow, #1149)
+  This was interpreted as "code blocks with result", which now mandates a
+  delimiter: `{delim@lang[ code ]delim[ result ]}`
+- Fix misprinting of type variables from ml files for OCaml 4.14 and later
+  (multiple occurences of the same type variable could be named differently)
+  (@octachron, #1173)
+
+# 2.4.2
+
+### Added
+
+- OCaml 5.2.0 compatibility (@Octachron, #1094, #1112)
+
+### Fixed
+
+- Fix issues #1066 and #1095 with extended opens (@jonludlam, #1082, #1100)
+ 
+# 2.4.1
+
+### Fixed
+
+- Revert to outputing a file (without content) when rendering a hidden
+  compilation unit. This fixes cases where the dune rules would
+  fail. (@panglesd, #1069)
 
 # 2.4.0
 
