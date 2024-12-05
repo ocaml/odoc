@@ -270,22 +270,19 @@ end
 
 (* Construct the list of mlds and assets from a package name and its list of pages *)
 let mk_mlds docs =
-  let mlds, assets =
-    List.fold_left
-      (fun (mlds, assets) doc ->
-        match doc.Opam.kind with
-        | `Mld ->
-            ( { mld_path = doc.Opam.file; mld_rel_path = doc.Opam.rel_path }
-              :: mlds,
-              assets )
-        | `Asset ->
-            ( mlds,
-              { asset_path = doc.Opam.file; asset_rel_path = doc.Opam.rel_path }
-              :: assets )
-        | `Other -> (mlds, assets))
-      ([], []) docs
-  in
-  (mlds, assets)
+  List.fold_left
+    (fun (mlds, assets, others) doc ->
+      match doc.Opam.kind with
+      | `Mld ->
+          ( { mld_path = doc.Opam.file; mld_rel_path = doc.Opam.rel_path }
+            :: mlds,
+            assets, others )
+      | `Asset ->
+          ( mlds,
+            { asset_path = doc.Opam.file; asset_rel_path = doc.Opam.rel_path }
+            :: assets, others )
+      | `Other -> (mlds, assets, doc.Opam.file :: others))
+    ([], [], []) docs
 
 let fix_missing_deps pkgs =
   let lib_name_by_hash =
@@ -395,16 +392,7 @@ let of_libs ~packages_dir libs =
                           pkg = pkg')
                         opam_map
                     in
-                    let mlds, assets = mk_mlds docs in
-                    let other_docs =
-                      List.filter_map
-                        (function
-                          | { Opam.kind = `Other; file; _ } -> Some file
-                          | _ -> None)
-                        docs
-                      |> Fpath.Set.of_list
-                    in
-                    let other_docs = Fpath.Set.elements other_docs in
+                    let mlds, assets, other_docs = mk_mlds docs in
                     Some
                       {
                         name = pkg.name;
@@ -462,16 +450,8 @@ let of_packages ~packages_dir packages =
         in
         let pkg_dir = pkg_dir packages_dir pkg.name in
         let config = Global_config.load pkg.name in
-        let mlds, assets = mk_mlds files.docs in
-        let other_docs =
-          List.filter_map
-            (function
-              | { Opam.kind = `Other; file; _ } -> Some file | _ -> None)
-            files.docs
-          |> Fpath.Set.of_list
-        in
+        let mlds, assets, other_docs = mk_mlds files.docs in
         let enable_warnings = List.mem pkg.name packages in
-        let other_docs = Fpath.Set.elements other_docs in
         Util.StringMap.add pkg.name
           {
             name = pkg.name;

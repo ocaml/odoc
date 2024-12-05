@@ -146,7 +146,47 @@ let pp_fpaths_of_package fmt l =
         docs)
     l
 
-let classify_contents prefix only_package contents =
+let classify_docs prefix only_package contents =
+  let pkg_match pkg =
+    match only_package with None -> true | Some p -> p = pkg
+  in
+
+  let is_dir f =
+    try Sys.is_directory (Fpath.to_string f) with Sys_error _ -> false
+  in
+
+  List.fold_left
+    (fun acc fpath ->
+      match Fpath.segs fpath with
+      | "doc" :: pkg :: "odoc-pages" :: _ :: _
+        when pkg_match pkg && not (is_dir Fpath.(prefix // fpath)) ->
+          Logs.debug (fun m -> m "Found odoc page: %a" Fpath.pp fpath);
+          let kind =
+            match Fpath.get_ext fpath with ".mld" -> `Mld | _ -> `Asset
+          in
+          let rel_path =
+            Fpath.rem_prefix Fpath.(v "doc" / pkg / "odoc-pages") fpath
+            |> Option.get
+          in
+          { kind; file = Fpath.(prefix // fpath); rel_path } :: acc
+      | "doc" :: pkg :: "odoc-assets" :: _ :: _
+        when pkg_match pkg && not (is_dir Fpath.(prefix // fpath)) ->
+          Logs.debug (fun m -> m "Found odoc page: %a" Fpath.pp fpath);
+          let rel_path =
+            Fpath.rem_prefix Fpath.(v "doc" / pkg / "odoc-assets") fpath
+            |> Option.get
+          in
+          let rel_path = Fpath.(v "_assets" // rel_path) in
+          { kind = `Asset; file = Fpath.(prefix // fpath); rel_path } :: acc
+      | [ "doc"; pkg; _ ]
+        when pkg_match pkg && not (is_dir Fpath.(prefix // fpath)) ->
+          Logs.debug (fun m -> m "Found other doc: %a" Fpath.pp fpath);
+          let rel_path = Fpath.base fpath in
+          { kind = `Other; file = Fpath.(prefix // fpath); rel_path } :: acc
+      | _ -> acc)
+    [] contents
+
+let classify_libs prefix only_package contents =
   let pkg_match pkg =
     match only_package with None -> true | Some p -> p = pkg
   in
@@ -162,44 +202,7 @@ let classify_contents prefix only_package contents =
         | _ -> set)
       Fpath.Set.empty contents
   in
-
-  let is_dir f =
-    try Sys.is_directory (Fpath.to_string f) with Sys_error _ -> false
-  in
-
-  let docs =
-    List.fold_left
-      (fun acc fpath ->
-        match Fpath.segs fpath with
-        | "doc" :: pkg :: "odoc-pages" :: _ :: _
-          when pkg_match pkg && not (is_dir Fpath.(prefix // fpath)) ->
-            Logs.debug (fun m -> m "Found odoc page: %a" Fpath.pp fpath);
-            let kind =
-              match Fpath.get_ext fpath with ".mld" -> `Mld | _ -> `Asset
-            in
-            let rel_path =
-              Fpath.rem_prefix Fpath.(v "doc" / pkg / "odoc-pages") fpath
-              |> Option.get
-            in
-            { kind; file = Fpath.(prefix // fpath); rel_path } :: acc
-        | "doc" :: pkg :: "odoc-assets" :: _ :: _
-          when pkg_match pkg && not (is_dir Fpath.(prefix // fpath)) ->
-            Logs.debug (fun m -> m "Found odoc page: %a" Fpath.pp fpath);
-            let rel_path =
-              Fpath.rem_prefix Fpath.(v "doc" / pkg / "odoc-assets") fpath
-              |> Option.get
-            in
-            let rel_path = Fpath.(v "_assets" // rel_path) in
-            { kind = `Asset; file = Fpath.(prefix // fpath); rel_path } :: acc
-        | [ "doc"; pkg; _ ]
-          when pkg_match pkg && not (is_dir Fpath.(prefix // fpath)) ->
-            Logs.debug (fun m -> m "Found other doc: %a" Fpath.pp fpath);
-            let rel_path = Fpath.base fpath in
-            { kind = `Other; file = Fpath.(prefix // fpath); rel_path } :: acc
-        | _ -> acc)
-      [] contents
-  in
-  (libs, docs)
+  libs
 
 let dune_overrides () =
   let ocamlpath = Sys.getenv_opt "OCAMLPATH" in
@@ -243,7 +246,8 @@ let dune_overrides () =
                     (Util.StringSet.elements packages));
               Util.StringSet.fold
                 (fun pkg acc ->
-                  let libs, docs = classify_contents base (Some pkg) contents in
+                  let libs = classify_libs base (Some pkg) contents in
+                  let docs = classify_docs base (Some pkg) contents in
                   Logs.debug (fun m ->
                       m "pkg %s Found %d docs" pkg (List.length docs));
                   ({ name = pkg; version = "dev" }, { libs; docs }) :: acc)
@@ -262,7 +266,8 @@ let pkg_to_dir_map () =
     List.map
       (fun p ->
         let contents = pkg_contents p in
-        let libs, docs = classify_contents (Fpath.v prefix) None contents in
+        let libs = classify_libs (Fpath.v prefix) None contents in
+        let docs = classify_docs (Fpath.v prefix) None contents in
         (p, { libs; docs }))
       pkgs
   in

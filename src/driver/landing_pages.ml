@@ -1,18 +1,27 @@
 open Odoc_unit
 
-let make_index ~dirs ~rel_dir ?index ~content () =
+let make_index ~dirs ~rel_dir ?(libs = []) ?(pkgs = []) ?index ~content () =
   let { odoc_dir; odocl_dir; mld_dir; _ } = dirs in
   let input_file = Fpath.(mld_dir // rel_dir / "index.mld") in
   let odoc_file = Fpath.(odoc_dir // rel_dir / "page-index.odoc") in
   let odocl_file = Fpath.(odocl_dir // rel_dir / "page-index.odocl") in
   let parent_id = rel_dir |> Odoc.Id.of_fpath in
+  let pages =
+    List.map (fun pkg -> (pkg.Packages.name, Odoc_unit.doc_dir pkg)) pkgs
+  in
+  let libs =
+    List.map
+      (fun (pkg, lib) -> (lib.Packages.lib_name, Odoc_unit.lib_dir pkg lib))
+      libs
+  in
+  let pkg_args = { Pkg_args.pages; libs; odoc_dir; odocl_dir } in
   Util.with_out_to input_file (fun oc ->
       Format.fprintf (Format.formatter_of_out_channel oc) "%t@?" content)
   |> Result.get_ok;
   {
     output_dir = dirs.odoc_dir;
     pkgname = None;
-    pkg_args = { Pkg_args.pages = []; libs = []; odoc_dir; odocl_dir };
+    pkg_args;
     parent_id;
     input_file;
     odoc_file;
@@ -32,7 +41,7 @@ let library ~dirs ~pkg ~index lib =
     List.iter print_module lib.modules
   in
   let rel_dir = lib_dir pkg lib in
-  make_index ~dirs ~rel_dir ~index ~content ()
+  make_index ~dirs ~rel_dir ~libs:[ (pkg, lib) ] ~index ~content ()
 
 let package ~dirs ~pkg ~index =
   let content ppf =
