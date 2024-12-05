@@ -687,7 +687,7 @@
 (subdir
  html
  (rule
-  (targets Alerts.html.gen Alerts-Top1.html.gen Alerts-Top2.html.gen)
+  (targets Alerts.html.gen Alerts-Top1.html.gen)
   (action
    (run
     odoc
@@ -711,12 +711,6 @@
   (alias runtest)
   (action
    (diff Alerts-Top1.html Alerts-Top1.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
- (rule
-  (alias runtest)
-  (action
-   (diff Alerts-Top2.html Alerts-Top2.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04))))
 
@@ -770,7 +764,7 @@
 (subdir
  man
  (rule
-  (targets Alerts.3o.gen Alerts.Top1.3o.gen Alerts.Top2.3o.gen)
+  (targets Alerts.3o.gen Alerts.Top1.3o.gen)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../alerts.odocl}))
   (enabled_if
@@ -785,12 +779,6 @@
   (alias runtest)
   (action
    (diff Alerts.Top1.3o Alerts.Top1.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
- (rule
-  (alias runtest)
-  (action
-   (diff Alerts.Top2.3o Alerts.Top2.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04))))
 

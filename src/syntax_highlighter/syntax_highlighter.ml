@@ -153,6 +153,7 @@ let tag_of_token (tok : Parser.token) =
 #endif
 
 let syntax_highlighting_locs src =
+    Lexer.init ();
   let lexbuf = Lexing.from_string
 #if OCAML_VERSION >= (4,8,0)
       ~with_positions:true

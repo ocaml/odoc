@@ -17,16 +17,12 @@ val c : int
 (* At the top-level of a module. *)
 
 module Top1 : sig
-  [@@@deprecated "A"]
 
+  (* On OCaml 4.04 to 4.06, this top-comment is lost by the parser if there's
+     no empty line before it. *)
   (** Top-comment. *)
 end
-
-module Top2 : sig
-  [@@@deprecated "A"]
-
-  (** Top-comment. *)
-end
+[@@deprecated "A"]
 
 (* Deprecated alert tag. *)
 
