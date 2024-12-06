@@ -208,7 +208,8 @@ let html_generate ~output_dir ?sidebar ?(ignore_output = false)
       empty search_uris
   in
   let cmd =
-    !odoc % "html-generate" % p file %% index %% search_uris % "-o" % output_dir
+    !odoc % "html-generate" % "--escape-breadcrumb" % p file %% index
+    %% search_uris % "-o" % output_dir
   in
   let cmd =
     match remap with None -> cmd | Some f -> cmd % "--remap-file" % p f
