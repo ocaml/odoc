@@ -65,7 +65,8 @@ module Antichain = struct
     in
     Fpath.normalize p
 
-  (** Check that a list of directories form an antichain: they are all disjoints *)
+  (** Check that a list of directories form an antichain: they are all disjoints
+  *)
   let check ~opt l =
     let l =
       List.map
@@ -456,14 +457,14 @@ module Indexing = struct
     | Some file, `JSON when not (Fpath.has_ext "json" (Fpath.v file)) ->
         Error
           (`Msg
-            "When generating a json index, the output must have a .json file \
-             extension")
+             "When generating a json index, the output must have a .json file \
+              extension")
     | Some file, `Marshall when not (Fpath.has_ext "odoc-index" (Fpath.v file))
       ->
         Error
           (`Msg
-            "When generating a binary index, the output must have a \
-             .odoc-index file extension")
+             "When generating a binary index, the output must have a \
+              .odoc-index file extension")
     | Some file, _ -> Ok (Fs.File.of_string file)
     | None, `JSON -> Ok (Fs.File.of_string "index.json")
     | None, `Marshall -> Ok (Fs.File.of_string "index.odoc-index")
@@ -667,8 +668,8 @@ end = struct
       when detected_package <> curpkgnane ->
         Error
           (`Msg
-            "The package name specified with --current-package is not \
-             consistent with the packages passed as a -P")
+             "The package name specified with --current-package is not \
+              consistent with the packages passed as a -P")
     | _, (Some _ as r) (* we have equality or only detected package *) -> Ok r
     | None, None -> Ok None
     | Some given, None -> (
@@ -676,8 +677,8 @@ end = struct
         with Not_found ->
           Error
             (`Msg
-              "The package name specified with --current-package do not match \
-               any package passed as a -P"))
+               "The package name specified with --current-package do not match \
+                any package passed as a -P"))
 
   let find_current_package ~current_package page_roots input =
     let detected_package = find_root_of_input page_roots input in
@@ -1527,8 +1528,8 @@ module Occurrences = struct
       | [], [] ->
           Error
             (`Msg
-              "At least one of --file-list or a path to a file must be passed \
-               to odoc aggregate-occurrences")
+               "At least one of --file-list or a path to a file must be passed \
+                to odoc aggregate-occurrences")
       | _ ->
           dst_of_string dst >>= fun dst ->
           Occurrences.aggregate ~dst ~warnings_options files file_list

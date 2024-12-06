@@ -5,8 +5,7 @@ type rendered_item = DocumentedSrc.t
 
 type text = Codefmt.t
 
-(** HTML generation syntax customization module. See {!ML} and
-    {!Reason}. *)
+(** HTML generation syntax customization module. See {!ML} and {!Reason}. *)
 module type SYNTAX = sig
   module Obj : sig
     val close_tag_closed : string

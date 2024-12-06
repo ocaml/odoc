@@ -130,13 +130,11 @@ let entity ~in_source ~verbatim x =
   if in_source && not verbatim then Ligaturable (escape_entity x)
   else Txt [ escape_entity x ]
 
-(** Tables with too many rows are hard to typeset correctly on
-    the same page.
+(** Tables with too many rows are hard to typeset correctly on the same page.
     Splitting tables on multiple pages is unreliable with longtable + hyperref.
-    Thus we limit the height of the tables that we render as latex tables.
-    This variable is kept separated because we may want to make it tunable
-    by the user.
-*)
+    Thus we limit the height of the tables that we render as latex tables. This
+    variable is kept separated because we may want to make it tunable by the
+    user. *)
 let small_table_height_limit = 10
 
 let rec pp_elt ppf = function

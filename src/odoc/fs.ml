@@ -79,7 +79,10 @@ module File = struct
       Result.Ok (Bytes.unsafe_to_string buf)
     in
     let input_stream file ic =
-      let bsize = 65536 (* IO_BUFFER_SIZE *) in
+      let bsize =
+        65536
+        (* IO_BUFFER_SIZE *)
+      in
       let buf = Buffer.create bsize in
       let rec loop () =
         match Buffer.add_channel buf ic bsize with

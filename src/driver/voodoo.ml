@@ -97,8 +97,10 @@ let assets_and_mlds_of_pkg pkg_path pkg =
                  else
                    Some
                      (`A
-                       { Packages.asset_path = path; asset_rel_path = rel_path })
-             )
+                        {
+                          Packages.asset_path = path;
+                          asset_rel_path = rel_path;
+                        }))
          | "doc" :: pkg_name :: "odoc-assets" :: _ :: _ -> (
              check_name pkg_name >>= fun () ->
              match Fpath.rem_prefix asset_prefix p with

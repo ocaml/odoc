@@ -1,21 +1,20 @@
 (** Markup examples. *)
 
 (** The OCaml manual gives a
-{{:https://ocaml.org/manual/ocamldoc.html#ss:ocamldoc-placement}comprehensive example}
-of comment placement. This has been replicated in the module Foo below to
-show how this is rendered by [odoc]. *)
+    {{:https://ocaml.org/manual/ocamldoc.html#ss:ocamldoc-placement}comprehensive
+     example} of comment placement. This has been replicated in the module Foo
+    below to show how this is rendered by [odoc]. *)
 
 module type Foo = sig
-  (** The first special comment of the file is the comment associated
-    with the whole module.*)
+  (** The first special comment of the file is the comment associated with the
+      whole module.*)
 
-  (** Special comments can be placed between elements and are kept
-    by the OCamldoc tool, but are not associated to any element.
-    [@]-tags in these comments are ignored.*)
+  (** Special comments can be placed between elements and are kept by the
+      OCamldoc tool, but are not associated to any element. [@]-tags in these
+      comments are ignored.*)
 
   (*******************************************************************)
-  (** Comments like the one above, with more than two asterisks,
-    are ignored. *)
+  (** Comments like the one above, with more than two asterisks, are ignored. *)
 
   (** The comment for function f. *)
   val f : int -> int -> int
@@ -23,20 +22,20 @@ module type Foo = sig
 
   (* Hello, I'm a simple comment :-) *)
   exception My_exception of (int -> int) * int
-  (** Comment for exception My_exception, even with a simple comment
-    between the special comment and the exception.*)
+  (** Comment for exception My_exception, even with a simple comment between the
+      special comment and the exception.*)
 
-  (** Comment for type weather  *)
+  (** Comment for type weather *)
   type weather =
     | Rain of int  (** The comment for constructor Rain *)
     | Sun  (** The comment for constructor Sun *)
 
-  (** Comment for type weather2  *)
+  (** Comment for type weather2 *)
   type weather2 =
     | Rain of int  (** The comment for constructor Rain *)
     | Sun  (** The comment for constructor Sun *)
-  (** I can continue the comment for type weather2 here
-  because there is already a comment associated to the last constructor.*)
+  (** I can continue the comment for type weather2 here because there is already
+      a comment associated to the last constructor.*)
 
   (** The comment for type my_record *)
   type my_record = {
@@ -67,9 +66,8 @@ module type Foo = sig
     val toto : int
     (** The comment for attribute toto. *)
 
-    (** This comment is not attached to titi since
-        there is a blank line before titi, but is kept
-        as a comment in the class. *)
+    (** This comment is not attached to titi since there is a blank line before
+        titi, but is kept as a comment in the class. *)
 
     val titi : string
 
@@ -126,8 +124,8 @@ module Stop : sig
   end
 
   val foo : string
-  (** This value appears in the documentation, since the Stop special comment
-      in the class does not affect the parent module of the class.*)
+  (** This value appears in the documentation, since the Stop special comment in
+      the class does not affect the parent module of the class.*)
 
   (**/**)
 
@@ -137,14 +135,14 @@ module Stop : sig
   (**/**)
 
   type t = string
-  (** The type t appears since in the documentation since the previous stop comment
-  toggled off the "no documentation mode". *)
+  (** The type t appears since in the documentation since the previous stop
+      comment toggled off the "no documentation mode". *)
 end
 
 (** {2 Scoping rules} *)
 module Scope : sig
-  (** In this floating comment I can refer to type {!t} and value {!v}
-    declared later in the signature *)
+  (** In this floating comment I can refer to type {!t} and value {!v} declared
+      later in the signature *)
 
   type t
 
@@ -155,12 +153,12 @@ module Scope : sig
   val y : int
 
   module A : sig
-    (** In this module I can refer to val {!x} declared above as well as
-      type {!u} declared later in the parent module. Elements declared
-      in this signature take priority, so {!y} refers to {!A.y} as
-      opposed to the [y] declared in the parent signature.
-      
-      @see 'markup.mli' for a good time *)
+    (** In this module I can refer to val {!x} declared above as well as type
+        {!u} declared later in the parent module. Elements declared in this
+        signature take priority, so {!y} refers to {!A.y} as opposed to the [y]
+        declared in the parent signature.
+
+        @see 'markup.mli' for a good time *)
 
     val y : string
   end
@@ -174,25 +172,27 @@ module Preamble_examples : sig
   (** This is the comment attached to the declaration of Hidden__Module *)
   module Hidden__Module : sig
     (** This is the top comment declared in the module Hidden__module.
-     
-     This is the second paragraph in the module Hidden__module.
-     
-     @canonical Odoc_examples.Markup.Module *)
+
+        This is the second paragraph in the module Hidden__module.
+
+        @canonical Odoc_examples.Markup.Module *)
 
     type t
     (** This is a comment on type t *)
   end
 
   module Module = Hidden__Module
-  (** This comment is on the declaration of Module as an alias of Hidden__Module *)
+  (** This comment is on the declaration of Module as an alias of Hidden__Module
+  *)
 
-  (** This is the comment attached to the declaration of module Hidden__Module2 *)
+  (** This is the comment attached to the declaration of module Hidden__Module2
+  *)
   module Hidden__Module2 : sig
     (** This is the top comment declared in the module Hidden__module2.
-       
-       This is the second paragraph in the module Hidden__module2.
-       
-       @canonical Odoc_examples.Markup.Module2 *)
+
+        This is the second paragraph in the module Hidden__module2.
+
+        @canonical Odoc_examples.Markup.Module2 *)
 
     type t
     (** This is a comment on type t *)
@@ -202,23 +202,22 @@ module Preamble_examples : sig
 
   module Nonhidden_module : sig
     (** This is the top comment declared in the module Hidden__module2.
-       
-       This is the second paragraph in the module Hidden__module2.
-    *)
+
+        This is the second paragraph in the module Hidden__module2. *)
   end
 
   module Module3 = Nonhidden_module
-  (** This comment is on the declaration of Module3 as an alias of Nonhidden_module *)
+  (** This comment is on the declaration of Module3 as an alias of
+      Nonhidden_module *)
 
   module Nonhidden_module2 : sig
     (** This is the top comment declared in the module Hidden__module2.
-       
-       This is the second paragraph in the module Hidden__module2.
-    *)
+
+        This is the second paragraph in the module Hidden__module2. *)
   end
 
   module Module4 = Nonhidden_module2
 
   (** The [modules] special reference can be used to refer to a list of modules.
-It uses the synopsis from the modules  *)
+      It uses the synopsis from the modules *)
 end

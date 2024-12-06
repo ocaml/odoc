@@ -161,7 +161,9 @@ and tag : general_tag t =
   let url_kind =
     Variant
       (function
-      | `Url -> C0 "`Url" | `File -> C0 "`File" | `Document -> C0 "`Document")
+      | `Url -> C0 "`Url"
+      | `File -> C0 "`File"
+      | `Document -> C0 "`Document")
   in
   Variant
     (function

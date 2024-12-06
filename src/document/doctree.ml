@@ -196,8 +196,8 @@ end
 module Headings : sig
   val fold :
     enter_subpages:bool -> ('a -> Heading.t -> 'a) -> 'a -> Page.t -> 'a
-  (** Fold over every headings, follow nested documentedsrc and
-      expansions, as well as subpages if [enter_subpages] is [true]. *)
+  (** Fold over every headings, follow nested documentedsrc and expansions, as
+      well as subpages if [enter_subpages] is [true]. *)
 
   val foldmap :
     enter_subpages:bool ->

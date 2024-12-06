@@ -117,7 +117,9 @@ module Reference = struct
           | Some s -> s
         and tooltip =
           (* Add a tooltip if the content is not the rendered reference. *)
-          match text with None -> None | Some _ -> Some rendered
+          match text with
+          | None -> None
+          | Some _ -> Some rendered
         in
         let url = Url.from_identifier ~stop_before:false id in
         let target = Target.Internal (Resolved url) in

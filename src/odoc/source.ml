@@ -36,7 +36,7 @@ let compile ~resolver ~output ~warnings_options ~source_id input =
             | None ->
                 Error
                   (`Msg
-                    "parent-id cannot be empty when compiling implementations.")
+                     "parent-id cannot be empty when compiling implementations.")
           in
           parent >>= fun parent ->
           let source_id =

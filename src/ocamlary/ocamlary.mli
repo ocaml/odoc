@@ -17,68 +17,49 @@
 
 (** This is an {i interface} with {b all} of the {e module system} features.
     This documentation demonstrates:
-- comment formatting
-- unassociated comments
-- documentation sections
-- module system documentation including
- {ol
- {- submodules}
- {- module aliases}
- {- module types}
- {- module type aliases}
- {- modules with signatures}
- {- modules with aliased signatures}
-}
+    {ul
+     {- comment formatting }
+     {- unassociated comments }
+     {- documentation sections }
+     {- module system documentation including
+        + submodules
+        + module aliases
+        + module types
+        + module type aliases
+        + modules with signatures
+        + modules with aliased signatures
+     }
+    }
 
-A numbered list:
-+ 3
-+ 2
-+ 1
+    A numbered list:
+    + 3
+    + 2
+    + 1
 
     David Sheets is the author.
-    @author David Sheets
-*)
+    @author David Sheets *)
 
-(**
-    You may find more information about this HTML documentation renderer
-    at {{:https://github.com/dsheets/ocamlary} github.com/dsheets/ocamlary }.
-*)
+(** You may find more information about this HTML documentation renderer at
+    {{:https://github.com/dsheets/ocamlary} github.com/dsheets/ocamlary}. *)
 
-(**
-   This is some verbatim text:
-   {v verbatim v}
-*)
+(** This is some verbatim text:
+    {v verbatim v} *)
 
-(**
-    This is some verbatim text:
-    {v [][df[]]}} v}
-*)
+(** This is some verbatim text:
+    {v [][df[]]}} v} *)
 
-(**
-    Here is some raw LaTeX:
-    {%latex: $e^{i\pi} = -1$ %}
-*)
+(** Here is some raw LaTeX: {%latex: $e^{i\pi} = -1$ %} *)
 
-(**
-    Here is an index table of [Empty] modules:
-    {!modules: Empty EmptyAlias}
-*)
+(** Here is an index table of [Empty] modules:
+    {!modules:Empty EmptyAlias} *)
 
-(**
-    Odoc doesn't support [{!indexlist}].
-*)
+(** Odoc doesn't support [{!indexlist}]. *)
 
-(**
-    Here is some superscript: x{^2}
-*)
+(** Here is some superscript: x{^ 2} *)
 
-(**
-    Here is some subscript: x{_0}
-*)
+(** Here is some subscript: x{_ 0} *)
 
-(**
-    Here are some escaped brackets: \{ \[ \@ \] \}
-*)
+(** Here are some escaped brackets: \{ \[ \@ \] \} *)
 
 (** Here is some {e emphasis} [followed by code]. *)
 
@@ -86,13 +67,13 @@ A numbered list:
 
 (******************************************************************************)
 
-(** {1 Level 1 } *)
+(** {1 Level 1} *)
 
-(** {2 Level 2 } *)
+(** {2 Level 2} *)
 
-(** {3 Level 3 } *)
+(** {3 Level 3} *)
 
-(** {4 Level 4 } *)
+(** {4 Level 4} *)
 
 (** {3 Basic module stuff} *)
 
@@ -110,7 +91,7 @@ module type MissingComment = sig
   type t
 end
 
-(** {1:s9000 Section 9000 } *)
+(** {1:s9000 Section 9000} *)
 
 module EmptyAlias = Empty
 (** A plain module alias of [Empty] *)
@@ -122,7 +103,9 @@ module type EmptySig = sig end
 
 module type EmptySigAlias = EmptySig
 (** A plain, empty module signature alias of
-    {[EmptySig]}
+    {[
+      EmptySig
+    ]}
     (preformatted). *)
 
 module ModuleWithSignature : EmptySig
@@ -130,8 +113,7 @@ module ModuleWithSignature : EmptySig
 
 module ModuleWithSignatureAlias : EmptySigAlias
 (** A plain module with an alias signature
-    @deprecated I don't like this element any more.
-*)
+    @deprecated I don't like this element any more. *)
 
 module One : sig
   type one
@@ -172,12 +154,10 @@ module type SuperSig = sig
   module type SuperSig = sig end
 end
 
-(** For a good time, see
-    {!SuperSig.SubSigA.subSig} or {!SuperSig.SubSigB.subSig} or
-    {!SuperSig.EmptySig}. Section {!s9000} is also
-    interesting.
-    {!section:emptySig} is the section and {!module-type:EmptySig} is the
-    module signature. *)
+(** For a good time, see {!SuperSig.SubSigA.subSig} or
+    {!SuperSig.SubSigB.subSig} or {!SuperSig.EmptySig}. Section {!s9000} is also
+    interesting. {!section:emptySig} is the section and {!module-type:EmptySig}
+    is the module signature. *)
 
 (** References are resolved after everything, so [{!Buffer.t}] won't resolve. *)
 module Buffer : sig
@@ -186,9 +166,9 @@ end
 
 (** Some text before exception title.
 
- {3 Basic exception stuff}
+    {3 Basic exception stuff}
 
- After exception title. *)
+    After exception title. *)
 
 exception Kaboom of unit
 (** Unary exception constructor *)
@@ -200,24 +180,21 @@ exception Kapow of (unit * unit)
 (** Unary exception constructor over binary tuple *)
 
 exception EmptySig
-(** {!module-type:EmptySig} is a module and
-    {!exception:EmptySig} is this exception. *)
+(** {!module-type:EmptySig} is a module and {!exception:EmptySig} is this
+    exception. *)
 
 exception EmptySigAlias
 (** {!exception:EmptySigAlias} is this exception. *)
 
-(** {3 Basic type and value stuff with advanced doc comments } *)
+(** {3 Basic type and value stuff with advanced doc comments} *)
 
 type ('a, 'b) a_function = 'a -> 'b
-(** {!type:a_function} is this type and
-    {!val:a_function} is the value below. *)
+(** {!type:a_function} is this type and {!val:a_function} is the value below. *)
 
 val a_function : x:int -> int
-(**
-   This is [a_function] with param and return type.
-   @param x the [x] coordinate
-   @return the [y] coordinate
-*)
+(** This is [a_function] with param and return type.
+    @param x the [x] coordinate
+    @return the [y] coordinate *)
 
 val fun_fun_fun : ((int, int) a_function, (unit, unit) a_function) a_function
 
@@ -239,20 +216,16 @@ val some_doc : string
 (** @see "some_doc" The document called [some_doc] *)
 
 val since_mesozoic : unit
-(**
-   This value was introduced in the Mesozoic era.
-   @since mesozoic
-*)
+(** This value was introduced in the Mesozoic era.
+    @since mesozoic *)
 
 val changing : unit
-(**
-   This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
-   @before 1.0.0 before 1.0.0
-   @before 1.1.0 before 1.1.0
-   @version 1.2.0
-*)
+(** This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
+    @before 1.0.0 before 1.0.0
+    @before 1.1.0 before 1.1.0
+    @version 1.2.0 *)
 
-(** {3 Some Operators } *)
+(** {3 Some Operators} *)
 
 val ( ~- ) : unit
 
@@ -361,9 +334,8 @@ module type B = sig
 end
 
 (** This module type includes two signatures.
-   {ul
-   {- it includes {!module-type:A}}
-   {- it includes {!module-type:B} with some substitution}} *)
+    - it includes {!module-type:A}
+    - it includes {!module-type:B} with some substitution *)
 module type C = sig
   include A
 
@@ -853,12 +825,11 @@ include IncludeInclude2
     With odoc, everything should be resolved (and linked) but only toplevel
     units will be documented.
 
-    {!modules: Dep1.X Ocamlary.IncludeInclude1 Ocamlary}
+    {!modules:Dep1.X Ocamlary.IncludeInclude1 Ocamlary}
 
     {3 Weirder usages involving module types}
 
-    {!modules: IncludeInclude1.IncludeInclude2_M Dep4.X}
-*)
+    {!modules:IncludeInclude1.IncludeInclude2_M Dep4.X} *)
 
 (** {1 Playing with \@canonical paths} *)
 
@@ -898,8 +869,9 @@ module CanonicalTest : sig
 end
 
 (* val test : 'a CanonicalTest.Base__.List.t -> unit *)
-(** Some ref to {!CanonicalTest.Base_Tests.C.t} and {!CanonicalTest.Base_Tests.L.id}.
-    But also to {!CanonicalTest.Base.List} and {!CanonicalTest.Base.List.t} *)
+(** Some ref to {!CanonicalTest.Base_Tests.C.t} and
+    {!CanonicalTest.Base_Tests.L.id}. But also to {!CanonicalTest.Base.List} and
+    {!CanonicalTest.Base.List.t} *)
 
 (** {1:aliases Aliases again} *)
 
@@ -1028,9 +1000,8 @@ end
     - [{{!section:indexmodules}A}] : {{!section:indexmodules}A}
     - [{{!aliases}B}] : {{!aliases}B}
     - [{{!section:SuperSig.SubSigA.subSig}C}] :
-    {{!section:SuperSig.SubSigA.subSig}C}
-    - [{{!Aliases.incl}D}] : {{!Aliases.incl}D}
-*)
+      {{!section:SuperSig.SubSigA.subSig}C}
+    - [{{!Aliases.incl}D}] : {{!Aliases.incl}D} *)
 
 (** {1 New reference syntax} *)
 

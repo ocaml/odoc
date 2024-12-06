@@ -223,7 +223,7 @@ module M = struct
     | Error _ ->
         Error
           (`Parent
-            (`Parent_module (`Lookup_failure_root (ModuleName.make_std name))))
+             (`Parent_module (`Lookup_failure_root (ModuleName.make_std name))))
 end
 
 module Path = struct
@@ -457,9 +457,10 @@ module ED = struct
         let id_parent = match id.iv with `Extension (p, _) -> p in
         Ok
           (`Identifier
-            (Identifier.Mk.extension_decl
-               ( id_parent,
-                 (ExtensionName.make_std c.name, ExtensionName.make_std name) )))
+             (Identifier.Mk.extension_decl
+                ( id_parent,
+                  (ExtensionName.make_std c.name, ExtensionName.make_std name)
+                )))
 
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name =
@@ -533,7 +534,7 @@ module CS = struct
         | `In_type (typ_name, _, `FPoly cs) ->
             Ok
               (`PolyConstructor
-                (`Type (parent', typ_name), ConstructorName.make_std cs.name))
+                 (`Type (parent', typ_name), ConstructorName.make_std cs.name))
         | `In_type (typ_name, _, `FConstructor _) ->
             Ok (`Constructor (`Type (parent', typ_name), name)))
     | `T (parent', t) -> (
@@ -542,20 +543,20 @@ module CS = struct
         | `FPoly cs ->
             Ok
               (`PolyConstructor
-                ( (parent' : Resolved.DataType.t),
-                  ConstructorName.make_std cs.name ))
+                 ( (parent' : Resolved.DataType.t),
+                   ConstructorName.make_std cs.name ))
         | `FConstructor _ ->
             Ok (`Constructor ((parent' : Resolved.DataType.t), name)))
 
   let of_component _env parent name =
     Ok
       (`Constructor
-        ((parent : Resolved.DataType.t), ConstructorName.make_std name))
+         ((parent : Resolved.DataType.t), ConstructorName.make_std name))
 
   let poly_of_component _env parent name =
     Ok
       (`PolyConstructor
-        ((parent : Resolved.DataType.t), ConstructorName.make_std name))
+         ((parent : Resolved.DataType.t), ConstructorName.make_std name))
 end
 
 module F = struct
@@ -582,7 +583,7 @@ module F = struct
         | `In_type (typ_name, _, `FField _) ->
             Ok
               (`Field
-                ((`Type (parent', typ_name) :> Resolved.FieldParent.t), name)))
+                 ((`Type (parent', typ_name) :> Resolved.FieldParent.t), name)))
     | `T (parent', t) -> (
         find Find.any_in_type t (fun x -> x) name_s >>= function
         | `FConstructor _ -> got_a_constructor name_s
@@ -592,8 +593,8 @@ module F = struct
   let of_component _env parent name =
     Ok
       (`Field
-        ( (parent : Resolved.DataType.t :> Resolved.FieldParent.t),
-          FieldName.make_std name ))
+         ( (parent : Resolved.DataType.t :> Resolved.FieldParent.t),
+           FieldName.make_std name ))
 end
 
 module MM = struct
