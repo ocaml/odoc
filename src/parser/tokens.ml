@@ -11,7 +11,6 @@ type table_cell_kind = [ `Header | `Data ]
 type token =
   | SPACE
   | Space of string
-  | NEWLINE
   | Single_newline of string
   | Blank_line of string
   | Simple_ref of string
@@ -71,7 +70,7 @@ let media_description ref_kind media_kind =
 
 let print : token -> string = function
   | SPACE | Space _ -> "\t"
-  | NEWLINE | Single_newline _ -> "\n"
+  | Single_newline _ -> "\n"
   | Blank_line _ -> "\n\n"
   | Simple_ref _ -> "{!"
   | Ref_with_replacement _ -> "{{!"
@@ -164,7 +163,6 @@ let describe : token -> string = function
   | END -> "end of text"
   | SPACE -> "whitespace"
   | Single_newline _ -> "newline"
-  | NEWLINE -> "line break"
   | Blank_line _ -> "blank line"
   | RIGHT_BRACE -> "'}'"
   | RIGHT_CODE_DELIMITER -> "']}'"

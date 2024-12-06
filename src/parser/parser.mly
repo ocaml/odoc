@@ -51,14 +51,14 @@
     | None -> Error Not_align
 
   let sequence : ('elt, 'err) result list -> ('elt list, 'err) result =
-  fun list ->
-    let rec go acc : ('elt, 'err) result list -> ('elt list, 'err) result =
-      function
-      | Ok x :: xs -> go (x :: acc) xs
-      | Error err :: _ -> Error err
-      | [] -> Ok (List.rev acc)
-    in
-    go [] list
+    fun list ->
+      let rec go acc : ('elt, 'err) result list -> ('elt list, 'err) result =
+        function
+        | Ok x :: xs -> go (x :: acc) xs
+        | Error err :: _ -> Error err
+        | [] -> Ok (List.rev acc)
+      in
+      go [] list
 
   (* NOTE: (@FayCarsons)
     When we get something that doesn't look like an align at all, we check to see if we've gotten
@@ -117,23 +117,6 @@
       `Table ((as_header header :: List.map as_data data, Some align), `Light)
     | data -> `Table ((List.map as_data data, None), `Light)
 
-(*
-
-  let construct_table :
-      ?header:Ast.inline_element Loc.with_location list list Writer.t ->
-      ?align:Ast.inline_element Loc.with_location list list Writer.t ->
-      Ast.inline_element Loc.with_location list list list Writer.t ->
-      Ast.nestable_block_element Writer.t =
-  fun ?header ?align data ->
-    let* data = Writer.map (List.map as_data) data in
-    let header = Option.value ~default:(Writer.return []) header in
-    let* header = Writer.map as_header header in
-    match align with
-    | Some align ->
-        let* table = Writer.map (mktable data header) align in
-        Writer.return table
-    | None -> Writer.return @@ mktable data header []
-*)
   let unclosed_table
       ?(data :
         Ast.inline_element Loc.with_location list list list Writer.t option)
@@ -168,10 +151,6 @@
     | Loc.{value = `Space _; _ } :: xs -> xs
     | xs -> xs
 
-  let loc_is_some = function 
-    | Loc.{ value = Some x; _ } as loc -> Some { loc with value = x }
-    | _ -> None
-(*
   let rec inline_element_inner : Ast.inline_element -> string = function 
     | `Space s -> s 
     | `Word s -> s
@@ -187,10 +166,18 @@
       "" 
       s
 
-*)
+let legal_module_list : Ast.inline_element Loc.with_location list -> bool = 
+  fun xs -> 
+    not_empty xs 
+    && List.for_all 
+      (function 
+        | `Word _ | `Space _ -> true 
+        | _ -> false) 
+      @@ List.map Loc.value xs
+
 %}
 
-%token SPACE NEWLINE
+%token SPACE 
 %token RIGHT_BRACE "{"
 %token RIGHT_CODE_DELIMITER "{["
 
@@ -262,28 +249,28 @@
 
 %%
 
-(* Utility which wraps the return value of a producer in `Loc.with_location` *)
+(* UTILITIES *)
+
+(* Utility which wraps the return value of a rule in `Loc.with_location` *)
 let locatedM(rule) == inner = rule; { Writer.map (wrap_location $sloc)  inner }
 let located(rule) == inner = rule; { wrap_location $sloc inner }
 
-let sequence(rule) == xs = rule*; { Writer.sequence xs }
-let sequence_nonempty(rule) == xs = rule+; { Writer.sequence xs }
-let separated_sequence_nonempty_inner(separator, X) := 
-  | x = X; { let* x = x in return [ x ] } 
-  | xs = separated_sequence_nonempty_inner(separator, X); separator; x = X;
-    {
-      let* x = x in 
-      let* xs = xs in
-      return @@ x :: xs
-    }
+let sequence(rule) == xs = list(rule); { Writer.sequence xs }
+let sequence_nonempty(rule) == xs = nonempty_list(rule); { Writer.sequence xs }
 
-let separated_sequence_nonempty(sep, rule) == xs = separated_sequence_nonempty_inner(sep, rule); { Writer.map List.rev xs }
+let separated_nonempty_sequence(sep, rule) := xs = separated_nonempty_list(sep, rule); { Writer.sequence xs }
+let separated_sequence(sep, rule) := 
+  | ~ = separated_nonempty_sequence(sep, rule); <>
+  | { return [] }
+
+(* WHITESPACE *)
 
 let horizontal_whitespace := 
   | SPACE; { `Space " " } 
   | ~ = Space; <`Space>
 
-let newline := NEWLINE; { "\n" } | ~ = Single_newline; <> 
+let newline := 
+  | ~ = Single_newline; <> 
 
 let whitespace := 
   | ~ = horizontal_whitespace; <>
@@ -297,7 +284,7 @@ let any_whitespace :=
 
 let main :=  
   | any_whitespace*; nodes = sequence_nonempty(locatedM(toplevel)); whitespace?; END; { nodes }
-  | any_whitespace*; END; { Writer.return @@ [] }
+  | END; { return [] }
 
 let toplevel :=
   | block = nestable_block_element; { Writer.map (fun b -> (b :> Ast.block_element) ) block }
@@ -635,22 +622,31 @@ let row_heavy :=
 let table_heavy := TABLE_HEAVY; whitespace?; grid = sequence_nonempty(row_heavy); RIGHT_BRACE; 
   { Writer.map (fun g -> `Table ((g, None), `Heavy)) grid }
 
+(* LIGHT TABLE *)
 
-let cell_light := ~ = sequence_nonempty(locatedM(inline_element)); <>
-(* This is crucial because we cannot have multiple optionals in sequence *)
-let row_prefix := 
-  | whitespace; {}
-  | BAR; {}
-  | whitespace; BAR; {}
-let row_light := row_prefix?; cells = separated_sequence_nonempty(BAR, cell_light); BAR?; <> 
-let rows_light := ~ = separated_sequence_nonempty(newline,row_light); <>
+let cell_content_light := ~ = sequence_nonempty(locatedM(inline_element)); <>
+let row_light := 
+  | BAR?; cells = separated_list(BAR, cell_content_light); BAR?; 
+    { Writer.sequence cells }
+let rows_light := rows = separated_list(Single_newline?, row_light); { Writer.sequence rows }
+let table_start_light := TABLE_LIGHT; whitespace?; {}
+
+let table_unexpected_EOI_light := newline?; END; {}
 let table_light :=
-  (* If there's only one row and it's not the align row, then it's data *)
-  | TABLE_LIGHT; data = rows_light; whitespace?; RIGHT_BRACE; { Writer.map construct_table data }
-    
-  (* If there's nothing inside, return an empty table *)
-  | TABLE_LIGHT; whitespace?; RIGHT_BRACE; 
-    { return @@ `Table (([[]], None), `Light) }
+    | table_start_light; data = rows_light; RIGHT_BRACE; { Writer.map construct_table data }
+    | table_start_light; RIGHT_BRACE; 
+      { return @@ `Table (([[]], None), `Light) }
+    | table_start_light; data = rows_light; table_unexpected_EOI_light; 
+      {
+        let in_what = Tokens.describe TABLE_LIGHT in
+        let warning = fun ~filename -> 
+          let span = Parser_aux.to_location ~filename $sloc in
+          Parse_error.end_not_allowed ~in_what span
+        in
+        unclosed_table ~data warning
+      }
+(*
+
   | TABLE_LIGHT; END; 
     {
       let in_what = Tokens.describe TABLE_LIGHT in
@@ -660,16 +656,7 @@ let table_light :=
       in
       unclosed_table warning
     }
-  | TABLE_LIGHT; data = rows_light; whitespace?; END; 
-    {
-      let in_what = Tokens.describe TABLE_LIGHT in
-      let warning = fun ~filename -> 
-        let span = Parser_aux.to_location ~filename $sloc in
-        Parse_error.end_not_allowed ~in_what span
-      in
-      unclosed_table ~data warning
-    }
-
+*)
 let table := 
   | ~ = table_heavy; <>
   | ~ = table_light; <>
@@ -736,73 +723,48 @@ let math_block := m = Math_block;
       |> Writer.map (fun m -> `Math_block m)
     }
 
-let module_list_element := 
-  | ~ = Word; <Some>
-  | horizontal_whitespace; { None }
-
 let modules := 
-  | MODULES; modules = located(module_list_element)+; RIGHT_BRACE; 
-    { 
-      let modules = List.filter_map loc_is_some modules in
-      return @@ `Modules modules
-    }
-  | MODULES; RIGHT_BRACE;
-    {
-      let what = Tokens.describe MODULES in
-      let warning = fun ~filename -> 
-        let span = Parser_aux.to_location ~filename $sloc in
-        Parse_error.should_not_be_empty ~what span 
-      in 
-      Writer.with_warning (`Modules []) warning
-    }
-  | MODULES; modules = located(module_list_element)+; END;
-    {
-      let in_what = Tokens.describe MODULES in
-      let warning = fun ~filename -> 
-        let span = Parser_aux.to_location ~filename $sloc in
-        Parse_error.end_not_allowed ~in_what span
-      in 
-      let modules = List.filter_map loc_is_some modules in
-      Writer.with_warning (`Modules modules) warning
-    }
-(*
-
-  | MODULES; modules = sequence_nonempty(locatedM(inline_element)); RIGHT_BRACE;
+  | MODULES; modules = sequence(locatedM(inline_element)); RIGHT_BRACE;
     {
       print_endline "INLINE";
       let in_what = Tokens.describe MODULES in
       let* modules = modules in
-      let warning = fun ~filename:_ -> 
+      let not_allowed = fun ~filename:_ -> 
         let span = Loc.span @@ List.map Loc.location modules in
-        let first_offending : Ast.inline_element = 
-          List.find 
+        let first_offending = 
+          List.find_opt 
             (function 
               | `Word _ | `Space _ -> false 
               | _ -> true) 
             (List.map Loc.value modules : Ast.inline_element list) 
         in
-        let what = Tokens.describe_inline first_offending in
+        let what = Option.map Tokens.describe_inline first_offending |> Option.value ~default:String.empty in
         Parse_error.not_allowed ~what ~in_what span 
       in
+      let is_empty = fun ~filename:_ -> 
+        let span = Loc.span @@ List.map Loc.location modules in
+        let what = Tokens.describe MODULES in
+        Parse_error.should_not_be_empty ~what span 
+      in
       let inner = `Modules (List.map (Loc.map inline_element_inner) modules) in
-      Writer.with_warning inner warning 
+      List.fold_left (fun writer (f, w) -> Writer.ensure f w writer) (return modules) [(not_empty, is_empty); (legal_module_list, not_allowed)]
+      |> Writer.map (Fun.const inner)
     }
-
-  | MODULES; modules = sequence_nonempty(locatedM(inline_element)); END;
+  | MODULES; modules = sequence(locatedM(inline_element)); END;
     {
       print_endline "INLINE + EOI";
       let in_what = Tokens.describe MODULES in
       let* modules = modules in
       let span = Loc.span @@ List.map Loc.location modules in
       let not_allowed = fun ~filename:_ -> 
-        let first_offending : Ast.inline_element = 
-          List.find 
+        let first_offending = 
+          List.find_opt 
             (function 
               | `Word _ | `Space _ -> false 
               | _ -> true) 
             (List.map Loc.value modules : Ast.inline_element list) 
         in
-        let what = Tokens.describe_inline first_offending in
+        let what = Option.map Tokens.describe_inline first_offending |> Option.value ~default:String.empty in
         Parse_error.not_allowed ~what ~in_what span 
       in
       let unexpected_end = fun ~filename:_ -> 
@@ -811,4 +773,3 @@ let modules :=
       let inner = `Modules (List.map (Loc.map inline_element_inner) modules) in
       Writer.with_warning inner not_allowed |> Writer.warning unexpected_end 
     }
-*)

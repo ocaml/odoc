@@ -178,7 +178,6 @@ let with_location_adjustments
   in
   k input location value
 
-(* TODO: Fix this so it can take things besides tokens *)
 let emit : 
   Lexing.lexbuf -> 
   input ->  
@@ -810,15 +809,15 @@ and code_block_metadata_tail input = parse
 (* NOTE : (@faycarsons) This is currently broken!! *)
 and code_block start_offset content_offset metadata prefix delim input = parse
   | ("]" (delim_char* as delim') "[") as terminator
-    { if delim = delim'
-      then emit_code_block ~start_offset ~content_offset ~lexbuf input None (Some delim) terminator prefix None
+    { if delim = delim' then 
+        emit_code_block ~start_offset ~content_offset ~lexbuf input None (Some delim) terminator prefix None
       else
         (Buffer.add_string prefix terminator;
         code_block start_offset content_offset metadata prefix delim input lexbuf) }
   | ("]" (delim_char* as delim') "}") as terminator
     { 
-      if delim = delim'
-      then emit_code_block ~start_offset ~content_offset ~lexbuf input None (Some delim ) terminator prefix None
+      if delim = delim' then 
+        emit_code_block ~start_offset ~content_offset ~lexbuf input None (Some delim ) terminator prefix None
       else (
         Buffer.add_string prefix terminator;
         code_block start_offset content_offset metadata prefix delim input lexbuf

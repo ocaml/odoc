@@ -6,7 +6,7 @@ module Parser = Odoc_parser.Tester
 (*
     NOTE (@FayCarsons): for anyone working on this parser - this is probably
     the easiest way to check if something is working. The tests are numerous
-    and difficult to parse. A test suite will fail in its entirety if one case
+    and difficult to read. A test suite will fail in its entirety if one case
     throws an exception.
 
     If you need to test a specific parser rule or test case, add it here and
@@ -37,9 +37,23 @@ let error_recovery =
     ("List item not at beginning of line", "- foo\n - bar\n- baz");
     ("Empty list item", "{ol {li} }");
     ("'{li' not followed by whitespace", "{ol {lifoo bar baz} }");
-    ("End not allowed in table", "{t \n| -- | :--: |\n| a | b \n");
+    ("End not allowed in table", "{t \n| -- | :--: |\n| a | b");
     ("Empty modules", "{!modules: }");
     ("EOI in modules", "{!modules: Foo Bar");
+  ]
+
+let light_table_early_EOI =
+  [
+    (*
+( "End not allowed WITHOUT newline",
+      {|{t 
+      | -- | :--: |
+      | a | b |} );
+    *)
+    ("End not allowed WITH newline", {|{t 
+| A | B | 
+  C | D 
+}|});
   ]
 
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
@@ -49,7 +63,7 @@ let documentation_cases =
     ("Heavy list", "{ul {li foo} {li bar} {li baz}}");
     ("Simple ref", "{!Stdlib.Buffer}");
     ("Ref w/ replacement", "{{: https://ocaml.org/ }the OCaml website}");
-    ("Modules", "{!modules: Foo Bar Baz }");
+    ("Modules", "{!modules: Foo Bar Baz}");
     ("Block tag", "@see <foo.ml> bar baz quux\n");
     ("Inline tag", "@author Fay Carsons");
     ("Simple tag", "@open");
@@ -82,13 +96,6 @@ let documentation_cases =
     ("Code block", "{[\n let foo = 0 \n]}");
   ]
 
-let light_table =
-  [ ("Light table", {|
-      {t
-        |--|--|
-      }
-      |}) ]
-
 open Test.Serialize
 
 let error err = Atom (Odoc_parser.Warning.to_string err)
@@ -105,6 +112,8 @@ type failure = {
   exn : string;
   label : string;
   offending_token : Parser.token;
+  failure_index : int;
+  tokens : Parser.token list;
   area : string;
 }
 
@@ -113,9 +122,53 @@ let get_area Loc.{ start; end_; _ } input =
   |> List.filteri (fun idx _ -> idx >= pred start.line && idx <= pred end_.line)
   |> List.fold_left ( ^ ) ""
 
-let mkfailure label input exn last =
+let mkfailure label input exn last failure_index tokens =
   let Loc.{ value; location } = last in
-  { offending_token = value; exn; label; area = get_area location input }
+  {
+    offending_token = value;
+    failure_index;
+    tokens;
+    exn;
+    label;
+    area = get_area location input;
+  }
+
+module TokBuf = struct
+  type t = {
+    tok_stream : Parser.token Loc.with_location Stream.t;
+    mutable cache : Parser.token Loc.with_location list;
+  }
+  type tok_state = { mutable seen_EOI : bool }
+
+  let create ~dispenser =
+    let tok_state = { seen_EOI = false } in
+    let tok_stream =
+      Stream.from (fun _ ->
+          if tok_state.seen_EOI then None
+          else
+            match dispenser () with
+            | Loc.{ value; _ } as loc when Parser.is_EOI value ->
+                tok_state.seen_EOI <- true;
+                Some loc
+            | t -> Some t)
+    in
+    let cache = [] in
+    { tok_stream; cache }
+
+  let next self =
+    let tok = Stream.next self.tok_stream in
+    self.cache <- tok :: self.cache;
+    tok
+
+  let cache_rest self =
+    let rec go () =
+      try
+        self.cache <- Stream.next self.tok_stream :: self.cache;
+        go ()
+      with Stream.Failure -> List.rev self.cache
+    in
+    go ()
+end
 
 let run_test (label, case) =
   let open Either in
@@ -133,12 +186,15 @@ let run_test (label, case) =
         file;
       }
   in
-  let last_tok = ref None in
-  let get_tok lexbuf =
-    let tok = Parser.Lexer.token input lexbuf in
-    print_endline @@ "Got tok: " ^ Parser.string_of_token (Loc.value tok);
-    last_tok := Some tok;
-    Loc.value tok
+  let failure_index = ref (-1) in
+  let tokbuf =
+    TokBuf.create ~dispenser:(fun () -> Parser.Lexer.token input lexbuf)
+  in
+  let get_tok _ =
+    incr failure_index;
+    let tok = Loc.value @@ TokBuf.next tokbuf in
+    print_endline @@ Parser.string_of_token tok;
+    tok
   in
   try
     let ast, warnings =
@@ -149,7 +205,9 @@ let run_test (label, case) =
     Left (label, output)
   with e ->
     let exns = Printexc.to_string e in
-    Right (mkfailure label case exns @@ Option.get !last_tok)
+    let offending_token = List.hd @@ tokbuf.cache in
+    let tokens = List.map Loc.value @@ TokBuf.cache_rest tokbuf in
+    Right (mkfailure label case exns offending_token !failure_index tokens)
 
 let sep = String.init 80 @@ Fun.const '-'
 
@@ -159,17 +217,23 @@ let format_successes =
   in
   List.fold_left go ""
 
-let failure_string { exn; label; offending_token; area } =
+let failure_string { exn; label; offending_token; area; tokens; failure_index }
+    =
   Printf.sprintf
     {|>>> Case '%s' failed with exn: <<<
 %s
-offending token:
-'%s'
-input:
-"%s"|}
-    label exn
+Offending token:
+%d: '%s'
+Input:
+"%s"
+Tokens:
+%s|}
+    label exn failure_index
     (Parser.string_of_token offending_token)
     area
+    (List.fold_left
+       (fun acc t -> acc ^ "\n" ^ Parser.string_of_token t)
+       "" tokens)
 
 let format_failures =
   let go acc x = acc ^ "\n" ^ sep ^ "\n" ^ x in
@@ -185,7 +249,7 @@ let () =
       | _ ->
           print_endline "unrecognized argument - running documentation_cases";
           documentation_cases)
-    else light_table
+    else light_table_early_EOI
   in
   let sucesses, failures = List.partition_map run_test cases in
   let sucesses = format_successes sucesses in
