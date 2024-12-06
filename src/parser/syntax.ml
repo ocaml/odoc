@@ -618,6 +618,8 @@ let tag_to_words = function
   | `Since s -> [ `Word "@since"; `Space " "; `Word s ]
   | `Version s -> [ `Word "@version"; `Space " "; `Word s ]
   | `Children_order -> [ `Word "@children_order" ]
+  | `Toc_status -> [ `Word "@toc_status" ]
+  | `Order_category -> [ `Word "@order_category" ]
   | `Short_title -> [ `Word "@short_title" ]
 
 (* {3 Block element lists} *)
@@ -819,7 +821,8 @@ let rec block_element_list :
 
                 let tag = Loc.at location (`Tag tag) in
                 consume_block_elements `After_text (tag :: acc)
-            | (`Deprecated | `Return | `Children_order | `Short_title) as tag ->
+            | ( `Deprecated | `Return | `Children_order | `Short_title
+              | `Toc_status | `Order_category ) as tag ->
                 let content, _stream_head, where_in_line =
                   block_element_list (In_implicitly_ended `Tag)
                     ~parent_markup:token input
@@ -827,9 +830,11 @@ let rec block_element_list :
                 let tag =
                   match tag with
                   | `Deprecated -> `Deprecated content
+                  | `Toc_status -> `Toc_status content
                   | `Return -> `Return content
                   | `Children_order -> `Children_order content
                   | `Short_title -> `Short_title content
+                  | `Order_category -> `Order_category content
                 in
                 let location =
                   location :: List.map Loc.location content |> Loc.span

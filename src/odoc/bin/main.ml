@@ -468,14 +468,11 @@ module Indexing = struct
     | None, `JSON -> Ok (Fs.File.of_string "index.json")
     | None, `Marshall -> Ok (Fs.File.of_string "index.odoc-index")
 
-  let index dst json warnings_options page_roots lib_roots inputs_in_file inputs
-      occurrences =
+  let index dst json warnings_options roots inputs_in_file inputs occurrences =
     let marshall = if json then `JSON else `Marshall in
     output_file ~dst marshall >>= fun output ->
-    Antichain.check (page_roots |> List.map ~f:snd) ~opt:"-P" >>= fun () ->
-    Antichain.check (lib_roots |> List.map ~f:snd) ~opt:"-L" >>= fun () ->
-    Indexing.compile marshall ~output ~warnings_options ~occurrences ~lib_roots
-      ~page_roots ~inputs_in_file ~odocls:inputs
+    Indexing.compile marshall ~output ~warnings_options ~roots ~occurrences
+      ~inputs_in_file ~odocls:inputs
 
   let cmd =
     let dst =
@@ -511,31 +508,20 @@ module Indexing = struct
       let doc = ".odocl file to index" in
       Arg.(value & pos_all convert_fpath [] & info ~doc ~docv:"FILE" [])
     in
-    let page_roots =
+    let roots =
       let doc =
-        "Specifies a directory PATH containing pages that should be included \
-         in the sidebar, under the NAME section."
+        "Specifies a directory PATH containing pages or units that should be \
+         included in the sidebar."
       in
       Arg.(
         value
-        & opt_all convert_named_root []
-        & info ~docs ~docv:"NAME:PATH" ~doc [ "P" ])
-    in
-    let lib_roots =
-      let doc =
-        "Specifies a directory PATH containing units that should be included \
-         in the sidebar, as part of the LIBNAME library."
-      in
-
-      Arg.(
-        value
-        & opt_all convert_named_root []
-        & info ~docs ~docv:"LIBNAME:PATH" ~doc [ "L" ])
+        & opt_all (convert_directory ()) []
+        & info ~docs ~docv:"NAME:PATH" ~doc [ "root" ])
     in
     Term.(
       const handle_error
-      $ (const index $ dst $ json $ warnings_options $ page_roots $ lib_roots
-       $ inputs_in_file $ inputs $ occurrences))
+      $ (const index $ dst $ json $ warnings_options $ roots $ inputs_in_file
+       $ inputs $ occurrences))
 
   let info ~docs =
     let doc =
@@ -863,7 +849,7 @@ end = struct
       Arg.(
         value
         & opt (some convert_fpath) None
-        & info [ "sidebar" ] ~doc ~docv:"FILE.odoc-index")
+        & info [ "sidebar" ] ~doc ~docv:"FILE.odoc-sidebar")
 
     let cmd =
       let syntax =
@@ -890,9 +876,10 @@ end = struct
 
   module Generate_source = struct
     let generate extra output_dir syntax extra_suffix input_file
-        warnings_options source_file =
+        warnings_options source_file sidebar =
       Rendering.generate_source_odoc ~renderer:R.renderer ~warnings_options
-        ~syntax ~output:output_dir ~extra_suffix ~source_file extra input_file
+        ~syntax ~output:output_dir ~extra_suffix ~source_file ~sidebar extra
+        input_file
 
     let input_odocl =
       let doc = "Linked implementation file." in
@@ -917,10 +904,12 @@ end = struct
           & opt (pconv convert_syntax) Odoc_document.Renderer.OCaml
             @@ info ~docv:"SYNTAX" ~doc ~env [ "syntax" ])
       in
+      let sidebar = Generate.sidebar in
       Term.(
         const handle_error
         $ (const generate $ R.extra_args $ dst ~create:true () $ syntax
-         $ extra_suffix $ input_odocl $ warnings_options $ source_file))
+         $ extra_suffix $ input_odocl $ warnings_options $ source_file $ sidebar
+          ))
 
     let info ~docs =
       let doc =
@@ -1143,6 +1132,13 @@ module Odoc_html_args = struct
       (parser, printer)
   end
 
+  let escape_breadcrumb =
+    let doc =
+      "Wether to add a 'Home' breadcrumb to go up the root of the given \
+       sidebar."
+    in
+    Arg.(value & flag & info ~docv:"escape" ~doc [ "escape-breadcrumb" ])
+
   let theme_uri =
     let doc =
       "Where to look for theme files (e.g. `URI/odoc.css'). Relative URIs are \
@@ -1211,7 +1207,7 @@ module Odoc_html_args = struct
 
   let extra_args =
     let config semantic_uris closed_details indent theme_uri support_uri
-        search_uris flat as_json remap remap_file =
+        search_uris flat as_json remap remap_file escape_breadcrumb =
       let open_details = not closed_details in
       let remap =
         match remap_file with
@@ -1232,13 +1228,14 @@ module Odoc_html_args = struct
       in
       let html_config =
         Odoc_html.Config.v ~theme_uri ~support_uri ~search_uris ~semantic_uris
-          ~indent ~flat ~open_details ~as_json ~remap ()
+          ~indent ~flat ~open_details ~as_json ~remap ~escape_breadcrumb ()
       in
       { Html_page.html_config }
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ search_uri $ flat $ as_json $ remap $ remap_file)
+      $ support_uri $ search_uri $ flat $ as_json $ remap $ remap_file
+      $ escape_breadcrumb)
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)

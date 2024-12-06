@@ -78,18 +78,14 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
   in
 
   let index_of pkg =
-    let pkg_libs =
-      List.map (fun l -> l.Packages.lib_name) pkg.Packages.libraries
-      |> Util.StringSet.of_list
-    in
-    let pkg_args = base_args pkg pkg_libs in
+    let roots = [ Fpath.( // ) odocl_dir (doc_dir pkg) ] in
     let output_file = Fpath.(index_dir / pkg.name / Odoc.index_filename) in
     let sidebar =
       let output_file = Fpath.(index_dir / pkg.name / Odoc.sidebar_filename) in
       { output_file; json = false }
     in
     {
-      pkg_args;
+      roots;
       output_file;
       json = false;
       search_dir = pkg.pkg_dir;
@@ -172,8 +168,7 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
         let kind =
           let src_name = Fpath.filename src_path in
           let src_id =
-            Fpath.(pkg.pkg_dir / "src" / lib.lib_name / src_name)
-            |> Odoc.Id.of_fpath
+            Fpath.(src_lib_dir pkg lib / src_name) |> Odoc.Id.of_fpath
           in
           `Impl { src_id; src_path }
         in
@@ -198,13 +193,11 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
   in
   let of_lib pkg (lib : Packages.libty) =
     let lib_deps = Util.StringSet.add lib.lib_name lib.lib_deps in
-    let landing_page :> t list =
-      if pkg.Packages.selected then
-        let index = index_of pkg in
-        [ Landing_pages.library ~dirs ~pkg ~index lib ]
-      else []
+    let landing_page :> t =
+      let index = index_of pkg in
+      Landing_pages.library ~dirs ~pkg ~index lib
     in
-    landing_page @ List.concat_map (of_module pkg lib lib_deps) lib.modules
+    landing_page :: List.concat_map (of_module pkg lib lib_deps) lib.modules
   in
   let of_mld pkg (mld : Packages.mld) : mld unit list =
     let open Fpath in
@@ -269,12 +262,31 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
               (Fpath.normalize (Fpath.v "./index.mld")))
           pkg.mlds
       in
-      if has_index_page || not pkg.selected then []
+      if has_index_page then []
       else
         let index = index_of pkg in
         [ Landing_pages.package ~dirs ~pkg ~index ]
     in
-    List.concat ((pkg_index :: lib_units) @ mld_units @ asset_units @ md_units)
+    let src_index :> t list =
+      if
+        (* Some library has a module which has an implementation which has a source *)
+        List.exists
+          (fun lib ->
+            List.exists
+              (fun m ->
+                match m.Packages.m_impl with
+                | Some { mip_src_info = Some _; _ } -> true
+                | _ -> false)
+              lib.Packages.modules)
+          pkg.libraries
+      then
+        let index = index_of pkg in
+        [ Landing_pages.src ~dirs ~pkg ~index ]
+      else []
+    in
+    List.concat
+      ((pkg_index :: src_index :: lib_units)
+      @ mld_units @ asset_units @ md_units)
   in
 
   let pkg_list :> t = Landing_pages.package_list ~dirs pkgs in

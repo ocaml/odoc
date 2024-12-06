@@ -50,7 +50,7 @@ module Identifier = struct
     | `Method (_, name) -> MethodName.to_string name
     | `InstanceVariable (_, name) -> InstanceVariableName.to_string name
     | `Label (_, name) -> LabelName.to_string name
-    | `SourcePage (dir, name) -> name_aux (dir :> t) ^ name
+    | `SourcePage (_, name) -> name
     | `SourceLocation (x, anchor) ->
         name_aux (x :> t) ^ "#" ^ DefName.to_string anchor
     | `SourceLocationMod x -> name_aux (x :> t)
@@ -382,6 +382,9 @@ module Identifier = struct
   module SourcePage = struct
     type t = Id.source_page
     type t_pv = Id.source_page_pv
+
+    let equal = equal
+    let hash = hash
   end
 
   module SourceLocation = struct
@@ -625,6 +628,8 @@ module Identifier = struct
     module Any = Hashtbl.Make (Any)
     module ContainerPage = Hashtbl.Make (ContainerPage)
     module LeafPage = Hashtbl.Make (LeafPage)
+    module RootModule = Hashtbl.Make (RootModule)
+    module SourcePage = Hashtbl.Make (SourcePage)
   end
 end
 

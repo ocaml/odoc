@@ -30,10 +30,8 @@ Same directory used twice
  Right input:
   $ mkdir _odoc/mylib
   $ odoc link -P pkg:_odoc/pkg/ -L mylib:_odoc/mylib/ _odoc/pkg/page-file.odoc
- Wrong input (-L exclude its content from -P roots):
+ Also right input (-L does not exclude its content from -P roots):
   $ odoc link -P pkg:_odoc/pkg -L pkg2:_odoc/pkg _odoc/pkg/page-file.odoc
-  File "file.mld", line 3, characters 0-20:
-  Warning: Failed to resolve reference /pkg/dir1/my_page Path '/pkg/dir1/my_page' not found
 
 # One directory given relatively, the other absolutely
  Right input

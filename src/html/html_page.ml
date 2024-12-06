@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Odoc_utils
+
 module Url = Odoc_document.Url
 module Html = Tyxml.Html
 
@@ -62,44 +64,46 @@ let sidebars ~global_toc ~local_toc =
   | [] -> []
   | tocs -> [ Html.div ~a:[ Html.a_class [ "odoc-tocs" ] ] tocs ]
 
-let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
+let html_of_breadcrumbs (breadcrumbs : Types.breadcrumbs) =
   let make_navigation ~up_url rest =
-    [
-      Html.nav
-        ~a:[ Html.a_class [ "odoc-nav" ] ]
-        ([ Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ]; Html.txt " – " ]
-        @ rest);
-    ]
+    let up =
+      match up_url with
+      | None -> []
+      | Some up_url ->
+          [ Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ]; Html.txt " – " ]
+    in
+    [ Html.nav ~a:[ Html.a_class [ "odoc-nav" ] ] (up @ rest) ]
   in
-  match List.rev breadcrumbs with
-  | [] -> [] (* Can't happen - there's always the current page's breadcrumb. *)
-  | [ _ ] -> [] (* No parents *)
-  | [ { name = "index"; _ }; x ] ->
-      (* Special case leaf pages called 'index' with one parent. This is for files called
-          index.mld that would otherwise clash with their parent. In particular,
-          dune and odig both cause this situation right now. *)
-      let up_url = "../index.html" in
-      let parent_name = x.name in
-      make_navigation ~up_url [ Html.txt parent_name ]
-  | current :: up :: bs ->
-      let space = Html.txt " " in
-      let sep = [ space; Html.entity "#x00BB"; space ] in
-      let html =
-        (* Create breadcrumbs *)
-        Odoc_utils.List.concat_map ?sep:(Some sep)
-          ~f:(fun (breadcrumb : Types.breadcrumb) ->
+  let space = Html.txt " " in
+  let sep = [ space; Html.entity "#x00BB"; space ] in
+  let html =
+    (* Create breadcrumbs *)
+    Odoc_utils.List.concat_map ~sep
+      ~f:(fun (breadcrumb : Types.breadcrumb) ->
+        match breadcrumb.href with
+        | Some href ->
             [
               [
                 Html.a
-                  ~a:[ Html.a_href breadcrumb.href ]
-                  [ Html.txt breadcrumb.name ];
+                  ~a:[ Html.a_href href ]
+                  (breadcrumb.name
+                    :> Html_types.flow5_without_interactive Html.elt list);
               ];
-            ])
-          (up :: bs)
-        |> List.flatten
-      in
-      make_navigation ~up_url:up.href
-        (List.rev html @ sep @ [ Html.txt current.name ])
+            ]
+        | None ->
+            [ (breadcrumb.name :> Html_types.nav_content_fun Html.elt list) ])
+      breadcrumbs.parents
+    |> List.flatten
+  in
+  let current_name :> Html_types.nav_content_fun Html.elt list =
+    breadcrumbs.current.name
+  in
+  let rest =
+    if List.is_empty breadcrumbs.parents then current_name
+    else html @ sep @ current_name
+  in
+  make_navigation ~up_url:breadcrumbs.up_url
+    (rest :> [< Html_types.nav_content_fun > `A `PCDATA `Wbr ] Html.elt list)
 
 let file_uri ~config ~url (base : Types.uri) file =
   match base with
@@ -258,7 +262,7 @@ let path_of_module_of_source ppf url =
       Format.fprintf ppf " (%s)" (String.concat "." path)
   | None -> ()
 
-let src_page_creator ~breadcrumbs ~config ~url ~header name content =
+let src_page_creator ~breadcrumbs ~config ~url ~header ~sidebar name content =
   let head : Html_types.head Html.elt =
     let title_string =
       Format.asprintf "Source: %s%a" name path_of_module_of_source url
@@ -269,6 +273,7 @@ let src_page_creator ~breadcrumbs ~config ~url ~header name content =
   let body =
     html_of_breadcrumbs breadcrumbs
     @ [ Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header ]
+    @ sidebars ~global_toc:sidebar ~local_toc:[]
     @ content
   in
   (* We never indent as there is a bug in tyxml and it would break lines inside
@@ -284,9 +289,9 @@ let src_page_creator ~breadcrumbs ~config ~url ~header name content =
   in
   content
 
-let make_src ~config ~url ~breadcrumbs ~header title content =
+let make_src ~config ~url ~breadcrumbs ~header ~sidebar title content =
   let filename = Link.Path.as_filename ~config url in
   let content =
-    src_page_creator ~breadcrumbs ~config ~url ~header title content
+    src_page_creator ~breadcrumbs ~config ~url ~header ~sidebar title content
   in
   { Odoc_document.Renderer.filename; content; children = []; path = url }

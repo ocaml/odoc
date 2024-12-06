@@ -1,4 +1,4 @@
-@children_order content dir1/ dir1/ typo
+@children_order content module-Unit dir1/ dir1/ typo
 
 {0 This is the main index}
 

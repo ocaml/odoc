@@ -12,10 +12,12 @@ type t = {
   flat : bool;
   open_details : bool;
   as_json : bool;
+  escape_breadcrumb : bool;
 }
 
 let v ?(search_result = false) ?theme_uri ?support_uri ?(search_uris = [])
-    ~semantic_uris ~indent ~flat ~open_details ~as_json ~remap () =
+    ~semantic_uris ~indent ~flat ~open_details ~as_json ~remap
+    ?(escape_breadcrumb = true) () =
   {
     semantic_uris;
     indent;
@@ -27,6 +29,7 @@ let v ?(search_result = false) ?theme_uri ?support_uri ?(search_uris = [])
     as_json;
     search_result;
     remap;
+    escape_breadcrumb;
   }
 
 let theme_uri config : Types.uri =
@@ -50,3 +53,5 @@ let as_json config = config.as_json
 let search_result config = config.search_result
 
 let remap config = config.remap
+
+let escape_breadcrumb config = config.escape_breadcrumb

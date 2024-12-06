@@ -13,7 +13,7 @@ let compile_to_json ~output sidebar =
 
 let generate ~marshall ~output ~warnings_options:_ ~index =
   Odoc_file.load_index index >>= fun index ->
-  let sidebar = Odoc_document.Sidebar.of_lang index in
+  let sidebar = Odoc_document.Sidebar.of_index index in
   match marshall with
   | `JSON -> Ok (compile_to_json ~output sidebar)
   | `Marshall -> Ok (Odoc_file.save_sidebar output sidebar)

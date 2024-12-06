@@ -269,13 +269,10 @@ let html_generate ~occurrence_file ~remaps output_dir linked =
   let compile_index : Odoc_unit.index -> _ =
    fun index ->
     let compile_index_one
-        ({ pkg_args; output_file; json; search_dir = _; sidebar } as index :
+        ({ roots; output_file; json; search_dir = _; sidebar } as index :
           Odoc_unit.index) =
-      let libs_linked = Odoc_unit.Pkg_args.linked_libs pkg_args in
-      let pages_linked = Odoc_unit.Pkg_args.linked_pages pkg_args in
       let () =
-        Odoc.compile_index ~json ~occurrence_file ~output_file ~libs:libs_linked
-          ~docs:pages_linked ()
+        Odoc.compile_index ~json ~occurrence_file ~output_file ~roots ()
       in
       let sidebar =
         match sidebar with
@@ -304,10 +301,18 @@ let html_generate ~occurrence_file ~remaps output_dir linked =
        match l.kind with
        | `Intf { hidden = true; _ } -> ()
        | `Impl { src_path; _ } ->
-           Odoc.html_generate_source ~search_uris:[] ~output_dir ~input_file
-             ~source:src_path ();
-           Odoc.html_generate_source ~search_uris:[] ~output_dir ~input_file
-             ~source:src_path ~as_json:true ();
+           let search_uris, sidebar =
+             match l.index with
+             | None -> (None, None)
+             | Some index ->
+                 let db_path, sidebar = compile_index index in
+                 let search_uris = [ db_path; Sherlodoc.js_file ] in
+                 (Some search_uris, sidebar)
+           in
+           Odoc.html_generate_source ?search_uris ?sidebar ~output_dir
+             ~input_file ~source:src_path ();
+           Odoc.html_generate_source ?search_uris ?sidebar ~output_dir
+             ~input_file ~source:src_path ~as_json:true ();
            Atomic.incr Stats.stats.generated_units
        | `Asset ->
            Odoc.html_generate_asset ~output_dir ~input_file:l.odoc_file

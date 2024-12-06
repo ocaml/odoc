@@ -19,13 +19,11 @@
 open Odoc_model
 open Or_error
 
-type unit_content = Lang.Compilation_unit.t
-
-(** Either a page or a module. *)
+(** Either a page or a module or something else. *)
 type content =
   | Page_content of Lang.Page.t
   | Impl_content of Lang.Implementation.t
-  | Unit_content of unit_content
+  | Unit_content of Lang.Compilation_unit.t
   | Asset_content of Lang.Asset.t
 
 type t = { content : content; warnings : Error.t list }
@@ -35,7 +33,8 @@ type t = { content : content; warnings : Error.t list }
 val save_page : Fs.File.t -> warnings:Error.t list -> Lang.Page.t -> unit
 (** Save a page. The [page-] prefix is added to the file name if missing. *)
 
-val save_unit : Fs.File.t -> warnings:Error.t list -> unit_content -> unit
+val save_unit :
+  Fs.File.t -> warnings:Error.t list -> Lang.Compilation_unit.t -> unit
 (** Save a module. *)
 
 val save_impl :
