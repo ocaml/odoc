@@ -46,22 +46,15 @@ let compile_to_json ~output ~occurrences hierarchies =
     open_out_bin (Fs.File.to_string output)
   in
   let output = Format.formatter_of_out_channel output_channel in
-  let print f first up =
-    if not first then Format.fprintf output ",";
-    f output up;
-    false
-  in
-  Format.fprintf output "[";
-  let _first =
+  let all =
     List.fold_left
-      (fun first hierarchy ->
+      (fun acc hierarchy ->
         Tree.fold_left
-          ~f:(fun first entry ->
-            print (Json_search.of_entry ?occurrences) first entry)
-          first hierarchy)
-      true hierarchies
+          ~f:(fun acc entry -> Json_search.of_entry ?occurrences entry :: acc)
+          acc hierarchy)
+      [] hierarchies
   in
-  Format.fprintf output "]";
+  Format.fprintf output "%s" (Odoc_utils.Json.to_string (`Array (List.rev all)));
   Ok ()
 
 let read_occurrences file =
