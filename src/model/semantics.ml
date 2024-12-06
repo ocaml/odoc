@@ -513,7 +513,8 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
   in
   loop ~start:true [] [] ast
 
-(** Append alerts at the end of the comment. Tags are favoured in case of alerts of the same name. *)
+(** Append alerts at the end of the comment. Tags are favoured in case of alerts
+    of the same name. *)
 let append_alerts_to_comment alerts
     (comment : Comment.block_element with_location list) =
   let alerts =

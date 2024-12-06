@@ -1733,15 +1733,13 @@ end
 
 module LocalIdents = struct
   open Odoc_model
-  (** The purpose of this module is to extract identifiers
-      that could be referenced in Paths - that is, modules,
-      module types, types, classes and class types. That way
-      we can assign them an Ident.t ahead of time and be
-      self-consistent. Because we don't need _all_ of the
-      identifiers we don't traverse the entire structure.
-      Additionally, we stop at (class_)signature boundaries
-      since identifiers within these won't be referenced 
-      except within them, so we only do that on demand. *)
+  (** The purpose of this module is to extract identifiers that could be
+      referenced in Paths - that is, modules, module types, types, classes and
+      class types. That way we can assign them an Ident.t ahead of time and be
+      self-consistent. Because we don't need _all_ of the identifiers we don't
+      traverse the entire structure. Additionally, we stop at (class_)signature
+      boundaries since identifiers within these won't be referenced except
+      within them, so we only do that on demand. *)
 
   type t = {
     modules : Paths.Identifier.Module.t list;

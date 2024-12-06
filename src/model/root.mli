@@ -18,8 +18,7 @@
 
     {{!t}Roots} are used by doc-ock (at the root of every resolved
     path/identifier/reference) and present at the beginning of every [.odoc]
-    file.
-*)
+    file. *)
 
 module Package : sig
   type t = string

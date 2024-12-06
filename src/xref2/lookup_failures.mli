@@ -1,7 +1,8 @@
 (** Report non-fatal errors.
 
     The main difference with {!Odoc_model.Error} is that no precise location is
-    attached to each failures, instead a filename is given to {!catch_failures}. *)
+    attached to each failures, instead a filename is given to {!catch_failures}.
+*)
 
 open Odoc_model
 
@@ -21,7 +22,8 @@ val report_warning : ('fmt, Format.formatter, unit, unit) format4 -> 'fmt
 (** Warnings are user errors. *)
 
 val with_location : Location_.span -> (unit -> 'a) -> 'a
-(** Failures reported indirectly by this function will have a location attached. *)
+(** Failures reported indirectly by this function will have a location attached.
+*)
 
 val with_context :
   ('fmt, Format.formatter, unit, (unit -> 'a) -> 'a) format4 -> 'fmt

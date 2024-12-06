@@ -65,7 +65,8 @@ module Antichain = struct
     in
     Fpath.normalize p
 
-  (** Check that a list of directories form an antichain: they are all disjoints *)
+  (** Check that a list of directories form an antichain: they are all disjoints
+  *)
   let check ~opt l =
     let l =
       List.map

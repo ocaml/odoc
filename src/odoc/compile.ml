@@ -64,7 +64,7 @@ let is_module_name n = String.length n > 0 && Char.Ascii.is_upper n.[0]
     - [page-foo] child is a container or leaf page.
     - [srctree-foo] child is a source tree
 
-  Parses [...-"foo"] as [...-foo] for backward compatibility. *)
+    Parses [...-"foo"] as [...-foo] for backward compatibility. *)
 let parse_parent_child_reference s =
   let unquote s =
     let len = String.length s in

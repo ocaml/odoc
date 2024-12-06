@@ -33,5 +33,5 @@ val for_compile_step : Fs.File.t list -> Compile.t list
 val for_rendering_step :
   Fs.Directory.t -> (Odoc_model.Root.t list, [> msg ]) result
 (** Takes the directory where the .odoc files of a given package are stored and
-    returns the list of roots that need to be in odoc's load path to
-    render these .odoc files. *)
+    returns the list of roots that need to be in odoc's load path to render
+    these .odoc files. *)

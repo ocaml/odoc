@@ -23,17 +23,16 @@ val of_strings :
   html list
 
 val names_of_id : Paths.Identifier.t -> string * string
-(** [names_of_id id] is [("X.Y", "foo")] if [id] corresponds to [X.Y.foo].
-    The tuple is intended to be given respectively to the [prefix_name] and
-    [name] arguments of {!Odoc_html_frontend.of_strings}. *)
+(** [names_of_id id] is [("X.Y", "foo")] if [id] corresponds to [X.Y.foo]. The
+    tuple is intended to be given respectively to the [prefix_name] and [name]
+    arguments of {!Odoc_html_frontend.of_strings}. *)
 
 val of_doc : Comment.docs -> html
 (** [of_doc d] returns the HTML associated of the documentation comment [d],
     generated correctly for search (no links or anchors). *)
 
 val html_string_of_doc : Comment.docs -> string
-(** [html_string_of_doc d] is the same as {!of_doc} converted to a
-    string. *)
+(** [html_string_of_doc d] is the same as {!of_doc} converted to a string. *)
 
 (** Right-hand sides *)
 

@@ -1,7 +1,7 @@
 (** Examples of different features of Expansion *)
 
-(** For details on what each of the following examples is showing,
-see the explanations in the {{!page-features}Features page} *)
+(** For details on what each of the following examples is showing, see the
+    explanations in the {{!page-features}Features page} *)
 
 [@@@warning "-67"]
 module Simple : sig
@@ -23,7 +23,8 @@ module Aliases : sig
 end
 
 module ModuleTypeAliases : sig
-  (** Demonstrates that module types are not expanded if they're a simple path to another. *)
+  (** Demonstrates that module types are not expanded if they're a simple path
+      to another. *)
 
   module type A = sig
     type t
@@ -125,7 +126,8 @@ module DeepEquality : sig
 end
 
 module DeepEquality2 : sig
-  (** Demonstrates expansion involving an equation on a type in a submodule, but the submodule is already a simple signature *)
+  (** Demonstrates expansion involving an equation on a type in a submodule, but
+      the submodule is already a simple signature *)
 
   module type MODTYPE = sig
     module X : sig
@@ -172,7 +174,8 @@ module ModuleTypeOf : sig
 end
 
 module ModuleTypeOfComplications : sig
-  (** Demonstrates the interaction of [module type of] and destructive module substitution *)
+  (** Demonstrates the interaction of [module type of] and destructive module
+      substitution *)
 
   module type S = sig
     module X : sig
