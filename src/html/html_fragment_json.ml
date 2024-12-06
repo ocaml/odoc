@@ -10,24 +10,19 @@ let json_of_html config h =
   let htmlpp = Html.pp_elt ~indent:(Config.indent config) () in
   String.concat "" (List.map (Format.asprintf "%a" htmlpp) h)
 
-let json_of_breadcrumbs config (breadcrumbs : Types.breadcrumbs option) :
-    Json.json =
-  match breadcrumbs with
-  | None -> `Array []
-  | Some breadcrumbs ->
-      let breadcrumb (b : Types.breadcrumb) =
-        `Object
-          [
-            ("name", `String (json_of_html config b.name));
-            ( "href",
-              match b.href with None -> `Null | Some href -> `String href );
-            ("kind", `String (Url.Path.string_of_kind b.kind));
-          ]
-      in
-      let json_breadcrumbs =
-        breadcrumbs.parents @ [ breadcrumbs.current ] |> List.map breadcrumb
-      in
-      `Array json_breadcrumbs
+let json_of_breadcrumbs config (breadcrumbs : Types.breadcrumbs) : Json.json =
+  let breadcrumb (b : Types.breadcrumb) =
+    `Object
+      [
+        ("name", `String (json_of_html config b.name));
+        ("href", match b.href with None -> `Null | Some href -> `String href);
+        ("kind", `String (Url.Path.string_of_kind b.kind));
+      ]
+  in
+  let json_breadcrumbs =
+    breadcrumbs.parents @ [ breadcrumbs.current ] |> List.map breadcrumb
+  in
+  `Array json_breadcrumbs
 
 let json_of_toc (toc : Types.toc list) : Json.json =
   let rec section (s : Types.toc) =
