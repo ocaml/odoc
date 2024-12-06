@@ -548,34 +548,30 @@ module Breadcrumbs = struct
         { current; parents; up_url }
 
   let gen_breadcrumbs_with_sidebar ~config ~sidebar ~url:current_url =
+    let find_parent =
+      List.find_opt (function
+        | ({ node = { url = { page; anchor = ""; _ }; _ }; _ } :
+            Odoc_document.Sidebar.entry Odoc_utils.Tree.t)
+          when Url.Path.is_prefix page current_url ->
+            true
+        | _ -> false)
+    in
     let rec extract acc (tree : Odoc_document.Sidebar.t) =
-      match
-        List.find_map
-          (function
-            | ({
-                 node =
-                   {
-                     url = { page; anchor = ""; _ } as url;
-                     valid_link;
-                     content;
-                     _;
-                   };
-                 children;
-               } :
-                Odoc_document.Sidebar.entry Odoc_utils.Tree.t)
-              when Url.Path.is_prefix page current_url ->
-                let href =
-                  if valid_link then
-                    Some (Link.href ~config ~resolve:(Current current_url) url)
-                  else None
-                in
-                let name = inline_nolink content in
-                let breadcrumb = { href; name; kind = page.kind } in
-                if page = current_url then Some (`Current breadcrumb)
-                else Some (`Parent (breadcrumb, children))
-            | _ -> None)
-          tree
-      with
+      let parent =
+        match find_parent tree with
+        | Some { node = { url; valid_link; content; _ }; children } ->
+            let href =
+              if valid_link then
+                Some (Link.href ~config ~resolve:(Current current_url) url)
+              else None
+            in
+            let name = inline_nolink content in
+            let breadcrumb = { href; name; kind = url.page.kind } in
+            if url.page = current_url then Some (`Current breadcrumb)
+            else Some (`Parent (breadcrumb, children))
+        | _ -> None
+      in
+      match parent with
       | Some (`Parent (bc, children)) -> extract (bc :: acc) children
       | Some (`Current current) ->
           let up_url =
@@ -593,9 +589,33 @@ module Breadcrumbs = struct
           let up_url =
             List.find_map (fun (b : Types.breadcrumb) -> b.href) acc
           in
-          { Types.current; parents = List.rev acc; up_url }
+          let parents = List.rev acc in
+          { Types.current; parents; up_url }
     in
-    extract [] sidebar
+    let escape =
+      let rec page_parent (page : Url.Path.t) =
+        match page with
+        | { parent = Some parent; name = "index"; kind = `LeafPage } ->
+            page_parent parent
+        | { parent = None; name = "index"; kind = `LeafPage } -> None
+        | { parent = Some parent; _ } -> Some parent
+        | { parent = None; _ } ->
+            Some { Url.Path.parent = None; name = "index"; kind = `LeafPage }
+      in
+      match (Config.escape_breadcrumb config, find_parent sidebar) with
+      | true, Some { node; _ } -> (
+          match page_parent node.url.page with
+          | None -> []
+          | Some parent ->
+              let href =
+                Some
+                  (Link.href ~config ~resolve:(Current current_url)
+                     (Odoc_document.Url.from_path parent))
+              in
+              [ { href; name = [ Html.txt "🏠" ]; kind = parent.kind } ])
+      | _ -> []
+    in
+    extract escape sidebar
 
   let gen_breadcrumbs ~config ~sidebar ~url =
     match sidebar with

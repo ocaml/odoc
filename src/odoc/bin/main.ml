@@ -1132,6 +1132,10 @@ module Odoc_html_args = struct
       (parser, printer)
   end
 
+  let escape_breadcrumb =
+    let doc = "URL to use to escape from the breadcrumbs" in
+    Arg.(value & flag & info ~docv:"escape" ~doc [ "escape-breadcrumb" ])
+
   let theme_uri =
     let doc =
       "Where to look for theme files (e.g. `URI/odoc.css'). Relative URIs are \
@@ -1200,7 +1204,7 @@ module Odoc_html_args = struct
 
   let extra_args =
     let config semantic_uris closed_details indent theme_uri support_uri
-        search_uris flat as_json remap remap_file =
+        search_uris flat as_json remap remap_file escape_breadcrumb =
       let open_details = not closed_details in
       let remap =
         match remap_file with
@@ -1221,13 +1225,14 @@ module Odoc_html_args = struct
       in
       let html_config =
         Odoc_html.Config.v ~theme_uri ~support_uri ~search_uris ~semantic_uris
-          ~indent ~flat ~open_details ~as_json ~remap ()
+          ~indent ~flat ~open_details ~as_json ~remap ~escape_breadcrumb ()
       in
       { Html_page.html_config }
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
-      $ support_uri $ search_uri $ flat $ as_json $ remap $ remap_file)
+      $ support_uri $ search_uri $ flat $ as_json $ remap $ remap_file
+      $ escape_breadcrumb)
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)
