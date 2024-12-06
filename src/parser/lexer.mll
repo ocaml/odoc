@@ -546,6 +546,9 @@ and token input = parse
   | ("@toc_status")
     { emit input (`Tag `Toc_status) }
 
+  | ("@order_category")
+    { emit input (`Tag `Order_category) }
+
   | ("@short_title")
     { emit input (`Tag `Short_title) }
 

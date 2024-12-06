@@ -26,6 +26,7 @@ let make_index ~dirs ~rel_dir ?index ~content () =
 let library ~dirs ~pkg ~index lib =
   let content ppf =
     Format.fprintf ppf "%@toc_status hidden\n";
+    Format.fprintf ppf "%@order_category libraries\n";
     Format.fprintf ppf "{0 Library [%s]}@\n" lib.Packages.lib_name;
     let print_module m =
       if not m.Packages.m_hidden then
@@ -45,6 +46,7 @@ let package ~dirs ~pkg ~index =
 
 let src ~dirs ~pkg ~index =
   let content ppf =
+    Format.fprintf ppf "%@order_category source\n";
     Format.fprintf ppf "{0 Sources}@\nUse sidebar to navigate."
   in
   let rel_dir = src_dir pkg in

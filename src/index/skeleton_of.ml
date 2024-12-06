@@ -17,15 +17,10 @@ let compare_entry (t1 : t) (t2 : t) =
     | Impl -> 20
     | _ -> 30
   in
-  (* Heuristic: If a dir contains only pages, place it before. *)
-  let by_content (t : t) =
-    if
-      List.for_all
-        (fun x ->
-          match x.Tree.node.Entry.kind with Page _ -> true | _ -> false)
-        t.children
-    then -10
-    else 10
+  let by_category (t : t) =
+    match t.node.kind with
+    | Page { order_category = Some o; _ } -> o
+    | _ -> "default"
   in
   let by_name (t : t) =
     match t.node.kind with
@@ -41,7 +36,7 @@ let compare_entry (t1 : t) (t2 : t) =
     match comp (f t1) (f t2) with 0 -> fallback () | i -> i
   in
   try_ (compare : int -> int -> int) by_kind @@ fun () ->
-  try_ (compare : int -> int -> int) by_content @@ fun () ->
+  try_ Astring.String.compare by_category @@ fun () ->
   try_ Astring.String.compare by_name @@ fun () -> 0
 
 let rec t_of_in_progress (dir : In_progress.in_progress) : t =

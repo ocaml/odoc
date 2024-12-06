@@ -150,6 +150,10 @@ module Ast_to_sexp = struct
     | `Toc_status es ->
         List
           (Atom "@toc_status" :: List.map (at.at (nestable_block_element at)) es)
+    | `Order_category es ->
+        List
+          (Atom "@order_category"
+          :: List.map (at.at (nestable_block_element at)) es)
     | `Short_title es ->
         List
           (Atom "@short_title"
