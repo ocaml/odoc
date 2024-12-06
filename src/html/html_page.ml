@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Odoc_utils
+
 module Url = Odoc_document.Url
 module Html = Tyxml.Html
 
