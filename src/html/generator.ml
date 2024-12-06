@@ -544,7 +544,7 @@ module Breadcrumbs = struct
             (Link.href ~config ~resolve:(Current url)
                (Odoc_document.Url.from_path up))
         in
-        let parents = List.map to_breadcrumb parents in
+        let parents = List.map to_breadcrumb parents |> List.rev in
         { current; parents; up_url }
 
   let gen_breadcrumbs_with_sidebar ~config ~sidebar ~url:current_url =

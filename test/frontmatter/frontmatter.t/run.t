@@ -4,7 +4,9 @@ When there is no frontmatter, everything is normal
   $ odoc_print page-zero_frontmatter.odoc | jq '.frontmatter'
   {
     "children": "None",
-    "short_title": "None"
+    "short_title": "None",
+    "toc_status": "None",
+    "order_category": "None"
   }
 
 When there is one frontmatter, it is extracted from the content:
@@ -30,7 +32,9 @@ When there is one frontmatter, it is extracted from the content:
           "`Word": "yes!"
         }
       ]
-    }
+    },
+    "toc_status": "None",
+    "order_category": "None"
   }
   $ odoc_print page-one_frontmatter.odoc | jq '.content'
   [
@@ -83,7 +87,9 @@ When there is more than one children order, we raise a warning and keep only the
         }
       ]
     },
-    "short_title": "None"
+    "short_title": "None",
+    "toc_status": "None",
+    "order_category": "None"
   }
   $ odoc_print page-two_frontmatters.odoc | jq '.content'
   [
