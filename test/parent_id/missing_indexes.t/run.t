@@ -33,8 +33,8 @@ Root is used for the missing index in the unnamed root directory. TODO
       <ul>
        <li>index
         <ul><li><a href="bar.html">Bar</a></li>
-         <li><a href="#" class="current_unit">Foo</a></li>
          <li>baz<ul><li><a href="baz/bli.html">Bli</a></li></ul></li>
+         <li><a href="#" class="current_unit">Foo</a></li>
         </ul>
        </li>
       </ul>
