@@ -500,52 +500,60 @@ end
 module Breadcrumbs = struct
   open Types
   let gen_breadcrumbs_no_sidebar ~config ~url =
-    (* This is the pre 3.0 way of computing the breadcrumbs *)
-    let rec get_parent_paths x =
-      match x with
-      | [] -> []
-      | x :: xs -> (
-          match Odoc_document.Url.Path.of_list (List.rev (x :: xs)) with
-          | Some x -> x :: get_parent_paths xs
-          | None -> get_parent_paths xs)
+    let url =
+      match url with
+      | { Url.Path.name = "index"; parent = Some parent; kind = `LeafPage } ->
+          parent
+      | _ -> url
     in
-    let to_breadcrumb path =
-      let href =
-        Some
-          (Link.href ~config ~resolve:(Current url)
-             (Odoc_document.Url.from_path path))
-      in
-      { href; name = [ Html.txt path.name ]; kind = path.kind }
-    in
-    let parent_paths =
-      get_parent_paths (List.rev (Odoc_document.Url.Path.to_list url))
-      |> List.rev
-    in
-    match List.rev parent_paths with
-    | [] -> assert false
-    | [ current ] ->
+    match url with
+    | { Url.Path.name = "index"; parent = None; kind = `LeafPage } ->
         let current =
-          { href = None; name = [ Html.txt current.name ]; kind = current.kind }
+          { href = None; name = [ Html.txt "" ]; kind = `LeafPage }
         in
         { parents = []; up_url = None; current }
-    | [ { name = "index"; _ }; x ] ->
-        (* Special case leaf pages called 'index' with one parent. This is for files called
-            index.mld that would otherwise clash with their parent. In particular,
-            dune and odig both cause this situation right now. *)
-        let up_url = Some "../index.html" in
-        let current =
-          { href = None; name = [ Html.txt x.name ]; kind = x.kind }
+    | url -> (
+        (* This is the pre 3.0 way of computing the breadcrumbs *)
+        let rec get_parent_paths x =
+          match x with
+          | [] -> []
+          | x :: xs -> (
+              match Odoc_document.Url.Path.of_list (List.rev (x :: xs)) with
+              | Some x -> x :: get_parent_paths xs
+              | None -> get_parent_paths xs)
         in
-        { parents = []; up_url; current }
-    | current :: (up :: _ as parents) ->
-        let current = to_breadcrumb current in
-        let up_url =
-          Some
-            (Link.href ~config ~resolve:(Current url)
-               (Odoc_document.Url.from_path up))
+        let to_breadcrumb path =
+          let href =
+            Some
+              (Link.href ~config ~resolve:(Current url)
+                 (Odoc_document.Url.from_path path))
+          in
+          { href; name = [ Html.txt path.name ]; kind = path.kind }
         in
-        let parents = List.map to_breadcrumb parents |> List.rev in
-        { current; parents; up_url }
+        let parent_paths =
+          get_parent_paths (List.rev (Odoc_document.Url.Path.to_list url))
+          |> List.rev
+        in
+        match List.rev parent_paths with
+        | [] -> assert false
+        | [ current ] ->
+            let current =
+              {
+                href = None;
+                name = [ Html.txt current.name ];
+                kind = current.kind;
+              }
+            in
+            { parents = []; up_url = None; current }
+        | current :: (up :: _ as parents) ->
+            let current = to_breadcrumb current in
+            let up_url =
+              Some
+                (Link.href ~config ~resolve:(Current url)
+                   (Odoc_document.Url.from_path up))
+            in
+            let parents = List.map to_breadcrumb parents |> List.rev in
+            { current; parents; up_url })
 
   let gen_breadcrumbs_with_sidebar ~config ~sidebar ~url:current_url =
     let find_parent =
@@ -593,10 +601,13 @@ module Breadcrumbs = struct
           { Types.current; parents; up_url }
     in
     let escape =
-      let rec page_parent (page : Url.Path.t) =
+      let page_parent (page : Url.Path.t) =
+        let page =
+          match page with
+          | { parent = Some parent; name = "index"; kind = `LeafPage } -> parent
+          | _ -> page
+        in
         match page with
-        | { parent = Some parent; name = "index"; kind = `LeafPage } ->
-            page_parent parent
         | { parent = None; name = "index"; kind = `LeafPage } -> None
         | { parent = Some parent; _ } -> Some parent
         | { parent = None; _ } ->
