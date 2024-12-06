@@ -62,55 +62,46 @@ let sidebars ~global_toc ~local_toc =
   | [] -> []
   | tocs -> [ Html.div ~a:[ Html.a_class [ "odoc-tocs" ] ] tocs ]
 
-let html_of_breadcrumbs (breadcrumbs : Types.breadcrumbs option) =
-  match breadcrumbs with
-  | None -> []
-  | Some breadcrumbs ->
-      let make_navigation ~up_url rest =
-        let up =
-          match up_url with
-          | None -> []
-          | Some up_url ->
+let html_of_breadcrumbs (breadcrumbs : Types.breadcrumbs) =
+  let make_navigation ~up_url rest =
+    let up =
+      match up_url with
+      | None -> []
+      | Some up_url ->
+          [ Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ]; Html.txt " – " ]
+    in
+    [ Html.nav ~a:[ Html.a_class [ "odoc-nav" ] ] (up @ rest) ]
+  in
+  let space = Html.txt " " in
+  let sep = [ space; Html.entity "#x00BB"; space ] in
+  let html =
+    (* Create breadcrumbs *)
+    Odoc_utils.List.concat_map ~sep
+      ~f:(fun (breadcrumb : Types.breadcrumb) ->
+        match breadcrumb.href with
+        | Some href ->
+            [
               [
-                Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ];
-                Html.txt " – ";
-              ]
-        in
-        [ Html.nav ~a:[ Html.a_class [ "odoc-nav" ] ] (up @ rest) ]
-      in
-      let space = Html.txt " " in
-      let sep = [ space; Html.entity "#x00BB"; space ] in
-      let html =
-        (* Create breadcrumbs *)
-        Odoc_utils.List.concat_map ~sep
-          ~f:(fun (breadcrumb : Types.breadcrumb) ->
-            match breadcrumb.href with
-            | Some href ->
-                [
-                  [
-                    Html.a
-                      ~a:[ Html.a_href href ]
-                      (breadcrumb.name
-                        :> Html_types.flow5_without_interactive Html.elt list);
-                  ];
-                ]
-            | None ->
-                [
-                  (breadcrumb.name :> Html_types.nav_content_fun Html.elt list);
-                ])
-          breadcrumbs.parents
-        |> List.flatten
-      in
-      let current_name :> Html_types.nav_content_fun Html.elt list =
-        breadcrumbs.current.name
-      in
-      let rest =
-        if List.is_empty breadcrumbs.parents then current_name
-        else List.rev html @ sep @ current_name
-      in
-      make_navigation ~up_url:breadcrumbs.up_url
-        (rest
-          :> [< Html_types.nav_content_fun > `A `PCDATA `Wbr ] Html.elt list)
+                Html.a
+                  ~a:[ Html.a_href href ]
+                  (breadcrumb.name
+                    :> Html_types.flow5_without_interactive Html.elt list);
+              ];
+            ]
+        | None ->
+            [ (breadcrumb.name :> Html_types.nav_content_fun Html.elt list) ])
+      breadcrumbs.parents
+    |> List.flatten
+  in
+  let current_name :> Html_types.nav_content_fun Html.elt list =
+    breadcrumbs.current.name
+  in
+  let rest =
+    if List.is_empty breadcrumbs.parents then current_name
+    else List.rev html @ sep @ current_name
+  in
+  make_navigation ~up_url:breadcrumbs.up_url
+    (rest :> [< Html_types.nav_content_fun > `A `PCDATA `Wbr ] Html.elt list)
 
 let file_uri ~config ~url (base : Types.uri) file =
   match base with

@@ -520,8 +520,12 @@ module Breadcrumbs = struct
       |> List.rev
     in
     match List.rev parent_paths with
-    | [] -> None
-    | [ _ ] -> None
+    | [] -> assert false
+    | [ current ] ->
+        let current =
+          { href = None; name = [ Html.txt current.name ]; kind = current.kind }
+        in
+        { parents = []; up_url = None; current }
     | [ { name = "index"; _ }; x ] ->
         (* Special case leaf pages called 'index' with one parent. This is for files called
             index.mld that would otherwise clash with their parent. In particular,
@@ -530,7 +534,7 @@ module Breadcrumbs = struct
         let current =
           { href = None; name = [ Html.txt x.name ]; kind = x.kind }
         in
-        Some { parents = []; up_url; current }
+        { parents = []; up_url; current }
     | current :: (up :: _ as parents) ->
         let current = to_breadcrumb current in
         let up_url =
@@ -539,7 +543,7 @@ module Breadcrumbs = struct
                (Odoc_document.Url.from_path up))
         in
         let parents = List.map to_breadcrumb parents in
-        Some { current; parents; up_url }
+        { current; parents; up_url }
 
   let gen_breadcrumbs_with_sidebar ~config ~sidebar ~url:current_url =
     let rec extract acc (tree : Odoc_document.Sidebar.t) =
@@ -594,7 +598,7 @@ module Breadcrumbs = struct
   let gen_breadcrumbs ~config ~sidebar ~url =
     match sidebar with
     | None -> gen_breadcrumbs_no_sidebar ~config ~url
-    | Some sidebar -> Some (gen_breadcrumbs_with_sidebar ~config ~sidebar ~url)
+    | Some sidebar -> gen_breadcrumbs_with_sidebar ~config ~sidebar ~url
 end
 
 module Page = struct

@@ -4,7 +4,7 @@ val make :
   config:Config.t ->
   preamble:Html_types.div_content Html.elt list ->
   url:Odoc_document.Url.Path.t ->
-  breadcrumbs:Types.breadcrumbs option ->
+  breadcrumbs:Types.breadcrumbs ->
   sidebar:Html_types.div_content Html.elt list option ->
   toc:Types.toc list ->
   uses_katex:bool ->
@@ -16,7 +16,7 @@ val make :
 val make_src :
   config:Config.t ->
   url:Odoc_document.Url.Path.t ->
-  breadcrumbs:Types.breadcrumbs option ->
+  breadcrumbs:Types.breadcrumbs ->
   sidebar:Html_types.div_content Html.elt list option ->
   Html_types.div_content Html.elt list ->
   Odoc_document.Renderer.page
