@@ -10,6 +10,7 @@ type t = {
   children_order : children_order option;
   short_title : short_title option;
   toc_status : [ `Open | `Hidden ] option;
+  order_category : string option;
 }
 
 val empty : t
@@ -27,6 +28,11 @@ val parse_short_title :
   (line Location_.with_location, Error.t) Result.result
 
 val parse_toc_status :
+  Location_.span ->
+  tag_payload ->
+  (line Location_.with_location, Error.t) Result.result
+
+val parse_order_category :
   Location_.span ->
   tag_payload ->
   (line Location_.with_location, Error.t) Result.result
