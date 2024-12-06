@@ -53,8 +53,8 @@ let compile_to_json ~output sidebar =
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     open_out_bin (Fs.File.to_string output)
   in
-  let output = Format.formatter_of_out_channel output_channel in
-  Format.fprintf output "%s" text
+  Fun.protect ~finally:(fun () -> close_out output_channel) @@ fun () ->
+  Printf.fprintf output_channel "%s" text
 
 let generate ~marshall ~output ~warnings_options:_ ~index =
   Odoc_file.load_index index >>= fun index ->
