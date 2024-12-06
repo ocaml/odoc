@@ -1133,7 +1133,10 @@ module Odoc_html_args = struct
   end
 
   let escape_breadcrumb =
-    let doc = "URL to use to escape from the breadcrumbs" in
+    let doc =
+      "Wether to add a 'Home' breadcrumb to go up the root of the given \
+       sidebar."
+    in
     Arg.(value & flag & info ~docv:"escape" ~doc [ "escape-breadcrumb" ])
 
   let theme_uri =
