@@ -51,16 +51,16 @@ let make ~config ~preamble ~url ~breadcrumbs ~sidebar ~toc ~uses_katex
     Format.pp_print_string ppf
       (json_to_string
          (`Object
-           [
-             ("type", `String "documentation");
-             ("uses_katex", `Bool uses_katex);
-             ("breadcrumbs", json_of_breadcrumbs breadcrumbs);
-             ("toc", json_of_toc toc);
-             ("global_toc", global_toc);
-             ("source_anchor", source_anchor);
-             ("preamble", `String (json_of_html preamble));
-             ("content", `String (json_of_html content));
-           ]))
+            [
+              ("type", `String "documentation");
+              ("uses_katex", `Bool uses_katex);
+              ("breadcrumbs", json_of_breadcrumbs breadcrumbs);
+              ("toc", json_of_toc toc);
+              ("global_toc", global_toc);
+              ("source_anchor", source_anchor);
+              ("preamble", `String (json_of_html preamble));
+              ("content", `String (json_of_html content));
+            ]))
   in
   { Odoc_document.Renderer.filename; content; children; path = url }
 
@@ -73,13 +73,13 @@ let make_src ~config ~url ~breadcrumbs content =
     Format.pp_print_string ppf
       (json_to_string
          (`Object
-           [
-             ("type", `String "source");
-             ("breadcrumbs", json_of_breadcrumbs breadcrumbs);
-             ( "content",
-               `String
-                 (String.concat ""
-                    (List.map (Format.asprintf "%a" htmlpp) content)) );
-           ]))
+            [
+              ("type", `String "source");
+              ("breadcrumbs", json_of_breadcrumbs breadcrumbs);
+              ( "content",
+                `String
+                  (String.concat ""
+                     (List.map (Format.asprintf "%a" htmlpp) content)) );
+            ]))
   in
   { Odoc_document.Renderer.filename; content; children = []; path = url }

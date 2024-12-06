@@ -24,8 +24,8 @@ let handle_file file ~unit ~page ~occ =
       | _ ->
           Error
             (`Msg
-              "Only pages and unit are allowed as input when generating an \
-               index"))
+               "Only pages and unit are allowed as input when generating an \
+                index"))
 
 let parse_input_file input =
   let is_sep = function '\n' | '\r' -> true | _ -> false in

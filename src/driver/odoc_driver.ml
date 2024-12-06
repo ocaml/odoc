@@ -43,8 +43,18 @@ let render_stats env nprocs =
       ++ dline "HTML" (total_impls + non_hidden + total_mlds)
       ++ line (procs nprocs)
       ++ descriptions)
-    (fun comp compimpl compmld compassets link linkimpl linkmld indexes html
-         procs descr ->
+    (fun comp
+         compimpl
+         compmld
+         compassets
+         link
+         linkimpl
+         linkmld
+         indexes
+         html
+         procs
+         descr
+       ->
       let rec inner (a, b, c, j, d, e, f, i, g, h) =
         Eio.Time.sleep clock 0.1;
         let a' = Atomic.get Stats.stats.compiled_units in
@@ -301,8 +311,8 @@ module Voodoo_mode = struct
     | _ ->
         Error
           (`Msg
-            "Invalid action. Options are 'compile-only', 'link-and-gen' or \
-             'all'")
+             "Invalid action. Options are 'compile-only', 'link-and-gen' or \
+              'all'")
 
   let string_of_action fmt = function
     | CompileOnly -> Format.fprintf fmt "compile-only"

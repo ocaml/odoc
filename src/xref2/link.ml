@@ -352,8 +352,7 @@ and comment_block_element env parent ~loc (x : Comment.block_element) =
       `Heading h
   | `Tag t -> `Tag (comment_tag env parent ~loc t)
 
-and with_location :
-    type a.
+and with_location : type a.
     (loc:_ -> a -> a) -> a Location_.with_location -> a Location_.with_location
     =
  fun fn { value; location = loc } ->

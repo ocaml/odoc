@@ -175,7 +175,7 @@ end = struct
     | exception Not_found -> Error NoPackage
 end
 
-let () = (ignore Named_roots.find_by_name [@warning "-5"])
+let () = ignore Named_roots.find_by_name [@warning "-5"]
 
 module Accessible_paths : sig
   type t
