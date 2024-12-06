@@ -9,4 +9,5 @@ module Html_page = Html_page
 
 module Generator = Generator
 module Link = Link
-module Json = Utils.Json
+module Json = Odoc_utils.Json
+module Sidebar = Sidebar

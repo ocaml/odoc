@@ -20,12 +20,15 @@
   File "index.mld", line 1, characters 0-40:
   Warning: (children) doesn't include 'omitted'.
 
-  $ odoc html-generate --indent --index index.odoc-index -o _html  _odoc/pkg/page-index.odocl
-  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/page-content.odocl
-  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/page-omitted.odocl
-  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/dir1/page-index.odocl
-  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/dir1/page-content_in_dir.odocl
-  $ odoc html-generate --index index.odoc-index -o _html  _odoc/pkg/dir1/page-dontent.odocl
+Turn the index into a sidebar (removes all unnecessary entries)
+  $ odoc sidebar-generate index.odoc-index
+
+  $ odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o _html  _odoc/pkg/page-index.odocl
+  $ odoc html-generate --sidebar sidebar.odoc-sidebar -o _html  _odoc/pkg/page-content.odocl
+  $ odoc html-generate --sidebar sidebar.odoc-sidebar -o _html  _odoc/pkg/page-omitted.odocl
+  $ odoc html-generate --sidebar sidebar.odoc-sidebar -o _html  _odoc/pkg/dir1/page-index.odocl
+  $ odoc html-generate --sidebar sidebar.odoc-sidebar -o _html  _odoc/pkg/dir1/page-content_in_dir.odocl
+  $ odoc html-generate --sidebar sidebar.odoc-sidebar -o _html  _odoc/pkg/dir1/page-dontent.odocl
   $ odoc support-files -o _html
 
   $ odoc_print _odoc/pkg/page-index.odocl | jq .frontmatter

@@ -590,3 +590,7 @@ let filepath ~config url = Link.Path.as_filename ~config url
 let doc ~config ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in
   block ~config ~resolve b
+
+let inline ~config ~xref_base_uri b =
+  let resolve = Link.Base xref_base_uri in
+  inline ~config ~resolve b

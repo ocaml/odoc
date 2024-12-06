@@ -36,11 +36,14 @@ module Pkg_args = struct
       x.odoc_dir Fpath.pp x.odocl_dir sfp_pp x.pages sfp_pp x.libs
 end
 
+type sidebar = { output_file : Fpath.t; json : bool }
+
 type index = {
   pkg_args : Pkg_args.t;
   output_file : Fpath.t;
   json : bool;
   search_dir : Fpath.t;
+  sidebar : sidebar option;
 }
 
 let pp_index fmt x =

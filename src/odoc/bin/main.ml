@@ -476,6 +476,7 @@ module Indexing = struct
     Antichain.check (lib_roots |> List.map ~f:snd) ~opt:"-L" >>= fun () ->
     Indexing.compile marshall ~output ~warnings_options ~occurrences ~lib_roots
       ~page_roots ~inputs_in_file ~odocls:inputs
+
   let cmd =
     let dst =
       let doc =
@@ -542,6 +543,59 @@ module Indexing = struct
        in the given directories."
     in
     Term.info "compile-index" ~docs ~doc
+end
+
+module Sidebar = struct
+  open Or_error
+
+  let output_file ~dst marshall =
+    match (dst, marshall) with
+    | Some file, `JSON when not (Fpath.has_ext "json" (Fpath.v file)) ->
+        Error
+          (`Msg
+            "When generating a sidebar with --json, the output must have a \
+             .json file extension")
+    | Some file, `Marshall
+      when not (Fpath.has_ext "odoc-sidebar" (Fpath.v file)) ->
+        Error
+          (`Msg
+            "When generating sidebar, the output must have a .odoc-sidebar \
+             file extension")
+    | Some file, _ -> Ok (Fs.File.of_string file)
+    | None, `JSON -> Ok (Fs.File.of_string "sidebar.json")
+    | None, `Marshall -> Ok (Fs.File.of_string "sidebar.odoc-sidebar")
+
+  let generate dst json warnings_options input =
+    let marshall = if json then `JSON else `Marshall in
+    output_file ~dst marshall >>= fun output ->
+    Sidebar.generate ~marshall ~output ~warnings_options ~index:input
+
+  let cmd =
+    let dst =
+      let doc =
+        "Output file path. Non-existing intermediate directories are created. \
+         Defaults to sidebar.odoc-sidebar, or sidebar.json if --json is \
+         passed."
+      in
+      Arg.(
+        value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
+    in
+    let json =
+      let doc = "whether to output a json file, or a binary .odoc-index file" in
+      Arg.(value & flag & info ~doc [ "json" ])
+    in
+    let inputs =
+      let doc = ".odoc-index file to generate a value from" in
+      Arg.(
+        required & pos 0 (some convert_fpath) None & info ~doc ~docv:"FILE" [])
+    in
+    Term.(
+      const handle_error
+      $ (const generate $ dst $ json $ warnings_options $ inputs))
+
+  let info ~docs =
+    let doc = "Generate a sidebar from an index file." in
+    Term.info "sidebar-generate" ~docs ~doc
 end
 
 module Support_files_command = struct
@@ -809,7 +863,7 @@ end = struct
       Arg.(
         value
         & opt (some convert_fpath) None
-        & info [ "index" ] ~doc ~docv:"FILE.odoc-index")
+        & info [ "sidebar" ] ~doc ~docv:"FILE.odoc-index")
 
     let cmd =
       let syntax =
@@ -1575,6 +1629,7 @@ let () =
       Support_files_command.(cmd, info ~docs:section_pipeline);
       Compile_impl.(cmd, info ~docs:section_pipeline);
       Indexing.(cmd, info ~docs:section_pipeline);
+      Sidebar.(cmd, info ~docs:section_pipeline);
       Odoc_manpage.generate ~docs:section_generators;
       Odoc_latex.generate ~docs:section_generators;
       Odoc_html_url.(cmd, info ~docs:section_support);
