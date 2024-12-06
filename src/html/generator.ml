@@ -498,6 +498,7 @@ end
 module Breadcrumbs = struct
   open Types
   let gen_breadcrumbs_no_sidebar ~config ~url =
+    (* This is the pre 3.0 way of computing the breadcrumbs *)
     let rec get_parent_paths x =
       match x with
       | [] -> []
@@ -514,44 +515,86 @@ module Breadcrumbs = struct
       in
       { href; name = [ Html.txt path.name ]; kind = path.kind }
     in
-    get_parent_paths (List.rev (Odoc_document.Url.Path.to_list url))
-    |> List.rev |> List.map to_breadcrumb
-
-  let gen_breadcrumbs ~config ~sidebar ~url:current_url =
-    match sidebar with
-    | None -> gen_breadcrumbs_no_sidebar ~config ~url:current_url
-    | Some sidebar ->
-        let rec extract acc (tree : Odoc_document.Sidebar.t) =
-          match
-            List.find_map
-              (function
-                | ({
-                     node =
-                       {
-                         url = { page; anchor = ""; _ } as url;
-                         valid_link;
-                         content;
-                         _;
-                       };
-                     children;
-                   } :
-                    Odoc_document.Sidebar.entry Odoc_utils.Tree.t)
-                  when Url.Path.is_prefix page current_url ->
-                    let href =
-                      if valid_link then
-                        Some
-                          (Link.href ~config ~resolve:(Current current_url) url)
-                      else None
-                    in
-                    let name = inline_nolink content in
-                    Some ({ href; name; kind = page.kind }, children)
-                | _ -> None)
-              tree
-          with
-          | None -> List.rev acc
-          | Some (bc, children) -> extract (bc :: acc) children
+    let parent_paths =
+      get_parent_paths (List.rev (Odoc_document.Url.Path.to_list url))
+      |> List.rev
+    in
+    match List.rev parent_paths with
+    | [] -> None
+    | [ _ ] -> None
+    | [ { name = "index"; _ }; x ] ->
+        (* Special case leaf pages called 'index' with one parent. This is for files called
+            index.mld that would otherwise clash with their parent. In particular,
+            dune and odig both cause this situation right now. *)
+        let up_url = Some "../index.html" in
+        let current =
+          { href = None; name = [ Html.txt x.name ]; kind = x.kind }
         in
-        extract [] sidebar
+        Some { parents = []; up_url; current }
+    | current :: (up :: _ as parents) ->
+        let current = to_breadcrumb current in
+        let up_url =
+          Some
+            (Link.href ~config ~resolve:(Current url)
+               (Odoc_document.Url.from_path up))
+        in
+        let parents = List.map to_breadcrumb parents in
+        Some { current; parents; up_url }
+
+  let gen_breadcrumbs_with_sidebar ~config ~sidebar ~url:current_url =
+    let rec extract acc (tree : Odoc_document.Sidebar.t) =
+      match
+        List.find_map
+          (function
+            | ({
+                 node =
+                   {
+                     url = { page; anchor = ""; _ } as url;
+                     valid_link;
+                     content;
+                     _;
+                   };
+                 children;
+               } :
+                Odoc_document.Sidebar.entry Odoc_utils.Tree.t)
+              when Url.Path.is_prefix page current_url ->
+                let href =
+                  if valid_link then
+                    Some (Link.href ~config ~resolve:(Current current_url) url)
+                  else None
+                in
+                let name = inline_nolink content in
+                let breadcrumb = { href; name; kind = page.kind } in
+                if page = current_url then Some (`Current breadcrumb)
+                else Some (`Parent (breadcrumb, children))
+            | _ -> None)
+          tree
+      with
+      | Some (`Parent (bc, children)) -> extract (bc :: acc) children
+      | Some (`Current current) ->
+          let up_url =
+            List.find_map (fun (b : Types.breadcrumb) -> b.href) acc
+          in
+          { Types.current; parents = List.rev acc; up_url }
+      | None ->
+          let current =
+            {
+              href = None;
+              name = [ Html.txt current_url.name ];
+              kind = current_url.kind;
+            }
+          in
+          let up_url =
+            List.find_map (fun (b : Types.breadcrumb) -> b.href) acc
+          in
+          { Types.current; parents = List.rev acc; up_url }
+    in
+    extract [] sidebar
+
+  let gen_breadcrumbs ~config ~sidebar ~url =
+    match sidebar with
+    | None -> gen_breadcrumbs_no_sidebar ~config ~url
+    | Some sidebar -> Some (gen_breadcrumbs_with_sidebar ~config ~sidebar ~url)
 end
 
 module Page = struct

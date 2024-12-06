@@ -62,25 +62,24 @@ let sidebars ~global_toc ~local_toc =
   | [] -> []
   | tocs -> [ Html.div ~a:[ Html.a_class [ "odoc-tocs" ] ] tocs ]
 
-let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
-  let make_navigation ~up_url rest =
-    let up =
-      match up_url with
-      | None -> []
-      | Some up_url ->
-          [ Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ]; Html.txt " – " ]
-    in
-    [ Html.nav ~a:[ Html.a_class [ "odoc-nav" ] ] (up @ rest) ]
-  in
-  match List.rev breadcrumbs with
-  | [] ->
-      [ Html.nav ~a:[ Html.a_class [ "odoc-nav" ] ] [ Html.txt "yooooooo" ] ]
-      (* Can't happen - there's always the current page's breadcrumb. *)
-  | current :: rest ->
-      let space = Html.txt " " in
-      let sep :> Html_types.nav_content_fun Html.elt list =
-        [ space; Html.entity "#x00BB"; space ]
+let html_of_breadcrumbs (breadcrumbs : Types.breadcrumbs option) =
+  match breadcrumbs with
+  | None -> []
+  | Some breadcrumbs ->
+      let make_navigation ~up_url rest =
+        let up =
+          match up_url with
+          | None -> []
+          | Some up_url ->
+              [
+                Html.a ~a:[ Html.a_href up_url ] [ Html.txt "Up" ];
+                Html.txt " – ";
+              ]
+        in
+        [ Html.nav ~a:[ Html.a_class [ "odoc-nav" ] ] (up @ rest) ]
       in
+      let space = Html.txt " " in
+      let sep = [ space; Html.entity "#x00BB"; space ] in
       let html =
         (* Create breadcrumbs *)
         Odoc_utils.List.concat_map ~sep
@@ -99,15 +98,17 @@ let html_of_breadcrumbs (breadcrumbs : Types.breadcrumb list) =
                 [
                   (breadcrumb.name :> Html_types.nav_content_fun Html.elt list);
                 ])
-          rest
+          breadcrumbs.parents
         |> List.flatten
       in
       let current_name :> Html_types.nav_content_fun Html.elt list =
-        current.name
+        breadcrumbs.current.name
       in
-      let up_url = List.find_map (fun (b : Types.breadcrumb) -> b.href) rest in
-      let rest = List.rev html @ sep @ current_name in
-      make_navigation ~up_url
+      let rest =
+        if List.is_empty breadcrumbs.parents then current_name
+        else List.rev html @ sep @ current_name
+      in
+      make_navigation ~up_url:breadcrumbs.up_url
         (rest
           :> [< Html_types.nav_content_fun > `A `PCDATA `Wbr ] Html.elt list)
 
