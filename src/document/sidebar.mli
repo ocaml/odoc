@@ -5,7 +5,7 @@ type entry = {
   url : Url.t;
   valid_link : bool;
   content : Inline.t;
-  toc_status : [ `Open ] option;
+  toc_status : [ `Open | `Hidden ] option;
 }
 
 type t = entry Tree.forest

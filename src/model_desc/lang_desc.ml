@@ -718,6 +718,13 @@ and frontmatter =
             (t.short_title
               :> Comment.inline_element Location_.with_location list option)),
           Option Comment_desc.inline_element );
+      F
+        ( "toc_status",
+          (fun t ->
+            Option.map
+              (function `Hidden -> "hidden" | `Open -> "open")
+              t.toc_status),
+          Option string );
     ]
 
 and child =
