@@ -193,13 +193,11 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
   in
   let of_lib pkg (lib : Packages.libty) =
     let lib_deps = Util.StringSet.add lib.lib_name lib.lib_deps in
-    let landing_page :> t list =
-      if pkg.Packages.selected then
-        let index = index_of pkg in
-        [ Landing_pages.library ~dirs ~pkg ~index lib ]
-      else []
+    let landing_page :> t =
+      let index = index_of pkg in
+      Landing_pages.library ~dirs ~pkg ~index lib
     in
-    landing_page @ List.concat_map (of_module pkg lib lib_deps) lib.modules
+    landing_page :: List.concat_map (of_module pkg lib lib_deps) lib.modules
   in
   let of_mld pkg (mld : Packages.mld) : mld unit list =
     let open Fpath in
