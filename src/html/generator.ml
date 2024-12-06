@@ -499,6 +499,19 @@ end
 
 module Breadcrumbs = struct
   open Types
+
+  let page_parent (page : Url.Path.t) =
+    let page =
+      match page with
+      | { parent = Some parent; name = "index"; kind = `LeafPage } -> parent
+      | _ -> page
+    in
+    match page with
+    | { parent = None; name = "index"; kind = `LeafPage } -> None
+    | { parent = Some parent; _ } -> Some parent
+    | { parent = None; _ } ->
+        Some { Url.Path.parent = None; name = "index"; kind = `LeafPage }
+
   let gen_breadcrumbs_no_sidebar ~config ~url =
     let url =
       match url with
@@ -536,24 +549,31 @@ module Breadcrumbs = struct
         in
         match List.rev parent_paths with
         | [] -> assert false
-        | [ current ] ->
-            let current =
-              {
-                href = None;
-                name = [ Html.txt current.name ];
-                kind = current.kind;
-              }
-            in
-            { parents = []; up_url = None; current }
-        | current :: (up :: _ as parents) ->
-            let current = to_breadcrumb current in
+        | current :: parents ->
             let up_url =
-              Some
-                (Link.href ~config ~resolve:(Current url)
-                   (Odoc_document.Url.from_path up))
+              match page_parent current with
+              | None -> None
+              | Some up ->
+                  Some
+                    (Link.href ~config ~resolve:(Current url)
+                       (Odoc_document.Url.from_path up))
             in
+            let current = to_breadcrumb current in
             let parents = List.map to_breadcrumb parents |> List.rev in
-            { current; parents; up_url })
+            let home =
+              let href =
+                Some
+                  (Link.href ~config ~resolve:(Current url)
+                     (Odoc_document.Url.from_path
+                        {
+                          Url.Path.name = "index";
+                          parent = None;
+                          kind = `LeafPage;
+                        }))
+              in
+              { href; name = [ Html.txt "🏠" ]; kind = `LeafPage }
+            in
+            { current; parents = home :: parents; up_url })
 
   let gen_breadcrumbs_with_sidebar ~config ~sidebar ~url:current_url =
     let find_parent =
@@ -601,18 +621,6 @@ module Breadcrumbs = struct
           { Types.current; parents; up_url }
     in
     let escape =
-      let page_parent (page : Url.Path.t) =
-        let page =
-          match page with
-          | { parent = Some parent; name = "index"; kind = `LeafPage } -> parent
-          | _ -> page
-        in
-        match page with
-        | { parent = None; name = "index"; kind = `LeafPage } -> None
-        | { parent = Some parent; _ } -> Some parent
-        | { parent = None; _ } ->
-            Some { Url.Path.parent = None; name = "index"; kind = `LeafPage }
-      in
       match (Config.escape_breadcrumb config, find_parent sidebar) with
       | true, Some { node; _ } -> (
           match page_parent node.url.page with
