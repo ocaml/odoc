@@ -928,9 +928,14 @@ body.odoc:has( .odoc-search) .odoc-toc {
     margin-bottom: 10px;
 }
 
-.odoc-toc.odoc-global-toc > ul > li > ul > li > a {
+.odoc-toc.odoc-global-toc > ul > li > ul > li {
     font-weight: 500;
     font-size: 500;
+}
+
+.odoc-toc.odoc-global-toc > ul > li > ul > li > a {
+    font-weight: inherit;
+    font-size: inherit;
 }
 
 .odoc-toc.odoc-global-toc > ul > li > a {

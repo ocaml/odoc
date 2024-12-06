@@ -6,7 +6,7 @@ type entry = {
   url : Url.t;
   valid_link : bool;
   content : Inline.t;
-  toc_status : [ `Open ] option;
+  toc_status : [ `Open | `Hidden ] option;
 }
 
 open Odoc_index
@@ -113,7 +113,12 @@ end = struct
                 let name = Odoc_model.Paths.Identifier.name entry.id in
                 [ inline (Text name) ]
           in
-          { url; content; toc_status; valid_link = true }
+          let valid_link =
+            match entry.kind with
+            | Page { toc_status = Some `Hidden; _ } -> false
+            | _ -> true
+          in
+          { url; content; toc_status; valid_link }
     in
     let f x =
       match x.Entry.kind with

@@ -5,14 +5,14 @@ type short_title = Comment.link_content
 type line =
   | Children_order of child Location_.with_location list
   | Short_title of short_title
-  | Toc_status of [ `Open ]
+  | Toc_status of [ `Open | `Hidden ]
 
 type children_order = child Location_.with_location list Location_.with_location
 
 type t = {
   children_order : children_order option;
   short_title : short_title option;
-  toc_status : [ `Open ] option;
+  toc_status : [ `Open | `Hidden ] option;
 }
 
 let empty = { children_order = None; short_title = None; toc_status = None }
@@ -91,7 +91,17 @@ let parse_toc_status loc (t : tag_payload) =
    { Location_.value = `Paragraph [ { Location_.value = `Word "open"; _ } ]; _ };
   ] ->
       Result.Ok (Location_.at loc (Toc_status `Open))
-  | _ -> Error (Error.make "@toc_status can only take the 'open' value" loc)
+  | [
+   {
+     Location_.value = `Paragraph [ { Location_.value = `Word "hidden"; _ } ];
+     _;
+   };
+  ] ->
+      Result.Ok (Location_.at loc (Toc_status `Hidden))
+  | _ ->
+      Error
+        (Error.make "@toc_status can only take the 'open' and 'hidden' value"
+           loc)
 
 let of_lines lines =
   Error.catch_warnings @@ fun () -> List.fold_left apply empty lines

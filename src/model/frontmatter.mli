@@ -9,7 +9,7 @@ type children_order = child Location_.with_location list Location_.with_location
 type t = {
   children_order : children_order option;
   short_title : short_title option;
-  toc_status : [ `Open ] option;
+  toc_status : [ `Open | `Hidden ] option;
 }
 
 val empty : t
