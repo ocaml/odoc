@@ -41,10 +41,6 @@ Now, let's see the result
     "node": "{\"url\":\"pkg/index.html\",\"html\":\"\"}",
     "children": [
       {
-        "node": "{\"url\":\"pkg/file.html\",\"html\":\"\"}",
-        "children": []
-      },
-      {
         "node": "{\"url\":\"pkg/dir1/index.html\",\"html\":\"\"}",
         "children": [
           {
@@ -52,6 +48,10 @@ Now, let's see the result
             "children": []
           }
         ]
+      },
+      {
+        "node": "{\"url\":\"pkg/file.html\",\"html\":\"\"}",
+        "children": []
       }
     ]
   }

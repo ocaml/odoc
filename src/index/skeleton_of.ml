@@ -11,7 +11,6 @@ type t = Entry.t Tree.t
 let compare_entry (t1 : t) (t2 : t) =
   let by_kind (t : t) =
     match t.node.kind with
-    | Page _ when List.is_empty t.children -> -10
     | Page _ | Dir -> 0
     | Module _ -> 10
     | Impl -> 20
