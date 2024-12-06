@@ -725,6 +725,7 @@ and frontmatter =
               (function `Hidden -> "hidden" | `Open -> "open")
               t.toc_status),
           Option string );
+      F ("order_category", (fun t -> t.order_category), Option string);
     ]
 
 and child =

@@ -56,7 +56,9 @@ Turn the index into a sidebar (removes all unnecessary entries)
         }
       ]
     },
-    "short_title": "None"
+    "short_title": "None",
+    "toc_status": "None",
+    "order_category": "None"
   }
 
 
