@@ -87,7 +87,7 @@ and source k ?a (t : Source.t) =
         if content = [] then [] else [ Html.span content ]
     | Tag (Some s, l) -> [ Html.span ~a:[ Html.a_class [ s ] ] (tokens l) ]
   and tokens t = Odoc_utils.List.concat_map t ~f:token in
-  Utils.optional_elt Html.code ?a (tokens t)
+  match tokens t with [] -> [] | l -> [ Html.code ?a l ]
 
 and styled style ~emph_level =
   match style with
