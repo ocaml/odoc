@@ -100,7 +100,7 @@ let html_of_breadcrumbs (breadcrumbs : Types.breadcrumbs) =
   in
   let rest =
     if List.is_empty breadcrumbs.parents then current_name
-    else List.rev html @ sep @ current_name
+    else html @ sep @ current_name
   in
   make_navigation ~up_url:breadcrumbs.up_url
     (rest :> [< Html_types.nav_content_fun > `A `PCDATA `Wbr ] Html.elt list)
