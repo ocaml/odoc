@@ -78,7 +78,10 @@ See the comments on the types at the end of test.mli for the expectation.
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
    </head>
-   <body class="odoc"><nav class="odoc-nav">Test</nav>
+   <body class="odoc">
+    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
+     <a href="../index.html">🏠</a> &#x00BB; Test
+    </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>Test</span></code></h1>
     </header>
