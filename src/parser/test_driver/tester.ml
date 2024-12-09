@@ -44,16 +44,7 @@ let error_recovery =
 
 let light_table_early_EOI =
   [
-    (*
-( "End not allowed WITHOUT newline",
-      {|{t 
-      | -- | :--: |
-      | a | b |} );
-    *)
-    ("End not allowed WITH newline", {|{t 
-| A | B | 
-  C | D 
-}|});
+    ("End not allowed WITH newline", "{t\n| A | B |\n| -- | -- |\n| C | D |\n}");
   ]
 
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
@@ -193,7 +184,7 @@ let run_test (label, case) =
   let get_tok _ =
     incr failure_index;
     let tok = Loc.value @@ TokBuf.next tokbuf in
-    print_endline @@ Parser.string_of_token tok;
+    print_endline @@ "Got token: " ^ Parser.string_of_token tok;
     tok
   in
   try

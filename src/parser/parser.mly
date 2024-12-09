@@ -177,7 +177,6 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 
 %}
 
-%token SPACE 
 %token RIGHT_BRACE "{"
 %token RIGHT_CODE_DELIMITER "{["
 
@@ -266,24 +265,18 @@ let separated_sequence(sep, rule) :=
 (* WHITESPACE *)
 
 let horizontal_whitespace := 
-  | SPACE; { `Space " " } 
   | ~ = Space; <`Space>
 
-let newline := 
-  | ~ = Single_newline; <> 
+let newline := ~ = Single_newline; <> 
 
 let whitespace := 
   | ~ = horizontal_whitespace; <>
   | ~ = newline; <`Space>
 
-let any_whitespace := 
-  | ~ = whitespace; <>
-  | ~ = Blank_line; <`Space>
-
 (* ENTRY *)
 
 let main :=  
-  | any_whitespace*; nodes = sequence_nonempty(locatedM(toplevel)); whitespace?; END; { nodes }
+  | nodes = sequence_nonempty(locatedM(toplevel)); whitespace?; END; { nodes }
   | END; { return [] }
 
 let toplevel :=
@@ -376,19 +369,17 @@ let tag_bare :=
 
 (* INLINE ELEMENTS *)
 
-let inline_element := 
+let inline_element :=
+  (* Single token inline elements which are mostly handled in the lexer *)
   | s = horizontal_whitespace; { return s } 
-  | ~ = code_span; <>
-  | ~ = raw_markup; <>
-  | ~ = word; <>
+  | c = Code_span; { return @@ `Code_span c }
+  | m = Raw_markup; { return @@ `Raw_markup m }
+  | w = Word; { return @@ `Word w }
+  | m = Math_span; { return @@ `Math_span m }
+  (* More complex/recursive inline elements should have their own rule *)
   | ~ = style; <>
-  | ~ = math_span; <>
   | ~ = reference; <>
   | ~ = link; <>
-
-let code_span := c = Code_span; { return @@ `Code_span c }
-let raw_markup := m = Raw_markup; { return @@ `Raw_markup m }
-let word := w = Word; { return @@ `Word w }
 
 let style := 
   | style = Style; children = sequence(locatedM(inline_element)); RIGHT_BRACE; 
@@ -625,25 +616,33 @@ let table_heavy := TABLE_HEAVY; whitespace?; grid = sequence_nonempty(row_heavy)
 (* LIGHT TABLE *)
 
 let cell_content_light := ~ = sequence_nonempty(locatedM(inline_element)); <>
-let row_light := 
-  | BAR?; cells = separated_list(BAR, cell_content_light); BAR?; 
-    { Writer.sequence cells }
-let rows_light := rows = separated_list(Single_newline?, row_light); { Writer.sequence rows }
-let table_start_light := TABLE_LIGHT; whitespace?; {}
+let cell := 
+  | ~ = cell_content_light; <>
+  | ~ = cell_content_light; BAR; <>
 
-let table_unexpected_EOI_light := newline?; END; {}
+let cells := BAR?; ~ = sequence_nonempty(cell); <>
+
+let row_light :=
+  | ~ = cells; <>
+  | ~ = cells; Single_newline; <>
+
+let rows_light := Single_newline?; ~ = sequence_nonempty(row_light); <>
+
+let table_start_light := TABLE_LIGHT; whitespace?; {}
 let table_light :=
     | table_start_light; data = rows_light; RIGHT_BRACE; { Writer.map construct_table data }
     | table_start_light; RIGHT_BRACE; 
       { return @@ `Table (([[]], None), `Light) }
-    | table_start_light; data = rows_light; table_unexpected_EOI_light; 
+    | table_start_light; data = rows_light?; END; 
       {
         let in_what = Tokens.describe TABLE_LIGHT in
         let warning = fun ~filename -> 
           let span = Parser_aux.to_location ~filename $sloc in
           Parse_error.end_not_allowed ~in_what span
         in
-        unclosed_table ~data warning
+        match data with 
+        | Some data -> unclosed_table ~data warning
+        | None -> unclosed_table warning
       }
 (*
 

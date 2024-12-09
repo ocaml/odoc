@@ -9,7 +9,6 @@ type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 type table_cell_kind = [ `Header | `Data ]
 
 type token =
-  | SPACE
   | Space of string
   | Single_newline of string
   | Blank_line of string
@@ -69,7 +68,7 @@ let media_description ref_kind media_kind =
   (ref_kind, media_kind)
 
 let print : token -> string = function
-  | SPACE | Space _ -> "\t"
+  | Space _ -> "\t"
   | Single_newline _ -> "\n"
   | Blank_line _ -> "\n\n"
   | Simple_ref _ -> "{!"
@@ -161,7 +160,6 @@ let describe : token -> string = function
   | Simple_link _ -> "'{:...} (external link)'"
   | Link_with_replacement _ -> "'{{:...} ...}' (external link)"
   | END -> "end of text"
-  | SPACE -> "whitespace"
   | Single_newline _ -> "newline"
   | Blank_line _ -> "blank line"
   | RIGHT_BRACE -> "'}'"
@@ -219,7 +217,7 @@ let empty_code_block =
 
 let describe_inline : Ast.inline_element -> string = function
   | `Word w -> describe @@ Word w
-  | `Space _ -> describe SPACE
+  | `Space _ -> describe @@ Space ""
   | `Styled (style, _) -> describe @@ Style style
   | `Code_span _ -> describe @@ Code_span ""
   | `Math_span _ -> describe @@ Math_span ""
