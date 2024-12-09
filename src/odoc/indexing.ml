@@ -7,23 +7,6 @@ open Odoc_model
 module H = Odoc_model.Paths.Identifier.Hashtbl.Any
 module Id = Odoc_model.Paths.Identifier
 
-let handle_file file ~unit ~page ~occ =
-  match Fpath.basename file with
-  | s when String.is_prefix ~affix:"index-" s ->
-      Odoc_file.load_index file >>= fun index -> Ok (occ index)
-  | _ -> (
-      Odoc_file.load file >>= fun unit' ->
-      match unit' with
-      | { Odoc_file.content = Unit_content unit'; _ } when unit'.hidden ->
-          Error (`Msg "Hidden units are ignored when generating an index")
-      | { Odoc_file.content = Unit_content unit'; _ } -> Ok (unit unit')
-      | { Odoc_file.content = Page_content page'; _ } -> Ok (page page')
-      | _ ->
-          Error
-            (`Msg
-              "Only pages and unit are allowed as input when generating an \
-               index"))
-
 let parse_input_file input =
   let is_sep = function '\n' | '\r' -> true | _ -> false in
   Fs.File.read input >>= fun content ->
