@@ -124,16 +124,16 @@ A concrete example for such command would be:
   $ odoc compile
        ~/.opam/5.2.0/lib/ppxlib/ppxlib__Extension.cmti
        --output-dir _odoc/
-       -I _odoc/ocaml-base-compiler/lib/compiler-libs.common
-       -I _odoc/ocaml-base-compiler/lib/stdlib
-       -I _odoc/ocaml-compiler-libs/lib/ocaml-compiler-libs.common
-       -I _odoc/ppxlib/lib/ppxlib
-       -I _odoc/ppxlib/lib/ppxlib.ast
-       -I _odoc/ppxlib/lib/ppxlib.astlib
-       -I _odoc/ppxlib/lib/ppxlib.stdppx
-       -I _odoc/ppxlib/lib/ppxlib.traverse_builtins
-       -I _odoc/sexplib0/lib/sexplib0
-       --parent-id ppxlib/lib/ppxlib
+       -I _odoc/ocaml-base-compiler/compiler-libs.common
+       -I _odoc/ocaml-base-compiler/stdlib
+       -I _odoc/ocaml-compiler-libs/ocaml-compiler-libs.common
+       -I _odoc/ppxlib/ppxlib
+       -I _odoc/ppxlib/ppxlib.ast
+       -I _odoc/ppxlib/ppxlib.astlib
+       -I _odoc/ppxlib/ppxlib.stdppx
+       -I _odoc/ppxlib/ppxlib.traverse_builtins
+       -I _odoc/sexplib0/sexplib0
+       --parent-id ppxlib/ppxlib
 ]}
 
 {3 Compiling implementations}
@@ -164,16 +164,16 @@ A concrete example for such command would be:
   $ odoc compile-impl
         ~/.opam/5.2.0/lib/ppxlib/ppxlib__Spellcheck.cmt
         --output-dir _odoc/
-        -I _odoc/ocaml-base-compiler/lib/compiler-libs.common
-        -I _odoc/ocaml-base-compiler/lib/stdlib
-        -I _odoc/ocaml-compiler-libs/lib/ocaml-compiler-libs.common
-        -I _odoc/ppxlib/lib/ppxlib
-        -I _odoc/ppxlib/lib/ppxlib.ast
-        -I _odoc/ppxlib/lib/ppxlib.astlib
-        -I _odoc/ppxlib/lib/ppxlib.stdppx
-        -I _odoc/sexplib0/lib/sexplib0
+        -I _odoc/ocaml-base-compiler/compiler-libs.common
+        -I _odoc/ocaml-base-compiler/stdlib
+        -I _odoc/ocaml-compiler-libs/ocaml-compiler-libs.common
+        -I _odoc/ppxlib/ppxlib
+        -I _odoc/ppxlib/ppxlib.ast
+        -I _odoc/ppxlib/ppxlib.astlib
+        -I _odoc/ppxlib/ppxlib.stdppx
+        -I _odoc/sexplib0/sexplib0
         --enable-missing-root-warning
-        --parent-id ppxlib/lib/ppxlib
+        --parent-id ppxlib/ppxlib
         --source-id ppxlib/src/ppxlib/spellcheck.ml
 ]}
 
@@ -274,18 +274,18 @@ An example of such command:
 {@shell[
   $ odoc compile-index
       -o _odoc/ppxlib/index.odoc-index
-      -P ppxlib:_odoc/ppxlib/doc
-      -L ppxlib:_odoc/ppxlib/lib/ppxlib
-      -L ppxlib.ast:_odoc/ppxlib/lib/ppxlib.ast
-      -L ppxlib.astlib:_odoc/ppxlib/lib/ppxlib.astlib
-      -L ppxlib.metaquot:_odoc/ppxlib/lib/ppxlib.metaquot
-      -L ppxlib.metaquot_lifters:_odoc/ppxlib/lib/ppxlib.metaquot_lifters
-      -L ppxlib.print_diff:_odoc/ppxlib/lib/ppxlib.print_diff
-      -L ppxlib.runner:_odoc/ppxlib/lib/ppxlib.runner
-      -L ppxlib.runner_as_ppx:_odoc/ppxlib/lib/ppxlib.runner_as_ppx
-      -L ppxlib.stdppx:_odoc/ppxlib/lib/ppxlib.stdppx
-      -L ppxlib.traverse:_odoc/ppxlib/lib/ppxlib.traverse
-      -L ppxlib.traverse_builtins:_odoc/ppxlib/lib/ppxlib.traverse_builtins
+      -P ppxlib:_odoc/ppxlib
+      -L ppxlib:_odoc/ppxlib/ppxlib
+      -L ppxlib.ast:_odoc/ppxlib/ppxlib.ast
+      -L ppxlib.astlib:_odoc/ppxlib/ppxlib.astlib
+      -L ppxlib.metaquot:_odoc/ppxlib/ppxlib.metaquot
+      -L ppxlib.metaquot_lifters:_odoc/ppxlib/ppxlib.metaquot_lifters
+      -L ppxlib.print_diff:_odoc/ppxlib/ppxlib.print_diff
+      -L ppxlib.runner:_odoc/ppxlib/ppxlib.runner
+      -L ppxlib.runner_as_ppx:_odoc/ppxlib/ppxlib.runner_as_ppx
+      -L ppxlib.stdppx:_odoc/ppxlib/ppxlib.stdppx
+      -L ppxlib.traverse:_odoc/ppxlib/ppxlib.traverse
+      -L ppxlib.traverse_builtins:_odoc/ppxlib/ppxlib.traverse_builtins
       --occurrences _odoc/occurrences-all.odoc-occurrences
 ]}
 
@@ -354,7 +354,7 @@ An example of such command is:
 
 {@shell[
   $ odoc html-generate
-      _odoc/ppxlib/doc/page-index.odocl
+      _odoc/ppxlib/page-index.odocl
       --index _odoc/ppxlib/index.odoc-index
       --search-uri ppxlib/sherlodoc_db.js
       --search-uri sherlodoc.js
@@ -380,7 +380,7 @@ An example of such command is:
 
 {@shell[
   $ odoc html-generate-source
-      --impl _odoc/ppxlib/lib/ppxlib/impl-ppxlib__Reconcile.odocl
+      --impl _odoc/ppxlib/ppxlib/impl-ppxlib__Reconcile.odocl
       /home/panglesd/.opam/5.2.0/lib/ppxlib/reconcile.ml
       -o _html/
 ]}
@@ -413,27 +413,27 @@ will be used in [--parent-id] and in [-P] and [-L].
 
 The driver can decide any set of mutually disjoint set of roots, without posing
 problem to the reference resolution. For instance, both [-P
-pkg:<output_dir>/pkg/doc] and [-P pkg:<output_dir>/pkg/version/doc] are
+pkg:<output_dir>/pkg] and [-P pkg:<output_dir>/pkg/version] are
 acceptable versions. However, we define here "canonical" roots:
 
-Each installed package [<p>] defines a single page root id: [<p>/doc].
+Each installed package [<p>] defines a single page root id: [<p>].
 
 For each package [<p>], each library [<l>] defines a library root id:
-[<p>/lib/<l>].
+[<p>/<l>].
 
 For instance, a package [foo] with two libraries: [foo] and [foo.bar] will
 define three trees:
 
-- A documentation tree named [foo], with root id [foo/doc]. When referred
-  from other trees, a [-P foo:<odoc_dir>/foo/doc] argument needs to be added
+- A documentation tree named [foo], with root id [foo]. When referred
+  from other trees, a [-P foo:<odoc_dir>/foo] argument needs to be added
   at the link phase.
 
-- A module tree named [foo], with root id [foo/lib/foo]. When referred from
-  other trees, a [-L foo:<odoc_dir>/foo/lib/foo] argument needs to be added
+- A module tree named [foo], with root id [foo/foo]. When referred from
+  other trees, a [-L foo:<odoc_dir>/foo/foo] argument needs to be added
   at the link phase.
 
-- A module tree named [foo.bar], with root id [foo/lib/foo.bar]. When referred from
-  other trees, a [-L foo.bar:<odoc_dir>/foo/lib/foo.bar] argument needs to be
+- A module tree named [foo.bar], with root id [foo/foo.bar]. When referred from
+  other trees, a [-L foo.bar:<odoc_dir>/foo/foo.bar] argument needs to be
   added at the link phase.
 
 {2 Link-time dependencies}
@@ -449,11 +449,11 @@ An installed package [<p>] specifies its tree dependencies in a file at
 
 Stanzas of the form [(packages p1 p2 ...)] specifies that page trees [p1],
 [p2], ..., should be added using the [-P] argument: with the canonical roots, it
-would be [-P p1:<output_dir>/p1/doc -P p2:<output_dir>/p2/doc -P ...].
+would be [-P p1:<output_dir>/p1 -P p2:<output_dir>/p2 -P ...].
 
 Stanzas of the form [(libraries l1 l2 ...)] specifies that module trees [l1],
 [l2], ..., should be added using the [-L] argument: with the canonical roots, it
-would be [-L l1:<output_dir>/p1/lib/l1 -L l2<output_dir>/p2/lib/l2 -L ...],
+would be [-L l1:<output_dir>/p1/l1 -L l2<output_dir>/p2/l2 -L ...],
 where [p1] is the package [l1] is in, etc.
 
 {2 The units}
@@ -472,21 +472,21 @@ root>/doc/odoc-assets/].
 {2 The [--parent-id] arguments}
 
 Interface and implementation units have as parent id the root of the library
-tree they belong to: with "canonical" roots, [<pkgname>/lib/<libname>].
+tree they belong to: with "canonical" roots, [<pkgname>/<libname>].
 
 Page units that are found in [<opam
 root>/doc/<pkgname>/odoc-pages/<relpath>/<name>.mld] have the parent id from
 their page tree, followed by [<relpath>]. So, with canonical roots,
-[<pkgname>/doc/<relpath>].
+[<pkgname>/<relpath>].
 
 Asset units that are found in [<opam
 root>/doc/<pkgname>/odoc-pages/<relpath>/<name>.<ext>] have the parent id from
 their page tree, followed by [<relpath>]. With canonical roots,
-[<pkgname>/doc/<relpath>].
+[<pkgname>/<relpath>].
 
 Asset units that are found in [<opam root>/doc/<pkgname>/odoc-assets/<filename>]
 have the parent id from their page tree, followed by [_asset/<filename>]
-[<p>/doc/_assets/<filename>].
+[<p>/_assets/<filename>].
 
 {2 The [--source-id] arguments}
 
