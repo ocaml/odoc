@@ -264,12 +264,12 @@ Partial name search:
   175 val Base.String.uppercase : t -> t
   176 type Base.String.Caseless.t = t
   176 val Base.String.capitalize : t -> t
-  177 mod Base.StringLabels
   177 mod Caml.StringLabels
   177 val Base.String.append : t -> t -> t
   177 val Base.Exn.to_string_mach : t -> string
   177 val Base.Info.to_string_hum : t -> string
   177 val Base.Sign.to_string_hum : t -> string
+  178 val Base.Info.to_string_mach : t -> string
   $ sherlodoc search --print-cost "base strin"
   162 type Base.string = String.t
   174 type Base.Export.string = String.t
@@ -289,13 +289,13 @@ Partial name search:
   190 val Base.String.uppercase : t -> t
   191 type Base.String.Caseless.t = t
   191 val Base.String.capitalize : t -> t
-  192 mod Base.StringLabels
   192 val Base.String.append : t -> t -> t
   192 val Base.Exn.to_string_mach : t -> string
   192 val Base.Info.to_string_hum : t -> string
   192 val Base.Sign.to_string_hum : t -> string
   193 val Base.Error.to_string_hum : t -> string
   193 val Base.Info.to_string_mach : t -> string
+  194 val Base.Error.to_string_mach : t -> string
 
   $ sherlodoc search --print-cost "tring"
   177 type Base.string = String.t
@@ -348,5 +348,5 @@ Partial name search:
   212 val Base.String.ascending : t -> t -> int
   212 val Base.String.split_lines : t -> t list
   212 val Base.Sys.max_string_length : int
-  214 val Base.String.common_prefix : t list -> t
+  214 val Base.String.common_suffix : t list -> t
 
