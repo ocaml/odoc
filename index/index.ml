@@ -1,12 +1,29 @@
+let handle_file register file =
+  let ( >>= ) = Result.bind in
+  let open Odoc_odoc in
+  let open Odoc_index in
+  match Fpath.get_ext file with
+  | ".odoc-index" -> Odoc_file.load_index file >>= fun index -> Ok (register index)
+  | ".odocl" ->
+    Odoc_file.load file
+    >>= fun unit' ->
+    (match unit' with
+     | { Odoc_file.content = Unit_content unit'; _ } when unit'.hidden ->
+       Error (`Msg "Hidden units are ignored when generating an index")
+     | { content = Unit_content u; _ } -> Ok (register [ Skeleton.from_unit u ])
+     | { content = Page_content p; _ } -> Ok (register [ Skeleton.from_page p ])
+     | _ ->
+       Error (`Msg "Only pages and unit are allowed as input when generating an index"))
+  | _ ->
+    Error
+      (`Msg "Only .odocl and .odoc-index are allowed as input when generating an index")
+
 let index_file register filename =
   match Fpath.of_string filename with
   | Error (`Msg msg) -> Format.printf "FILE ERROR %s: %s@." filename msg
   | Ok file ->
     let open Odoc_model in
-    let page p = register [ Odoc_index.Skeleton.from_page p ] in
-    let unit u = register [ Odoc_index.Skeleton.from_unit u ] in
-    let occ o = register o in
-    (match Odoc_odoc.Indexing.handle_file ~page ~unit ~occ file with
+    (match handle_file register file with
      | Ok result -> result
      | Error (`Msg msg) ->
        Format.printf "Odoc warning or error %a: %s@." Fpath.pp file msg)
