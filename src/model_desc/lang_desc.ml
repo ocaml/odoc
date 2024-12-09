@@ -718,6 +718,14 @@ and frontmatter =
             (t.short_title
               :> Comment.inline_element Location_.with_location list option)),
           Option Comment_desc.inline_element );
+      F
+        ( "toc_status",
+          (fun t ->
+            Option.map
+              (function `Hidden -> "hidden" | `Open -> "open")
+              t.toc_status),
+          Option string );
+      F ("order_category", (fun t -> t.order_category), Option string);
     ]
 
 and child =
@@ -725,7 +733,8 @@ and child =
   Variant
     (function
     | { Location_.value = Page s; _ } -> C ("Page", s, string)
-    | { Location_.value = Dir s; _ } -> C ("Dir", s, string))
+    | { Location_.value = Dir s; _ } -> C ("Dir", s, string)
+    | { Location_.value = Module s; _ } -> C ("Module", s, string))
 
 and implementation_t =
   let open Lang.Implementation in

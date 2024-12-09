@@ -297,7 +297,7 @@ body {
 }
 
 body.odoc {
-  max-width: 160ex;
+  max-width: 181ex;
   display: grid;
   grid-template-columns: min-content 1fr min-content;
   grid-template-areas:
@@ -340,7 +340,14 @@ nav.odoc-nav:has(+ .odoc-search:focus-within) {
 }
 
 body.odoc-src {
-  margin-right: calc(10vw + 20ex);
+  display: grid;
+  grid-template-columns: min-content 1fr;
+  grid-template-areas:
+    "search-bar nav      "
+    "toc-global preamble"
+    "toc-global content ";
+  column-gap: 4ex;
+  grid-template-rows: auto auto 1fr;
 }
 
 .odoc-content {
@@ -886,7 +893,7 @@ body.odoc:has( .odoc-search) .odoc-toc {
 
 .odoc-toc {
   --toc-top: 20px;
-  width: 28ex;
+  width: 42ex;
   background: var(--toc-background);
   overflow: auto;
   color: var(--toc-color);
@@ -907,6 +914,32 @@ body.odoc:has( .odoc-search) .odoc-toc {
   font-weight: 400;
   line-height: 1.2em;
   display: block;
+}
+
+.odoc-toc.odoc-global-toc > ul > li {
+    margin-left:0;
+}
+
+.odoc-toc.odoc-global-toc > ul > li > ul > li {
+    margin-left:0;
+    padding-left:0;
+    border: 0;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.odoc-toc.odoc-global-toc > ul > li > ul > li {
+    font-weight: 500;
+    font-size: 500;
+}
+
+.odoc-toc.odoc-global-toc > ul > li > ul > li > a {
+    font-weight: inherit;
+    font-size: inherit;
+}
+
+.odoc-toc.odoc-global-toc > ul > li > a {
+    font-size: 2em;
 }
 
 .current_unit {
@@ -1341,6 +1374,7 @@ body.odoc:has( .odoc-search) .odoc-toc {
 
 .source_container {
   display: flex;
+  grid-area: content;
 }
 
 .source_line_column {

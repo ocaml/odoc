@@ -28,10 +28,15 @@
 - Added a `compile-asset` command (@EmileTrotignon, @panglesd, #1170)
 - Allow referencing assets (@panglesd, #1171)
 - Added a `--asset-path` arg to `html-generate` (@panglesd, #1185)
-- Add a `@children_order` tag to specify the order in the sidebar (@panglesd,
-  #1187, #1243)
+- Added a `@children_order` and an `@order_category` tags to specify the order
+  in the sidebar (@panglesd, #1187, #1243, #1251)
 - Add a `@short_title` tag to specify the short title of a page for use in
   the sidebar / breadcrumbs (@panglesd, #1246)
+- Added a home icon in the breacrumbs (@panglesd, #1251)
+- Added a CLI option to add or disable the home icon (@panglesd, #1251)
+- Add sidebar to the implementation pages (@panglesd, #1251)
+- Added a `@toc_status` tag, with possible values `open` and `hidden`, to define
+  the behavior of the entry in the sidebar and breadcrumbs (@panglesd, #1251)
 - Add a frontmatter syntax for mld pages (@panglesd, #1187)
 - Add 'remap' and 'remap-file' options to HTML generation for partial docsets
   (@jonludlam, #1189, #1248)

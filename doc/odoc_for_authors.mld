@@ -500,6 +500,9 @@ There are three types of tags. Those with:
 - a single line of text (line tags), and 
 - a block of marked-up text (block tags).
 
+Some tags can only be used on specific contexts: specific items ([include]s,
+[module]s, ...) or pages.
+
 {3 Simple Tags}
 
 The three tags without data are hints to the HTML renderer to do with [include]s.
@@ -535,6 +538,8 @@ and other tags. Note that compared to ocamldoc, block tags do not extend to the
 end of the docstring. Instead, they are ended by a blank line, or a block that
 cannot be included in (a heading or another tag).
 
+{4 Signature tags}
+
 - [@deprecated <text>] - marks the element as deprecated. [text] should describe
 when the element was deprecated, what to use as a replacement, and possibly
 the reason for the deprecation.
@@ -554,6 +559,29 @@ doesn't turn this into a link in the output HTML.
 - [@see "<document-name>" <text>] - adds a reference to the given document name
 (written between double quotes), with the given text as comment. {e Note:} 
 As with the file reference, [odoc] doesn't turn this into a link.
+
+{4 Page tags}
+
+These tags are the only tags that can be used on pages.
+
+- [@children_order <order>] - defines the order, in the sidebar, of the content
+  of a directory. It can only be used on [index.mld] pages. [<order>] must be a
+  space-separated list of content. Pages are referred by filename, and modules
+  are prefixed with [module-]. Directories are suffixed with a [/]. Here is an
+  example:
+  {[
+    @children_order content module-Unit dir1/
+  ]}
+
+- [@toc_status <status>] determines the behaviour of the entry in the sidebar
+  and breadcrumbs. It can only be used on [index.mld] pages. [<status>] can be
+  either [open] or [hidden]. If it is [open], the content of the directory will
+  always be displayed in the sidebar. If it is [hidden], it will be [opened] but
+  the directory entry, in the sidebar and breadcrumbs, will not be clickable.
+
+- [@order_category <category name>] helps defining the order of children for
+  pages unordered by the [@children_order] tag. Those unordered content will be
+  ordered by the lexicoraphic order on the category name.
 
 {2:math Mathematics}
 

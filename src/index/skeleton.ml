@@ -41,8 +41,7 @@ module Entry = struct
           representation = td.representation;
         }
     in
-    let td_entry = Entry.entry ~id:td.id ~doc:td.doc ~kind in
-    td_entry
+    Entry.entry ~id:td.id ~doc:td.doc ~kind
 
   let varify_params =
     List.mapi (fun i param ->
@@ -95,6 +94,17 @@ module Entry = struct
     let kind = Entry.Value { value = v.value; type_ = v.type_ } in
     Entry.entry ~id:v.id ~doc:v.doc ~kind
 
+  let of_extension_constructor type_path params (v : Extension.Constructor.t) =
+    let res =
+      match v.res with
+      | Some res -> res
+      | None ->
+          let params = varify_params params in
+          TypeExpr.Constr (type_path, params)
+    in
+    let kind = Entry.ExtensionConstructor { args = v.args; res } in
+    Entry.entry ~id:v.id ~doc:v.doc ~kind
+
   let of_class (cl : Class.t) =
     let kind = Entry.Class { virtual_ = cl.virtual_; params = cl.params } in
     Entry.entry ~id:cl.id ~doc:cl.doc ~kind
@@ -118,6 +128,24 @@ end
 let if_non_hidden id f =
   if Identifier.is_hidden (id :> Identifier.t) then [] else f ()
 
+let filter_signature items =
+  List.fold_left
+    (fun (keep, acc) item ->
+      match item with
+      | Signature.Comment `Stop -> (not keep, acc)
+      | _ -> if keep then (keep, item :: acc) else (keep, acc))
+    (true, []) items
+  |> snd |> List.rev
+
+let filter_class_signature items =
+  List.fold_left
+    (fun (keep, acc) item ->
+      match item with
+      | ClassSignature.Comment `Stop -> (not keep, acc)
+      | _ -> if keep then (keep, item :: acc) else (keep, acc))
+    (true, []) items
+  |> snd |> List.rev
+
 let rec unit (u : Compilation_unit.t) =
   let entry = Entry.of_comp_unit u in
   let children =
@@ -128,7 +156,8 @@ let rec unit (u : Compilation_unit.t) =
   { Tree.node = entry; children }
 
 and signature id (s : Signature.t) =
-  List.concat_map ~f:(signature_item (id :> Identifier.LabelParent.t)) s.items
+  let items = filter_signature s.items in
+  List.concat_map ~f:(signature_item (id :> Identifier.LabelParent.t)) items
 
 and signature_item id s_item =
   match s_item with
@@ -139,13 +168,19 @@ and signature_item id s_item =
   | Open _ -> []
   | Type (_, t_decl) -> type_decl t_decl
   | TypeSubstitution _ -> []
-  | TypExt _te -> []
+  | TypExt te -> type_ext te
   | Exception exc -> exception_ exc
   | Value v -> value v
   | Class (_, cl) -> class_ (cl.id :> Identifier.LabelParent.t) cl
   | ClassType (_, clt) -> class_type (clt.id :> Identifier.LabelParent.t) clt
   | Include i -> include_ id i
   | Comment d -> docs id d
+
+and type_ext te =
+  List.map (constructor_extension te.type_path te.type_params) te.constructors
+
+and constructor_extension type_path params ec =
+  Tree.leaf @@ Entry.of_extension_constructor type_path params ec
 
 and module_ id m =
   if_non_hidden m.id @@ fun () ->
@@ -188,8 +223,6 @@ and constructor type_id params c =
 and field type_id params f =
   let entry = Entry.of_field type_id params f in
   [ Tree.leaf entry ]
-
-and _type_extension _te = []
 
 and exception_ exc =
   if_non_hidden exc.id @@ fun () ->
@@ -249,7 +282,8 @@ and module_type_expr id mte =
   | TypeOf { t_expansion = None; _ } -> []
 
 and class_signature id ct_expr =
-  List.concat_map ~f:(class_signature_item id) ct_expr.items
+  let items = filter_class_signature ct_expr.items in
+  List.concat_map ~f:(class_signature_item id) items
 
 and class_signature_item id item =
   match item with

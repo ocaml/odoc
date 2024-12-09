@@ -48,17 +48,6 @@ val create :
 
 val lookup_page : t -> string -> Lang.Page.t option
 
-val all_pages :
-  ?root:string ->
-  t ->
-  (Paths.Identifier.Page.t * Comment.link_content option * Frontmatter.t) list
-
-val all_units :
-  library:string ->
-  t ->
-  ((unit -> Lang.Compilation_unit.t option) * Paths.Identifier.RootModule.t)
-  list
-
 (** Helpers for creating xref2 env. *)
 
 val build_compile_env_for_unit :

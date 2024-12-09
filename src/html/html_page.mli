@@ -24,7 +24,7 @@ val make :
   config:Config.t ->
   url:Odoc_document.Url.Path.t ->
   header:Html_types.flow5_without_header_footer Html.elt list ->
-  breadcrumbs:Types.breadcrumb list ->
+  breadcrumbs:Types.breadcrumbs ->
   sidebar:Html_types.div_content Html.elt list option ->
   toc:Types.toc list ->
   uses_katex:bool ->
@@ -38,8 +38,9 @@ val make :
 val make_src :
   config:Config.t ->
   url:Odoc_document.Url.Path.t ->
-  breadcrumbs:Types.breadcrumb list ->
+  breadcrumbs:Types.breadcrumbs ->
   header:Html_types.flow5_without_header_footer Html.elt list ->
+  sidebar:Html_types.div_content Html.elt list option ->
   string ->
   Html_types.div_content Html.elt list ->
   Odoc_document.Renderer.page

@@ -161,6 +161,9 @@ let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
             ("type", `String (Text.of_type type_));
             ("parent_type", `String (Text.of_type parent_type));
           ]
+    | Page _ -> return "Page" []
+    | Impl -> return "Impl" []
+    | Dir -> return "Dir" []
   in
   let occurrences =
     match occurrences with
@@ -180,17 +183,7 @@ let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
     ([ ("id", j_id); ("doc", doc); ("kind", kind); ("display", display) ]
     @ occurrences)
 
-let output_json ppf first (entry, html, occurrences) =
-  let output_json json =
-    let str = Odoc_html.Json.to_string json in
-    Format.fprintf ppf "%s\n" str
-  in
-  let json = of_entry entry html occurrences in
-  if not first then Format.fprintf ppf ",";
-  output_json json;
-  false
-
-let unit ?occurrences ppf u =
+let of_entry ?occurrences entry =
   let get_occ id =
     match occurrences with
     | None -> None
@@ -199,40 +192,8 @@ let unit ?occurrences ppf u =
         | Some x -> Some x
         | None -> Some { direct = 0; indirect = 0 })
   in
-  let f first entry =
-    let entry =
-      let occ = get_occ entry.Entry.id in
-      (entry, Html.of_entry entry, occ)
-    in
-    let first = output_json ppf first entry in
-    first
+  let entry, html, occurrences =
+    let occ = get_occ entry.Entry.id in
+    (entry, Html.of_entry entry, occ)
   in
-  let skel = Odoc_index.Skeleton.from_unit u in
-  let _first = Odoc_utils.Tree.fold_left ~f true skel in
-  ()
-
-let page ppf (page : Odoc_model.Lang.Page.t) =
-  let f first entry =
-    let entry = (entry, Html.of_entry entry, None) in
-    output_json ppf first entry
-  in
-  let skel = Odoc_index.Skeleton.from_page page in
-  let _first = Odoc_utils.Tree.fold_left ~f true skel in
-  ()
-
-let index ?occurrences ppf (index : Skeleton.t list) =
-  let get_occ id =
-    match occurrences with
-    | None -> None
-    | Some occurrences -> (
-        match Odoc_occurrences.Table.get occurrences id with
-        | Some x -> Some x
-        | None -> Some { direct = 0; indirect = 0 })
-  in
-  let _first =
-    Odoc_utils.Forest.fold_left true index ~f:(fun first entry ->
-        let occ = get_occ entry.Entry.id in
-        let entry = (entry, Html.of_entry entry, occ) in
-        output_json ppf first entry)
-  in
-  ()
+  of_entry entry html occurrences

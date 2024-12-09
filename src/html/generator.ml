@@ -13,6 +13,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
+open Odoc_utils
+
 module HLink = Link
 open Odoc_document.Types
 module Html = Tyxml.Html
@@ -85,7 +87,7 @@ and source k ?a (t : Source.t) =
         if content = [] then [] else [ Html.span content ]
     | Tag (Some s, l) -> [ Html.span ~a:[ Html.a_class [ s ] ] (tokens l) ]
   and tokens t = Odoc_utils.List.concat_map t ~f:token in
-  Utils.optional_elt Html.code ?a (tokens t)
+  match tokens t with [] -> [] | l -> [ Html.code ?a l ]
 
 and styled style ~emph_level =
   match style with
@@ -498,24 +500,146 @@ end
 module Breadcrumbs = struct
   open Types
 
-  let gen_breadcrumbs ~config ~url =
-    let rec get_parent_paths x =
-      match x with
-      | [] -> []
-      | x :: xs -> (
-          match Odoc_document.Url.Path.of_list (List.rev (x :: xs)) with
-          | Some x -> x :: get_parent_paths xs
-          | None -> get_parent_paths xs)
+  let page_parent (page : Url.Path.t) =
+    let page =
+      match page with
+      | { parent = Some parent; name = "index"; kind = `LeafPage } -> parent
+      | _ -> page
     in
-    let to_breadcrumb path =
-      let href =
-        Link.href ~config ~resolve:(Current url)
-          (Odoc_document.Url.from_path path)
+    match page with
+    | { parent = None; name = "index"; kind = `LeafPage } -> None
+    | { parent = Some parent; _ } -> Some parent
+    | { parent = None; _ } ->
+        Some { Url.Path.parent = None; name = "index"; kind = `LeafPage }
+
+  let gen_breadcrumbs_no_sidebar ~config ~url =
+    let url =
+      match url with
+      | { Url.Path.name = "index"; parent = Some parent; kind = `LeafPage } ->
+          parent
+      | _ -> url
+    in
+    match url with
+    | { Url.Path.name = "index"; parent = None; kind = `LeafPage } ->
+        let current =
+          { href = None; name = [ Html.txt "" ]; kind = `LeafPage }
+        in
+        { parents = []; up_url = None; current }
+    | url -> (
+        (* This is the pre 3.0 way of computing the breadcrumbs *)
+        let rec get_parent_paths x =
+          match x with
+          | [] -> []
+          | x :: xs -> (
+              match Odoc_document.Url.Path.of_list (List.rev (x :: xs)) with
+              | Some x -> x :: get_parent_paths xs
+              | None -> get_parent_paths xs)
+        in
+        let to_breadcrumb path =
+          let href =
+            Some
+              (Link.href ~config ~resolve:(Current url)
+                 (Odoc_document.Url.from_path path))
+          in
+          { href; name = [ Html.txt path.name ]; kind = path.kind }
+        in
+        let parent_paths =
+          get_parent_paths (List.rev (Odoc_document.Url.Path.to_list url))
+          |> List.rev
+        in
+        match List.rev parent_paths with
+        | [] -> assert false
+        | current :: parents ->
+            let up_url =
+              match page_parent current with
+              | None -> None
+              | Some up ->
+                  Some
+                    (Link.href ~config ~resolve:(Current url)
+                       (Odoc_document.Url.from_path up))
+            in
+            let current = to_breadcrumb current in
+            let parents = List.map to_breadcrumb parents |> List.rev in
+            let home =
+              let href =
+                Some
+                  (Link.href ~config ~resolve:(Current url)
+                     (Odoc_document.Url.from_path
+                        {
+                          Url.Path.name = "index";
+                          parent = None;
+                          kind = `LeafPage;
+                        }))
+              in
+              { href; name = [ Html.txt "🏠" ]; kind = `LeafPage }
+            in
+            { current; parents = home :: parents; up_url })
+
+  let gen_breadcrumbs_with_sidebar ~config ~sidebar ~url:current_url =
+    let find_parent =
+      List.find_opt (function
+        | ({ node = { url = { page; anchor = ""; _ }; _ }; _ } :
+            Odoc_document.Sidebar.entry Odoc_utils.Tree.t)
+          when Url.Path.is_prefix page current_url ->
+            true
+        | _ -> false)
+    in
+    let rec extract acc (tree : Odoc_document.Sidebar.t) =
+      let parent =
+        match find_parent tree with
+        | Some { node = { url; valid_link; content; _ }; children } ->
+            let href =
+              if valid_link then
+                Some (Link.href ~config ~resolve:(Current current_url) url)
+              else None
+            in
+            let name = inline_nolink content in
+            let breadcrumb = { href; name; kind = url.page.kind } in
+            if url.page = current_url then Some (`Current breadcrumb)
+            else Some (`Parent (breadcrumb, children))
+        | _ -> None
       in
-      { href; name = path.name; kind = path.kind }
+      match parent with
+      | Some (`Parent (bc, children)) -> extract (bc :: acc) children
+      | Some (`Current current) ->
+          let up_url =
+            List.find_map (fun (b : Types.breadcrumb) -> b.href) acc
+          in
+          { Types.current; parents = List.rev acc; up_url }
+      | None ->
+          let current =
+            {
+              href = None;
+              name = [ Html.txt current_url.name ];
+              kind = current_url.kind;
+            }
+          in
+          let up_url =
+            List.find_map (fun (b : Types.breadcrumb) -> b.href) acc
+          in
+          let parents = List.rev acc in
+          { Types.current; parents; up_url }
     in
-    get_parent_paths (List.rev (Odoc_document.Url.Path.to_list url))
-    |> List.rev |> List.map to_breadcrumb
+    let escape =
+      match (Config.escape_breadcrumb config, find_parent sidebar) with
+      | true, Some { node; _ } -> (
+          match page_parent node.url.page with
+          | None -> []
+          | Some parent ->
+              let href =
+                Some
+                  (Link.href ~config ~resolve:(Current current_url)
+                     (Odoc_document.Url.from_path parent))
+              in
+              [ { href; name = [ Html.txt "🏠" ]; kind = parent.kind } ])
+      | _ -> []
+    in
+    extract escape sidebar
+
+  let gen_breadcrumbs ~config ~sidebar ~url =
+    match sidebar with
+    | None -> gen_breadcrumbs_no_sidebar ~config ~url
+    | Some sidebar -> gen_breadcrumbs_with_sidebar ~config ~sidebar ~url
 end
 
 module Page = struct
@@ -538,6 +662,7 @@ module Page = struct
     in
     let subpages = subpages ~config ~sidebar @@ Doctree.Subpages.compute p in
     let resolve = Link.Current url in
+    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~sidebar ~url in
     let sidebar =
       match sidebar with
       | None -> None
@@ -548,7 +673,6 @@ module Page = struct
     let i = Doctree.Shift.compute ~on_sub i in
     let uses_katex = Doctree.Math.has_math_elements p in
     let toc = Toc.gen_toc ~config ~resolve ~path:url i in
-    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
     let content = (items ~config ~resolve i :> any Html.elt list) in
     if Config.as_json config then
       let source_anchor =
@@ -567,23 +691,32 @@ module Page = struct
       Html_page.make ~sidebar ~config ~header ~toc ~breadcrumbs ~url ~uses_katex
         content subpages
 
-  and source_page ~config sp =
+  and source_page ~config ~sidebar sp =
     let { Source_page.url; contents } = sp in
     let resolve = Link.Current sp.url in
+    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~sidebar ~url in
+    let sidebar =
+      match sidebar with
+      | None -> None
+      | Some sidebar ->
+          let sidebar = Odoc_document.Sidebar.to_block sidebar url in
+          (Some (block ~config ~resolve sidebar) :> any Html.elt list option)
+    in
     let title = url.Url.Path.name
     and doc = Html_source.html_of_doc ~config ~resolve contents in
-    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~url in
     let header =
       items ~config ~resolve (Doctree.PageTitle.render_src_title sp)
     in
     if Config.as_json config then
-      Html_fragment_json.make_src ~config ~url ~breadcrumbs [ doc ]
-    else Html_page.make_src ~breadcrumbs ~header ~config ~url title [ doc ]
+      Html_fragment_json.make_src ~config ~url ~breadcrumbs ~sidebar [ doc ]
+    else
+      Html_page.make_src ~breadcrumbs ~header ~config ~url ~sidebar title
+        [ doc ]
 end
 
 let render ~config ~sidebar = function
   | Document.Page page -> [ Page.page ~config ~sidebar page ]
-  | Source_page src -> [ Page.source_page ~config src ]
+  | Source_page src -> [ Page.source_page ~config ~sidebar src ]
 
 let filepath ~config url = Link.Path.as_filename ~config url
 

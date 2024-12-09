@@ -145,3 +145,20 @@ let find_zero_heading docs : link_content option =
           Some (link_content_of_inline_elements h_content)
       | _ -> None)
     docs
+
+(* Used in particular to sort the title names *)
+let to_string (l : link_content) =
+  let rec s_of_i (i : non_link_inline_element) =
+    match i with
+    | `Code_span s -> s
+    | `Word w -> w
+    | `Math_span m -> m
+    | `Space -> " "
+    | `Styled (_, is) -> s_of_is is
+    | `Raw_markup (_, r) -> r
+  and s_of_is is =
+    is
+    |> List.map (fun { Location_.value; _ } -> s_of_i value)
+    |> String.concat ""
+  in
+  s_of_is l

@@ -25,7 +25,9 @@ let describe_internal_tag = function
   | `Closed -> "@closed"
   | `Hidden -> "@hidden"
   | `Children_order _ -> "@children_order"
+  | `Toc_status _ -> "@toc_status"
   | `Short_title _ -> "@short_title"
+  | `Order_category _ -> "@order_category"
 
 let warn_unexpected_tag { Location.value; location } =
   Error.raise_warning
@@ -485,7 +487,8 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
         in
         match tag with
         | (`Inline | `Open | `Closed | `Hidden) as tag -> next tag
-        | (`Children_order _ | `Short_title _) as tag ->
+        | ( `Children_order _ | `Short_title _ | `Toc_status _
+          | `Order_category _ ) as tag ->
             let tag_name = describe_internal_tag tag in
             if not start then
               Error.raise_warning
@@ -553,7 +556,10 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
       let unparsed_lines =
         find_tags []
           ~filter:(function
-            | (`Children_order _ | `Short_title _) as p -> Some p | _ -> None)
+            | ( `Children_order _ | `Toc_status _ | `Short_title _
+              | `Order_category _ ) as p ->
+                Some p
+            | _ -> None)
           tags
       in
       let lines =
@@ -569,7 +575,10 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
           (function
             | `Children_order co, loc ->
                 do_ Frontmatter.parse_children_order loc co
-            | `Short_title t, loc -> do_ Frontmatter.parse_short_title loc t)
+            | `Toc_status co, loc -> do_ Frontmatter.parse_toc_status loc co
+            | `Short_title t, loc -> do_ Frontmatter.parse_short_title loc t
+            | `Order_category t, loc ->
+                do_ Frontmatter.parse_order_category loc t)
           unparsed_lines
       in
       Frontmatter.of_lines lines |> Error.raise_warnings

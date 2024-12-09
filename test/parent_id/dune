@@ -1,7 +1,8 @@
 (env
  (_
   (binaries
+   (../odoc_print/print_index.exe as print_index)
    (../odoc_print/odoc_print.exe as odoc_print))))
 
 (cram
- (deps %{bin:odoc} %{bin:odoc_print}))
+ (deps %{bin:odoc} %{bin:odoc_print} %{bin:print_index}))

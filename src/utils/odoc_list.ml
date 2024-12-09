@@ -27,3 +27,9 @@ let rec find_map f = function
   | [] -> None
   | x :: l -> (
       match f x with Some _ as result -> result | None -> find_map f l)
+
+let rec find_opt p = function
+  | [] -> None
+  | x :: l -> if p x then Some x else find_opt p l
+
+let is_empty = function [] -> true | _ :: _ -> false

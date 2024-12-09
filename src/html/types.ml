@@ -12,7 +12,13 @@ type toc = {
 }
 
 type breadcrumb = {
-  href : string;
-  name : string;
+  href : string option;
+  name : Html_types.phrasing_without_interactive Tyxml.Html.elt list;
   kind : Odoc_document.Url.Path.kind;
+}
+
+type breadcrumbs = {
+  parents : breadcrumb list;
+  current : breadcrumb;
+  up_url : string option;
 }

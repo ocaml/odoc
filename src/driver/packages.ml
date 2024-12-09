@@ -397,15 +397,6 @@ let of_libs ~packages_dir libs =
                         opam_map
                     in
                     let mlds, assets = mk_mlds docs in
-                    let other_docs =
-                      List.filter_map
-                        (function
-                          | { Opam.kind = `Other; file; _ } -> Some file
-                          | _ -> None)
-                        docs
-                      |> Fpath.Set.of_list
-                    in
-                    let other_docs = Fpath.Set.elements other_docs in
                     Some
                       {
                         name = pkg.name;
@@ -415,7 +406,7 @@ let of_libs ~packages_dir libs =
                         assets;
                         selected = false;
                         remaps = [];
-                        other_docs;
+                        other_docs = [];
                         pkg_dir;
                         config;
                       })
@@ -465,13 +456,6 @@ let of_packages ~packages_dir packages =
         let pkg_dir = pkg_dir packages_dir pkg.name in
         let config = Global_config.load pkg.name in
         let mlds, assets = mk_mlds files.docs in
-        let other_docs =
-          List.filter_map
-            (function
-              | { Opam.kind = `Other; file; _ } -> Some file | _ -> None)
-            files.docs
-          |> Fpath.Set.of_list
-        in
         let selected = List.mem pkg.name packages in
         let remaps =
           if selected then []
@@ -494,7 +478,6 @@ let of_packages ~packages_dir packages =
             in
             (local_pkg_path, pkg_path) :: lib_paths
         in
-        let other_docs = Fpath.Set.elements other_docs in
         Util.StringMap.add pkg.name
           {
             name = pkg.name;
@@ -504,7 +487,7 @@ let of_packages ~packages_dir packages =
             assets;
             selected;
             remaps;
-            other_docs;
+            other_docs = [];
             pkg_dir;
             config;
           }
