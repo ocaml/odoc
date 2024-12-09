@@ -142,7 +142,7 @@ let register_kind ~db elt =
 let rec categorize id =
   let open Odoc_model.Paths in
   match id.Identifier.iv with
-  | `CoreType _ | `CoreException _ | `Root _ | `Page _ | `LeafPage _ -> `definition
+  | `Root _ | `Page _ | `LeafPage _ -> `definition
   | `ModuleType _ -> `declaration
   | `Parameter _ -> `ignore (* redundant with indexed signature *)
   | ( `InstanceVariable _ | `Method _ | `Field _ | `Result _ | `Label _ | `Type _
@@ -185,7 +185,7 @@ let register_entry
   let rhs = Html.rhs_of_kind kind in
   let kind = convert_kind ~db entry in
   let cost = cost ~name ~kind ~doc_html ~rhs ~cat ~favourite ~favoured_prefixes in
-  let url = Result.get_ok (Html.url id) in
+  let url = Html.url entry in
   let elt = Sherlodoc_entry.v ~name ~kind ~rhs ~doc_html ~cost ~url ~pkg () in
   if index_docstring then register_doc ~db elt doc_txt ;
   if index_name && kind <> Doc then register_full_name ~db elt ;
