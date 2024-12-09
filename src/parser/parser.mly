@@ -273,6 +273,10 @@ let whitespace :=
   | ~ = horizontal_whitespace; <>
   | ~ = newline; <`Space>
 
+let any_whitespace := 
+  | ~ = whitespace; <>
+  | ~ = Blank_line; <`Space>
+
 (* ENTRY *)
 
 let main :=  
@@ -626,36 +630,32 @@ let row_light :=
   | ~ = cells; <>
   | ~ = cells; Single_newline; <>
 
-let rows_light := Single_newline?; ~ = sequence_nonempty(row_light); <>
+let rows_light := ~ = sequence_nonempty(row_light); <>
 
 let table_start_light := TABLE_LIGHT; whitespace?; {}
 let table_light :=
     | table_start_light; data = rows_light; RIGHT_BRACE; { Writer.map construct_table data }
     | table_start_light; RIGHT_BRACE; 
       { return @@ `Table (([[]], None), `Light) }
-    | table_start_light; data = rows_light?; END; 
+    | table_start_light; data = rows_light; END; 
       {
         let in_what = Tokens.describe TABLE_LIGHT in
         let warning = fun ~filename -> 
           let span = Parser_aux.to_location ~filename $sloc in
           Parse_error.end_not_allowed ~in_what span
         in
-        match data with 
-        | Some data -> unclosed_table ~data warning
-        | None -> unclosed_table warning
+        unclosed_table ~data warning
       }
-(*
+    | TABLE_LIGHT; any_whitespace?; END; 
+      {
+        let in_what = Tokens.describe TABLE_LIGHT in
+        let warning = fun ~filename -> 
+          let span = Parser_aux.to_location ~filename $sloc in
+          Parse_error.end_not_allowed ~in_what span 
+        in
+        unclosed_table warning
+      }
 
-  | TABLE_LIGHT; END; 
-    {
-      let in_what = Tokens.describe TABLE_LIGHT in
-      let warning = fun ~filename -> 
-        let span = Parser_aux.to_location ~filename $sloc in
-        Parse_error.end_not_allowed ~in_what span 
-      in
-      unclosed_table warning
-    }
-*)
 let table := 
   | ~ = table_heavy; <>
   | ~ = table_light; <>

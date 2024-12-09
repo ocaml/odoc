@@ -42,10 +42,7 @@ let error_recovery =
     ("EOI in modules", "{!modules: Foo Bar");
   ]
 
-let light_table_early_EOI =
-  [
-    ("End not allowed WITH newline", "{t\n| A | B |\n| -- | -- |\n| C | D |\n}");
-  ]
+let light_table_early_EOI = [ ("End not allowed WITH newline", "{t\n") ]
 
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
 let documentation_cases =
@@ -123,6 +120,7 @@ let mkfailure label input exn last failure_index tokens =
     label;
     area = get_area location input;
   }
+(*
 
 module TokBuf = struct
   type t = {
@@ -160,6 +158,7 @@ module TokBuf = struct
     in
     go ()
 end
+*)
 
 let run_test (label, case) =
   let open Either in
@@ -178,14 +177,12 @@ let run_test (label, case) =
       }
   in
   let failure_index = ref (-1) in
-  let tokbuf =
-    TokBuf.create ~dispenser:(fun () -> Parser.Lexer.token input lexbuf)
-  in
+  let offending_token = ref None in
   let get_tok _ =
     incr failure_index;
-    let tok = Loc.value @@ TokBuf.next tokbuf in
-    print_endline @@ "Got token: " ^ Parser.string_of_token tok;
-    tok
+    let locd = Parser.Lexer.token input lexbuf in
+    offending_token := Some locd;
+    Loc.value locd
   in
   try
     let ast, warnings =
@@ -196,9 +193,14 @@ let run_test (label, case) =
     Left (label, output)
   with e ->
     let exns = Printexc.to_string e in
+    (*
     let offending_token = List.hd @@ tokbuf.cache in
     let tokens = List.map Loc.value @@ TokBuf.cache_rest tokbuf in
-    Right (mkfailure label case exns offending_token !failure_index tokens)
+    *)
+    Right
+      (mkfailure label case exns
+         (Option.get !offending_token)
+         !failure_index [])
 
 let sep = String.init 80 @@ Fun.const '-'
 
