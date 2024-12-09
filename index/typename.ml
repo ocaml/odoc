@@ -25,7 +25,11 @@ let show_type_name_verbose h : Path.Type.t -> _ = function
   | `Identifier (path, _hidden) ->
     let name = String.concat "." @@ Identifier.fullname path in
     Format.fprintf h "%s" name
-  | `Dot (mdl, x) ->
-    Format.fprintf h "%s.%s" (Odoc_document.Url.render_path (mdl :> Path.t)) x
+  | `DotT (mdl, x) ->
+    Format.fprintf
+      h
+      "%s.%s"
+      (Odoc_document.Url.render_path (mdl :> Path.t))
+      (Odoc_model.Names.TypeName.to_string x)
 
 let to_string t = Format.asprintf "%a" show_type_name_verbose t
