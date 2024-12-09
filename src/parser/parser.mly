@@ -267,11 +267,9 @@ let separated_sequence(sep, rule) :=
 let horizontal_whitespace := 
   | ~ = Space; <`Space>
 
-let newline := ~ = Single_newline; <> 
-
 let whitespace := 
   | ~ = horizontal_whitespace; <>
-  | ~ = newline; <`Space>
+  | ~ = Single_newline; <`Space>
 
 let any_whitespace := 
   | ~ = whitespace; <>
@@ -514,9 +512,9 @@ let list_light_item_ordered ==
     }
 
 let list_light := 
-  | children = separated_nonempty_list(newline, list_light_item_ordered); 
+  | children = separated_nonempty_list(Single_newline, list_light_item_ordered); 
     { let* children = Writer.sequence children in return @@ `List (`Ordered, `Light, [ children ]) }
-  | children = separated_nonempty_list(newline, list_light_item_unordered); 
+  | children = separated_nonempty_list(Single_newline, list_light_item_unordered); 
     { let* children = Writer.sequence children in return @@ `List (`Unordered, `Light, [ children ]) }
 
 let item_heavy ==
@@ -682,7 +680,7 @@ let media :=
 
 (* TOP-LEVEL ELEMENTS *)
 
-let nestable_block_element := ~ = nestable_block_element_inner; newline?; <>
+let nestable_block_element := ~ = nestable_block_element_inner; Single_newline?; <>
 
 let nestable_block_element_inner := 
   | ~ = verbatim; <>
@@ -693,6 +691,18 @@ let nestable_block_element_inner :=
   | ~ = math_block; <>
   | ~ = paragraph; <>
   | ~ = modules; <> 
+  | ~ = paragraph_style; <>
+
+let paragraph_style := 
+  | style = Paragraph_style; ws = paragraph; RIGHT_BRACE;
+    { 
+      let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in
+        let what = Tokens.describe @@ Paragraph_style style in
+        Parse_error.markup_should_not_be_used span ~what
+      in 
+      Writer.warning warning ws
+    }
 
 let verbatim := v = Verbatim; 
   { 

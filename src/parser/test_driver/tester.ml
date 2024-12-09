@@ -42,8 +42,6 @@ let error_recovery =
     ("EOI in modules", "{!modules: Foo Bar");
   ]
 
-let light_table_early_EOI = [ ("End not allowed WITH newline", "{t\n") ]
-
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
 let documentation_cases =
   [
@@ -82,6 +80,17 @@ let documentation_cases =
     ("Styled", "{i italicized}");
     ("Inline code", "[fmap Fun.id None]");
     ("Code block", "{[\n let foo = 0 \n]}");
+  ]
+
+let unsupported =
+  [
+    ("left_alignment", "{L foo}");
+    ("center alignment", "{C foo}");
+    ("Right", "{R foo}");
+    ("Custom style", "{c foo}");
+    ("custom tag", "@custom");
+    ("custom reference kind", "{!custom:foo}");
+    ("html", "<b>foo</b>");
   ]
 
 open Test.Serialize
@@ -242,7 +251,7 @@ let () =
       | _ ->
           print_endline "unrecognized argument - running documentation_cases";
           documentation_cases)
-    else light_table_early_EOI
+    else unsupported
   in
   let sucesses, failures = List.partition_map run_test cases in
   let sucesses = format_successes sucesses in
