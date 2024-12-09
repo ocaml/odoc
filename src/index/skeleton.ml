@@ -41,8 +41,7 @@ module Entry = struct
           representation = td.representation;
         }
     in
-    let td_entry = Entry.entry ~id:td.id ~doc:td.doc ~kind in
-    td_entry
+    Entry.entry ~id:td.id ~doc:td.doc ~kind
 
   let varify_params =
     List.mapi (fun i param ->
@@ -93,6 +92,17 @@ module Entry = struct
 
   let of_value (v : Value.t) =
     let kind = Entry.Value { value = v.value; type_ = v.type_ } in
+    Entry.entry ~id:v.id ~doc:v.doc ~kind
+
+  let of_extension_constructor type_path params (v : Extension.Constructor.t) =
+    let res =
+      match v.res with
+      | Some res -> res
+      | None ->
+          let params = varify_params params in
+          TypeExpr.Constr (type_path, params)
+    in
+    let kind = Entry.ExtensionConstructor { args = v.args; res } in
     Entry.entry ~id:v.id ~doc:v.doc ~kind
 
   let of_class (cl : Class.t) =
@@ -158,13 +168,19 @@ and signature_item id s_item =
   | Open _ -> []
   | Type (_, t_decl) -> type_decl t_decl
   | TypeSubstitution _ -> []
-  | TypExt _te -> []
+  | TypExt te -> type_ext te
   | Exception exc -> exception_ exc
   | Value v -> value v
   | Class (_, cl) -> class_ (cl.id :> Identifier.LabelParent.t) cl
   | ClassType (_, clt) -> class_type (clt.id :> Identifier.LabelParent.t) clt
   | Include i -> include_ id i
   | Comment d -> docs id d
+
+and type_ext te =
+  List.map (constructor_extension te.type_path te.type_params) te.constructors
+
+and constructor_extension type_path params ec =
+  Tree.leaf @@ Entry.of_extension_constructor type_path params ec
 
 and module_ id m =
   if_non_hidden m.id @@ fun () ->
@@ -207,8 +223,6 @@ and constructor type_id params c =
 and field type_id params f =
   let entry = Entry.of_field type_id params f in
   [ Tree.leaf entry ]
-
-and _type_extension _te = []
 
 and exception_ exc =
   if_non_hidden exc.id @@ fun () ->
