@@ -54,6 +54,17 @@ type t =
   ; pkg : Package.t
   }
 
+let pp fmt { name; rhs; url; kind; cost; doc_html; pkg } =
+  Format.fprintf
+    fmt
+    "{ name = %s ; rhs = %a ; url = %s ; kind = . ; cost = %d ; doc_html = %s ; pkg = . }\n"
+    name
+    (Fmt.option Fmt.string)
+    rhs
+    url
+    cost
+    doc_html
+
 let string_compare_shorter a b =
   match Int.compare (String.length a) (String.length b) with
   | 0 -> String.compare a b

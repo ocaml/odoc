@@ -38,6 +38,8 @@ type t =
   ; pkg : Package.t
   }
 
+val pp : t Fmt.t
+
 val v
   :  name:string
   -> kind:Kind.t
