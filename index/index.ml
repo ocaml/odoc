@@ -3,17 +3,13 @@ let index_file register filename =
   | Error (`Msg msg) -> Format.printf "FILE ERROR %s: %s@." filename msg
   | Ok file ->
     let open Odoc_model in
-    let page p =
-      let id = p.Lang.Page.name in
-      Fold.page ~f:(register (id :> Paths.Identifier.t)) () p
-    in
-    let unit u =
-      let id = u.Lang.Compilation_unit.id in
-      Fold.unit ~f:(register (id :> Paths.Identifier.t)) () u
-    in
-    (match Odoc_odoc.Indexing.handle_file ~page ~unit file with
+    let page p = register [ Odoc_index.Skeleton.from_page p ] in
+    let unit u = register [ Odoc_index.Skeleton.from_unit u ] in
+    let occ o = register o in
+    (match Odoc_odoc.Indexing.handle_file ~page ~unit ~occ file with
      | Ok result -> result
-     | Error (`Msg msg) -> Format.printf "Odoc warning or error %s: %s@." filename msg)
+     | Error (`Msg msg) ->
+       Format.printf "Odoc warning or error %a: %s@." Fpath.pp file msg)
 
 let main
   files
@@ -29,17 +25,18 @@ let main
   let module Storage = (val Db_store.storage_module db_format) in
   let db = Db_writer.make () in
   let no_pkg = Db.Entry.Package.v ~name:"" ~version:"" in
-  let register ~pkg ~favourite id () item =
+  let register ~pkg ~favourite =
     List.iter
-      (Load_doc.register_entry
-         ~db
-         ~index_docstring
-         ~index_name
-         ~type_search
-         ~favourite
-         ~favoured_prefixes
-         ~pkg)
-      (Odoc_search.Entry.entries_of_item id item)
+    @@ Odoc_utils.Tree.iter
+         ~f:
+           (Load_doc.register_entry
+              ~db
+              ~index_docstring
+              ~index_name
+              ~type_search
+              ~favourite
+              ~favoured_prefixes
+              ~pkg)
   in
   let files =
     match file_list with
@@ -109,7 +106,7 @@ let odoc_favourite_file =
   Arg.(value & opt_all file [] & info [ "favoured" ] ~doc)
 
 let odoc_files =
-  let doc = "Path to a .odocl file" in
+  let doc = "Path to a .odocl file or a .odoc-index file" in
   Arg.(value & (pos_all file [] @@ info ~doc ~docv:"ODOCL_FILE" []))
 
 let term =

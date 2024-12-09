@@ -3,9 +3,10 @@
   $ odoc compile -I . page.mld
   $ odoc link -I . main.odoc
   $ odoc link -I . page-page.odoc
+  $ odoc compile-index -o index.odoc-index --root ./
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=marshal
-  $ sherlodoc index $(find . -name '*.odocl')
+  $ sherlodoc index index.odoc-index
   $ sherlodoc search "unique_name"
   val Main.unique_name : foo
   $ sherlodoc search "multiple_hit"

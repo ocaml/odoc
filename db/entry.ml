@@ -6,7 +6,9 @@ let non_empty_string s =
 
 module Kind = struct
   type t =
-    | Doc
+    | Doc (** Standalone doc comment *)
+    | Page (** Mld page *)
+    | Impl (** Source page *)
     | Module
     | Module_type
     | Class
@@ -26,7 +28,7 @@ module Kind = struct
     match t with
     | Val typ | Extension_constructor typ | Exception typ | Constructor typ | Field typ ->
       Some typ
-    | Doc | Module | Module_type | Class | Class_type | Method | Type_decl _
+    | Doc | Page | Impl | Module | Module_type | Class | Class_type | Method | Type_decl _
     | Type_extension ->
       None
 end
