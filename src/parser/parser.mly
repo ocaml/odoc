@@ -307,21 +307,41 @@ let tag ==
   | t = tag_bare; { Writer.map tag t }
 
 let tag_with_content := 
-  | version = Before; children = sequence_nonempty(locatedM(nestable_block_element)); 
-    { Writer.map (fun c -> `Before (version, c)) children }
   | DEPRECATED; children = sequence_nonempty(locatedM(nestable_block_element)); 
     { Writer.map (fun c -> `Deprecated c) children }
   | RETURN; children = sequence_nonempty(locatedM(nestable_block_element));
     { Writer.map (fun c -> `Return c) children }
-  | ident = Param; children = sequence_nonempty(locatedM(nestable_block_element));
-    { Writer.map (fun c -> `Param (ident, c)) children }
+  | ~ = before; <>
+  | ~ = raise; <>
+  | ~ = see; <>
+  | ~ = param; <>
+
+let before := 
+  | version = Before; children = sequence_nonempty(locatedM(nestable_block_element)); 
+    { Writer.map (fun c -> `Before (version, c)) children }
+  | version = Before; 
+    { return @@ `Before (version, []) }
+
+let raise := 
   | exn = Raise; children = sequence_nonempty(locatedM(nestable_block_element));
     { Writer.map (fun c -> `Raise (exn, c)) children }
-  | (kind, href) = See; horizontal_whitespace?; children = sequence_nonempty(locatedM(nestable_block_element)); 
+  | exn = Raise; 
+    { return @@ `Raise (exn, []) }
+
+let see := 
+  | (kind, href) = See; children = sequence_nonempty(locatedM(nestable_block_element)); 
     {
       let* children = children in
       return @@ `See (kind, href, children)
     }
+  | (kind, href) = See; 
+    { return @@ `See (kind, href, []) }
+
+let param := 
+  | ident = Param; children = sequence_nonempty(locatedM(nestable_block_element));
+    { Writer.map (fun c -> `Param (ident, c)) children }
+  | ident = Param;
+    { return @@ `Param (ident, [])}
 
 let tag_bare :=
   | version = Version; 
@@ -696,7 +716,7 @@ let media :=
 
 (* TOP-LEVEL ELEMENTS *)
 
-let nestable_block_element := ~ = nestable_block_element_inner; Single_newline?; <>
+let nestable_block_element := ~ = nestable_block_element_inner; any_whitespace?; <>
 
 let nestable_block_element_inner := 
   | ~ = verbatim; <>

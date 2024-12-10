@@ -42,7 +42,31 @@ let error_recovery =
     ("EOI in modules", "{!modules: Foo Bar");
   ]
 
-let location = [ ("Inline false nesting", "{m \\{ \\mathbb{only_left}}") ]
+let utf =
+  [
+    ("lambda", "\xce\xbb");
+    ("words", "\xce\xbb \xce\xbb");
+    ("no_validation", "Î");
+    ("escapes", "\xce\xbb\\");
+    ("newline", "\xce\xbb \n \xce\xbb");
+    ("paragraphs", "\xce\xbb \n\n \xce\xbb");
+    ("code_span", "[\xce\xbb]");
+    ("minuys", "\xce\xbb-\xce\xbb");
+    ("shorthand list", "- \xce\xbb");
+    ("styled", "{b \xce\xbb}");
+    ("reference_target", "{!\xce\xbb}");
+    ("code block ", "{[\xce\xbb]}");
+    ("verbatim", "{v \xce\xbb v}");
+    ("label", "{2:\xce\xbb Bar}");
+    ("author", "@author \xce\xbb");
+    ("param", "@param \xce\xbb");
+    ("raise", "@raise \xce\xbb");
+    ("see", "@see <\xce\xbb>");
+    ("since", "@since \xce\xbb");
+    ("before", "@before \xce\xbb");
+    ("version", "@version \xce\xbb");
+    ("right brace", "\xce\xbb}");
+  ]
 
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
 let documentation_cases =
@@ -102,24 +126,10 @@ type failure = {
   offending_token : Parser.token;
   failure_index : int;
   tokens : Parser.token list;
-  area : string;
 }
 
-let get_area Loc.{ start; end_; _ } input =
-  String.split_on_char '\n' input
-  |> List.filteri (fun idx _ -> idx >= pred start.line && idx <= pred end_.line)
-  |> List.fold_left ( ^ ) ""
-
-let mkfailure label input exn last failure_index tokens =
-  let Loc.{ value; location } = last in
-  {
-    offending_token = value;
-    failure_index;
-    tokens;
-    exn;
-    label;
-    area = get_area location input;
-  }
+let mkfailure label exn last failure_index tokens =
+  { offending_token = last; failure_index; tokens; exn; label }
 
 let run_test (label, case) =
   let open Either in
@@ -127,6 +137,7 @@ let run_test (label, case) =
   let lexbuf = Lexing.from_string case in
   let file = "Tester" in
   Lexing.set_filename lexbuf file;
+  let tokens = ref [] in
   let input =
     Parser.Lexer.
       {
@@ -141,7 +152,10 @@ let run_test (label, case) =
   let offending_token = ref None in
   let get_tok _ =
     incr failure_index;
-    Parser.Lexer.token input lexbuf
+    let tok = Parser.Lexer.token input lexbuf in
+    tokens := tok :: !tokens;
+    offending_token := Some tok;
+    tok
   in
   try
     let ast, warnings =
@@ -157,9 +171,9 @@ let run_test (label, case) =
     let tokens = List.map Loc.value @@ TokBuf.cache_rest tokbuf in
     *)
     Right
-      (mkfailure label case exns
+      (mkfailure label exns
          (Option.get !offending_token)
-         !failure_index [])
+         !failure_index (List.rev !tokens))
 
 let sep = String.init 80 @@ Fun.const '-'
 
@@ -169,20 +183,16 @@ let format_successes =
   in
   List.fold_left go ""
 
-let failure_string { exn; label; offending_token; area; tokens; failure_index }
-    =
+let failure_string { exn; label; offending_token; tokens; failure_index } =
   Printf.sprintf
     {|>>> Case '%s' failed with exn: <<<
 %s
 Offending token:
 %d: '%s'
-Input:
-"%s"
 Tokens:
 %s|}
     label exn failure_index
     (Parser.string_of_token offending_token)
-    area
     (List.fold_left
        (fun acc t -> acc ^ "\n" ^ Parser.string_of_token t)
        "" tokens)
@@ -201,7 +211,7 @@ let () =
       | _ ->
           print_endline "unrecognized argument - running documentation_cases";
           documentation_cases)
-    else location
+    else utf
   in
   let sucesses, failures = List.partition_map run_test cases in
   let sucesses = format_successes sucesses in
