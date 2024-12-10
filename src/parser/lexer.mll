@@ -146,14 +146,13 @@ type input = {
 
 let mkloc input lexbuf =
   let open Lexing in
-  let file = input.file
-  and start = 
-    Loc.{ line = lexbuf.lex_start_p.pos_lnum; 
-          column = lexbuf.lex_start_p.pos_cnum }
-  and end_ = 
-    Loc.{ line = lexbuf.lex_curr_p.pos_lnum; 
-          column = lexbuf.lex_curr_p.pos_cnum } 
+  let pos_to_span pos =  
+    Loc.{ line = pos.pos_lnum; 
+          column = pos.pos_cnum - pos.pos_bol }
   in
+  let file = input.file
+  and start = pos_to_span lexbuf.lex_start_p 
+  and end_ = pos_to_span lexbuf.lex_curr_p in
   { Loc.file; start; end_ }
 
 let with_loc : Lexing.lexbuf -> input -> 'a -> 'a Loc.with_location = 
@@ -699,17 +698,18 @@ and math kind buffer nesting_level start_offset input = parse
         emit lexbuf input (math_constr kind (Buffer.contents buffer)) ~start_offset
       else begin
         Buffer.add_char buffer '}';
-        math kind buffer (nesting_level - 1) start_offset input lexbuf
+        math kind buffer (pred nesting_level) start_offset input lexbuf
       end
       }
   | '{'
     { Buffer.add_char buffer '{';
-      math kind buffer (nesting_level + 1) start_offset input lexbuf }
+      math kind buffer (succ nesting_level) start_offset input lexbuf }
   | ("\\{" | "\\}") as s
     { Buffer.add_string buffer s;
       math kind buffer nesting_level start_offset input lexbuf }
   | (newline) as s
     {
+      Lexing.new_line lexbuf;
       match kind with
       | Inline ->
         warning 
