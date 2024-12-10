@@ -130,9 +130,9 @@ let parse_comment : location:Lexing.position -> text:string -> t =
       }
   in
   (* Remove the `Loc.with_location` wrapping our token because Menhir cannot handle that *)
-  let unwrapped_token lexbuf = Lexer.token lexer_state lexbuf |> Loc.value in
   let ast, warnings =
-    Writer.run ~filename:lexer_state.file @@ Parser.main unwrapped_token lexbuf
+    Writer.run ~filename:lexer_state.file
+    @@ Parser.main (Lexer.token lexer_state) lexbuf
   in
   {
     ast;

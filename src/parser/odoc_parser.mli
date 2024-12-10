@@ -28,7 +28,7 @@ module Tester : sig
       mutable warnings : Warning.t list;
     }
 
-    val token : input -> Lexing.lexbuf -> Parser.token Loc.with_location
+    val token : input -> Lexing.lexbuf -> Parser.token
   end
   val is_EOI : token -> bool
   val pp_warning : Warning.t -> string

@@ -144,7 +144,27 @@ type input = {
   mutable warnings : Warning.t list;
 }
 
-let with_location_adjustments  
+let mkloc input lexbuf =
+  let open Lexing in
+  let file = input.file
+  and start = 
+    Loc.{ line = lexbuf.lex_start_p.pos_lnum; 
+          column = lexbuf.lex_start_p.pos_cnum }
+  and end_ = 
+    Loc.{ line = lexbuf.lex_curr_p.pos_lnum; 
+          column = lexbuf.lex_curr_p.pos_cnum } 
+  in
+  { Loc.file; start; end_ }
+
+let with_loc : Lexing.lexbuf -> input -> 'a -> 'a Loc.with_location = 
+  fun lexbuf input  ->
+    let location = mkloc input lexbuf in 
+    Loc.at location
+
+let with_location_adjustments : (Lexing.lexbuf -> input -> 'a) -> Lexing.lexbuf
+  -> input 
+  -> ?start_offset:int -> ?adjust_start_by:string -> ?end_offset:int
+    -> ?adjust_end_by:string -> 'a
   =
   fun 
     k lexbuf input ?start_offset ?adjust_start_by ?end_offset ?adjust_end_by
@@ -170,28 +190,18 @@ let with_location_adjustments
     | None -> end_
     | Some s -> end_ - String.length s
   in
-  let location = {
-    Loc.file = input.file;
-    start = input.offset_to_location start;
-    end_ = input.offset_to_location end_;
-  }
-  in
-  k input location value
+  lexbuf.lex_start_p <- { lexbuf.lex_start_p with pos_cnum = start };
+  lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_cnum = end_ };
+  k lexbuf input value
 
-let emit : 
-  Lexing.lexbuf -> 
-  input ->  
-  ?start_offset:int ->
-  ?adjust_start_by:string -> 
-  ?end_offset:int ->
-  ?adjust_end_by:string -> 
-  'a -> 
-  'a Loc.with_location =
-  with_location_adjustments (fun _ -> Loc.at)
+let emit = 
+  with_location_adjustments (fun _ _ token -> token)
+
 
 let warning =
-  with_location_adjustments (fun input location error ->
-    input.warnings <- (error location) :: input.warnings)
+  with_location_adjustments (fun lexbuf input error ->
+    let location = mkloc input lexbuf in
+    input.warnings <- error location :: input.warnings)
 
 let reference_token media start ( target : string ) input lexbuf =
   match start with
@@ -269,7 +279,13 @@ let emit_code_block ~start_offset ~content_offset ~lexbuf input meta delimiter t
           lexbuf
           input 
     |> trim_leading_blank_lines 
-    |> with_location_adjustments ~adjust_end_by:terminator ~start_offset:content_offset (fun _ -> Loc.at) lexbuf input in
+    |> with_location_adjustments 
+        ~adjust_end_by:terminator
+        ~start_offset:content_offset 
+        with_loc
+        lexbuf 
+        input 
+  in
   emit ~start_offset lexbuf input (Code_block { meta; delimiter; content; output }) 
 
 let heading_level lexbuf input level =
@@ -380,10 +396,15 @@ and token input = parse
 
   | ((horizontal_space* newline as prefix)
     horizontal_space* ((newline horizontal_space*)+ as suffix) as ws)
-    { emit lexbuf input (Blank_line ws) ~adjust_start_by:prefix ~adjust_end_by:suffix }
+    { 
+      Lexing.new_line lexbuf;
+      Lexing.new_line lexbuf;
+      emit lexbuf input (Blank_line ws) ~adjust_start_by:prefix ~adjust_end_by:suffix }
 
   | (horizontal_space* newline horizontal_space* as ws)
-    { emit lexbuf input (Single_newline ws) }
+    {
+      Lexing.new_line lexbuf;
+      emit lexbuf input (Single_newline ws) }
 
   | (horizontal_space+ as ws)
     { emit lexbuf input (Space ws) }
@@ -458,10 +479,15 @@ and token input = parse
     {
       let start_offset = Lexing.lexeme_start lexbuf in
       let lang_tag =
-        with_location_adjustments ~adjust_start_by:prefix (fun _ -> Loc.at) lexbuf input lang_tag_
+        with_location_adjustments 
+          ~adjust_start_by:prefix 
+          with_loc 
+          lexbuf 
+          input 
+          lang_tag_
       in
       let emit_truncated_code_block () =
-        let empty_content = with_location_adjustments (fun _ -> Loc.at) lexbuf input "" in
+        let empty_content = with_location_adjustments with_loc lexbuf input "" in
         emit ~start_offset lexbuf input (Code_block { meta = Some { language = lang_tag; tags = None }; delimiter = Some delimiter; content = empty_content; output = None}) 
       in
       match code_block_metadata_tail input lexbuf with
@@ -795,7 +821,13 @@ and code_block_metadata_tail input = parse
    ((space_char* '[') as suffix)
     {
       let meta =
-        with_location_adjustments ~adjust_start_by:prefix ~adjust_end_by:suffix (fun _ -> Loc.at) lexbuf input meta
+        with_location_adjustments 
+          ~adjust_start_by:prefix 
+          ~adjust_end_by:suffix 
+          with_loc 
+          lexbuf 
+          input 
+          meta
       in
       Ok (Some meta)
     }

@@ -141,10 +141,7 @@ let run_test (label, case) =
   let offending_token = ref None in
   let get_tok _ =
     incr failure_index;
-    let locd = Parser.Lexer.token input lexbuf in
-    offending_token := Some locd;
-    print_endline @@ "Token location: " ^ Loc.fmt (Loc.location locd);
-    Loc.value locd
+    Parser.Lexer.token input lexbuf
   in
   try
     let ast, warnings =
