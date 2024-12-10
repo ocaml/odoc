@@ -3,7 +3,7 @@
 (executable
  (name main)
  (public_name sherlodoc)
- (package sherlodoc)
+ (package odoc-driver)
  (libraries
   cmdliner
   index

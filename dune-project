@@ -29,3 +29,7 @@
 (cram enable)
 
 (using mdx 0.3)
+
+; Sherlodoc
+(using menhir 2.1)
+(using directory-targets 0.1)
