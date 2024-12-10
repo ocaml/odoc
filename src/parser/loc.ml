@@ -9,6 +9,12 @@ let map f annotated = { annotated with value = f annotated.value }
 let is predicate { value; _ } = predicate value
 let same annotated value = { annotated with value }
 
+let fmt { start; end_; _ } =
+  let { line = sline; column = scol } = start
+  and { line = eline; column = ecol } = end_ in
+  Printf.sprintf "start: { line : %d, col : %d }\nend: { line: %d; col: %d }"
+    sline scol eline ecol
+
 let span spans =
   match spans with
   | [] ->

@@ -42,6 +42,8 @@ let error_recovery =
     ("EOI in modules", "{!modules: Foo Bar");
   ]
 
+let location = [ ("Inline false nesting", "{m \\{ \\mathbb{only_left}}") ]
+
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
 let documentation_cases =
   [
@@ -82,17 +84,6 @@ let documentation_cases =
     ("Code block", "{[\n let foo = 0 \n]}");
   ]
 
-let unsupported =
-  [
-    ("left_alignment", "{L foo}");
-    ("center alignment", "{C foo}");
-    ("Right", "{R foo}");
-    ("Custom style", "{c foo}");
-    ("custom tag", "@custom");
-    ("custom reference kind", "{!custom:foo}");
-    ("html", "<b>foo</b>");
-  ]
-
 open Test.Serialize
 
 let error err = Atom (Odoc_parser.Warning.to_string err)
@@ -129,45 +120,6 @@ let mkfailure label input exn last failure_index tokens =
     label;
     area = get_area location input;
   }
-(*
-
-module TokBuf = struct
-  type t = {
-    tok_stream : Parser.token Loc.with_location Stream.t;
-    mutable cache : Parser.token Loc.with_location list;
-  }
-  type tok_state = { mutable seen_EOI : bool }
-
-  let create ~dispenser =
-    let tok_state = { seen_EOI = false } in
-    let tok_stream =
-      Stream.from (fun _ ->
-          if tok_state.seen_EOI then None
-          else
-            match dispenser () with
-            | Loc.{ value; _ } as loc when Parser.is_EOI value ->
-                tok_state.seen_EOI <- true;
-                Some loc
-            | t -> Some t)
-    in
-    let cache = [] in
-    { tok_stream; cache }
-
-  let next self =
-    let tok = Stream.next self.tok_stream in
-    self.cache <- tok :: self.cache;
-    tok
-
-  let cache_rest self =
-    let rec go () =
-      try
-        self.cache <- Stream.next self.tok_stream :: self.cache;
-        go ()
-      with Stream.Failure -> List.rev self.cache
-    in
-    go ()
-end
-*)
 
 let run_test (label, case) =
   let open Either in
@@ -191,6 +143,7 @@ let run_test (label, case) =
     incr failure_index;
     let locd = Parser.Lexer.token input lexbuf in
     offending_token := Some locd;
+    print_endline @@ "Token location: " ^ Loc.fmt (Loc.location locd);
     Loc.value locd
   in
   try
@@ -251,7 +204,7 @@ let () =
       | _ ->
           print_endline "unrecognized argument - running documentation_cases";
           documentation_cases)
-    else unsupported
+    else location
   in
   let sucesses, failures = List.partition_map run_test cases in
   let sucesses = format_successes sucesses in
