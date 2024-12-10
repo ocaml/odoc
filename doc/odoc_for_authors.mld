@@ -579,10 +579,6 @@ These tags are the only tags that can be used on pages.
   always be displayed in the sidebar. If it is [hidden], it will be [opened] but
   the directory entry, in the sidebar and breadcrumbs, will not be clickable.
 
-- [@order_category <category name>] helps defining the order of children for
-  pages unordered by the [@children_order] tag. Those unordered content will be
-  ordered by the lexicoraphic order on the category name.
-
 {2:math Mathematics}
 
 [odoc] 2.2 introduced new markup for maths, available both for inline and block
