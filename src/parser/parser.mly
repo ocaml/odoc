@@ -373,7 +373,7 @@ let tag_bare :=
 
 let inline_element :=
   (* Single token inline elements which are mostly handled in the lexer *)
-  | s = horizontal_whitespace; { return s } 
+  | s = inline_elt_legal_whitespace; { return s } 
   | c = Code_span; { return @@ `Code_span c }
   | m = Raw_markup; { return @@ `Raw_markup m }
   | w = Word; { return @@ `Word w }
@@ -382,6 +382,10 @@ let inline_element :=
   | ~ = style; <>
   | ~ = reference; <>
   | ~ = link; <>
+
+let inline_elt_legal_whitespace := 
+  | ~ = Space; <`Space>
+  | ~ = Single_newline; <`Space>
 
 let style := 
   | style = Style; children = sequence(locatedM(inline_element)); RIGHT_BRACE; 
@@ -617,7 +621,19 @@ let table_heavy := TABLE_HEAVY; whitespace?; grid = sequence_nonempty(row_heavy)
 
 (* LIGHT TABLE *)
 
-let cell_content_light := ~ = sequence_nonempty(locatedM(inline_element)); <>
+let table_light_legal_elt := 
+  (* Single token inline elements which are mostly handled in the lexer *)
+  | s = horizontal_whitespace; { return s } 
+  | c = Code_span; { return @@ `Code_span c }
+  | m = Raw_markup; { return @@ `Raw_markup m }
+  | w = Word; { return @@ `Word w }
+  | m = Math_span; { return @@ `Math_span m }
+  (* More complex/recursive inline elements should have their own rule *)
+  | ~ = style; <>
+  | ~ = reference; <>
+  | ~ = link; <>
+
+let cell_content_light := ~ = sequence_nonempty(locatedM(table_light_legal_elt)); <>
 let cell := 
   | ~ = cell_content_light; <>
   | ~ = cell_content_light; BAR; <>
