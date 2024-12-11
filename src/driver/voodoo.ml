@@ -67,50 +67,6 @@ let metas_of_pkg pkg =
       filename = "META")
     pkg.files
 
-(* Given a [pkg] and an output [pkg_path], returns a pair of lists of assets an mlds *)
-let assets_and_mlds_of_pkg pkg_path pkg =
-  pkg.files
-  |> List.filter_map (fun p ->
-         let prefix = Fpath.(v "doc" / pkg.name / "odoc-pages") in
-         let asset_prefix = Fpath.(v "doc" / pkg.name / "odoc-assets") in
-         let check_name pkg_name =
-           if pkg_name <> pkg.name then (
-             Logs.err (fun k ->
-                 k
-                   "Error: name in 'doc' dir does not match package name: %s \
-                    <> %s"
-                   pkg_name pkg.name);
-             None)
-           else Some ()
-         in
-         let ( >>= ) = Option.bind in
-         match Fpath.segs p with
-         | "doc" :: pkg_name :: "odoc-pages" :: _ :: _ -> (
-             check_name pkg_name >>= fun () ->
-             match Fpath.rem_prefix prefix p with
-             | None -> None
-             | Some rel_path ->
-                 let path = Fpath.(pkg_path // p) in
-                 if Fpath.has_ext "mld" p then
-                   Some
-                     (`M { Packages.mld_path = path; mld_rel_path = rel_path })
-                 else
-                   Some
-                     (`A
-                       { Packages.asset_path = path; asset_rel_path = rel_path })
-             )
-         | "doc" :: pkg_name :: "odoc-assets" :: _ :: _ -> (
-             check_name pkg_name >>= fun () ->
-             match Fpath.rem_prefix asset_prefix p with
-             | None -> None
-             | Some asset_rel_path ->
-                 let asset_path = Fpath.(pkg_path // p) in
-                 Some (`A { Packages.asset_path; asset_rel_path }))
-         | _ -> None)
-  |> List.partition_map (function
-       | `A asset -> Either.Left asset
-       | `M mld -> Either.Right mld)
-
 let process_package pkg =
   let metas = metas_of_pkg pkg in
 
@@ -139,7 +95,8 @@ let process_package pkg =
         Fmt.(list ~sep:comma (pair ~sep:comma string ss_pp))
         (Util.StringMap.bindings all_lib_deps));
 
-  let assets, mlds = assets_and_mlds_of_pkg pkg_path pkg in
+  let docs = Opam.classify_docs pkg_path (Some pkg.name) pkg.files in
+  let mlds, assets, other_docs = Packages.mk_mlds docs in
 
   let config =
     let config_file =
@@ -222,6 +179,8 @@ let process_package pkg =
     |> List.flatten
   in
   let libraries = meta_libraries @ non_meta_libraries in
+  let pkg_dir = top_dir pkg in
+  let doc_dir = Fpath.(pkg_dir / "doc") in
   let result =
     {
       Packages.name = pkg.name;
@@ -231,8 +190,9 @@ let process_package pkg =
       assets;
       selected = true;
       remaps = [];
-      other_docs = [];
-      pkg_dir = top_dir pkg;
+      other_docs;
+      pkg_dir;
+      doc_dir;
       config;
     }
   in
@@ -284,7 +244,6 @@ let of_voodoo pkg_name ~blessed =
       match packages with
       | [ package ] ->
           let package = process_package package in
-          Logs.debug (fun m -> m "Package: %a\n%!" Packages.pp package);
           Util.StringMap.singleton pkg_name package
       | [] ->
           Logs.err (fun m -> m "No package found for %s" pkg_name);
@@ -315,17 +274,17 @@ let extra_paths compile_dir =
           (fun (pkgs, libs) abs_path ->
             let path = Fpath.rem_prefix compile_dir abs_path |> Option.get in
             match Fpath.segs path with
-            | [ "p"; _pkg; _version; libname; l ] when l = lib_marker ->
+            | [ "p"; _pkg; _version; "doc"; libname; l ] when l = lib_marker ->
                 Logs.debug (fun m -> m "Found lib marker: %a" Fpath.pp path);
                 (pkgs, Util.StringMap.add libname (Fpath.parent path) libs)
-            | [ "p"; pkg; _version; l ] when l = pkg_marker ->
+            | [ "p"; pkg; _version; "doc"; l ] when l = pkg_marker ->
                 Logs.debug (fun m -> m "Found pkg marker: %a" Fpath.pp path);
                 (Util.StringMap.add pkg (Fpath.parent path) pkgs, libs)
-            | [ "u"; _universe; _pkg; _version; libname; l ] when l = lib_marker
-              ->
+            | [ "u"; _universe; _pkg; _version; "doc"; libname; l ]
+              when l = lib_marker ->
                 Logs.debug (fun m -> m "Found lib marker: %a" Fpath.pp path);
                 (pkgs, Util.StringMap.add libname (Fpath.parent path) libs)
-            | [ "u"; _universe; pkg; _version; l ] when l = pkg_marker ->
+            | [ "u"; _universe; pkg; _version; "doc"; l ] when l = pkg_marker ->
                 Logs.debug (fun m -> m "Found pkg marker: %a" Fpath.pp path);
                 (Util.StringMap.add pkg (Fpath.parent path) pkgs, libs)
             | _ -> (pkgs, libs))

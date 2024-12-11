@@ -77,12 +77,15 @@ type t = {
   remaps : (string * string) list;
   other_docs : Fpath.t list;
   pkg_dir : Fpath.t;
+  doc_dir : Fpath.t;
   config : Global_config.t;
 }
 
 val pp : Format.formatter -> t -> unit
 
 type set = t Util.StringMap.t
+
+val mk_mlds : Opam.doc_file list -> mld list * asset list * Fpath.t list
 
 val of_libs : packages_dir:Fpath.t option -> Util.StringSet.t -> set
 (** Turns a set of libraries into a map from package name to package *)

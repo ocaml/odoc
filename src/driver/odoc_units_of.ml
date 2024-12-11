@@ -1,6 +1,7 @@
 open Odoc_unit
 
-let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
+let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
+    t list =
   let { odoc_dir; odocl_dir; index_dir; mld_dir = _ } = dirs in
   (* [module_of_hash] Maps a hash to the corresponding [Package.t], library name and
      [Packages.modulety]. [lib_dirs] maps a library name to the odoc dir containing its
@@ -46,7 +47,7 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
   let base_args pkg lib_deps : Pkg_args.t =
     let own_page = dash_p pkg.Packages.name (doc_dir pkg) in
     let own_libs = List.concat_map dash_l (Util.StringSet.to_list lib_deps) in
-    { pages = [ own_page ]; libs = own_libs; odoc_dir; odocl_dir }
+    Pkg_args.v ~pages:[ own_page ] ~libs:own_libs ~odoc_dir ~odocl_dir
   in
   let args_of_config config : Pkg_args.t =
     let { Global_config.deps = { packages; libraries } } = config in
@@ -61,7 +62,7 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
         packages
     in
     let libs_rel = List.concat_map dash_l libraries in
-    { pages = pages_rel; libs = libs_rel; odoc_dir; odocl_dir }
+    Pkg_args.v ~pages:pages_rel ~libs:libs_rel ~odoc_dir ~odocl_dir
   in
   let args_of =
     let cache = Hashtbl.create 10 in
@@ -80,15 +81,16 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
   let index_of pkg =
     let roots = [ Fpath.( // ) odocl_dir (doc_dir pkg) ] in
     let output_file = Fpath.(index_dir / pkg.name / Odoc.index_filename) in
+    let pkg_dir = doc_dir pkg in
     let sidebar =
       let output_file = Fpath.(index_dir / pkg.name / Odoc.sidebar_filename) in
-      { output_file; json = false }
+      { output_file; json = false; pkg_dir }
     in
     {
       roots;
       output_file;
       json = false;
-      search_dir = pkg.pkg_dir;
+      search_dir = doc_dir pkg;
       sidebar = Some sidebar;
     }
   in
@@ -193,10 +195,13 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
   in
   let of_lib pkg (lib : Packages.libty) =
     let lib_deps = Util.StringSet.add lib.lib_name lib.lib_deps in
-    let landing_page :> t =
-      let index = index_of pkg in
-      Landing_pages.library ~dirs ~pkg ~index lib
+    let lib_deps =
+      List.fold_left
+        (fun acc lib -> Util.StringSet.add lib.Packages.lib_name acc)
+        lib_deps pkg.Packages.libraries
     in
+    let index = index_of pkg in
+    let landing_page :> t = Landing_pages.library ~dirs ~pkg ~index lib in
     landing_page :: List.concat_map (of_module pkg lib lib_deps) lib.modules
   in
   let of_mld pkg (mld : Packages.mld) : mld unit list =
@@ -220,7 +225,7 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
     let ext = Fpath.get_ext md in
     match ext with
     | ".md" ->
-        let rel_dir = doc_dir pkg in
+        let rel_dir = pkg_dir pkg in
         let kind = `Md in
         let name = md |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "page-" in
         let lib_deps = Util.StringSet.empty in
@@ -288,6 +293,7 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
       ((pkg_index :: src_index :: lib_units)
       @ mld_units @ asset_units @ md_units)
   in
-
-  let pkg_list :> t = Landing_pages.package_list ~dirs pkgs in
-  pkg_list :: List.concat_map of_package pkgs
+  if gen_indices then
+    let gen_indices :> t = Landing_pages.package_list ~dirs pkgs in
+    gen_indices :: List.concat_map of_package pkgs
+  else List.concat_map of_package pkgs

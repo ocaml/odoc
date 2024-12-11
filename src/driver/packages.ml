@@ -91,6 +91,7 @@ type t = {
   remaps : (string * string) list;
   other_docs : Fpath.t list;
   pkg_dir : Fpath.t;
+  doc_dir : Fpath.t;
   config : Global_config.t;
 }
 
@@ -271,22 +272,21 @@ end
 
 (* Construct the list of mlds and assets from a package name and its list of pages *)
 let mk_mlds docs =
-  let mlds, assets =
-    List.fold_left
-      (fun (mlds, assets) doc ->
-        match doc.Opam.kind with
-        | `Mld ->
-            ( { mld_path = doc.Opam.file; mld_rel_path = doc.Opam.rel_path }
-              :: mlds,
-              assets )
-        | `Asset ->
-            ( mlds,
-              { asset_path = doc.Opam.file; asset_rel_path = doc.Opam.rel_path }
-              :: assets )
-        | `Other -> (mlds, assets))
-      ([], []) docs
-  in
-  (mlds, assets)
+  List.fold_left
+    (fun (mlds, assets, others) doc ->
+      match doc.Opam.kind with
+      | `Mld ->
+          ( { mld_path = doc.Opam.file; mld_rel_path = doc.Opam.rel_path }
+            :: mlds,
+            assets,
+            others )
+      | `Asset ->
+          ( mlds,
+            { asset_path = doc.Opam.file; asset_rel_path = doc.Opam.rel_path }
+            :: assets,
+            others )
+      | `Other -> (mlds, assets, doc.Opam.file :: others))
+    ([], [], []) docs
 
 let fix_missing_deps pkgs =
   let lib_name_by_hash =
@@ -396,7 +396,7 @@ let of_libs ~packages_dir libs =
                           pkg = pkg')
                         opam_map
                     in
-                    let mlds, assets = mk_mlds docs in
+                    let mlds, assets, _ = mk_mlds docs in
                     Some
                       {
                         name = pkg.name;
@@ -408,6 +408,7 @@ let of_libs ~packages_dir libs =
                         remaps = [];
                         other_docs = [];
                         pkg_dir;
+                        doc_dir = pkg_dir;
                         config;
                       })
               acc)
@@ -455,7 +456,7 @@ let of_packages ~packages_dir packages =
         in
         let pkg_dir = pkg_dir packages_dir pkg.name in
         let config = Global_config.load pkg.name in
-        let mlds, assets = mk_mlds files.docs in
+        let mlds, assets, _ = mk_mlds files.docs in
         let selected = List.mem pkg.name packages in
         let remaps =
           if selected then []
@@ -489,6 +490,7 @@ let of_packages ~packages_dir packages =
             remaps;
             other_docs = [];
             pkg_dir;
+            doc_dir = pkg_dir;
             config;
           }
           acc)

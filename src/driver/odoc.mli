@@ -9,6 +9,7 @@ val index_filename : string
 val sidebar_filename : string
 
 val odoc : Bos.Cmd.t ref
+val odoc_md : Bos.Cmd.t ref
 
 type compile_deps = { digest : Digest.t; deps : (string * Digest.t) list }
 val compile_deps : Fpath.t -> (compile_deps, [> `Msg of string ]) result

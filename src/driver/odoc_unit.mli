@@ -1,22 +1,24 @@
 module Pkg_args : sig
-  type t = {
-    odoc_dir : Fpath.t;
-    odocl_dir : Fpath.t;
-    pages : (string * Fpath.t) list;
-    libs : (string * Fpath.t) list;
-  }
+  type t
 
   val compiled_pages : t -> (string * Fpath.t) list
   val compiled_libs : t -> (string * Fpath.t) list
   val linked_pages : t -> (string * Fpath.t) list
   val linked_libs : t -> (string * Fpath.t) list
 
+  val v :
+    odoc_dir:Fpath.t ->
+    odocl_dir:Fpath.t ->
+    pages:(string * Fpath.t) list ->
+    libs:(string * Fpath.t) list ->
+    t
+
   val combine : t -> t -> t
 
   val pp : t Fmt.t
 end
 
-type sidebar = { output_file : Fpath.t; json : bool }
+type sidebar = { output_file : Fpath.t; json : bool; pkg_dir : Fpath.t }
 type index = {
   roots : Fpath.t list;
   output_file : Fpath.t;
@@ -53,10 +55,11 @@ type t = [ impl | intf | mld | asset | md ] unit
 
 val pp : t Fmt.t
 
+val pkg_dir : Packages.t -> Fpath.t
 val lib_dir : Packages.t -> Packages.libty -> Fpath.t
 val doc_dir : Packages.t -> Fpath.t
-val src_lib_dir : Packages.t -> Packages.libty -> Fpath.t
 val src_dir : Packages.t -> Fpath.t
+val src_lib_dir : Packages.t -> Packages.libty -> Fpath.t
 
 type dirs = {
   odoc_dir : Fpath.t;

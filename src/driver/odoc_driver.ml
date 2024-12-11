@@ -130,6 +130,7 @@ let run mode
       stats;
       nb_workers;
       odoc_bin;
+      odoc_md_bin;
       compile_grep;
       link_grep;
       generate_grep;
@@ -137,6 +138,10 @@ let run mode
       index_grep;
     } =
   Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
+  Option.iter
+    (fun odoc_md_bin -> Odoc.odoc_md := Bos.Cmd.v odoc_md_bin)
+    odoc_md_bin;
+
   let _ = Voodoo.find_universe_and_version "foo" in
   Eio_main.run @@ fun env ->
   Eio.Switch.run @@ fun sw ->
@@ -145,22 +150,24 @@ let run mode
   Stats.init_nprocs nb_workers;
   let () = Worker_pool.start_workers env sw nb_workers in
 
-  let all, extra_paths, actions =
+  let all, extra_paths, actions, gen_indices =
     match mode with
     | Voodoo { package_name = p; blessed; actions } ->
         let all = Voodoo.of_voodoo p ~blessed in
         let extra_paths = Voodoo.extra_paths odoc_dir in
-        (all, extra_paths, actions)
+        (all, extra_paths, actions, false)
     | Dune { path } ->
-        (Dune_style.of_dune_build path, Voodoo.empty_extra_paths, All)
+        (Dune_style.of_dune_build path, Voodoo.empty_extra_paths, All, true)
     | OpamLibs { libs } ->
         ( Packages.of_libs ~packages_dir:None (Util.StringSet.of_list libs),
           Voodoo.empty_extra_paths,
-          All )
+          All,
+          true )
     | OpamPackages { packages } ->
         ( Packages.of_packages ~packages_dir:None packages,
           Voodoo.empty_extra_paths,
-          All )
+          All,
+          true )
   in
 
   let virtual_check =
@@ -214,7 +221,7 @@ let run mode
             let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
             { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir }
           in
-          Odoc_units_of.packages ~dirs ~extra_paths ~remap all
+          Odoc_units_of.packages ~dirs ~gen_indices ~extra_paths ~remap all
         in
         Compile.init_stats units;
         let compiled =
