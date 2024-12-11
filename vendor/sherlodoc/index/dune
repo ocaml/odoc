@@ -1,0 +1,11 @@
+(library
+ (name index)
+ (libraries
+  db
+  db_store
+  fpath
+  tyxml
+  odoc.search
+  odoc.model
+  odoc.odoc
+  cmdliner))

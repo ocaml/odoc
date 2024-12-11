@@ -1,0 +1,9 @@
+(library
+ (name query)
+ (libraries db))
+
+(menhir
+ (modules type_parser)
+ (flags --explain))
+
+(ocamllex type_lexer)

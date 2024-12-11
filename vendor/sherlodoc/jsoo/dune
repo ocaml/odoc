@@ -1,0 +1,9 @@
+(executable
+ (name main)
+ (modes js)
+ (libraries brr query))
+
+(rule
+ (alias all)
+ (action
+  (copy main.bc.js sherlodoc.js)))

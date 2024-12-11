@@ -1,0 +1,27 @@
+(library
+ (name db_store)
+ (modules db_store)
+ (libraries
+  storage_marshal
+  storage_js
+  (select
+   db_store.ml
+   from
+   (storage_ancient -> db_store.with_ancient.ml)
+   (!storage_ancient -> db_store.default.ml))))
+
+(library
+ (name storage_ancient)
+ (modules storage_ancient)
+ (optional)
+ (libraries db ancient unix))
+
+(library
+ (name storage_js)
+ (modules storage_js)
+ (libraries db base64 bigstringaf decompress.zl))
+
+(library
+ (name storage_marshal)
+ (modules storage_marshal)
+ (libraries db))
