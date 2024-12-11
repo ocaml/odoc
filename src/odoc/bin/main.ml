@@ -1132,12 +1132,12 @@ module Odoc_html_args = struct
       (parser, printer)
   end
 
-  let escape_breadcrumb =
+  let home_breadcrumb =
     let doc =
       "Wether to add a 'Home' breadcrumb to go up the root of the given \
        sidebar."
     in
-    Arg.(value & flag & info ~docv:"escape" ~doc [ "escape-breadcrumb" ])
+    Arg.(value & flag & info ~docv:"escape" ~doc [ "home-breadcrumb" ])
 
   let theme_uri =
     let doc =
@@ -1207,7 +1207,7 @@ module Odoc_html_args = struct
 
   let extra_args =
     let config semantic_uris closed_details indent theme_uri support_uri
-        search_uris flat as_json remap remap_file escape_breadcrumb =
+        search_uris flat as_json remap remap_file home_breadcrumb =
       let open_details = not closed_details in
       let remap =
         match remap_file with
@@ -1228,14 +1228,14 @@ module Odoc_html_args = struct
       in
       let html_config =
         Odoc_html.Config.v ~theme_uri ~support_uri ~search_uris ~semantic_uris
-          ~indent ~flat ~open_details ~as_json ~remap ~escape_breadcrumb ()
+          ~indent ~flat ~open_details ~as_json ~remap ~home_breadcrumb ()
       in
       { Html_page.html_config }
     in
     Term.(
       const config $ semantic_uris $ closed_details $ indent $ theme_uri
       $ support_uri $ search_uri $ flat $ as_json $ remap $ remap_file
-      $ escape_breadcrumb)
+      $ home_breadcrumb)
 end
 
 module Odoc_html = Make_renderer (Odoc_html_args)
