@@ -1,6 +1,8 @@
 module Kind : sig
   type t =
-    | Doc
+    | Doc (** Standalone doc comment *)
+    | Page (** Mld page *)
+    | Impl (** Source page *)
     | Module
     | Module_type
     | Class
@@ -37,6 +39,8 @@ type t =
   ; doc_html : string
   ; pkg : Package.t
   }
+
+val pp : t Fmt.t
 
 val v
   :  name:string

@@ -99,7 +99,7 @@ let searchable_type_of_constructor args res =
 let searchable_type_of_record parent_type type_ =
   Odoc_model.Lang.TypeExpr.Arrow (None, parent_type, type_)
 
-let convert_kind ~db (Odoc_search.Entry.{ kind; _ } as entry) =
+let convert_kind ~db (Odoc_index.Entry.{ kind; _ } as entry) =
   match kind with
   | TypeDecl _ -> Entry.Kind.Type_decl (Odoc_search.Html.typedecl_params_of_entry entry)
   | Value { value = _; type_ } ->
@@ -121,13 +121,16 @@ let convert_kind ~db (Odoc_search.Entry.{ kind; _ } as entry) =
     let typ = searchable_type_of_record parent_type type_ in
     let typ = Db_writer.type_of_odoc ~db typ in
     Entry.Kind.Field typ
-  | Doc _ -> Doc
+  | Doc -> Doc
+  | Dir -> Doc
+  | Page _ -> Doc
   | Class_type _ -> Class_type
   | Method _ -> Method
   | Class _ -> Class
   | TypeExtension _ -> Type_extension
-  | Module -> Entry.Kind.Module
-  | ModuleType -> Module_type
+  | Module _ -> Entry.Kind.Module
+  | ModuleType _ -> Module_type
+  | Impl -> Doc
 
 let register_type_expr ~db elt typ =
   let type_polarities = Db.Type_polarity.of_typ ~any_is_poly:true typ in
@@ -142,7 +145,7 @@ let register_kind ~db elt =
 let rec categorize id =
   let open Odoc_model.Paths in
   match id.Identifier.iv with
-  | `CoreType _ | `CoreException _ | `Root _ | `Page _ | `LeafPage _ -> `definition
+  | `Root _ | `Page _ | `LeafPage _ -> `definition
   | `ModuleType _ -> `declaration
   | `Parameter _ -> `ignore (* redundant with indexed signature *)
   | ( `InstanceVariable _ | `Method _ | `Field _ | `Result _ | `Label _ | `Type _
@@ -150,11 +153,11 @@ let rec categorize id =
     | `ExtensionDecl _ | `Module _ ) as x ->
     let parent = Identifier.label_parent { id with iv = x } in
     categorize (parent :> Identifier.Any.t)
-  | `AssetFile _ | `SourceDir _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
+  | `AssetFile _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
   | `SourceLocationInternal _ ->
     `ignore (* unclear what to do with those *)
 
-let categorize Odoc_search.Entry.{ id; _ } =
+let categorize Odoc_index.Entry.{ id; _ } =
   match id.iv with
   | `ModuleType (parent, _) ->
     (* A module type itself is not *from* a module type, but it might be if one
@@ -171,7 +174,7 @@ let register_entry
   ~favoured_prefixes
   ~pkg
   ~cat
-  (Odoc_search.Entry.{ id; doc; kind } as entry)
+  (Odoc_index.Entry.{ id; doc; kind } as entry)
   =
   let module Sherlodoc_entry = Entry in
   let open Odoc_search in
@@ -185,7 +188,7 @@ let register_entry
   let rhs = Html.rhs_of_kind kind in
   let kind = convert_kind ~db entry in
   let cost = cost ~name ~kind ~doc_html ~rhs ~cat ~favourite ~favoured_prefixes in
-  let url = Result.get_ok (Html.url id) in
+  let url = Html.url entry in
   let elt = Sherlodoc_entry.v ~name ~kind ~rhs ~doc_html ~cost ~url ~pkg () in
   if index_docstring then register_doc ~db elt doc_txt ;
   if index_name && kind <> Doc then register_full_name ~db elt ;
@@ -199,15 +202,15 @@ let register_entry
   ~favourite
   ~favoured_prefixes
   ~pkg
-  (Odoc_search.Entry.{ id; kind; _ } as entry)
+  (Odoc_index.Entry.{ id; kind; _ } as entry)
   =
   let cat = categorize entry in
   let is_pure_documentation =
     match kind with
-    | Doc _ -> true
+    | Doc | Page _ | Dir | Impl -> true
     | _ -> false
   in
-  if is_pure_documentation || cat = `ignore || Odoc_model.Paths.Identifier.is_internal id
+  if is_pure_documentation || cat = `ignore || Odoc_model.Paths.Identifier.is_hidden id
   then ()
   else
     register_entry

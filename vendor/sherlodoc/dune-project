@@ -25,7 +25,7 @@
  (synopsis "Search engine for OCaml documentation")
  (depends
   (ocaml (>= 4.0.8))
-  (odoc (>= 2.4.0))
+  (odoc (>= 3.0.0))
   (base64 (>= 3.5.1))
   (bigstringaf (>= 0.9.1))
   (js_of_ocaml (>= 5.6.0))

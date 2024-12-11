@@ -25,9 +25,9 @@
   165 val Base.List.ignore_m : 'a t -> unit t
   166 val Base.List.drop : 'a t -> int -> 'a t
   166 val Base.List.take : 'a t -> int -> 'a t
-  175 mod Base.ListLabels
   175 mod Caml.ListLabels
   394 mod Base
+  397 type Base.Nothing.t = 
   $ sherlodoc index --favoured-prefixes=Base $ODOCLS > /dev/null
   $ sherlodoc search --print-cost "list"
   81 type 'a Base.list = 'a List.t
@@ -50,11 +50,11 @@
   115 val Base.List.ignore_m : 'a t -> unit t
   116 val Base.List.drop : 'a t -> int -> 'a t
   116 val Base.List.take : 'a t -> int -> 'a t
-  125 mod Base.ListLabels
   344 mod Base
   347 type Base.Nothing.t = 
   362 val Base.String.append : t -> t -> t
   364 val Base.Int.ascending : t -> t -> int
+  365 val Base.Bool.ascending : t -> t -> int
   $ sherlodoc index --favoured-prefixes=Caml $ODOCLS > /dev/null
   $ sherlodoc search --print-cost "list"
   104 mod Caml.List
@@ -80,8 +80,8 @@
   165 val Base.List.ignore_m : 'a t -> unit t
   166 val Base.List.drop : 'a t -> int -> 'a t
   166 val Base.List.take : 'a t -> int -> 'a t
-  175 mod Base.ListLabels
   394 mod Base
+  397 type Base.Nothing.t = 
   $ sherlodoc index --favoured-prefixes=Base,Caml $ODOCLS > /dev/null
   $ sherlodoc search --print-cost "list"
   81 type 'a Base.list = 'a List.t
@@ -105,10 +105,10 @@
   115 val Base.List.ignore_m : 'a t -> unit t
   116 val Base.List.drop : 'a t -> int -> 'a t
   116 val Base.List.take : 'a t -> int -> 'a t
-  125 mod Base.ListLabels
   125 mod Caml.ListLabels
   344 mod Base
   347 type Base.Nothing.t = 
+  362 val Base.String.append : t -> t -> t
   $ sherlodoc index $ODOCLS --favoured-prefixes "" > /dev/null
   $ sherlodoc search --print-cost "list"
   131 type 'a Base.list = 'a List.t
@@ -133,8 +133,8 @@
   165 val Base.List.ignore_m : 'a t -> unit t
   166 val Base.List.drop : 'a t -> int -> 'a t
   166 val Base.List.take : 'a t -> int -> 'a t
-  175 mod Base.ListLabels
   175 mod Caml.ListLabels
   394 mod Base
+  397 type Base.Nothing.t = 
 
 Partial name search:

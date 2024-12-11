@@ -3,9 +3,10 @@
   $ odoc compile -I . page.mld
   $ odoc link -I . main.odoc
   $ odoc link -I . page-page.odoc
+  $ odoc compile-index -o index.odoc-index --root ./
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=marshal
-  $ sherlodoc index $(find . -name '*.odocl')
+  $ sherlodoc index index.odoc-index
   $ sherlodoc search "unique_name"
   val Main.unique_name : foo
   $ sherlodoc search "multiple_hit"
@@ -59,6 +60,8 @@
   $ sherlodoc search "modtype"
   sig Main.Modtype
   val Main.Modtype.v_modtype : foo
+  $ sherlodoc search "extensible"
+  type Main.extensible_type = ..
   $ sherlodoc search "S"
   mod Main.S_to_S1
   sig Main.S
@@ -67,7 +70,6 @@
   mod Main.List
   mod Main.Nest
   type 'a Main.list
-  type Main.MyExtension
   cons Main.MyExtension : moo -> extensible_type
   val Main.consume : moo -> unit
   val Main.Map.to_list : foo

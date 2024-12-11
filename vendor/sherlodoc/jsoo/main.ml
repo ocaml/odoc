@@ -81,6 +81,8 @@ let string_of_kind =
   let open Odoc_html_frontend in
   function
   | Db.Entry.Kind.Doc -> kind_doc
+  | Page -> kind_doc
+  | Impl -> kind_impl
   | Type_decl _ -> kind_typedecl
   | Module -> kind_module
   | Exception _ -> kind_exception

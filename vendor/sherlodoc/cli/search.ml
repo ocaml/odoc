@@ -17,6 +17,8 @@ let string_of_kind =
   | Constructor _ -> "cons"
   | Field _ -> "field"
   | Val _ -> "val"
+  | Page -> "page"
+  | Impl -> "source"
 
 let print_result ~print_cost ~print_docstring ~no_rhs (elt : Db.Entry.t) =
   let cost = if print_cost then string_of_int elt.cost ^ " " else "" in

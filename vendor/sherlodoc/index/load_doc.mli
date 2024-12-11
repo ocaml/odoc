@@ -6,7 +6,7 @@ val register_entry
   -> favourite:bool
   -> favoured_prefixes:string list
   -> pkg:Db.Entry.Package.t
-  -> Odoc_search.Entry.t
+  -> Odoc_index.Entry.t
   -> unit
 (** [register_entry ~db ~index_name ~type_search ~index_docstring e] register
     the entry [e] in [db]. *)

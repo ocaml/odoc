@@ -262,12 +262,12 @@ Partial name search:
   175 val Base.String.uppercase : t -> t
   176 type Base.String.Caseless.t = t
   176 val Base.String.capitalize : t -> t
-  177 mod Base.StringLabels
   177 mod Caml.StringLabels
   177 val Base.String.append : t -> t -> t
   177 val Base.Exn.to_string_mach : t -> string
   177 val Base.Info.to_string_hum : t -> string
   177 val Base.Sign.to_string_hum : t -> string
+  178 val Base.Info.to_string_mach : t -> string
   $ sherlodoc search --print-cost "tring"
   177 type Base.string = String.t
   182 type Base.String.t = string

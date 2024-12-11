@@ -5,7 +5,6 @@ module ModuleName = Odoc_model.Names.ModuleName
 
 let rec show_ident_long h (r : Identifier.t_pv Identifier.id) =
   match r.iv with
-  | `CoreType n -> Format.fprintf h "Stdlib.%s" (TypeName.to_string n)
   | `Type (md, n) -> Format.fprintf h "%a.%s" show_signature md (TypeName.to_string n)
   | _ -> Format.fprintf h "%S" (r |> Identifier.fullname |> String.concat ".")
 
@@ -19,13 +18,23 @@ and show_signature h sig_ =
   | `ModuleType (_, p) ->
     Format.fprintf h "%s" (Odoc_model.Names.ModuleTypeName.to_string p)
 
-let show_type_name_verbose h : Path.Type.t -> _ = function
+let rec show_type_name_verbose h : Path.Type.t -> _ = function
   | `Resolved t ->
-    Format.fprintf h "%a" show_ident_long Path.Resolved.(identifier (t :> t))
+    (match Path.Resolved.(identifier (t :> t)) with
+     | Some i -> Format.fprintf h "%a" show_ident_long i
+     | None ->
+       (match t with
+        | `CoreType n -> Format.fprintf h "%s" (Odoc_model.Names.TypeName.to_string n)
+        | _ -> Format.fprintf h "%s" "Core type"))
   | `Identifier (path, _hidden) ->
     let name = String.concat "." @@ Identifier.fullname path in
     Format.fprintf h "%s" name
-  | `Dot (mdl, x) ->
-    Format.fprintf h "%s.%s" (Odoc_document.Url.render_path (mdl :> Path.t)) x
+  | `DotT (mdl, x) ->
+    Format.fprintf
+      h
+      "%s.%s"
+      (Odoc_document.Url.render_path (mdl :> Path.t))
+      (Odoc_model.Names.TypeName.to_string x)
+  | `SubstitutedT x -> show_type_name_verbose h x
 
 let to_string t = Format.asprintf "%a" show_type_name_verbose t
