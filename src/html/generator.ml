@@ -512,6 +512,14 @@ module Breadcrumbs = struct
     | { parent = None; _ } ->
         Some { Url.Path.parent = None; name = "index"; kind = `LeafPage }
 
+  let home_breadcrumb config current_url parent =
+    let href =
+      Some
+        (Link.href ~config ~resolve:(Current current_url)
+           (Odoc_document.Url.from_path parent))
+    in
+    { href; name = [ Html.txt "🏠" ]; kind = `LeafPage }
+
   let gen_breadcrumbs_no_sidebar ~config ~url =
     let url =
       match url with
@@ -521,9 +529,8 @@ module Breadcrumbs = struct
     in
     match url with
     | { Url.Path.name = "index"; parent = None; kind = `LeafPage } ->
-        let current =
-          { href = None; name = [ Html.txt "" ]; kind = `LeafPage }
-        in
+        let kind = `LeafPage in
+        let current = { href = None; name = [ Html.txt "" ]; kind } in
         { parents = []; up_url = None; current }
     | url -> (
         (* This is the pre 3.0 way of computing the breadcrumbs *)
@@ -561,17 +568,8 @@ module Breadcrumbs = struct
             let current = to_breadcrumb current in
             let parents = List.map to_breadcrumb parents |> List.rev in
             let home =
-              let href =
-                Some
-                  (Link.href ~config ~resolve:(Current url)
-                     (Odoc_document.Url.from_path
-                        {
-                          Url.Path.name = "index";
-                          parent = None;
-                          kind = `LeafPage;
-                        }))
-              in
-              { href; name = [ Html.txt "🏠" ]; kind = `LeafPage }
+              home_breadcrumb config url
+                { Url.Path.name = "index"; parent = None; kind = `LeafPage }
             in
             { current; parents = home :: parents; up_url })
 
@@ -607,13 +605,8 @@ module Breadcrumbs = struct
           in
           { Types.current; parents = List.rev acc; up_url }
       | None ->
-          let current =
-            {
-              href = None;
-              name = [ Html.txt current_url.name ];
-              kind = current_url.kind;
-            }
-          in
+          let kind = current_url.kind and name = current_url.name in
+          let current = { href = None; name = [ Html.txt name ]; kind } in
           let up_url =
             List.find_map (fun (b : Types.breadcrumb) -> b.href) acc
           in
@@ -625,13 +618,7 @@ module Breadcrumbs = struct
       | true, Some { node; _ } -> (
           match page_parent node.url.page with
           | None -> []
-          | Some parent ->
-              let href =
-                Some
-                  (Link.href ~config ~resolve:(Current current_url)
-                     (Odoc_document.Url.from_path parent))
-              in
-              [ { href; name = [ Html.txt "🏠" ]; kind = parent.kind } ])
+          | Some parent -> [ home_breadcrumb config parent current_url ])
       | _ -> []
     in
     extract escape sidebar
