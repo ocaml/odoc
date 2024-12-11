@@ -50,3 +50,7 @@ let ensure : ('a -> bool) -> partial_warning -> 'a t -> 'a t =
 let run : filename:string -> Ast.t t -> Ast.t * Warning.t list =
  fun ~filename (Writer (tree, warnings)) ->
   (tree, List.map (fun f -> f ~filename) warnings)
+
+let unwrap : 'a t -> 'a = fun (Writer (x, _)) -> x
+let unwrap_located : 'a Loc.with_location t -> 'a =
+ fun (Writer (Loc.{ value; _ }, _)) -> value

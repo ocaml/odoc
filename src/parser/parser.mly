@@ -285,6 +285,29 @@ let toplevel :=
   | block = nestable_block_element; { Writer.map (fun b -> (b :> Ast.block_element) ) block }
   | ~ = tag; <>
   | ~ = heading; <>
+  | ~ = toplevel_error; <> 
+
+let toplevel_error := 
+  | elt = locatedM(inline_element); RIGHT_BRACE;
+    { let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in 
+        let what = Tokens.describe RIGHT_BRACE in 
+        let in_what = Tokens.describe_inline @@ Writer.unwrap_located elt in 
+        Parse_error.not_allowed ~what ~in_what span 
+      in
+      let* elt = Writer.warning warning elt in
+      return (`Paragraph [elt] :> Ast.block_element)
+    }
+  | elt = locatedM(inline_element); RIGHT_CODE_DELIMITER;
+    { let warning = fun ~filename -> 
+        let span = Parser_aux.to_location ~filename $sloc in 
+        let what = Tokens.describe RIGHT_CODE_DELIMITER in 
+        let in_what = Tokens.describe_inline @@ Writer.unwrap_located elt in 
+        Parse_error.not_allowed ~what ~in_what span 
+      in
+      let* elt = Writer.warning warning elt in
+      return (`Paragraph [elt] :> Ast.block_element)
+    }
 
 (* SECTION HEADING *)
 
