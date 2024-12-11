@@ -614,7 +614,7 @@ module Breadcrumbs = struct
           { Types.current; parents; up_url }
     in
     let escape =
-      match (Config.escape_breadcrumb config, find_parent sidebar) with
+      match (Config.home_breadcrumb config, find_parent sidebar) with
       | true, Some { node; _ } -> (
           match page_parent node.url.page with
           | None -> []
