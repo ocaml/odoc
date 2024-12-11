@@ -3,21 +3,20 @@ open Packages
 
 let fpf = Format.fprintf
 
-let make_index ~dirs ?pkg ~rel_dir ?index ~content () =
-  let pages, libs =
-    match pkg with
-    | None -> ([], [])
-    | Some pkg ->
-        let lib_args =
-          List.map (fun lib -> (lib.lib_name, lib_dir pkg lib)) pkg.libraries
-        in
-        ([ (pkg.name, doc_dir pkg) ], lib_args)
-  in
+let make_index ~dirs ~rel_dir ?(libs = []) ?(pkgs = []) ?index ~content () =
   let { odoc_dir; odocl_dir; mld_dir; _ } = dirs in
   let input_file = Fpath.(mld_dir // rel_dir / "index.mld") in
   let odoc_file = Fpath.(odoc_dir // rel_dir / "page-index.odoc") in
   let odocl_file = Fpath.(odocl_dir // rel_dir / "page-index.odocl") in
   let parent_id = rel_dir |> Odoc.Id.of_fpath in
+  let pages =
+    List.map (fun pkg -> (pkg.Packages.name, Odoc_unit.doc_dir pkg)) pkgs
+  in
+  let libs =
+    List.map
+      (fun (pkg, lib) -> (lib.Packages.lib_name, Odoc_unit.lib_dir pkg lib))
+      libs
+  in
   let pkg_args = Pkg_args.v ~pages ~libs ~odoc_dir ~odocl_dir in
   Util.with_out_to input_file (fun oc ->
       fpf (Format.formatter_of_out_channel oc) "%t@?" content)
@@ -56,7 +55,8 @@ let library ~dirs ~pkg ~index lib =
     fpf ppf "%a@\n" module_list lib
   in
   let rel_dir = lib_dir pkg lib in
-  make_index ~dirs ~rel_dir ~pkg ~index ~content ()
+  let libs = [ (pkg, lib) ] in
+  make_index ~dirs ~rel_dir ~libs ~index ~content ()
 
 let package ~dirs ~pkg ~index =
   let library_list ppf pkg =
@@ -75,14 +75,15 @@ let package ~dirs ~pkg ~index =
     List.iter
       (fun { mld_rel_path; _ } ->
         let page = mld_rel_path |> Fpath.rem_ext |> Fpath.to_string in
-        fpf ppf "@\n{!/%s/doc/%s}@\n" pkg.name page)
+        fpf ppf "@\n{!/%s/%s}@\n" pkg.name page)
       pkg.mlds;
     if not (List.is_empty pkg.libraries) then
       fpf ppf "{1 API}@\n@\n%a@\n" library_list pkg
   in
   let content = content pkg in
   let rel_dir = doc_dir pkg in
-  make_index ~dirs ~rel_dir ~index ~content ~pkg ()
+  let libs = List.map (fun lib -> (pkg, lib)) pkg.libraries in
+  make_index ~dirs ~rel_dir ~index ~content ~pkgs:[ pkg ] ~libs ()
 
 let src ~dirs ~pkg ~index =
   let content ppf =
@@ -104,10 +105,10 @@ let package_list ~dirs ~remap all =
     fpf ppf "{0 List of all packages}@\n";
     let print_pkg pkg =
       if pkg.selected || not remap then
-        fpf ppf "- {{:%s/index.html}%s}@\n" pkg.name pkg.name
+        fpf ppf "- {{!/%s/page-index}%s}@\n" pkg.name pkg.name
     in
     List.iter print_pkg sorted_packages
   in
   let content = content all in
   let rel_dir = Fpath.v "./" in
-  make_index ~dirs ~rel_dir ~content ()
+  make_index ~dirs ~rel_dir ~pkgs:all ~content ()
