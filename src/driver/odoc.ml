@@ -208,7 +208,7 @@ let html_generate ~output_dir ?sidebar ?(ignore_output = false)
       empty search_uris
   in
   let cmd =
-    !odoc % "html-generate" % "--escape-breadcrumb" % p file %% index
+    !odoc % "html-generate" % "--home-breadcrumb" % p file %% index
     %% search_uris % "-o" % output_dir
   in
   let cmd =
