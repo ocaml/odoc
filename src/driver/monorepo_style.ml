@@ -8,19 +8,45 @@ type item = Library of library
 
 and items = item list
 
+and module_ = {
+  name : string;
+  impl : string option;
+  intf : string option;
+  cmt : string option;
+  cmti : string option;
+}
+
 and library = {
   name : string;
   uid : uid;
   local : bool;
   requires : uid list;
   source_dir : string;
-  modules : Sexplib.Sexp.t list;
+  modules : module_ list;
   include_dirs : string list;
 }
 
 and library_list = library list
 
 and uid = string [@@deriving sexp]
+
+(* Eurgh *)
+let internal_name_of_library : library -> string option =
+ fun l ->
+  match l.modules with
+  | [] -> None
+  | m :: _ -> (
+      let ps = List.filter_map (fun x -> x) [ m.cmt; m.cmti ] in
+      match ps with
+      | [] -> None
+      | p :: _ -> (
+          let p' = Fpath.relativize ~root:(Fpath.v l.source_dir) (Fpath.v p) in
+          match Option.map Fpath.segs p' with
+          | Some (objdir :: _ :: _) -> (
+              match Astring.String.fields ~is_sep:(fun c -> c = '.') objdir with
+              | [ ""; libname; _ ] -> Some libname
+              | _ -> None)
+          | _ -> None))
 
 let of_dune_describe txt =
   let sexp = Sexplib.Sexp.of_string txt in
@@ -39,18 +65,27 @@ let dune_describe dir =
 
 let of_dune_build dir =
   let contents =
-    Bos.OS.Dir.fold_contents ~dotfiles:true (fun p acc -> p :: acc) [] dir
+    Bos.OS.Dir.fold_contents ~dotfiles:true
+      (fun p acc -> p :: acc)
+      []
+      Fpath.(dir / "_build" / "default")
   in
   match contents with
   | Error _ -> []
   | Ok c ->
-      let sorted = List.sort (fun p1 p2 -> Fpath.compare p1 p2) c in
       let libs = dune_describe dir in
       let local_libs =
         List.filter_map
           (function Library l -> if l.local then Some l else None)
           libs
       in
+      List.iter
+        (fun (lib : library) ->
+          Logs.debug (fun m ->
+              m "lib %s internal name: %a" lib.name
+                Fmt.(option string)
+                (internal_name_of_library lib)))
+        local_libs;
       let uid_to_libname =
         List.fold_left
           (fun acc l -> Util.StringMap.add l.uid l.name acc)
@@ -58,7 +93,7 @@ let of_dune_build dir =
       in
       let all_lib_deps =
         List.fold_left
-          (fun acc l ->
+          (fun acc (l : library) ->
             Util.StringMap.add l.name
               (List.filter_map
                  (fun uid -> Util.StringMap.find_opt uid uid_to_libname)
@@ -67,64 +102,85 @@ let of_dune_build dir =
               acc)
           Util.StringMap.empty local_libs
       in
-      (* Format.eprintf "all_lib_deps: %a@." Fmt.(list ~sep:comma (pair string (list ~sep:semi string))) (Util.StringMap.to_list all_lib_deps); *)
+      let colon = Fmt.any ":" in
+      Format.eprintf "all_lib_deps: %a@."
+        Fmt.(list ~sep:comma (pair ~sep:colon string (list ~sep:semi string)))
+        (Util.StringMap.to_list all_lib_deps
+        |> List.map (fun (x, y) -> (x, Util.StringSet.elements y)));
+
       (* Format.eprintf "libs: %s@." (Sexplib.Sexp.to_string_hum (sexp_of_library_list local_libs)); *)
-      let libs =
-        List.filter_map
-          (fun x ->
-            match Fpath.segs x |> List.rev with
-            | "byte" :: libname :: path ->
-                let sz = String.length ".objs" in
-                if
-                  Astring.String.is_suffix ~affix:".objs" libname
-                  && String.length libname > sz + 1
-                  && libname.[0] = '.'
-                then
-                  let libname =
-                    String.sub libname 1 (String.length libname - sz - 1)
-                  in
-                  Some
-                    (libname, Fpath.(v (String.concat dir_sep (List.rev path))))
-                else None
-            | _ -> None)
-          sorted
-      in
       let libname_of_archive =
         List.fold_left
-          (fun acc (libname, path) ->
-            Fpath.Map.add Fpath.(path / libname) libname acc)
+          (fun acc item ->
+            match item with
+            | Library lib -> (
+                let libname_opt = internal_name_of_library lib in
+                match libname_opt with
+                | Some libname ->
+                    let archive =
+                      Fpath.(append dir (v lib.source_dir / libname))
+                    in
+                    Logs.debug (fun m ->
+                        m "libname_of_archive: %a -> %s" Fpath.pp archive
+                          lib.name);
+                    Fpath.Map.add archive lib.name acc
+                | None -> acc))
           Fpath.Map.empty libs
       in
       let libs =
-        List.map
-          (fun (libname, path) ->
-            let cmtidir =
-              Fpath.(path / Printf.sprintf ".%s.objs" libname / "byte")
-            in
-            let pkg_dir = Fpath.rem_prefix dir path |> Option.get in
-            ( pkg_dir,
-              Packages.Lib.v ~libname_of_archive ~pkg_name:libname ~dir:path
-                ~cmtidir:(Some cmtidir) ~all_lib_deps ~cmi_only_libs:[] ))
+        List.filter_map
+          (fun (Library lib) ->
+            match internal_name_of_library lib with
+            | None -> None
+            | Some libname ->
+                let cmtidir =
+                  Fpath.(
+                    append dir
+                      (v lib.source_dir
+                      / Printf.sprintf ".%s.objs" libname
+                      / "byte"))
+                in
+                let id_override =
+                  Fpath.relativize
+                    ~root:Fpath.(v "_build" / "default")
+                    Fpath.(v lib.source_dir)
+                  |> Option.map Fpath.to_string
+                in
+                if List.mem cmtidir c then
+                  Some
+                    (Packages.Lib.v ~libname_of_archive ~pkg_name:lib.name
+                       ~dir:(Fpath.append dir (Fpath.v lib.source_dir))
+                       ~cmtidir:(Some cmtidir) ~all_lib_deps ~cmi_only_libs:[]
+                       ~id_override)
+                else None)
           libs
       in
-      List.filter_map
-        (fun (pkg_dir, lib) ->
-          match lib with
-          | [ lib ] ->
-              Some
-                {
-                  Packages.name = lib.Packages.lib_name;
-                  version = "1.0";
-                  libraries = [ lib ];
-                  mlds = [];
-                  assets =
-                    [] (* When dune has a notion of doc assets, do something *);
-                  selected = false;
-                  remaps = [];
-                  pkg_dir;
-                  doc_dir = pkg_dir;
-                  other_docs = [];
-                  config = Global_config.empty;
-                }
-          | _ -> None)
-        libs
+      let other_docs =
+        List.filter_map
+          (fun f ->
+            if Fpath.has_ext "md" f then
+              let md_rel_path =
+                Fpath.relativize ~root:Fpath.(v "_build" / "default") f
+                |> Option.get
+              in
+              Some { Packages.md_path = f; md_rel_path }
+            else None)
+          c
+      in
+      let libs = List.flatten libs in
+      [
+          {
+            Packages.name = "root";
+            version = "1.0";
+            libraries = libs;
+            mlds = [];
+            assets = [];
+            selected = true;
+            remaps = [];
+            pkg_dir = Fpath.v ".";
+            doc_dir = Fpath.v ".";
+            other_docs;
+            config = Global_config.empty;
+          };
+      ]
+   

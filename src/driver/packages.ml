@@ -68,6 +68,7 @@ type libty = {
   archive_name : string option;
   lib_deps : Util.StringSet.t;
   modules : modulety list;
+  id_override : string option;
 }
 
 let pp_libty fmt l =
@@ -78,14 +79,16 @@ let pp_libty fmt l =
      archive_name: %a;@,\
      lib_deps: %a;@,\
      modules: %a@,\
-     }@]"
-    l.lib_name Fpath.pp l.dir
+     id_override: %a@,\n\
+    \     }@]" l.lib_name Fpath.pp l.dir
     (Fmt.Dump.option Fmt.string)
     l.archive_name
     (Fmt.list ~sep:Fmt.comma Fmt.string)
     (Util.StringSet.elements l.lib_deps)
     (Fmt.Dump.list pp_modulety)
     l.modules
+    Fmt.Dump.(option string)
+    l.id_override
 
 type t = {
   name : string;
@@ -200,7 +203,7 @@ module Module = struct
 end
 
 module Lib = struct
-  let handle_virtual_lib ~dir ~lib_name ~all_lib_deps =
+  let handle_virtual_lib ~dir ~id_override ~lib_name ~all_lib_deps =
     let modules =
       match
         Bos.OS.Dir.fold_contents
@@ -221,10 +224,10 @@ module Lib = struct
       try Util.StringMap.find lib_name all_lib_deps
       with _ -> Util.StringSet.empty
     in
-    [ { lib_name; archive_name = None; modules; lib_deps; dir } ]
+    [ { lib_name; archive_name = None; modules; lib_deps; dir; id_override } ]
 
   let v ~libname_of_archive ~pkg_name ~dir ~cmtidir ~all_lib_deps ~cmi_only_libs
-      =
+      ~id_override =
     Logs.debug (fun m ->
         m "Classifying dir %a for package %s" Fpath.pp dir pkg_name);
     let dirs =
@@ -239,7 +242,7 @@ module Lib = struct
         | None -> []
         | Some dir ->
             let lib_name = List.assoc dir cmi_only_libs in
-            handle_virtual_lib ~dir ~lib_name ~all_lib_deps)
+            handle_virtual_lib ~dir ~lib_name ~all_lib_deps ~id_override)
     | _ ->
         Logs.debug (fun m -> m "Got %d lines" (List.length results));
         List.filter_map
@@ -260,8 +263,12 @@ module Lib = struct
                     modules;
                     lib_deps;
                     dir;
+                    id_override;
                   }
             | None ->
+                Logs.info (fun m ->
+                    m "No entry for '%a' in libname_of_archive" Fpath.pp
+                      Fpath.(dir / archive_name));
                 Logs.info (fun m ->
                     m "Unable to determine library of archive %s: Ignoring."
                       archive_name);
@@ -377,7 +384,7 @@ let of_libs ~packages_dir libs =
         | Some pkg ->
             let libraries =
               Lib.v ~libname_of_archive ~pkg_name:pkg.name ~dir ~cmtidir:None
-                ~all_lib_deps ~cmi_only_libs
+                ~all_lib_deps ~cmi_only_libs ~id_override:None
             in
             let libraries =
               List.filter
@@ -482,7 +489,7 @@ let of_packages ~packages_dir packages =
           List.fold_left
             (fun acc dir ->
               Lib.v ~libname_of_archive ~pkg_name:pkg.Opam.name ~dir
-                ~cmtidir:None ~all_lib_deps ~cmi_only_libs
+                ~cmtidir:None ~all_lib_deps ~cmi_only_libs ~id_override:None
               @ acc)
             []
             (files.Opam.libs |> Fpath.Set.to_list)

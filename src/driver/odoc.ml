@@ -67,7 +67,9 @@ let compile_md ~output_dir ~input_file:file ~parent_id =
     Some Fpath.(output_dir // Id.to_fpath parent_id // set_ext "odoc" f)
   in
   let cmd = !odoc_md % p file % "--output-dir" % p output_dir in
-  let cmd = cmd % "--parent-id" % Id.to_string parent_id in
+  let cmd =
+    match Id.to_string parent_id with "" -> cmd | x -> cmd % "--parent-id" % x
+  in
   let desc = Printf.sprintf "Compiling Markdown %s" (Fpath.to_string file) in
   let _lines =
     Cmd_outputs.submit
