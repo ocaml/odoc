@@ -286,10 +286,10 @@ let toplevel :=
 let toplevel_error :=
   | brace = located(RIGHT_BRACE); 
     { 
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
+      let warning = 
+        let span = Loc.of_position $sloc in
         let what = Tokens.describe RIGHT_BRACE in 
-        Parse_error.bad_markup what span 
+        Writer.Warning (Parse_error.bad_markup what span) 
       in 
       let as_text = Loc.same brace @@ `Word "{" in
       let node = (`Paragraph [ as_text ]) in
@@ -298,10 +298,10 @@ let toplevel_error :=
   | t = tag; RIGHT_BRACE; 
     {
       let* tag_descr = Writer.map Tokens.describe_tag (t : Ast.tag Writer.t) in 
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in 
+      let warning = 
+        let span = Loc.of_position $sloc in 
         let what = Tokens.describe RIGHT_BRACE in 
-        Parse_error.not_allowed ~what ~in_what:tag_descr span 
+        Writer.Warning (Parse_error.not_allowed ~what ~in_what:tag_descr span) 
       in
       let ret = Writer.map (fun t -> ( `Tag t : Ast.block_element )) t 
         |> Writer.warning warning
@@ -309,21 +309,21 @@ let toplevel_error :=
       (ret : Ast.block_element Writer.t)
     }
   | elt = locatedM(inline_element); RIGHT_BRACE;
-    { let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in 
+    { let warning = 
+        let span = Loc.of_position $sloc in 
         let what = Tokens.describe RIGHT_BRACE in 
         let in_what = Tokens.describe_inline @@ Writer.unwrap_located elt in 
-        Parse_error.not_allowed ~what ~in_what span 
+        Writer.Warning (Parse_error.not_allowed ~what ~in_what span) 
       in
       let* elt = Writer.warning warning elt in
       return @@ `Paragraph [elt]
     }
   | elt = locatedM(inline_element); RIGHT_CODE_DELIMITER;
-    { let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in 
+    { let warning = 
+        let span = Loc.of_position $sloc in 
         let what = Tokens.describe RIGHT_CODE_DELIMITER in 
         let in_what = Tokens.describe_inline @@ Writer.unwrap_located elt in 
-        Parse_error.not_allowed ~what ~in_what span 
+        Writer.Warning (Parse_error.not_allowed ~what ~in_what span) 
       in
       let* elt = Writer.warning warning elt in
       return @@ `Paragraph [elt]
@@ -334,10 +334,10 @@ let toplevel_error :=
 let section_heading := 
   | (num, title) = Section_heading; children = sequence(locatedM(inline_element)); RIGHT_BRACE; 
     { 
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
+      let warning = 
+        let span = Loc.of_position $sloc in
         let what = Tokens.describe @@ Section_heading (num, title) in
-        Parse_error.should_not_be_empty ~what span
+        Writer.Warning (Parse_error.should_not_be_empty ~what span)
       in
       Writer.ensure not_empty warning children
       |> Writer.map (fun c -> `Heading (num, title, trim_start c))
@@ -345,16 +345,16 @@ let section_heading :=
 
   | (num, title) = Section_heading; whitespace?; RIGHT_CODE_DELIMITER; 
     {
-      let should_not_be_empty = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
+      let should_not_be_empty = 
+        let span = Loc.of_position $sloc in
         let what = Tokens.describe @@ Section_heading (num, title) in
-        Parse_error.should_not_be_empty ~what span
+        Writer.Warning (Parse_error.should_not_be_empty ~what span)
       in
-      let not_allowed = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
+      let not_allowed = 
+        let span = Loc.of_position $sloc in
         let what = Tokens.describe RIGHT_CODE_DELIMITER in
         let in_what = Tokens.describe @@ Section_heading (num, title) in
-        Parse_error.not_allowed ~what ~in_what span 
+        Writer.Warning (Parse_error.not_allowed ~what ~in_what span) 
       in
       return @@ `Heading (num, title, [])
       |> Writer.warning should_not_be_empty
@@ -372,8 +372,8 @@ let tag_with_content :=
     { Writer.map (fun c -> `Deprecated c) children }
   | DEPRECATED; RIGHT_BRACE; 
     {
-      let warning = fun ~filename ->
-        Parse_error.unpaired_right_brace @@ Loc.of_position ~filename $sloc
+      let warning = 
+        Writer.Warning (Parse_error.unpaired_right_brace @@ Loc.of_position $sloc)
       in
       Writer.with_warning (`Deprecated []) warning
     }
@@ -415,9 +415,9 @@ let tag_bare :=
   | version = Version; 
     {
       let what = Tokens.describe (Version version) in
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
-        Parse_error.should_not_be_empty ~what span
+      let warning = 
+        let span = Loc.of_position $sloc in
+        Writer.Warning (Parse_error.should_not_be_empty ~what span)
       in
       Writer.ensure has_content warning (return version) 
       |> Writer.map (fun v -> `Version v) 
@@ -425,9 +425,9 @@ let tag_bare :=
   | version = Since; 
     {
       let what = Tokens.describe (Since version) in
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
-        Parse_error.should_not_be_empty ~what span
+      let warning = 
+        let span = Loc.of_position $sloc in
+        Writer.Warning (Parse_error.should_not_be_empty ~what span)
       in
       Writer.ensure has_content warning (return version) 
       |> Writer.map (fun v -> `Since v) 
@@ -435,9 +435,9 @@ let tag_bare :=
   | impl = located(Canonical); 
     {
       let what = Tokens.describe @@ Canonical "" in
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
-        Parse_error.should_not_be_empty ~what span
+      let warning = 
+        let span = Loc.of_position $sloc in
+        Writer.Warning (Parse_error.should_not_be_empty ~what span)
       in
       Writer.ensure (Loc.is has_content) warning @@ return impl 
       |> Writer.map (fun v -> `Canonical v) 
@@ -445,9 +445,9 @@ let tag_bare :=
   | author = Author; 
     {
       let what = Tokens.describe @@ Author author in
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
-        Parse_error.should_not_be_empty ~what span
+      let warning = 
+        let span = Loc.of_position $sloc in
+        Writer.Warning (Parse_error.should_not_be_empty ~what span)
       in
       Writer.ensure has_content warning @@ return author
       |> Writer.map (fun a -> `Author a) 
@@ -478,20 +478,20 @@ let inline_elt_legal_whitespace :=
 let style := 
   | style = Style; children = sequence(locatedM(inline_element)); RIGHT_BRACE; 
     { 
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
+      let warning = 
+        let span = Loc.of_position $sloc in
         let what = Tokens.describe @@ Style style in
-        Parse_error.should_not_be_empty ~what span 
+        Writer.Warning (Parse_error.should_not_be_empty ~what span) 
       in
       Writer.ensure not_empty warning children
       |> Writer.map (fun c -> `Styled (style, trim_start c)) 
     }
   | style = Style; RIGHT_BRACE;
     {
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
+      let warning = 
+        let span = Loc.of_position $sloc in
         let what = Tokens.describe @@ Style style in
-        Parse_error.should_not_be_empty ~what span 
+        Writer.Warning (Parse_error.should_not_be_empty ~what span) 
       in
       Writer.with_warning (`Styled (style, [])) warning
     }
@@ -499,14 +499,14 @@ let style :=
     {
 
       let style_desc = Tokens.describe @@ Style style in
-      let not_allowed = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
+      let not_allowed = 
+        let span = Loc.of_position $sloc in
         let what = Tokens.describe RIGHT_CODE_DELIMITER in
-        Parse_error.not_allowed ~what ~in_what:style_desc span 
+        Writer.Warning (Parse_error.not_allowed ~what ~in_what:style_desc span)
       in
-      let should_not_be_empty = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
-        Parse_error.should_not_be_empty ~what:style_desc span 
+      let should_not_be_empty = 
+        let span = Loc.of_position $sloc in
+        Writer.Warning (Parse_error.should_not_be_empty ~what:style_desc span) 
       in
       return (`Styled (style, [])) 
       |> Writer.warning not_allowed
@@ -514,10 +514,10 @@ let style :=
     }
   | style = Style; END;
     {
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
+      let warning = 
+        let span = Loc.of_position $sloc in
         let in_what = Tokens.describe @@ Style style in
-        Parse_error.end_not_allowed ~in_what span 
+        Writer.Warning (Parse_error.end_not_allowed ~in_what span) 
       in
       Writer.with_warning (`Styled (style, [])) warning
     }
@@ -541,12 +541,12 @@ let reference :=
     {
       let node = `Reference (`With_text, ref_body, []) in
       let what = Tokens.describe @@ Ref_with_replacement (Loc.value ref_body) in
-      let warning = fun ~filename -> 
+      let warning = 
         let span = 
-          Loc.of_position ~filename $sloc
+          Loc.of_position $sloc
           |> Loc.nudge_start (String.length "{{!") 
         in
-        Parse_error.should_not_be_empty ~what span 
+        Writer.Warning (Parse_error.should_not_be_empty ~what span) 
       in
       Writer.with_warning node warning
     }
@@ -558,9 +558,9 @@ let link :=
       let url = String.trim link_body in
       if "" = url then 
         let what = Tokens.describe @@ Simple_link link_body in
-        let warning = fun ~filename -> 
-          let span = Loc.of_position ~filename $sloc in
-          Parse_error.should_not_be_empty ~what span
+        let warning = 
+          let span = Loc.of_position $sloc in
+          Writer.Warning (Parse_error.should_not_be_empty ~what span)
         in
         Writer.with_warning node warning
       else
@@ -573,8 +573,8 @@ let link :=
       if "" = link_body then
         let what = Tokens.describe @@ Link_with_replacement link_body in
         let span = Loc.of_position $sloc in
-        let warning = fun ~filename:_f -> 
-          Parse_error.should_not_be_empty ~what span
+        let warning =  
+          Writer.Warning (Parse_error.should_not_be_empty ~what span)
         in
         Writer.with_warning node warning
       else 
@@ -588,8 +588,8 @@ let link :=
       in
       let node = `Link (link_body, []) in
       let what = Tokens.describe @@ Link_with_replacement link_body in
-      let warning = fun ~filename:_f -> 
-        Parse_error.should_not_be_empty ~what span 
+      let warning =
+        Writer.Warning (Parse_error.should_not_be_empty ~what span) 
       in
       Writer.with_warning node warning
     }
@@ -600,9 +600,9 @@ let list_light_item_unordered ==
   | MINUS; ~ = locatedM(nestable_block_element); <>
   | horizontal_whitespace; MINUS; item = locatedM(nestable_block_element);
     { 
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
-        Parse_error.should_begin_on_its_own_line ~what:(Tokens.describe MINUS) span
+      let warning = 
+        let span = Loc.of_position $sloc in
+        Writer.Warning (Parse_error.should_begin_on_its_own_line ~what:(Tokens.describe MINUS) span)
       in
       Writer.warning warning item 
     }
@@ -611,9 +611,9 @@ let list_light_item_ordered ==
   | PLUS; ~ = locatedM(nestable_block_element); <>
   | horizontal_whitespace; PLUS; item = locatedM(nestable_block_element);
     { 
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
-        Parse_error.should_begin_on_its_own_line ~what:(Tokens.describe MINUS) span
+      let warning = 
+        let span = Loc.of_position $sloc in
+        Writer.Warning (Parse_error.should_begin_on_its_own_line ~what:(Tokens.describe MINUS) span)
       in
       Writer.warning warning item 
     }
@@ -627,22 +627,22 @@ let list_light :=
 let item_heavy ==
     | LI; whitespace; items = sequence(locatedM(nestable_block_element)); RIGHT_BRACE; whitespace?; 
       {
-        let warning = fun ~filename -> 
-          let span = Loc.of_position ~filename $sloc in 
-          Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span 
+        let warning = 
+          let span = Loc.of_position $sloc in 
+          Writer.Warning (Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span) 
         in
         Writer.ensure not_empty warning items 
       }
     | LI; items = sequence(locatedM(nestable_block_element)); RIGHT_BRACE; whitespace?; 
       {
-        let warning = fun ~filename -> 
-          let span = Loc.of_position ~filename $sloc in
-          Parse_error.should_be_followed_by_whitespace ~what:(Tokens.describe LI) span
+        let warning = 
+          let span = Loc.of_position $sloc in
+          Writer.Warning (Parse_error.should_be_followed_by_whitespace ~what:(Tokens.describe LI) span)
         in
         let writer = 
-          let warning = fun ~filename -> 
-            let span = Loc.of_position ~filename $sloc in 
-            Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span 
+          let warning = 
+            let span = Loc.of_position $sloc in 
+            Writer.Warning (Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span) 
           in
           Writer.ensure not_empty warning items 
         in
@@ -650,24 +650,24 @@ let item_heavy ==
       }
     | DASH; whitespace?; items = sequence(locatedM(nestable_block_element)); RIGHT_BRACE; whitespace?; 
       {
-        let warning = fun ~filename -> 
-          let span = Loc.of_position ~filename $sloc in 
-          Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span 
+        let warning = 
+          let span = Loc.of_position $sloc in 
+          Writer.Warning (Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span) 
         in
         Writer.ensure not_empty warning items 
       }
     | LI; whitespace?; items = sequence(locatedM(nestable_block_element))?; END;
       {
-        let warning = fun ~filename -> 
-          let span = Loc.of_position ~filename $sloc in 
-          Parse_error.end_not_allowed ~in_what:(Tokens.describe LI) span
+        let warning = 
+          let span = Loc.of_position $sloc in 
+          Writer.Warning (Parse_error.end_not_allowed ~in_what:(Tokens.describe LI) span)
         in
         match items with 
         | Some items -> 
           let writer = 
-            let warning = fun ~filename -> 
-              let span = Loc.of_position ~filename $sloc in 
-              Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span 
+            let warning = 
+              let span = Loc.of_position $sloc in 
+              Writer.Warning (Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span) 
             in
             Writer.ensure not_empty warning items 
           in
@@ -677,16 +677,16 @@ let item_heavy ==
       }
     | DASH; whitespace?; items = sequence(locatedM(nestable_block_element))?; END;
       {
-        let warning = fun ~filename -> 
-          let span = Loc.of_position ~filename $sloc in 
-          Parse_error.end_not_allowed ~in_what:(Tokens.describe DASH) span
+        let warning = 
+          let span = Loc.of_position $sloc in 
+          Writer.Warning (Parse_error.end_not_allowed ~in_what:(Tokens.describe DASH) span)
         in
         match items with 
         | Some items -> 
           let writer = 
-            let warning = fun ~filename -> 
-              let span = Loc.of_position ~filename $sloc in 
-              Parse_error.should_not_be_empty ~what:(Tokens.describe DASH) span 
+            let warning = 
+              let span = Loc.of_position $sloc in 
+              Writer.Warning (Parse_error.should_not_be_empty ~what:(Tokens.describe DASH) span) 
             in
             Writer.ensure not_empty warning items 
           in
@@ -702,10 +702,10 @@ let list_heavy :=
       }
     | list_kind = List; whitespace?; RIGHT_BRACE;
       { 
-        let warning = fun ~filename -> 
+        let warning = 
           let what = Tokens.describe @@ List list_kind in
-          let span = Loc.of_position ~filename $sloc in
-          Parse_error.should_not_be_empty ~what span 
+          let span = Loc.of_position $sloc in
+          Writer.Warning (Parse_error.should_not_be_empty ~what span) 
         in
         let node = `List (list_kind, `Heavy, []) in
         Writer.with_warning node warning
@@ -761,18 +761,18 @@ let table_light :=
     | table_start_light; data = rows_light; END; 
       {
         let in_what = Tokens.describe TABLE_LIGHT in
-        let warning = fun ~filename -> 
-          let span = Loc.of_position ~filename $sloc in
-          Parse_error.end_not_allowed ~in_what span
+        let warning = 
+          let span = Loc.of_position $sloc in
+          Writer.Warning (Parse_error.end_not_allowed ~in_what span)
         in
         unclosed_table ~data warning
       }
     | TABLE_LIGHT; any_whitespace?; END; 
       {
         let in_what = Tokens.describe TABLE_LIGHT in
-        let warning = fun ~filename -> 
-          let span = Loc.of_position ~filename $sloc in
-          Parse_error.end_not_allowed ~in_what span 
+        let warning = 
+          let span = Loc.of_position $sloc in
+          Writer.Warning (Parse_error.end_not_allowed ~in_what span) 
         in
         unclosed_table warning
       }
@@ -819,10 +819,10 @@ let nestable_block_element_inner :=
 let paragraph_style := 
   | style = Paragraph_style; ws = paragraph; RIGHT_BRACE;
     { 
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
+      let warning = 
+        let span = Loc.of_position $sloc in
         let what = Tokens.describe @@ Paragraph_style style in
-        Parse_error.markup_should_not_be_used span ~what
+        Writer.Warning (Parse_error.markup_should_not_be_used span ~what)
       in 
       Writer.warning warning ws
     }
@@ -830,9 +830,9 @@ let paragraph_style :=
 let verbatim := v = Verbatim; 
   { 
     let what = Tokens.describe @@ Verbatim v in
-    let warning = fun ~filename -> 
-      let span = Loc.of_position ~filename $sloc in
-      Parse_error.should_not_be_empty ~what span 
+    let warning =  
+      let span = Loc.of_position $sloc in
+      Writer.Warning (Parse_error.should_not_be_empty ~what span) 
     in 
     Writer.ensure has_content warning (return v) 
     |> Writer.map (fun v -> `Verbatim v)
@@ -850,9 +850,9 @@ let code_block := c = Code_block;
 let math_block := m = Math_block; 
     { 
       let what = Tokens.describe @@ Math_block m in
-      let warning = fun ~filename -> 
-        let span = Loc.of_position ~filename $sloc in
-        Parse_error.should_not_be_empty ~what span 
+      let warning = 
+        let span = Loc.of_position $sloc in
+        Writer.Warning (Parse_error.should_not_be_empty ~what span) 
       in 
       Writer.ensure has_content warning (return m) 
       |> Writer.map (fun m -> `Math_block m)
@@ -864,7 +864,7 @@ let modules :=
       print_endline "INLINE";
       let in_what = Tokens.describe MODULES in
       let* modules = modules in
-      let not_allowed = fun ~filename:_ -> 
+      let not_allowed =  
         let span = Loc.span @@ List.map Loc.location modules in
         let first_offending = 
           List.find_opt 
@@ -874,12 +874,12 @@ let modules :=
             (List.map Loc.value modules : Ast.inline_element list) 
         in
         let what = Option.map Tokens.describe_inline first_offending |> Option.value ~default:String.empty in
-        Parse_error.not_allowed ~what ~in_what span 
+        Writer.Warning (Parse_error.not_allowed ~what ~in_what span) 
       in
-      let is_empty = fun ~filename:_ -> 
+      let is_empty = 
         let span = Loc.span @@ List.map Loc.location modules in
         let what = Tokens.describe MODULES in
-        Parse_error.should_not_be_empty ~what span 
+        Writer.Warning (Parse_error.should_not_be_empty ~what span) 
       in
       let inner = `Modules (List.map (Loc.map inline_element_inner) modules) in
       List.fold_left (fun writer (f, w) -> Writer.ensure f w writer) (return modules) [(not_empty, is_empty); (legal_module_list, not_allowed)]
@@ -891,7 +891,7 @@ let modules :=
       let in_what = Tokens.describe MODULES in
       let* modules = modules in
       let span = Loc.span @@ List.map Loc.location modules in
-      let not_allowed = fun ~filename:_ -> 
+      let not_allowed = 
         let first_offending = 
           List.find_opt 
             (function 
@@ -900,11 +900,13 @@ let modules :=
             (List.map Loc.value modules : Ast.inline_element list) 
         in
         let what = Option.map Tokens.describe_inline first_offending |> Option.value ~default:String.empty in
-        Parse_error.not_allowed ~what ~in_what span 
+        Writer.Warning (Parse_error.not_allowed ~what ~in_what span) 
       in
-      let unexpected_end = fun ~filename:_ -> 
-        Parse_error.end_not_allowed ~in_what:(Tokens.describe MODULES) span
+      let unexpected_end = 
+        Writer.Warning (Parse_error.end_not_allowed ~in_what:(Tokens.describe MODULES) span)
       in
       let inner = `Modules (List.map (Loc.map inline_element_inner) modules) in
-      Writer.with_warning inner not_allowed |> Writer.warning unexpected_end 
+      return inner 
+      |> Writer.warning not_allowed
+      |> Writer.warning unexpected_end
     }

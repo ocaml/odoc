@@ -38,7 +38,7 @@ module Tester : sig
     comment_location:Lexing.position ->
     int ->
     Loc.point
-  val run : filename:string -> Ast.t Writer.t -> Ast.t * Warning.t list
+  val run : input:string -> Ast.t Writer.t -> Ast.t * Warning.t list
   val main : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Ast.t Writer.t
   val string_of_token : token -> string
 end

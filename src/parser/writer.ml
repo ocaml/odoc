@@ -1,5 +1,11 @@
-type partial_warning = filename:string -> Warning.t
-type +'a t = Writer of ('a * partial_warning list)
+(** An implementation of the Writer monad for parser error reporting *)
+
+type +'a t = Writer of ('a * warning list)
+and warning = InputNeeded of (string -> Warning.t) | Warning of Warning.t
+
+let run_warning : input:string -> warning -> Warning.t =
+ fun ~input warning ->
+  match warning with InputNeeded f -> f input | Warning w -> w
 
 let return : 'a -> 'a t = fun x -> Writer (x, [])
 
@@ -21,8 +27,8 @@ module Prelude = struct
   let ( >>= ) = bind
   let ( let* ) = bind
   let ( and* ) = bind
-  let ( let+ ) = map
-  let ( >|= ) = map
+  let ( let+ ) w f = map f w
+  let ( <$> ) = map
   let ( *> ) = seq_right
   let ( <* ) = seq_left
 end
@@ -43,13 +49,13 @@ let traverse : ('a -> 'b t) -> 'a list -> 'b list t =
 
 let with_warning node warning = Writer (node, [ warning ])
 
-let ensure : ('a -> bool) -> partial_warning -> 'a t -> 'a t =
+let ensure : ('a -> bool) -> warning -> 'a t -> 'a t =
  fun pred warning (Writer (x, ws) as self) ->
   if pred x then self else Writer (x, warning :: ws)
 
-let run : filename:string -> Ast.t t -> Ast.t * Warning.t list =
- fun ~filename (Writer (tree, warnings)) ->
-  (tree, List.map (fun f -> f ~filename) warnings)
+let run : input:string -> Ast.t t -> Ast.t * Warning.t list =
+ fun ~input (Writer (tree, warnings)) ->
+  (tree, List.map (run_warning ~input) warnings)
 
 let unwrap : 'a t -> 'a = fun (Writer (x, _)) -> x
 let unwrap_located : 'a Loc.with_location t -> 'a =

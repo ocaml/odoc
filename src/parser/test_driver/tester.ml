@@ -158,9 +158,7 @@ let run_test (label, case) =
     tok
   in
   try
-    let ast, warnings =
-      Parser.run ~filename:"Tester" @@ Parser.main get_tok lexbuf
-    in
+    let ast, warnings = Parser.run ~input:case @@ Parser.main get_tok lexbuf in
     let warnings = warnings @ input.warnings in
     let output = Format.asprintf "%a" parser_output (ast, warnings) in
     Left (label, output)
