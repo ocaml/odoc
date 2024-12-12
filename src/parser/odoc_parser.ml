@@ -118,8 +118,7 @@ let parse_comment : location:Lexing.position -> text:string -> t =
   let lexbuf = Lexing.from_string text in
   (* We cannot directly pass parameters to Menhir without converting our parser
      to a module functor. So we pass our current filename to the lexbuf here *)
-  lexbuf.lex_curr_p <-
-    { lexbuf.lex_curr_p with pos_fname = location.Lexing.pos_fname };
+  Lexing.(set_filename lexbuf location.pos_fname);
   let lexer_state =
     Lexer.
       {

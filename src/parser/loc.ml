@@ -9,10 +9,25 @@ let map f annotated = { annotated with value = f annotated.value }
 let is predicate { value; _ } = predicate value
 let same annotated value = { annotated with value }
 
-let fmt { start; end_; _ } =
+let of_position : ?filename:string -> Lexing.position * Lexing.position -> span
+    =
+ fun ?filename (start, end_) ->
+  print_endline @@ "FILENAME: " ^ start.pos_fname;
+  let to_point Lexing.{ pos_lnum; pos_cnum; _ } =
+    { line = pos_lnum; column = pos_cnum }
+  in
+  let start_point = to_point start and end_point = to_point end_ in
+  {
+    file = Option.value ~default:start.pos_fname filename;
+    start = start_point;
+    end_ = end_point;
+  }
+
+let fmt { file; start; end_ } =
   let { line = sline; column = scol } = start
   and { line = eline; column = ecol } = end_ in
-  Printf.sprintf "start: { line : %d, col : %d }\nend: { line: %d; col: %d }"
+  Printf.sprintf
+    "file: %s\nstart: { line : %d, col : %d }\nend: { line: %d; col: %d }" file
     sline scol eline ecol
 
 let span spans =

@@ -253,3 +253,19 @@ let describe_nestable_block : Ast.nestable_block_element -> string = function
       describe @@ if kind = `Light then TABLE_LIGHT else TABLE_HEAVY
   | `Math_block _ -> describe @@ Math_block ""
   | `Media _ as media -> describe @@ of_media media
+
+let describe_tag : Ast.tag -> string = function
+  | `See (kind, _, _) -> describe @@ See (kind, "")
+  | `Author s -> describe @@ Author s
+  | `Deprecated _ -> describe DEPRECATED
+  | `Param (s, _) -> describe @@ Param s
+  | `Raise (s, _) -> describe @@ Raise s
+  | `Return _ -> describe RETURN
+  | `Since v -> describe @@ Since v
+  | `Before (v, _) -> describe @@ Before v
+  | `Version v -> describe @@ Version v
+  | `Closed -> describe CLOSED
+  | `Open -> describe OPEN
+  | `Canonical Loc.{ value; _ } -> describe @@ Canonical value
+  | `Hidden -> describe HIDDEN
+  | `Inline -> describe INLINE

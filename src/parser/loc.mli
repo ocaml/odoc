@@ -36,6 +36,9 @@ val nudge_map_end : int -> 'a with_location -> 'a with_location
 val at : span -> 'a -> 'a with_location
 (** Constructor for {!with_location} *)
 
+val of_position : ?filename:string -> Lexing.position * Lexing.position -> span
+(** Convert Menhir's `$loc` or `$sloc` into a span *)
+
 val location : 'a with_location -> span
 (** Returns the location of a located value *)
 
