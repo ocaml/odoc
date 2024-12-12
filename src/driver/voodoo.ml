@@ -146,7 +146,8 @@ let process_package pkg =
                   Logs.debug (fun m ->
                       m "Processing directory: %a\n%!" Fpath.pp directory);
                   Packages.Lib.v ~libname_of_archive ~pkg_name:pkg.name
-                    ~dir:directory ~cmtidir:None ~all_lib_deps ~cmi_only_libs)
+                    ~dir:directory ~cmtidir:None ~all_lib_deps ~cmi_only_libs
+                    ~id_override:None)
                 Fpath.(Set.to_list directories)))
     |> List.flatten
   in
@@ -189,7 +190,7 @@ let process_package pkg =
             m "Processing directory without META: %a" Fpath.pp libdir);
         Packages.Lib.v ~libname_of_archive ~pkg_name:pkg.name
           ~dir:Fpath.(pkg_path // libdir)
-          ~cmtidir:None ~all_lib_deps ~cmi_only_libs:[])
+          ~cmtidir:None ~all_lib_deps ~cmi_only_libs:[] ~id_override:None)
       libdirs_without_meta
     |> List.flatten
   in

@@ -141,11 +141,17 @@ and pp : all_kinds unit Fmt.t =
     (Fmt.option pp_index) x.index pp_kind
     (x.kind :> all_kinds)
 
-let pkg_dir pkg = pkg.Packages.pkg_dir
-let doc_dir pkg = pkg.Packages.doc_dir
-let lib_dir pkg lib = Fpath.(doc_dir pkg / lib.Packages.lib_name)
+let pkg_dir : Packages.t -> Fpath.t = fun pkg -> pkg.pkg_dir
+let doc_dir : Packages.t -> Fpath.t = fun pkg -> pkg.doc_dir
+let lib_dir (pkg : Packages.t) (lib : Packages.libty) =
+  match lib.id_override with
+  | Some id -> Fpath.v id
+  | None -> Fpath.(doc_dir pkg / lib.Packages.lib_name)
 let src_dir pkg = Fpath.(doc_dir pkg / "src")
-let src_lib_dir pkg lib = Fpath.(src_dir pkg / lib.Packages.lib_name)
+let src_lib_dir (pkg : Packages.t) (lib : Packages.libty) =
+  match lib.id_override with
+  | Some id -> Fpath.v id
+  | None -> Fpath.(src_dir pkg / lib.Packages.lib_name)
 
 type dirs = {
   odoc_dir : Fpath.t;

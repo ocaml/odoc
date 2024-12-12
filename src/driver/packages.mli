@@ -56,6 +56,7 @@ type libty = {
   archive_name : string option;
   lib_deps : Util.StringSet.t;
   modules : modulety list;
+  id_override : string option;
 }
 
 module Lib : sig
@@ -66,6 +67,7 @@ module Lib : sig
     cmtidir:Fpath.t option ->
     all_lib_deps:Util.StringSet.t Util.StringMap.t ->
     cmi_only_libs:(Fpath.t * string) list ->
+    id_override:string option ->
     libty list
 
   val pp : Format.formatter -> libty -> unit
