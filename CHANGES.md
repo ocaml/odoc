@@ -2,6 +2,9 @@
 
 ### Added
 
+- Addded `--suppress-warnings` to the CLI to remove warnings from a unit, even
+  if they end up being raised in another unit through expansion (@jonludlam,
+  #1260)
 - Improve jump to implementation in rendered source code, and add a
   `count-occurrences` flag and command to count occurrences of every identifiers
   (@panglesd, #976)
