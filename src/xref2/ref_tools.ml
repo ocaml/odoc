@@ -181,8 +181,26 @@ let type_lookup_to_class_signature_lookup =
         |> of_option ~error:(`Parent (`Parent_type `OpaqueClass))
         >>= resolved p'
 
-module M = struct
-  (** Module *)
+module rec M 
+: sig
+            type t = module_lookup_result
+          
+            val of_component : Env.t -> Component.Module.t -> Cpath.Resolved.module_ -> Resolved.Module.t -> t
+          
+          val in_signature : Env.t -> signature_lookup_result ->
+             ModuleName.t ->
+              (t, Errors.Tools_error.reference_lookup_error) result
+          
+            val of_element : Env.t -> Component.Element.module_ -> t
+          
+            val in_env : Env.t -> string -> (t, Errors.Tools_error.reference_lookup_error) result
+
+            val in_env_by_id : Env.t -> Identifier.Module.t -> (t, Errors.Tools_error.reference_lookup_error) result
+          end 
+          
+          =
+          
+          struct  (** Module *)
 
   type t = module_lookup_result
 
@@ -224,6 +242,82 @@ module M = struct
         Error
           (`Parent
             (`Parent_module (`Lookup_failure_root (ModuleName.make_std name))))
+
+  let rec in_env_by_id env (id : Identifier.Module.t) =
+    match Env.lookup_by_id Env.s_module id env with
+    | Some e -> Ok (of_element env e)
+    | None -> match id.iv with
+      | `Module ({ Identifier.iv = #Identifier.Module.t_pv; _} as p, name) ->
+          in_env_by_id env p >>=
+          module_lookup_to_signature_lookup env >>=
+          fun x -> in_signature env x name
+      |  `Module ({ Identifier.iv = #Identifier.ModuleType.t_pv; _} as p, name) ->
+        MT.in_env_by_id env p >>=
+        module_type_lookup_to_signature_lookup env >>=
+        fun x -> in_signature env x name
+      | `Module ({ Identifier.iv = `Result _; _}, _) 
+      | `Parameter (_, _)
+      | `Root _ -> Error (`Lookup_by_id (id :> Identifier.t))
+end and 
+
+MT : sig
+  type t = module_type_lookup_result
+
+  val of_element : Env.t -> Component.Element.module_type -> t
+
+  val of_component : Env.t -> Component.ModuleType.t -> Cpath.Resolved.module_type -> Resolved.ModuleType.t -> t
+
+  val in_signature : Env.t -> signature_lookup_result -> ModuleTypeName.t -> (t, Errors.Tools_error.reference_lookup_error) result
+  
+  val in_env : Env.t -> string -> (t, Errors.Tools_error.reference_lookup_error) result
+
+  val in_env_by_id : Env.t -> Identifier.ModuleType.t -> (t, Errors.Tools_error.reference_lookup_error) result
+
+end = struct
+  (** Module type *)
+
+  type t = module_type_lookup_result
+
+  let of_component env mt base_path base_ref : t =
+    match Tools.get_module_type_path_modifiers env mt with
+    | None -> (base_ref, base_path, mt)
+    | Some (`AliasModuleType cp) ->
+        let cp = Tools.reresolve_module_type env cp in
+        let p = Lang_of.(Path.resolved_module_type (empty ()) cp) in
+        (`AliasModuleType (p, base_ref), `AliasModuleType (cp, base_path), mt)
+
+  let in_signature env ((parent', parent_cp, sg) : signature_lookup_result) name
+      =
+    let sg = Tools.prefix_signature (parent_cp, sg) in
+    find Find.module_type_in_sig sg ModuleTypeName.to_string name
+    >>= fun (`FModuleType (name, mt)) ->
+    Ok
+      (of_component env mt
+         (`ModuleType (parent_cp, name))
+         (`ModuleType (parent', name)))
+
+  let of_element env (`ModuleType (id, mt)) : t =
+    of_component env mt (`Gpath (`Identifier id)) (`Identifier id)
+
+  let in_env env name =
+    env_lookup_by_name Env.s_module_type name env >>= fun e ->
+    Ok (of_element env e)
+
+  let rec in_env_by_id env id =
+    match Env.lookup_by_id Env.s_module_type id env with
+    | Some e -> Ok (of_element env e)
+    | None -> match id.iv with
+      | `ModuleType ({ Identifier.iv = #Identifier.Module.t_pv; _} as p, name) ->
+          M.in_env_by_id env p >>=
+          module_lookup_to_signature_lookup env >>=
+          fun x -> in_signature env x name
+      | `ModuleType ({ Identifier.iv = #Identifier.ModuleType.t_pv; _} as p, name) ->
+        in_env_by_id env p >>=
+        module_type_lookup_to_signature_lookup env >>=
+        fun x -> in_signature env x name
+      | `ModuleType ({ Identifier.iv = `Result _; _}, _) ->
+        Error (`Lookup_by_id (id :> Identifier.t))
+  
 end
 
 module Path = struct
@@ -262,36 +356,6 @@ module Path = struct
     | Error _, Error _ -> mk_lookup_error p
 end
 
-module MT = struct
-  (** Module type *)
-
-  type t = module_type_lookup_result
-
-  let of_component env mt base_path base_ref : t =
-    match Tools.get_module_type_path_modifiers env mt with
-    | None -> (base_ref, base_path, mt)
-    | Some (`AliasModuleType cp) ->
-        let cp = Tools.reresolve_module_type env cp in
-        let p = Lang_of.(Path.resolved_module_type (empty ()) cp) in
-        (`AliasModuleType (p, base_ref), `AliasModuleType (cp, base_path), mt)
-
-  let in_signature env ((parent', parent_cp, sg) : signature_lookup_result) name
-      =
-    let sg = Tools.prefix_signature (parent_cp, sg) in
-    find Find.module_type_in_sig sg ModuleTypeName.to_string name
-    >>= fun (`FModuleType (name, mt)) ->
-    Ok
-      (of_component env mt
-         (`ModuleType (parent_cp, name))
-         (`ModuleType (parent', name)))
-
-  let of_element env (`ModuleType (id, mt)) : t =
-    of_component env mt (`Gpath (`Identifier id)) (`Identifier id)
-
-  let in_env env name =
-    env_lookup_by_name Env.s_module_type name env >>= fun e ->
-    Ok (of_element env e)
-end
 
 module CL = struct
   (** Class *)
@@ -402,7 +466,7 @@ module L = struct
           | _ -> find tl)
       | [] -> Error (`Find_by_name (`Page, name))
     in
-    find p.Odoc_model.Lang.Page.content
+    find p.Odoc_model.Lang.Page.content.elements
 
   let of_component _env ~parent_ref label =
     Ok
@@ -697,7 +761,9 @@ let rec resolve_label_parent_reference env (r : LabelParent.t) =
    fun r -> Ok (r :> label_parent_lookup_result)
   in
   match r with
-  | `Resolved _ -> failwith "unimplemented"
+  | `Resolved (`Identifier {iv=(`Module _ | `ModuleType _); _}) as sr ->
+    resolve_signature_reference env sr >>= fun s -> Ok (`S s)
+  | `Resolved _ -> failwith "Unimplemented"
   | `Root (name, `TUnknown) -> LP.in_env env name
   | (`Module _ | `ModuleType _ | `Root (_, (`TModule | `TModuleType))) as sr ->
       resolve_signature_reference env sr >>= fun s -> Ok (`S s)
@@ -760,9 +826,6 @@ and resolve_signature_reference :
  fun env' r ->
   let resolve env =
     match r with
-    | `Resolved _r ->
-        failwith "What's going on here then?"
-        (* Some (resolve_resolved_signature_reference env r ~add_canonical) *)
     | `Root (name, `TModule) ->
         M.in_env env name >>= module_lookup_to_signature_lookup env
     | `Module (parent, name) ->
@@ -799,6 +862,15 @@ and resolve_signature_reference :
                  (`ModuleType (parent, name))))
     | `Module_path p ->
         Path.module_in_env env p >>= module_lookup_to_signature_lookup env
+    | `Resolved (`Identifier ({iv=`Module _; _} as ident)) -> (
+        let m = M.in_env_by_id env ident in
+        m >>= module_lookup_to_signature_lookup env)
+    | `Resolved (`Identifier ({iv=`ModuleType _; _} as ident)) -> (
+        let m = MT.in_env_by_id env ident in
+        m >>= module_type_lookup_to_signature_lookup env)
+    | `Resolved _ -> failwith "What's going on!?"
+          (* Some (resolve_resolved_signature_reference env r ~add_canonical) *)
+
   in
   resolve env'
 

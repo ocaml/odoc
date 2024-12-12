@@ -7,7 +7,13 @@ let resolve url_to_string directories reference =
   in
   let reference =
     let open Odoc_model in
-    let warnings_options = { Error.warn_error = true; print_warnings = true } in
+    let warnings_options =
+      {
+        Error.warn_error = true;
+        print_warnings = true;
+        suppress_warnings = false;
+      }
+    in
     Semantics.parse_reference reference
     |> Error.handle_errors_and_warnings ~warnings_options
   in

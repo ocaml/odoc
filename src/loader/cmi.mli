@@ -18,9 +18,16 @@
 
 module Paths = Odoc_model.Paths
 
+
+type env = {
+  ident_env : Ident_env.t; (** Environment *)
+  suppress_warnings : bool (** Suppress warnings *)
+}
+
 val read_interface :
   Odoc_model.Paths.Identifier.ContainerPage.t option ->
   string ->
+  bool ->
   Odoc_model.Compat.signature ->
   Paths.Identifier.RootModule.t * Odoc_model.Lang.Signature.t
 
@@ -32,7 +39,7 @@ val read_label : Asttypes.arg_label -> Odoc_model.Lang.TypeExpr.label option
 
 val mark_type_expr : Types.type_expr -> unit
 
-val read_type_expr : Ident_env.t ->
+val read_type_expr : env ->
                      Types.type_expr -> Odoc_model.Lang.TypeExpr.t
 
 val mark_type_extension : Types.type_expr list ->
@@ -46,44 +53,45 @@ val mark_class_declaration : Types.class_declaration -> unit
 
 val read_self_type : Types.type_expr -> Odoc_model.Lang.TypeExpr.t option
 
-val read_type_constraints : Ident_env.t -> Types.type_expr list ->
+val read_type_constraints : env -> Types.type_expr list ->
                             (Odoc_model.Lang.TypeExpr.t
                              * Odoc_model.Lang.TypeExpr.t) list
 
 val read_class_constraints :
-  Ident_env.t ->
+  env ->
   Types.type_expr list ->
   Odoc_model.Lang.ClassSignature.item list
 
-val read_class_signature : Ident_env.t ->
+val read_class_signature : env ->
                            Paths.Identifier.ClassSignature.t ->
                            Types.type_expr list -> Types.class_type ->
                            Odoc_model.Lang.ClassType.expr
 
-val read_class_type : Ident_env.t ->
+val read_class_type : env ->
                       Paths.Identifier.ClassSignature.t ->
                       Types.type_expr list -> Types.class_type ->
                       Odoc_model.Lang.Class.decl
 
-val read_module_type : Ident_env.t ->
+val read_module_type : env ->
                        Paths.Identifier.Signature.t ->
                        Odoc_model.Compat.module_type -> Odoc_model.Lang.ModuleType.expr
 
-val read_signature_noenv : Ident_env.t ->
+val read_signature_noenv : env ->
                        Paths.Identifier.Signature.t ->
                        Odoc_model.Compat.signature ->
                        (Odoc_model.Lang.Signature.t * Odoc_model.Lang.Include.shadowed)
 
-val read_signature : Ident_env.t ->
+val read_signature : env ->
                      Paths.Identifier.Signature.t ->
                      Odoc_model.Compat.signature -> Odoc_model.Lang.Signature.t
 
 
-val read_extension_constructor : Ident_env.t ->
+val read_extension_constructor : env ->
                        Paths.Identifier.Signature.t ->
                        Ident.t -> Types.extension_constructor ->
                        Odoc_model.Lang.Extension.Constructor.t
 
-val read_exception : Ident_env.t ->
+val read_exception : env ->
   Paths.Identifier.Signature.t -> Ident.t ->
   Types.extension_constructor -> Odoc_model.Lang.Exception.t
+ 

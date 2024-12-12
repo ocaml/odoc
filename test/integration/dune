@@ -1,6 +1,12 @@
+(env
+ (_
+  (binaries
+   (../odoc_print/odoc_print.exe as odoc_print))))
+
 (cram
  (deps
-  (package odoc)))
+  (package odoc)
+  %{bin:odoc_print}))
 
 (cram
  (applies_to json_expansion_with_sources)

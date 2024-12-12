@@ -26,6 +26,48 @@ module LocHashtbl = Hashtbl.Make(struct
     let hash = Hashtbl.hash
   end)
 
+(* duplicated code *)
+#if OCAML_VERSION >= (4,8,0)
+  let attribute_unpack = function
+    | { Parsetree.attr_name = { Location.txt = name; _ }; attr_payload; attr_loc } ->
+        (name, attr_payload, attr_loc)
+  #else
+  let attribute_unpack = function
+    | { Location.txt = name; loc }, attr_payload -> (name, attr_payload, loc)
+  #endif
+
+  let load_constant_string = function
+  | {Parsetree.pexp_desc =
+#if OCAML_VERSION < (4,3,0)
+     Pexp_constant (Const_string (text, _))
+#elif OCAML_VERSION < (4,11,0)
+     Pexp_constant (Pconst_string (text, _))
+#elif OCAML_VERSION < (5,3,0)
+     Pexp_constant (Pconst_string (text, _, _))
+#else
+     Pexp_constant {pconst_desc= Pconst_string (text, _, _); _}
+#endif
+   ; pexp_loc = loc; _} ->
+       Some (text , loc)
+  | _ -> None
+
+  let load_payload = function
+  | Parsetree.PStr [ { pstr_desc = Pstr_eval (constant_string, _); _ } ] ->
+      load_constant_string constant_string
+  | _ -> None
+
+  let is_stop_comment : Parsetree.attribute -> bool =
+    fun attr ->
+     let name, attr_payload, _attr_loc = attribute_unpack attr in
+     match name with
+     | "text" | "ocaml.text" -> (
+         match load_payload attr_payload with
+         | Some ("/*", _) -> true
+         | Some _ -> false
+         | None -> false)
+      | _ -> false
+   
+  
 type t =
   { modules : Id.Module.t Ident.tbl;
     parameters : Id.FunctorParameter.t Ident.tbl;
@@ -252,7 +294,7 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
   | {sig_desc = Tsig_include incl; _ } :: rest ->
       [`Include (extract_signature_type_items Exported (Compat.signature incl.incl_type))] @ extract_signature_tree_items hide_item rest
   | {sig_desc = Tsig_attribute attr; _ } :: rest ->
-      let hide_item = if Doc_attr.is_stop_comment attr then not hide_item else hide_item in
+      let hide_item = if is_stop_comment attr then not hide_item else hide_item in
       extract_signature_tree_items hide_item rest
   | {sig_desc = Tsig_class cls; _} :: rest ->
       List.map
@@ -388,7 +430,7 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
     | { str_desc = Tstr_include incl; _ } :: rest ->
         [`Include (extract_signature_type_items Exported (Compat.signature incl.incl_type))] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_attribute attr; _} :: rest ->
-        let hide_item = if Doc_attr.is_stop_comment attr then not hide_item else hide_item in
+        let hide_item = if is_stop_comment attr then not hide_item else hide_item in
         extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_class cls; _ } :: rest ->
         List.map
@@ -798,3 +840,30 @@ module Fragment = struct
     | Longident.Lapply _ -> assert false
 
 end
+
+let lookup_by_name tbl n =
+  Ident.fold_all (fun _ id acc -> if Id.name id = n then id :: acc else acc) tbl []
+
+let lookup_module_by_name env = lookup_by_name env.modules
+
+let lookup_module_type_by_name env =
+    lookup_by_name env.module_types
+
+let lookup_type_by_name env =
+    lookup_by_name env.types
+
+let lookup_value_by_name env =
+  lookup_by_name env.values
+
+let lookup_exception_by_name env =
+  lookup_by_name env.exceptions
+
+let lookup_constructor_by_name env =
+  lookup_by_name env.constructors
+
+let lookup_class_by_name env =
+  lookup_by_name env.classes
+
+let lookup_class_type_by_name env =
+  lookup_by_name env.class_types
+

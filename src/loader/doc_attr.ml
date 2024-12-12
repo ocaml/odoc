@@ -29,7 +29,7 @@ let read_location { Location.loc_start; loc_end; _ } =
     end_ = point_of_pos loc_end;
   }
 
-let empty_body = []
+let empty_body = { Comment.elements = []; suppress_warnings = false }
 
 let empty : Odoc_model.Comment.docs = empty_body
 
@@ -113,10 +113,11 @@ let is_stop_comment attr =
 let pad_loc loc =
   { loc.Location.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 }
 
-let ast_to_comment ~internal_tags parent ast_docs alerts =
+let ast_to_comment ~env ~internal_tags parent ast_docs alerts =
   Odoc_model.Semantics.ast_to_comment ~internal_tags
     ~tags_allowed:true ~parent_of_sections:parent ast_docs alerts
   |> Error.raise_warnings
+  |> (fun (x, b) -> (Resolve_init.resolve env x, b))
 
 let mk_alert_payload ~loc name p =
   let p = match p with Some (p, _) -> Some p | None -> None in
@@ -124,7 +125,7 @@ let mk_alert_payload ~loc name p =
   let span = read_location loc in
   Location_.at span elt
 
-let attached internal_tags parent attrs =
+let attached ~suppress_warnings ~env internal_tags parent attrs =
   let rec loop acc_docs acc_alerts = function
     | attr :: rest -> (
         match parse_attribute attr with
@@ -141,10 +142,11 @@ let attached internal_tags parent attrs =
     | [] -> (List.rev acc_docs, List.rev acc_alerts)
   in
   let ast_docs, alerts = loop [] [] attrs in
-  ast_to_comment ~internal_tags parent ast_docs alerts
+  let elements, warnings = ast_to_comment ~env ~internal_tags parent ast_docs alerts in
+  { Comment.elements; suppress_warnings }, warnings
 
-let attached_no_tag parent attrs =
-  let x, () = attached Semantics.Expect_none parent attrs in
+let attached_no_tag ~suppress_warnings ~env parent attrs =
+  let x, () = attached ~env ~suppress_warnings Semantics.Expect_none parent attrs in
   x
 
 let read_string ~tags_allowed internal_tags parent location str =
@@ -160,31 +162,32 @@ let read_string_comment internal_tags parent loc str =
   read_string ~tags_allowed:true internal_tags parent (pad_loc loc) str
 
 let page parent loc str =
-    read_string ~tags_allowed:false Odoc_model.Semantics.Expect_page_tags parent loc.Location.loc_start
+  let elements, tags = read_string ~tags_allowed:false Odoc_model.Semantics.Expect_page_tags parent loc.Location.loc_start
       str
+  in
+  { Comment.elements; suppress_warnings = false}, tags
 
-let standalone parent (attr : Parsetree.attribute) :
+let standalone parent ~suppress_warnings (attr : Parsetree.attribute) :
     Odoc_model.Comment.docs_or_stop option =
   match parse_attribute attr with
   | Some (`Stop _loc) -> Some `Stop
   | Some (`Text (str, loc)) ->
-      let doc, () = read_string_comment Semantics.Expect_none parent loc str in
-      Some (`Docs doc)
+      let elements, () = read_string_comment Semantics.Expect_none parent loc str in
+      Some (`Docs { elements; suppress_warnings })
   | Some (`Doc _) -> None
   | Some (`Alert (name, _, attr_loc)) ->
       let w =
-        Error.make "Alert %s not expected here." name
-          (read_location attr_loc)
+        Error.make "Alert %s not expected here." name (read_location attr_loc)
       in
       Error.raise_warning w;
       None
   | _ -> None
 
-let standalone_multiple parent attrs =
+let standalone_multiple parent ~suppress_warnings attrs =
   let coms =
     List.fold_left
       (fun acc attr ->
-        match standalone parent attr  with
+        match standalone parent ~suppress_warnings attr  with
          | None -> acc
          | Some com -> com :: acc)
       [] attrs
@@ -200,7 +203,7 @@ let split_docs docs =
   in
   inner [] docs
 
-let extract_top_comment internal_tags ~classify parent items =
+let extract_top_comment ~env internal_tags ~classify parent items =
   let classify x =
     match classify x with
     | Some (`Attribute attr) -> (
@@ -247,16 +250,23 @@ let extract_top_comment internal_tags ~classify parent items =
   in
   let items, ast_docs, alerts = extract items in
   let docs, tags =
-    ast_to_comment ~internal_tags
+    ast_to_comment ~env ~internal_tags
       (parent : Paths.Identifier.Signature.t :> Paths.Identifier.LabelParent.t)
       ast_docs alerts
   in
-  (items, split_docs docs, tags)
+  let d1, d2 = split_docs docs in
+  ( items,
+    ( { Comment.elements = d1; suppress_warnings = false },
+      { Comment.elements = d2; suppress_warnings = false } ),
+    tags )
 
 let extract_top_comment_class items =
+  let mk elements suppress_warnings = { Comment.elements; suppress_warnings } in
   match items with
-  | Lang.ClassSignature.Comment (`Docs doc) :: tl -> (tl, split_docs doc)
-  | _ -> items, (empty,empty)
+  | Lang.ClassSignature.Comment (`Docs doc) :: tl ->
+      let d1, d2 = split_docs doc.elements in
+      (tl, (mk d1 doc.suppress_warnings, mk d2 doc.suppress_warnings))
+  | _ -> (items, (mk [] false, mk [] false))
 
 let rec conv_canonical_module : Odoc_model.Reference.path -> Paths.Path.Module.t = function
   | `Dot (parent, name) -> `Dot (conv_canonical_module parent, Names.ModuleName.make_std name)

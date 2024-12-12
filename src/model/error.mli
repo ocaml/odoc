@@ -41,6 +41,7 @@ val catch_errors_and_warnings : (unit -> 'a) -> 'a with_errors_and_warnings
 type warnings_options = {
   warn_error : bool;  (** If [true], warnings will result in an error. *)
   print_warnings : bool;  (** Whether to print warnings. *)
+  suppress_warnings : bool;  (** Whether to suppress warnings. *)
 }
 
 val handle_warnings :

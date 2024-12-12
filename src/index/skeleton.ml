@@ -8,7 +8,12 @@ type t = Entry.t Tree.t
 module Entry = struct
   let of_comp_unit (u : Compilation_unit.t) =
     let has_expansion = true in
-    let doc = match u.content with Pack _ -> [] | Module m -> m.doc in
+    let doc =
+      match u.content with
+      | Pack _ ->
+          { Odoc_model.Comment.elements = []; suppress_warnings = false }
+      | Module m -> m.doc
+    in
     Entry.entry ~id:u.id ~doc ~kind:(Module { has_expansion })
 
   let of_module (m : Module.t) =

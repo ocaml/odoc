@@ -25,6 +25,14 @@ open Odoc_model.Names
 module Env = Ident_env
 module Paths = Odoc_model.Paths
 
+
+type env = {
+  ident_env : Env.t;
+  suppress_warnings : bool;  (** suppress warnings *)
+}
+
+let empty_doc = { Odoc_model.Comment.elements = []; suppress_warnings = false }
+
 module Compat = struct
 #if OCAML_VERSION >= (4, 14, 0)
 #if OCAML_VERSION >= (5, 3, 0)
@@ -458,7 +466,7 @@ let rec read_type_expr env typ =
           let typs = List.map (read_type_expr env) typs in
             Tuple typs
       | Tconstr(p, params, _) ->
-          let p = Env.Path.read_type env p in
+          let p = Env.Path.read_type env.ident_env p in
           let params = List.map (read_type_expr env) params in
             Constr(p, params)
       | Tvariant row -> read_row env px row
@@ -479,7 +487,7 @@ let rec read_type_expr env typ =
         let eqs = List.combine frags tyl in
 #endif
           let open TypeExpr.Package in
-          let path = Env.Path.read_module_type env p in
+          let path = Env.Path.read_module_type env.ident_env p in
           let substitutions =
             List.map
               (fun (frag,typ) ->
@@ -522,7 +530,7 @@ and read_row env _px row =
   let all_present = List.length present = List.length sorted_fields in
   match Compat.get_row_name row with
   | Some(p, params) when namable_row row ->
-      let p = Env.Path.read_type env p in
+      let p = Env.Path.read_type env.ident_env p in
       let params = List.map (read_type_expr env) params in
       if Compat.row_closed row && all_present then
         Constr (p, params)
@@ -535,15 +543,16 @@ and read_row env _px row =
       let elements =
         List.map
           (fun (name, f) ->
+            let doc = empty_doc in
             match Compat.row_field_repr f with
               | Rpresent None ->
-                Constructor {name; constant = true; arguments = []; doc = []}
+                Constructor {name; constant = true; arguments = []; doc}
               | Rpresent (Some typ) ->
                 Constructor {
                   name;
                   constant = false;
                   arguments = [read_type_expr env typ];
-                  doc = [];
+                  doc;
                 }
 #if OCAML_VERSION >= (4, 14, 0)
               | Reither(constant, typs, _) ->
@@ -553,7 +562,7 @@ and read_row env _px row =
                 let arguments =
                   List.map (read_type_expr env) typs
                 in
-                Constructor {name; constant; arguments; doc = []}
+                Constructor {name; constant; arguments; doc}
               | Rabsent -> assert false)
           sorted_fields
       in
@@ -600,20 +609,23 @@ and read_object env fi nm =
         in
         Object {fields = methods; open_}
     | Some (p, _ :: params) ->
-        let p = Env.Path.read_class_type env p in
+        let p = Env.Path.read_class_type env.ident_env p in
         let params = List.map (read_type_expr env) params in
         Class (p, params)
     | _ -> assert false
   end
 
-let read_value_description env parent id vd =
+let read_value_description ({ ident_env; suppress_warnings } as env) parent id
+    vd =
   let open Signature in
-  let id = Env.find_value_identifier env id in
+  let id = Env.find_value_identifier ident_env id in
   let source_loc = None in
   let container =
     (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
   in
-  let doc = Doc_attr.attached_no_tag container vd.val_attributes in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings container vd.val_attributes
+  in
   mark_value_description vd;
   let type_ = read_type_expr env vd.val_type in
   let value =
@@ -633,14 +645,17 @@ let read_value_description env parent id vd =
 let read_label_declaration env parent ld =
   let open TypeDecl.Field in
   let name = Ident.name ld.ld_id in
-  let id = Identifier.Mk.field (parent, Odoc_model.Names.FieldName.make_std name) in
-  let doc =
-    Doc_attr.attached_no_tag
-      (parent :> Identifier.LabelParent.t) ld.ld_attributes
+  let id =
+    Identifier.Mk.field (parent, Odoc_model.Names.FieldName.make_std name)
   in
-  let mutable_ = (ld.ld_mutable = Mutable) in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      (parent :> Identifier.LabelParent.t)
+      ld.ld_attributes
+  in
+  let mutable_ = ld.ld_mutable = Mutable in
   let type_ = read_type_expr env ld.ld_type in
-    {id; doc; mutable_; type_}
+  { id; doc; mutable_; type_ }
 
 let read_constructor_declaration_arguments env parent arg =
 #if OCAML_VERSION < (4,3,0)
@@ -658,15 +673,19 @@ let read_constructor_declaration_arguments env parent arg =
 
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
-  let id = Ident_env.find_constructor_identifier env cd.cd_id in
+  let id = Ident_env.find_constructor_identifier env.ident_env cd.cd_id in
   let container = (parent :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag container cd.cd_attributes in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container cd.cd_attributes
+  in
   let args =
     read_constructor_declaration_arguments env
-      (parent :> Identifier.FieldParent.t) cd.cd_args
+      (parent :> Identifier.FieldParent.t)
+      cd.cd_args
   in
   let res = opt_map (read_type_expr env) cd.cd_res in
-    {id; doc; args; res}
+  { id; doc; args; res }
 
 let read_type_kind env parent =
   let open TypeDecl.Representation in function
@@ -735,15 +754,16 @@ let read_class_constraints env params =
   let open ClassSignature in
   read_type_constraints env params
   |> List.map (fun (left, right) ->
-         Constraint { Constraint.left; right; doc = [] })
+         Constraint { Constraint.left; right; doc = empty_doc })
 
 let read_type_declaration env parent id decl =
   let open TypeDecl in
-  let id = Env.find_type_identifier env id in
+  let id = Env.find_type_identifier env.ident_env id in
   let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical =
-    Doc_attr.attached Odoc_model.Semantics.Expect_canonical container decl.type_attributes
+    Doc_attr.attached ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      Odoc_model.Semantics.Expect_canonical container decl.type_attributes
   in
   let canonical = match canonical with | None -> None | Some s -> Doc_attr.conv_canonical_type s in
   let params = mark_type_declaration decl in
@@ -779,20 +799,26 @@ let read_type_declaration env parent id decl =
 
 let read_extension_constructor env parent id ext =
   let open Extension.Constructor in
-  let id = Env.find_extension_identifier env id in
+  let id = Env.find_extension_identifier env.ident_env id in
   let source_loc = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container ext.ext_attributes
+  in
   let args =
     read_constructor_declaration_arguments env
-      (parent : Identifier.Signature.t :> Identifier.FieldParent.t) ext.ext_args
+      (parent : Identifier.Signature.t :> Identifier.FieldParent.t)
+      ext.ext_args
   in
   let res = opt_map (read_type_expr env) ext.ext_ret_type in
-  {id; source_loc; doc; args; res}
+  { id; source_loc; doc; args; res }
 
 let read_type_extension env parent id ext rest =
   let open Extension in
-  let type_path = Env.Path.read_type env ext.ext_type_path in
+  let type_path = Env.Path.read_type env.ident_env ext.ext_type_path in
   let doc = Doc_attr.empty in
   let type_params = mark_type_extension' ext rest in
   let first = read_extension_constructor env parent id ext in
@@ -812,17 +838,23 @@ let read_type_extension env parent id ext rest =
 
 let read_exception env parent id ext =
   let open Exception in
-  let id = Env.find_exception_identifier env id in
+  let id = Env.find_exception_identifier env.ident_env id in
   let source_loc = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
-    mark_exception ext;
-    let args =
-      read_constructor_declaration_arguments env
-        (parent : Identifier.Signature.t :> Identifier.FieldParent.t) ext.ext_args
-    in
-    let res = opt_map (read_type_expr env) ext.ext_ret_type in
-    {id; source_loc; doc; args; res}
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container ext.ext_attributes
+  in
+  mark_exception ext;
+  let args =
+    read_constructor_declaration_arguments env
+      (parent : Identifier.Signature.t :> Identifier.FieldParent.t)
+      ext.ext_args
+  in
+  let res = opt_map (read_type_expr env) ext.ext_ret_type in
+  { id; source_loc; doc; args; res }
 
 let read_method env parent concrete (name, kind, typ) =
   let open Method in
@@ -854,7 +886,7 @@ let rec read_class_signature env parent params =
       || List.exists aliasable params
       then read_class_signature env parent params cty
       else begin
-        let p = Env.Path.read_class_type env p in
+        let p = Env.Path.read_class_type env.ident_env p in
         let params = List.map (read_type_expr env) params in
           Constr(p, params)
       end
@@ -881,7 +913,7 @@ let rec read_class_signature env parent params =
         List.map (read_method env parent (Compat.csig_concr csig)) methods
       in
       let items = constraints @ instance_variables @ methods in
-      Signature {self; items; doc = []}
+      Signature {self; items; doc = empty_doc}
   | Cty_arrow _ -> assert false
 
 let rec read_virtual = function
@@ -906,21 +938,26 @@ let rec read_virtual = function
 
 let read_class_type_declaration env parent id cltd =
   let open ClassType in
-  let id = Env.find_class_type_identifier env id in
+  let id = Env.find_class_type_identifier env.ident_env id in
   let source_loc = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag container cltd.clty_attributes in
-    mark_class_type_declaration cltd;
-    let params =
-      List.map2
-        (read_type_parameter false)
-        cltd.clty_variance cltd.clty_params
-    in
-    let expr =
-      read_class_signature env (id :> Identifier.ClassSignature.t) cltd.clty_params cltd.clty_type
-    in
-    let virtual_ = read_virtual cltd.clty_type in
-    { id; source_loc; doc; virtual_; params; expr; expansion = None }
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container cltd.clty_attributes
+  in
+  mark_class_type_declaration cltd;
+  let params =
+    List.map2 (read_type_parameter false) cltd.clty_variance cltd.clty_params
+  in
+  let expr =
+    read_class_signature env
+      (id :> Identifier.ClassSignature.t)
+      cltd.clty_params cltd.clty_type
+  in
+  let virtual_ = read_virtual cltd.clty_type in
+  { id; source_loc; doc; virtual_; params; expr; expansion = None }
 
 let rec read_class_type env parent params =
   let open Class in function
@@ -942,26 +979,31 @@ let rec read_class_type env parent params =
 
 let read_class_declaration env parent id cld =
   let open Class in
-  let id = Env.find_class_identifier env id in
+  let id = Env.find_class_identifier env.ident_env id in
   let source_loc = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag container cld.cty_attributes in
-    mark_class_declaration cld;
-    let params =
-      List.map2
-        (read_type_parameter false)
-        cld.cty_variance cld.cty_params
-    in
-    let type_ =
-      read_class_type env (id :> Identifier.ClassSignature.t) cld.cty_params cld.cty_type
-    in
-    let virtual_ = cld.cty_new = None in
-    { id; source_loc; doc; virtual_; params; type_; expansion = None }
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      container cld.cty_attributes
+  in
+  mark_class_declaration cld;
+  let params =
+    List.map2 (read_type_parameter false) cld.cty_variance cld.cty_params
+  in
+  let type_ =
+    read_class_type env
+      (id :> Identifier.ClassSignature.t)
+      cld.cty_params cld.cty_type
+  in
+  let virtual_ = cld.cty_new = None in
+  { id; source_loc; doc; virtual_; params; type_; expansion = None }
 
 let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
   let open ModuleType in
     match mty with
-    | Mty_ident p -> Path {p_path = Env.Path.read_module_type env p; p_expansion=None }
+    | Mty_ident p -> Path {p_path = Env.Path.read_module_type env.ident_env p; p_expansion=None }
     | Mty_signature sg -> Signature (read_signature env parent sg)
     | Mty_functor(parameter, res) ->
         let f_parameter, env =
@@ -970,8 +1012,8 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
           | Named (id_opt, arg) ->
               let id, env = match id_opt with
                 | None -> Identifier.Mk.parameter(parent, Odoc_model.Names.ModuleName.make_std "_"), env
-                | Some id -> let env = Env.add_parameter parent id (ModuleName.of_ident id) env in
-                  Ident_env.find_parameter_identifier env id, env
+                | Some id -> let e' = Env.add_parameter parent id (ModuleName.of_ident id) env.ident_env in
+                  Ident_env.find_parameter_identifier e' id, {env with ident_env = e'}
               in
               let arg = read_module_type env (id :> Identifier.Signature.t) arg in
               Odoc_model.Lang.FunctorParameter.Named ({ FunctorParameter. id; expr = arg }), env
@@ -979,38 +1021,64 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
         let res = read_module_type env (Identifier.Mk.result parent) res in
         Functor( f_parameter, res)
     | Mty_alias p ->
-        let t_original_path = Env.Path.read_module env p in
+        let t_original_path = Env.Path.read_module env.ident_env p in
         let t_desc = ModPath t_original_path in
         TypeOf { t_desc; t_expansion = None; t_original_path }
 
-and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_declaration) =
+and read_module_type_declaration env parent id
+    (mtd : Odoc_model.Compat.modtype_declaration) =
   let open ModuleType in
-  let id = Env.find_module_type env id in
+  let id = Env.find_module_type env.ident_env id in
   let source_loc = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container mtd.mtd_attributes in
-  let canonical = match canonical with | None -> None | Some s -> Doc_attr.conv_canonical_module_type s in
-  let expr = opt_map (read_module_type env (id :> Identifier.Signature.t)) mtd.mtd_type in
-  {id; source_loc; doc; canonical; expr }
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc, canonical =
+    Doc_attr.attached ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      Odoc_model.Semantics.Expect_canonical container mtd.mtd_attributes
+  in
+  let canonical =
+    match canonical with
+    | None -> None
+    | Some s -> Doc_attr.conv_canonical_module_type s
+  in
+  let expr =
+    opt_map (read_module_type env (id :> Identifier.Signature.t)) mtd.mtd_type
+  in
+  { id; source_loc; doc; canonical; expr }
 
-and read_module_declaration env parent ident (md : Odoc_model.Compat.module_declaration) =
+and read_module_declaration env parent ident
+    (md : Odoc_model.Compat.module_declaration) =
   let open Module in
-  let id = (Env.find_module_identifier env ident :> Identifier.Module.t) in
+  let id =
+    (Env.find_module_identifier env.ident_env ident :> Identifier.Module.t)
+  in
   let source_loc = None in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container md.md_attributes in
-  let canonical = match canonical with | None -> None | Some s -> Some (Doc_attr.conv_canonical_module s) in
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc, canonical =
+    Doc_attr.attached ~env:env.ident_env ~suppress_warnings:env.suppress_warnings
+      Odoc_model.Semantics.Expect_canonical container md.md_attributes
+  in
+  let canonical =
+    match canonical with
+    | None -> None
+    | Some s -> Some (Doc_attr.conv_canonical_module s)
+  in
   let type_ =
     match md.md_type with
-    | Mty_alias p -> Alias (Env.Path.read_module env p, None)
-    | _ -> ModuleType (read_module_type env (id :> Identifier.Signature.t) md.md_type)
+    | Mty_alias p -> Alias (Env.Path.read_module env.ident_env p, None)
+    | _ ->
+        ModuleType
+          (read_module_type env (id :> Identifier.Signature.t) md.md_type)
   in
   let hidden =
     match canonical with
     | Some _ -> false
     | None -> Odoc_model.Names.contains_double_underscore (Ident.name ident)
   in
-  {id; source_loc; doc; type_; canonical; hidden }
+  { id; source_loc; doc; type_; canonical; hidden }
 
 and read_type_rec_status rec_status =
   let open Signature in
@@ -1035,9 +1103,9 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     | Sig_value(id, v, _) :: rest ->
         let vd = read_value_description env parent id v in
         let shadowed =
-          if Env.is_shadowed env id
+          if Env.is_shadowed env.ident_env id
           then
-            let identifier = Env.find_value_identifier env id in
+            let identifier = Env.find_value_identifier env.ident_env id in
           match identifier.iv with
           | `Value (_, n) -> { shadowed with s_values = (Odoc_model.Names.parenthesise (Ident.name id), n) :: shadowed.s_values }
           else shadowed
@@ -1049,9 +1117,9 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     | Sig_type(id, decl, rec_status, _)::rest ->
         let decl = read_type_declaration env parent id decl in
         let shadowed =
-          if Env.is_shadowed env id
+          if Env.is_shadowed env.ident_env id
           then
-            let identifier = Env.find_type_identifier env id in
+            let identifier = Env.find_type_identifier env.ident_env id in
             let `Type (_, name) = identifier.iv in
             { shadowed with s_types = (Ident.name id, name) :: shadowed.s_types }
           else shadowed
@@ -1077,9 +1145,9 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     | Sig_module (id, _, md, rec_status, _)::rest ->
           let md = read_module_declaration env parent id md in
           let shadowed =
-            if Env.is_shadowed env id
+            if Env.is_shadowed env.ident_env id
             then
-              let identifier = Env.find_module_identifier env id in
+              let identifier = Env.find_module_identifier env.ident_env id in
             let name =
               match identifier.iv with
               | `Module (_, n) -> n 
@@ -1093,9 +1161,9 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     | Sig_modtype(id, mtd, _) :: rest ->
           let mtd = read_module_type_declaration env parent id mtd in
           let shadowed =
-            if Env.is_shadowed env id
+            if Env.is_shadowed env.ident_env id
             then
-              let identifier = Env.find_module_type env id in
+              let identifier = Env.find_module_type env.ident_env id in
             let name =
               match identifier.iv with
               | `ModuleType (_, n) -> n
@@ -1114,9 +1182,9 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
 #endif
           let cl = read_class_declaration env parent id cl in
           let shadowed =
-            if Env.is_shadowed env id
+            if Env.is_shadowed env.ident_env id
             then
-              let identifier = Env.find_class_identifier env id in
+              let identifier = Env.find_class_identifier env.ident_env id in
             let name =
               match identifier.iv with
               | `Class (_, n) -> n
@@ -1133,9 +1201,9 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
 #endif
         let cltyp = read_class_type_declaration env parent id cltyp in
         let shadowed =
-          if Env.is_shadowed env id
+          if Env.is_shadowed env.ident_env id
           then
-            let identifier = Env.find_class_type_identifier env id in
+            let identifier = Env.find_class_type_identifier env.ident_env id in
           let name =
             match identifier.iv with
             | `ClassType (_, n) -> n
@@ -1152,16 +1220,23 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     | Sig_class_type _ :: _
     | Sig_class _ :: _ -> assert false
 
-    | [] -> ({items = List.rev acc; compiled=false; removed = []; doc = [] }, shadowed)
+    | [] -> ({items = List.rev acc; compiled=false; removed = []; doc = empty_doc }, shadowed)
   in
     loop ([],{s_modules=[]; s_module_types=[]; s_values=[];s_types=[]; s_classes=[]; s_class_types=[]}) items
 
 and read_signature env parent (items : Odoc_model.Compat.signature) =
-  let env = Env.handle_signature_type_items parent items env in
+  let e' = Env.handle_signature_type_items parent items env.ident_env in
+  let env = { env with ident_env = e' } in
   fst @@ read_signature_noenv env parent items
 
 
-let read_interface root name intf =
-  let id = Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name) in
-  let items = read_signature (Env.empty ()) id intf in
+let read_interface root name suppress_warnings intf =
+  let id =
+    Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name)
+  in
+  let items =
+    read_signature
+      { ident_env = Env.empty (); suppress_warnings }
+      id intf
+  in
   (id, items)

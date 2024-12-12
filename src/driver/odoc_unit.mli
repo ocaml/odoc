@@ -1,15 +1,16 @@
 module Pkg_args : sig
-  type t = {
-    odoc_dir : Fpath.t;
-    odocl_dir : Fpath.t;
-    pages : (string * Fpath.t) list;
-    libs : (string * Fpath.t) list;
-  }
+  type t
 
   val compiled_pages : t -> (string * Fpath.t) list
   val compiled_libs : t -> (string * Fpath.t) list
   val linked_pages : t -> (string * Fpath.t) list
   val linked_libs : t -> (string * Fpath.t) list
+
+  val v : odoc_dir:Fpath.t ->
+    odocl_dir:Fpath.t ->
+    pages:(string * Fpath.t) list ->
+    libs:(string * Fpath.t) list ->
+    t
 
   val combine : t -> t -> t
 

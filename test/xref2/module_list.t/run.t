@@ -1,14 +1,10 @@
 # Testing {!modules:...} lists
 
   $ compile external.mli starts_with_open.mli main.mli
-  File "main.mli", line 63, characters 22-43:
-  Warning: Failed to resolve reference unresolvedroot(Resolve_synopsis).t Couldn't find "Resolve_synopsis"
   File "main.mli", line 63, characters 17-21:
   Warning: Failed to resolve reference unresolvedroot(t) Couldn't find "t"
   File "external.mli", line 9, characters 6-10:
   Warning: Failed to resolve reference unresolvedroot(t) Couldn't find "t"
-  File "main.mli", line 63, characters 22-43:
-  Warning: Failed to resolve reference unresolvedroot(Resolve_synopsis).t Couldn't find "Resolve_synopsis"
   File "main.mli", line 63, characters 17-21:
   Warning: Failed to resolve reference unresolvedroot(t) Couldn't find "t"
 
@@ -46,7 +42,7 @@ Everything should resolve:
   {"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Starts_with_open"]}}}
   {"Some":[{"`Word":"Synopsis"},"`Space",{"`Word":"of"},"`Space",{"`Code_span":"Starts_with_open"},{"`Word":"."}]}
   {"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Main"]},"Resolve_synopsis"]}}}
-  {"Some":[{"`Word":"This"},"`Space",{"`Word":"should"},"`Space",{"`Word":"be"},"`Space",{"`Word":"resolved"},"`Space",{"`Word":"when"},"`Space",{"`Word":"included:"},"`Space",{"`Reference":[{"`Resolved":{"`Type":[{"`Module":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Main"]}},"Resolve_synopsis"]},"t"]}},[]]},{"`Word":"."},"`Space",{"`Word":"These"},"`Space",{"`Word":"shouldn't:"},"`Space",{"`Reference":[{"`Root":["t","`TUnknown"]},[]]},"`Space",{"`Reference":[{"`Dot":[{"`Root":["Resolve_synopsis","`TUnknown"]},"t"]},[]]}]}
+  {"Some":[{"`Word":"This"},"`Space",{"`Word":"should"},"`Space",{"`Word":"be"},"`Space",{"`Word":"resolved"},"`Space",{"`Word":"when"},"`Space",{"`Word":"included:"},"`Space",{"`Reference":[{"`Resolved":{"`Type":[{"`Module":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Main"]}},"Resolve_synopsis"]},"t"]}},[]]},{"`Word":"."},"`Space",{"`Word":"These"},"`Space",{"`Word":"shouldn't:"},"`Space",{"`Reference":[{"`Root":["t","`TUnknown"]},[]]},"`Space",{"`Reference":[{"`Resolved":{"`Type":[{"`Module":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Main"]}},"Resolve_synopsis"]},"t"]}},[]]}]}
   {"`Resolved":{"`Module":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"External"]}},"Resolve_synopsis"]}}
   {"Some":[{"`Reference":[{"`Root":["t","`TUnknown"]},[]]}]}
 
@@ -55,6 +51,6 @@ References in the synopses above should be resolved.
 
   $ odoc_print external.odocl | jq -c '.. | .["`Modules"]? | select(.) | .[] | .[]'
   {"`Resolved":{"`Module":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Main"]}},"Resolve_synopsis"]}}
-  {"Some":[{"`Word":"This"},"`Space",{"`Word":"should"},"`Space",{"`Word":"be"},"`Space",{"`Word":"resolved"},"`Space",{"`Word":"when"},"`Space",{"`Word":"included:"},"`Space",{"`Reference":[{"`Resolved":{"`Type":[{"`Module":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Main"]}},"Resolve_synopsis"]},"t"]}},[]]},{"`Word":"."},"`Space",{"`Word":"These"},"`Space",{"`Word":"shouldn't:"},"`Space",{"`Reference":[{"`Root":["t","`TUnknown"]},[]]},"`Space",{"`Reference":[{"`Dot":[{"`Root":["Resolve_synopsis","`TUnknown"]},"t"]},[]]}]}
+  {"Some":[{"`Word":"This"},"`Space",{"`Word":"should"},"`Space",{"`Word":"be"},"`Space",{"`Word":"resolved"},"`Space",{"`Word":"when"},"`Space",{"`Word":"included:"},"`Space",{"`Reference":[{"`Resolved":{"`Type":[{"`Module":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Main"]}},"Resolve_synopsis"]},"t"]}},[]]},{"`Word":"."},"`Space",{"`Word":"These"},"`Space",{"`Word":"shouldn't:"},"`Space",{"`Reference":[{"`Root":["t","`TUnknown"]},[]]},"`Space",{"`Reference":[{"`Resolved":{"`Type":[{"`Module":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Main"]}},"Resolve_synopsis"]},"t"]}},[]]}]}
 
 'Type_of' and 'Alias' don't have a summary. `C1` and `C2` neither, we expect at least `C2` to have one.

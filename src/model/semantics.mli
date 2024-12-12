@@ -17,7 +17,7 @@ val ast_to_comment :
   parent_of_sections:Paths.Identifier.LabelParent.t ->
   Odoc_parser.Ast.t ->
   alerts ->
-  (Comment.docs * 'tags) Error.with_warnings
+  (Comment.elements * 'tags) Error.with_warnings
 
 val non_link_inline_element :
   context:string ->
@@ -30,6 +30,6 @@ val parse_comment :
   containing_definition:Paths.Identifier.LabelParent.t ->
   location:Lexing.position ->
   text:string ->
-  (Comment.docs * 'tags) Error.with_warnings
+  (Comment.elements * 'tags) Error.with_warnings
 
 val parse_reference : string -> Paths.Reference.t Error.with_errors_and_warnings

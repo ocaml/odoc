@@ -1711,7 +1711,7 @@ and expansion_of_module :
       let sg =
         (* Override the signature's documentation when the module also has
            a comment attached. *)
-        match m.doc with [] -> sg | doc -> { sg with doc }
+        match m.doc.elements with [] -> sg | _ -> { sg with doc = m.doc }
       in
       Ok (Signature sg)
   | Functor _ as f -> Ok f

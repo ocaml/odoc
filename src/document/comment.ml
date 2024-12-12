@@ -415,6 +415,6 @@ let standalone docs =
 
 let to_ir (docs : Comment.docs) =
   Utils.flatmap ~f:block_element
-  @@ List.map (fun x -> x.Odoc_model.Location_.value) docs
+  @@ List.map (fun x -> x.Odoc_model.Location_.value) docs.elements
 
 let has_doc docs = docs <> []
