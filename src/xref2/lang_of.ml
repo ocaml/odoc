@@ -1092,7 +1092,12 @@ and docs :
     Identifier.LabelParent.t ->
     Component.CComment.docs ->
     Odoc_model.Comment.docs =
- fun parent ds -> List.rev_map (fun d -> block_element parent d) ds |> List.rev
+ fun parent ds ->
+  {
+    elements =
+      List.rev_map (fun d -> block_element parent d) ds.elements |> List.rev;
+    suppress_warnings = ds.suppress_warnings;
+  }
 
 and docs_or_stop parent (d : Component.CComment.docs_or_stop) =
   match d with `Docs d -> `Docs (docs parent d) | `Stop -> `Stop

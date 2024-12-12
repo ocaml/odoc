@@ -571,5 +571,6 @@ let extract_signature_doc (s : Signature.t) =
     | { decl = ModuleType expr; _ } -> uexpr_considered_hidden expr
   in
   match (s.doc, s.items) with
-  | [], Include inc :: _ when should_take_top inc -> inc.expansion.content.doc
+  | { elements = []; _ }, Include inc :: _ when should_take_top inc ->
+      inc.expansion.content.doc
   | doc, _ -> doc

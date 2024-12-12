@@ -433,7 +433,10 @@ and CComment : sig
     | `Media of
       Odoc_model.Comment.media_href * Odoc_model.Comment.media * string ]
 
-  type docs = block_element Odoc_model.Comment.with_location list
+  type docs = {
+    elements : block_element Odoc_model.Comment.with_location list;
+    suppress_warnings : bool;
+  }
 
   type docs_or_stop = [ `Docs of docs | `Stop ]
 end

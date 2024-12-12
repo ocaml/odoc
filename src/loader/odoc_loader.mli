@@ -17,12 +17,14 @@ val read_cmti :
   make_root:make_root ->
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
+  suppress_warnings:bool ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
 val read_cmt :
   make_root:make_root ->
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
+  suppress_warnings:bool ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
 val read_impl :
@@ -35,6 +37,7 @@ val read_cmi :
   make_root:make_root ->
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
+  suppress_warnings:bool ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
 val read_location : Location.t -> Location_.span

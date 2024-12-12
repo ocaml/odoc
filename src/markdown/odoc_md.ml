@@ -20,9 +20,9 @@ let parse id input_s =
   in
   (content, List.map Error.t_of_parser_t parser_warnings @ semantics_warnings)
 
-let mk_page input_s id content =
+let mk_page input_s id elements =
   (* Construct the output file representation *)
-  let zero_heading = Comment.find_zero_heading content in
+  let zero_heading = Comment.find_zero_heading elements in
   let frontmatter = Frontmatter.empty in
   let digest = Digest.file input_s in
   let root =
@@ -34,7 +34,7 @@ let mk_page input_s id content =
     Lang.Page.name = id;
     root;
     children;
-    content;
+    content = { elements; suppress_warnings = false };
     digest;
     linked = false;
     frontmatter;

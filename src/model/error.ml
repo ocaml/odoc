@@ -101,7 +101,11 @@ let print_error ?prefix t = prerr_endline (_to_string ?prefix t)
 
 let print_errors = List.iter print_error
 
-type warnings_options = { warn_error : bool; print_warnings : bool }
+type warnings_options = {
+  warn_error : bool;
+  print_warnings : bool;
+  suppress_warnings : bool;
+}
 
 let print_warnings ~warnings_options warnings =
   if warnings_options.print_warnings then

@@ -17,7 +17,7 @@
 module Paths = Odoc_model.Paths
 
 val read_module_expr :
-  (Ident_env.t ->
+  (Cmi.env ->
   Paths.Identifier.Signature.t ->
   Paths.Identifier.LabelParent.t ->
   Typedtree.module_expr ->
@@ -27,6 +27,7 @@ val read_module_expr :
 val read_interface :
   Odoc_model.Paths.Identifier.ContainerPage.t option ->
   string ->
+  bool ->
   Typedtree.signature ->
   Paths.Identifier.RootModule.t
   * Odoc_model.Lang.Signature.t
@@ -35,33 +36,33 @@ val read_interface :
     [@canonical] tag. *)
 
 val read_module_type :
-  Ident_env.t ->
+  Cmi.env ->
   Paths.Identifier.Signature.t ->
   Paths.Identifier.LabelParent.t ->
   Typedtree.module_type ->
   Odoc_model.Lang.ModuleType.expr
 
 val read_value_description :
-  Ident_env.t ->
+  Cmi.env ->
   Paths.Identifier.Signature.t ->
   Typedtree.value_description ->
   Odoc_model.Lang.Signature.item
 
 val read_type_declarations :
-  Ident_env.t ->
+  Cmi.env ->
   Paths.Identifier.Signature.t ->
   Odoc_model.Lang.Signature.recursive ->
   Typedtree.type_declaration list ->
   Odoc_model.Lang.Signature.item list
 
 val read_module_type_declaration :
-  Ident_env.t ->
+  Cmi.env ->
   Paths.Identifier.Signature.t ->
   Typedtree.module_type_declaration ->
   Odoc_model.Lang.ModuleType.t
 
 val read_class_type_declarations :
-  Ident_env.t ->
+  Cmi.env ->
   Paths.Identifier.Signature.t ->
   Typedtree.class_type Typedtree.class_infos list ->
   Odoc_model.Lang.Signature.item list
