@@ -113,7 +113,9 @@ type block_element =
     heading_attrs * Identifier.Label.t * inline_element with_location list
   | `Tag of tag ]
 
-type docs = block_element with_location list
+type elements = block_element with_location list
+
+type docs = { elements : elements; suppress_warnings : bool }
 
 type docs_or_stop = [ `Docs of docs | `Stop ]
 

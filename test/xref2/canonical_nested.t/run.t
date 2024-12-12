@@ -55,7 +55,10 @@ unresolved in the paths though:
       ]
     },
     "source_loc": "None",
-    "doc": [],
+    "doc": {
+      "elements": [],
+      "suppress_warnings": "false"
+    },
     "type_": {
       "Alias": [
         {
@@ -121,7 +124,10 @@ unresolved in the paths though:
       ]
     },
     "source_loc": "None",
-    "doc": [],
+    "doc": {
+      "elements": [],
+      "suppress_warnings": "false"
+    },
     "type_": {
       "Alias": [
         {
@@ -186,7 +192,10 @@ unresolved in the paths though:
       ]
     },
     "source_loc": "None",
-    "doc": [],
+    "doc": {
+      "elements": [],
+      "suppress_warnings": "false"
+    },
     "type_": {
       "Alias": [
         {
@@ -278,7 +287,10 @@ unresolved in the paths though:
                         ]
                       },
                       "source_loc": "None",
-                      "doc": [],
+                      "doc": {
+                        "elements": [],
+                        "suppress_warnings": "false"
+                      },
                       "equation": {
                         "params": [],
                         "private_": "false",
@@ -291,7 +303,10 @@ unresolved in the paths though:
                 }
               ],
               "compiled": "true",
-              "doc": []
+              "doc": {
+                "elements": [],
+                "suppress_warnings": "false"
+              }
             }
           }
         }

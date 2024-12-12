@@ -141,12 +141,29 @@ let warnings_options =
     let env = Arg.env_var "ODOC_ENABLE_MISSING_ROOT_WARNING" ~doc in
     Arg.(value & flag & info ~docs ~doc ~env [ "enable-missing-root-warning" ])
   in
+  let suppress_warnings =
+    let doc =
+      "Suppress warnings. This is useful when you want to declare that \
+       warnings that would be generated resolving the references defined in \
+       this unit should be ignored if they end up in expansions in other \
+       units."
+    in
+    let env = Arg.env_var "ODOC_SUPPRESS_WARNINGS" ~doc in
+    Arg.(value & flag & info ~docs ~doc ~env [ "suppress-warnings" ])
+  in
   Term.(
-    const (fun warn_error print_warnings enable_missing_root_warning ->
+    const
+      (fun
+        warn_error
+        print_warnings
+        enable_missing_root_warning
+        suppress_warnings
+      ->
         Odoc_model.Error.enable_missing_root_warning :=
           enable_missing_root_warning;
-        { Odoc_model.Error.warn_error; print_warnings })
-    $ warn_error $ print_warnings $ enable_missing_root_warning)
+        { Odoc_model.Error.warn_error; print_warnings; suppress_warnings })
+    $ warn_error $ print_warnings $ enable_missing_root_warning
+    $ suppress_warnings)
 
 let dst ?create () =
   let doc = "Output directory where the HTML tree is expected to be saved." in
@@ -965,7 +982,11 @@ end = struct
           ~roots:None
       in
       let warnings_options =
-        { Odoc_model.Error.warn_error = false; print_warnings = false }
+        {
+          Odoc_model.Error.warn_error = false;
+          print_warnings = false;
+          suppress_warnings = false;
+        }
       in
       Rendering.targets_odoc ~resolver ~warnings_options ~syntax:OCaml
         ~renderer:R.renderer ~output:output_dir ~extra odoc_file
@@ -1000,7 +1021,11 @@ end = struct
   module Targets_source = struct
     let list_targets output_dir source_file extra odoc_file =
       let warnings_options =
-        { Odoc_model.Error.warn_error = false; print_warnings = false }
+        {
+          Odoc_model.Error.warn_error = false;
+          print_warnings = false;
+          suppress_warnings = false;
+        }
       in
       Rendering.targets_source_odoc ~warnings_options ~syntax:OCaml
         ~renderer:R.renderer ~output:output_dir ~extra ~source_file odoc_file

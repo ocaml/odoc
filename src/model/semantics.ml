@@ -531,7 +531,7 @@ let append_alerts_to_comment alerts
           comment)
       alerts
   in
-  comment @ (alerts : alerts :> Comment.docs)
+  comment @ (alerts :> Comment.elements)
 
 let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
   | Expect_status -> (

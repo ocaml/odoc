@@ -34,7 +34,14 @@ let content_for_hidden_modules =
       `Word "hidden.";
     ]
   in
-  [ Comment (`Docs [ with_loc @@ `Paragraph (List.map with_loc sentence) ]) ]
+  [
+    Comment
+      (`Docs
+        {
+          elements = [ with_loc @@ `Paragraph (List.map with_loc sentence) ];
+          suppress_warnings = true;
+        });
+  ]
 
 let link_unit ~resolver ~filename m =
   let open Odoc_model in
@@ -49,7 +56,7 @@ let link_unit ~resolver ~filename m =
               items = content_for_hidden_modules;
               compiled = false;
               removed = [];
-              doc = [];
+              doc = { elements = []; suppress_warnings = false };
             };
         expansion = None;
       }

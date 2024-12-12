@@ -11,7 +11,7 @@ let parser_output_desc =
     ( Error.unpack_warnings,
       Record
         [
-          F ("value", fst, Indirect (fst, Comment_desc.docs));
+          F ("value", fst, Indirect (fst, Comment_desc.elements));
           F ("warnings", snd, List warning_desc);
         ] )
 

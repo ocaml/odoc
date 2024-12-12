@@ -273,7 +273,7 @@ let add_docs (docs : Comment.docs) env =
           let label = Ident.Of_Identifier.label id in
           add_label id { Component.Label.attrs; label; text; location } env
       | _ -> env)
-    env docs
+    env docs.elements
 
 let add_comment (com : Comment.docs_or_stop) env =
   match com with `Docs doc -> add_docs doc env | `Stop -> env
@@ -289,7 +289,7 @@ let add_cdocs p (docs : Component.CComment.docs) env =
           in
           add_label label h env
       | _ -> env)
-    env docs
+    env docs.elements
 
 let add_module identifier m docs env =
   let env' = add_to_elts Kind_Module identifier (`Module (identifier, m)) env in
@@ -373,7 +373,7 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
           {
             id;
             source_loc = None;
-            doc = [];
+            doc = { elements = []; suppress_warnings = false };
             type_ = ModuleType (Signature s);
             canonical = unit.canonical;
             hidden = unit.hidden;
@@ -387,11 +387,16 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
           {
             id;
             source_loc = None;
-            doc = [];
+            doc = { elements = []; suppress_warnings = false };
             type_ =
               ModuleType
                 (Signature
-                   { items = []; compiled = true; removed = []; doc = [] });
+                   {
+                     items = [];
+                     compiled = true;
+                     removed = [];
+                     doc = { elements = []; suppress_warnings = false };
+                   });
             canonical = unit.canonical;
             hidden = unit.hidden;
           }
@@ -644,7 +649,13 @@ let lookup_fragment_root env =
 let mk_functor_parameter module_type =
   let type_ = Component.Module.ModuleType module_type in
   Component.Module.
-    { source_loc = None; doc = []; type_; canonical = None; hidden = false }
+    {
+      source_loc = None;
+      doc = { elements = []; suppress_warnings = false };
+      type_;
+      canonical = None;
+      hidden = false;
+    }
 
 let add_functor_parameter : Lang.FunctorParameter.t -> t -> t =
  fun p t ->
@@ -656,7 +667,10 @@ let add_functor_parameter : Lang.FunctorParameter.t -> t -> t =
         let open Component.Of_Lang in
         mk_functor_parameter (module_type_expr (empty ()) n.expr)
       in
-      add_module id (Component.Delayed.put_val m) [] t
+      add_module id
+        (Component.Delayed.put_val m)
+        { elements = []; suppress_warnings = false }
+        t
 
 let add_functor_args' :
     Paths.Identifier.Signature.t -> Component.ModuleType.expr -> t -> t =

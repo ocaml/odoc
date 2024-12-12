@@ -271,7 +271,7 @@ let any_in_sig sg name =
         | Some r -> Some (`In_type (N.typed_type id, typ, r))
         | None -> None)
     | TypExt typext -> any_in_typext typext name
-    | Comment (`Docs d) -> any_in_comment d (LabelName.make_std name)
+    | Comment (`Docs d) -> any_in_comment d.elements (LabelName.make_std name)
     | _ -> None)
 
 let signature_in_sig sg name =
@@ -303,7 +303,7 @@ let value_in_sig sg name =
 
 let label_in_sig sg name =
   filter_in_sig sg (function
-    | Signature.Comment (`Docs d) -> any_in_comment d name
+    | Signature.Comment (`Docs d) -> any_in_comment d.elements name
     | _ -> None)
 
 let exception_in_sig sg name =

@@ -33,8 +33,7 @@ type general_block_element =
     Comment.heading_attrs * Identifier.Label.t * general_link_content
   | `Tag of general_tag
   | `Media of
-    [ `Reference of Paths.Reference.t | `Link of string ] * media * string
-  | `MediaLink of string * media * general_link_content ]
+    [ `Reference of Paths.Reference.t | `Link of string ] * media * string ]
 
 and general_tag =
   [ `Author of string
@@ -133,12 +132,15 @@ let rec block_element : general_block_element t =
     | `Verbatim x -> C ("`Verbatim", x, string)
     | `Modules x -> C ("`Modules", x, List module_reference)
     | `List (x1, x2) ->
-        C ("`List", (x1, (x2 :> general_docs list)), Pair (list_kind, List docs))
+        C
+          ( "`List",
+            (x1, (x2 :> general_docs list)),
+            Pair (list_kind, List general_content) )
     | `Table { data; align } ->
         let cell_type_desc =
           Variant (function `Header -> C0 "`Header" | `Data -> C0 "`Data")
         in
-        let data_desc = List (List (Pair (docs, cell_type_desc))) in
+        let data_desc = List (List (Pair (general_content, cell_type_desc))) in
         let align_desc =
           Option
             (Variant
@@ -153,9 +155,7 @@ let rec block_element : general_block_element t =
     | `Heading h -> C ("`Heading", h, heading)
     | `Tag x -> C ("`Tag", x, tag)
     | `Media (x1, m, x2) ->
-        C ("`MediaReference", (x1, m, x2), Triple (media_href, media, string))
-    | `MediaLink (x1, m, x2) ->
-        C ("`MediaLink", (x1, m, x2), Triple (string, media, link_content)))
+        C ("`Media", (x1, m, x2), Triple (media_href, media, string)))
 
 and tag : general_tag t =
   let url_kind =
@@ -166,24 +166,32 @@ and tag : general_tag t =
   Variant
     (function
     | `Author x -> C ("`Author", x, string)
-    | `Deprecated x -> C ("`Deprecated", x, docs)
-    | `Param (x1, x2) -> C ("`Param", (x1, x2), Pair (string, docs))
+    | `Deprecated x -> C ("`Deprecated", x, general_content)
+    | `Param (x1, x2) -> C ("`Param", (x1, x2), Pair (string, general_content))
     | `Raise (x1, x2) ->
         C
           ( "`Raise",
             ((x1 :> general_inline_element), x2),
-            Pair (inline_element, docs) )
-    | `Return x -> C ("`Return", x, docs)
+            Pair (inline_element, general_content) )
+    | `Return x -> C ("`Return", x, general_content)
     | `See (x1, x2, x3) ->
-        C ("`See", (x1, x2, x3), Triple (url_kind, string, docs))
+        C ("`See", (x1, x2, x3), Triple (url_kind, string, general_content))
     | `Since x -> C ("`Since", x, string)
-    | `Before (x1, x2) -> C ("`Before", (x1, x2), Pair (string, docs))
+    | `Before (x1, x2) -> C ("`Before", (x1, x2), Pair (string, general_content))
     | `Version x -> C ("`Version", x, string)
     | `Alert (x1, x2) -> C ("`Alert", (x1, x2), Pair (string, Option string)))
 
-and docs : general_docs t = List (Indirect (ignore_loc, block_element))
+and general_content : general_docs t =
+  List (Indirect (ignore_loc, block_element))
 
-let docs = Indirect ((fun n -> ((n :> docs) :> general_docs)), docs)
+let elements : elements t =
+  Indirect ((fun x -> (x :> general_docs)), general_content)
+let docs =
+  Record
+    [
+      F ("elements", (fun h -> h.elements), elements);
+      F ("suppress_warnings", (fun h -> h.suppress_warnings), bool);
+    ]
 
 let docs_or_stop : docs_or_stop t =
   Variant (function `Docs x -> C ("`Docs", x, docs) | `Stop -> C0 "`Stop")
