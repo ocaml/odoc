@@ -416,6 +416,7 @@ let of_libs ~packages_dir libs =
   fix_missing_deps packages
 
 let of_packages ~packages_dir packages =
+  Format.eprintf "Computing deps... \n%!";
   let deps =
     if packages = [] then Opam.all_opam_packages () else Opam.deps packages
   in
@@ -441,6 +442,7 @@ let of_packages ~packages_dir packages =
 
   let all = orig @ ps in
 
+  Format.eprintf "Analyzing packages needed to be built... \n%!";
   let packages =
     List.fold_left
       (fun acc (pkg, files) ->
