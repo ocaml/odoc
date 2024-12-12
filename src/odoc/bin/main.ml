@@ -687,11 +687,16 @@ end = struct
     validate_current_package ?detected_package page_roots current_package
 
   let link directories page_roots lib_roots input_file output_file
-      current_package warnings_options open_modules =
+      current_package warnings_options open_modules custom_layout =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
-    Antichain.check (page_roots |> List.map ~f:snd) ~opt:"-P" >>= fun () ->
-    Antichain.check (lib_roots |> List.map ~f:snd) ~opt:"-L" >>= fun () ->
+    let check () =
+      if not custom_layout then
+        Antichain.check (page_roots |> List.map ~f:snd) ~opt:"-P" >>= fun () ->
+        Antichain.check (lib_roots |> List.map ~f:snd) ~opt:"-L"
+      else Ok ()
+    in
+    check () >>= fun () ->
     let current_lib = current_library_of_input lib_roots input in
     find_current_package ~current_package page_roots input
     >>= fun current_package ->
@@ -759,6 +764,13 @@ end = struct
       & opt (some string) None
       & info ~docs ~docv:"pkgname" ~doc [ "current-package" ])
 
+  let custom_layout =
+    let doc =
+      "Signal that a custom layout is being used. This disables the checks \
+       that the library and package paths are disjoint."
+    in
+    Arg.(value & flag (info ~doc [ "custom-layout" ]))
+
   let cmd =
     let input =
       let doc = "Input file" in
@@ -767,7 +779,8 @@ end = struct
     Term.(
       const handle_error
       $ (const link $ odoc_file_directories $ page_roots $ lib_roots $ input
-       $ dst $ current_package $ warnings_options $ open_modules))
+       $ dst $ current_package $ warnings_options $ open_modules $ custom_layout
+        ))
 
   let info ~docs =
     let man =
