@@ -206,7 +206,9 @@ and so we simply look up the type in the environment, giving a `Component.Type.t
             ihash = 818126955; ikey = "r_Root.p_None"},
            x);
        ihash = 622581103; ikey = "t_x.r_Root.p_None"};
-     source_loc = None; doc = []; canonical = None;
+     source_loc = None;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+     canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
        manifest = None; constraints = []};
@@ -224,7 +226,9 @@ and so we simply look up the type in the environment, giving a `Component.Type.t
             ihash = 818126955; ikey = "r_Root.p_None"},
            u);
        ihash = 15973539; ikey = "t_u.r_Root.p_None"};
-     source_loc = None; doc = []; canonical = None;
+     source_loc = None;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+     canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
        manifest =
@@ -246,7 +250,8 @@ and so we simply look up the type in the environment, giving a `Component.Type.t
            []));
        constraints = []};
      representation = None})];
- compiled = true; removed = []; doc = []}
+ compiled = true; removed = [];
+ doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false}}
 ```
 
 ### One module
@@ -332,7 +337,10 @@ val path : Cpath.Resolved.module_ =
 val module_ : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
-     {Odoc_xref2.Component.Module.source_loc = None; doc = [];
+     {Odoc_xref2.Component.Module.source_loc = None;
+      doc =
+       {Odoc_xref2.Component.CComment.elements = [];
+        suppress_warnings = false};
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.Signature
@@ -341,14 +349,20 @@ val module_ : Component.Module.t Component.Delayed.t =
               Odoc_model.Lang.Signature.Ordinary,
               {Odoc_xref2.Component.Delayed.v =
                 Some
-                 {Odoc_xref2.Component.TypeDecl.source_loc = None; doc = [];
+                 {Odoc_xref2.Component.TypeDecl.source_loc = None;
+                  doc =
+                   {Odoc_xref2.Component.CComment.elements = [];
+                    suppress_warnings = false};
                   canonical = None;
                   equation =
                    {Odoc_xref2.Component.TypeDecl.Equation.params = [];
                     private_ = false; manifest = None; constraints = []};
                   representation = None};
                get = None})];
-           compiled = false; removed = []; doc = []});
+           compiled = false; removed = [];
+           doc =
+            {Odoc_xref2.Component.CComment.elements = [];
+             suppress_warnings = false}});
       canonical = None; hidden = false};
    get = None}
 ```
@@ -364,14 +378,19 @@ Odoc_xref2.Tools.Signature
      Odoc_model.Lang.Signature.Ordinary,
      {Odoc_xref2.Component.Delayed.v =
        Some
-        {Odoc_xref2.Component.TypeDecl.source_loc = None; doc = [];
+        {Odoc_xref2.Component.TypeDecl.source_loc = None;
+         doc =
+          {Odoc_xref2.Component.CComment.elements = [];
+           suppress_warnings = false};
          canonical = None;
          equation =
           {Odoc_xref2.Component.TypeDecl.Equation.params = [];
            private_ = false; manifest = None; constraints = []};
          representation = None};
       get = None})];
-  compiled = false; removed = []; doc = []}
+  compiled = false; removed = [];
+  doc =
+   {Odoc_xref2.Component.CComment.elements = []; suppress_warnings = false}}
 ```
 
 We're now in a position to verify the existence of the type `t` we're
@@ -419,7 +438,10 @@ val path : Cpath.Resolved.module_ =
 val module_ : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
-     {Odoc_xref2.Component.Module.source_loc = None; doc = [];
+     {Odoc_xref2.Component.Module.source_loc = None;
+      doc =
+       {Odoc_xref2.Component.CComment.elements = [];
+        suppress_warnings = false};
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.Path
@@ -485,7 +507,10 @@ val m : Component.Element.module_type option =
              ihash = 818126955; ikey = "r_Root.p_None"},
             M);
         ihash = 459143770; ikey = "mt_M.r_Root.p_None"},
-       {Odoc_xref2.Component.ModuleType.source_loc = None; doc = [];
+       {Odoc_xref2.Component.ModuleType.source_loc = None;
+        doc =
+         {Odoc_xref2.Component.CComment.elements = [];
+          suppress_warnings = false};
         canonical = None;
         expr =
          Some
@@ -496,7 +521,10 @@ val m : Component.Element.module_type option =
                 {Odoc_xref2.Component.Delayed.v =
                   Some
                    {Odoc_xref2.Component.ModuleType.source_loc = None;
-                    doc = []; canonical = None;
+                    doc =
+                     {Odoc_xref2.Component.CComment.elements = [];
+                      suppress_warnings = false};
+                    canonical = None;
                     expr =
                      Some
                       (Odoc_xref2.Component.ModuleType.Signature
@@ -508,7 +536,10 @@ val m : Component.Element.module_type option =
                               Some
                                {Odoc_xref2.Component.TypeDecl.source_loc =
                                  None;
-                                doc = []; canonical = None;
+                                doc =
+                                 {Odoc_xref2.Component.CComment.elements = [];
+                                  suppress_warnings = false};
+                                canonical = None;
                                 equation =
                                  {Odoc_xref2.Component.TypeDecl.Equation.params
                                    = [];
@@ -516,13 +547,19 @@ val m : Component.Element.module_type option =
                                   constraints = []};
                                 representation = None};
                              get = None})];
-                         compiled = false; removed = []; doc = []})};
+                         compiled = false; removed = [];
+                         doc =
+                          {Odoc_xref2.Component.CComment.elements = [];
+                           suppress_warnings = false}})};
                  get = None});
                Odoc_xref2.Component.Signature.Module (`LModule (B, 0),
                 Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_xref2.Component.Delayed.v =
                   Some
-                   {Odoc_xref2.Component.Module.source_loc = None; doc = [];
+                   {Odoc_xref2.Component.Module.source_loc = None;
+                    doc =
+                     {Odoc_xref2.Component.CComment.elements = [];
+                      suppress_warnings = false};
                     type_ =
                      Odoc_xref2.Component.Module.ModuleType
                       (Odoc_xref2.Component.ModuleType.Path
@@ -530,7 +567,10 @@ val m : Component.Element.module_type option =
                          p_path = `Local (`LModuleType (N, 1), false)});
                     canonical = None; hidden = false};
                  get = None})];
-             compiled = false; removed = []; doc = []})}))
+             compiled = false; removed = [];
+             doc =
+              {Odoc_xref2.Component.CComment.elements = [];
+               suppress_warnings = false}})}))
 ```
 
 We can see here that module `B` has type `` Path (`Resolved (`Local (`LModuleType (N, 1)))) `` which refers to the module type defined just above it.
@@ -840,7 +880,8 @@ val module_C_lens :
         ihash = 818126955; ikey = "r_Root.p_None"},
        C);
    ihash = 43786577; ikey = "m_C.r_Root.p_None"};
- source_loc = None; doc = [];
+ source_loc = None;
+ doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
  type_ =
   Odoc_model.Lang.Module.ModuleType
    (Odoc_model.Lang.ModuleType.With
@@ -888,7 +929,10 @@ of module `C` we see the following:
 val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
-     {Odoc_xref2.Component.Module.source_loc = None; doc = [];
+     {Odoc_xref2.Component.Module.source_loc = None;
+      doc =
+       {Odoc_xref2.Component.CComment.elements = [];
+        suppress_warnings = false};
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.With
@@ -941,7 +985,10 @@ val sg : Tools.expansion =
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
-          {Odoc_xref2.Component.Module.source_loc = None; doc = [];
+          {Odoc_xref2.Component.Module.source_loc = None;
+           doc =
+            {Odoc_xref2.Component.CComment.elements = [];
+             suppress_warnings = false};
            type_ =
             Odoc_xref2.Component.Module.Alias
              (`Identifier
@@ -964,7 +1011,10 @@ val sg : Tools.expansion =
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
-          {Odoc_xref2.Component.Module.source_loc = None; doc = [];
+          {Odoc_xref2.Component.Module.source_loc = None;
+           doc =
+            {Odoc_xref2.Component.CComment.elements = [];
+             suppress_warnings = false};
            type_ =
             Odoc_xref2.Component.Module.ModuleType
              (Odoc_xref2.Component.ModuleType.Path
@@ -973,7 +1023,9 @@ val sg : Tools.expansion =
                  `DotMT (`Substituted (`Local (`LModule (M, 32), false)), S)});
            canonical = None; hidden = false};
         get = None})];
-    compiled = false; removed = []; doc = []}
+    compiled = false; removed = [];
+    doc =
+     {Odoc_xref2.Component.CComment.elements = []; suppress_warnings = false}}
 ```
 
 and we can see the module `M` is now an alias of the root module `B`. We can now
@@ -985,7 +1037,10 @@ look up module `N` from within this and find its signature:
 val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
-     {Odoc_xref2.Component.Module.source_loc = None; doc = [];
+     {Odoc_xref2.Component.Module.source_loc = None;
+      doc =
+       {Odoc_xref2.Component.CComment.elements = [];
+        suppress_warnings = false};
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.Path
@@ -1021,14 +1076,19 @@ Odoc_xref2.Tools.Signature
      Odoc_model.Lang.Signature.Ordinary,
      {Odoc_xref2.Component.Delayed.v =
        Some
-        {Odoc_xref2.Component.TypeDecl.source_loc = None; doc = [];
+        {Odoc_xref2.Component.TypeDecl.source_loc = None;
+         doc =
+          {Odoc_xref2.Component.CComment.elements = [];
+           suppress_warnings = false};
          canonical = None;
          equation =
           {Odoc_xref2.Component.TypeDecl.Equation.params = [];
            private_ = false; manifest = None; constraints = []};
          representation = None};
       get = None})];
-  compiled = false; removed = []; doc = []}
+  compiled = false; removed = [];
+  doc =
+   {Odoc_xref2.Component.CComment.elements = []; suppress_warnings = false}}
 ```
 
 where we've correctly identified that a type `t` exists in the signature. The path in
@@ -1589,7 +1649,10 @@ val p : Cpath.Resolved.module_ =
 val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
-     {Odoc_xref2.Component.Module.source_loc = None; doc = [];
+     {Odoc_xref2.Component.Module.source_loc = None;
+      doc =
+       {Odoc_xref2.Component.CComment.elements = [];
+        suppress_warnings = false};
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.Path
@@ -1641,7 +1704,10 @@ val sg' : Tools.expansion =
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
-          {Odoc_xref2.Component.Module.source_loc = None; doc = [];
+          {Odoc_xref2.Component.Module.source_loc = None;
+           doc =
+            {Odoc_xref2.Component.CComment.elements = [];
+             suppress_warnings = false};
            type_ =
             Odoc_xref2.Component.Module.ModuleType
              (Odoc_xref2.Component.ModuleType.Path
@@ -1671,7 +1737,9 @@ val sg' : Tools.expansion =
                     T)});
            canonical = None; hidden = false};
         get = None})];
-    compiled = false; removed = []; doc = []}
+    compiled = false; removed = [];
+    doc =
+     {Odoc_xref2.Component.CComment.elements = []; suppress_warnings = false}}
 # let sg' = get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m);;
 val sg' : Tools.expansion =
   Odoc_xref2.Tools.Signature
@@ -1680,7 +1748,10 @@ val sg' : Tools.expansion =
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
-          {Odoc_xref2.Component.Module.source_loc = None; doc = [];
+          {Odoc_xref2.Component.Module.source_loc = None;
+           doc =
+            {Odoc_xref2.Component.CComment.elements = [];
+             suppress_warnings = false};
            type_ =
             Odoc_xref2.Component.Module.ModuleType
              (Odoc_xref2.Component.ModuleType.Path
@@ -1710,7 +1781,9 @@ val sg' : Tools.expansion =
                     T)});
            canonical = None; hidden = false};
         get = None})];
-    compiled = false; removed = []; doc = []}
+    compiled = false; removed = [];
+    doc =
+     {Odoc_xref2.Component.CComment.elements = []; suppress_warnings = false}}
 # let sg' = get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m);;
 val sg' : Tools.expansion =
   Odoc_xref2.Tools.Signature
@@ -1719,7 +1792,10 @@ val sg' : Tools.expansion =
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
-          {Odoc_xref2.Component.Module.source_loc = None; doc = [];
+          {Odoc_xref2.Component.Module.source_loc = None;
+           doc =
+            {Odoc_xref2.Component.CComment.elements = [];
+             suppress_warnings = false};
            type_ =
             Odoc_xref2.Component.Module.ModuleType
              (Odoc_xref2.Component.ModuleType.Path
@@ -1749,7 +1825,9 @@ val sg' : Tools.expansion =
                     T)});
            canonical = None; hidden = false};
         get = None})];
-    compiled = false; removed = []; doc = []}
+    compiled = false; removed = [];
+    doc =
+     {Odoc_xref2.Component.CComment.elements = []; suppress_warnings = false}}
 # let sg' = get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m);;
 val sg' : Tools.expansion =
   Odoc_xref2.Tools.Signature
@@ -1758,7 +1836,10 @@ val sg' : Tools.expansion =
        Odoc_model.Lang.Signature.Ordinary,
        {Odoc_xref2.Component.Delayed.v =
          Some
-          {Odoc_xref2.Component.Module.source_loc = None; doc = [];
+          {Odoc_xref2.Component.Module.source_loc = None;
+           doc =
+            {Odoc_xref2.Component.CComment.elements = [];
+             suppress_warnings = false};
            type_ =
             Odoc_xref2.Component.Module.ModuleType
              (Odoc_xref2.Component.ModuleType.Path
@@ -1788,7 +1869,9 @@ val sg' : Tools.expansion =
                     T)});
            canonical = None; hidden = false};
         get = None})];
-    compiled = false; removed = []; doc = []}
+    compiled = false; removed = [];
+    doc =
+     {Odoc_xref2.Component.CComment.elements = []; suppress_warnings = false}}
 ```
 
 ```ocaml env=e1
@@ -2537,27 +2620,29 @@ let resolved = Common.compile_signature sg;;
    ihash = 1016576344; ikey = "t_t.r_Root.p_None"};
  source_loc = None;
  doc =
-  [{Odoc_model__.Location_.location =
-     {Odoc_model__.Location_.file = "";
-      start = {Odoc_model__.Location_.line = 3; column = 6};
-      end_ = {Odoc_model__.Location_.line = 3; column = 14}};
-    value =
-     `Paragraph
-       [{Odoc_model__.Location_.location =
-          {Odoc_model__.Location_.file = "";
-           start = {Odoc_model__.Location_.line = 3; column = 6};
-           end_ = {Odoc_model__.Location_.line = 3; column = 9}};
-         value = `Code_span "t"};
-        {Odoc_model__.Location_.location =
-          {Odoc_model__.Location_.file = "";
-           start = {Odoc_model__.Location_.line = 3; column = 9};
-           end_ = {Odoc_model__.Location_.line = 3; column = 10}};
-         value = `Space};
-        {Odoc_model__.Location_.location =
-          {Odoc_model__.Location_.file = "";
-           start = {Odoc_model__.Location_.line = 3; column = 10};
-           end_ = {Odoc_model__.Location_.line = 3; column = 14}};
-         value = `Reference (`Root ("t", `TUnknown), [])}]}];
+  {Odoc_model__.Comment.elements =
+    [{Odoc_model__.Location_.location =
+       {Odoc_model__.Location_.file = "";
+        start = {Odoc_model__.Location_.line = 3; column = 6};
+        end_ = {Odoc_model__.Location_.line = 3; column = 14}};
+      value =
+       `Paragraph
+         [{Odoc_model__.Location_.location =
+            {Odoc_model__.Location_.file = "";
+             start = {Odoc_model__.Location_.line = 3; column = 6};
+             end_ = {Odoc_model__.Location_.line = 3; column = 9}};
+           value = `Code_span "t"};
+          {Odoc_model__.Location_.location =
+            {Odoc_model__.Location_.file = "";
+             start = {Odoc_model__.Location_.line = 3; column = 9};
+             end_ = {Odoc_model__.Location_.line = 3; column = 10}};
+           value = `Space};
+          {Odoc_model__.Location_.location =
+            {Odoc_model__.Location_.file = "";
+             start = {Odoc_model__.Location_.line = 3; column = 10};
+             end_ = {Odoc_model__.Location_.line = 3; column = 14}};
+           value = `Reference (`Root ("t", `TUnknown), [])}]}];
+   suppress_warnings = false};
  canonical = None;
  equation =
   {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -2599,7 +2684,9 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 818126955; ikey = "r_Root.p_None"},
            M);
        ihash = 459143770; ikey = "mt_M.r_Root.p_None"};
-     source_loc = None; doc = []; canonical = None;
+     source_loc = None;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+     canonical = None;
      expr =
       Some
        (Odoc_model.Lang.ModuleType.Signature
@@ -2623,12 +2710,18 @@ let sg = Common.signature_of_mli_string test_data;;
                      ihash = 459143770; ikey = "mt_M.r_Root.p_None"},
                     t);
                 ihash = 825731485; ikey = "t_t.mt_M.r_Root.p_None"};
-              source_loc = None; doc = []; canonical = None;
+              source_loc = None;
+              doc =
+               {Odoc_model__.Comment.elements = [];
+                suppress_warnings = false};
+              canonical = None;
               equation =
                {Odoc_model.Lang.TypeDecl.Equation.params = [];
                 private_ = false; manifest = None; constraints = []};
               representation = None})];
-          compiled = false; removed = []; doc = []})};
+          compiled = false; removed = [];
+          doc =
+           {Odoc_model__.Comment.elements = []; suppress_warnings = false}})};
    Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
     {Odoc_model.Lang.TypeDecl.id =
       {Odoc_model__Paths_types.iv =
@@ -2642,7 +2735,9 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 818126955; ikey = "r_Root.p_None"},
            u);
        ihash = 15973539; ikey = "t_u.r_Root.p_None"};
-     source_loc = None; doc = []; canonical = None;
+     source_loc = None;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+     canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
        manifest = None; constraints = []};
@@ -2660,7 +2755,9 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 818126955; ikey = "r_Root.p_None"},
            M1);
        ihash = 756272831; ikey = "mt_M1.r_Root.p_None"};
-     source_loc = None; doc = []; canonical = None;
+     source_loc = None;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+     canonical = None;
      expr =
       Some
        (Odoc_model.Lang.ModuleType.With
@@ -2703,7 +2800,8 @@ let sg = Common.signature_of_mli_string test_data;;
                         ihash = 818126955; ikey = "r_Root.p_None"},
                        M);
                    ihash = 459143770; ikey = "mt_M.r_Root.p_None"}))})}];
- compiled = false; removed = []; doc = []}
+ compiled = false; removed = [];
+ doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false}}
 ```
 
 # Expansion continued
@@ -2750,7 +2848,10 @@ Odoc_model.Lang.ModuleType.Path
                   ihash = 716453475; ikey = "m_M.r_Root.p_None"},
                  s);
              ihash = 395135148; ikey = "t_s.m_M.r_Root.p_None"};
-           source_loc = None; doc = []; canonical = None;
+           source_loc = None;
+           doc =
+            {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+           canonical = None;
            equation =
             {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
              manifest = None; constraints = []};
@@ -2778,7 +2879,9 @@ Odoc_model.Lang.ModuleType.Path
                         ihash = 395135148; ikey = "t_s.m_M.r_Root.p_None"},
                        <abstr>);
                    ihash = 2570800; ikey = "ctor_C.t_s.m_M.r_Root.p_None"};
-                 doc = [];
+                 doc =
+                  {Odoc_model__.Comment.elements = [];
+                   suppress_warnings = false};
                  args =
                   Odoc_model.Lang.TypeDecl.Constructor.Tuple
                    [Odoc_model.Lang.TypeExpr.Constr
@@ -2820,7 +2923,8 @@ Odoc_model.Lang.ModuleType.Path
                             t)),
                      [])];
                  res = None}])})];
-       compiled = true; removed = []; doc = []});
+       compiled = true; removed = [];
+       doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false}});
   p_path =
    `Resolved
      (`ModuleType
@@ -2905,7 +3009,8 @@ let m_e_i_s_value mod_name n val_name =
         ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
        id);
    ihash = 424389437; ikey = "v_id.m_Foo3.r_Root.p_None"};
- source_loc = None; value = Odoc_model.Lang.Value.Abstract; doc = [];
+ source_loc = None; value = Odoc_model.Lang.Value.Abstract;
+ doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
  type_ =
   Odoc_model.Lang.TypeExpr.Constr
    (`DotT
@@ -2942,7 +3047,8 @@ let m_e_i_s_value mod_name n val_name =
         ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
        id2);
    ihash = 412619918; ikey = "v_id2.m_Foo3.r_Root.p_None"};
- source_loc = None; value = Odoc_model.Lang.Value.Abstract; doc = [];
+ source_loc = None; value = Odoc_model.Lang.Value.Abstract;
+ doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
  type_ =
   Odoc_model.Lang.TypeExpr.Constr
    (`Identifier
@@ -3015,7 +3121,9 @@ let sg = Common.signature_of_mli_string test_data;;
            {t}3/shadowed/(XXXX));
        ihash = 584226322;
        ikey = "t_{t}3/shadowed/(XXXX).m_Foo3.r_Root.p_None"};
-     source_loc = None; doc = []; canonical = None;
+     source_loc = None;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+     canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
        manifest =
@@ -3056,7 +3164,8 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
            id);
        ihash = 424389437; ikey = "v_id.m_Foo3.r_Root.p_None"};
-     source_loc = None; value = Odoc_model.Lang.Value.Abstract; doc = [];
+     source_loc = None; value = Odoc_model.Lang.Value.Abstract;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
        (`Identifier
@@ -3078,7 +3187,8 @@ let sg = Common.signature_of_mli_string test_data;;
             ikey = "t_{t}3/shadowed/(XXXX).m_Foo3.r_Root.p_None"},
            false),
        [])}];
- compiled = false; removed = []; doc = []}
+ compiled = false; removed = [];
+ doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false}}
 # Common.LangUtils.Lens.get (module_expansion_include_sig "Foo3" 1) sg;;
 - : Odoc_model.Lang.Signature.t =
 {Odoc_model.Lang.Signature.items =
@@ -3100,7 +3210,9 @@ let sg = Common.signature_of_mli_string test_data;;
            {t}4/shadowed/(XXXX));
        ihash = 466750041;
        ikey = "t_{t}4/shadowed/(XXXX).m_Foo3.r_Root.p_None"};
-     source_loc = None; doc = []; canonical = None;
+     source_loc = None;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+     canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
        manifest =
@@ -3141,7 +3253,8 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
            id2);
        ihash = 412619918; ikey = "v_id2.m_Foo3.r_Root.p_None"};
-     source_loc = None; value = Odoc_model.Lang.Value.Abstract; doc = [];
+     source_loc = None; value = Odoc_model.Lang.Value.Abstract;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
        (`Identifier
@@ -3163,7 +3276,8 @@ let sg = Common.signature_of_mli_string test_data;;
             ikey = "t_{t}4/shadowed/(XXXX).m_Foo3.r_Root.p_None"},
            false),
        [])}];
- compiled = false; removed = []; doc = []}
+ compiled = false; removed = [];
+ doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false}}
 ```
 
 
@@ -3217,7 +3331,9 @@ let sg = Common.signature_of_mli_string test_data;;
            {t}5/shadowed/(XXXX));
        ihash = 995358055;
        ikey = "t_{t}5/shadowed/(XXXX).m_Foo3.r_Root.p_None"};
-     source_loc = None; doc = []; canonical = None;
+     source_loc = None;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+     canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
        manifest =
@@ -3259,7 +3375,8 @@ let sg = Common.signature_of_mli_string test_data;;
            {x}6/shadowed/(XXXX));
        ihash = 1011043008;
        ikey = "v_{x}6/shadowed/(XXXX).m_Foo3.r_Root.p_None"};
-     source_loc = None; value = Odoc_model.Lang.Value.Abstract; doc = [];
+     source_loc = None; value = Odoc_model.Lang.Value.Abstract;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
      type_ = Odoc_model.Lang.TypeExpr.Constr (`Resolved (`CoreType int), [])};
    Odoc_model.Lang.Signature.Value
     {Odoc_model.Lang.Value.id =
@@ -3278,7 +3395,8 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
            id);
        ihash = 424389437; ikey = "v_id.m_Foo3.r_Root.p_None"};
-     source_loc = None; value = Odoc_model.Lang.Value.Abstract; doc = [];
+     source_loc = None; value = Odoc_model.Lang.Value.Abstract;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
        (`Identifier
@@ -3300,7 +3418,8 @@ let sg = Common.signature_of_mli_string test_data;;
             ikey = "t_{t}5/shadowed/(XXXX).m_Foo3.r_Root.p_None"},
            false),
        [])}];
- compiled = false; removed = []; doc = []}
+ compiled = false; removed = [];
+ doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false}}
 ```
 
 
@@ -3353,7 +3472,8 @@ let sg = Common.signature_of_mli_string test_data;;
            {Bar}8/shadowed/(XXXX));
        ihash = 38422300;
        ikey = "m_{Bar}8/shadowed/(XXXX).m_Foo3.r_Root.p_None"};
-     source_loc = None; doc = [];
+     source_loc = None;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
      type_ =
       Odoc_model.Lang.Module.Alias
        (`Dot
@@ -3390,7 +3510,8 @@ let sg = Common.signature_of_mli_string test_data;;
             ihash = 670280318; ikey = "m_Foo3.r_Root.p_None"},
            id);
        ihash = 424389437; ikey = "v_id.m_Foo3.r_Root.p_None"};
-     source_loc = None; value = Odoc_model.Lang.Value.Abstract; doc = [];
+     source_loc = None; value = Odoc_model.Lang.Value.Abstract;
+     doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
      type_ =
       Odoc_model.Lang.TypeExpr.Constr
        (`DotT
@@ -3415,5 +3536,6 @@ let sg = Common.signature_of_mli_string test_data;;
               true),
            t),
        [])}];
- compiled = false; removed = []; doc = []}
+ compiled = false; removed = [];
+ doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false}}
 ```

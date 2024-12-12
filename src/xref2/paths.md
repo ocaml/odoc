@@ -434,7 +434,9 @@ val sg : Odoc_model.Lang.Signature.t =
               ihash = 818126955; ikey = "r_Root.p_None"},
              ARG);
          ihash = 379411454; ikey = "mt_ARG.r_Root.p_None"};
-       source_loc = None; doc = []; canonical = None;
+       source_loc = None;
+       doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+       canonical = None;
        expr =
         Some
          (Odoc_model.Lang.ModuleType.Signature
@@ -457,8 +459,14 @@ val sg : Odoc_model.Lang.Signature.t =
                        ihash = 379411454; ikey = "mt_ARG.r_Root.p_None"},
                       S);
                   ihash = 208722936; ikey = "mt_S.mt_ARG.r_Root.p_None"};
-                source_loc = None; doc = []; canonical = None; expr = None}];
-            compiled = true; removed = []; doc = []})};
+                source_loc = None;
+                doc =
+                 {Odoc_model__.Comment.elements = [];
+                  suppress_warnings = false};
+                canonical = None; expr = None}];
+            compiled = true; removed = [];
+            doc =
+             {Odoc_model__.Comment.elements = []; suppress_warnings = false}})};
      Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
       {Odoc_model.Lang.Module.id =
         {Odoc_model__Paths_types.iv =
@@ -472,7 +480,8 @@ val sg : Odoc_model.Lang.Signature.t =
               ihash = 818126955; ikey = "r_Root.p_None"},
              F);
          ihash = 748202139; ikey = "m_F.r_Root.p_None"};
-       source_loc = None; doc = [];
+       source_loc = None;
+       doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
        type_ =
         Odoc_model.Lang.Module.ModuleType
          (Odoc_model.Lang.ModuleType.Functor
@@ -527,9 +536,15 @@ val sg : Odoc_model.Lang.Signature.t =
                                 S);
                             ihash = 313393860;
                             ikey = "mt_S.p_X.m_F.r_Root.p_None"};
-                          source_loc = None; doc = []; canonical = None;
-                          expr = None}];
-                      compiled = true; removed = []; doc = []});
+                          source_loc = None;
+                          doc =
+                           {Odoc_model__.Comment.elements = [];
+                            suppress_warnings = false};
+                          canonical = None; expr = None}];
+                      compiled = true; removed = [];
+                      doc =
+                       {Odoc_model__.Comment.elements = [];
+                        suppress_warnings = false}});
                  p_path =
                   `Resolved
                     (`Identifier
@@ -565,25 +580,19 @@ val sg : Odoc_model.Lang.Signature.t =
                                      Root);
                                  ihash = 818126955;
                                  ikey =
-                                  "r_Root.p_Non"... (* string length 13; truncated *)},
-                                F);
-                            ihash = 748202139;
-                            ikey =
-                             "m_F.r_Roo"... (* string length 17; truncated *)};
-                        ihash = 709672416;
-                        ikey =
-                         "___resul"... (* string length 29; truncated *)},
-                       N);
-                   ihash = 837385364;
-                   ikey = "m_N.___r"... (* string length 33; truncated *)};
-                 source_loc = None; doc = [];
-                 type_ = Odoc_model.Lang.Module.ModuleType ...;
-                  canonical = ...; hidden = ...});
-                ...];
-              compiled = ...; removed = ...; doc = ...}));
-        canonical = ...; hidden = ...});
-      ...];
-    compiled = ...; removed = ...; doc = ...}
+                                  "r_Root.p"... (* string length 13; truncated *)},
+                                ...);
+                            ihash = ...; ikey = ...};
+                        ihash = ...; ikey = ...},
+                       ...);
+                   ihash = ...; ikey = ...};
+                 source_loc = ...; doc = ...; type_ = ...; canonical = ...;
+                 hidden = ...});
+               ...];
+             compiled = ...; removed = ...; doc = ...}));
+       canonical = ...; hidden = ...});
+     ...];
+   compiled = ...; removed = ...; doc = ...}
 ```
 
 The problem here is that odoc will not generate a page for the module `F(M)`.
