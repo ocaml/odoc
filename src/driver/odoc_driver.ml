@@ -211,7 +211,7 @@ let run mode
     else []
   in
   Logs.debug (fun m -> m "XXXX Remaps length: %d" (List.length remaps));
-  Logs.app (fun m -> m "Starting the compilation process... \n%!");
+  Logs.app (fun m -> m "Starting the compilation process...");
   let () =
     Eio.Fiber.both
       (fun () ->
@@ -255,7 +255,7 @@ let run mode
       (fun () -> render_stats env ~generate_json nb_workers)
   in
 
-  Logs.app (fun m -> m "Collected logs... \n%!");
+  Logs.app (fun m -> m "Collected logs...");
   let grep_log ty s =
     let open Astring in
     let do_ affix =
@@ -293,7 +293,7 @@ let run mode
       | _ -> ())
     !Cmd_outputs.outputs;
 
-  Logs.app (fun m -> m "Benchmarking... \n%!");
+  Logs.app (fun m -> m "Benchmarking...");
 
   if stats then Stats.bench_results html_dir
 
