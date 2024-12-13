@@ -28,7 +28,6 @@ depends: [
   "alcotest" {with-test}
 ]
 depopts: [
-  "dream" {>= "1.0.0~alpha5"}
   "ancient" {>= "0.9.1"}
 ]
 build: [

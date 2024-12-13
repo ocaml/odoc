@@ -42,5 +42,4 @@
   (base (and :with-test (= v0.16.3)))
   (alcotest :with-test))
  (depopts
-  (dream (>= 1.0.0~alpha5))
   (ancient (>= 0.9.1))))
