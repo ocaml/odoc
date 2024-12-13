@@ -1,0 +1,20 @@
+(ocamllex unescape)
+
+(executable
+ (name main)
+ (public_name sherlodoc)
+ (package sherlodoc)
+ (libraries
+  cmdliner
+  index
+  query
+  db_store
+  unix
+  (select
+   serve.ml
+   from
+   (www -> serve.available.ml)
+   (!www -> serve.unavailable.ml)))
+ (preprocess
+  (pps ppx_blob))
+ (preprocessor_deps ../jsoo/sherlodoc.js))
