@@ -30,7 +30,7 @@ let render_stats env nprocs =
   let non_hidden = Atomic.get Stats.stats.non_hidden_units in
 
   let dline x y = Multi.line (bar x y) in
-  let config = Progress.Config.v ~persistent:false () in
+  let config = Progress.Config.v ~persistent:true () in
   with_reporters ~config
     Multi.(
       dline "Compiling" total
@@ -249,6 +249,7 @@ let run mode
       (fun () -> render_stats env nb_workers)
   in
 
+  Format.eprintf "Collected logs... \n%!";
   let grep_log ty s =
     let open Astring in
     let do_ affix =
@@ -286,6 +287,7 @@ let run mode
       | _ -> ())
     !Cmd_outputs.outputs;
 
+  Format.eprintf "Benchmarking... \n%!";
   if stats then Stats.bench_results html_dir
 
 open Cmdliner

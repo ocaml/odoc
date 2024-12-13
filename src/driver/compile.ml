@@ -296,42 +296,42 @@ let html_generate ~occurrence_file ~remaps output_dir linked =
   in
   let html_generate : Fpath.t option -> linked -> unit =
    fun remap_file l ->
-    (if l.to_output then
-       let output_dir = Fpath.to_string output_dir in
-       let input_file = l.odocl_file in
-       match l.kind with
-       | `Intf { hidden = true; _ } -> ()
-       | `Impl { src_path; _ } ->
-           let search_uris, sidebar =
-             match l.index with
-             | None -> (None, None)
-             | Some index ->
-                 let db_path, sidebar = compile_index index in
-                 let search_uris = [ db_path; Sherlodoc.js_file ] in
-                 (Some search_uris, sidebar)
-           in
-           Odoc.html_generate_source ?search_uris ?sidebar ~output_dir
-             ~input_file ~source:src_path ();
-           Odoc.html_generate_source ?search_uris ?sidebar ~output_dir
-             ~input_file ~source:src_path ~as_json:true ();
-           Atomic.incr Stats.stats.generated_units
-       | `Asset ->
-           Odoc.html_generate_asset ~output_dir ~input_file:l.odoc_file
-             ~asset_path:l.input_file ()
-       | _ ->
-           let search_uris, sidebar =
-             match l.index with
-             | None -> (None, None)
-             | Some index ->
-                 let db_path, sidebar = compile_index index in
-                 let search_uris = [ db_path; Sherlodoc.js_file ] in
-                 (Some search_uris, sidebar)
-           in
-           Odoc.html_generate ?search_uris ?sidebar ?remap:remap_file
-             ~output_dir ~input_file ();
-           Odoc.html_generate ?search_uris ?sidebar ~output_dir ~input_file
-             ~as_json:true ());
-    Atomic.incr Stats.stats.generated_units
+    if l.to_output then
+      let output_dir = Fpath.to_string output_dir in
+      let input_file = l.odocl_file in
+      match l.kind with
+      | `Intf { hidden = true; _ } -> ()
+      | `Impl { src_path; _ } ->
+          let search_uris, sidebar =
+            match l.index with
+            | None -> (None, None)
+            | Some index ->
+                let db_path, sidebar = compile_index index in
+                let search_uris = [ db_path; Sherlodoc.js_file ] in
+                (Some search_uris, sidebar)
+          in
+          Odoc.html_generate_source ?search_uris ?sidebar ~output_dir
+            ~input_file ~source:src_path ();
+          Odoc.html_generate_source ?search_uris ?sidebar ~output_dir
+            ~input_file ~source:src_path ~as_json:true ();
+          Atomic.incr Stats.stats.generated_units
+      | `Asset ->
+          Odoc.html_generate_asset ~output_dir ~input_file:l.odoc_file
+            ~asset_path:l.input_file ()
+      | _ ->
+          let search_uris, sidebar =
+            match l.index with
+            | None -> (None, None)
+            | Some index ->
+                let db_path, sidebar = compile_index index in
+                let search_uris = [ db_path; Sherlodoc.js_file ] in
+                (Some search_uris, sidebar)
+          in
+          Odoc.html_generate ?search_uris ?sidebar ?remap:remap_file ~output_dir
+            ~input_file ();
+          Odoc.html_generate ?search_uris ?sidebar ~output_dir ~input_file
+            ~as_json:true ();
+          Atomic.incr Stats.stats.generated_units
   in
   if List.length remaps = 0 then Fiber.List.iter (html_generate None) linked
   else
