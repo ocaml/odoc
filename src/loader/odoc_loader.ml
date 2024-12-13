@@ -119,7 +119,7 @@ let read_cmti ~make_root ~parent ~filename ~suppress_warnings () =
               cmt_info.cmt_builddir )
           in
           let id, sg, canonical =
-            Cmti.read_interface parent name suppress_warnings intf
+            Cmti.read_interface parent name ~suppress_warnings intf
           in
           compilation_unit_of_sig ~make_root ~imports:cmt_info.cmt_imports
             ~interface ~sourcefile ~name ~id ?canonical sg)
@@ -178,7 +178,7 @@ let read_cmt ~make_root ~parent ~filename ~suppress_warnings () =
             ~id content
       | Implementation impl ->
           let id, sg, canonical =
-            Cmt.read_implementation parent name suppress_warnings impl
+            Cmt.read_implementation parent name ~suppress_warnings impl
           in
           compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
             ~name ~id ?canonical sg
@@ -189,7 +189,7 @@ let read_cmi ~make_root ~parent ~filename ~suppress_warnings () =
   match cmi_info.cmi_crcs with
   | (name, (Some _ as interface)) :: imports when name = cmi_info.cmi_name ->
       let id, sg =
-        Cmi.read_interface parent name suppress_warnings
+        Cmi.read_interface parent name ~suppress_warnings
           (Odoc_model.Compat.signature cmi_info.cmi_sign)
       in
       compilation_unit_of_sig ~make_root ~imports ~interface ~name ~id sg

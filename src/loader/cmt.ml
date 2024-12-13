@@ -616,7 +616,7 @@ and read_structure :
   | _ ->
     ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; removed = []; doc }, tags)
 
-let read_implementation root name suppress_warnings impl =
+let read_implementation root name ~suppress_warnings impl =
   let id =
     Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name)
   in

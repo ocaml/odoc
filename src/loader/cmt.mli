@@ -17,7 +17,7 @@
 val read_implementation :
   Odoc_model.Paths.Identifier.ContainerPage.t option ->
   string ->
-  bool ->
+  suppress_warnings:bool ->
   Typedtree.structure ->
   Odoc_model.Paths.Identifier.RootModule.t
   * Odoc_model.Lang.Signature.t
