@@ -50,5 +50,5 @@
 
 (install
  (section doc)
- (files (odoc_logo_placeholder.jpg as odoc-pages/odoc_logo_placeholder.jpg))
+ (files odoc-config.sexp (odoc_logo_placeholder.jpg as odoc-pages/odoc_logo_placeholder.jpg))
  (package odoc))
