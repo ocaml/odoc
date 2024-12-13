@@ -41,8 +41,8 @@ module Of_comments = struct
 
   let get_value x = x.Odoc_model.Location_.value
 
-  let rec string_of_doc (doc : Odoc_model.Comment.docs) =
-    doc.elements |> List.map get_value
+  let rec string_of_doc (doc : Odoc_model.Comment.elements) =
+    doc |> List.map get_value
     |> List.map s_of_block_element
     |> String.concat "\n"
 

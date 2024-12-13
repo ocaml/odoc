@@ -62,7 +62,7 @@ type kind =
 
 type t = {
   id : Odoc_model.Paths.Identifier.Any.t;
-  doc : Odoc_model.Comment.docs;
+  doc : Odoc_model.Comment.elements;
   kind : kind;
 }
 

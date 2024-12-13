@@ -6,13 +6,12 @@ open Odoc_utils
 type t = Entry.t Tree.t
 
 module Entry = struct
+  open Odoc_model.Comment
+
   let of_comp_unit (u : Compilation_unit.t) =
     let has_expansion = true in
     let doc =
-      match u.content with
-      | Pack _ ->
-          { Odoc_model.Comment.elements = []; suppress_warnings = false }
-      | Module m -> m.doc
+      match u.content with Pack _ -> [] | Module m -> m.doc.elements
     in
     Entry.entry ~id:u.id ~doc ~kind:(Module { has_expansion })
 
@@ -20,7 +19,7 @@ module Entry = struct
     let has_expansion =
       match m.type_ with Alias (_, None) -> false | _ -> true
     in
-    Entry.entry ~id:m.id ~doc:m.doc ~kind:(Module { has_expansion })
+    Entry.entry ~id:m.id ~doc:m.doc.elements ~kind:(Module { has_expansion })
 
   let of_module_type (mt : ModuleType.t) =
     let has_expansion =
@@ -35,7 +34,8 @@ module Entry = struct
           | _ -> false)
       | _ -> true
     in
-    Entry.entry ~id:mt.id ~doc:mt.doc ~kind:(ModuleType { has_expansion })
+    Entry.entry ~id:mt.id ~doc:mt.doc.elements
+      ~kind:(ModuleType { has_expansion })
 
   let of_type_decl (td : TypeDecl.t) =
     let kind =
@@ -46,7 +46,7 @@ module Entry = struct
           representation = td.representation;
         }
     in
-    Entry.entry ~id:td.id ~doc:td.doc ~kind
+    Entry.entry ~id:td.id ~doc:td.doc.elements ~kind
 
   let varify_params =
     List.mapi (fun i param ->
@@ -67,7 +67,7 @@ module Entry = struct
               params )
     in
     let kind = Entry.Constructor { args; res } in
-    Entry.entry ~id:c.id ~doc:c.doc ~kind
+    Entry.entry ~id:c.id ~doc:c.doc.elements ~kind
 
   let of_field id_parent params (field : TypeDecl.Field.t) =
     let params = varify_params params in
@@ -81,7 +81,7 @@ module Entry = struct
       Entry.Field
         { mutable_ = field.mutable_; type_ = field.type_; parent_type }
     in
-    Entry.entry ~id:field.id ~doc:field.doc ~kind
+    Entry.entry ~id:field.id ~doc:field.doc.elements ~kind
 
   let of_exception (exc : Exception.t) =
     let res =
@@ -93,11 +93,11 @@ module Entry = struct
       | Some x -> x
     in
     let kind = Entry.Exception { args = exc.args; res } in
-    Entry.entry ~id:exc.id ~doc:exc.doc ~kind
+    Entry.entry ~id:exc.id ~doc:exc.doc.elements ~kind
 
   let of_value (v : Value.t) =
     let kind = Entry.Value { value = v.value; type_ = v.type_ } in
-    Entry.entry ~id:v.id ~doc:v.doc ~kind
+    Entry.entry ~id:v.id ~doc:v.doc.elements ~kind
 
   let of_extension_constructor type_path params (v : Extension.Constructor.t) =
     let res =
@@ -108,26 +108,26 @@ module Entry = struct
           TypeExpr.Constr (type_path, params)
     in
     let kind = Entry.ExtensionConstructor { args = v.args; res } in
-    Entry.entry ~id:v.id ~doc:v.doc ~kind
+    Entry.entry ~id:v.id ~doc:v.doc.elements ~kind
 
   let of_class (cl : Class.t) =
     let kind = Entry.Class { virtual_ = cl.virtual_; params = cl.params } in
-    Entry.entry ~id:cl.id ~doc:cl.doc ~kind
+    Entry.entry ~id:cl.id ~doc:cl.doc.elements ~kind
 
   let of_class_type (ct : ClassType.t) =
     let kind =
       Entry.Class_type { virtual_ = ct.virtual_; params = ct.params }
     in
-    Entry.entry ~id:ct.id ~doc:ct.doc ~kind
+    Entry.entry ~id:ct.id ~doc:ct.doc.elements ~kind
 
   let of_method (m : Method.t) =
     let kind =
       Entry.Method
         { virtual_ = m.virtual_; private_ = m.private_; type_ = m.type_ }
     in
-    Entry.entry ~id:m.id ~doc:m.doc ~kind
+    Entry.entry ~id:m.id ~doc:m.doc.elements ~kind
 
-  let of_docs id doc = Entry.entry ~id ~doc ~kind:Doc
+  let of_docs id doc = Entry.entry ~id ~doc:doc.elements ~kind:Doc
 end
 
 let if_non_hidden id f =
