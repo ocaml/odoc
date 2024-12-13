@@ -1,4 +1,5 @@
 (cram
+ (package sherlodoc)
  (enabled_if
   (and
    (= %{version:menhirLib} 20230608)

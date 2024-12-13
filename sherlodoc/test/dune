@@ -1,6 +1,7 @@
 (rule
  (target
   (dir docs))
+ (package sherlodoc)
  (deps
   (package base))
  (action

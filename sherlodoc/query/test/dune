@@ -1,3 +1,4 @@
 (test
  (name test)
+ (package sherlodoc)
  (libraries alcotest query))
