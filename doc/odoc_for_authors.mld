@@ -663,7 +663,7 @@ would render as
 The light syntax has the advantages of being arguably more readable for small tables when viewing the source file directly. However, its content is restricted (for instance, no new line is allowed).
 The heavy syntax is easier to write, can be more readable for big tables, and supports having any kind of content inside. It does not support alignment (yet).
 
-{2 Medias}
+{2:media Medias}
 
 Odoc 3.0 introduced new markup for medias. Medias are nestable blocks,
 so they can be put inside lists and tables, but they cannot be
