@@ -33,7 +33,11 @@ type modulety = {
 
 type mld = { mld_path : Fpath.t; mld_rel_path : Fpath.t }
 
+type md = { md_path : Fpath.t; md_rel_path : Fpath.t }
+
 val pp_mld : Format.formatter -> mld -> unit
+
+val pp_md : Format.formatter -> md -> unit
 
 (** {1 Asset units} *)
 
@@ -75,7 +79,7 @@ type t = {
   assets : asset list;
   selected : bool;
   remaps : (string * string) list;
-  other_docs : Fpath.t list;
+  other_docs : md list;
   pkg_dir : Fpath.t;
   doc_dir : Fpath.t;
   config : Global_config.t;
@@ -83,7 +87,7 @@ type t = {
 
 val pp : Format.formatter -> t -> unit
 
-val mk_mlds : Opam.doc_file list -> mld list * asset list * Fpath.t list
+val mk_mlds : Opam.doc_file list -> mld list * asset list * md list
 
 val of_libs : packages_dir:Fpath.t option -> Util.StringSet.t -> t list
 (** Turns a set of libraries into a map from package name to package *)
