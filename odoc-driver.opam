@@ -46,6 +46,7 @@ depends: [
   "cmdliner"
   "sexplib"
   "ppx_sexp_conv"
+  "sherlodoc"
 ]
 
 build: [
