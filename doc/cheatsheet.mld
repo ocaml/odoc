@@ -158,6 +158,18 @@ Quick reference for the odoc language!
 
       {math \sqrt 2}}}
   {tr
+    {th {{!odoc_for_authors.media}Images} }
+    {td {@text[
+      {image!path/to/file.png}
+
+      {image:https://picsum.photos/200/100}
+    ]}}
+    {td
+      {image!odoc_logo_placeholder.jpg}
+
+      {image:https://picsum.photos/200/100}
+    }}
+  {tr
     {th {{!odoc_for_authors.tables}Table} }
     {td {@text[
       Light syntax:
