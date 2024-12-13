@@ -3,7 +3,8 @@
   (dir docs))
  (package sherlodoc)
  (deps
-  (package base))
+  (package base)
+  %{bin:odoc})
  (action
   (progn
    (run mkdir -p docs)
