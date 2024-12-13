@@ -530,10 +530,9 @@ module Make (Syntax : SYNTAX) = struct
                  field fld.mutable_ (fld.id :> Paths.Identifier.t) fld.type_
                in
                let anchor = Some url in
-               let rhs = Comment.to_ir fld.doc in
-               let doc =
-                 if not (Comment.has_doc fld.doc.elements) then [] else rhs
-               in
+               let doc = fld.doc.elements in
+               let rhs = Comment.to_ir doc in
+               let doc = if not (Comment.has_doc doc) then [] else rhs in
                let markers = Syntax.Comment.markers in
                DocumentedSrc.Documented { anchor; attrs; code; doc; markers })
       in
@@ -610,10 +609,9 @@ module Make (Syntax : SYNTAX) = struct
                        cstr.args cstr.res
                    in
                    let anchor = Some url in
-                   let rhs = Comment.to_ir cstr.doc in
-                   let doc =
-                     if not (Comment.has_doc cstr.doc.elements) then [] else rhs
-                   in
+                   let doc = cstr.doc.elements in
+                   let rhs = Comment.to_ir doc in
+                   let doc = if not (Comment.has_doc doc) then [] else rhs in
                    let markers = Syntax.Comment.markers in
                    DocumentedSrc.Nested { anchor; attrs; code; doc; markers })
           in
@@ -625,7 +623,7 @@ module Make (Syntax : SYNTAX) = struct
       let anchor = Some url in
       let attrs = [ "def"; "variant"; Url.Anchor.string_of_kind url.kind ] in
       let code = O.documentedSrc (O.txt "| ") @ constructor id t.args t.res in
-      let doc = Comment.to_ir t.doc in
+      let doc = Comment.to_ir t.doc.elements in
       let markers = Syntax.Comment.markers in
       DocumentedSrc.Nested { anchor; attrs; code; doc; markers }
 
@@ -646,7 +644,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let attr = [ "type"; "extension" ] in
       let anchor = Some (Url.Anchor.extension_decl t) in
-      let doc = Comment.to_ir t.doc in
+      let doc = Comment.to_ir t.doc.elements in
       let source_anchor =
         (* Take the anchor from the first constructor only for consistency with
            regular variants. *)
@@ -666,7 +664,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let attr = [ "exception" ] in
       let anchor = path_to_id t.id in
-      let doc = Comment.to_ir t.doc in
+      let doc = Comment.to_ir t.doc.elements in
       let source_anchor = source_anchor t.source_loc in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
 
@@ -710,7 +708,7 @@ module Make (Syntax : SYNTAX) = struct
                       else O.txt " " ++ O.keyword "of" ++ O.sp ++ params)),
                 match doc with
                 | { elements = []; _ } -> None
-                | _ -> Some (Comment.to_ir doc) ))
+                | _ -> Some (Comment.to_ir doc.elements) ))
         in
         let markers = Syntax.Comment.markers in
         try
@@ -881,7 +879,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let attr = "type" :: (if is_substitution then [ "subst" ] else []) in
       let anchor = path_to_id t.id in
-      let doc = Comment.to_ir t.doc in
+      let doc = Comment.to_ir t.doc.elements in
       let source_anchor = source_anchor t.source_loc in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
   end
@@ -909,7 +907,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let attr = [ "value" ] @ extra_attr in
       let anchor = path_to_id t.id in
-      let doc = Comment.to_ir t.doc in
+      let doc = Comment.to_ir t.doc.elements in
       let source_anchor = source_anchor t.source_loc in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
   end
@@ -1010,7 +1008,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let attr = [ "method" ] in
       let anchor = path_to_id t.id in
-      let doc = Comment.to_ir t.doc in
+      let doc = Comment.to_ir t.doc.elements in
       Item.Declaration { attr; anchor; doc; content; source_anchor = None }
 
     let instance_variable (t : Odoc_model.Lang.InstanceVariable.t) =
@@ -1029,7 +1027,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let attr = [ "value"; "instance-variable" ] in
       let anchor = path_to_id t.id in
-      let doc = Comment.to_ir t.doc in
+      let doc = Comment.to_ir t.doc.elements in
       Item.Declaration { attr; anchor; doc; content; source_anchor = None }
 
     let inherit_ (ih : Lang.ClassSignature.Inherit.t) =
@@ -1043,7 +1041,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let attr = [ "inherit" ] in
       let anchor = None in
-      let doc = Comment.to_ir ih.doc in
+      let doc = Comment.to_ir ih.doc.elements in
       Item.Declaration { attr; anchor; doc; content; source_anchor = None }
 
     let constraint_ (cst : Lang.ClassSignature.Constraint.t) =
@@ -1052,7 +1050,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let attr = [] in
       let anchor = None in
-      let doc = Comment.to_ir cst.doc in
+      let doc = Comment.to_ir cst.doc.elements in
       Item.Declaration { attr; anchor; doc; content; source_anchor = None }
 
     let class_signature (c : Lang.ClassSignature.t) =
@@ -1314,7 +1312,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let attr = [ "module-substitution" ] in
       let anchor = path_to_id t.id in
-      let doc = Comment.to_ir t.doc in
+      let doc = Comment.to_ir t.doc.elements in
       Item.Declaration { attr; anchor; doc; content; source_anchor = None }
 
     and module_type_substitution (t : Odoc_model.Lang.ModuleTypeSubstitution.t)
@@ -1724,7 +1722,7 @@ module Make (Syntax : SYNTAX) = struct
            synopsis because no page is generated to render it and we'd loose
            the full documentation.
            The documentation from the expansion is not used. *)
-        Comment.to_ir t.doc
+        Comment.to_ir t.doc.elements
       in
       Item.Include { attr; anchor; doc; content; source_anchor = None }
   end

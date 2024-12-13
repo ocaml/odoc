@@ -81,7 +81,7 @@ let rec of_id x =
 
 let of_id n = `Array (List.rev @@ of_id (n :> Odoc_model.Paths.Identifier.t))
 
-let of_doc (doc : Odoc_model.Comment.docs) =
+let of_doc (doc : Odoc_model.Comment.elements) =
   let txt = Text.of_doc doc in
   `String txt
 

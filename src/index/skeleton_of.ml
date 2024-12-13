@@ -39,18 +39,15 @@ let compare_entry (t1 : t) (t2 : t) =
   try_ Astring.String.compare by_name @@ fun () -> 0
 
 let rec t_of_in_progress (dir : In_progress.in_progress) : t =
-  let empty_doc = { Comment.elements = []; suppress_warnings = false } in
-
   let entry_of_page page =
     let kind = Entry.Page page.Lang.Page.frontmatter in
-    let doc = page.content in
+    let doc = page.content.elements in
     let id = page.name in
     Entry.entry ~kind ~doc ~id
   in
   let entry_of_impl id =
     let kind = Entry.Impl in
-    let doc = empty_doc in
-    Entry.entry ~kind ~doc ~id
+    Entry.entry ~kind ~doc:[] ~id
   in
   let children_order, index =
     match In_progress.index dir with
@@ -63,16 +60,14 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
           match In_progress.root_dir dir with
           | Some id ->
               let kind = Entry.Dir in
-              let doc = empty_doc in
-              Entry.entry ~kind ~doc ~id
+              Entry.entry ~kind ~doc:[] ~id
           | None ->
               let id =
                 (* root dir must have an index page *)
                 Id.Mk.leaf_page (None, Names.PageName.make_std "index")
               in
               let kind = Entry.Dir in
-              let doc = empty_doc in
-              Entry.entry ~kind ~doc ~id
+              Entry.entry ~kind ~doc:[] ~id
         in
         (None, entry)
   in
