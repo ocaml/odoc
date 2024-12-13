@@ -1,5 +1,6 @@
 (rule
  (target alerts.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/alerts.mli}))
  (enabled_if
@@ -7,6 +8,7 @@
 
 (rule
  (target alerts.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:alerts.cmti}))
  (enabled_if
@@ -14,6 +16,7 @@
 
 (rule
  (target alerts.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:alerts.odoc}))
  (enabled_if
@@ -21,6 +24,7 @@
 
 (rule
  (target alias.cmt)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/alias.ml}))
  (enabled_if
@@ -28,6 +32,7 @@
 
 (rule
  (target alias.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:alias.cmt}))
  (enabled_if
@@ -35,6 +40,7 @@
 
 (rule
  (target alias.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:alias.odoc}))
  (enabled_if
@@ -42,6 +48,7 @@
 
 (rule
  (target bugs.cmt)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/bugs.ml}))
  (enabled_if
@@ -49,6 +56,7 @@
 
 (rule
  (target bugs.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:bugs.cmt}))
  (enabled_if
@@ -56,6 +64,7 @@
 
 (rule
  (target bugs.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:bugs.odoc}))
  (enabled_if
@@ -63,6 +72,7 @@
 
 (rule
  (target bugs_post_406.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/bugs_post_406.mli}))
  (enabled_if
@@ -70,6 +80,7 @@
 
 (rule
  (target bugs_post_406.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:bugs_post_406.cmti}))
  (enabled_if
@@ -77,6 +88,7 @@
 
 (rule
  (target bugs_post_406.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:bugs_post_406.odoc}))
  (enabled_if
@@ -84,6 +96,7 @@
 
 (rule
  (target bugs_pre_410.cmt)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/bugs_pre_410.ml}))
  (enabled_if
@@ -91,6 +104,7 @@
 
 (rule
  (target bugs_pre_410.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:bugs_pre_410.cmt}))
  (enabled_if
@@ -98,6 +112,7 @@
 
 (rule
  (target bugs_pre_410.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:bugs_pre_410.odoc}))
  (enabled_if
@@ -105,6 +120,7 @@
 
 (rule
  (target class.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/class.mli}))
  (enabled_if
@@ -112,6 +128,7 @@
 
 (rule
  (target class.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:class.cmti}))
  (enabled_if
@@ -119,6 +136,7 @@
 
 (rule
  (target class.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:class.odoc}))
  (enabled_if
@@ -126,6 +144,7 @@
 
 (rule
  (target class_comments.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/class_comments.mli}))
  (enabled_if
@@ -133,6 +152,7 @@
 
 (rule
  (target class_comments.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:class_comments.cmti}))
  (enabled_if
@@ -140,6 +160,7 @@
 
 (rule
  (target class_comments.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:class_comments.odoc}))
  (enabled_if
@@ -147,6 +168,7 @@
 
 (rule
  (target external.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/external.mli}))
  (enabled_if
@@ -154,6 +176,7 @@
 
 (rule
  (target external.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:external.cmti}))
  (enabled_if
@@ -161,6 +184,7 @@
 
 (rule
  (target external.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:external.odoc}))
  (enabled_if
@@ -168,6 +192,7 @@
 
 (rule
  (target functor.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/functor.mli}))
  (enabled_if
@@ -175,6 +200,7 @@
 
 (rule
  (target functor.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:functor.cmti}))
  (enabled_if
@@ -182,6 +208,7 @@
 
 (rule
  (target functor.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:functor.odoc}))
  (enabled_if
@@ -189,6 +216,7 @@
 
 (rule
  (target functor2.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/functor2.mli}))
  (enabled_if
@@ -196,6 +224,7 @@
 
 (rule
  (target functor2.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:functor2.cmti}))
  (enabled_if
@@ -203,6 +232,7 @@
 
 (rule
  (target functor2.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:functor2.odoc}))
  (enabled_if
@@ -210,6 +240,7 @@
 
 (rule
  (target functor_ml.cmt)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/functor_ml.ml}))
  (enabled_if
@@ -217,6 +248,7 @@
 
 (rule
  (target functor_ml.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:functor_ml.cmt}))
  (enabled_if
@@ -224,6 +256,7 @@
 
 (rule
  (target functor_ml.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:functor_ml.odoc}))
  (enabled_if
@@ -231,6 +264,7 @@
 
 (rule
  (target include.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/include.mli}))
  (enabled_if
@@ -238,6 +272,7 @@
 
 (rule
  (target include.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:include.cmti}))
  (enabled_if
@@ -245,6 +280,7 @@
 
 (rule
  (target include.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:include.odoc}))
  (enabled_if
@@ -252,6 +288,7 @@
 
 (rule
  (target include2.cmt)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/include2.ml}))
  (enabled_if
@@ -259,6 +296,7 @@
 
 (rule
  (target include2.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:include2.cmt}))
  (enabled_if
@@ -266,6 +304,7 @@
 
 (rule
  (target include2.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:include2.odoc}))
  (enabled_if
@@ -273,6 +312,7 @@
 
 (rule
  (target include_sections.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/include_sections.mli}))
  (enabled_if
@@ -280,6 +320,7 @@
 
 (rule
  (target include_sections.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:include_sections.cmti}))
  (enabled_if
@@ -287,6 +328,7 @@
 
 (rule
  (target include_sections.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:include_sections.odoc}))
  (enabled_if
@@ -294,6 +336,7 @@
 
 (rule
  (target interlude.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/interlude.mli}))
  (enabled_if
@@ -301,6 +344,7 @@
 
 (rule
  (target interlude.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:interlude.cmti}))
  (enabled_if
@@ -308,6 +352,7 @@
 
 (rule
  (target interlude.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:interlude.odoc}))
  (enabled_if
@@ -315,6 +360,7 @@
 
 (rule
  (target labels.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/labels.mli}))
  (enabled_if
@@ -322,6 +368,7 @@
 
 (rule
  (target labels.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:labels.cmti}))
  (enabled_if
@@ -329,6 +376,7 @@
 
 (rule
  (target labels.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:labels.odoc}))
  (enabled_if
@@ -336,6 +384,7 @@
 
 (rule
  (target markup.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/markup.mli}))
  (enabled_if
@@ -343,6 +392,7 @@
 
 (rule
  (target markup.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:markup.cmti}))
  (enabled_if
@@ -350,6 +400,7 @@
 
 (rule
  (target markup.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:markup.odoc}))
  (enabled_if
@@ -357,6 +408,7 @@
 
 (rule
  (target page-mld.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:cases/mld.mld}))
  (enabled_if
@@ -364,6 +416,7 @@
 
 (rule
  (target page-mld.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:page-mld.odoc}))
  (enabled_if
@@ -371,6 +424,7 @@
 
 (rule
  (target module.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/module.mli}))
  (enabled_if
@@ -378,6 +432,7 @@
 
 (rule
  (target module.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:module.cmti}))
  (enabled_if
@@ -385,6 +440,7 @@
 
 (rule
  (target module.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:module.odoc}))
  (enabled_if
@@ -392,6 +448,7 @@
 
 (rule
  (target module_type_alias.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/module_type_alias.mli}))
  (enabled_if
@@ -399,6 +456,7 @@
 
 (rule
  (target module_type_alias.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:module_type_alias.cmti}))
  (enabled_if
@@ -406,6 +464,7 @@
 
 (rule
  (target module_type_alias.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:module_type_alias.odoc}))
  (enabled_if
@@ -413,6 +472,7 @@
 
 (rule
  (target module_type_of.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/module_type_of.mli}))
  (enabled_if
@@ -420,6 +480,7 @@
 
 (rule
  (target module_type_of.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:module_type_of.cmti}))
  (enabled_if
@@ -427,6 +488,7 @@
 
 (rule
  (target module_type_of.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:module_type_of.odoc}))
  (enabled_if
@@ -434,6 +496,7 @@
 
 (rule
  (target module_type_subst.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/module_type_subst.mli}))
  (enabled_if
@@ -441,6 +504,7 @@
 
 (rule
  (target module_type_subst.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:module_type_subst.cmti}))
  (enabled_if
@@ -448,6 +512,7 @@
 
 (rule
  (target module_type_subst.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:module_type_subst.odoc}))
  (enabled_if
@@ -455,6 +520,7 @@
 
 (rule
  (target nested.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/nested.mli}))
  (enabled_if
@@ -462,6 +528,7 @@
 
 (rule
  (target nested.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:nested.cmti}))
  (enabled_if
@@ -469,6 +536,7 @@
 
 (rule
  (target nested.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:nested.odoc}))
  (enabled_if
@@ -476,6 +544,7 @@
 
 (rule
  (target ocamlary.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/ocamlary.mli}))
  (enabled_if
@@ -483,6 +552,7 @@
 
 (rule
  (target ocamlary.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:ocamlary.cmti}))
  (enabled_if
@@ -490,6 +560,7 @@
 
 (rule
  (target ocamlary.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:ocamlary.odoc}))
  (enabled_if
@@ -497,6 +568,7 @@
 
 (rule
  (target recent.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/recent.mli}))
  (enabled_if
@@ -504,6 +576,7 @@
 
 (rule
  (target recent.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:recent.cmti}))
  (enabled_if
@@ -511,6 +584,7 @@
 
 (rule
  (target recent.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:recent.odoc}))
  (enabled_if
@@ -518,6 +592,7 @@
 
 (rule
  (target recent_impl.cmt)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/recent_impl.ml}))
  (enabled_if
@@ -525,6 +600,7 @@
 
 (rule
  (target recent_impl.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:recent_impl.cmt}))
  (enabled_if
@@ -532,6 +608,7 @@
 
 (rule
  (target recent_impl.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:recent_impl.odoc}))
  (enabled_if
@@ -539,6 +616,7 @@
 
 (rule
  (target section.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/section.mli}))
  (enabled_if
@@ -546,6 +624,7 @@
 
 (rule
  (target section.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:section.cmti}))
  (enabled_if
@@ -553,6 +632,7 @@
 
 (rule
  (target section.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:section.odoc}))
  (enabled_if
@@ -560,6 +640,7 @@
 
 (rule
  (target stop.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/stop.mli}))
  (enabled_if
@@ -567,6 +648,7 @@
 
 (rule
  (target stop.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:stop.cmti}))
  (enabled_if
@@ -574,6 +656,7 @@
 
 (rule
  (target stop.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:stop.odoc}))
  (enabled_if
@@ -581,6 +664,7 @@
 
 (rule
  (target stop_dead_link_doc.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/stop_dead_link_doc.mli}))
  (enabled_if
@@ -588,6 +672,7 @@
 
 (rule
  (target stop_dead_link_doc.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:stop_dead_link_doc.cmti}))
  (enabled_if
@@ -595,6 +680,7 @@
 
 (rule
  (target stop_dead_link_doc.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:stop_dead_link_doc.odoc}))
  (enabled_if
@@ -602,6 +688,7 @@
 
 (rule
  (target stop_first_comment.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/stop_first_comment.mli}))
  (enabled_if
@@ -609,6 +696,7 @@
 
 (rule
  (target stop_first_comment.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:stop_first_comment.cmti}))
  (enabled_if
@@ -616,6 +704,7 @@
 
 (rule
  (target stop_first_comment.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:stop_first_comment.odoc}))
  (enabled_if
@@ -623,6 +712,7 @@
 
 (rule
  (target tag_link.cmt)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/tag_link.ml}))
  (enabled_if
@@ -630,6 +720,7 @@
 
 (rule
  (target tag_link.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:tag_link.cmt}))
  (enabled_if
@@ -637,6 +728,7 @@
 
 (rule
  (target tag_link.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:tag_link.odoc}))
  (enabled_if
@@ -644,6 +736,7 @@
 
 (rule
  (target toplevel_comments.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/toplevel_comments.mli}))
  (enabled_if
@@ -651,6 +744,7 @@
 
 (rule
  (target toplevel_comments.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:toplevel_comments.cmti}))
  (enabled_if
@@ -658,6 +752,7 @@
 
 (rule
  (target toplevel_comments.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:toplevel_comments.odoc}))
  (enabled_if
@@ -665,6 +760,7 @@
 
 (rule
  (target type.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/type.mli}))
  (enabled_if
@@ -672,6 +768,7 @@
 
 (rule
  (target type.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:type.cmti}))
  (enabled_if
@@ -679,6 +776,7 @@
 
 (rule
  (target type.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:type.odoc}))
  (enabled_if
@@ -686,6 +784,7 @@
 
 (rule
  (target val.cmti)
+ (package odoc)
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/val.mli}))
  (enabled_if
@@ -693,6 +792,7 @@
 
 (rule
  (target val.odoc)
+ (package odoc)
  (action
   (run odoc compile -o %{target} %{dep:val.cmti}))
  (enabled_if
@@ -700,6 +800,7 @@
 
 (rule
  (target val.odocl)
+ (package odoc)
  (action
   (run odoc link -o %{target} %{dep:val.odoc}))
  (enabled_if
@@ -709,6 +810,7 @@
  html
  (rule
   (targets Alerts.html.gen Alerts-Top1.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -724,12 +826,14 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Alerts.html Alerts.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Alerts-Top1.html Alerts-Top1.html.gen))
   (enabled_if
@@ -738,6 +842,8 @@
 (subdir
  html
  (rule
+  (target alerts.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     alerts.targets.gen
@@ -746,6 +852,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff alerts.targets alerts.targets.gen))
   (enabled_if
@@ -755,12 +862,14 @@
  latex
  (rule
   (targets Alerts.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../alerts.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Alerts.tex Alerts.tex.gen))
   (enabled_if
@@ -769,6 +878,8 @@
 (subdir
  latex
  (rule
+  (target alerts.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     alerts.targets.gen
@@ -777,6 +888,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff alerts.targets alerts.targets.gen))
   (enabled_if
@@ -786,18 +898,21 @@
  man
  (rule
   (targets Alerts.3o.gen Alerts.Top1.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../alerts.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Alerts.3o Alerts.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Alerts.Top1.3o Alerts.Top1.3o.gen))
   (enabled_if
@@ -806,6 +921,8 @@
 (subdir
  man
  (rule
+  (target alerts.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     alerts.targets.gen
@@ -814,6 +931,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff alerts.targets alerts.targets.gen))
   (enabled_if
@@ -823,6 +941,7 @@
  html
  (rule
   (targets Alias.html.gen Alias-X.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -838,12 +957,14 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Alias.html Alias.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Alias-X.html Alias-X.html.gen))
   (enabled_if
@@ -852,6 +973,8 @@
 (subdir
  html
  (rule
+  (target alias.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     alias.targets.gen
@@ -860,6 +983,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff alias.targets alias.targets.gen))
   (enabled_if
@@ -869,18 +993,21 @@
  latex
  (rule
   (targets Alias.tex.gen Alias.X.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../alias.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Alias.tex Alias.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Alias.X.tex Alias.X.tex.gen))
   (enabled_if
@@ -889,6 +1016,8 @@
 (subdir
  latex
  (rule
+  (target alias.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     alias.targets.gen
@@ -897,6 +1026,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff alias.targets alias.targets.gen))
   (enabled_if
@@ -906,18 +1036,21 @@
  man
  (rule
   (targets Alias.3o.gen Alias.X.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../alias.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Alias.3o Alias.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Alias.X.3o Alias.X.3o.gen))
   (enabled_if
@@ -926,6 +1059,8 @@
 (subdir
  man
  (rule
+  (target alias.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     alias.targets.gen
@@ -934,6 +1069,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff alias.targets alias.targets.gen))
   (enabled_if
@@ -943,6 +1079,7 @@
  html
  (rule
   (targets Bugs.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -958,6 +1095,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Bugs.html Bugs.html.gen))
   (enabled_if
@@ -966,6 +1104,8 @@
 (subdir
  html
  (rule
+  (target bugs.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     bugs.targets.gen
@@ -974,6 +1114,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff bugs.targets bugs.targets.gen))
   (enabled_if
@@ -983,12 +1124,14 @@
  latex
  (rule
   (targets Bugs.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../bugs.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Bugs.tex Bugs.tex.gen))
   (enabled_if
@@ -997,6 +1140,8 @@
 (subdir
  latex
  (rule
+  (target bugs.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     bugs.targets.gen
@@ -1005,6 +1150,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff bugs.targets bugs.targets.gen))
   (enabled_if
@@ -1014,12 +1160,14 @@
  man
  (rule
   (targets Bugs.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../bugs.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Bugs.3o Bugs.3o.gen))
   (enabled_if
@@ -1028,6 +1176,8 @@
 (subdir
  man
  (rule
+  (target bugs.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     bugs.targets.gen
@@ -1036,6 +1186,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff bugs.targets bugs.targets.gen))
   (enabled_if
@@ -1048,6 +1199,7 @@
    Bugs_post_406.html.gen
    Bugs_post_406-class-type-let_open.html.gen
    Bugs_post_406-class-let_open'.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -1063,12 +1215,14 @@
    (>= %{ocaml_version} 4.06)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Bugs_post_406.html Bugs_post_406.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.06)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Bugs_post_406-class-type-let_open.html
@@ -1077,6 +1231,7 @@
    (>= %{ocaml_version} 4.06)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Bugs_post_406-class-let_open'.html
@@ -1087,6 +1242,8 @@
 (subdir
  html
  (rule
+  (target bugs_post_406.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     bugs_post_406.targets.gen
@@ -1095,6 +1252,7 @@
    (>= %{ocaml_version} 4.06)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff bugs_post_406.targets bugs_post_406.targets.gen))
   (enabled_if
@@ -1104,6 +1262,7 @@
  latex
  (rule
   (targets Bugs_post_406.tex.gen Bugs_post_406.let_open'.tex.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -1117,12 +1276,14 @@
    (>= %{ocaml_version} 4.06)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Bugs_post_406.tex Bugs_post_406.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.06)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Bugs_post_406.let_open'.tex Bugs_post_406.let_open'.tex.gen))
   (enabled_if
@@ -1131,6 +1292,8 @@
 (subdir
  latex
  (rule
+  (target bugs_post_406.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     bugs_post_406.targets.gen
@@ -1139,6 +1302,7 @@
    (>= %{ocaml_version} 4.06)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff bugs_post_406.targets bugs_post_406.targets.gen))
   (enabled_if
@@ -1148,6 +1312,7 @@
  man
  (rule
   (targets Bugs_post_406.3o.gen Bugs_post_406.class-let_open'.3o.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -1161,12 +1326,14 @@
    (>= %{ocaml_version} 4.06)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Bugs_post_406.3o Bugs_post_406.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.06)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Bugs_post_406.class-let_open'.3o
@@ -1177,6 +1344,8 @@
 (subdir
  man
  (rule
+  (target bugs_post_406.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     bugs_post_406.targets.gen
@@ -1185,6 +1354,7 @@
    (>= %{ocaml_version} 4.06)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff bugs_post_406.targets bugs_post_406.targets.gen))
   (enabled_if
@@ -1194,6 +1364,7 @@
  html
  (rule
   (targets Bugs_pre_410.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -1209,6 +1380,7 @@
    (<= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Bugs_pre_410.html Bugs_pre_410.html.gen))
   (enabled_if
@@ -1217,6 +1389,8 @@
 (subdir
  html
  (rule
+  (target bugs_pre_410.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     bugs_pre_410.targets.gen
@@ -1225,6 +1399,7 @@
    (<= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff bugs_pre_410.targets bugs_pre_410.targets.gen))
   (enabled_if
@@ -1234,6 +1409,7 @@
  latex
  (rule
   (targets Bugs_pre_410.tex.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -1247,6 +1423,7 @@
    (<= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Bugs_pre_410.tex Bugs_pre_410.tex.gen))
   (enabled_if
@@ -1255,6 +1432,8 @@
 (subdir
  latex
  (rule
+  (target bugs_pre_410.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     bugs_pre_410.targets.gen
@@ -1263,6 +1442,7 @@
    (<= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff bugs_pre_410.targets bugs_pre_410.targets.gen))
   (enabled_if
@@ -1272,6 +1452,7 @@
  man
  (rule
   (targets Bugs_pre_410.3o.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -1285,6 +1466,7 @@
    (<= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Bugs_pre_410.3o Bugs_pre_410.3o.gen))
   (enabled_if
@@ -1293,6 +1475,8 @@
 (subdir
  man
  (rule
+  (target bugs_pre_410.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     bugs_pre_410.targets.gen
@@ -1301,6 +1485,7 @@
    (<= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff bugs_pre_410.targets bugs_pre_410.targets.gen))
   (enabled_if
@@ -1320,6 +1505,7 @@
    Class-class-empty_virtual'.html.gen
    Class-class-type-polymorphic.html.gen
    Class-class-polymorphic'.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -1335,42 +1521,49 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class.html Class.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class-class-type-empty.html Class-class-type-empty.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class-class-type-mutually.html Class-class-type-mutually.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class-class-type-recursive.html Class-class-type-recursive.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class-class-mutually'.html Class-class-mutually'.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class-class-recursive'.html Class-class-recursive'.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Class-class-type-empty_virtual.html
@@ -1379,12 +1572,14 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class-class-empty_virtual'.html Class-class-empty_virtual'.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Class-class-type-polymorphic.html
@@ -1393,6 +1588,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class-class-polymorphic'.html Class-class-polymorphic'.html.gen))
   (enabled_if
@@ -1401,6 +1597,8 @@
 (subdir
  html
  (rule
+  (target class.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     class.targets.gen
@@ -1409,6 +1607,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff class.targets class.targets.gen))
   (enabled_if
@@ -1423,36 +1622,42 @@
    Class.recursive'.tex.gen
    Class.empty_virtual'.tex.gen
    Class.polymorphic'.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../class.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class.tex Class.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class.mutually'.tex Class.mutually'.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class.recursive'.tex Class.recursive'.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class.empty_virtual'.tex Class.empty_virtual'.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class.polymorphic'.tex Class.polymorphic'.tex.gen))
   (enabled_if
@@ -1461,6 +1666,8 @@
 (subdir
  latex
  (rule
+  (target class.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     class.targets.gen
@@ -1469,6 +1676,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff class.targets class.targets.gen))
   (enabled_if
@@ -1483,36 +1691,42 @@
    Class.class-recursive'.3o.gen
    Class.class-empty_virtual'.3o.gen
    Class.class-polymorphic'.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../class.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class.3o Class.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class.class-mutually'.3o Class.class-mutually'.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class.class-recursive'.3o Class.class-recursive'.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class.class-empty_virtual'.3o Class.class-empty_virtual'.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class.class-polymorphic'.3o Class.class-polymorphic'.3o.gen))
   (enabled_if
@@ -1521,6 +1735,8 @@
 (subdir
  man
  (rule
+  (target class.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     class.targets.gen
@@ -1529,6 +1745,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff class.targets class.targets.gen))
   (enabled_if
@@ -1541,6 +1758,7 @@
    Class_comments.html.gen
    Class_comments-class-x.html.gen
    Class_comments-class-c.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -1556,18 +1774,21 @@
    (>= %{ocaml_version} 4.08)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class_comments.html Class_comments.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.08)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class_comments-class-x.html Class_comments-class-x.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.08)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class_comments-class-c.html Class_comments-class-c.html.gen))
   (enabled_if
@@ -1576,6 +1797,8 @@
 (subdir
  html
  (rule
+  (target class_comments.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     class_comments.targets.gen
@@ -1584,6 +1807,7 @@
    (>= %{ocaml_version} 4.08)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff class_comments.targets class_comments.targets.gen))
   (enabled_if
@@ -1596,6 +1820,7 @@
    Class_comments.tex.gen
    Class_comments.x.tex.gen
    Class_comments.c.tex.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -1609,18 +1834,21 @@
    (>= %{ocaml_version} 4.08)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class_comments.tex Class_comments.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.08)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class_comments.x.tex Class_comments.x.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.08)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class_comments.c.tex Class_comments.c.tex.gen))
   (enabled_if
@@ -1629,6 +1857,8 @@
 (subdir
  latex
  (rule
+  (target class_comments.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     class_comments.targets.gen
@@ -1637,6 +1867,7 @@
    (>= %{ocaml_version} 4.08)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff class_comments.targets class_comments.targets.gen))
   (enabled_if
@@ -1649,6 +1880,7 @@
    Class_comments.3o.gen
    Class_comments.class-x.3o.gen
    Class_comments.class-c.3o.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -1662,18 +1894,21 @@
    (>= %{ocaml_version} 4.08)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class_comments.3o Class_comments.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.08)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class_comments.class-x.3o Class_comments.class-x.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.08)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Class_comments.class-c.3o Class_comments.class-c.3o.gen))
   (enabled_if
@@ -1682,6 +1917,8 @@
 (subdir
  man
  (rule
+  (target class_comments.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     class_comments.targets.gen
@@ -1690,6 +1927,7 @@
    (>= %{ocaml_version} 4.08)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff class_comments.targets class_comments.targets.gen))
   (enabled_if
@@ -1699,6 +1937,7 @@
  html
  (rule
   (targets External.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -1714,6 +1953,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff External.html External.html.gen))
   (enabled_if
@@ -1722,6 +1962,8 @@
 (subdir
  html
  (rule
+  (target external.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     external.targets.gen
@@ -1730,6 +1972,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff external.targets external.targets.gen))
   (enabled_if
@@ -1739,12 +1982,14 @@
  latex
  (rule
   (targets External.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../external.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff External.tex External.tex.gen))
   (enabled_if
@@ -1753,6 +1998,8 @@
 (subdir
  latex
  (rule
+  (target external.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     external.targets.gen
@@ -1761,6 +2008,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff external.targets external.targets.gen))
   (enabled_if
@@ -1770,12 +2018,14 @@
  man
  (rule
   (targets External.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../external.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff External.3o External.3o.gen))
   (enabled_if
@@ -1784,6 +2034,8 @@
 (subdir
  man
  (rule
+  (target external.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     external.targets.gen
@@ -1792,6 +2044,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff external.targets external.targets.gen))
   (enabled_if
@@ -1814,6 +2067,7 @@
    Functor-F4.html.gen
    Functor-F4-argument-1-Arg.html.gen
    Functor-F5.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -1829,24 +2083,28 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor.html Functor.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor-module-type-S.html Functor-module-type-S.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor-module-type-S1.html Functor-module-type-S1.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Functor-module-type-S1-argument-1-_.html
@@ -1855,54 +2113,63 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor-F1.html Functor-F1.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor-F1-argument-1-Arg.html Functor-F1-argument-1-Arg.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor-F2.html Functor-F2.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor-F2-argument-1-Arg.html Functor-F2-argument-1-Arg.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor-F3.html Functor-F3.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor-F3-argument-1-Arg.html Functor-F3-argument-1-Arg.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor-F4.html Functor-F4.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor-F4-argument-1-Arg.html Functor-F4-argument-1-Arg.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor-F5.html Functor-F5.html.gen))
   (enabled_if
@@ -1911,6 +2178,8 @@
 (subdir
  html
  (rule
+  (target functor.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     functor.targets.gen
@@ -1919,6 +2188,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff functor.targets functor.targets.gen))
   (enabled_if
@@ -1934,42 +2204,49 @@
    Functor.F3.tex.gen
    Functor.F4.tex.gen
    Functor.F5.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../functor.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor.tex Functor.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor.F1.tex Functor.F1.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor.F2.tex Functor.F2.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor.F3.tex Functor.F3.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor.F4.tex Functor.F4.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor.F5.tex Functor.F5.tex.gen))
   (enabled_if
@@ -1978,6 +2255,8 @@
 (subdir
  latex
  (rule
+  (target functor.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     functor.targets.gen
@@ -1986,6 +2265,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff functor.targets functor.targets.gen))
   (enabled_if
@@ -2001,42 +2281,49 @@
    Functor.F3.3o.gen
    Functor.F4.3o.gen
    Functor.F5.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../functor.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor.3o Functor.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor.F1.3o Functor.F1.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor.F2.3o Functor.F2.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor.F3.3o Functor.F3.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor.F4.3o Functor.F4.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor.F5.3o Functor.F5.3o.gen))
   (enabled_if
@@ -2045,6 +2332,8 @@
 (subdir
  man
  (rule
+  (target functor.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     functor.targets.gen
@@ -2053,6 +2342,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff functor.targets functor.targets.gen))
   (enabled_if
@@ -2070,6 +2360,7 @@
    Functor2-module-type-XF.html.gen
    Functor2-module-type-XF-argument-1-Y.html.gen
    Functor2-module-type-XF-argument-2-Z.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -2085,42 +2376,49 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor2.html Functor2.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor2-module-type-S.html Functor2-module-type-S.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor2-X.html Functor2-X.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor2-X-argument-1-Y.html Functor2-X-argument-1-Y.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor2-X-argument-2-Z.html Functor2-X-argument-2-Z.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor2-module-type-XF.html Functor2-module-type-XF.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Functor2-module-type-XF-argument-1-Y.html
@@ -2129,6 +2427,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Functor2-module-type-XF-argument-2-Z.html
@@ -2139,6 +2438,8 @@
 (subdir
  html
  (rule
+  (target functor2.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     functor2.targets.gen
@@ -2147,6 +2448,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff functor2.targets functor2.targets.gen))
   (enabled_if
@@ -2156,18 +2458,21 @@
  latex
  (rule
   (targets Functor2.tex.gen Functor2.X.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../functor2.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor2.tex Functor2.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor2.X.tex Functor2.X.tex.gen))
   (enabled_if
@@ -2176,6 +2481,8 @@
 (subdir
  latex
  (rule
+  (target functor2.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     functor2.targets.gen
@@ -2184,6 +2491,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff functor2.targets functor2.targets.gen))
   (enabled_if
@@ -2193,18 +2501,21 @@
  man
  (rule
   (targets Functor2.3o.gen Functor2.X.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../functor2.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor2.3o Functor2.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor2.X.3o Functor2.X.3o.gen))
   (enabled_if
@@ -2213,6 +2524,8 @@
 (subdir
  man
  (rule
+  (target functor2.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     functor2.targets.gen
@@ -2221,6 +2534,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff functor2.targets functor2.targets.gen))
   (enabled_if
@@ -2234,6 +2548,7 @@
    Functor_ml-Bar.html.gen
    Functor_ml-Foo'.html.gen
    Functor_ml-Foo'-argument-1-X.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -2249,24 +2564,28 @@
    (>= %{ocaml_version} 4.14)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor_ml.html Functor_ml.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.14)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor_ml-Bar.html Functor_ml-Bar.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.14)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor_ml-Foo'.html Functor_ml-Foo'.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.14)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Functor_ml-Foo'-argument-1-X.html
@@ -2277,6 +2596,8 @@
 (subdir
  html
  (rule
+  (target functor_ml.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     functor_ml.targets.gen
@@ -2285,6 +2606,7 @@
    (>= %{ocaml_version} 4.14)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff functor_ml.targets functor_ml.targets.gen))
   (enabled_if
@@ -2294,6 +2616,7 @@
  latex
  (rule
   (targets Functor_ml.tex.gen Functor_ml.Foo'.tex.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -2307,12 +2630,14 @@
    (>= %{ocaml_version} 4.14)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor_ml.tex Functor_ml.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.14)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor_ml.Foo'.tex Functor_ml.Foo'.tex.gen))
   (enabled_if
@@ -2321,6 +2646,8 @@
 (subdir
  latex
  (rule
+  (target functor_ml.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     functor_ml.targets.gen
@@ -2329,6 +2656,7 @@
    (>= %{ocaml_version} 4.14)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff functor_ml.targets functor_ml.targets.gen))
   (enabled_if
@@ -2338,24 +2666,28 @@
  man
  (rule
   (targets Functor_ml.3o.gen Functor_ml.Bar.3o.gen Functor_ml.Foo'.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../functor_ml.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.14)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor_ml.3o Functor_ml.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.14)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor_ml.Bar.3o Functor_ml.Bar.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.14)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Functor_ml.Foo'.3o Functor_ml.Foo'.3o.gen))
   (enabled_if
@@ -2364,6 +2696,8 @@
 (subdir
  man
  (rule
+  (target functor_ml.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     functor_ml.targets.gen
@@ -2372,6 +2706,7 @@
    (>= %{ocaml_version} 4.14)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff functor_ml.targets functor_ml.targets.gen))
   (enabled_if
@@ -2388,6 +2723,7 @@
    Include-module-type-Not_inlined_and_opened.html.gen
    Include-module-type-Inherent_Module.html.gen
    Include-module-type-Dorminant_Module.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -2403,12 +2739,14 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include.html Include.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Include-module-type-Not_inlined.html
@@ -2417,6 +2755,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Include-module-type-Inlined.html
@@ -2425,6 +2764,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Include-module-type-Not_inlined_and_closed.html
@@ -2433,6 +2773,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Include-module-type-Not_inlined_and_opened.html
@@ -2441,6 +2782,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Include-module-type-Inherent_Module.html
@@ -2449,6 +2791,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Include-module-type-Dorminant_Module.html
@@ -2459,6 +2802,8 @@
 (subdir
  html
  (rule
+  (target include.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     include.targets.gen
@@ -2467,6 +2812,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff include.targets include.targets.gen))
   (enabled_if
@@ -2476,12 +2822,14 @@
  latex
  (rule
   (targets Include.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../include.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include.tex Include.tex.gen))
   (enabled_if
@@ -2490,6 +2838,8 @@
 (subdir
  latex
  (rule
+  (target include.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     include.targets.gen
@@ -2498,6 +2848,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff include.targets include.targets.gen))
   (enabled_if
@@ -2507,12 +2858,14 @@
  man
  (rule
   (targets Include.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../include.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include.3o Include.3o.gen))
   (enabled_if
@@ -2521,6 +2874,8 @@
 (subdir
  man
  (rule
+  (target include.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     include.targets.gen
@@ -2529,6 +2884,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff include.targets include.targets.gen))
   (enabled_if
@@ -2543,6 +2899,7 @@
    Include2-Y.html.gen
    Include2-Y_include_synopsis.html.gen
    Include2-Y_include_doc.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -2558,24 +2915,28 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include2.html Include2.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include2-X.html Include2-X.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include2-Y.html Include2-Y.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Include2-Y_include_synopsis.html
@@ -2584,6 +2945,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include2-Y_include_doc.html Include2-Y_include_doc.html.gen))
   (enabled_if
@@ -2592,6 +2954,8 @@
 (subdir
  html
  (rule
+  (target include2.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     include2.targets.gen
@@ -2600,6 +2964,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff include2.targets include2.targets.gen))
   (enabled_if
@@ -2609,12 +2974,14 @@
  latex
  (rule
   (targets Include2.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../include2.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include2.tex Include2.tex.gen))
   (enabled_if
@@ -2623,6 +2990,8 @@
 (subdir
  latex
  (rule
+  (target include2.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     include2.targets.gen
@@ -2631,6 +3000,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff include2.targets include2.targets.gen))
   (enabled_if
@@ -2645,36 +3015,42 @@
    Include2.Y.3o.gen
    Include2.Y_include_synopsis.3o.gen
    Include2.Y_include_doc.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../include2.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include2.3o Include2.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include2.X.3o Include2.X.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include2.Y.3o Include2.Y.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include2.Y_include_synopsis.3o Include2.Y_include_synopsis.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include2.Y_include_doc.3o Include2.Y_include_doc.3o.gen))
   (enabled_if
@@ -2683,6 +3059,8 @@
 (subdir
  man
  (rule
+  (target include2.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     include2.targets.gen
@@ -2691,6 +3069,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff include2.targets include2.targets.gen))
   (enabled_if
@@ -2702,6 +3081,7 @@
   (targets
    Include_sections.html.gen
    Include_sections-module-type-Something.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -2717,12 +3097,14 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include_sections.html Include_sections.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Include_sections-module-type-Something.html
@@ -2733,6 +3115,8 @@
 (subdir
  html
  (rule
+  (target include_sections.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     include_sections.targets.gen
@@ -2741,6 +3125,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff include_sections.targets include_sections.targets.gen))
   (enabled_if
@@ -2750,6 +3135,7 @@
  latex
  (rule
   (targets Include_sections.tex.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -2763,6 +3149,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include_sections.tex Include_sections.tex.gen))
   (enabled_if
@@ -2771,6 +3158,8 @@
 (subdir
  latex
  (rule
+  (target include_sections.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     include_sections.targets.gen
@@ -2779,6 +3168,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff include_sections.targets include_sections.targets.gen))
   (enabled_if
@@ -2788,6 +3178,7 @@
  man
  (rule
   (targets Include_sections.3o.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -2801,6 +3192,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Include_sections.3o Include_sections.3o.gen))
   (enabled_if
@@ -2809,6 +3201,8 @@
 (subdir
  man
  (rule
+  (target include_sections.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     include_sections.targets.gen
@@ -2817,6 +3211,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff include_sections.targets include_sections.targets.gen))
   (enabled_if
@@ -2826,6 +3221,7 @@
  html
  (rule
   (targets Interlude.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -2841,6 +3237,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Interlude.html Interlude.html.gen))
   (enabled_if
@@ -2849,6 +3246,8 @@
 (subdir
  html
  (rule
+  (target interlude.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     interlude.targets.gen
@@ -2857,6 +3256,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff interlude.targets interlude.targets.gen))
   (enabled_if
@@ -2866,6 +3266,7 @@
  latex
  (rule
   (targets Interlude.tex.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -2879,6 +3280,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Interlude.tex Interlude.tex.gen))
   (enabled_if
@@ -2887,6 +3289,8 @@
 (subdir
  latex
  (rule
+  (target interlude.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     interlude.targets.gen
@@ -2895,6 +3299,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff interlude.targets interlude.targets.gen))
   (enabled_if
@@ -2904,12 +3309,14 @@
  man
  (rule
   (targets Interlude.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../interlude.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Interlude.3o Interlude.3o.gen))
   (enabled_if
@@ -2918,6 +3325,8 @@
 (subdir
  man
  (rule
+  (target interlude.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     interlude.targets.gen
@@ -2926,6 +3335,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff interlude.targets interlude.targets.gen))
   (enabled_if
@@ -2940,6 +3350,7 @@
    Labels-module-type-S.html.gen
    Labels-class-c.html.gen
    Labels-class-type-cs.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -2955,30 +3366,35 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Labels.html Labels.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Labels-A.html Labels-A.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Labels-module-type-S.html Labels-module-type-S.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Labels-class-c.html Labels-class-c.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Labels-class-type-cs.html Labels-class-type-cs.html.gen))
   (enabled_if
@@ -2987,6 +3403,8 @@
 (subdir
  html
  (rule
+  (target labels.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     labels.targets.gen
@@ -2995,6 +3413,7 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff labels.targets labels.targets.gen))
   (enabled_if
@@ -3004,18 +3423,21 @@
  latex
  (rule
   (targets Labels.tex.gen Labels.c.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../labels.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Labels.tex Labels.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Labels.c.tex Labels.c.tex.gen))
   (enabled_if
@@ -3024,6 +3446,8 @@
 (subdir
  latex
  (rule
+  (target labels.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     labels.targets.gen
@@ -3032,6 +3456,7 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff labels.targets labels.targets.gen))
   (enabled_if
@@ -3041,24 +3466,28 @@
  man
  (rule
   (targets Labels.3o.gen Labels.A.3o.gen Labels.class-c.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../labels.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Labels.3o Labels.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Labels.A.3o Labels.A.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Labels.class-c.3o Labels.class-c.3o.gen))
   (enabled_if
@@ -3067,6 +3496,8 @@
 (subdir
  man
  (rule
+  (target labels.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     labels.targets.gen
@@ -3075,6 +3506,7 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff labels.targets labels.targets.gen))
   (enabled_if
@@ -3084,6 +3516,7 @@
  html
  (rule
   (targets Markup.html.gen Markup-X.html.gen Markup-Y.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -3099,18 +3532,21 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Markup.html Markup.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Markup-X.html Markup-X.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Markup-Y.html Markup-Y.html.gen))
   (enabled_if
@@ -3119,6 +3555,8 @@
 (subdir
  html
  (rule
+  (target markup.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     markup.targets.gen
@@ -3127,6 +3565,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff markup.targets markup.targets.gen))
   (enabled_if
@@ -3136,12 +3575,14 @@
  latex
  (rule
   (targets Markup.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../markup.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Markup.tex Markup.tex.gen))
   (enabled_if
@@ -3150,6 +3591,8 @@
 (subdir
  latex
  (rule
+  (target markup.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     markup.targets.gen
@@ -3158,6 +3601,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff markup.targets markup.targets.gen))
   (enabled_if
@@ -3167,24 +3611,28 @@
  man
  (rule
   (targets Markup.3o.gen Markup.X.3o.gen Markup.Y.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../markup.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Markup.3o Markup.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Markup.X.3o Markup.X.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Markup.Y.3o Markup.Y.3o.gen))
   (enabled_if
@@ -3193,6 +3641,8 @@
 (subdir
  man
  (rule
+  (target markup.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     markup.targets.gen
@@ -3201,6 +3651,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff markup.targets markup.targets.gen))
   (enabled_if
@@ -3210,6 +3661,7 @@
  html
  (rule
   (targets mld.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -3225,6 +3677,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff mld.html mld.html.gen))
   (enabled_if
@@ -3233,6 +3686,8 @@
 (subdir
  html
  (rule
+  (target page-mld.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     page-mld.targets.gen
@@ -3241,6 +3696,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff page-mld.targets page-mld.targets.gen))
   (enabled_if
@@ -3250,12 +3706,14 @@
  latex
  (rule
   (targets mld.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../page-mld.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff mld.tex mld.tex.gen))
   (enabled_if
@@ -3264,6 +3722,8 @@
 (subdir
  latex
  (rule
+  (target page-mld.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     page-mld.targets.gen
@@ -3272,6 +3732,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff page-mld.targets page-mld.targets.gen))
   (enabled_if
@@ -3281,12 +3742,14 @@
  man
  (rule
   (targets mld.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../page-mld.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff mld.3o mld.3o.gen))
   (enabled_if
@@ -3295,6 +3758,8 @@
 (subdir
  man
  (rule
+  (target page-mld.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     page-mld.targets.gen
@@ -3303,6 +3768,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff page-mld.targets page-mld.targets.gen))
   (enabled_if
@@ -3329,6 +3795,7 @@
    Module-module-type-S9.html.gen
    Module-Mutually.html.gen
    Module-Recursive.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -3344,102 +3811,119 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module.html Module.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-module-type-S.html Module-module-type-S.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-module-type-S-M.html Module-module-type-S-M.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-module-type-S3.html Module-module-type-S3.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-module-type-S3-M.html Module-module-type-S3-M.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-module-type-S4.html Module-module-type-S4.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-module-type-S4-M.html Module-module-type-S4-M.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-module-type-S5.html Module-module-type-S5.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-module-type-S5-M.html Module-module-type-S5-M.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-module-type-S6.html Module-module-type-S6.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-module-type-S6-M.html Module-module-type-S6-M.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-M'.html Module-M'.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-module-type-S7.html Module-module-type-S7.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-module-type-S8.html Module-module-type-S8.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-module-type-S9.html Module-module-type-S9.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-Mutually.html Module-Mutually.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module-Recursive.html Module-Recursive.html.gen))
   (enabled_if
@@ -3448,6 +3932,8 @@
 (subdir
  html
  (rule
+  (target module.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     module.targets.gen
@@ -3456,6 +3942,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff module.targets module.targets.gen))
   (enabled_if
@@ -3465,12 +3952,14 @@
  latex
  (rule
   (targets Module.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../module.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module.tex Module.tex.gen))
   (enabled_if
@@ -3479,6 +3968,8 @@
 (subdir
  latex
  (rule
+  (target module.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     module.targets.gen
@@ -3487,6 +3978,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff module.targets module.targets.gen))
   (enabled_if
@@ -3500,30 +3992,35 @@
    Module.M'.3o.gen
    Module.Mutually.3o.gen
    Module.Recursive.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../module.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module.3o Module.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module.M'.3o Module.M'.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module.Mutually.3o Module.Mutually.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module.Recursive.3o Module.Recursive.3o.gen))
   (enabled_if
@@ -3532,6 +4029,8 @@
 (subdir
  man
  (rule
+  (target module.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     module.targets.gen
@@ -3540,6 +4039,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff module.targets module.targets.gen))
   (enabled_if
@@ -3558,6 +4058,7 @@
    Module_type_alias-module-type-E-argument-2-C.html.gen
    Module_type_alias-module-type-G.html.gen
    Module_type_alias-module-type-G-argument-1-H.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -3573,12 +4074,14 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_alias.html Module_type_alias.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_alias-module-type-A.html
@@ -3587,6 +4090,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_alias-module-type-B.html
@@ -3595,6 +4099,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_alias-module-type-B-argument-1-C.html
@@ -3603,6 +4108,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_alias-module-type-E.html
@@ -3611,6 +4117,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_alias-module-type-E-argument-1-F.html
@@ -3619,6 +4126,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_alias-module-type-E-argument-2-C.html
@@ -3627,6 +4135,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_alias-module-type-G.html
@@ -3635,6 +4144,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_alias-module-type-G-argument-1-H.html
@@ -3645,6 +4155,8 @@
 (subdir
  html
  (rule
+  (target module_type_alias.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     module_type_alias.targets.gen
@@ -3653,6 +4165,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff module_type_alias.targets module_type_alias.targets.gen))
   (enabled_if
@@ -3662,6 +4175,7 @@
  latex
  (rule
   (targets Module_type_alias.tex.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -3675,6 +4189,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_alias.tex Module_type_alias.tex.gen))
   (enabled_if
@@ -3683,6 +4198,8 @@
 (subdir
  latex
  (rule
+  (target module_type_alias.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     module_type_alias.targets.gen
@@ -3691,6 +4208,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff module_type_alias.targets module_type_alias.targets.gen))
   (enabled_if
@@ -3700,6 +4218,7 @@
  man
  (rule
   (targets Module_type_alias.3o.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -3713,6 +4232,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_alias.3o Module_type_alias.3o.gen))
   (enabled_if
@@ -3721,6 +4241,8 @@
 (subdir
  man
  (rule
+  (target module_type_alias.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     module_type_alias.targets.gen
@@ -3729,6 +4251,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff module_type_alias.targets module_type_alias.targets.gen))
   (enabled_if
@@ -3747,6 +4270,7 @@
    Module_type_of-T.html.gen
    Module_type_of-T-module-type-T.html.gen
    Module_type_of-T-N.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -3762,12 +4286,14 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_of.html Module_type_of.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_of-module-type-S.html
@@ -3776,6 +4302,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_of-module-type-S-module-type-T.html
@@ -3784,6 +4311,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_of-module-type-S-M.html
@@ -3792,6 +4320,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_of-module-type-S-N.html
@@ -3800,18 +4329,21 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_of-X.html Module_type_of-X.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_of-T.html Module_type_of-T.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_of-T-module-type-T.html
@@ -3820,6 +4352,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_of-T-N.html Module_type_of-T-N.html.gen))
   (enabled_if
@@ -3828,6 +4361,8 @@
 (subdir
  html
  (rule
+  (target module_type_of.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     module_type_of.targets.gen
@@ -3836,6 +4371,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff module_type_of.targets module_type_of.targets.gen))
   (enabled_if
@@ -3848,6 +4384,7 @@
    Module_type_of.tex.gen
    Module_type_of.T.tex.gen
    Module_type_of.T.N.tex.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -3861,18 +4398,21 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_of.tex Module_type_of.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_of.T.tex Module_type_of.T.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_of.T.N.tex Module_type_of.T.N.tex.gen))
   (enabled_if
@@ -3881,6 +4421,8 @@
 (subdir
  latex
  (rule
+  (target module_type_of.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     module_type_of.targets.gen
@@ -3889,6 +4431,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff module_type_of.targets module_type_of.targets.gen))
   (enabled_if
@@ -3902,6 +4445,7 @@
    Module_type_of.X.3o.gen
    Module_type_of.T.3o.gen
    Module_type_of.T.N.3o.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -3915,24 +4459,28 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_of.3o Module_type_of.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_of.X.3o Module_type_of.X.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_of.T.3o Module_type_of.T.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_of.T.N.3o Module_type_of.T.N.3o.gen))
   (enabled_if
@@ -3941,6 +4489,8 @@
 (subdir
  man
  (rule
+  (target module_type_of.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     module_type_of.targets.gen
@@ -3949,6 +4499,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff module_type_of.targets module_type_of.targets.gen))
   (enabled_if
@@ -3994,6 +4545,7 @@
    Module_type_subst-Structural-module-type-w-module-type-a.html.gen
    Module_type_subst-Structural-module-type-w-module-type-a-module-type-b.html.gen
    Module_type_subst-Structural-module-type-w-module-type-a-module-type-b-module-type-c.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -4009,18 +4561,21 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_subst.html Module_type_subst.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_subst-Local.html Module_type_subst-Local.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Local-module-type-local.html
@@ -4029,6 +4584,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Local-module-type-s.html
@@ -4037,6 +4593,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-module-type-s.html
@@ -4045,12 +4602,14 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_subst-Basic.html Module_type_subst-Basic.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Basic-module-type-u.html
@@ -4059,6 +4618,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Basic-module-type-u-module-type-T.html
@@ -4067,6 +4627,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Basic-module-type-with_.html
@@ -4075,6 +4636,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Basic-module-type-u2.html
@@ -4083,6 +4645,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Basic-module-type-u2-module-type-T.html
@@ -4091,6 +4654,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Basic-module-type-u2-M.html
@@ -4099,6 +4663,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Basic-module-type-with_2.html
@@ -4107,6 +4672,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Basic-module-type-with_2-module-type-T.html
@@ -4115,6 +4681,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Basic-module-type-with_2-M.html
@@ -4123,6 +4690,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Basic-module-type-a.html
@@ -4131,6 +4699,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Basic-module-type-a-M.html
@@ -4139,6 +4708,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Basic-module-type-c.html
@@ -4147,6 +4717,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Basic-module-type-c-M.html
@@ -4155,12 +4726,14 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_subst-Nested.html Module_type_subst-Nested.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Nested-module-type-nested.html
@@ -4169,6 +4742,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Nested-module-type-nested-N.html
@@ -4177,6 +4751,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Nested-module-type-nested-N-module-type-t.html
@@ -4185,6 +4760,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Nested-module-type-with_.html
@@ -4193,6 +4769,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Nested-module-type-with_-N.html
@@ -4201,6 +4778,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Nested-module-type-with_subst.html
@@ -4209,6 +4787,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Nested-module-type-with_subst-N.html
@@ -4217,6 +4796,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Structural.html
@@ -4225,6 +4805,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Structural-module-type-u.html
@@ -4233,6 +4814,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Structural-module-type-u-module-type-a.html
@@ -4241,6 +4823,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Structural-module-type-u-module-type-a-module-type-b.html
@@ -4249,6 +4832,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Structural-module-type-u-module-type-a-module-type-b-module-type-c.html
@@ -4257,6 +4841,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Structural-module-type-w.html
@@ -4265,6 +4850,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Structural-module-type-w-module-type-a.html
@@ -4273,6 +4859,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Structural-module-type-w-module-type-a-module-type-b.html
@@ -4281,6 +4868,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Module_type_subst-Structural-module-type-w-module-type-a-module-type-b-module-type-c.html
@@ -4291,6 +4879,8 @@
 (subdir
  html
  (rule
+  (target module_type_subst.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     module_type_subst.targets.gen
@@ -4299,6 +4889,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff module_type_subst.targets module_type_subst.targets.gen))
   (enabled_if
@@ -4308,6 +4899,7 @@
  latex
  (rule
   (targets Module_type_subst.tex.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -4321,6 +4913,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_subst.tex Module_type_subst.tex.gen))
   (enabled_if
@@ -4329,6 +4922,8 @@
 (subdir
  latex
  (rule
+  (target module_type_subst.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     module_type_subst.targets.gen
@@ -4337,6 +4932,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff module_type_subst.targets module_type_subst.targets.gen))
   (enabled_if
@@ -4351,6 +4947,7 @@
    Module_type_subst.Basic.3o.gen
    Module_type_subst.Nested.3o.gen
    Module_type_subst.Structural.3o.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -4364,30 +4961,35 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_subst.3o Module_type_subst.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_subst.Local.3o Module_type_subst.Local.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_subst.Basic.3o Module_type_subst.Basic.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_subst.Nested.3o Module_type_subst.Nested.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Module_type_subst.Structural.3o Module_type_subst.Structural.3o.gen))
   (enabled_if
@@ -4396,6 +4998,8 @@
 (subdir
  man
  (rule
+  (target module_type_subst.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     module_type_subst.targets.gen
@@ -4404,6 +5008,7 @@
    (>= %{ocaml_version} 4.13)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff module_type_subst.targets module_type_subst.targets.gen))
   (enabled_if
@@ -4421,6 +5026,7 @@
    Nested-F-argument-2-Arg2.html.gen
    Nested-class-z.html.gen
    Nested-class-inherits.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -4436,48 +5042,56 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested.html Nested.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested-X.html Nested-X.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested-module-type-Y.html Nested-module-type-Y.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested-F.html Nested-F.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested-F-argument-1-Arg1.html Nested-F-argument-1-Arg1.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested-F-argument-2-Arg2.html Nested-F-argument-2-Arg2.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested-class-z.html Nested-class-z.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested-class-inherits.html Nested-class-inherits.html.gen))
   (enabled_if
@@ -4486,6 +5100,8 @@
 (subdir
  html
  (rule
+  (target nested.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     nested.targets.gen
@@ -4494,6 +5110,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff nested.targets nested.targets.gen))
   (enabled_if
@@ -4507,30 +5124,35 @@
    Nested.F.tex.gen
    Nested.z.tex.gen
    Nested.inherits.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../nested.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested.tex Nested.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested.F.tex Nested.F.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested.z.tex Nested.z.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested.inherits.tex Nested.inherits.tex.gen))
   (enabled_if
@@ -4539,6 +5161,8 @@
 (subdir
  latex
  (rule
+  (target nested.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     nested.targets.gen
@@ -4547,6 +5171,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff nested.targets nested.targets.gen))
   (enabled_if
@@ -4561,36 +5186,42 @@
    Nested.F.3o.gen
    Nested.class-z.3o.gen
    Nested.class-inherits.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../nested.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested.3o Nested.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested.X.3o Nested.X.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested.F.3o Nested.F.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested.class-z.3o Nested.class-z.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Nested.class-inherits.3o Nested.class-inherits.3o.gen))
   (enabled_if
@@ -4599,6 +5230,8 @@
 (subdir
  man
  (rule
+  (target nested.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     nested.targets.gen
@@ -4607,6 +5240,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff nested.targets nested.targets.gen))
   (enabled_if
@@ -4799,6 +5433,7 @@
    Ocamlary-Only_a_module.html.gen
    Ocamlary-module-type-TypeExt.html.gen
    Ocamlary-module-type-TypeExtPruned.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -4814,24 +5449,28 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.html Ocamlary.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Empty.html Ocamlary-Empty.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-module-type-Empty.html Ocamlary-module-type-Empty.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-MissingComment.html
@@ -4840,6 +5479,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-EmptySig.html
@@ -4848,6 +5488,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-ModuleWithSignature.html
@@ -4856,6 +5497,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-ModuleWithSignatureAlias.html
@@ -4864,12 +5506,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-One.html Ocamlary-One.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-SigForMod.html
@@ -4878,6 +5522,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-SigForMod-Inner.html
@@ -4886,6 +5531,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-SigForMod-Inner-module-type-Empty.html
@@ -4894,6 +5540,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-SuperSig.html
@@ -4902,6 +5549,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-SuperSig-module-type-SubSigA.html
@@ -4910,6 +5558,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-SuperSig-module-type-SubSigA-SubSigAMod.html
@@ -4918,6 +5567,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-SuperSig-module-type-SubSigB.html
@@ -4926,6 +5576,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-SuperSig-module-type-EmptySig.html
@@ -4934,6 +5585,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-SuperSig-module-type-One.html
@@ -4942,6 +5594,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-SuperSig-module-type-SuperSig.html
@@ -4950,18 +5603,21 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Buffer.html Ocamlary-Buffer.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-CollectionModule.html Ocamlary-CollectionModule.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-CollectionModule-InnerModuleA.html
@@ -4970,6 +5626,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-CollectionModule-InnerModuleA-InnerModuleA'.html
@@ -4978,6 +5635,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-CollectionModule-InnerModuleA-module-type-InnerModuleTypeA'.html
@@ -4986,6 +5644,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-COLLECTION.html
@@ -4994,6 +5653,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-COLLECTION-InnerModuleA.html
@@ -5002,6 +5662,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-COLLECTION-InnerModuleA-InnerModuleA'.html
@@ -5010,6 +5671,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-COLLECTION-InnerModuleA-module-type-InnerModuleTypeA'.html
@@ -5018,12 +5680,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Recollection.html Ocamlary-Recollection.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Recollection-argument-1-C.html
@@ -5032,6 +5696,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Recollection-argument-1-C-InnerModuleA.html
@@ -5040,6 +5705,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Recollection-argument-1-C-InnerModuleA-InnerModuleA'.html
@@ -5048,6 +5714,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Recollection-argument-1-C-InnerModuleA-module-type-InnerModuleTypeA'.html
@@ -5056,6 +5723,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Recollection-InnerModuleA.html
@@ -5064,6 +5732,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Recollection-InnerModuleA-InnerModuleA'.html
@@ -5072,6 +5741,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Recollection-InnerModuleA-module-type-InnerModuleTypeA'.html
@@ -5080,18 +5750,21 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-module-type-MMM.html Ocamlary-module-type-MMM.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-module-type-MMM-C.html Ocamlary-module-type-MMM-C.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-MMM-C-InnerModuleA.html
@@ -5100,6 +5773,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-MMM-C-InnerModuleA-InnerModuleA'.html
@@ -5108,6 +5782,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-MMM-C-InnerModuleA-module-type-InnerModuleTypeA'.html
@@ -5116,6 +5791,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-RECOLLECTION.html
@@ -5124,6 +5800,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-RecollectionModule.html
@@ -5132,6 +5809,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-RecollectionModule-InnerModuleA.html
@@ -5140,6 +5818,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-RecollectionModule-InnerModuleA-InnerModuleA'.html
@@ -5148,6 +5827,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-RecollectionModule-InnerModuleA-module-type-InnerModuleTypeA'.html
@@ -5156,18 +5836,21 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-module-type-A.html Ocamlary-module-type-A.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-module-type-A-Q.html Ocamlary-module-type-A-Q.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-A-Q-InnerModuleA.html
@@ -5176,6 +5859,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-A-Q-InnerModuleA-InnerModuleA'.html
@@ -5184,6 +5868,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-A-Q-InnerModuleA-module-type-InnerModuleTypeA'.html
@@ -5192,18 +5877,21 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-module-type-B.html Ocamlary-module-type-B.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-module-type-B-Q.html Ocamlary-module-type-B-Q.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-B-Q-InnerModuleA.html
@@ -5212,6 +5900,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-B-Q-InnerModuleA-InnerModuleA'.html
@@ -5220,6 +5909,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-B-Q-InnerModuleA-module-type-InnerModuleTypeA'.html
@@ -5228,18 +5918,21 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-module-type-C.html Ocamlary-module-type-C.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-module-type-C-Q.html Ocamlary-module-type-C-Q.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-C-Q-InnerModuleA.html
@@ -5248,6 +5941,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-C-Q-InnerModuleA-InnerModuleA'.html
@@ -5256,6 +5950,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-C-Q-InnerModuleA-module-type-InnerModuleTypeA'.html
@@ -5264,12 +5959,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-FunctorTypeOf.html Ocamlary-FunctorTypeOf.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-FunctorTypeOf-argument-1-Collection.html
@@ -5278,6 +5975,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-FunctorTypeOf-argument-1-Collection-InnerModuleA.html
@@ -5286,6 +5984,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-FunctorTypeOf-argument-1-Collection-InnerModuleA-InnerModuleA'.html
@@ -5294,6 +5993,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-FunctorTypeOf-argument-1-Collection-InnerModuleA-module-type-InnerModuleTypeA'.html
@@ -5302,6 +6002,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-IncludeModuleType.html
@@ -5310,6 +6011,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-ToInclude.html
@@ -5318,6 +6020,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-ToInclude-IncludedA.html
@@ -5326,6 +6029,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-ToInclude-module-type-IncludedB.html
@@ -5334,12 +6038,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-IncludedA.html Ocamlary-IncludedA.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-IncludedB.html
@@ -5348,18 +6054,21 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-ExtMod.html Ocamlary-ExtMod.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-class-empty_class.html Ocamlary-class-empty_class.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-class-one_method_class.html
@@ -5368,6 +6077,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-class-two_method_class.html
@@ -5376,18 +6086,21 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-class-param_class.html Ocamlary-class-param_class.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep1.html Ocamlary-Dep1.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep1-module-type-S.html
@@ -5396,6 +6109,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep1-module-type-S-class-c.html
@@ -5404,30 +6118,35 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep1-X.html Ocamlary-Dep1-X.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep1-X-Y.html Ocamlary-Dep1-X-Y.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep1-X-Y-class-c.html Ocamlary-Dep1-X-Y-class-c.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep2.html Ocamlary-Dep2.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep2-argument-1-Arg.html
@@ -5436,6 +6155,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep2-argument-1-Arg-X.html
@@ -5444,24 +6164,28 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep2-A.html Ocamlary-Dep2-A.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep3.html Ocamlary-Dep3.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep4.html Ocamlary-Dep4.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep4-module-type-T.html
@@ -5470,6 +6194,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep4-module-type-S.html
@@ -5478,6 +6203,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep4-module-type-S-X.html
@@ -5486,6 +6212,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep4-module-type-S-Y.html
@@ -5494,18 +6221,21 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep4-X.html Ocamlary-Dep4-X.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep5.html Ocamlary-Dep5.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep5-argument-1-Arg.html
@@ -5514,6 +6244,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep5-argument-1-Arg-module-type-S.html
@@ -5522,6 +6253,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep5-argument-1-Arg-module-type-S-Y.html
@@ -5530,18 +6262,21 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep5-Z.html Ocamlary-Dep5-Z.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep6.html Ocamlary-Dep6.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep6-module-type-S.html
@@ -5550,6 +6285,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep6-module-type-T.html
@@ -5558,6 +6294,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep6-module-type-T-Y.html
@@ -5566,24 +6303,28 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep6-X.html Ocamlary-Dep6-X.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep6-X-Y.html Ocamlary-Dep6-X-Y.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep7.html Ocamlary-Dep7.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep7-argument-1-Arg.html
@@ -5592,6 +6333,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep7-argument-1-Arg-module-type-T.html
@@ -5600,6 +6342,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep7-argument-1-Arg-X.html
@@ -5608,18 +6351,21 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep7-M.html Ocamlary-Dep7-M.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep8.html Ocamlary-Dep8.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep8-module-type-T.html
@@ -5628,30 +6374,35 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep9.html Ocamlary-Dep9.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep9-argument-1-X.html Ocamlary-Dep9-argument-1-X.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-module-type-Dep10.html Ocamlary-module-type-Dep10.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep11.html Ocamlary-Dep11.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep11-module-type-S.html
@@ -5660,6 +6411,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep11-module-type-S-class-c.html
@@ -5668,12 +6420,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep12.html Ocamlary-Dep12.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-Dep12-argument-1-Arg.html
@@ -5682,24 +6436,28 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep13.html Ocamlary-Dep13.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Dep13-class-c.html Ocamlary-Dep13-class-c.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-module-type-With1.html Ocamlary-module-type-With1.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-With1-M.html
@@ -5708,12 +6466,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-With2.html Ocamlary-With2.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-With2-module-type-S.html
@@ -5722,36 +6482,42 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-With3.html Ocamlary-With3.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-With3-N.html Ocamlary-With3-N.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-With4.html Ocamlary-With4.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-With4-N.html Ocamlary-With4-N.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-With5.html Ocamlary-With5.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-With5-module-type-S.html
@@ -5760,18 +6526,21 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-With5-N.html Ocamlary-With5-N.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-With6.html Ocamlary-With6.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-With6-module-type-T.html
@@ -5780,6 +6549,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-With6-module-type-T-M.html
@@ -5788,12 +6558,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-With7.html Ocamlary-With7.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-With7-argument-1-X.html
@@ -5802,12 +6574,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-module-type-With8.html Ocamlary-module-type-With8.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-With8-M.html
@@ -5816,6 +6590,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-With8-M-N.html
@@ -5824,12 +6599,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-With9.html Ocamlary-With9.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-With9-module-type-S.html
@@ -5838,12 +6615,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-With10.html Ocamlary-With10.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-With10-module-type-T.html
@@ -5852,6 +6631,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-With10-module-type-T-M.html
@@ -5860,6 +6640,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-With11.html
@@ -5868,6 +6649,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-With11-N.html
@@ -5876,6 +6658,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-NestedInclude1.html
@@ -5884,6 +6667,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-NestedInclude1-module-type-NestedInclude2.html
@@ -5892,6 +6676,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-NestedInclude2.html
@@ -5900,12 +6685,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-DoubleInclude1.html Ocamlary-DoubleInclude1.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-DoubleInclude1-DoubleInclude2.html
@@ -5914,12 +6701,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-DoubleInclude3.html Ocamlary-DoubleInclude3.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-DoubleInclude3-DoubleInclude2.html
@@ -5928,12 +6717,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-IncludeInclude1.html Ocamlary-IncludeInclude1.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-IncludeInclude1-module-type-IncludeInclude2.html
@@ -5942,6 +6733,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-IncludeInclude1-IncludeInclude2_M.html
@@ -5950,6 +6742,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-IncludeInclude2.html
@@ -5958,18 +6751,21 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-IncludeInclude2_M.html Ocamlary-IncludeInclude2_M.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-CanonicalTest.html Ocamlary-CanonicalTest.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-CanonicalTest-Base.html
@@ -5978,6 +6774,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-CanonicalTest-Base-List.html
@@ -5986,6 +6783,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-CanonicalTest-Base_Tests.html
@@ -5994,6 +6792,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-CanonicalTest-Base_Tests-C.html
@@ -6002,6 +6801,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-CanonicalTest-List_modif.html
@@ -6010,102 +6810,119 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Aliases.html Ocamlary-Aliases.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Aliases-Foo.html Ocamlary-Aliases-Foo.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Aliases-Foo-A.html Ocamlary-Aliases-Foo-A.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Aliases-Foo-B.html Ocamlary-Aliases-Foo-B.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Aliases-Foo-C.html Ocamlary-Aliases-Foo-C.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Aliases-Foo-D.html Ocamlary-Aliases-Foo-D.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Aliases-Foo-E.html Ocamlary-Aliases-Foo-E.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Aliases-Std.html Ocamlary-Aliases-Std.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Aliases-E.html Ocamlary-Aliases-E.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Aliases-P1.html Ocamlary-Aliases-P1.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Aliases-P1-Y.html Ocamlary-Aliases-P1-Y.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Aliases-P2.html Ocamlary-Aliases-P2.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Aliases-P2-Z.html Ocamlary-Aliases-P2-Z.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-module-type-M.html Ocamlary-module-type-M.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-M.html Ocamlary-M.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary-Only_a_module.html Ocamlary-Only_a_module.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-TypeExt.html
@@ -6114,6 +6931,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary-module-type-TypeExtPruned.html
@@ -6124,6 +6942,8 @@
 (subdir
  html
  (rule
+  (target ocamlary.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     ocamlary.targets.gen
@@ -6132,6 +6952,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff ocamlary.targets ocamlary.targets.gen))
   (enabled_if
@@ -6164,18 +6985,21 @@
    Ocamlary.With4.tex.gen
    Ocamlary.With4.N.tex.gen
    Ocamlary.With7.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../ocamlary.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.tex Ocamlary.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.ModuleWithSignature.tex
@@ -6184,6 +7008,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.ModuleWithSignatureAlias.tex
@@ -6192,120 +7017,140 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Recollection.tex Ocamlary.Recollection.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.FunctorTypeOf.tex Ocamlary.FunctorTypeOf.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.empty_class.tex Ocamlary.empty_class.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.one_method_class.tex Ocamlary.one_method_class.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.two_method_class.tex Ocamlary.two_method_class.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.param_class.tex Ocamlary.param_class.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep2.tex Ocamlary.Dep2.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep5.tex Ocamlary.Dep5.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep5.Z.tex Ocamlary.Dep5.Z.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep7.tex Ocamlary.Dep7.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep7.M.tex Ocamlary.Dep7.M.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep9.tex Ocamlary.Dep9.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep12.tex Ocamlary.Dep12.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep13.tex Ocamlary.Dep13.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep13.c.tex Ocamlary.Dep13.c.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With3.tex Ocamlary.With3.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With3.N.tex Ocamlary.With3.N.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With4.tex Ocamlary.With4.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With4.N.tex Ocamlary.With4.N.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With7.tex Ocamlary.With7.tex.gen))
   (enabled_if
@@ -6314,6 +7159,8 @@
 (subdir
  latex
  (rule
+  (target ocamlary.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     ocamlary.targets.gen
@@ -6322,6 +7169,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff ocamlary.targets ocamlary.targets.gen))
   (enabled_if
@@ -6411,30 +7259,35 @@
    Ocamlary.Aliases.P2.Z.3o.gen
    Ocamlary.M.3o.gen
    Ocamlary.Only_a_module.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../ocamlary.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.3o Ocamlary.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Empty.3o Ocamlary.Empty.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.ModuleWithSignature.3o Ocamlary.ModuleWithSignature.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.ModuleWithSignatureAlias.3o
@@ -6443,24 +7296,28 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.One.3o Ocamlary.One.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Buffer.3o Ocamlary.Buffer.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.CollectionModule.3o Ocamlary.CollectionModule.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.CollectionModule.InnerModuleA.3o
@@ -6469,6 +7326,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.CollectionModule.InnerModuleA.InnerModuleA'.3o
@@ -6477,12 +7335,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Recollection.3o Ocamlary.Recollection.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.Recollection.InnerModuleA.3o
@@ -6491,6 +7351,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.Recollection.InnerModuleA.InnerModuleA'.3o
@@ -6499,30 +7360,35 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.FunctorTypeOf.3o Ocamlary.FunctorTypeOf.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.IncludedA.3o Ocamlary.IncludedA.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.ExtMod.3o Ocamlary.ExtMod.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.class-empty_class.3o Ocamlary.class-empty_class.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.class-one_method_class.3o
@@ -6531,6 +7397,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.class-two_method_class.3o
@@ -6539,216 +7406,252 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.class-param_class.3o Ocamlary.class-param_class.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep1.3o Ocamlary.Dep1.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep1.X.3o Ocamlary.Dep1.X.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep1.X.Y.3o Ocamlary.Dep1.X.Y.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep1.X.Y.class-c.3o Ocamlary.Dep1.X.Y.class-c.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep2.3o Ocamlary.Dep2.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep2.A.3o Ocamlary.Dep2.A.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep3.3o Ocamlary.Dep3.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep4.3o Ocamlary.Dep4.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep4.X.3o Ocamlary.Dep4.X.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep5.3o Ocamlary.Dep5.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep5.Z.3o Ocamlary.Dep5.Z.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep6.3o Ocamlary.Dep6.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep6.X.3o Ocamlary.Dep6.X.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep6.X.Y.3o Ocamlary.Dep6.X.Y.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep7.3o Ocamlary.Dep7.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep7.M.3o Ocamlary.Dep7.M.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep8.3o Ocamlary.Dep8.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep9.3o Ocamlary.Dep9.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep11.3o Ocamlary.Dep11.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep12.3o Ocamlary.Dep12.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep13.3o Ocamlary.Dep13.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Dep13.class-c.3o Ocamlary.Dep13.class-c.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With2.3o Ocamlary.With2.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With3.3o Ocamlary.With3.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With3.N.3o Ocamlary.With3.N.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With4.3o Ocamlary.With4.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With4.N.3o Ocamlary.With4.N.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With5.3o Ocamlary.With5.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With5.N.3o Ocamlary.With5.N.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With6.3o Ocamlary.With6.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With7.3o Ocamlary.With7.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With9.3o Ocamlary.With9.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.With10.3o Ocamlary.With10.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.DoubleInclude1.3o Ocamlary.DoubleInclude1.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.DoubleInclude1.DoubleInclude2.3o
@@ -6757,12 +7660,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.DoubleInclude3.3o Ocamlary.DoubleInclude3.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.DoubleInclude3.DoubleInclude2.3o
@@ -6771,12 +7676,14 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.IncludeInclude1.3o Ocamlary.IncludeInclude1.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.IncludeInclude1.IncludeInclude2_M.3o
@@ -6785,24 +7692,28 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.IncludeInclude2_M.3o Ocamlary.IncludeInclude2_M.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.CanonicalTest.3o Ocamlary.CanonicalTest.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.CanonicalTest.Base.3o Ocamlary.CanonicalTest.Base.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.CanonicalTest.Base.List.3o
@@ -6811,6 +7722,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.CanonicalTest.Base_Tests.3o
@@ -6819,6 +7731,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.CanonicalTest.Base_Tests.C.3o
@@ -6827,6 +7740,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Ocamlary.CanonicalTest.List_modif.3o
@@ -6835,90 +7749,105 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Aliases.3o Ocamlary.Aliases.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Aliases.Foo.3o Ocamlary.Aliases.Foo.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Aliases.Foo.A.3o Ocamlary.Aliases.Foo.A.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Aliases.Foo.B.3o Ocamlary.Aliases.Foo.B.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Aliases.Foo.C.3o Ocamlary.Aliases.Foo.C.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Aliases.Foo.D.3o Ocamlary.Aliases.Foo.D.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Aliases.Foo.E.3o Ocamlary.Aliases.Foo.E.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Aliases.Std.3o Ocamlary.Aliases.Std.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Aliases.E.3o Ocamlary.Aliases.E.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Aliases.P1.3o Ocamlary.Aliases.P1.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Aliases.P1.Y.3o Ocamlary.Aliases.P1.Y.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Aliases.P2.3o Ocamlary.Aliases.P2.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Aliases.P2.Z.3o Ocamlary.Aliases.P2.Z.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.M.3o Ocamlary.M.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Ocamlary.Only_a_module.3o Ocamlary.Only_a_module.3o.gen))
   (enabled_if
@@ -6927,6 +7856,8 @@
 (subdir
  man
  (rule
+  (target ocamlary.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     ocamlary.targets.gen
@@ -6935,6 +7866,7 @@
    (>= %{ocaml_version} 4.07)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff ocamlary.targets ocamlary.targets.gen))
   (enabled_if
@@ -6953,6 +7885,7 @@
    Recent-Z-Y-X.html.gen
    Recent-X.html.gen
    Recent-module-type-PolyS.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -6968,24 +7901,28 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent.html Recent.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent-module-type-S.html Recent-module-type-S.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent-module-type-S1.html Recent-module-type-S1.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Recent-module-type-S1-argument-1-_.html
@@ -6994,30 +7931,35 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent-Z.html Recent-Z.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent-Z-Y.html Recent-Z-Y.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent-Z-Y-X.html Recent-Z-Y-X.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent-X.html Recent-X.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent-module-type-PolyS.html Recent-module-type-PolyS.html.gen))
   (enabled_if
@@ -7026,6 +7968,8 @@
 (subdir
  html
  (rule
+  (target recent.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     recent.targets.gen
@@ -7034,6 +7978,7 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff recent.targets recent.targets.gen))
   (enabled_if
@@ -7043,12 +7988,14 @@
  latex
  (rule
   (targets Recent.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../recent.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent.tex Recent.tex.gen))
   (enabled_if
@@ -7057,6 +8004,8 @@
 (subdir
  latex
  (rule
+  (target recent.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     recent.targets.gen
@@ -7065,6 +8014,7 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff recent.targets recent.targets.gen))
   (enabled_if
@@ -7079,36 +8029,42 @@
    Recent.Z.Y.3o.gen
    Recent.Z.Y.X.3o.gen
    Recent.X.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../recent.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent.3o Recent.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent.Z.3o Recent.Z.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent.Z.Y.3o Recent.Z.Y.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent.Z.Y.X.3o Recent.Z.Y.X.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent.X.3o Recent.X.3o.gen))
   (enabled_if
@@ -7117,6 +8073,8 @@
 (subdir
  man
  (rule
+  (target recent.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     recent.targets.gen
@@ -7125,6 +8083,7 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff recent.targets recent.targets.gen))
   (enabled_if
@@ -7143,6 +8102,7 @@
    Recent_impl-module-type-S-F.html.gen
    Recent_impl-module-type-S-F-argument-1-_.html.gen
    Recent_impl-module-type-S-X.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -7158,42 +8118,49 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent_impl.html Recent_impl.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent_impl-Foo.html Recent_impl-Foo.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent_impl-Foo-A.html Recent_impl-Foo-A.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent_impl-Foo-B.html Recent_impl-Foo-B.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent_impl-B.html Recent_impl-B.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent_impl-module-type-S.html Recent_impl-module-type-S.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Recent_impl-module-type-S-F.html
@@ -7202,6 +8169,7 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Recent_impl-module-type-S-F-argument-1-_.html
@@ -7210,6 +8178,7 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Recent_impl-module-type-S-X.html
@@ -7220,6 +8189,8 @@
 (subdir
  html
  (rule
+  (target recent_impl.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     recent_impl.targets.gen
@@ -7228,6 +8199,7 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff recent_impl.targets recent_impl.targets.gen))
   (enabled_if
@@ -7237,6 +8209,7 @@
  latex
  (rule
   (targets Recent_impl.tex.gen Recent_impl.B.tex.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -7250,12 +8223,14 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent_impl.tex Recent_impl.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent_impl.B.tex Recent_impl.B.tex.gen))
   (enabled_if
@@ -7264,6 +8239,8 @@
 (subdir
  latex
  (rule
+  (target recent_impl.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     recent_impl.targets.gen
@@ -7272,6 +8249,7 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff recent_impl.targets recent_impl.targets.gen))
   (enabled_if
@@ -7286,6 +8264,7 @@
    Recent_impl.Foo.A.3o.gen
    Recent_impl.Foo.B.3o.gen
    Recent_impl.B.3o.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -7299,30 +8278,35 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent_impl.3o Recent_impl.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent_impl.Foo.3o Recent_impl.Foo.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent_impl.Foo.A.3o Recent_impl.Foo.A.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent_impl.Foo.B.3o Recent_impl.Foo.B.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Recent_impl.B.3o Recent_impl.B.3o.gen))
   (enabled_if
@@ -7331,6 +8315,8 @@
 (subdir
  man
  (rule
+  (target recent_impl.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     recent_impl.targets.gen
@@ -7339,6 +8325,7 @@
    (>= %{ocaml_version} 4.09)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff recent_impl.targets recent_impl.targets.gen))
   (enabled_if
@@ -7348,6 +8335,7 @@
  html
  (rule
   (targets Section.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -7363,6 +8351,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Section.html Section.html.gen))
   (enabled_if
@@ -7371,6 +8360,8 @@
 (subdir
  html
  (rule
+  (target section.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     section.targets.gen
@@ -7379,6 +8370,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff section.targets section.targets.gen))
   (enabled_if
@@ -7388,12 +8380,14 @@
  latex
  (rule
   (targets Section.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../section.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Section.tex Section.tex.gen))
   (enabled_if
@@ -7402,6 +8396,8 @@
 (subdir
  latex
  (rule
+  (target section.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     section.targets.gen
@@ -7410,6 +8406,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff section.targets section.targets.gen))
   (enabled_if
@@ -7419,12 +8416,14 @@
  man
  (rule
   (targets Section.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../section.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Section.3o Section.3o.gen))
   (enabled_if
@@ -7433,6 +8432,8 @@
 (subdir
  man
  (rule
+  (target section.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     section.targets.gen
@@ -7441,6 +8442,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff section.targets section.targets.gen))
   (enabled_if
@@ -7450,6 +8452,7 @@
  html
  (rule
   (targets Stop.html.gen Stop-N.html.gen Stop-O.html.gen Stop-P.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -7465,24 +8468,28 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop.html Stop.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop-N.html Stop-N.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop-O.html Stop-O.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop-P.html Stop-P.html.gen))
   (enabled_if
@@ -7491,6 +8498,8 @@
 (subdir
  html
  (rule
+  (target stop.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     stop.targets.gen
@@ -7499,6 +8508,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff stop.targets stop.targets.gen))
   (enabled_if
@@ -7508,12 +8518,14 @@
  latex
  (rule
   (targets Stop.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../stop.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop.tex Stop.tex.gen))
   (enabled_if
@@ -7522,6 +8534,8 @@
 (subdir
  latex
  (rule
+  (target stop.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     stop.targets.gen
@@ -7530,6 +8544,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff stop.targets stop.targets.gen))
   (enabled_if
@@ -7539,30 +8554,35 @@
  man
  (rule
   (targets Stop.3o.gen Stop.N.3o.gen Stop.O.3o.gen Stop.P.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../stop.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop.3o Stop.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop.N.3o Stop.N.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop.O.3o Stop.O.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop.P.3o Stop.P.3o.gen))
   (enabled_if
@@ -7571,6 +8591,8 @@
 (subdir
  man
  (rule
+  (target stop.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     stop.targets.gen
@@ -7579,6 +8601,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff stop.targets stop.targets.gen))
   (enabled_if
@@ -7588,6 +8611,7 @@
  html
  (rule
   (targets Stop_dead_link_doc.html.gen Stop_dead_link_doc-Foo.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -7603,12 +8627,14 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop_dead_link_doc.html Stop_dead_link_doc.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop_dead_link_doc-Foo.html Stop_dead_link_doc-Foo.html.gen))
   (enabled_if
@@ -7617,6 +8643,8 @@
 (subdir
  html
  (rule
+  (target stop_dead_link_doc.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     stop_dead_link_doc.targets.gen
@@ -7625,6 +8653,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff stop_dead_link_doc.targets stop_dead_link_doc.targets.gen))
   (enabled_if
@@ -7634,6 +8663,7 @@
  latex
  (rule
   (targets Stop_dead_link_doc.tex.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -7647,6 +8677,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop_dead_link_doc.tex Stop_dead_link_doc.tex.gen))
   (enabled_if
@@ -7655,6 +8686,8 @@
 (subdir
  latex
  (rule
+  (target stop_dead_link_doc.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     stop_dead_link_doc.targets.gen
@@ -7663,6 +8696,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff stop_dead_link_doc.targets stop_dead_link_doc.targets.gen))
   (enabled_if
@@ -7672,6 +8706,7 @@
  man
  (rule
   (targets Stop_dead_link_doc.3o.gen Stop_dead_link_doc.Foo.3o.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -7685,12 +8720,14 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop_dead_link_doc.3o Stop_dead_link_doc.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop_dead_link_doc.Foo.3o Stop_dead_link_doc.Foo.3o.gen))
   (enabled_if
@@ -7699,6 +8736,8 @@
 (subdir
  man
  (rule
+  (target stop_dead_link_doc.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     stop_dead_link_doc.targets.gen
@@ -7707,6 +8746,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff stop_dead_link_doc.targets stop_dead_link_doc.targets.gen))
   (enabled_if
@@ -7716,6 +8756,7 @@
  html
  (rule
   (targets Stop_first_comment.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -7731,6 +8772,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop_first_comment.html Stop_first_comment.html.gen))
   (enabled_if
@@ -7739,6 +8781,8 @@
 (subdir
  html
  (rule
+  (target stop_first_comment.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     stop_first_comment.targets.gen
@@ -7747,6 +8791,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff stop_first_comment.targets stop_first_comment.targets.gen))
   (enabled_if
@@ -7756,6 +8801,7 @@
  latex
  (rule
   (targets Stop_first_comment.tex.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -7769,6 +8815,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop_first_comment.tex Stop_first_comment.tex.gen))
   (enabled_if
@@ -7777,6 +8824,8 @@
 (subdir
  latex
  (rule
+  (target stop_first_comment.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     stop_first_comment.targets.gen
@@ -7785,6 +8834,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff stop_first_comment.targets stop_first_comment.targets.gen))
   (enabled_if
@@ -7794,6 +8844,7 @@
  man
  (rule
   (targets Stop_first_comment.3o.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -7807,6 +8858,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Stop_first_comment.3o Stop_first_comment.3o.gen))
   (enabled_if
@@ -7815,6 +8867,8 @@
 (subdir
  man
  (rule
+  (target stop_first_comment.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     stop_first_comment.targets.gen
@@ -7823,6 +8877,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff stop_first_comment.targets stop_first_comment.targets.gen))
   (enabled_if
@@ -7832,6 +8887,7 @@
  html
  (rule
   (targets Tag_link.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -7847,6 +8903,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Tag_link.html Tag_link.html.gen))
   (enabled_if
@@ -7855,6 +8912,8 @@
 (subdir
  html
  (rule
+  (target tag_link.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     tag_link.targets.gen
@@ -7863,6 +8922,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff tag_link.targets tag_link.targets.gen))
   (enabled_if
@@ -7872,12 +8932,14 @@
  latex
  (rule
   (targets Tag_link.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../tag_link.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Tag_link.tex Tag_link.tex.gen))
   (enabled_if
@@ -7886,6 +8948,8 @@
 (subdir
  latex
  (rule
+  (target tag_link.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     tag_link.targets.gen
@@ -7894,6 +8958,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff tag_link.targets tag_link.targets.gen))
   (enabled_if
@@ -7903,12 +8968,14 @@
  man
  (rule
   (targets Tag_link.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../tag_link.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Tag_link.3o Tag_link.3o.gen))
   (enabled_if
@@ -7917,6 +8984,8 @@
 (subdir
  man
  (rule
+  (target tag_link.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     tag_link.targets.gen
@@ -7925,6 +8994,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff tag_link.targets tag_link.targets.gen))
   (enabled_if
@@ -7950,6 +9020,7 @@
    Toplevel_comments-Ref_in_synopsis.html.gen
    Toplevel_comments-Comments_on_open.html.gen
    Toplevel_comments-Comments_on_open-M.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -7965,12 +9036,14 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments.html Toplevel_comments.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments-module-type-T.html
@@ -7979,6 +9052,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments-Include_inline.html
@@ -7987,6 +9061,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments-Include_inline'.html
@@ -7995,6 +9070,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments-module-type-Include_inline_T.html
@@ -8003,6 +9079,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments-module-type-Include_inline_T'.html
@@ -8011,36 +9088,42 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments-M.html Toplevel_comments-M.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments-M'.html Toplevel_comments-M'.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments-M''.html Toplevel_comments-M''.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments-Alias.html Toplevel_comments-Alias.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments-class-c1.html Toplevel_comments-class-c1.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments-class-type-ct.html
@@ -8049,12 +9132,14 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments-class-c2.html Toplevel_comments-class-c2.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments-Ref_in_synopsis.html
@@ -8063,6 +9148,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments-Comments_on_open.html
@@ -8071,6 +9157,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments-Comments_on_open-M.html
@@ -8081,6 +9168,8 @@
 (subdir
  html
  (rule
+  (target toplevel_comments.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     toplevel_comments.targets.gen
@@ -8089,6 +9178,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff toplevel_comments.targets toplevel_comments.targets.gen))
   (enabled_if
@@ -8102,6 +9192,7 @@
    Toplevel_comments.Alias.tex.gen
    Toplevel_comments.c1.tex.gen
    Toplevel_comments.c2.tex.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -8115,24 +9206,28 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments.tex Toplevel_comments.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments.Alias.tex Toplevel_comments.Alias.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments.c1.tex Toplevel_comments.c1.tex.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments.c2.tex Toplevel_comments.c2.tex.gen))
   (enabled_if
@@ -8141,6 +9236,8 @@
 (subdir
  latex
  (rule
+  (target toplevel_comments.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     toplevel_comments.targets.gen
@@ -8149,6 +9246,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff toplevel_comments.targets toplevel_comments.targets.gen))
   (enabled_if
@@ -8170,6 +9268,7 @@
    Toplevel_comments.Ref_in_synopsis.3o.gen
    Toplevel_comments.Comments_on_open.3o.gen
    Toplevel_comments.Comments_on_open.M.3o.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -8183,12 +9282,14 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments.3o Toplevel_comments.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments.Include_inline.3o
@@ -8197,6 +9298,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments.Include_inline'.3o
@@ -8205,42 +9307,49 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments.M.3o Toplevel_comments.M.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments.M'.3o Toplevel_comments.M'.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments.M''.3o Toplevel_comments.M''.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments.Alias.3o Toplevel_comments.Alias.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments.class-c1.3o Toplevel_comments.class-c1.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Toplevel_comments.class-c2.3o Toplevel_comments.class-c2.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments.Ref_in_synopsis.3o
@@ -8249,6 +9358,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments.Comments_on_open.3o
@@ -8257,6 +9367,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff
     Toplevel_comments.Comments_on_open.M.3o
@@ -8267,6 +9378,8 @@
 (subdir
  man
  (rule
+  (target toplevel_comments.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     toplevel_comments.targets.gen
@@ -8275,6 +9388,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff toplevel_comments.targets toplevel_comments.targets.gen))
   (enabled_if
@@ -8284,6 +9398,7 @@
  html
  (rule
   (targets Type.html.gen Type-module-type-X.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -8299,12 +9414,14 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Type.html Type.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Type-module-type-X.html Type-module-type-X.html.gen))
   (enabled_if
@@ -8313,6 +9430,8 @@
 (subdir
  html
  (rule
+  (target type.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     type.targets.gen
@@ -8321,6 +9440,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff type.targets type.targets.gen))
   (enabled_if
@@ -8330,12 +9450,14 @@
  latex
  (rule
   (targets Type.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../type.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Type.tex Type.tex.gen))
   (enabled_if
@@ -8344,6 +9466,8 @@
 (subdir
  latex
  (rule
+  (target type.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     type.targets.gen
@@ -8352,6 +9476,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff type.targets type.targets.gen))
   (enabled_if
@@ -8361,12 +9486,14 @@
  man
  (rule
   (targets Type.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../type.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Type.3o Type.3o.gen))
   (enabled_if
@@ -8375,6 +9502,8 @@
 (subdir
  man
  (rule
+  (target type.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     type.targets.gen
@@ -8383,6 +9512,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff type.targets type.targets.gen))
   (enabled_if
@@ -8392,6 +9522,7 @@
  html
  (rule
   (targets Val.html.gen)
+  (package odoc)
   (action
    (run
     odoc
@@ -8407,6 +9538,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Val.html Val.html.gen))
   (enabled_if
@@ -8415,6 +9547,8 @@
 (subdir
  html
  (rule
+  (target val.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     val.targets.gen
@@ -8423,6 +9557,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff val.targets val.targets.gen))
   (enabled_if
@@ -8432,12 +9567,14 @@
  latex
  (rule
   (targets Val.tex.gen)
+  (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../val.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Val.tex Val.tex.gen))
   (enabled_if
@@ -8446,6 +9583,8 @@
 (subdir
  latex
  (rule
+  (target val.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     val.targets.gen
@@ -8454,6 +9593,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff val.targets val.targets.gen))
   (enabled_if
@@ -8463,12 +9603,14 @@
  man
  (rule
   (targets Val.3o.gen)
+  (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../val.odocl}))
   (enabled_if
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff Val.3o Val.3o.gen))
   (enabled_if
@@ -8477,6 +9619,8 @@
 (subdir
  man
  (rule
+  (target val.targets.gen)
+  (package odoc)
   (action
    (with-outputs-to
     val.targets.gen
@@ -8485,6 +9629,7 @@
    (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
+  (package odoc)
   (action
    (diff val.targets val.targets.gen))
   (enabled_if

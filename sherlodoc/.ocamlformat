@@ -1,0 +1,9 @@
+version = 0.26.1
+profile = janestreet
+let-binding-spacing = compact
+sequence-style = separator
+doc-comments = after-when-possible
+exp-grouping = preserve
+break-cases = toplevel
+cases-exp-indent = 4
+cases-matching-exp-indent = normal

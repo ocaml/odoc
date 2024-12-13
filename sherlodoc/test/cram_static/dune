@@ -1,0 +1,7 @@
+(cram
+ (package sherlodoc)
+ (enabled_if
+  (and
+   (= %{version:menhirLib} 20230608)
+   (= %{ocaml_version} 4.14.1)))
+ (deps ../docs %{bin:odoc} %{bin:sherlodoc}))

@@ -1,0 +1,4 @@
+(cram
+ (package sherlodoc)
+ (enabled_if %{lib-available:ancient})
+ (deps %{bin:odoc} %{bin:sherlodoc}))

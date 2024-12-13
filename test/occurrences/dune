@@ -8,4 +8,5 @@
 (cram
  (enabled_if
   (>= %{ocaml_version} 4.14.1))
+ (package odoc)
  (deps %{bin:odoc} %{bin:occurrences_print}))

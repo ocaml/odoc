@@ -1,4 +1,5 @@
 (cram
+ (package odoc)
  (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile}))
 
 ; 4.07.0 and above

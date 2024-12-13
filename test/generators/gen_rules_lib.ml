@@ -51,30 +51,29 @@ module Dune = struct
 
   let run cmd = List (Atom "run" :: arg_list cmd)
 
-  let action x = List [ Atom "action"; x ]
+  let package = List [ Atom "package"; Atom "odoc" ]
 
-  let rule ?enabledif fields =
-    List ((Atom "rule" :: fields) @ render_enabledif enabledif)
+  let rule ?enabledif ?(fields = []) action =
+    List
+      ((Atom "rule" :: fields)
+      @ (package :: List [ Atom "action"; action ] :: render_enabledif enabledif)
+      )
 
   let simple_rule ?enabledif target cmd =
     rule ?enabledif
-      [ List [ Atom "target"; Atom (arg_fpath target) ]; action (run cmd) ]
+      ~fields:[ List [ Atom "target"; Atom (arg_fpath target) ] ]
+      (run cmd)
 
   let rule_with_output_to ?enabledif target cmd =
+    let target = arg_fpath target in
     rule ?enabledif
-      [
-        action
-          (List [ Atom "with-outputs-to"; Atom (arg_fpath target); run cmd ]);
-      ]
+      ~fields:[ List [ Atom "target"; Atom target ] ]
+      (List [ Atom "with-outputs-to"; Atom target; run cmd ])
 
   let runtest_diff ?enabledif file_a file_b =
     rule ?enabledif
-      [
-        List [ Atom "alias"; Atom "runtest" ];
-        action
-          (List
-             [ Atom "diff"; Atom (arg_fpath file_a); Atom (arg_fpath file_b) ]);
-      ]
+      ~fields:[ List [ Atom "alias"; Atom "runtest" ] ]
+      (List [ Atom "diff"; Atom (arg_fpath file_a); Atom (arg_fpath file_b) ])
 
   let subdir dir rules = List (Atom "subdir" :: Atom (arg_fpath dir) :: rules)
 end
@@ -148,16 +147,15 @@ let gen_backend_diff_rule enabledif ~targets (b_t_r, b, _) p =
   | [] -> []
   | _ ->
       let targets_gen = List.map (Fpath.add_ext ".gen") targets in
+      let targets_field =
+        List
+          (Atom "targets"
+          :: List.map (fun t -> Atom (Dune.arg_fpath t)) targets_gen)
+      in
       Dune.
         [
           subdir b
-            (rule ?enabledif
-               [
-                 List
-                   (Atom "targets"
-                   :: List.map (fun t -> Atom (Dune.arg_fpath t)) targets_gen);
-                 action (run (b_t_r p));
-               ]
+            (rule ?enabledif ~fields:[ targets_field ] (run (b_t_r p))
             :: List.map2 (Dune.runtest_diff ?enabledif) targets targets_gen);
         ]
 

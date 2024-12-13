@@ -4,6 +4,7 @@
    (../odoc_print/odoc_print.exe as odoc_print))))
 
 (cram
+ (package odoc)
  (deps
   (package odoc)
   %{bin:odoc_print}))

@@ -4,6 +4,7 @@
 (rule
  (aliases runtest support-files)
  (target odoc_html_support_files.ml)
+ (package odoc)
  (deps
   (glob_files *.js)
   (glob_files *.css)

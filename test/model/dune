@@ -7,4 +7,5 @@
    (../xref2/compile.exe as compile))))
 
 (cram
+ (package odoc)
  (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile}))
