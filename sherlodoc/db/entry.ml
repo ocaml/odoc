@@ -56,7 +56,7 @@ type t =
   ; pkg : Package.t
   }
 
-let pp fmt { name; rhs; url; kind; cost; doc_html; pkg } =
+let pp fmt { name; rhs; url; kind = _; cost; doc_html; pkg = _ } =
   Format.fprintf
     fmt
     "{ name = %s ; rhs = %a ; url = %s ; kind = . ; cost = %d ; doc_html = %s ; pkg = . }\n"

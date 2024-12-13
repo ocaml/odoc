@@ -22,7 +22,6 @@ let index_file register filename =
   match Fpath.of_string filename with
   | Error (`Msg msg) -> Format.printf "FILE ERROR %s: %s@." filename msg
   | Ok file ->
-    let open Odoc_model in
     (match handle_file register file with
      | Ok result -> result
      | Error (`Msg msg) ->
