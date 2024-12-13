@@ -66,11 +66,19 @@ Quick reference for the odoc language!
 
       See {{!Odoc_odoc.Compile.compile}this function}.
 
+      See {{!/fmt/Fmt.pf}this function from another library}.
+
+      See {{!/cmdliner/tutorial}this page from another package}.
+
       See {{!odoc_for_authors.links_and_references}this section} for the syntax of references.]}}
     {td
       See {!Odoc_odoc.Compile.compile}.
 
       See {{!Odoc_odoc.Compile.compile}this function}.
+
+      See {{!/fmt/Fmt.pf}this function from another library}.
+
+      See {{!/cmdliner/tutorial}this page from another package}.
 
       See {{!odoc_for_authors.links_and_references}this section} for the syntax of references.}}
     {tr
