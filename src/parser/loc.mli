@@ -29,6 +29,7 @@ type +'a with_location = { location : span; value : 'a }
 (** Describes values located at a particular span *)
 
 val fmt : span -> string
+(** Format a `span` and return the resulting string *)
 
 val nudge_map_start : int -> 'a with_location -> 'a with_location
 val nudge_map_end : int -> 'a with_location -> 'a with_location
@@ -38,6 +39,11 @@ val at : span -> 'a -> 'a with_location
 
 val of_position : ?filename:string -> Lexing.position * Lexing.position -> span
 (** Convert Menhir's `$loc` or `$sloc` into a span *)
+
+val extract :
+  input:string -> start_pos:Lexing.position -> end_pos:Lexing.position -> string
+(** Given a starting positon and an ending position extract the portion of the
+    input text between those positions *)
 
 val location : 'a with_location -> span
 (** Returns the location of a located value *)

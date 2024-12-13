@@ -13,8 +13,8 @@ let of_position : ?filename:string -> Lexing.position * Lexing.position -> span
     =
  fun ?filename (start, end_) ->
   print_endline @@ "FILENAME: " ^ start.pos_fname;
-  let to_point Lexing.{ pos_lnum; pos_cnum; _ } =
-    { line = pos_lnum; column = pos_cnum }
+  let to_point Lexing.{ pos_lnum; pos_cnum; pos_bol; _ } =
+    { line = pos_lnum; column = pos_cnum - pos_bol }
   in
   let start_point = to_point start and end_point = to_point end_ in
   {
@@ -22,6 +22,14 @@ let of_position : ?filename:string -> Lexing.position * Lexing.position -> span
     start = start_point;
     end_ = end_point;
   }
+
+let extract :
+    input:string ->
+    start_pos:Lexing.position ->
+    end_pos:Lexing.position ->
+    string =
+ fun ~input ~start_pos ~end_pos ->
+  String.sub input start_pos.pos_cnum (end_pos.pos_cnum - start_pos.pos_cnum)
 
 let fmt { file; start; end_ } =
   let { line = sline; column = scol } = start

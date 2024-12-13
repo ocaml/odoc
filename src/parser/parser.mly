@@ -249,7 +249,7 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 (* Utility which wraps the return value of a rule in `Loc.with_location` *)
 let locatedM(rule) == inner = rule; { Writer.map (wrap_location $sloc)  inner }
 let located(rule) == inner = rule; { wrap_location $sloc inner }
-
+let position(rule) == _ = rule; { $sloc }
 let sequence(rule) == xs = list(rule); { Writer.sequence xs }
 let sequence_nonempty(rule) == xs = nonempty_list(rule); { Writer.sequence xs }
 
@@ -343,7 +343,7 @@ let section_heading :=
       |> Writer.map (fun c -> `Heading (num, title, trim_start c))
     }
 
-  | (num, title) = Section_heading; whitespace?; RIGHT_CODE_DELIMITER; 
+  | (num, title) = Section_heading; RIGHT_CODE_DELIMITER; 
     {
       let should_not_be_empty = 
         let span = Loc.of_position $sloc in
@@ -710,7 +710,28 @@ let list_heavy :=
         let node = `List (list_kind, `Heavy, []) in
         Writer.with_warning node warning
       }
-
+    | list_kind = List; whitespace?; items = sequence_nonempty(item_heavy); errloc = position(error); 
+      {
+        let warning = fun input ->
+          let (start_pos, end_pos) as loc = errloc in 
+          let illegal_input = Loc.extract ~input ~start_pos ~end_pos in
+          let span = Loc.of_position loc in
+          Parse_error.illegal illegal_input span 
+        in 
+        let* items = Writer.warning (Writer.InputNeeded warning) items in
+        return @@ `List (list_kind, `Heavy, items)
+      }
+    | list_kind = List; whitespace?; errloc = position(error);
+      {
+        let warning = fun input ->
+          let (start_pos, end_pos) as loc = errloc in 
+          let illegal_input = Loc.extract ~input ~start_pos ~end_pos in
+          let span = Loc.of_position loc in
+          Parse_error.illegal illegal_input span 
+        in
+        return @@ `List (list_kind, `Heavy, []) 
+        |> Writer.warning (Writer.InputNeeded warning) 
+      }
 let list_element := 
   | ~ = list_light; <>
   | ~ = list_heavy; <>
@@ -861,7 +882,6 @@ let math_block := m = Math_block;
 let modules := 
   | MODULES; modules = sequence(locatedM(inline_element)); RIGHT_BRACE;
     {
-      print_endline "INLINE";
       let in_what = Tokens.describe MODULES in
       let* modules = modules in
       let not_allowed =  
@@ -887,7 +907,6 @@ let modules :=
     }
   | MODULES; modules = sequence(locatedM(inline_element)); END;
     {
-      print_endline "INLINE + EOI";
       let in_what = Tokens.describe MODULES in
       let* modules = modules in
       let span = Loc.span @@ List.map Loc.location modules in
