@@ -17,6 +17,7 @@ val link : compiled list -> linked list
 val html_generate :
   occurrence_file:Fpath.t ->
   remaps:(string * string) list ->
+  generate_json:bool ->
   Fpath.t ->
   linked list ->
   unit

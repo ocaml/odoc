@@ -1,6 +1,6 @@
 (* Odoc driver *)
 
-let render_stats env nprocs =
+let render_stats env ~generate_json nprocs =
   let if_app f =
     match Logs.level () with Some (App | Warning) | None -> f () | _ -> ()
   in
@@ -31,6 +31,10 @@ let render_stats env nprocs =
 
   let dline x y = Multi.line (bar x y) in
   let config = Progress.Config.v ~persistent:true () in
+  let total_generate =
+    let units = total_impls + non_hidden + total_mlds in
+    if generate_json then 2 * units else units
+  in
   with_reporters ~config
     Multi.(
       dline "Compiling" total
@@ -41,7 +45,7 @@ let render_stats env nprocs =
       ++ dline "Linking impls" total_impls
       ++ dline "Linking mlds" total_mlds
       ++ dline "Indexes" total_indexes
-      ++ dline "HTML" (total_impls + non_hidden + total_mlds)
+      ++ dline "HTML" total_generate
       ++ line (procs nprocs)
       ++ descriptions)
     (fun comp compimpl compmld compassets link linkimpl linkmld indexes html
@@ -71,7 +75,7 @@ let render_stats env nprocs =
         indexes (i' - i);
         html (g' - g);
         procs (h' - h);
-        if g' < non_hidden + total_impls + total_mlds then
+        if g' < total_generate then
           inner (a', b', c', j', d', e', f', i', g', h')
       in
       inner (0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
@@ -136,6 +140,7 @@ let run mode
       generate_grep;
       remap;
       index_grep;
+      generate_json;
     } =
   Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
   let _ = Voodoo.find_universe_and_version "foo" in
@@ -242,11 +247,12 @@ let run mode
               output
             in
             let () =
-              Compile.html_generate ~occurrence_file ~remaps html_dir linked
+              Compile.html_generate ~occurrence_file ~remaps ~generate_json
+                html_dir linked
             in
             let _ = Odoc.support_files html_dir in
             ())
-      (fun () -> render_stats env nb_workers)
+      (fun () -> render_stats env ~generate_json nb_workers)
   in
 
   Format.eprintf "Collected logs... \n%!";

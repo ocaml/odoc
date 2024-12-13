@@ -263,7 +263,7 @@ let sherlodoc_index_one ~output_dir (index : Odoc_unit.index) =
   Sherlodoc.index ~format:`js ~inputs ~dst ();
   rel_path
 
-let html_generate ~occurrence_file ~remaps output_dir linked =
+let html_generate ~occurrence_file ~remaps ~generate_json output_dir linked =
   let tbl = Hashtbl.create 10 in
   let _ = OS.Dir.create output_dir |> Result.get_ok in
   Sherlodoc.js Fpath.(output_dir // Sherlodoc.js_file);
@@ -312,9 +312,11 @@ let html_generate ~occurrence_file ~remaps output_dir linked =
           in
           Odoc.html_generate_source ?search_uris ?sidebar ~output_dir
             ~input_file ~source:src_path ();
-          Odoc.html_generate_source ?search_uris ?sidebar ~output_dir
-            ~input_file ~source:src_path ~as_json:true ();
-          Atomic.incr Stats.stats.generated_units
+          Atomic.incr Stats.stats.generated_units;
+          if generate_json then (
+            Odoc.html_generate_source ?search_uris ?sidebar ~output_dir
+              ~input_file ~source:src_path ~as_json:true ();
+            Atomic.incr Stats.stats.generated_units)
       | `Asset ->
           Odoc.html_generate_asset ~output_dir ~input_file:l.odoc_file
             ~asset_path:l.input_file ()
@@ -329,9 +331,11 @@ let html_generate ~occurrence_file ~remaps output_dir linked =
           in
           Odoc.html_generate ?search_uris ?sidebar ?remap:remap_file ~output_dir
             ~input_file ();
-          Odoc.html_generate ?search_uris ?sidebar ~output_dir ~input_file
-            ~as_json:true ();
-          Atomic.incr Stats.stats.generated_units
+          Atomic.incr Stats.stats.generated_units;
+          if generate_json then (
+            Odoc.html_generate ?search_uris ?sidebar ~output_dir ~input_file
+              ~as_json:true ();
+            Atomic.incr Stats.stats.generated_units)
   in
   if List.length remaps = 0 then Fiber.List.iter (html_generate None) linked
   else
