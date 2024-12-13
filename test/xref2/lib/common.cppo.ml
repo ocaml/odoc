@@ -70,7 +70,7 @@ let root_pp fmt (_ : Odoc_model.Root.t) = Format.fprintf fmt "Common.root"
 
 let model_of_string str = 
     let cmti = cmti_of_string str in
-    Odoc_loader__Cmti.read_interface (Some parent) "Root" false cmti
+    Odoc_loader__Cmti.read_interface (Some parent) "Root" ~suppress_warnings:false cmti
 
 let model_of_string_impl str =
 #if OCAML_VERSION < (4,13,0)
@@ -78,7 +78,7 @@ let model_of_string_impl str =
 #else
     let cmt = (cmt_of_string str).structure in
 #endif
-    Odoc_loader__Cmt.read_implementation (Some parent) "Root" false cmt
+    Odoc_loader__Cmt.read_implementation (Some parent) "Root" ~suppress_warnings:false cmt
 
 let signature_of_mli_string str =
     Odoc_xref2.Ident.reset ();

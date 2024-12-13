@@ -815,7 +815,7 @@ and read_signature :
   | _ ->
     ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; removed = []; doc }, tags)
 
-let read_interface root name suppress_warnings intf =
+let read_interface root name ~suppress_warnings intf =
   let id =
     Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name)
   in

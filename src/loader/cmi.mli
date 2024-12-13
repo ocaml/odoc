@@ -27,7 +27,7 @@ type env = {
 val read_interface :
   Odoc_model.Paths.Identifier.ContainerPage.t option ->
   string ->
-  bool ->
+  suppress_warnings:bool ->
   Odoc_model.Compat.signature ->
   Paths.Identifier.RootModule.t * Odoc_model.Lang.Signature.t
 
