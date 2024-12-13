@@ -195,21 +195,28 @@ let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
     in
     [ unit ]
   in
-  let of_md pkg (md : Fpath.t) : md unit list =
-    let ext = Fpath.get_ext md in
+  let of_md pkg (md : Packages.md) : md unit list =
+    let ext = Fpath.get_ext md.md_path in
     match ext with
     | ".md" ->
-        let rel_dir = pkg_dir pkg in
+        let open Fpath in
+        let { Packages.md_path; md_rel_path } = md in
+        let rel_dir =
+          doc_dir pkg // Fpath.parent md_rel_path |> Fpath.normalize
+        in
         let kind = `Md in
-        let name = md |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "page-" in
+        let name =
+          md_path |> Fpath.rem_ext |> Fpath.basename |> ( ^ ) "page-"
+        in
         let lib_deps = Util.StringSet.empty in
         let unit =
-          make_unit ~name ~kind ~rel_dir ~input_file:md ~pkg ~lib_deps
+          make_unit ~name ~kind ~rel_dir ~input_file:md_path ~pkg ~lib_deps
             ~enable_warnings:pkg.selected ~to_output:pkg.selected
         in
         [ unit ]
     | _ ->
-        Logs.debug (fun m -> m "Skipping non-markdown doc file %a" Fpath.pp md);
+        Logs.debug (fun m ->
+            m "Skipping non-markdown doc file %a" Fpath.pp md.md_path);
         []
   in
   let of_asset pkg (asset : Packages.asset) : asset unit list =

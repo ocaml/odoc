@@ -46,9 +46,15 @@ let pp_modulety fmt i =
 
 type mld = { mld_path : Fpath.t; mld_rel_path : Fpath.t }
 
+type md = { md_path : Fpath.t; md_rel_path : Fpath.t }
+
 let pp_mld fmt m =
   Format.fprintf fmt "@[<hov>{@,mld_path: %a;@,mld_rel_path: %a@,}@]" Fpath.pp
     m.mld_path Fpath.pp m.mld_rel_path
+
+let pp_md fmt m =
+  Format.fprintf fmt "@[<hov>{@,md_path: %a;@,md_rel_path: %a@,}@]" Fpath.pp
+    m.md_path Fpath.pp m.md_rel_path
 
 type asset = { asset_path : Fpath.t; asset_rel_path : Fpath.t }
 
@@ -89,7 +95,7 @@ type t = {
   assets : asset list;
   selected : bool;
   remaps : (string * string) list;
-  other_docs : Fpath.t list;
+  other_docs : md list;
   pkg_dir : Fpath.t;
   doc_dir : Fpath.t;
   config : Global_config.t;
@@ -108,7 +114,7 @@ let pp fmt t =
      pkg_dir: %a@,\
      }@]"
     t.name t.version (Fmt.Dump.list pp_libty) t.libraries (Fmt.Dump.list pp_mld)
-    t.mlds (Fmt.Dump.list pp_asset) t.assets t.selected (Fmt.Dump.list Fpath.pp)
+    t.mlds (Fmt.Dump.list pp_asset) t.assets t.selected (Fmt.Dump.list pp_md)
     t.other_docs Fpath.pp t.pkg_dir
 
 let maybe_prepend_top top_dir dir =
@@ -273,19 +279,20 @@ end
 (* Construct the list of mlds and assets from a package name and its list of pages *)
 let mk_mlds docs =
   List.fold_left
-    (fun (mlds, assets, others) doc ->
-      match doc.Opam.kind with
+    (fun (mlds, assets, others) (doc : Opam.doc_file) ->
+      match doc.kind with
       | `Mld ->
-          ( { mld_path = doc.Opam.file; mld_rel_path = doc.Opam.rel_path }
-            :: mlds,
+          ( { mld_path = doc.file; mld_rel_path = doc.rel_path } :: mlds,
             assets,
             others )
       | `Asset ->
           ( mlds,
-            { asset_path = doc.Opam.file; asset_rel_path = doc.Opam.rel_path }
-            :: assets,
+            { asset_path = doc.file; asset_rel_path = doc.rel_path } :: assets,
             others )
-      | `Other -> (mlds, assets, doc.Opam.file :: others))
+      | `Other ->
+          ( mlds,
+            assets,
+            { md_path = doc.file; md_rel_path = doc.rel_path } :: others ))
     ([], [], []) docs
 
 let fix_missing_deps pkgs =
