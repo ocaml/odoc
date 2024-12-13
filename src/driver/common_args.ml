@@ -60,6 +60,10 @@ let index_grep =
   let doc = "Show compile-index commands containing the string" in
   Arg.(value & opt (some string) None & info [ "index-grep" ] ~doc)
 
+let generate_json =
+  let doc = "Also generate json output" in
+  Arg.(value & flag & info [ "json-output" ] ~doc)
+
 type t = {
   verbose : bool;
   odoc_dir : Fpath.t;
@@ -75,6 +79,7 @@ type t = {
   generate_grep : string option;
   remap : bool;
   index_grep : string option;
+  generate_json : bool;
 }
 
 let term =
@@ -91,6 +96,7 @@ let term =
   and+ nb_workers = nb_workers
   and+ odoc_bin = odoc_bin
   and+ compile_grep = compile_grep
+  and+ generate_json = generate_json
   and+ link_grep = link_grep
   and+ generate_grep = generate_grep
   and+ index_grep = index_grep
@@ -110,4 +116,5 @@ let term =
     generate_grep;
     remap;
     index_grep;
+    generate_json;
   }
