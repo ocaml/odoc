@@ -30,7 +30,7 @@ let render_stats env ~generate_json nprocs =
   let non_hidden = Atomic.get Stats.stats.non_hidden_units in
 
   let dline x y = Multi.line (bar x y) in
-  let config = Progress.Config.v ~persistent:true () in
+  let config = Progress.Config.v ~persistent:false () in
   let total_generate =
     let units = total_impls + non_hidden + total_mlds in
     if generate_json then 2 * units else units
