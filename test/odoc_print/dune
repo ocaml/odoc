@@ -1,5 +1,6 @@
 (library
  (name type_desc_to_yojson)
+ (package odoc)
  (modules type_desc_to_yojson)
  (libraries odoc_model_desc yojson))
 

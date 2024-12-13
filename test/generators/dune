@@ -6,6 +6,7 @@
   (glob_files html/*.targets)
   (glob_files latex/*.targets)
   (glob_files man/*.targets))
+ (package odoc)
  (enabled_if
   (>= %{ocaml_version} 4.04))
  (action
@@ -17,6 +18,7 @@
 
 (rule
  (alias runtest)
+ (package odoc)
  (enabled_if
   (>= %{ocaml_version} 4.04))
  (action
@@ -29,4 +31,5 @@
   (>= %{ocaml_version} 4.04)))
 
 (cram
+ (package odoc)
  (deps %{bin:odoc}))
