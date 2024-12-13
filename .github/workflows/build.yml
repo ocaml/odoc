@@ -54,16 +54,19 @@ jobs:
           opam-pin: ${{ matrix.run-mdx != true }}
 
       - name: Install dependencies
-        run: opam install --deps-only --with-test ./odoc.opam ./odoc-parser.opam
+        run: |
+          opam install --deps-only --with-test ./odoc.opam ./odoc-parser.opam \
+            ${{ matrix.test-sherlodoc && './sherlodoc.opam' }}
 
       - name: dune runtest
-        run: opam exec -- dune runtest -p odoc,odoc-parser
-
-      - name: Test Sherlodoc
         if: matrix.test-sherlodoc == true
-        run: |
-          opam install --deps-only --with-test ./sherlodoc.opam
-          opam exec -- dune runtest -p sherlodoc
+        # Run all tests
+        run: opam exec -- dune runtest
+
+      - name: dune runtest
+        if: matrix.test-sherlodoc != true
+        # Run the tests for odoc and odoc-parser only
+        run: opam exec -- dune runtest -p odoc,odoc-parser
 
       - name: Mdx tests
         if: matrix.run-mdx == true
