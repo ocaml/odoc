@@ -28,6 +28,7 @@ jobs:
             send-coverage: true
             # Mdx tests Mdx tests
             run-mdx: true
+            test-sherlodoc: true
           - os: macos-latest
             ocaml-compiler: "5.2"
           # - os: windows-latest
@@ -56,7 +57,13 @@ jobs:
         run: opam install --deps-only --with-test ./odoc.opam ./odoc-parser.opam
 
       - name: dune runtest
-        run: opam exec -- dune runtest
+        run: opam exec -- dune runtest -p odoc,odoc-parser
+
+      - name: Test Sherlodoc
+        if: matrix.test-sherlodoc == true
+        run: |
+          opam install --deps-only --with-test ./sherlodoc.opam
+          opam exec -- dune runtest -p sherlodoc
 
       - name: Mdx tests
         if: matrix.run-mdx == true
