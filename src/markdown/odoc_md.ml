@@ -40,10 +40,14 @@ let mk_page input_s id elements =
     frontmatter;
   }
 
-let run input_s parent_id_str odoc_dir =
+let run input_s parent_id_opt odoc_dir =
   (* Construct the id of this page *)
   let page_name = Filename.basename input_s |> Filename.chop_extension in
-  let parent_id = Odoc_odoc.Compile.mk_id parent_id_str in
+  let parent_id =
+    match parent_id_opt with
+    | Some parent_id_str -> Odoc_odoc.Compile.mk_id parent_id_str
+    | None -> None
+  in
   let id =
     Odoc_model.Paths.Identifier.Mk.leaf_page
       (parent_id, Odoc_model.Names.PageName.make_std page_name)
@@ -53,7 +57,10 @@ let run input_s parent_id_str odoc_dir =
   let page = mk_page input_s id content in
 
   let output =
-    Fpath.(v odoc_dir // v parent_id_str / ("page-" ^ page_name ^ ".odoc"))
+    match parent_id_opt with
+    | None -> Fpath.(v odoc_dir / ("page-" ^ page_name ^ ".odoc"))
+    | Some parent_id_str ->
+        Fpath.(v odoc_dir // v parent_id_str / ("page-" ^ page_name ^ ".odoc"))
   in
   Odoc_odoc.Odoc_file.save_page output ~warnings page
 
@@ -69,7 +76,7 @@ let parent_id =
      well as the location of the eventual html or other file."
   in
   Arg.(
-    required & opt (some string) None & info ~docv:"PARENT" ~doc [ "parent-id" ])
+    value & opt (some string) None & info ~docv:"PARENT" ~doc [ "parent-id" ])
 
 let output_dir =
   let doc =
