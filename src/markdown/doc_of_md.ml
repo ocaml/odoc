@@ -279,8 +279,24 @@ let rec link_reference_to_inline_element ~locator defs l m (is, warns) =
       in
       (text @ is, warns)
   | Some ld ->
+      let replace_md_mdx s =
+        let root =
+          if String.ends_with ~suffix:".md" s then
+            String.sub s 0 (String.length s - 3)
+          else if String.ends_with ~suffix:".mdx" s then
+            String.sub s 0 (String.length s - 4)
+          else s
+        in
+        root ^ ".html"
+      in
       let link =
-        match Link_definition.dest ld with None -> "" | Some (l, _) -> l
+        match Link_definition.dest ld with
+        | None -> ""
+        | Some (l, _) ->
+            if String.contains l ':' then (* Assume it's a URL *) l
+            else
+              (* If it ends with `.md` or `.mdx`, drop the extension and add `.html` *)
+              replace_md_mdx l
       in
       let warns =
         match Link_definition.title ld with
