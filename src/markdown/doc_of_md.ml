@@ -64,11 +64,15 @@ let textloc_to_loc ~locator textloc =
   let point_of_line_and_byte_pos ~locator:(location, line_trim_counts) l pos =
     let line_num, line_pos = l in
     let line = location.Lexing.pos_lnum + line_num - 1 in
-    let column = line_trim_counts.(line_num - 1) + (pos - line_pos) in
-    let column =
-      match line_num with 1 -> comment_col ~location + column | _ -> column
-    in
-    { Loc.line; column }
+    try
+      let column = line_trim_counts.(line_num - 1) + (pos - line_pos) in
+      let column =
+        match line_num with 1 -> comment_col ~location + column | _ -> column
+      in
+      { Loc.line; column }
+    with _ ->
+      (* Presumably this is the above-mentioned bug that's being hit. *)
+      { Loc.line = -1; column = -1 }
   in
   let file = Textloc.file textloc in
   let first_line = Textloc.first_line textloc in
@@ -161,8 +165,10 @@ type nestable_ast_acc =
 
 let link_definition defs l =
   match Inline.Link.reference_definition defs l with
-  | Some (Link_definition.Def (ld, _)) -> ld
-  | Some _ -> assert false (* if we parse without cmarkit extensions *)
+  | Some (Link_definition.Def (ld, _)) -> Some ld
+  | Some (Block.Footnote.Def (_, _)) ->
+    None
+  | Some _ -> assert false
   | None -> assert false (* assert [l]'s referenced label is not synthetic *)
 
 let autolink_to_inline_element ~locator a m (is, warns) =
@@ -208,27 +214,31 @@ let image_to_inline_element ~locator defs i m (is, warns) =
   let loc = meta_to_loc ~locator m in
   let b = Buffer.create 255 in
   let ld = link_definition defs i in
-  let link =
-    match Link_definition.dest ld with
-    | None -> ""
-    | Some (link, _) -> pct_esc b link
-  in
-  let title =
-    match Link_definition.title ld with
-    | None -> ""
-    | Some title ->
-        let title = List.map Block_line.tight_to_string title in
-        html_esc b (String.concat "\n" title)
-  in
-  let alt =
-    let ls = Inline.to_plain_text ~break_on_soft:false (Inline.Link.text i) in
-    html_esc b (String.concat "\n" (List.map (String.concat "") ls))
-  in
-  let img =
-    String.concat ""
-      [ {|<img src="|}; link; {|" alt="|}; alt; {|" title="|}; title; {|" >"|} ]
-  in
-  (Loc.at loc (`Raw_markup (Some "html", img)) :: is, warns)
+  match ld with
+  | None ->
+    (is, warns)
+  | Some ld ->
+    let link =
+      match Link_definition.dest ld with
+      | None -> ""
+      | Some (link, _) -> pct_esc b link
+    in
+    let title =
+      match Link_definition.title ld with
+      | None -> ""
+      | Some title ->
+          let title = List.map Block_line.tight_to_string title in
+          html_esc b (String.concat "\n" title)
+    in
+    let alt =
+      let ls = Inline.to_plain_text ~break_on_soft:false (Inline.Link.text i) in
+      html_esc b (String.concat "\n" (List.map (String.concat "") ls))
+    in
+    let img =
+      String.concat ""
+        [ {|<img src="|}; link; {|" alt="|}; alt; {|" title="|}; title; {|" >"|} ]
+    in
+    (Loc.at loc (`Raw_markup (Some "html", img)) :: is, warns)
 
 let text_to_inline_elements ~locator s meta ((is, warns) as acc) =
   (* [s] is on a single source line (but may have newlines because of
@@ -254,21 +264,28 @@ let text_to_inline_elements ~locator s meta ((is, warns) as acc) =
 let rec link_reference_to_inline_element ~locator defs l m (is, warns) =
   let loc = meta_to_loc ~locator m in
   let ld = link_definition defs l in
-  let link =
-    match Link_definition.dest ld with None -> "" | Some (l, _) -> l
-  in
-  let warns =
-    match Link_definition.title ld with
-    | None -> warns
-    | Some title ->
-        let textloc = Block_line.tight_list_textloc title in
-        let loc = textloc_to_loc ~locator textloc in
-        warn ~loc warn_unsupported_link_title warns
-  in
-  let text, warns =
-    inline_to_inline_elements ~locator defs ([], warns) (Inline.Link.text l)
-  in
-  (Loc.at loc (`Link (link, text)) :: is, warns)
+  match ld with
+  | None ->
+    let text, warns =
+      inline_to_inline_elements ~locator defs ([], warns) (Inline.Link.text l)
+    in
+    (text @ is, warns)
+  | Some ld ->
+    let link =
+      match Link_definition.dest ld with None -> "" | Some (l, _) -> l
+    in
+    let warns =
+      match Link_definition.title ld with
+      | None -> warns
+      | Some title ->
+          let textloc = Block_line.tight_list_textloc title in
+          let loc = textloc_to_loc ~locator textloc in
+          warn ~loc warn_unsupported_link_title warns
+    in
+    let text, warns =
+      inline_to_inline_elements ~locator defs ([], warns) (Inline.Link.text l)
+    in
+    (Loc.at loc (`Link (link, text)) :: is, warns)
 
 and link_to_inline_element ~locator defs l m acc =
   link_reference_to_inline_element ~locator defs l m acc
