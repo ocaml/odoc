@@ -222,7 +222,7 @@ end = struct
 
   let compile hidden directories resolve_fwd_refs dst output_dir package_opt
       parent_name_opt parent_id_opt open_modules children input warnings_options
-      unique_id =
+      unique_id short_title =
     let open Or_error in
     let _ =
       match unique_id with
@@ -266,7 +266,8 @@ end = struct
     in
     cli_spec >>= fun cli_spec ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
-    Compile.compile ~resolver ~cli_spec ~hidden ~warnings_options input
+    Compile.compile ~resolver ~cli_spec ~hidden ~warnings_options ~short_title
+      input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
@@ -322,6 +323,13 @@ end = struct
         & opt (some string) None
         & info ~docs ~docv:"PARENT" ~doc [ "parent-id" ])
     in
+    let short_title =
+      let doc = "Override short_title of an mld file" in
+      Arg.(
+        value
+        & opt (some string) None
+        & info ~docs ~docv:"TITLE" ~doc [ "short-title" ])
+    in
     let resolve_fwd_refs =
       let doc = "Try resolving forward references." in
       Arg.(value & flag & info ~doc [ "r"; "resolve-fwd-refs" ])
@@ -330,7 +338,7 @@ end = struct
       const handle_error
       $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
        $ output_dir $ package_opt $ parent_opt $ parent_id_opt $ open_modules
-       $ children $ input $ warnings_options $ unique_id))
+       $ children $ input $ warnings_options $ unique_id $ short_title))
 
   let info ~docs =
     let man =
