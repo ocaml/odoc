@@ -209,7 +209,8 @@ let is_index_page = function
 let has_children_order { Frontmatter.children_order; _ } =
   Option.is_some children_order
 
-let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
+let mld ~parent_id ~parents_children ~output ~children ~warnings_options
+    ~short_title input =
   List.fold_left
     (fun acc child_str ->
       match (acc, parse_parent_child_reference child_str) with
@@ -255,6 +256,52 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options input =
         Root.Odoc_file.create_page root_name zero_heading frontmatter
       in
       { Root.id = (id :> Paths.Identifier.OdocId.t); file; digest }
+    in
+    let rec conv :
+        Comment.inline_element -> Comment.non_link_inline_element option =
+      function
+      | #Comment.leaf_inline_element as e -> Some e
+      | `Styled (s, es) ->
+          Some
+            (`Styled
+              ( s,
+                List.filter_map
+                  (function
+                    | { Location_.location; value } -> (
+                        match conv value with
+                        | Some value -> Some { Location_.location; value }
+                        | None -> None))
+                  es ))
+      | `Reference _ | `Link _ -> None
+    in
+    let frontmatter =
+      match short_title with
+      | None -> frontmatter
+      | Some t -> (
+          let t =
+            Odoc_parser.parse_comment ~location:Lexing.dummy_pos ~text:t
+          in
+          let v = Odoc_parser.ast t in
+          let parent_of_sections =
+            Odoc_model.Paths.Identifier.Mk.page
+              (None, Odoc_model.Names.PageName.make_std "None")
+          in
+          let v =
+            Odoc_model.Semantics.ast_to_comment ~internal_tags:Expect_none
+              ~tags_allowed:false ~parent_of_sections v []
+          in
+          let v, _ = Error.raise_warnings v in
+          match v with
+          | { location = _; value = `Paragraph ({ value = e; location } :: _) }
+            :: _ -> (
+              match conv e with
+              | None -> frontmatter
+              | Some e ->
+                  {
+                    frontmatter with
+                    short_title = Some [ { value = e; location } ];
+                  })
+          | _ -> frontmatter)
     in
     let page =
       Lang.Page.
@@ -335,12 +382,13 @@ let resolve_spec ~input resolver cli_spec =
   | CliNoParent output ->
       Ok { output; parent_id = None; parents_children = None; children = [] }
 
-let compile ~resolver ~hidden ~cli_spec ~warnings_options input =
+let compile ~resolver ~hidden ~cli_spec ~warnings_options ~short_title input =
   resolve_spec ~input resolver cli_spec
   >>= fun { parent_id; output; parents_children; children } ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then
-    mld ~parent_id ~parents_children ~output ~warnings_options ~children input
+    mld ~parent_id ~parents_children ~output ~warnings_options ~children
+      ~short_title input
   else
     check_is_empty "Not expecting children (--child) when compiling modules."
       children

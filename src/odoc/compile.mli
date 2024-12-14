@@ -58,6 +58,7 @@ val compile :
   hidden:bool ->
   cli_spec:cli_spec ->
   warnings_options:Odoc_model.Error.warnings_options ->
+  short_title:string option ->
   Fpath.t ->
   (unit, [> msg ]) result
 (** Produces .odoc files out of [.cm{i,t,ti}] or .mld files. *)
