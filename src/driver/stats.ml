@@ -20,6 +20,7 @@ type stats = {
   mutable generated_units : int Atomic.t;
   mutable processes : int Atomic.t;
   mutable process_activity : string Atomic.t Array.t;
+  mutable finished : bool;
 }
 
 let stats =
@@ -41,6 +42,7 @@ let stats =
     generated_indexes = Atomic.make 0;
     processes = Atomic.make 0;
     process_activity = [||];
+    finished = false;
   }
 
 let init_nprocs nprocs =
