@@ -75,7 +75,7 @@ let render_stats env ~generate_json nprocs =
         indexes (i' - i);
         html (g' - g);
         procs (h' - h);
-        if g' < total_generate then
+        if not Stats.stats.finished then
           inner (a', b', c', j', d', e', f', i', g', h')
       in
       inner (0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
@@ -251,6 +251,7 @@ let run mode
                 html_dir linked
             in
             let _ = Odoc.support_files html_dir in
+            Stats.stats.finished <- true;
             ())
       (fun () -> render_stats env ~generate_json nb_workers)
   in

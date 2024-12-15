@@ -102,7 +102,8 @@ let package_list ~dirs all =
       all |> List.sort (fun n1 n2 -> String.compare n1.name n2.name)
     in
     fpf ppf "{0 List of all packages}@\n";
-    let print_pkg pkg = fpf ppf "- {{:%s/index.html}%s}@\n" pkg.name pkg.name in
+    let print_pkg pkg =
+      if pkg.selected then fpf ppf "- {{:%s/index.html}%s}@\n" pkg.name pkg.name in
     List.iter print_pkg sorted_packages
   in
   let content = content all in

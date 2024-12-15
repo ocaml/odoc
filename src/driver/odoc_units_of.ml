@@ -199,8 +199,11 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
         lib_deps pkg.Packages.libraries
     in
     let index = index_of pkg in
-    let landing_page :> t = Landing_pages.library ~dirs ~pkg ~index lib in
-    landing_page :: List.concat_map (of_module pkg lib lib_deps) lib.modules
+    let units = List.concat_map (of_module pkg lib lib_deps) lib.modules in
+    if pkg.selected then 
+      let landing_page :> t = Landing_pages.library ~dirs ~pkg ~index lib in
+      landing_page :: units
+    else units
   in
   let of_mld pkg (mld : Packages.mld) : mld unit list =
     let open Fpath in
@@ -265,7 +268,7 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
               (Fpath.normalize (Fpath.v "./index.mld")))
           pkg.mlds
       in
-      if has_index_page then []
+      if has_index_page || not pkg.selected then []
       else
         let index = index_of pkg in
         [ Landing_pages.package ~dirs ~pkg ~index ]
@@ -281,7 +284,7 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
                 | Some { mip_src_info = Some _; _ } -> true
                 | _ -> false)
               lib.Packages.modules)
-          pkg.libraries
+          pkg.libraries && pkg.selected
       then
         let index = index_of pkg in
         [ Landing_pages.src ~dirs ~pkg ~index ]
