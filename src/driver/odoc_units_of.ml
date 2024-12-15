@@ -200,7 +200,7 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
     in
     let index = index_of pkg in
     let units = List.concat_map (of_module pkg lib lib_deps) lib.modules in
-    if pkg.selected then 
+    if pkg.selected then
       let landing_page :> t = Landing_pages.library ~dirs ~pkg ~index lib in
       landing_page :: units
     else units
@@ -284,7 +284,8 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
                 | Some { mip_src_info = Some _; _ } -> true
                 | _ -> false)
               lib.Packages.modules)
-          pkg.libraries && pkg.selected
+          pkg.libraries
+        && pkg.selected
       then
         let index = index_of pkg in
         [ Landing_pages.src ~dirs ~pkg ~index ]
