@@ -200,10 +200,10 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
     in
     let index = index_of pkg in
     let units = List.concat_map (of_module pkg lib lib_deps) lib.modules in
-    if pkg.selected then
+    if remap && not pkg.selected then units
+    else
       let landing_page :> t = Landing_pages.library ~dirs ~pkg ~index lib in
       landing_page :: units
-    else units
   in
   let of_mld pkg (mld : Packages.mld) : mld unit list =
     let open Fpath in
@@ -268,13 +268,14 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
               (Fpath.normalize (Fpath.v "./index.mld")))
           pkg.mlds
       in
-      if has_index_page || not pkg.selected then []
+      if has_index_page || (remap && not pkg.selected) then []
       else
         let index = index_of pkg in
         [ Landing_pages.package ~dirs ~pkg ~index ]
     in
     let src_index :> t list =
-      if
+      if remap && not pkg.selected then []
+      else if
         (* Some library has a module which has an implementation which has a source *)
         List.exists
           (fun lib ->
@@ -285,7 +286,6 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
                 | _ -> false)
               lib.Packages.modules)
           pkg.libraries
-        && pkg.selected
       then
         let index = index_of pkg in
         [ Landing_pages.src ~dirs ~pkg ~index ]
@@ -296,5 +296,5 @@ let packages ~dirs ~extra_paths ~remap (pkgs : Packages.t list) : t list =
       @ mld_units @ asset_units @ md_units)
   in
 
-  let pkg_list :> t = Landing_pages.package_list ~dirs pkgs in
+  let pkg_list :> t = Landing_pages.package_list ~dirs ~remap pkgs in
   pkg_list :: List.concat_map of_package pkgs

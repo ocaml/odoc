@@ -7,4 +7,4 @@ val package : dirs:dirs -> pkg:Packages.t -> index:index -> mld unit
 
 val src : dirs:dirs -> pkg:Packages.t -> index:index -> mld unit
 
-val package_list : dirs:dirs -> Packages.t list -> mld unit
+val package_list : dirs:dirs -> remap:bool -> Packages.t list -> mld unit
