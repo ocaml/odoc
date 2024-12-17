@@ -35,6 +35,7 @@ val compile_asset : output_dir:Fpath.t -> name:string -> parent_id:Id.t -> unit
 
 val link :
   ?ignore_output:bool ->
+  custom_layout:bool ->
   input_file:Fpath.t ->
   ?output_file:Fpath.t ->
   docs:(string * Fpath.t) list ->

@@ -1,6 +1,11 @@
 open Odoc_unit
 
-let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
+type indices_style =
+  | Voodoo
+  | Normal
+  | Custom
+
+let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     t list =
   let { odoc_dir; odocl_dir; index_dir; mld_dir = _ } = dirs in
   (* [module_of_hash] Maps a hash to the corresponding [Package.t], library name and
@@ -239,7 +244,7 @@ let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
     let mld_units :> t list list = List.map (of_mld pkg) pkg.mlds in
     let asset_units :> t list list = List.map (of_asset pkg) pkg.assets in
     let md_units :> t list list = List.map (of_md pkg) pkg.other_docs in
-    let pkg_index :> t list =
+    let pkg_index () :> t list =
       let has_index_page =
         List.exists
           (fun mld ->
@@ -253,7 +258,7 @@ let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
         let index = index_of pkg in
         [ Landing_pages.package ~dirs ~pkg ~index ]
     in
-    let src_index :> t list =
+    let src_index () :> t list =
       if remap && not pkg.selected then []
       else if
         (* Some library has a module which has an implementation which has a source *)
@@ -271,11 +276,23 @@ let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
         [ Landing_pages.src ~dirs ~pkg ~index ]
       else []
     in
-    List.concat
-      ((pkg_index :: src_index :: lib_units)
-      @ mld_units @ asset_units @ md_units)
+    match indices_style with
+    | Normal | Voodoo ->
+      List.concat
+        ((pkg_index () :: src_index () :: lib_units)
+        @ mld_units @ asset_units @ md_units)
+    | Custom ->
+      if pkg.name = "pkg" then
+        let others :> t list = Landing_pages.make_custom dirs index_of (List.find (fun p -> p.Packages.name = "pkg") pkgs) in
+        others @ List.concat
+          (mld_units @ asset_units @ md_units @ lib_units)
+      else
+        List.concat
+          ((pkg_index () :: src_index () :: lib_units)
+          @ mld_units @ asset_units @ md_units)
   in
-  if gen_indices then
+  if indices_style = Normal then
     let gen_indices :> t = Landing_pages.package_list ~dirs ~remap pkgs in
     gen_indices :: List.concat_map of_package pkgs
   else List.concat_map of_package pkgs
+  
