@@ -64,11 +64,12 @@ let dune_describe dir =
   match out with Error _ -> [] | Ok out -> of_dune_describe out.Run.output
 
 let of_dune_build dir =
+  let root = Fpath.(dir / "_build" / "default") in
   let contents =
     Bos.OS.Dir.fold_contents ~dotfiles:true
       (fun p acc -> p :: acc)
       []
-      Fpath.(dir / "_build" / "default")
+      root
   in
   match contents with
   | Error _ -> []
@@ -79,6 +80,13 @@ let of_dune_build dir =
           (function Library l -> if l.local then Some l else None)
           libs
       in
+
+      let global_libs =
+        List.filter_map
+          (function Library l -> if l.local then None else Some l)
+          libs
+      in
+
       List.iter
         (fun (lib : library) ->
           Logs.debug (fun m ->
@@ -142,10 +150,11 @@ let of_dune_build dir =
                 in
                 let id_override =
                   Fpath.relativize
-                    ~root:Fpath.(v "_build" / "default")
+                    ~root:Fpath.(v "_build/default")
                     Fpath.(v lib.source_dir)
                   |> Option.map Fpath.to_string
                 in
+                Logs.debug (fun m -> m "this should never be 'None': %a" Fmt.Dump.(option string) id_override);
                 if List.mem cmtidir c then
                   Some
                     (Packages.Lib.v ~libname_of_archive ~pkg_name:lib.name
@@ -155,32 +164,39 @@ let of_dune_build dir =
                 else None)
           libs
       in
-      let other_docs =
+      let find_docs ext =
         List.filter_map
           (fun f ->
-            if Fpath.has_ext "md" f then
-              let md_rel_path =
-                Fpath.relativize ~root:Fpath.(v "_build" / "default") f
+            if Fpath.has_ext ext f then
+              let rel_path =
+                Fpath.relativize ~root f
                 |> Option.get
               in
-              Some { Packages.md_path = f; md_rel_path }
+              Some ( f, rel_path )
             else None)
           c
       in
+      let other_docs = find_docs ".md" |> List.map (fun (p,r) -> { Packages.md_path = p; md_rel_path = r}) in
+      let mlds = find_docs ".mld" |> List.map (fun (p,r) -> { Packages.mld_path = p; mld_rel_path = r}) in
+
       let libs = List.flatten libs in
-      [
-          {
-            Packages.name = "root";
-            version = "1.0";
-            libraries = libs;
-            mlds = [];
-            assets = [];
-            selected = true;
-            remaps = [];
-            pkg_dir = Fpath.v ".";
-            doc_dir = Fpath.v ".";
-            other_docs;
-            config = Global_config.empty;
-          };
-      ]
-   
+      let local =
+        [
+            {
+              Packages.name = "pkg";
+              version = "1.0";
+              libraries = libs;
+              mlds;
+              assets = [];
+              selected = true;
+              remaps = [];
+              pkg_dir = Fpath.v ".";
+              doc_dir = Fpath.v ".";
+              other_docs;
+              config = Global_config.empty;
+            };
+        ]
+      in
+      let global = Packages.of_libs ~packages_dir:(Some (Fpath.v "opam_switch")) (List.map (fun (l : library) -> l.name) global_libs |> Util.StringSet.of_list) in
+      local @ global
+

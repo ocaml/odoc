@@ -1,9 +1,14 @@
 open Odoc_unit
 
+type indices_style =
+| Voodoo
+| Normal
+| Custom
+
 val packages :
   dirs:dirs ->
   extra_paths:Voodoo.extra_paths ->
   remap:bool ->
-  gen_indices:bool ->
+  indices_style:indices_style ->
   Packages.t list ->
   t list

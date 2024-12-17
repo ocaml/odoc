@@ -22,10 +22,10 @@ let run package_name blessed actions odoc_dir odocl_dir
   Stats.init_nprocs nb_workers;
   let () = Worker_pool.start_workers env sw nb_workers in
 
-  let all, extra_paths, actions, gen_indices, generate_json =
+  let all, extra_paths, actions, generate_json =
     let all = Voodoo.of_voodoo package_name ~blessed in
     let extra_paths = Voodoo.extra_paths odoc_dir in
-    (all, extra_paths, actions, false, true)
+    (all, extra_paths, actions, true)
   in
 
   let all = Packages.remap_virtual all in
@@ -43,7 +43,7 @@ let run package_name blessed actions odoc_dir odocl_dir
       let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
       { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir }
     in
-    Odoc_units_of.packages ~dirs ~gen_indices ~extra_paths ~remap:false all
+    Odoc_units_of.packages ~dirs ~indices_style:Odoc_units_of.Voodoo ~extra_paths ~remap:false all
   in
   Compile.init_stats units;
   let compiled =
@@ -56,7 +56,7 @@ let run package_name blessed actions odoc_dir odocl_dir
     match actions with
     | CompileOnly -> ()
     | LinkAndGen | All ->
-        let linked = Compile.link compiled in
+        let linked = Compile.link ~custom_layout:false compiled in
         let occurrence_file =
           let output =
             Fpath.( / ) odoc_dir "occurrences-all.odoc-occurrences"
