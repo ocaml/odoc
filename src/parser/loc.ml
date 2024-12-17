@@ -12,7 +12,6 @@ let same annotated value = { annotated with value }
 let of_position : ?filename:string -> Lexing.position * Lexing.position -> span
     =
  fun ?filename (start, end_) ->
-  print_endline @@ "FILENAME: " ^ start.pos_fname;
   let to_point Lexing.{ pos_lnum; pos_cnum; pos_bol; _ } =
     { line = pos_lnum; column = pos_cnum - pos_bol }
   in

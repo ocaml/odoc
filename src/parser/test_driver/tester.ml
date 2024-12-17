@@ -42,30 +42,48 @@ let error_recovery =
     ("EOI in modules", "{!modules: Foo Bar");
   ]
 
-let utf =
+let table_heavy =
   [
-    ("lambda", "\xce\xbb");
-    ("words", "\xce\xbb \xce\xbb");
-    ("no_validation", "Î");
-    ("escapes", "\xce\xbb\\");
-    ("newline", "\xce\xbb \n \xce\xbb");
-    ("paragraphs", "\xce\xbb \n\n \xce\xbb");
-    ("code_span", "[\xce\xbb]");
-    ("minuys", "\xce\xbb-\xce\xbb");
-    ("shorthand list", "- \xce\xbb");
-    ("styled", "{b \xce\xbb}");
-    ("reference_target", "{!\xce\xbb}");
-    ("code block ", "{[\xce\xbb]}");
-    ("verbatim", "{v \xce\xbb v}");
-    ("label", "{2:\xce\xbb Bar}");
-    ("author", "@author \xce\xbb");
-    ("param", "@param \xce\xbb");
-    ("raise", "@raise \xce\xbb");
-    ("see", "@see <\xce\xbb>");
-    ("since", "@since \xce\xbb");
-    ("before", "@before \xce\xbb");
-    ("version", "@version \xce\xbb");
-    ("right brace", "\xce\xbb}");
+    (* name, case *)
+    (*
+
+    ("empty_table_heavy", "{table }");
+    ("empty_row", "{table {tr } }");
+    ("no_header", "{table {tr {td}}}");
+    ("no_data", "{table {tr {th}}}");
+    ("bad_data", "{table absurd content}");
+    ("bad_row", "{table {tr absurd content}}");
+    ("multiple_headers", "{table {tr {th}} {tr {th}} {tr {td}}}");
+    ("unclosed_table", "{table {tr {td}}");
+    *)
+    ( "complex_table",
+      "{table\n\
+      \    {tr\n\
+      \      {th xxx}\n\
+      \      {th yyy}\n\
+      \    }\n\
+      \    {tr\n\
+      \      {td aaaa bbb ccc {i ddd}\n\
+      \      }\n\
+      \      {td\n\
+      \         {table {tr {td}}}\n\
+      \      }\n\
+      \    }\n\
+      \    {tr\n\
+      \      {td\n\
+      \         - aaa\n\
+      \         - bbb\n\
+      \         - ccc\n\
+      \      }\n\
+      \      {td\n\
+      \        {t\n\
+      \           x | y | z\n\
+      \           --|---|--\n\
+      \           1 | 2 | 3\n\
+      \        }\n\
+      \      }\n\
+      \    }\n\
+      \  }" );
   ]
 
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
@@ -209,7 +227,7 @@ let () =
       | _ ->
           print_endline "unrecognized argument - running documentation_cases";
           documentation_cases)
-    else utf
+    else table_heavy
   in
   let sucesses, failures = List.partition_map run_test cases in
   let sucesses = format_successes sucesses in

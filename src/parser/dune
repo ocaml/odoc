@@ -2,7 +2,7 @@
 
 (menhir
  (modules parser)
- (flags --table --external-tokens Tokens))
+ (flags --table --external-tokens Tokens --explain --trace))
 
 (library
  (name odoc_parser)

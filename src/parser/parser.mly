@@ -240,6 +240,9 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 %token <string> Verbatim "{v"
 
 %token END
+
+%on_error_reduce inline_element
+
 %start <Ast.t Writer.t> main 
 
 %%
@@ -270,6 +273,10 @@ let whitespace :=
 let any_whitespace := 
   | ~ = whitespace; <>
   | ~ = Blank_line; <`Space>
+
+let line_breaks := 
+  | Blank_line; {}
+  | Single_newline; {}
 
 (* ENTRY *)
 
@@ -580,7 +587,7 @@ let link :=
       else 
         return node
     }
-  | link_body = Link_with_replacement; whitespace?; RIGHT_BRACE;
+  | link_body = Link_with_replacement; RIGHT_BRACE;
     {
       let span = 
         Loc.of_position $sloc
@@ -696,11 +703,11 @@ let item_heavy ==
       }
 
 let list_heavy := 
-    | list_kind = List; whitespace?; items = sequence_nonempty(item_heavy); whitespace?; RIGHT_BRACE;
+    | list_kind = List; whitespace?; items = sequence_nonempty(item_heavy); RIGHT_BRACE;
       { 
         Writer.map (fun items -> `List (list_kind, `Heavy, items)) items
       }
-    | list_kind = List; whitespace?; RIGHT_BRACE;
+    | list_kind = List; RIGHT_BRACE;
       { 
         let warning = 
           let what = Tokens.describe @@ List list_kind in
@@ -732,20 +739,63 @@ let list_heavy :=
         return @@ `List (list_kind, `Heavy, []) 
         |> Writer.warning (Writer.InputNeeded warning) 
       }
+
 let list_element := 
   | ~ = list_light; <>
   | ~ = list_heavy; <>
 
 (* TABLES *)
 
-let cell_heavy := cell_kind = Table_cell; whitespace?; children = sequence(locatedM(nestable_block_element)); whitespace?; RIGHT_BRACE; whitespace?;
-  { Writer.map (fun c -> (c, cell_kind)) children }
+let cell_heavy := 
+  | cell_kind = Table_cell; whitespace?; children = sequence_nonempty(locatedM(nestable_block_element)); RIGHT_BRACE; whitespace?;
+    { Writer.map (fun c -> (c, cell_kind)) children }
+  | cell_kind = Table_cell; RIGHT_BRACE; whitespace?;
+    { return ([], cell_kind) }
+  | cell_kind = Table_cell; children = sequence_nonempty(locatedM(nestable_block_element))?; errloc = position(error);
+    {
+      let warning = fun input ->
+        let (start_pos, end_pos) as loc = errloc in 
+        let illegal_input = Loc.extract ~input ~start_pos ~end_pos in
+        let span = Loc.of_position loc in
+        Parse_error.illegal illegal_input span 
+      in 
+      Option.value ~default:(return []) children
+      |> Writer.map (fun children -> (children, cell_kind))
+      |> Writer.warning (Writer.InputNeeded warning) 
+    }
 
 let row_heavy := 
   | TABLE_ROW; whitespace?; ~ = sequence_nonempty(cell_heavy); RIGHT_BRACE; whitespace?; <>
+  | TABLE_ROW; whitespace?; RIGHT_BRACE; whitespace?; { return [] }
+  | TABLE_ROW; children = sequence_nonempty(cell_heavy)?; errloc = position(error);
+    {
+      let warning = fun input ->
+        let (start_pos, end_pos) as loc = errloc in 
+        let illegal_input = Loc.extract ~input ~start_pos ~end_pos in
+        let span = Loc.of_position loc in
+        Parse_error.illegal illegal_input span 
+      in 
+      Option.value ~default:(return []) children
+      |> Writer.warning (Writer.InputNeeded warning) 
+    }
 
-let table_heavy := TABLE_HEAVY; whitespace?; grid = sequence_nonempty(row_heavy); RIGHT_BRACE; 
-  { Writer.map (fun g -> `Table ((g, None), `Heavy)) grid }
+let table_heavy := 
+  | TABLE_HEAVY; whitespace?; grid = sequence_nonempty(row_heavy); RIGHT_BRACE; 
+    { Writer.map (fun g -> `Table ((g, None), `Heavy)) grid }
+  | TABLE_HEAVY; RIGHT_BRACE;
+    { return (`Table (([], None), `Heavy)) }
+  | TABLE_HEAVY; whitespace?; grid = sequence_nonempty(row_heavy)?; errloc = position(error);
+    {
+      let warning = fun input ->
+        let (start_pos, end_pos) as loc = errloc in 
+        let illegal_input = Loc.extract ~input ~start_pos ~end_pos in
+        let span = Loc.of_position loc in
+        Parse_error.illegal illegal_input span 
+      in 
+      Option.value ~default:(return []) grid
+      |> Writer.map (fun grid -> `Table ((grid, None), `Heavy))
+      |> Writer.warning (Writer.InputNeeded warning) 
+    }
 
 (* LIGHT TABLE *)
 
