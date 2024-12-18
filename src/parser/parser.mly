@@ -315,15 +315,14 @@ let toplevel_error :=
       in
       (ret : Ast.block_element Writer.t)
     }
-  | elt = locatedM(inline_element); RIGHT_BRACE;
-    { let warning = 
-        let span = Loc.of_position $sloc in 
-        let what = Tokens.describe RIGHT_BRACE in 
-        let in_what = Tokens.describe_inline @@ Writer.unwrap_located elt in 
-        Writer.Warning (Parse_error.not_allowed ~what ~in_what span) 
+  | elt = locatedM(inline_element); errloc = position(RIGHT_BRACE);
+    { 
+      let span = Loc.of_position errloc in 
+      let warning = 
+        Writer.Warning (Parse_error.unpaired_right_brace span) 
       in
       let* elt = Writer.warning warning elt in
-      return @@ `Paragraph [elt]
+      return @@ `Paragraph [elt; Loc.at span @@ `Word "}"]
     }
   | elt = locatedM(inline_element); RIGHT_CODE_DELIMITER;
     { let warning = 
