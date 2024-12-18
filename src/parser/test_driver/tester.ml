@@ -42,20 +42,77 @@ let error_recovery =
     ("EOI in modules", "{!modules: Foo Bar");
   ]
 
-let math =
+let open_t =
   [
-    ( "position",
-      {|{math
-      \alpha(x)=\left\{
-                \begin{array}{ll}                 % beginning of the array
-                  x \% 4\\                        % some variable modulo 4
-                  \frac{1}{1+e^{-kx}}\\           % something else
-                  \frac{e^x-e^{-x}}{e^x+e^{-x}}   % another action
-                \end{array}                       % end of the array
-              \right.
-      }|}
-    );
+    ("basic", "@open");
+    ("prefix", "@openfoo");
+    ("extra_whitespace", "@open");
+    ("followed_by_junk", "@open foo");
+    ("followed_by_paragraph", "@open\nfoo");
+    ("followed_by_tag", "@open\n@deprecated");
+    ("with_list", "@open - foo");
   ]
+
+let utf8 =
+  [
+    ("lambda", "\xce\xbb");
+    ("words", "\xce\xbb \xce\xbb");
+    ("no_validation", "Î");
+    ("escapes", "\xce\xbb\\}");
+    ("newline", "\xce\xbb \n \xce\xbb");
+    ("paragraphs", "\xce\xbb \n\n \xce\xbb");
+    ("code_span", "[\xce\xbb]");
+    ("minus", "\xce\xbb-\xce\xbb");
+    ("shorthand_list", "- \xce\xbb");
+    ("styled", "{b \xce\xbb}");
+    ("reference_target", "{!\xce\xbb}");
+    ("code_block", "{[\xce\xbb]}");
+    ("verbatim", "{v \xce\xbb v}");
+    ("label", "{2:\xce\xbb Bar}");
+    ("author", "@author \xce\xbb");
+    ("param", "@param \xce\xbb");
+    ("raise", "@raise \xce\xbb");
+    ("see", "@see <\xce\xbb>");
+    ("since", "@since \xce\xbb");
+    ("before", "@before \xce\xbb");
+    ("version", "@version \xce\xbb");
+    ("right_brace", "\xce\xbb}");
+  ]
+
+let bad_markup =
+  [
+    ("left_brace", "{");
+    ("left_brace_with_letter", "{g");
+    ("left_brace_with_letters", "{gg");
+    ("empty_braces", "{}");
+    ("left_space", "{ foo}");
+    ("left_spaces", "{  foo}");
+    ("left_space_eof", "{");
+    ("braces_instead_of_brackets", "{foo}");
+    ("right_brace", "}");
+    ("right_brace_in_paragraph", "foo}");
+    ("multiple_right_brace", "foo } bar } baz");
+    ("right_brace_in_list_item", "- foo}");
+    ("right_brace_in_code_span", "[foo}]");
+    ("right_brace_in_code_block", "{[foo}]}");
+    ("right_brace_in_verbatim_text", "{v foo} v}");
+    ("right_brace_in_author", "@author Foo}");
+    ("right_brace_in_deprecated", "@deprecated }");
+    ("right_bracket", "]");
+    ("right_bracket_in_paragraph", "foo]");
+    ("right_bracket_in_shorthand_list", "- foo]");
+    ("right_bracket_in_code_span", "[]]");
+    ("right_bracket_in_style", "{b]}");
+    ("right_bracket_in_verbatim", "{v ] v}");
+    ("right_bracket_in_list", "{ul ]}");
+    ("right_bracket_in_list_item", "{ul {li ]}}");
+    ("right_bracket_in_heading", "{2 ]}");
+    ("right_bracket_in_author", "@author Foo]");
+    ("at", "@");
+    ("cr", "");
+  ]
+
+let isolated = [ ("label", "{2:\xce\xbb Bar}") ]
 
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
 let documentation_cases =
@@ -195,10 +252,13 @@ let () =
       | "code" -> code_cases
       | "recovery" | "r" -> error_recovery
       | "docs" | "d" -> documentation_cases
+      | "open" | "o" -> open_t
+      | "utf8" | "u" -> utf8
+      | "isolated" | "i" -> isolated
       | _ ->
           print_endline "unrecognized argument - running documentation_cases";
           documentation_cases)
-    else math
+    else bad_markup
   in
   let sucesses, failures = List.partition_map run_test cases in
   let sucesses = format_successes sucesses in

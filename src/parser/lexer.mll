@@ -313,6 +313,15 @@ let heading_level lexbuf input level =
 let buffer_add_lexeme buffer lexbuf =
   Buffer.add_string buffer (Lexing.lexeme lexbuf)
 
+let trim_horizontal_start : string -> string = fun s -> 
+  let rec go idx = 
+    let c = s.[idx] in
+      if Char.equal c ' ' 
+        then go @@ succ idx 
+        else String.sub s idx (String.length s - idx)
+  in 
+  go 0
+
 }
 
 let markup_char =
@@ -575,7 +584,7 @@ and token input = parse
     { emit lexbuf input (Section_heading (heading_level lexbuf input level, None)) }
 
   | "@author" ((horizontal_space+ [^ '\r' '\n']*)? as author)
-    { emit lexbuf input (Author author) }
+    { emit lexbuf input (Author (trim_horizontal_start author )) }
 
   | "@deprecated"
     { emit lexbuf input DEPRECATED }
@@ -590,22 +599,22 @@ and token input = parse
     { emit lexbuf input RETURN }
 
   | "@see" horizontal_space* '<' ([^ '>']* as url) '>'
-    { emit lexbuf input (See (URL, url)) }
+    { emit lexbuf input (See (URL, trim_horizontal_start url)) }
 
   | "@see" horizontal_space* '\'' ([^ '\'']* as filename) '\''
-    { emit lexbuf input (See (File, filename)) }
+    { emit lexbuf input (See (File, trim_horizontal_start filename)) }
 
   | "@see" horizontal_space* '"' ([^ '"']* as name) '"'
-    { emit lexbuf input (See (Document, name)) }
+    { emit lexbuf input (See (Document, trim_horizontal_start name)) }
 
   | "@since" ((horizontal_space+ [^ '\r' '\n']*)? as version)
-    { emit lexbuf input (Since version) }
+    { emit lexbuf input (Since (trim_horizontal_start version)) }
 
   | "@before" horizontal_space+ ((_ # space_char)+ as version)
-    { emit lexbuf input (Before version) }
+    { emit lexbuf input (Before (trim_horizontal_start version)) }
 
   | "@version" ((horizontal_space+ [^ '\r' '\n']*)? as version)
-    { emit lexbuf input (Version version) }
+    { emit lexbuf input (Version (trim_horizontal_start version)) }
 
   | "@canonical" ((horizontal_space+ [^ '\r' '\n']*)? as identifier)
     { emit lexbuf input (Canonical identifier) }

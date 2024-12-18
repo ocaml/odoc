@@ -241,8 +241,6 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 
 %token END
 
-%on_error_reduce inline_element
-
 %start <Ast.t Writer.t> main 
 
 %%
@@ -338,44 +336,43 @@ let toplevel_error :=
 (* SECTION HEADING *)
 
 let section_heading := 
-  | (num, title) = Section_heading; children = sequence(locatedM(inline_element)); RIGHT_BRACE; 
+  | (num, title) = Section_heading; children = sequence_nonempty(locatedM(inline_element)); RIGHT_BRACE; 
     { 
-      let warning = 
-        let span = Loc.of_position $sloc in
-        let what = Tokens.describe @@ Section_heading (num, title) in
-        Writer.Warning (Parse_error.should_not_be_empty ~what span)
-      in
-      Writer.ensure not_empty warning children
-      |> Writer.map (fun c -> `Heading (num, title, trim_start c))
+      Writer.map (fun c -> `Heading (num, title, trim_start c)) children
     }
-
-  | (num, title) = Section_heading; RIGHT_CODE_DELIMITER; 
-    {
+  | (num, title) = Section_heading; RIGHT_BRACE; 
+    { 
       let should_not_be_empty = 
         let span = Loc.of_position $sloc in
         let what = Tokens.describe @@ Section_heading (num, title) in
         Writer.Warning (Parse_error.should_not_be_empty ~what span)
       in
-      let not_allowed = 
-        let span = Loc.of_position $sloc in
-        let what = Tokens.describe RIGHT_CODE_DELIMITER in
-        let in_what = Tokens.describe @@ Section_heading (num, title) in
-        Writer.Warning (Parse_error.not_allowed ~what ~in_what span) 
+      let node = `Heading (num, title, []) in
+      Writer.with_warning node should_not_be_empty
+    }
+  | (num, title) = Section_heading; errloc = position(error); 
+    {
+      let illegal = Writer.InputNeeded (fun input ->
+        let (start_pos, end_pos) = errloc in
+        let span = Loc.of_position (start_pos, end_pos) in
+        let err = Loc.extract ~input ~start_pos ~end_pos in
+        Parse_error.illegal err span) 
       in
       return @@ `Heading (num, title, [])
-      |> Writer.warning should_not_be_empty
-      |> Writer.warning not_allowed
+      |> Writer.warning illegal
     }
-
+  
 (* TAGS *)
 
 let tag == 
-  | with_content = tag_with_content; { (with_content : Ast.tag Writer.t) }
-  | bare = tag_bare; { (bare : Ast.tag Writer.t) }
+  | with_content = tag_with_content; Single_newline?; { (with_content : Ast.tag Writer.t) }
+  | bare = tag_bare; Single_newline?; { (bare : Ast.tag Writer.t) }
 
 let tag_with_content := 
   | DEPRECATED; children = sequence_nonempty(locatedM(nestable_block_element)); 
     { Writer.map (fun c -> `Deprecated c) children }
+  | DEPRECATED; 
+    { return @@ `Deprecated [] }
   | DEPRECATED; RIGHT_BRACE; 
     {
       let warning = 
