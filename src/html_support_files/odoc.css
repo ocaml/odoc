@@ -364,7 +364,8 @@ body.odoc-src {
   margin-top: 0;
 }
 
-header {
+/* Add margin after the preamble if it contains more than one element. */
+header.odoc-preamble:has(> :nth-child(2)) {
   margin-bottom: 30px;
 }
 
