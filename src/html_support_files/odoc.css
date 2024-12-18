@@ -230,7 +230,7 @@
 
 
   --source-line-column: var(--fg3);
-  --source-line-column-bg: var(--bg1);
+  --source-line-column-bg: var(--bg_h);
 
   --source-code-comment: var(--gray);
   --source-code-docstring: var(--green-dim);
