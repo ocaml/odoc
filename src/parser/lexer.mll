@@ -445,28 +445,28 @@ and token input = parse
     { emit lexbuf input PLUS }
 
   | "{b"
-    { emit lexbuf input (Style `Bold) }
+    { emit lexbuf input (Style Bold) }
 
   | "{i"
-    { emit lexbuf input (Style `Italic) }
+    { emit lexbuf input (Style Italic) }
 
   | "{e"
-    { emit lexbuf input (Style `Emphasis) }
+    { emit lexbuf input (Style Emphasis) }
 
   | "{L"
-    { emit lexbuf input (Paragraph_style `Left) }
+    { emit lexbuf input (Paragraph_style Left) }
 
   | "{C"
-    { emit lexbuf input (Paragraph_style  `Center) }
+    { emit lexbuf input (Paragraph_style Center) }
 
   | "{R"
-    { emit lexbuf input (Paragraph_style  `Right) }
+    { emit lexbuf input (Paragraph_style Right) }
 
   | "{^"
-    { emit lexbuf input (Style `Superscript) }
+    { emit lexbuf input (Style Superscript) }
 
   | "{_"
-    { emit lexbuf input (Style `Subscript) }
+    { emit lexbuf input (Style Subscript) }
 
   | "{math" space_char
     { math Block (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) (copy lexbuf.lex_curr_p) input lexbuf }
@@ -542,10 +542,10 @@ and token input = parse
       emit lexbuf input token }
 
   | "{ul"
-    { emit lexbuf input (List `Unordered) }
+    { emit lexbuf input (List Unordered) }
 
   | "{ol"
-    { emit lexbuf input (List `Ordered) }
+    { emit lexbuf input (List Ordered) }
 
   | "{li"
     { emit lexbuf input LI }
@@ -590,13 +590,13 @@ and token input = parse
     { emit lexbuf input RETURN }
 
   | "@see" horizontal_space* '<' ([^ '>']* as url) '>'
-    { emit lexbuf input (See (`Url, url)) }
+    { emit lexbuf input (See (URL, url)) }
 
   | "@see" horizontal_space* '\'' ([^ '\'']* as filename) '\''
-    { emit lexbuf input (See (`File, filename)) }
+    { emit lexbuf input (See (File, filename)) }
 
   | "@see" horizontal_space* '"' ([^ '"']* as name) '"'
-    { emit lexbuf input (See (`Document, name)) }
+    { emit lexbuf input (See (Document, name)) }
 
   | "@since" ((horizontal_space+ [^ '\r' '\n']*)? as version)
     { emit lexbuf input (Since version) }

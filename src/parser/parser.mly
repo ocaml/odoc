@@ -185,10 +185,10 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 %token MINUS "-" 
 %token PLUS "+"
 
-%token <Ast.style> Style "{i" (* or '{b' etc *)
+%token <Tokens.style> Style "{i" (* or '{b' etc *)
 
 (* or '{C' or '{R', but this syntax has been deprecated and is only kept around so legacy codebases don't break :p *)
-%token <Ast.alignment> Paragraph_style "{L" 
+%token <Tokens.alignment> Paragraph_style "{L" 
 
 %token MODULES "{!modules:"
 
@@ -200,7 +200,7 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 %token <Ast.code_block> Code_block "{[]}"
 %token <string> Code_span "[]" 
 
-%token <Ast.list_kind> List "{ol" (* or '{ul' *)
+%token <Tokens.list_kind> List "{ol" (* or '{ul' *)
 %token LI "{li" 
 %token DASH "{-"
 
@@ -490,7 +490,7 @@ let style :=
         Writer.Warning (Parse_error.should_not_be_empty ~what span) 
       in
       Writer.ensure not_empty warning children
-      |> Writer.map (fun c -> `Styled (style, trim_start c)) 
+      |> Writer.map (fun c -> `Styled (Tokens.to_ast_style style, trim_start c)) 
     }
   | style = Style; RIGHT_BRACE;
     {
@@ -499,7 +499,7 @@ let style :=
         let what = Tokens.describe @@ Style style in
         Writer.Warning (Parse_error.should_not_be_empty ~what span) 
       in
-      Writer.with_warning (`Styled (style, [])) warning
+      Writer.with_warning (`Styled (Tokens.to_ast_style style, [])) warning
     }
   | style = Style; RIGHT_CODE_DELIMITER; 
     {
@@ -514,7 +514,7 @@ let style :=
         let span = Loc.of_position $sloc in
         Writer.Warning (Parse_error.should_not_be_empty ~what:style_desc span) 
       in
-      return (`Styled (style, [])) 
+      return (`Styled (Tokens.to_ast_style style, [])) 
       |> Writer.warning not_allowed
       |> Writer.warning should_not_be_empty
     }
@@ -525,7 +525,7 @@ let style :=
         let in_what = Tokens.describe @@ Style style in
         Writer.Warning (Parse_error.end_not_allowed ~in_what span) 
       in
-      Writer.with_warning (`Styled (style, [])) warning
+      Writer.with_warning (`Styled (Tokens.to_ast_style style, [])) warning
     }
 
 (* LINKS + REFS *)
@@ -704,7 +704,7 @@ let item_heavy ==
 let list_heavy := 
     | list_kind = List; whitespace?; items = sequence_nonempty(item_heavy); RIGHT_BRACE;
       { 
-        Writer.map (fun items -> `List (list_kind, `Heavy, items)) items
+        Writer.map (fun items -> `List (Tokens.ast_list_kind list_kind, `Heavy, items)) items
       }
     | list_kind = List; RIGHT_BRACE;
       { 
@@ -713,7 +713,7 @@ let list_heavy :=
           let span = Loc.of_position $sloc in
           Writer.Warning (Parse_error.should_not_be_empty ~what span) 
         in
-        let node = `List (list_kind, `Heavy, []) in
+        let node = `List (Tokens.ast_list_kind list_kind, `Heavy, []) in
         Writer.with_warning node warning
       }
     | list_kind = List; whitespace?; items = sequence_nonempty(item_heavy); errloc = position(error); 
@@ -725,7 +725,7 @@ let list_heavy :=
           Parse_error.illegal illegal_input span 
         in 
         let* items = Writer.warning (Writer.InputNeeded warning) items in
-        return @@ `List (list_kind, `Heavy, items)
+        return @@ `List (Tokens.ast_list_kind list_kind, `Heavy, items)
       }
     | list_kind = List; whitespace?; errloc = position(error);
       {
@@ -735,7 +735,7 @@ let list_heavy :=
           let span = Loc.of_position loc in
           Parse_error.illegal illegal_input span 
         in
-        return @@ `List (list_kind, `Heavy, []) 
+        return @@ `List (Tokens.ast_list_kind list_kind, `Heavy, []) 
         |> Writer.warning (Writer.InputNeeded warning) 
       }
 

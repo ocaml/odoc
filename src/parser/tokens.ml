@@ -3,10 +3,18 @@ type ref_kind = Simple | With_replacement
 type media = Reference of string | Link of string
 type media_target = Audio | Video | Image
 
-type paragraph_style = [ `Left | `Center | `Right ]
+type alignment = Left | Center | Right
 
-type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
-type table_cell_kind = [ `Header | `Data ]
+type style = Bold | Italic | Emphasis | Superscript | Subscript
+type table_cell_kind = Header | Data
+
+type list_kind = Ordered | Unordered
+
+type internal_reference = URL | File | Document
+
+let ast_list_kind : list_kind -> Ast.list_kind = function
+  | Ordered -> `Ordered
+  | Unordered -> `Unordered
 
 type token =
   | Space of string
@@ -27,9 +35,9 @@ type token =
   | Verbatim of string
   | RIGHT_CODE_DELIMITER
   | RIGHT_BRACE
-  | Paragraph_style of paragraph_style
+  | Paragraph_style of alignment
   | Style of style
-  | List of Ast.list_kind
+  | List of list_kind
   | LI
   | DASH
   | TABLE_LIGHT
@@ -45,7 +53,7 @@ type token =
   | Param of string
   | Raise of string
   | RETURN
-  | See of ([ `Url | `File | `Document ] * string)
+  | See of (internal_reference * string)
   | Since of string
   | Before of string
   | Version of string
@@ -90,16 +98,16 @@ let print : token -> string = function
   | Verbatim _ -> "{v"
   | RIGHT_CODE_DELIMITER -> "]}"
   | RIGHT_BRACE -> "}"
-  | Paragraph_style `Left -> "'{L'"
-  | Paragraph_style `Center -> "'{C'"
-  | Paragraph_style `Right -> "'{R'"
-  | Style `Bold -> "'{b'"
-  | Style `Italic -> "'{i'"
-  | Style `Emphasis -> "'{e'"
-  | Style `Superscript -> "'{^'"
-  | Style `Subscript -> "'{_'"
-  | List `Ordered -> "{ol"
-  | List `Unordered -> "{ul"
+  | Paragraph_style Left -> "'{L'"
+  | Paragraph_style Center -> "'{C'"
+  | Paragraph_style Right -> "'{R'"
+  | Style Bold -> "'{b'"
+  | Style Italic -> "'{i'"
+  | Style Emphasis -> "'{e'"
+  | Style Superscript -> "'{^'"
+  | Style Subscript -> "'{_'"
+  | List Ordered -> "{ol"
+  | List Unordered -> "{ul"
   | LI -> "'{li ...}'"
   | DASH -> "'{- ...}'"
   | TABLE_LIGHT -> "{t"
@@ -145,14 +153,14 @@ let describe : token -> string = function
   | Word w -> Printf.sprintf "'%s'" w
   | Code_span _ -> "'[...]' (code)"
   | Raw_markup _ -> "'{%...%}' (raw markup)"
-  | Paragraph_style `Left -> "'{L ...}' (left alignment)"
-  | Paragraph_style `Center -> "'{C ...}' (center alignment)"
-  | Paragraph_style `Right -> "'{R ...}' (right alignment)"
-  | Style `Bold -> "'{b ...}' (boldface text)"
-  | Style `Italic -> "'{i ...}' (italic text)"
-  | Style `Emphasis -> "'{e ...}' (emphasized text)"
-  | Style `Superscript -> "'{^...}' (superscript)"
-  | Style `Subscript -> "'{_...}' (subscript)"
+  | Paragraph_style Left -> "'{L ...}' (left alignment)"
+  | Paragraph_style Center -> "'{C ...}' (center alignment)"
+  | Paragraph_style Right -> "'{R ...}' (right alignment)"
+  | Style Bold -> "'{b ...}' (boldface text)"
+  | Style Italic -> "'{i ...}' (italic text)"
+  | Style Emphasis -> "'{e ...}' (emphasized text)"
+  | Style Superscript -> "'{^...}' (superscript)"
+  | Style Subscript -> "'{_...}' (subscript)"
   | Math_span _ -> "'{m ...}' (math span)"
   | Math_block _ -> "'{math ...}' (math block)"
   | Simple_ref _ -> "'{!...}' (cross-reference)"
@@ -167,8 +175,8 @@ let describe : token -> string = function
   | Code_block _ -> "'{[...]}' (code block)"
   | Verbatim _ -> "'{v ... v}' (verbatim text)"
   | MODULES -> "'{!modules ...}'"
-  | List `Unordered -> "'{ul ...}' (bulleted list)"
-  | List `Ordered -> "'{ol ...}' (numbered list)"
+  | List Unordered -> "'{ul ...}' (bulleted list)"
+  | List Ordered -> "'{ol ...}' (numbered list)"
   | LI -> "'{li ...}' (list item)"
   | DASH -> "'{- ...}' (list item)"
   | TABLE_LIGHT -> "'{t ...}' (table)"
@@ -215,10 +223,24 @@ let empty_code_block =
       output = None;
     }
 
+let of_ast_style : Ast.style -> style = function
+  | `Bold -> Bold
+  | `Italic -> Italic
+  | `Emphasis -> Emphasis
+  | `Superscript -> Superscript
+  | `Subscript -> Subscript
+
+let to_ast_style : style -> Ast.style = function
+  | Bold -> `Bold
+  | Italic -> `Italic
+  | Emphasis -> `Emphasis
+  | Superscript -> `Superscript
+  | Subscript -> `Subscript
+
 let describe_inline : Ast.inline_element -> string = function
   | `Word w -> describe @@ Word w
   | `Space _ -> describe @@ Space ""
-  | `Styled (style, _) -> describe @@ Style style
+  | `Styled (style, _) -> describe @@ Style (of_ast_style style)
   | `Code_span _ -> describe @@ Code_span ""
   | `Math_span _ -> describe @@ Math_span ""
   | `Raw_markup x -> describe @@ Raw_markup x
@@ -254,8 +276,13 @@ let describe_nestable_block : Ast.nestable_block_element -> string = function
   | `Math_block _ -> describe @@ Math_block ""
   | `Media _ as media -> describe @@ of_media media
 
+let of_ast_ref : [ `Document | `File | `Url ] -> internal_reference = function
+  | `Document -> Document
+  | `File -> File
+  | `Url -> URL
+
 let describe_tag : Ast.tag -> string = function
-  | `See (kind, _, _) -> describe @@ See (kind, "")
+  | `See (kind, _, _) -> describe @@ See (of_ast_ref kind, "")
   | `Author s -> describe @@ Author s
   | `Deprecated _ -> describe DEPRECATED
   | `Param (s, _) -> describe @@ Param s
