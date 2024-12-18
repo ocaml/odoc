@@ -930,7 +930,6 @@ body.odoc:has( .odoc-search) .odoc-toc {
 
 .odoc-toc.odoc-global-toc > ul > li > ul > li {
     font-weight: 500;
-    font-size: 500;
 }
 
 .odoc-toc.odoc-global-toc > ul > li > ul > li > a {
@@ -939,7 +938,7 @@ body.odoc:has( .odoc-search) .odoc-toc {
 }
 
 .odoc-toc.odoc-global-toc > ul > li > a {
-    font-size: 2em;
+  font-size: 1.2em;
 }
 
 .current_unit {
