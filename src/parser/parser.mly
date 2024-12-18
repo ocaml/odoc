@@ -220,7 +220,7 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 %token <string> Param "@param"
 %token <string> Raise "@raise(s)"
 %token RETURN "@return"
-%token <[ `Url | `File | `Document ] * string> See "@see"
+%token <Tokens.internal_reference * string> See "@see"
 %token <string> Since "@since"
 %token <string> Before "@before"
 %token <string> Version "@version"
@@ -406,10 +406,10 @@ let see :=
   | (kind, href) = See; children = sequence_nonempty(locatedM(nestable_block_element)); 
     {
       let* children = children in
-      return @@ `See (kind, href, children)
+      return @@ `See (Tokens.to_ast_ref kind, href, children)
     }
   | (kind, href) = See; 
-    { return @@ `See (kind, href, []) }
+    { return @@ `See (Tokens.to_ast_ref kind, href, []) }
 
 let param := 
   | ident = Param; children = sequence_nonempty(locatedM(nestable_block_element));

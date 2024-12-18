@@ -281,6 +281,11 @@ let of_ast_ref : [ `Document | `File | `Url ] -> internal_reference = function
   | `File -> File
   | `Url -> URL
 
+let to_ast_ref : internal_reference -> [ `Url | `File | `Document ] = function
+  | URL -> `Url
+  | File -> `File
+  | Document -> `Document
+
 let describe_tag : Ast.tag -> string = function
   | `See (kind, _, _) -> describe @@ See (of_ast_ref kind, "")
   | `Author s -> describe @@ Author s
