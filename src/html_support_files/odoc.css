@@ -1372,6 +1372,7 @@ body.odoc:has( .odoc-search) .odoc-toc {
 .source_container {
   display: flex;
   grid-area: content;
+  margin-top: 0;
 }
 
 .source_line_column {
