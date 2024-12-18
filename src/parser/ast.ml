@@ -1,5 +1,11 @@
 (** Abstract syntax tree representing ocamldoc comments *)
 
+(* TODO: (@faycarsons)
+   We no longer need polymorphism in the parser, so for performance and
+   simplicity's sake the AST should (probably, assuming no issues in other
+   parts of Odoc) be refactored to use nominal sum types
+*)
+
 type list_kind = [ `Ordered | `Unordered ]
 type list_syntax = [ `Light | `Heavy ]
 type list_item = [ `Li | `Dash ]
