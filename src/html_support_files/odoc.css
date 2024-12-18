@@ -460,7 +460,7 @@ a:hover:not(.img-link) {
 }
 
 /* Linked highlight */
-*:target {
+*:target, .current_unit {
   background-color: var(--target-background) !important;
   border-radius: 1px;
   border: var(--target-border) 1px solid !important;
@@ -939,10 +939,6 @@ body.odoc:has( .odoc-search) .odoc-toc {
 
 .odoc-toc.odoc-global-toc > ul > li > a {
   font-size: 1.2em;
-}
-
-.current_unit {
-  background-color: var(--anchor-color);
 }
 
 :root {
