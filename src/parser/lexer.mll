@@ -1,6 +1,13 @@
 {
-
 open Tokens
+
+(* NOTE: 
+   I think that, ideally, this would be rewritten from scratch, removing the 
+   currying in `emit` and `with_location_adjustments` that makes this code 
+   difficult to understand 
+
+   Additionally, I there think there are probably a few things here that could 
+   be better handled by the parser. *)
 
 let unescape_word : string -> string = fun s ->
   (* The common case is that there are no escape sequences. *)
@@ -36,6 +43,10 @@ let math_constr kind x =
   match kind with
   | Inline -> Math_span x
   | Block -> Math_block x
+
+let copy : 'a -> 'a = fun t -> 
+  Obj.magic t |> Obj.dup |> Obj.magic
+
 
 (* This is used for code and verbatim blocks. It can be done with a regular
    expression, but the regexp gets quite ugly, so a function is easier to
@@ -160,10 +171,15 @@ let with_loc : Lexing.lexbuf -> input -> 'a -> 'a Loc.with_location =
     let location = mkloc input lexbuf in 
     Loc.at location
 
-let with_location_adjustments : (Lexing.lexbuf -> input -> 'a) -> Lexing.lexbuf
+let with_location_adjustments : 
+  (Lexing.lexbuf -> input -> 'a) 
+  -> Lexing.lexbuf
   -> input 
-  -> ?start_offset:int -> ?adjust_start_by:string -> ?end_offset:int
-    -> ?adjust_end_by:string -> 'a
+  -> ?start_offset:int 
+  -> ?adjust_start_by:string 
+  -> ?end_offset:int
+  -> ?adjust_end_by:string 
+  -> 'a
   =
   fun 
     k lexbuf input ?start_offset ?adjust_start_by ?end_offset ?adjust_end_by
@@ -189,7 +205,7 @@ let with_location_adjustments : (Lexing.lexbuf -> input -> 'a) -> Lexing.lexbuf
     | None -> end_
     | Some s -> end_ - String.length s
   in
-  lexbuf.lex_start_p <- { lexbuf.lex_start_p with pos_cnum = start };
+  lexbuf.lex_start_p <- { lexbuf.lex_start_p with pos_cnum = start + lexbuf.lex_start_p.pos_bol };
   lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_cnum = end_ };
   k lexbuf input value
 
@@ -453,10 +469,10 @@ and token input = parse
     { emit lexbuf input (Style `Subscript) }
 
   | "{math" space_char
-    { math Block (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
+    { math Block (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) (copy lexbuf.lex_curr_p) input lexbuf }
 
   | "{m" horizontal_space
-    { math Inline (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
+    { math Inline (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) (copy lexbuf.lex_curr_p) input lexbuf }
 
 
   | "{!modules:"
@@ -668,11 +684,12 @@ and code_span buffer nesting_level start_offset input = parse
       code_span buffer nesting_level start_offset input lexbuf }
 
   | newline horizontal_space* (newline horizontal_space*)+
-    { let w = Parse_error.not_allowed
+    { let not_allowed = 
+        Parse_error.not_allowed
           ~what:(Tokens.describe (Blank_line "\n\n"))
           ~in_what:(Tokens.describe (Code_span ""))
       in
-      warning lexbuf input w;
+      warning lexbuf input not_allowed;
       Buffer.add_char buffer ' ';
       code_span buffer nesting_level start_offset input lexbuf }
   | newline horizontal_space*
@@ -692,49 +709,56 @@ and code_span buffer nesting_level start_offset input = parse
     { Buffer.add_char buffer c;
       code_span buffer nesting_level start_offset input lexbuf }
 
-and math kind buffer nesting_level start_offset input = parse
+and math kind buffer nesting_level start_offset start_pos input = parse
   | '}'
-    { if nesting_level == 0 then
-        emit lexbuf input (math_constr kind (Buffer.contents buffer)) ~start_offset
-      else begin
+    { 
+      if nesting_level == 0 then (
+        lexbuf.lex_start_p <- start_pos;
+        emit lexbuf input (math_constr kind (Buffer.contents buffer)) ~start_offset) 
+      else (
         Buffer.add_char buffer '}';
-        math kind buffer (pred nesting_level) start_offset input lexbuf
-      end
-      }
+        math kind buffer (pred nesting_level) start_offset start_pos input lexbuf)
+    }
   | '{'
-    { Buffer.add_char buffer '{';
-      math kind buffer (succ nesting_level) start_offset input lexbuf }
+    { 
+      Buffer.add_char buffer '{';
+      math kind buffer (succ nesting_level) start_offset start_pos input lexbuf 
+    }
   | ("\\{" | "\\}") as s
     { Buffer.add_string buffer s;
-      math kind buffer nesting_level start_offset input lexbuf }
+      math kind buffer nesting_level start_offset start_pos input lexbuf }
   | (newline) as s
     {
+      (* 
+      Printf.printf "Adding newline!\nPosition:\n %s\n" (Loc.fmt @@ Loc.of_position ( lexbuf.lex_start_p, lexbuf.lex_curr_p ));
+      *)
       Lexing.new_line lexbuf;
       match kind with
       | Inline ->
-        warning 
-          lexbuf
-          input
-          (Parse_error.not_allowed
+        let not_allowed = 
+          Parse_error.not_allowed
             ~what:(Tokens.describe (Blank_line "\n"))
-            ~in_what:(Tokens.describe (math_constr kind "")));
+            ~in_what:(Tokens.describe (math_constr kind ""))
+        in
+        warning lexbuf input not_allowed;
         Buffer.add_char buffer '\n';
-        math kind buffer nesting_level start_offset input lexbuf
+        math kind buffer nesting_level start_offset start_pos input lexbuf
       | Block ->
         Buffer.add_string buffer s;
-        math kind buffer nesting_level start_offset input lexbuf
+        math kind buffer nesting_level start_offset start_pos input lexbuf
     }
   | eof
-    { warning
-        lexbuf
-        input
-        (Parse_error.not_allowed
-          ~what:(Tokens.describe END)
-          ~in_what:(Tokens.describe (math_constr kind "")));
-      emit lexbuf input (math_constr kind (Buffer.contents buffer)) ~start_offset }
+    { 
+      let unexpected_eof = 
+        Parse_error.end_not_allowed
+          ~in_what:(Tokens.describe (math_constr kind ""))
+      in
+      warning lexbuf input unexpected_eof;
+      emit lexbuf input (math_constr kind (Buffer.contents buffer)) ~start_offset
+    }
   | _ as c
     { Buffer.add_char buffer c;
-      math kind buffer nesting_level start_offset input lexbuf }
+      math kind buffer nesting_level start_offset start_pos input lexbuf }
 
 and media tok_descr buffer nesting_level start_offset input = parse
   | '}'

@@ -1,4 +1,4 @@
-  open Odoc_parser
+open Odoc_parser
 
 type sexp = Sexplib0.Sexp.t = Atom of string | List of sexp list
 
@@ -177,4 +177,3 @@ module Ast_to_sexp = struct
   let docs at : Ast.t -> sexp =
    fun f -> List (List.map (at.at (block_element at)) f)
 end
-
