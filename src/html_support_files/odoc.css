@@ -1234,7 +1234,7 @@ body.odoc:has( .odoc-search) .odoc-toc {
   font-weight: 500;
 }
 
-.odoc-toc li ul {
+.odoc-toc ul li ul {
   margin: 0px;
   padding-top: 0.25em;
 }
@@ -1248,6 +1248,7 @@ body.odoc:has( .odoc-search) .odoc-toc {
 }
 
 .odoc-toc>ul>li {
+  margin-left: 0;
   margin-bottom: 0.3em;
 }
 
