@@ -356,7 +356,8 @@ let section_heading :=
         let (start_pos, end_pos) = errloc in
         let span = Loc.of_position (start_pos, end_pos) in
         let err = Loc.extract ~input ~start_pos ~end_pos in
-        Parse_error.illegal err span) 
+        let in_what = Tokens.describe @@ Section_heading (num, title) in
+        Parse_error.illegal ~in_what err span) 
       in
       return @@ `Heading (num, title, [])
       |> Writer.warning illegal
@@ -719,7 +720,8 @@ let list_heavy :=
           let (start_pos, end_pos) as loc = errloc in 
           let illegal_input = Loc.extract ~input ~start_pos ~end_pos in
           let span = Loc.of_position loc in
-          Parse_error.illegal illegal_input span 
+          let in_what = Tokens.describe @@ List list_kind in
+          Parse_error.illegal ~in_what illegal_input span 
         in 
         let* items = Writer.warning (Writer.InputNeeded warning) items in
         return @@ `List (Tokens.ast_list_kind list_kind, `Heavy, items)
@@ -730,7 +732,8 @@ let list_heavy :=
           let (start_pos, end_pos) as loc = errloc in 
           let illegal_input = Loc.extract ~input ~start_pos ~end_pos in
           let span = Loc.of_position loc in
-          Parse_error.illegal illegal_input span 
+          let in_what = Tokens.describe (List list_kind) in
+          Parse_error.illegal ~in_what illegal_input span 
         in
         return @@ `List (Tokens.ast_list_kind list_kind, `Heavy, []) 
         |> Writer.warning (Writer.InputNeeded warning) 
@@ -753,7 +756,8 @@ let cell_heavy :=
         let (start_pos, end_pos) as loc = errloc in 
         let illegal_input = Loc.extract ~input ~start_pos ~end_pos in
         let span = Loc.of_position loc in
-        Parse_error.illegal illegal_input span 
+        let in_what = Tokens.describe @@ Table_cell cell_kind in
+        Parse_error.illegal ~in_what illegal_input span 
       in 
       Option.value ~default:(return []) children
       |> Writer.map (fun children -> (children, cell_kind))
@@ -769,7 +773,8 @@ let row_heavy :=
         let (start_pos, end_pos) as loc = errloc in 
         let illegal_input = Loc.extract ~input ~start_pos ~end_pos in
         let span = Loc.of_position loc in
-        Parse_error.illegal illegal_input span 
+        let in_what = Tokens.describe TABLE_ROW in
+        Parse_error.illegal ~in_what illegal_input span 
       in 
       Option.value ~default:(return []) children
       |> Writer.warning (Writer.InputNeeded warning) 
@@ -786,7 +791,8 @@ let table_heavy :=
         let (start_pos, end_pos) as loc = errloc in 
         let illegal_input = Loc.extract ~input ~start_pos ~end_pos in
         let span = Loc.of_position loc in
-        Parse_error.illegal illegal_input span 
+        let in_what = Tokens.describe TABLE_HEAVY in
+        Parse_error.illegal ~in_what illegal_input span 
       in 
       Option.value ~default:(return []) grid
       |> Writer.map (fun grid -> `Table ((grid, None), `Heavy))

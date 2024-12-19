@@ -128,7 +128,6 @@ let parse_comment : location:Lexing.position -> text:string -> t =
         file = Lexing.(location.pos_fname);
       }
   in
-  (* Remove the `Loc.with_location` wrapping our token because Menhir cannot handle that *)
   let ast, warnings =
     Writer.run ~input:text @@ Parser.main (Lexer.token lexer_state) lexbuf
   in
