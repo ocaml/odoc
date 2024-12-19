@@ -544,16 +544,30 @@ let reference :=
   | ref_body = located(Ref_with_replacement); RIGHT_BRACE;
     {
       let node = `Reference (`With_text, ref_body, []) in
-      let what = Tokens.describe @@ Ref_with_replacement (Loc.value ref_body) in
       let warning = 
         let span = 
           Loc.of_position $sloc
           |> Loc.nudge_start (String.length "{{!") 
         in
+        let what = Tokens.describe @@ Ref_with_replacement (Loc.value ref_body) in
         Writer.Warning (Parse_error.should_not_be_empty ~what span) 
       in
       Writer.with_warning node warning
     }
+    | ref_body = located(Ref_with_replacement); children = sequence_nonempty(locatedM(inline_element))?; END;
+    {
+      let not_allowed = 
+        let span = 
+          Loc.of_position $sloc 
+          |> Loc.nudge_start @@ String.length "{{!"
+        in
+        let in_what = Tokens.describe @@ Ref_with_replacement (Loc.value ref_body) in
+        Writer.Warning (Parse_error.end_not_allowed ~in_what span)
+      in
+      let* children = Option.value ~default:(return []) children in
+      let node = `Reference (`With_text, ref_body, children) in
+      Writer.with_warning node not_allowed
+  }
 
 let link := 
   | link_body = Simple_link; RIGHT_BRACE; 
