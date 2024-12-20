@@ -76,6 +76,7 @@
   This could happen with inline includes.
 - Fix bug where source rendering would cause odoc to fail completely if it
   encounters invalid syntax (@jonludlam #1208)
+- Add missing parentheses in 'val (let*) : ...' (@Julow, #1268)
 
 # 2.4.4
 
