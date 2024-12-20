@@ -1,0 +1,28 @@
+
+.TH Op 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocamlary\.Op
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocamlary\.Op\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR let* : int
+.sp 
+\f[CB]val\fR and* : int
+.sp 
+\f[CB]val\fR (\.%{}) : int
+.sp 
+\f[CB]val\fR (\.%{}<-) : int
+.sp 
+\f[CB]val\fR (\.%{;\.\.}) : int
+.sp 
+\f[CB]val\fR (\.%{;\.\.}<-) : int
+.sp 
+\f[CB]val\fR (!~) : int
+.sp 
+\f[CB]val\fR (#~) : int
