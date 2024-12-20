@@ -1,19 +1,19 @@
+(** Returns [true] on chars that are part of operators. *)
+let operator_char = function
+  (* https://ocaml.org/manual/5.2/lex.html#core-operator-char *)
+  | '$' | '&' | '*' | '+' | '-' | '/' | '=' | '>' | '@' | '^' | '|' | '~' | '!'
+  | '?' | '%' | '<' | ':' | '.'
+  (* https://ocaml.org/manual/5.2/lex.html#infix-symbol *)
+  | '#'
+  (* https://ocaml.org/manual/5.2/indexops.html#s:index-operators *)
+  | '(' | ')' | '[' | ']' | '{' | '}' ->
+      true
+  | _ -> false
+
 let parenthesise name =
   match name with
   | "asr" | "land" | "lor" | "lsl" | "lsr" | "lxor" | "mod" -> "(" ^ name ^ ")"
-  | _ ->
-      if String.length name > 0 then
-        match name.[0] with
-        | 'a' .. 'z'
-        | '\223' .. '\246'
-        | '\248' .. '\255'
-        | '_'
-        | 'A' .. 'Z'
-        | '\192' .. '\214'
-        | '\216' .. '\222' ->
-            name
-        | _ -> "(" ^ name ^ ")"
-      else name
+  | _ -> if String.exists operator_char name then "(" ^ name ^ ")" else name
 
 let contains_double_underscore s =
   let len = String.length s in
