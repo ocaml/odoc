@@ -23,7 +23,7 @@ let html_of_doc ~config ~resolve docs =
     | Source_page.Plain_code s -> [ txt s ]
     | Tagged_code (info, docs) -> (
         let is_in_a = match info with Link _ -> true | _ -> is_in_a in
-        let children = List.concat @@ List.map (doc_to_html ~is_in_a) docs in
+        let children = List.concat @@ (List.rev_map (doc_to_html ~is_in_a) docs |> List.rev) in
         match info with
         | Syntax tok -> [ span ~a:[ a_class [ tok ] ] children ]
         (* Currently, we do not render links to documentation *)
@@ -33,7 +33,10 @@ let html_of_doc ~config ~resolve docs =
             [ a ~a:[ a_href href ] children ]
         | Anchor lbl -> [ span ~a:[ a_id lbl ] children ])
   in
-  span ~a:[] @@ List.concat @@ List.map (doc_to_html ~is_in_a:false) docs
+  let span_content_l = List.rev_map (doc_to_html ~is_in_a:false) docs |> List.rev in
+  (* This is List.concat, tail recursive version *)
+  let span_content = List.fold_left (fun acc x -> List.rev_append x acc) [] span_content_l |> List.rev in
+  span ~a:[] span_content
 
 let count_lines_in_string s =
   let n = ref 0 in
@@ -45,9 +48,12 @@ let rec count_lines_in_span = function
   | Source_page.Plain_code s -> count_lines_in_string s
   | Tagged_code (_, docs) -> count_lines docs
 
-and count_lines = function
-  | [] -> 0
-  | hd :: tl -> count_lines_in_span hd + count_lines tl
+and count_lines l =
+  let rec inner l acc =
+    match l with
+    | [] -> acc
+    | hd :: tl -> inner tl (count_lines_in_span hd + acc)
+  in inner l 0
 
 let rec line_numbers acc n =
   let open Html in

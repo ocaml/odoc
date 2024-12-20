@@ -160,20 +160,21 @@ let syntax_highlighting_locs src =
         ~with_positions:true
   #endif
         src in
-    let rec collect lexbuf =
+    let rec collect lexbuf tokens =
       let tok = Lexer.token_with_comments lexbuf in
       let loc_start, loc_end = (lexbuf.lex_start_p, lexbuf.lex_curr_p) in
       let tag = tag_of_token tok in
       match tok with
-      | EOF -> []
+      | EOF -> List.rev tokens
       | COMMENT (_, loc) ->
-          (tag, (loc.loc_start.pos_cnum, loc.loc_end.pos_cnum)) :: collect lexbuf
+          collect lexbuf ((tag, (loc.loc_start.pos_cnum, loc.loc_end.pos_cnum)) :: tokens)
       | DOCSTRING doc ->
           let loc = Docstrings.docstring_loc doc in
-          (tag, (loc.loc_start.pos_cnum, loc.loc_end.pos_cnum)) :: collect lexbuf
-      | _ -> (tag, (loc_start.pos_cnum, loc_end.pos_cnum)) :: collect lexbuf
+          collect lexbuf ((tag, (loc.loc_start.pos_cnum, loc.loc_end.pos_cnum)) :: tokens)
+      | _ -> collect lexbuf ((tag, (loc_start.pos_cnum, loc_end.pos_cnum)) :: tokens)
     in
-    collect lexbuf
+    let result = collect lexbuf [] in
+    result
   with e ->
     Format.eprintf "Error during syntax highlighting: %s\n%!" (Printexc.to_string e);
     []

@@ -290,7 +290,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let infos = Odoc_utils.List.filter_map mapper infos in
       let syntax_info =
-        List.map (fun (ty, loc) -> (Source_page.Syntax ty, loc)) syntax_info
+        List.rev_map (fun (ty, loc) -> (Source_page.Syntax ty, loc)) syntax_info |> List.rev
       in
       let contents = Impl.impl ~infos:(infos @ syntax_info) source_code in
       { Source_page.url; contents }
