@@ -139,7 +139,7 @@ let page_creator ~config ~url ~uses_katex ~global_toc header breadcrumbs
 
   let head : Html_types.head Html.elt =
     let title_string =
-      Printf.sprintf "%s (%s)" url.name (String.concat "." path)
+      Printf.sprintf "%s (%s)" url.name (String.concat ~sep:"." path)
     in
 
     let file_uri = file_uri ~config ~url in
@@ -157,7 +157,7 @@ let page_creator ~config ~url ~uses_katex ~global_toc header breadcrumbs
           let search_urls =
             let search_url name = Printf.sprintf "'%s'" name in
             let search_urls = List.map search_url search_urls in
-            "[" ^ String.concat "," search_urls ^ "]"
+            "[" ^ String.concat ~sep:"," search_urls ^ "]"
           in
           (* The names of the search scripts are put into a js variable. Then
              the code in [odoc_search.js] load them into a webworker. *)
@@ -259,7 +259,7 @@ let path_of_module_of_source ppf url =
   match url.Url.Path.parent with
   | Some parent ->
       let path = Link.Path.for_printing parent in
-      Format.fprintf ppf " (%s)" (String.concat "." path)
+      Format.fprintf ppf " (%s)" (String.concat ~sep:"." path)
   | None -> ()
 
 let src_page_creator ~breadcrumbs ~config ~url ~header ~sidebar name content =
