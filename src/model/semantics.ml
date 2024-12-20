@@ -133,8 +133,9 @@ let leaf_inline_element :
       match target with
       | Some invalid_target
         when String.trim invalid_target = ""
-             || String.contains invalid_target '%'
-             || String.contains invalid_target '}' ->
+             || String.exists
+                  (function '%' | '}' -> true | _ -> false)
+                  invalid_target ->
           Error.raise_warning
             (invalid_raw_markup_target invalid_target location);
 

@@ -161,6 +161,6 @@ let to_string (l : link_content) =
   and s_of_is is =
     is
     |> List.map (fun { Location_.value; _ } -> s_of_i value)
-    |> String.concat ""
+    |> String.concat ~sep:""
   in
   s_of_is l

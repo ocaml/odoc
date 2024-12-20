@@ -1,4 +1,3 @@
-open Astring
 open Odoc_model
 open Odoc_model.Names
 open Or_error
