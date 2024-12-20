@@ -489,7 +489,7 @@ module Toc = struct
       in
       let title_str =
         List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ())) text
-        |> String.concat ""
+        |> String.concat ~sep:""
       in
       let href = Link.href ~config ~resolve url in
       { title; title_str; href; children = List.map section children }

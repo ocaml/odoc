@@ -78,3 +78,5 @@ end
 module Tree = Tree
 module Forest = Tree.Forest
 module Json = Json
+
+include Astring

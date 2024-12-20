@@ -5432,7 +5432,8 @@
    Ocamlary-M.html.gen
    Ocamlary-Only_a_module.html.gen
    Ocamlary-module-type-TypeExt.html.gen
-   Ocamlary-module-type-TypeExtPruned.html.gen)
+   Ocamlary-module-type-TypeExtPruned.html.gen
+   Ocamlary-Op.html.gen)
   (package odoc)
   (action
    (run
@@ -6937,6 +6938,13 @@
     Ocamlary-module-type-TypeExtPruned.html
     Ocamlary-module-type-TypeExtPruned.html.gen))
   (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocamlary-Op.html Ocamlary-Op.html.gen))
+  (enabled_if
    (>= %{ocaml_version} 4.07))))
 
 (subdir
@@ -7258,7 +7266,8 @@
    Ocamlary.Aliases.P2.3o.gen
    Ocamlary.Aliases.P2.Z.3o.gen
    Ocamlary.M.3o.gen
-   Ocamlary.Only_a_module.3o.gen)
+   Ocamlary.Only_a_module.3o.gen
+   Ocamlary.Op.3o.gen)
   (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../ocamlary.odocl}))
@@ -7850,6 +7859,13 @@
   (package odoc)
   (action
    (diff Ocamlary.Only_a_module.3o Ocamlary.Only_a_module.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.07)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocamlary.Op.3o Ocamlary.Op.3o.gen))
   (enabled_if
    (>= %{ocaml_version} 4.07))))
 

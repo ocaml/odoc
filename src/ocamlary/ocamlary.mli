@@ -1068,3 +1068,14 @@ type new_t = ..
 type new_t += C
 
 module type TypeExtPruned = TypeExt with type t := new_t
+
+module Op : sig
+  val ( let* ) : int
+  val ( and* ) : int
+  val ( .%{} ) : int
+  val ( .%{}<- ) : int
+  val ( .%{;..} ) : int
+  val ( .%{;..}<- ) : int
+  val ( !~ ) : int
+  val ( #~ ) : int
+end

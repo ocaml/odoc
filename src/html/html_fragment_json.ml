@@ -8,7 +8,7 @@ module Url = Odoc_document.Url
 
 let json_of_html config h =
   let htmlpp = Html.pp_elt ~indent:(Config.indent config) () in
-  String.concat "" (List.map (Format.asprintf "%a" htmlpp) h)
+  String.concat ~sep:"" (List.map (Format.asprintf "%a" htmlpp) h)
 
 let json_of_breadcrumbs config (breadcrumbs : Types.breadcrumbs) : Json.json =
   let breadcrumb (b : Types.breadcrumb) =
@@ -83,7 +83,7 @@ let make_src ~config ~url ~breadcrumbs ~sidebar content =
              ("global_toc", global_toc);
              ( "content",
                `String
-                 (String.concat ""
+                 (String.concat ~sep:""
                     (List.map (Format.asprintf "%a" htmlpp) content)) );
            ]))
   in

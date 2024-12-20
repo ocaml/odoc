@@ -21,7 +21,7 @@ let toc_to_json
   let inline =
     let inline = Generator.inline ~config ~xref_base_uri:"" inline in
     let inline =
-      String.concat ""
+      String.concat ~sep:""
       @@ List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ())) inline
     in
     `String inline
