@@ -610,7 +610,9 @@ and typeexpr_label =
   let open Lang.TypeExpr in
   Variant
     (function
-    | Label x -> C ("Label", x, string) | Optional x -> C ("Optional", x, string))
+    | Label x -> C ("Label", x, string)
+    | RawOptional x -> C ("RawOptional", x, string)
+    | Optional x -> C ("Optional", x, string))
 
 and typeexpr_t =
   let open Lang.TypeExpr in
