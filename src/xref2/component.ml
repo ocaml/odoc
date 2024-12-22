@@ -1078,6 +1078,7 @@ module Fmt = struct
   and type_expr_label ppf l =
     match l with
     | Some (Odoc_model.Lang.TypeExpr.Label l) -> Format.fprintf ppf "%s:" l
+    | Some (RawOptional o) -> Format.fprintf ppf "?(%s):" o
     | Some (Optional o) -> Format.fprintf ppf "?%s:" o
     | None -> ()
 

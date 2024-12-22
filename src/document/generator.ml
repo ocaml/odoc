@@ -26,6 +26,8 @@ let tag tag t = O.span ~attr:tag t
 let label t =
   match t with
   | Odoc_model.Lang.TypeExpr.Label s -> tag "label" (O.txt s)
+  | RawOptional _s ->
+      tag "error" (O.txt "Error: RawOptional found during rendering")
   | Optional s -> tag "optlabel" (O.txt "?" ++ O.txt s)
 
 let type_var tv = tag "type-var" (O.txt tv)

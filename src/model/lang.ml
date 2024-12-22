@@ -431,7 +431,7 @@ and TypeExpr : sig
     type t = { path : Path.ModuleType.t; substitutions : substitution list }
   end
 
-  type label = Label of string | Optional of string
+  type label = Label of string | RawOptional of string | Optional of string
 
   type t =
     | Var of string
