@@ -110,7 +110,8 @@ let directories v =
   List.fold_left
     (fun acc x ->
       match x.dir with
-      | None -> Fpath.Set.add meta_dir acc
+      | None
+      | Some "" -> Fpath.Set.add meta_dir acc
       | Some x -> (
           let dir = Fpath.(meta_dir // v x) in
           (* NB. topkg installs a META file that points to a ../topkg-care directory
