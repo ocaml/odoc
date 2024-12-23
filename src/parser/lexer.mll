@@ -374,12 +374,13 @@ rule reference_paren_content input start ref_offset start_offset depth_paren
         reference_paren_content input start ref_offset start_offset
           (depth_paren - 1) buffer lexbuf }
   | eof
-    { warning
-        lexbuf
-        input
-        ~start_offset
-        (Parse_error.unclosed_bracket ~bracket:"(") ;
-      Buffer.contents buffer }
+    { 
+      let unclosed_bracket = 
+        Parse_error.unclosed_bracket ~bracket:"("
+      in
+      warning lexbuf input ~start_offset unclosed_bracket;
+      Buffer.contents buffer 
+    }
   | _
     {
       buffer_add_lexeme buffer lexbuf ;
@@ -403,12 +404,13 @@ and reference_content input start start_offset buffer = parse
       reference_content input start start_offset buffer lexbuf
     }
   | eof
-    { warning
-        lexbuf
-        input
-        ~start_offset
-        (Parse_error.unclosed_bracket ~bracket:start) ;
-      Buffer.contents buffer }
+    { 
+      let unclosed_bracket = 
+        Parse_error.unclosed_bracket ~bracket:start
+      in
+      warning lexbuf input ~start_offset unclosed_bracket;
+      Buffer.contents buffer 
+    }
   | _
     {
       buffer_add_lexeme buffer lexbuf ;
@@ -534,20 +536,19 @@ and token input = parse
     }
 
   | "{v"
-    { verbatim
-        (Buffer.create 1024) None (Lexing.lexeme_start lexbuf) input lexbuf }
+    { verbatim (Buffer.create 1024) None (Lexing.lexeme_start lexbuf) input lexbuf }
 
   | "{%" ((raw_markup_target as target) ':')? (raw_markup as s)
     ("%}" | eof as e)
     { let token = Raw_markup (target, s) in
-      if e <> "%}" then
-        warning
-          lexbuf
-          input
-          ~start_offset:(Lexing.lexeme_end lexbuf)
-          (Parse_error.not_allowed
+      let not_allowed = 
+        Parse_error.not_allowed
             ~what:(Tokens.describe END)
-            ~in_what:(Tokens.describe token));
+            ~in_what:(Tokens.describe token)
+      in
+      let start_offset = Lexing.lexeme_end lexbuf in
+      if e <> "%}" then
+      warning lexbuf input ~start_offset not_allowed;
       emit lexbuf input token }
 
   | "{ul"
@@ -717,13 +718,15 @@ and code_span buffer nesting_level start_offset input = parse
       code_span buffer nesting_level start_offset input lexbuf }
 
   | eof
-    { warning
-        lexbuf
-        input
-        (Parse_error.not_allowed
+    { 
+      let not_allowed = 
+        Parse_error.not_allowed
           ~what:(Tokens.describe END)
-          ~in_what:(Tokens.describe (Code_span "")));
-      emit lexbuf input (Code_span (Buffer.contents buffer)) ~start_offset }
+          ~in_what:(Tokens.describe (Code_span ""))
+      in
+      warning lexbuf input not_allowed;
+      emit lexbuf input (Code_span (Buffer.contents buffer)) ~start_offset 
+    }
 
   | _ as c
     { Buffer.add_char buffer c;
@@ -848,12 +851,10 @@ and verbatim buffer last_false_terminator start_offset input = parse
 and bad_markup_recovery start_offset input = parse
   | [^ '}']+ as text '}' as rest
     { let suggestion =
-        Printf.sprintf "did you mean '{!%s}' or '[%s]'?" text text in
-      warning
-        lexbuf
-        input
-        ~start_offset
-        (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
+        Printf.sprintf "did you mean '{!%s}' or '[%s]'?" text text 
+      in
+      let bad_markup = Parse_error.bad_markup ("{" ^ rest) ~suggestion in
+      warning lexbuf input ~start_offset bad_markup;
       emit lexbuf input (Code_span text) ~start_offset}
 
 (* The second field of the metadata.
