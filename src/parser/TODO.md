@@ -10,9 +10,11 @@
     wrapping tokens in `Loc.with_location`         
   - Do we rewrite it from scratch? (~week of work)
   - Or fix it as it is now
+  - Or! move location adjustment to parser
 - Code blocks 
   - Code blocks do not work now. The lexer relies on cooperation from the parser
     which is not possible with Menhir. 
+
   - Our only option is to break the `Code_block` token up in multiple tokens,
     the question is how:                                                 
       - Do we split it into `Code_block` and `Code_block_w_output`? 

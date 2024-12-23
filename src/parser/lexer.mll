@@ -441,7 +441,7 @@ and token input = parse
 
   | word_char (word_char | bullet_char | '@')*
   | bullet_char (word_char | bullet_char | '@')+ as w
-    { emit lexbuf input (Word (unescape_word w)) }
+    { (Word (unescape_word w)) }
 
   | '['
     { code_span
@@ -583,7 +583,7 @@ and token input = parse
   | '{' (['0'-'9']+ as level)
     { emit lexbuf input (Section_heading (heading_level lexbuf input level, None)) }
 
-  | "@author" ((horizontal_space+ [^ '\r' '\n']*)? as author)
+  | "@author" horizontal_space+ (([^ '\r' '\n']*)? as author)
     { emit lexbuf input (Author (trim_horizontal_start author )) }
 
   | "@deprecated"
@@ -612,17 +612,23 @@ and token input = parse
      thing from the token body but that seems to cause problems. 
      This is (maybe?) an issue because the tests expect the token body to have 
      no leading whitespace. What do we do here? *)
-  | "@since" ((horizontal_space+ [^ '\r' '\n']*)? as version)
-    { emit lexbuf input (Since (trim_horizontal_start version)) }
+  | "@since" horizontal_space+ (([^ '\r' '\n']+) as version)
+    { emit lexbuf input (Since version) }
+  | "@since" 
+    { Since "" }
 
   | "@before" horizontal_space+ ((_ # space_char)+ as version)
     { emit lexbuf input (Before (trim_horizontal_start version)) }
 
-  | "@version" ((horizontal_space+ [^ '\r' '\n']*)? as version)
-    { emit lexbuf input (Version (trim_horizontal_start version)) }
+  | "@version" horizontal_space+ (([^ '\r' '\n']+) as version)
+    { emit lexbuf input (Version version) }
+  | "@version" 
+    { Version "" }
 
-  | "@canonical" ((horizontal_space+ [^ '\r' '\n']*)? as identifier)
+  | "@canonical" horizontal_space+ (([^ '\r' '\n']+) as identifier)
     { emit lexbuf input (Canonical identifier) }
+  | "@canonical"
+    { Canonical "" }
 
   | "@inline"
     { emit lexbuf input INLINE }
