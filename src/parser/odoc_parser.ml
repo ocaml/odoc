@@ -89,6 +89,7 @@ module Tester = struct
   let reversed_newlines = reversed_newlines
   let offset_to_location = offset_to_location
   let string_of_token = Tokens.describe
+  let default_token = Tokens.Word ""
 end
 
 (* Given a Loc.point and the result of [parse_comment], this function returns

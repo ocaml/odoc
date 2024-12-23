@@ -41,6 +41,7 @@ module Tester : sig
   val run : input:string -> Ast.t Writer.t -> Ast.t * Warning.t list
   val main : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Ast.t Writer.t
   val string_of_token : token -> string
+  val default_token : token
 end
 
 (** Warnings produced during parsing. *)
