@@ -618,7 +618,7 @@ and token input = parse
     { Since "" }
 
   | "@before" horizontal_space+ ((_ # space_char)+ as version)
-    { emit lexbuf input (Before (trim_horizontal_start version)) }
+    { emit lexbuf input (Before version) }
 
   | "@version" horizontal_space+ (([^ '\r' '\n']+) as version)
     { emit lexbuf input (Version version) }
