@@ -49,6 +49,10 @@ let span spans =
       let last = List.fold_left (fun _ span -> span) first spans in
       { file = first.file; start = first.start; end_ = last.end_ }
 
+let delimited : 'a with_location -> 'b with_location -> span =
+ fun { location = startpos; _ } { location = endpos; _ } ->
+  { file = startpos.file; start = startpos.start; end_ = endpos.end_ }
+
 let nudge_start offset span =
   { span with start = { span.start with column = span.start.column + offset } }
 
@@ -68,3 +72,52 @@ let spans_multiple_lines = function
       _;
     } ->
       end_line > start_line
+
+let map_location : (span -> span) -> 'a with_location -> 'a with_location =
+ fun f located -> { located with location = f located.location }
+
+(* Utilities for offsetting the locations of various AST nodes to be more accurate *)
+
+let _offset_inline_elt located =
+  let f =
+    match located.value with
+    | `Word _ | `Space _ -> Fun.id
+    | `Code_span _ -> nudge_start (-1)
+    | `Raw_markup (_, _) | `Styled _ | `Math_span _ -> nudge_start (-3)
+    | `Reference (`Simple, _, _) -> nudge_start (-2)
+    | `Reference (`With_text, ref, _) ->
+        let ref = value ref in
+        nudge_start (-(String.length ref + 4))
+    | `Link (_, []) -> nudge_start (-2)
+    | `Link (link, _ :: _) -> nudge_start (-(String.length link + 3))
+  in
+  map_location f located
+
+(*
+and nestable_block_element =
+  [ `Paragraph of inline_element with_location list
+  | `Code_block of code_block
+  | `Verbatim of string
+  | `Modules of string with_location list
+  | `List of
+    list_kind * list_syntax * nestable_block_element with_location list list
+  | `Table of table
+  | `Math_block of string  (** @since 2.0.0 *)
+  | `Media of reference_kind * media_href with_location * string * media
+    (** @since 3.0.0 *) ]
+*)
+
+let _offset_block_elt located =
+  let f =
+    match located.value with
+    | `Paragraph children ->
+        let loc = span @@ List.map location children in
+        Fun.const loc
+    | `Verbatim _ -> nudge_start (-2)
+    | `Modules _ -> nudge_start @@ -String.length "{!modules:"
+    | `List (`Heavy, _, _) -> nudge_start (-4)
+    | `Table (_, `Heavy) -> nudge_start @@ -String.length "{table"
+    | `Math_block _ -> nudge_start @@ -String.length "{math"
+    | _ -> Fun.id
+  in
+  map_location f located

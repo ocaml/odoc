@@ -11,6 +11,13 @@
   - Do we rewrite it from scratch? (~week of work)
   - Or fix it as it is now
   - Or! move location adjustment to parser
+    - This is the approach I'm taking. Everywhere the parser uses the 
+      `Inline_element` and `nestable_block_element` rules, they're wrapped in
+      a location, so we can instead emit them wrapped in a location initially 
+      instead of afterwards with a higher-order rule. 
+    - This looks like getting the location of opening and closing delimiters 
+      for delimited elements, and setting their location to the span between 
+      those two points
 - Code blocks 
   - Code blocks do not work now. The lexer relies on cooperation from the parser
     which is not possible with Menhir. 

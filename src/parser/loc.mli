@@ -31,6 +31,9 @@ type +'a with_location = { location : span; value : 'a }
 val fmt : span -> string
 (** Format a `span` and return the resulting string *)
 
+val delimited : 'a with_location -> 'b with_location -> span
+(** Returns the span which contains both arguments *)
+
 val nudge_map_start : int -> 'a with_location -> 'a with_location
 val nudge_map_end : int -> 'a with_location -> 'a with_location
 

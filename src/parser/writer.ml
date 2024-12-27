@@ -41,6 +41,9 @@ let sequence : 'a t list -> 'a list t =
   let xs, ws = List.fold_left go ([], []) xs in
   Writer (List.rev xs, ws)
 
+let sequence_loc : 'a t Loc.with_location -> 'a Loc.with_location t =
+ fun { value; location } -> map (Loc.at location) value
+
 let map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t =
  fun f (Writer (a, ws)) (Writer (b, wsb)) -> Writer (f a b, wsb @ ws)
 

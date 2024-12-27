@@ -271,7 +271,7 @@ let emit_verbatim lexbuf input start_offset buffer =
    Note that the location reflects the content _without_ stripping of whitespace, whereas
    the value of the content in the tree has whitespace stripped from the beginning,
    and trailing empty lines removed. *)
-let emit_code_block ~start_offset:_ ~content_offset ~lexbuf input meta delimiter terminator buffer output =
+let emit_code_block ~content_offset ~lexbuf input meta delimiter terminator buffer output =
   let content_location = input.offset_to_location content_offset in
   let content = 
     Buffer.contents buffer 
@@ -894,14 +894,14 @@ and code_block_metadata_tail input = parse
 and code_block start_offset content_offset metadata prefix delim input = parse
   | ("]" (delim_char* as delim') "[") as terminator
     { if delim = delim' then 
-        emit_code_block ~start_offset ~content_offset ~lexbuf input None (Some delim) terminator prefix None
+        emit_code_block ~content_offset ~lexbuf input None (Some delim) terminator prefix None
       else
         (Buffer.add_string prefix terminator;
         code_block start_offset content_offset metadata prefix delim input lexbuf) }
   | ("]" (delim_char* as delim') "}") as terminator
     { 
       if delim = delim' then 
-        emit_code_block ~start_offset ~content_offset ~lexbuf input None (Some delim ) terminator prefix None
+        emit_code_block ~content_offset ~lexbuf input None (Some delim ) terminator prefix None
       else (
         Buffer.add_string prefix terminator;
         code_block start_offset content_offset metadata prefix delim input lexbuf
@@ -910,7 +910,7 @@ and code_block start_offset content_offset metadata prefix delim input = parse
   | eof
     {
       warning lexbuf input ~start_offset Parse_error.truncated_code_block;
-      emit_code_block ~start_offset ~content_offset ~lexbuf input None (Some delim ) "" prefix None
+      emit_code_block ~content_offset ~lexbuf input None (Some delim ) "" prefix None
     }
   | (_ as c)
     {
