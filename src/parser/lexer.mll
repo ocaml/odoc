@@ -36,16 +36,6 @@ let unescape_word : string -> string = fun s ->
     scan_word 0;
     Buffer.contents buffer
 
-type math_kind =
-  Inline | Block
-
-let math_constr kind x =
-  match kind with
-  | Inline -> Math_span x
-  | Block -> Math_block x
-
-let copy : 'a -> 'a = fun t -> 
-  Obj.magic t |> Obj.dup |> Obj.magic
 
 let update_content_newlines : content:string -> Lexing.lexbuf -> unit = 
   fun ~content lexbuf -> 
@@ -159,6 +149,16 @@ type input = {
   offset_to_location : int -> Loc.point;
   mutable warnings : Warning.t list;
 }
+
+
+type math_kind =
+  Inline | Block
+
+let math_constr input kind x start_offset =
+  let start_pos = input.offset_to_location start_offset in
+  match kind with
+  | Inline -> Math_span Tokens.{ start = start_pos; content = x }
+  | Block -> Math_block Tokens.{ start = start_pos; content = x }
 
 let with_loc : Lexing.lexbuf -> input -> Loc.span -> ('a -> 'a Loc.with_location) = 
   fun _lexbuf _input location ->
@@ -473,10 +473,10 @@ and token input = parse
     { Style Subscript }
 
   | "{math" space_char
-    { math Block (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) (copy lexbuf.lex_curr_p) input lexbuf }
+    { math Block (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
 
   | "{m" horizontal_space
-    { math Inline (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) (copy lexbuf.lex_curr_p) input lexbuf }
+    { math Inline (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
 
 
   | "{!modules:"
@@ -740,24 +740,23 @@ and code_span buffer nesting_level start_offset input = parse
     { Buffer.add_char buffer c;
       code_span buffer nesting_level start_offset input lexbuf }
 
-and math kind buffer nesting_level start_offset start_pos input = parse
+and math kind buffer nesting_level start_offset input = parse
   | '}'
     { 
       if nesting_level == 0 then (
-        lexbuf.lex_start_p <- start_pos;
-        math_constr kind (Buffer.contents buffer))
+        math_constr input kind (Buffer.contents buffer)) start_offset
       else (
         Buffer.add_char buffer '}';
-        math kind buffer (pred nesting_level) start_offset start_pos input lexbuf)
+        math kind buffer (pred nesting_level) start_offset input lexbuf)
     }
   | '{'
     { 
       Buffer.add_char buffer '{';
-      math kind buffer (succ nesting_level) start_offset start_pos input lexbuf 
+      math kind buffer (succ nesting_level) start_offset input lexbuf 
     }
   | ("\\{" | "\\}") as s
     { Buffer.add_string buffer s;
-      math kind buffer nesting_level start_offset start_pos input lexbuf }
+      math kind buffer nesting_level start_offset input lexbuf }
   | (newline) as s
     {
       Lexing.new_line lexbuf;
@@ -765,28 +764,28 @@ and math kind buffer nesting_level start_offset start_pos input = parse
       | Inline ->
         let not_allowed = 
           Parse_error.not_allowed
-            ~what:(Tokens.describe (Blank_line "\n"))
-            ~in_what:(Tokens.describe (math_constr kind ""))
+            ~what:(Tokens.describe (Single_newline "\n"))
+            ~in_what:(Tokens.describe (math_constr input kind "" start_offset))
         in
         warning lexbuf input not_allowed;
         Buffer.add_char buffer '\n';
-        math kind buffer nesting_level start_offset start_pos input lexbuf
+        math kind buffer nesting_level start_offset input lexbuf
       | Block ->
         Buffer.add_string buffer s;
-        math kind buffer nesting_level start_offset start_pos input lexbuf
+        math kind buffer nesting_level start_offset input lexbuf
     }
   | eof
     { 
       let unexpected_eof = 
         Parse_error.end_not_allowed
-          ~in_what:(Tokens.describe (math_constr kind ""))
+          ~in_what:(Tokens.describe (math_constr input kind "" start_offset))
       in
       warning lexbuf input unexpected_eof;
-      math_constr kind (Buffer.contents buffer)
+      math_constr input kind (Buffer.contents buffer) start_offset
     }
   | _ as c
     { Buffer.add_char buffer c;
-      math kind buffer nesting_level start_offset start_pos input lexbuf }
+      math kind buffer nesting_level start_offset input lexbuf }
 
 and media tok_descr buffer nesting_level start_offset input = parse
   | '}'

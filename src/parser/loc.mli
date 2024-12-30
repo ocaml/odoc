@@ -8,6 +8,8 @@
 type point = { line : int; column : int }
 (** A specific character *)
 
+val dummy_pos : point
+
 type span = { file : string; start : point; end_ : point }
 (** A range of characters between [start] and [end_] in a particular file *)
 

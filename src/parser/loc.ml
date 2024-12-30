@@ -9,6 +9,8 @@ let map f annotated = { annotated with value = f annotated.value }
 let is predicate { value; _ } = predicate value
 let same annotated value = { annotated with value }
 
+let dummy_pos : point = { line = -1; column = -1 }
+
 let of_position : ?filename:string -> Lexing.position * Lexing.position -> span
     =
  fun ?filename (start, end_) ->

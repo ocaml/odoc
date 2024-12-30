@@ -202,8 +202,8 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 
 %token MODULES "{!modules:"
 
-%token <string> Math_span "{m"
-%token <string> Math_block "{math"
+%token <Tokens.math> Math_span "{m"
+%token <Tokens.math> Math_block "{math"
 
 %token <string option * string> Raw_markup "{%%}"
 
@@ -251,6 +251,10 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 
 %token END
 
+%type <Ast.tag Loc.with_location Writer.t> tag_bare
+%type <Ast.tag Loc.with_location Writer.t> tag_with_content
+%type <Ast.tag Loc.with_location Writer.t> tag
+
 %start <Ast.t Writer.t> main 
 
 %%
@@ -297,9 +301,9 @@ let main :=
 
 let toplevel :=
   | block = nestable_block_element; { Writer.map (Loc.map @@ fun b -> (b :> Ast.block_element) ) block }
-  | t = locatedM(tag); { Writer.map (Loc.map @@ fun t -> `Tag t) t }
+  | t = tag; { Writer.map (fun loc -> Loc.{ loc with value = `Tag loc.value }) t }
   | ~ = locatedM(section_heading); <>
-  | ~ = locatedM(toplevel_error); <> 
+  | ~ = toplevel_error; <> 
 
 let toplevel_error :=
   | brace = located(RIGHT_BRACE); 
@@ -310,41 +314,42 @@ let toplevel_error :=
         Writer.Warning (Parse_error.bad_markup what span) 
       in 
       let as_text = Loc.same brace @@ `Word "{" in
-      let node = (`Paragraph [ as_text ]) in
+      let node = (Loc.same brace @@ `Paragraph [ as_text ]) in
       Writer.with_warning node warning 
     }
-  | t = tag; RIGHT_BRACE; 
-    {
-      let* tag_descr = Writer.map Tokens.describe_tag (t : Ast.tag Writer.t) in 
-      let warning = 
-        let span = Loc.of_position $sloc in 
-        let what = Tokens.describe RIGHT_BRACE in 
-        Writer.Warning (Parse_error.not_allowed ~what ~in_what:tag_descr span) 
-      in
-      let ret = Writer.map (fun t -> ( `Tag t : Ast.block_element )) t 
-        |> Writer.warning warning
-      in
-      (ret : Ast.block_element Writer.t)
-    }
-  | elt = inline_element; errloc = position(RIGHT_BRACE);
-    { 
-      let span = Loc.of_position errloc in 
-      let warning = 
-        Writer.Warning (Parse_error.unpaired_right_brace span) 
-      in
-      let* elt = Writer.warning warning elt in
-      return @@ `Paragraph [elt; Loc.at span @@ `Word "}"]
-    }
-  | elt = inline_element; RIGHT_CODE_DELIMITER;
-    { let warning = 
-        let span = Loc.of_position $sloc in 
-        let what = Tokens.describe RIGHT_CODE_DELIMITER in 
-        let in_what = Tokens.describe_inline @@ Writer.unwrap_located elt in 
-        Writer.Warning (Parse_error.not_allowed ~what ~in_what span) 
-      in
-      let* elt = Writer.warning warning elt in
-      return @@ `Paragraph [elt]
-    }
+  | t = tag; RIGHT_BRACE; {
+    let* tag_descr = Writer.map (fun t -> Tokens.describe_tag @@ t.Loc.value) t in 
+    let warning = 
+      let span = Loc.of_position $sloc in 
+      let what = Tokens.describe RIGHT_BRACE in 
+      Writer.Warning (Parse_error.not_allowed ~what ~in_what:tag_descr span) 
+    in
+    let ret = 
+      Writer.map (fun loc -> Loc.{ loc with value = ( `Tag loc.value : Ast.block_element ) }) t 
+      |> Writer.warning warning
+    in
+    (ret : Ast.block_element Loc.with_location Writer.t)
+  }
+  | elt = inline_element; errloc = located(RIGHT_BRACE); { 
+    let* elt = elt in
+    let span = Loc.delimited elt errloc in 
+    let warning = 
+      Writer.Warning (Parse_error.unpaired_right_brace span) 
+    in
+    let inner = Loc.at span @@ `Paragraph [elt; Loc.at span @@ `Word "}"] in 
+    Writer.with_warning inner warning
+  }
+  | elt = inline_element; endpos = located(RIGHT_CODE_DELIMITER); { 
+    let span = Loc.delimited (Writer.unwrap elt) endpos in
+    let warning = 
+      let what = Tokens.describe RIGHT_CODE_DELIMITER in 
+      let in_what = Tokens.describe_inline @@ Writer.unwrap_located elt in 
+      Writer.Warning (Parse_error.not_allowed ~what ~in_what span) 
+    in
+    let* elt = elt in
+    let inner = Loc.at span @@ `Paragraph [elt] in
+    Writer.with_warning inner warning
+  }
 
 (* SECTION HEADING *)
 
@@ -379,75 +384,99 @@ let section_heading :=
 (* TAGS *)
 
 let tag == 
-  | with_content = tag_with_content; Single_newline?; { (with_content : Ast.tag Writer.t) }
-  | bare = tag_bare; Single_newline?; { (bare : Ast.tag Writer.t) }
+  | with_content = tag_with_content; Single_newline?; { with_content }
+  | bare = tag_bare; Single_newline?; { bare }
 
 let tag_with_content := 
-  | DEPRECATED; children = sequence_nonempty(nestable_block_element); 
-    { Writer.map (fun c -> `Deprecated c) children }
-  | DEPRECATED; 
-    { return @@ `Deprecated [] }
-  | DEPRECATED; RIGHT_BRACE; 
-    {
-      let warning = 
-        Writer.Warning (Parse_error.unpaired_right_brace @@ Loc.of_position $sloc)
-      in
-      Writer.with_warning (`Deprecated []) warning
-    }
-  | RETURN; children = sequence_nonempty(nestable_block_element);
-    { Writer.map (fun c -> `Return c) children }
+  | startpos = located(DEPRECATED); children = located(sequence_nonempty(nestable_block_element)); {
+    let span = Loc.delimited startpos children in
+    Writer.map (fun c -> Loc.at span @@ `Deprecated c) children.Loc.value 
+  }
+  | pos = located(DEPRECATED); 
+    { return @@ { pos with Loc.value = `Deprecated [] } }
+  | pos = located(DEPRECATED); errloc = located(RIGHT_BRACE); {
+    let warning = 
+      Writer.Warning (Parse_error.unpaired_right_brace @@ errloc.Loc.location)
+    in
+    Writer.with_warning ({ pos with Loc.value = `Deprecated [] }) warning
+  }
+  | startpos = located(RETURN); children = located(sequence_nonempty(nestable_block_element)); {
+    let span = Loc.delimited startpos children in
+    Writer.map (fun c -> Loc.at span @@ `Return c) children.Loc.value 
+  }
   | ~ = before; <>
   | ~ = raise; <>
   | ~ = see; <>
   | ~ = param; <>
 
 let before := 
-  | version = Before; children = sequence_nonempty(nestable_block_element); 
-    { Writer.map (fun c -> `Before (version, c)) children }
-  | version = Before; 
-    { return @@ `Before (version, []) }
+  | content = located(Before); children = sequence_nonempty(nestable_block_element); {
+    let* children = children in
+    let span = Loc.span @@ content.Loc.location :: List.map Loc.location children in
+    let inner = Loc.at span @@ `Before (content.Loc.value, children) in
+    return inner
+  }
+  | version = located(Before); {
+    return { version with value = `Before (version.Loc.value, []) }
+  }
 
 let raise := 
-  | exn = Raise; children = sequence_nonempty(nestable_block_element);
-    { Writer.map (fun c -> `Raise (exn, c)) children }
-  | exn = Raise; 
-    { return @@ `Raise (exn, []) }
+  | exn = located(Raise); children = located(sequence_nonempty(nestable_block_element)); { 
+    let span = Loc.delimited exn children in
+    let exn = exn.Loc.value in
+    let* children = children.Loc.value in
+    let inner = Loc.at span @@ `Raise (exn, children) in
+    return inner
+  }
+  | exn = located(Raise); { 
+    return { exn with Loc.value = `Raise (exn.Loc.value, []) }
+  }
 
 let see := 
-  | (kind, href) = See; children = sequence_nonempty(nestable_block_element); 
+  | content = located(See); children = located(sequence_nonempty(nestable_block_element)); 
     {
-      let* children = children in
-      return @@ `See (Tokens.to_ast_ref kind, href, children)
+      let span = Loc.delimited content children in
+      let (kind, href) = content.Loc.value in
+      let* children = children.Loc.value in
+      let inner = Loc.at span @@ `See (Tokens.to_ast_ref kind, href, children) in
+      return inner
     }
-  | (kind, href) = See; 
-    { return @@ `See (Tokens.to_ast_ref kind, href, []) }
+  | content = located(See); {
+    let (kind, href) = content.Loc.value in
+    return { content with value = `See (Tokens.to_ast_ref kind, href, []) }
+  }
 
 let param := 
-  | ident = Param; children = sequence_nonempty(nestable_block_element);
-    { Writer.map (fun c -> `Param (ident, c)) children }
-  | ident = Param;
-    { return @@ `Param (ident, [])}
+  | content = located(Param); children = sequence_nonempty(nestable_block_element); { 
+    let* children = children in
+    let span = Loc.span @@ content.Loc.location :: List.map Loc.location children in
+    let ident = content.Loc.value in
+    let inner = Loc.at span @@ `Param (ident, children) in
+    return inner
+  }
+  | content = located(Param);
+      { return { content with Loc.value = `Param (content.Loc.value, []) }} 
 
 let tag_bare :=
-  | version = Version; 
+  | content = located(Version); 
     {
+      let Loc.{ value = version; location } = content in
       let what = Tokens.describe (Version version) in
       let warning = 
-        let span = Loc.of_position $sloc in
-        Writer.Warning (Parse_error.should_not_be_empty ~what span)
+        Writer.Warning (Parse_error.should_not_be_empty ~what location)
       in
       Writer.ensure has_content warning (return version) 
-      |> Writer.map (fun v -> `Version v) 
+      |> Writer.map (fun v -> { content with value = `Version v }) 
     }
-  | version = Since; 
+  | content = located(Since); 
     {
+      let Loc.{ value = version; location } = content in
       let what = Tokens.describe (Since version) in
       let warning = 
-        let span = Loc.of_position $sloc in
-        Writer.Warning (Parse_error.should_not_be_empty ~what span)
+        Writer.Warning (Parse_error.should_not_be_empty ~what location)
       in
       Writer.ensure has_content warning (return version) 
-      |> Writer.map (fun v -> `Since v) 
+      |> Writer.map (fun v -> { content with value = `Since v }) 
     }
   | impl = located(Canonical); 
     {
@@ -457,34 +486,41 @@ let tag_bare :=
         Writer.Warning (Parse_error.should_not_be_empty ~what span)
       in
       Writer.ensure (Loc.is has_content) warning @@ return impl 
-      |> Writer.map (fun v -> `Canonical v) 
+      |> Writer.map (fun v -> Loc.at impl.Loc.location @@ `Canonical v) 
     }
-  | author = Author; 
+  | content = located(Author); 
     {
-      let what = Tokens.describe @@ Author author in
+      let Loc.{ value; location } = content in
+      let what = Tokens.describe @@ Author value in
       let warning = 
-        let span = Loc.of_position $sloc in
-        Writer.Warning (Parse_error.should_not_be_empty ~what span)
+        Writer.Warning (Parse_error.should_not_be_empty ~what location)
       in
-      Writer.ensure has_content warning @@ return author
-      |> Writer.map (fun a -> `Author a) 
+      Writer.ensure has_content warning @@ return value
+      |> Writer.map (fun a -> { content with value = `Author a }) 
     }
-  | OPEN; { return `Open }
-  | INLINE; { return `Inline }
-  | CLOSED; { return `Closed }
-  | HIDDEN; { return `Hidden }
+  | pos = position(OPEN); { let loc = Loc.of_position pos in return @@ Loc.at loc `Open }
+  | pos = position(INLINE); { let loc = Loc.of_position pos in return @@ Loc.at loc `Inline }
+  | pos = position(CLOSED); { let loc = Loc.of_position pos in return @@ Loc.at loc `Closed }
+  | pos = position(HIDDEN); { let loc = Loc.of_position pos in return @@ Loc.at loc `Hidden }
 
 (* INLINE ELEMENTS *)
 
-let inline_element :=
-  (* Single token inline elements which are mostly handled in the lexer *)
+let inline_element := 
+  | ~ = inline_element_without_whitespace; <>
   | s = located(inline_elt_legal_whitespace); { return s } 
+
+let inline_element_without_whitespace :=
+  (* Single token inline elements which are mostly handled in the lexer *)
   | c = located(Code_span); {
     return @@ Loc.map (fun c -> `Code_span c) c
   }
   | m = located(Raw_markup); { return @@ Loc.map (fun m -> `Raw_markup m) m }
   | w = located(Word); { return @@ Loc.map (fun w -> `Word w) w }
-  | m = located(Math_span); { return @@ Loc.map (fun m -> `Math_span m) m }
+  | m = located(Math_span); { 
+    let Loc.{ value = Tokens.{ start; content }; location } = m in
+    let span = { location with start } in
+    return @@ Loc.at span (`Math_span content)
+  }
   (* More complex/recursive inline elements should have their own rule *)
   | ~ = style; <>
   | ~ = reference; <>
@@ -817,13 +853,7 @@ let table_heavy :=
 
 let table_light_legal_elt := 
   | s = located(horizontal_whitespace); { return s } 
-  | c = located(Code_span); { return @@ Loc.map (fun c -> `Code_span c) c }
-  | m = located(Raw_markup); { return @@ Loc.map (fun m -> `Raw_markup m) m }
-  | w = located(Word); { return @@ Loc.map (fun w -> `Word w) w }
-  | m = located(Math_span); { return @@ Loc.map (fun m -> `Math_span m) m }
-  | ~ = style; <>
-  | ~ = reference; <>
-  | ~ = link; <>
+  | ~ = inline_element_without_whitespace; <>
 
 let cell_content_light := ~ = sequence_nonempty(table_light_legal_elt); <>
 let cell := 
@@ -943,13 +973,15 @@ let code_block := c = Code_block; {
   return (Loc.at span @@ `Code_block c) 
 }
 
-let math_block := m = Math_block; { 
-  let what = Tokens.describe @@ Math_block m in
-  let span = Loc.of_position $sloc in
+let math_block := inner = located(Math_block); {
+  let Loc.{ value ; location } = inner in
+  let Tokens.{start; content} = value in
+  let span = { location with start } in
+  let what = Tokens.describe @@ Math_block value in
   let warning = 
     Writer.Warning (Parse_error.should_not_be_empty ~what span) 
   in 
-  Writer.ensure has_content warning (return m) 
+  Writer.ensure has_content warning (return content) 
   |> Writer.map (fun m -> Loc.at span @@ `Math_block m)
 }
 

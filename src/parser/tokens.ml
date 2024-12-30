@@ -11,6 +11,7 @@ type table_cell_kind = Header | Data
 type list_kind = Ordered | Unordered
 
 type internal_reference = URL | File | Document
+type math = { start : Loc.point; content : string }
 
 let ast_list_kind : list_kind -> Ast.list_kind = function
   | Ordered -> `Ordered
@@ -27,8 +28,9 @@ type token =
   | MODULES
   | Media of (media * media_target)
   | Media_with_replacement of (media * media_target * string)
-  | Math_span of string
-  | Math_block of string
+  (* Start location *)
+  | Math_span of math
+  | Math_block of math
   | Code_span of string
   | Code_block of Ast.code_block
   | Word of string
@@ -242,7 +244,8 @@ let describe_inline : Ast.inline_element -> string = function
   | `Space _ -> describe @@ Space ""
   | `Styled (style, _) -> describe @@ Style (of_ast_style style)
   | `Code_span _ -> describe @@ Code_span ""
-  | `Math_span _ -> describe @@ Math_span ""
+  | `Math_span _ ->
+      describe @@ Math_span { start = Loc.dummy_pos; content = "" }
   | `Raw_markup x -> describe @@ Raw_markup x
   | `Link (l, []) -> describe @@ Simple_link l
   | `Link (l, _ :: _) -> describe @@ Link_with_replacement l
@@ -273,7 +276,8 @@ let describe_nestable_block : Ast.nestable_block_element -> string = function
   | `List (_, _, _) -> "List"
   | `Table (_, kind) ->
       describe @@ if kind = `Light then TABLE_LIGHT else TABLE_HEAVY
-  | `Math_block _ -> describe @@ Math_block ""
+  | `Math_block _ ->
+      describe @@ Math_block { start = Loc.dummy_pos; content = "" }
   | `Media _ as media -> describe @@ of_media media
 
 let of_ast_ref : [ `Document | `File | `Url ] -> internal_reference = function
