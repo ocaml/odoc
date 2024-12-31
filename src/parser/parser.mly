@@ -264,6 +264,7 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 (* Utility which wraps the return value of a rule in `Loc.with_location` *)
 let locatedM(rule) == inner = rule; { Writer.map (wrap_location $sloc)  inner }
 let located(rule) == inner = rule; { wrap_location $sloc inner }
+let with_position(rule) == inner = rule; { (inner, $sloc) } 
 let position(rule) == _ = rule; { $sloc }
 let sequence(rule) == xs = list(rule); { Writer.sequence xs }
 let sequence_nonempty(rule) == xs = nonempty_list(rule); { Writer.sequence xs }
@@ -302,7 +303,7 @@ let main :=
 let toplevel :=
   | block = nestable_block_element; { Writer.map (Loc.map @@ fun b -> (b :> Ast.block_element) ) block }
   | t = tag; { Writer.map (fun loc -> Loc.{ loc with value = `Tag loc.value }) t }
-  | ~ = locatedM(section_heading); <>
+  | ~ = section_heading; <>
   | ~ = toplevel_error; <> 
 
 let toplevel_error :=
@@ -354,31 +355,35 @@ let toplevel_error :=
 (* SECTION HEADING *)
 
 let section_heading := 
-  | (num, title) = Section_heading; children = sequence_nonempty(inline_element); RIGHT_BRACE; 
-    { 
-      Writer.map (fun c -> `Heading (num, title, trim_start c)) children
+  | content = located(Section_heading); children = sequence_nonempty(inline_element); endpos = located(RIGHT_BRACE); 
+    {
+      let span = Loc.delimited content endpos in
+      let (num, title) = content.Loc.value in
+      Writer.map (fun c -> Loc.at span @@ `Heading (num, title, trim_start c)) children
     }
-  | (num, title) = Section_heading; RIGHT_BRACE; 
+  | content = located(Section_heading); endpos = located(RIGHT_BRACE); 
     { 
+      let span = Loc.delimited content endpos 
+      and (num, title) = content.Loc.value in
       let should_not_be_empty = 
-        let span = Loc.of_position $sloc in
         let what = Tokens.describe @@ Section_heading (num, title) in
         Writer.Warning (Parse_error.should_not_be_empty ~what span)
       in
-      let node = `Heading (num, title, []) in
+      let node = Loc.at span @@ `Heading (num, title, []) in
       Writer.with_warning node should_not_be_empty
     }
-  | (num, title) = Section_heading; errloc = position(error); 
+  | content = with_position(Section_heading); end_pos = position(error); 
     {
+      let (num, title), start_pos = content in
+      let span = Loc.span @@ List.map Loc.of_position [start_pos; end_pos] in
+      let start_pos = fst start_pos and end_pos = snd end_pos in
       let illegal = Writer.InputNeeded (fun input ->
-        let (start_pos, end_pos) = errloc in
-        let span = Loc.of_position (start_pos, end_pos) in
         let err = Loc.extract ~input ~start_pos ~end_pos in
         let in_what = Tokens.describe @@ Section_heading (num, title) in
         Parse_error.illegal ~in_what err span) 
       in
-      return @@ `Heading (num, title, [])
-      |> Writer.warning illegal
+      let inner = Loc.at span @@ `Heading (num, title, []) in
+      Writer.with_warning inner illegal
     }
   
 (* TAGS *)
@@ -667,7 +672,7 @@ let link :=
 
 (* LIST *)
 
-let list_light_item_unordered == 
+let list_light_item_unordered := 
   | MINUS; ~ = nestable_block_element; <>
   | horizontal_whitespace; MINUS; item = nestable_block_element;
     { 
@@ -678,7 +683,7 @@ let list_light_item_unordered ==
       Writer.warning warning item 
     }
 
-let list_light_item_ordered == 
+let list_light_item_ordered := 
   | PLUS; ~ = nestable_block_element; <>
   | horizontal_whitespace; PLUS; item = nestable_block_element;
     { 
