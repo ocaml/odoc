@@ -154,7 +154,7 @@
 
   let paragraph : Ast.inline_element Loc.with_location list -> Ast.nestable_block_element Loc.with_location =
     fun elts -> 
-      let span = List.map Loc.location elts |> Loc.span in
+      let span = List.map Loc.location (trim_start elts) |> Loc.span in
       Loc.at span @@ `Paragraph elts
 
   let rec inline_element_inner : Ast.inline_element -> string = function 
@@ -290,101 +290,69 @@ let any_whitespace :=
   | ~ = whitespace; <>
   | ~ = Blank_line; <`Space>
 
-let line_breaks := 
-  | Blank_line; {}
-  | Single_newline; {}
-
 (* ENTRY *)
 
 let main :=  
-  | nodes = sequence_nonempty(toplevel); whitespace?; END; { nodes }
+  | ~ = sequence_nonempty(toplevel); END; <>
   | END; { return [] }
 
 let toplevel :=
-  | block = nestable_block_element; { Writer.map (Loc.map @@ fun b -> (b :> Ast.block_element) ) block }
+  | block = nestable_block_element; { (block :> Ast.block_element Loc.with_location Writer.t) }
   | t = tag; { Writer.map (fun loc -> Loc.{ loc with value = `Tag loc.value }) t }
   | ~ = section_heading; <>
-  | ~ = toplevel_error; <> 
 
 let toplevel_error :=
-  | brace = located(RIGHT_BRACE); 
-    { 
-      let warning = 
-        let span = Loc.of_position $sloc in
-        let what = Tokens.describe RIGHT_BRACE in 
-        Writer.Warning (Parse_error.bad_markup what span) 
-      in 
-      let as_text = Loc.same brace @@ `Word "{" in
-      let node = (Loc.same brace @@ `Paragraph [ as_text ]) in
-      Writer.with_warning node warning 
-    }
-  | t = tag; RIGHT_BRACE; {
-    let* tag_descr = Writer.map (fun t -> Tokens.describe_tag @@ t.Loc.value) t in 
+  | errloc = position(RIGHT_BRACE); { 
+    let span = Loc.of_position errloc in
     let warning = 
-      let span = Loc.of_position $sloc in 
       let what = Tokens.describe RIGHT_BRACE in 
-      Writer.Warning (Parse_error.not_allowed ~what ~in_what:tag_descr span) 
-    in
-    let ret = 
-      Writer.map (fun loc -> Loc.{ loc with value = ( `Tag loc.value : Ast.block_element ) }) t 
-      |> Writer.warning warning
-    in
-    (ret : Ast.block_element Loc.with_location Writer.t)
+      Writer.Warning (Parse_error.bad_markup what span) 
+    in 
+    let as_text = Loc.at span @@ `Word "{" in
+    let node = (Loc.same as_text @@ `Paragraph [ as_text ]) in
+    Writer.with_warning node warning 
   }
-  | elt = inline_element; errloc = located(RIGHT_BRACE); { 
-    let* elt = elt in
-    let span = Loc.delimited elt errloc in 
+  | errloc = position(RIGHT_CODE_DELIMITER); { 
+    let span = Loc.of_position errloc in
     let warning = 
-      Writer.Warning (Parse_error.unpaired_right_brace span) 
-    in
-    let inner = Loc.at span @@ `Paragraph [elt; Loc.at span @@ `Word "}"] in 
-    Writer.with_warning inner warning
-  }
-  | elt = inline_element; endpos = located(RIGHT_CODE_DELIMITER); { 
-    let span = Loc.delimited (Writer.unwrap elt) endpos in
-    let warning = 
-      let what = Tokens.describe RIGHT_CODE_DELIMITER in 
-      let in_what = Tokens.describe_inline @@ Writer.unwrap_located elt in 
-      Writer.Warning (Parse_error.not_allowed ~what ~in_what span) 
-    in
-    let* elt = elt in
-    let inner = Loc.at span @@ `Paragraph [elt] in
-    Writer.with_warning inner warning
+      let what = Tokens.describe RIGHT_BRACE in 
+      Writer.Warning (Parse_error.bad_markup what span) 
+    in 
+    let as_text = Loc.at span @@ `Word "{" in
+    let node = Loc.same as_text @@ `Paragraph [ as_text ] in
+    Writer.with_warning node warning 
   }
 
 (* SECTION HEADING *)
 
 let section_heading := 
-  | content = located(Section_heading); children = sequence_nonempty(inline_element); endpos = located(RIGHT_BRACE); 
-    {
-      let span = Loc.delimited content endpos in
-      let (num, title) = content.Loc.value in
-      Writer.map (fun c -> Loc.at span @@ `Heading (num, title, trim_start c)) children
-    }
-  | content = located(Section_heading); endpos = located(RIGHT_BRACE); 
-    { 
-      let span = Loc.delimited content endpos 
-      and (num, title) = content.Loc.value in
-      let should_not_be_empty = 
-        let what = Tokens.describe @@ Section_heading (num, title) in
-        Writer.Warning (Parse_error.should_not_be_empty ~what span)
-      in
-      let node = Loc.at span @@ `Heading (num, title, []) in
-      Writer.with_warning node should_not_be_empty
-    }
-  | content = with_position(Section_heading); end_pos = position(error); 
-    {
-      let (num, title), start_pos = content in
-      let span = Loc.span @@ List.map Loc.of_position [start_pos; end_pos] in
-      let start_pos = fst start_pos and end_pos = snd end_pos in
-      let illegal = Writer.InputNeeded (fun input ->
-        let err = Loc.extract ~input ~start_pos ~end_pos in
-        let in_what = Tokens.describe @@ Section_heading (num, title) in
-        Parse_error.illegal ~in_what err span) 
-      in
-      let inner = Loc.at span @@ `Heading (num, title, []) in
-      Writer.with_warning inner illegal
-    }
+  | content = located(Section_heading); children = sequence_nonempty(inline_element); endpos = located(RIGHT_BRACE); {
+    let span = Loc.delimited content endpos in
+    let (num, title) = content.Loc.value in
+    Writer.map (fun c -> Loc.at span @@ `Heading (num, title, trim_start c)) children
+  }
+  | content = located(Section_heading); endpos = located(RIGHT_BRACE); { 
+    let span = Loc.delimited content endpos 
+    and (num, title) = content.Loc.value in
+    let should_not_be_empty = 
+      let what = Tokens.describe @@ Section_heading (num, title) in
+      Writer.Warning (Parse_error.should_not_be_empty ~what span)
+    in
+    let node = Loc.at span @@ `Heading (num, title, []) in
+    Writer.with_warning node should_not_be_empty
+  }
+  | content = with_position(Section_heading); end_pos = position(error); {
+    let (num, title), start_pos = content in
+    let span = Loc.span @@ List.map Loc.of_position [start_pos; end_pos] in
+    let start_pos = fst start_pos and end_pos = snd end_pos in
+    let illegal = Writer.InputNeeded (fun input ->
+      let err = Loc.extract ~input ~start_pos ~end_pos in
+      let in_what = Tokens.describe @@ Section_heading (num, title) in
+      Parse_error.illegal ~in_what err span) 
+    in
+    let inner = Loc.at span @@ `Heading (num, title, []) in
+    Writer.with_warning inner illegal
+  }
   
 (* TAGS *)
 
@@ -536,7 +504,7 @@ let inline_elt_legal_whitespace :=
   | ~ = Single_newline; <`Space>
 
 let style := 
-  | style = located(Style); children = sequence(inline_element); endpos = located( RIGHT_BRACE ); { 
+  | style = located(Style); children = sequence(inline_element); endpos = located(RIGHT_BRACE); { 
     let span = Loc.delimited style endpos in
     let style = style.Loc.value in
     let warning = 
@@ -673,7 +641,7 @@ let link :=
 (* LIST *)
 
 let list_light_item_unordered := 
-  | MINUS; ~ = nestable_block_element; <>
+  | MINUS; horizontal_whitespace; ~ = nestable_block_element; <>
   | horizontal_whitespace; MINUS; item = nestable_block_element;
     { 
       let warning = 
@@ -684,24 +652,23 @@ let list_light_item_unordered :=
     }
 
 let list_light_item_ordered := 
-  | PLUS; ~ = nestable_block_element; <>
-  | horizontal_whitespace; PLUS; item = nestable_block_element;
-    { 
-      let warning = 
-        let span = Loc.of_position $sloc in
-        Writer.Warning (Parse_error.should_begin_on_its_own_line ~what:(Tokens.describe MINUS) span)
-      in
-      Writer.warning warning item 
-    }
+  | PLUS; horizontal_whitespace; ~ = nestable_block_element; <>
+  | horizontal_whitespace; PLUS; item = nestable_block_element; { 
+    let warning = 
+      let span = Loc.of_position $sloc in
+      Writer.Warning (Parse_error.should_begin_on_its_own_line ~what:(Tokens.describe MINUS) span)
+    in
+    Writer.warning warning item 
+  }
 
 let list_light := 
-  | children = separated_nonempty_sequence(Single_newline, list_light_item_ordered); {
+  | children = separated_nonempty_sequence(Single_newline, list_light_item_unordered); {
     let* children = children in
     let span = Loc.span @@ List.map Loc.location children in
     let inner = Loc.at span @@ `List (`Ordered, `Light, [ children ]) in
     return inner
   }
-  | children = separated_nonempty_sequence(Single_newline, list_light_item_unordered); {
+  | children = separated_nonempty_sequence(Single_newline, list_light_item_ordered); {
     let* children = children in
     let span = Loc.span @@ List.map Loc.location children in
     let inner = Loc.at span @@ `List (`Unordered, `Light, [ children ]) in
@@ -789,7 +756,7 @@ let list_heavy :=
       Writer.with_warning inner (Writer.InputNeeded warning)
     }
 
-let list_element := 
+let odoc_list := 
   | ~ = list_light; <>
   | ~ = list_heavy; <>
 
@@ -937,7 +904,7 @@ let nestable_block_element := ~ = nestable_block_element_inner; any_whitespace?;
 let nestable_block_element_inner := 
   | ~ = verbatim; <>
   | ~ = code_block; <> 
-  | ~ = list_element; <>
+  | ~ = odoc_list; <>
   | ~ = table; <> 
   | ~ = media; <>
   | ~ = math_block; <>

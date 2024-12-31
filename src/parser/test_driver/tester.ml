@@ -112,7 +112,11 @@ let bad_markup =
     ("cr", "");
   ]
 
-let isolated = [ ("label", "{2:\xce\xbb Bar}") ]
+let isolated =
+  [
+    ("Heavy list", "+ foo bar baz")
+    (* ("Multiple right brace", "Foo } Bar } Baz") *);
+  ]
 
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
 let documentation_cases =
