@@ -406,14 +406,13 @@ let raise :=
   }
 
 let see := 
-  | content = located(See); children = located(sequence_nonempty(nestable_block_element)); 
-    {
-      let span = Loc.delimited content children in
-      let (kind, href) = content.Loc.value in
-      let* children = children.Loc.value in
-      let inner = Loc.at span @@ `See (Tokens.to_ast_ref kind, href, children) in
-      return inner
-    }
+  | content = located(See); horizontal_whitespace; children = located(sequence_nonempty(nestable_block_element)); {
+    let span = Loc.delimited content children in
+    let (kind, href) = content.Loc.value in
+    let* children = children.Loc.value in
+    let inner = Loc.at span @@ `See (Tokens.to_ast_ref kind, href, children) in
+    return inner
+  }
   | content = located(See); {
     let (kind, href) = content.Loc.value in
     return { content with value = `See (Tokens.to_ast_ref kind, href, []) }
@@ -642,14 +641,13 @@ let link :=
 
 let list_light_item_unordered := 
   | MINUS; horizontal_whitespace; ~ = nestable_block_element; <>
-  | horizontal_whitespace; MINUS; item = nestable_block_element;
-    { 
-      let warning = 
-        let span = Loc.of_position $sloc in
-        Writer.Warning (Parse_error.should_begin_on_its_own_line ~what:(Tokens.describe MINUS) span)
-      in
-      Writer.warning warning item 
-    }
+  | horizontal_whitespace; MINUS; item = nestable_block_element; { 
+    let warning = 
+      let span = Loc.of_position $sloc in
+      Writer.Warning (Parse_error.should_begin_on_its_own_line ~what:(Tokens.describe MINUS) span)
+    in
+    Writer.warning warning item 
+  }
 
 let list_light_item_ordered := 
   | PLUS; horizontal_whitespace; ~ = nestable_block_element; <>
