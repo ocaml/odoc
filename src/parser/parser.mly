@@ -300,9 +300,10 @@ let toplevel :=
   | block = nestable_block_element; { (block :> Ast.block_element Loc.with_location Writer.t) }
   | t = tag; { Writer.map (fun loc -> Loc.{ loc with value = `Tag loc.value }) t }
   | ~ = section_heading; <>
+  | ~ = toplevel_error; <>
 
 let toplevel_error :=
-  | errloc = position(RIGHT_BRACE); { 
+  | errloc = position(RIGHT_BRACE); whitespace?; { 
     let span = Loc.of_position errloc in
     let warning = 
       let what = Tokens.describe RIGHT_BRACE in 
@@ -322,6 +323,32 @@ let toplevel_error :=
     let node = Loc.same as_text @@ `Paragraph [ as_text ] in
     Writer.with_warning node warning 
   }
+  | list = list_light; {
+    let* list = list in
+    let warning = 
+      let Loc.{ value; location } = list in
+      let what = Tokens.describe @@
+        match value with
+        | `List (`Ordered, `Light, _) -> Tokens.PLUS
+        | `List (`Unordered, `Light, _) -> Tokens.MINUS
+        | _ -> assert false (* Unreachable *)
+      in 
+      Parse_error.should_begin_on_its_own_line ~what location
+    in 
+    Writer.with_warning (list :> Ast.block_element Loc.with_location) (Writer.Warning warning)
+  }
+  | illegal_elt = tag; {
+      Writer.bind 
+        illegal_elt
+        (fun illegal_elt -> 
+          let should_begin_on_its_own_line = Writer.Warning (
+            let what = Tokens.describe_tag illegal_elt.Loc.value in
+            Parse_error.should_begin_on_its_own_line ~what illegal_elt.Loc.location) 
+          in 
+          let illegal_elt = Loc.map (fun t -> `Tag t) illegal_elt in
+          let inner = (illegal_elt :> Ast.block_element  Loc.with_location) in
+          Writer.with_warning inner should_begin_on_its_own_line) 
+    }
 
 (* SECTION HEADING *)
 
@@ -356,7 +383,7 @@ let section_heading :=
   
 (* TAGS *)
 
-let tag == 
+let tag := 
   | with_content = tag_with_content; Single_newline?; { with_content }
   | bare = tag_bare; Single_newline?; { bare }
 
@@ -373,9 +400,12 @@ let tag_with_content :=
     in
     Writer.with_warning ({ pos with Loc.value = `Deprecated [] }) warning
   }
-  | startpos = located(RETURN); children = located(sequence_nonempty(nestable_block_element)); {
+  | startpos = located(RETURN); horizontal_whitespace; children = located(sequence_nonempty(nestable_block_element)); {
     let span = Loc.delimited startpos children in
     Writer.map (fun c -> Loc.at span @@ `Return c) children.Loc.value 
+  }
+  | pos = located(RETURN); horizontal_whitespace?; {
+    return (Loc.same pos @@ `Return [])
   }
   | ~ = before; <>
   | ~ = raise; <>
@@ -383,7 +413,7 @@ let tag_with_content :=
   | ~ = param; <>
 
 let before := 
-  | content = located(Before); children = sequence_nonempty(nestable_block_element); {
+  | content = located(Before); horizontal_whitespace; children = sequence_nonempty(nestable_block_element); {
     let* children = children in
     let span = Loc.span @@ content.Loc.location :: List.map Loc.location children in
     let inner = Loc.at span @@ `Before (content.Loc.value, children) in
@@ -394,14 +424,14 @@ let before :=
   }
 
 let raise := 
-  | exn = located(Raise); children = located(sequence_nonempty(nestable_block_element)); { 
+  | exn = located(Raise); horizontal_whitespace; children = located(sequence_nonempty(nestable_block_element)); { 
     let span = Loc.delimited exn children in
     let exn = exn.Loc.value in
     let* children = children.Loc.value in
     let inner = Loc.at span @@ `Raise (exn, children) in
     return inner
   }
-  | exn = located(Raise); { 
+  | exn = located(Raise); horizontal_whitespace?; { 
     return { exn with Loc.value = `Raise (exn.Loc.value, []) }
   }
 
@@ -413,24 +443,25 @@ let see :=
     let inner = Loc.at span @@ `See (Tokens.to_ast_ref kind, href, children) in
     return inner
   }
-  | content = located(See); {
+  | content = located(See); horizontal_whitespace?; {
     let (kind, href) = content.Loc.value in
     return { content with value = `See (Tokens.to_ast_ref kind, href, []) }
   }
 
 let param := 
-  | content = located(Param); children = sequence_nonempty(nestable_block_element); { 
+  | content = located(Param); horizontal_whitespace; children = sequence_nonempty(nestable_block_element); { 
     let* children = children in
     let span = Loc.span @@ content.Loc.location :: List.map Loc.location children in
     let ident = content.Loc.value in
     let inner = Loc.at span @@ `Param (ident, children) in
     return inner
   }
-  | content = located(Param);
-      { return { content with Loc.value = `Param (content.Loc.value, []) }} 
+  | content = located(Param); horizontal_whitespace?; { 
+    return { content with Loc.value = `Param (content.Loc.value, []) }
+  }
 
 let tag_bare :=
-  | content = located(Version); 
+  | content = located(Version); horizontal_whitespace?;
     {
       let Loc.{ value = version; location } = content in
       let what = Tokens.describe (Version version) in
@@ -470,10 +501,10 @@ let tag_bare :=
       Writer.ensure has_content warning @@ return value
       |> Writer.map (fun a -> { content with value = `Author a }) 
     }
-  | pos = position(OPEN); { let loc = Loc.of_position pos in return @@ Loc.at loc `Open }
-  | pos = position(INLINE); { let loc = Loc.of_position pos in return @@ Loc.at loc `Inline }
-  | pos = position(CLOSED); { let loc = Loc.of_position pos in return @@ Loc.at loc `Closed }
-  | pos = position(HIDDEN); { let loc = Loc.of_position pos in return @@ Loc.at loc `Hidden }
+  | pos = position(OPEN); whitespace?; { let loc = Loc.of_position pos in return @@ Loc.at loc `Open }
+  | pos = position(INLINE); whitespace?; { let loc = Loc.of_position pos in return @@ Loc.at loc `Inline }
+  | pos = position(CLOSED); whitespace?; { let loc = Loc.of_position pos in return @@ Loc.at loc `Closed }
+  | pos = position(HIDDEN); whitespace?; { let loc = Loc.of_position pos in return @@ Loc.at loc `Hidden }
 
 (* INLINE ELEMENTS *)
 
@@ -654,7 +685,7 @@ let list_light_item_ordered :=
   | horizontal_whitespace; PLUS; item = nestable_block_element; { 
     let warning = 
       let span = Loc.of_position $sloc in
-      Writer.Warning (Parse_error.should_begin_on_its_own_line ~what:(Tokens.describe MINUS) span)
+      Writer.Warning (Parse_error.should_begin_on_its_own_line ~what:(Tokens.describe PLUS) span)
     in
     Writer.warning warning item 
   }
@@ -663,13 +694,13 @@ let list_light :=
   | children = separated_nonempty_sequence(Single_newline, list_light_item_unordered); {
     let* children = children in
     let span = Loc.span @@ List.map Loc.location children in
-    let inner = Loc.at span @@ `List (`Ordered, `Light, [ children ]) in
+    let inner = Loc.at span @@ `List (`Unordered, `Light, [ children ]) in
     return inner
   }
   | children = separated_nonempty_sequence(Single_newline, list_light_item_ordered); {
     let* children = children in
     let span = Loc.span @@ List.map Loc.location children in
-    let inner = Loc.at span @@ `List (`Unordered, `Light, [ children ]) in
+    let inner = Loc.at span @@ `List (`Ordered, `Light, [ children ]) in
     return inner
   }
 
@@ -897,9 +928,7 @@ let media :=
 
 (* TOP-LEVEL ELEMENTS *)
 
-let nestable_block_element := ~ = nestable_block_element_inner; any_whitespace?; <>
-
-let nestable_block_element_inner := 
+let nestable_block_element :=
   | ~ = verbatim; <>
   | ~ = code_block; <> 
   | ~ = odoc_list; <>
@@ -910,16 +939,14 @@ let nestable_block_element_inner :=
   | ~ = modules; <> 
   | ~ = paragraph_style; <>
 
-let paragraph_style := 
-  | style = Paragraph_style; ws = paragraph; RIGHT_BRACE;
-    { 
-      let warning = 
-        let span = Loc.of_position $sloc in
-        let what = Tokens.describe @@ Paragraph_style style in
-        Writer.Warning (Parse_error.markup_should_not_be_used span ~what)
-      in 
-      Writer.warning warning ws
-    }
+let paragraph_style := | style = Paragraph_style; ws = paragraph; RIGHT_BRACE; { 
+    let warning = 
+      let span = Loc.of_position $sloc in
+      let what = Tokens.describe @@ Paragraph_style style in
+      Writer.Warning (Parse_error.markup_should_not_be_used span ~what)
+    in 
+    Writer.warning warning ws
+  }
 
 let verbatim := verbatim = located(Verbatim); { 
   let Loc.{ value; location } = verbatim in
