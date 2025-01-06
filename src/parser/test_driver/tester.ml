@@ -176,6 +176,22 @@ let bad_markup =
     ("cr", "");
   ]
 
+let dashes =
+  [
+    ("minus_in_word", "foo-bar");
+    ("minus_as_word", "foo -");
+    ("plus_in_word", "foo+bar");
+    ("plus_as_word", "foo +");
+    ("bar_in_word", "foo|bar");
+    ("escaped_bar_in_word", "foo\\|bar");
+    ("bar_as_word", "foo |");
+    ("negative_number", "-3.14 -1337");
+    ("n_em_dash", "-- ---");
+    ("minus_at", "-@");
+    ("at_minus", "-@-");
+    ("option", "--option");
+  ]
+
 let isolated = [ ("empty line", "    \n  @foo") ]
 
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
@@ -325,7 +341,7 @@ let () =
       | "isolated" | "i" -> isolated
       | "tags" | "t" -> tags
       | "all" -> all_tests
-      | "deprecated" | "p" -> deprecated_tests
+      | "dashes" | "ds" -> dashes
       | _ ->
           print_endline "unrecognized argument - running documentation_cases";
           documentation_cases)

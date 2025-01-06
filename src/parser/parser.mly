@@ -153,8 +153,9 @@
     | xs -> xs
 
   let paragraph : Ast.inline_element Loc.with_location list -> Ast.nestable_block_element Loc.with_location =
-    fun elts -> 
-      let span = List.map Loc.location (trim_start elts) |> Loc.span in
+    fun elts ->
+      let elts = trim_start elts in
+      let span = Loc.span @@ List.map Loc.location elts in
       Loc.at span @@ `Paragraph elts
 
   let rec inline_element_inner : Ast.inline_element -> string = function 
@@ -306,6 +307,36 @@ let toplevel :=
   | ~ = toplevel_error; <>
 
 let toplevel_error :=
+  | errloc = position(PLUS); whitespace?; { 
+    let span = Loc.of_position errloc in
+    let warning = 
+      let what = Tokens.describe PLUS in 
+      Writer.Warning (Parse_error.bad_markup what span) 
+    in 
+    let as_text = Loc.at span @@ `Word "{" in
+    let node = (Loc.same as_text @@ `Paragraph [ as_text ]) in
+    Writer.with_warning node warning 
+  }
+  | errloc = position(MINUS); whitespace?; { 
+    let span = Loc.of_position errloc in
+    let warning = 
+      let what = Tokens.describe MINUS in 
+      Writer.Warning (Parse_error.bad_markup what span) 
+    in 
+    let as_text = Loc.at span @@ `Word "{" in
+    let node = (Loc.same as_text @@ `Paragraph [ as_text ]) in
+    Writer.with_warning node warning 
+  }
+  | errloc = position(BAR); whitespace?; { 
+    let span = Loc.of_position errloc in
+    let warning = 
+      let what = Tokens.describe BAR in 
+      Writer.Warning (Parse_error.bad_markup what span) 
+    in 
+    let as_text = Loc.at span @@ `Word "{" in
+    let node = (Loc.same as_text @@ `Paragraph [ as_text ]) in
+    Writer.with_warning node warning 
+  }
   | errloc = position(RIGHT_BRACE); whitespace?; { 
     let span = Loc.of_position errloc in
     let warning = 
