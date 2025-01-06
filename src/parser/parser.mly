@@ -245,8 +245,7 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 %token <string> Simple_link "{:"
 %token <string> Link_with_replacement "{{:"
 %token <Tokens.media * Tokens.media_target> Media "{(format)!" 
-(* where 'format' is audio, video, image *)
-%token <Tokens.media * Tokens.media_target * string> Media_with_replacement "{(format):"
+%token <Tokens.media * Tokens.media_target * string> Media_with_replacement "{(format):"  (* where 'format' is audio, video, image *)
 %token <string> Verbatim "{v"
 
 %token END
@@ -290,11 +289,15 @@ let any_whitespace :=
   | ~ = whitespace; <>
   | ~ = Blank_line; <`Space>
 
+let line_break := 
+  | ~ = Single_newline; <>
+  | ~ = Blank_line; <>
+
 (* ENTRY *)
 
 let main :=  
   | ~ = sequence_nonempty(toplevel); END; <>
-  | END; { return [] }
+  | any_whitespace?; END; { return [] }
 
 let toplevel :=
   | block = nestable_block_element; { (block :> Ast.block_element Loc.with_location Writer.t) }
@@ -384,22 +387,18 @@ let section_heading :=
 (* TAGS *)
 
 let tag := 
-  | with_content = tag_with_content; Single_newline?; { with_content }
-  | bare = tag_bare; Single_newline?; { bare }
+  | with_content = tag_with_content; line_break?; { with_content }
+  | bare = tag_bare; line_break?; { bare }
 
 let tag_with_content := 
-  | startpos = located(DEPRECATED); children = located(sequence_nonempty(nestable_block_element)); {
-    let span = Loc.delimited startpos children in
-    Writer.map (fun c -> Loc.at span @@ `Deprecated c) children.Loc.value 
-  }
-  | pos = located(DEPRECATED); 
-    { return @@ { pos with Loc.value = `Deprecated [] } }
-  | pos = located(DEPRECATED); errloc = located(RIGHT_BRACE); {
-    let warning = 
-      Writer.Warning (Parse_error.unpaired_right_brace @@ errloc.Loc.location)
-    in
-    Writer.with_warning ({ pos with Loc.value = `Deprecated [] }) warning
-  }
+  | ~ = before; <>
+  | ~ = raise; <>
+  | ~ = see; <>
+  | ~ = param; <>
+  | ~ = deprecated; <>
+  | ~ = return; <>
+
+let return := 
   | startpos = located(RETURN); horizontal_whitespace; children = located(sequence_nonempty(nestable_block_element)); {
     let span = Loc.delimited startpos children in
     Writer.map (fun c -> Loc.at span @@ `Return c) children.Loc.value 
@@ -407,10 +406,20 @@ let tag_with_content :=
   | pos = located(RETURN); horizontal_whitespace?; {
     return (Loc.same pos @@ `Return [])
   }
-  | ~ = before; <>
-  | ~ = raise; <>
-  | ~ = see; <>
-  | ~ = param; <>
+
+let deprecated := 
+  | startpos = located(DEPRECATED); horizontal_whitespace; children = located(sequence_nonempty(nestable_block_element)); {
+    let span = Loc.delimited startpos children in
+    Writer.map (fun c -> Loc.at span @@ `Deprecated c) children.Loc.value 
+  }
+  | pos = located(DEPRECATED); horizontal_whitespace?;
+    { return @@ { pos with Loc.value = `Deprecated [] } }
+  | pos = located(DEPRECATED); horizontal_whitespace?; errloc = located(RIGHT_BRACE); {
+    let warning = 
+      Writer.Warning (Parse_error.unpaired_right_brace @@ errloc.Loc.location)
+    in
+    Writer.with_warning ({ pos with Loc.value = `Deprecated [] }) warning
+  }
 
 let before := 
   | content = located(Before); horizontal_whitespace; children = sequence_nonempty(nestable_block_element); {
@@ -928,7 +937,8 @@ let media :=
 
 (* TOP-LEVEL ELEMENTS *)
 
-let nestable_block_element :=
+let nestable_block_element := ~ = nestable_block_element_inner; any_whitespace?; <>
+let nestable_block_element_inner :=
   | ~ = verbatim; <>
   | ~ = code_block; <> 
   | ~ = odoc_list; <>
