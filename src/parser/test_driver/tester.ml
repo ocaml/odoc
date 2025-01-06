@@ -53,6 +53,70 @@ let open_t =
     ("with_list", "@open - foo");
   ]
 
+let tags =
+  let raise_tests =
+    [
+      ("raise basic", "@raise Foo");
+      ("raise bare", "@raise");
+      ("raise words", "@raise foo bar baz");
+      ("raise prefix", "@raisefoo");
+    ]
+  and return_tests =
+    [
+      ("return basic", "@return");
+      ("return words", "@return foo bar");
+      ("return prefix", "@returnfoo");
+    ]
+  and before_tests =
+    [
+      ("before basic", "@before Foo");
+      ("before bare", "@before");
+      ("before words", "@before foo bar baz");
+      ("before prefix", "@beforefoo");
+    ]
+  and param_tests =
+    [
+      ("param basic", "@param foo");
+      ("param bare", "@param");
+      ("param bare_with_whitespace", "@param");
+      ("param immediate_newline", "@param\nfoo");
+      ("param followed_by_whitespace", "@param foo");
+      ("param extra_whitespace", "@param  foo");
+      ("param words", "@param foo bar baz");
+      ("param multiline", "@param foo\nbar\nbaz");
+      ("param paragraphs", "@param foo bar\n\nbaz");
+      ("param two", "@param foo\n@param bar");
+      ("param nested", "@param foo @param bar");
+      ("param preceded_by_paragraph", "foo\n@param bar");
+      ("param prefix", "@paramfoo");
+      ("param after_code_block", "{[foo]} @param foo");
+    ]
+  and deprecated_tests =
+    [
+      ("basic", "@deprecated");
+      ("words", "@deprecated foo bar");
+      ("multiline", "@deprecated foo\nbar");
+      ("paragraphs", "@deprecated foo\n\nbar");
+      ("whitespace_only", "@deprecated");
+      ("immediate_newline", "@deprecated\nfoo");
+      ("immediate_cr_lf", "@deprecated\r\nfoo");
+      ("immediate_blank_line", "@deprecated\n\nfoo");
+      ("extra_whitespace", "@deprecated  foo");
+      ("followed_by_deprecated", "@deprecated foo\n@deprecated bar");
+      ("followed_by_deprecated_cr_lf", "@deprecated foo\r\n@deprecated bar");
+      ("nested_in_self", "@deprecated foo @deprecated bar");
+      ("nested_in_self_at_start", "@deprecated @deprecated foo");
+      ("preceded_by_paragraph", "foo\n@deprecated");
+      ("preceded_by_shorthand_list", "- foo\n@deprecated");
+      ("with_shorthand_list", "@deprecated - foo");
+      ("with_shorthand_list_after_newline", "@deprecated\n- foo");
+      ("prefix", "@deprecatedfoo");
+      ("after_code_block", "{[foo]} @deprecated");
+      ("followed_by_section", "@deprecated foo\n{2 Bar}");
+    ]
+  in
+  raise_tests @ return_tests @ before_tests @ param_tests @ deprecated_tests
+
 let utf8 =
   [
     ("lambda", "\xce\xbb");
@@ -112,11 +176,7 @@ let bad_markup =
     ("cr", "");
   ]
 
-let isolated =
-  [
-    ("Heavy list", "+ foo bar baz")
-    (* ("Multiple right brace", "Foo } Bar } Baz") *);
-  ]
+let isolated = [ ("empty line", "    \n  @foo") ]
 
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
 let documentation_cases =
@@ -157,6 +217,10 @@ let documentation_cases =
     ("Inline code", "[fmap Fun.id None]");
     ("Code block", "{[\n let foo = 0 \n]}");
   ]
+
+let all_tests =
+  code_cases @ error_recovery @ open_t @ tags @ utf8 @ bad_markup
+  @ documentation_cases
 
 open Test.Serialize
 
@@ -259,6 +323,9 @@ let () =
       | "open" | "o" -> open_t
       | "utf8" | "u" -> utf8
       | "isolated" | "i" -> isolated
+      | "tags" | "t" -> tags
+      | "all" -> all_tests
+      | "deprecated" | "p" -> deprecated_tests
       | _ ->
           print_endline "unrecognized argument - running documentation_cases";
           documentation_cases)
