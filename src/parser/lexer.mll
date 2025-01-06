@@ -160,10 +160,6 @@ let math_constr input kind x start_offset =
   | Inline -> Math_span Tokens.{ start = start_pos; content = x }
   | Block -> Math_block Tokens.{ start = start_pos; content = x }
 
-let with_loc : Lexing.lexbuf -> input -> Loc.span -> ('a -> 'a Loc.with_location) = 
-  fun _lexbuf _input location ->
-    Loc.at location
-
 let with_location_adjustments : 
   (Lexing.lexbuf -> input -> Loc.span -> 'a) 
   -> Lexing.lexbuf
@@ -271,26 +267,33 @@ let emit_verbatim lexbuf input start_offset buffer =
    Note that the location reflects the content _without_ stripping of whitespace, whereas
    the value of the content in the tree has whitespace stripped from the beginning,
    and trailing empty lines removed. *)
-let emit_code_block ~content_offset ~lexbuf input meta delimiter terminator buffer output =
+let emit_code_block lexbuf input ~content_offset ~metadata ~delimiter ~terminator ~content has_output =
+  let content = Buffer.contents content |> trim_trailing_blank_lines in
   let content_location = input.offset_to_location content_offset in
-  let content = 
-    Buffer.contents buffer 
-    |> trim_trailing_blank_lines  
-    |> with_location_adjustments
-        (fun _ _ _ ->
-          let first_line_offset = content_location.column in
-          trim_leading_whitespace ~first_line_offset)
-          lexbuf
-          input 
-    |> trim_leading_blank_lines 
-    |> with_location_adjustments 
-        ~adjust_end_by:terminator
-        ~start_offset:content_offset 
-        with_loc
-        lexbuf 
-        input 
+  let content =
+    with_location_adjustments
+      (fun _ _location _ c ->
+         let first_line_offset = content_location.column in
+         trim_leading_whitespace ~first_line_offset c)
+      lexbuf
+      input 
+      content
   in
-  Code_block { meta; delimiter; content; output }
+  let content = trim_leading_blank_lines content in
+  let content = 
+    with_location_adjustments 
+      ~adjust_end_by:terminator 
+      ~start_offset:content_offset 
+      (fun _ _ -> Loc.at) 
+      lexbuf 
+      input 
+      content 
+  in
+  let inner = { metadata; delimiter; content } in
+  if has_output then 
+    Code_block_with_output inner
+  else 
+    Code_block inner 
 
 let heading_level lexbuf input level =
   if String.length level >= 2 && level.[0] = '0' then begin
@@ -492,42 +495,43 @@ and token input = parse
     }
 
   | "{["
-    { code_block (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf }
+    { code_block false (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf }
 
-  | (("{" (delim_char* as delimiter) "@" horizontal_space*) as prefix) (language_tag_char+ as lang_tag_)
+  | (("{" (delim_char* as delimiter) "@" horizontal_space*) as prefix) (language_tag_char+ as language_tag)
     {
       let start_offset = Lexing.lexeme_start lexbuf in
-      let lang_tag =
-        with_location_adjustments 
-          ~adjust_start_by:prefix 
-          with_loc 
-          lexbuf 
-          input 
-          lang_tag_
+      let language_tag =
+        with_location_adjustments ~adjust_start_by:prefix (fun _ _  -> Loc.at) lexbuf input language_tag
       in
       let emit_truncated_code_block () =
-        let empty_content = with_location_adjustments with_loc lexbuf input "" in
-        Code_block { meta = Some { language = lang_tag; tags = None }; delimiter = Some delimiter; content = empty_content; output = None}
+        let empty_content = with_location_adjustments (fun _ _ -> Loc.at) lexbuf input "" in
+        Code_block { metadata = Some { language_tag; tags = None }; delimiter = Some delimiter; content = empty_content }
+      in
+      (* Disallow result block sections for code blocks without a delimiter.
+         This avoids the surprising parsing of '][' ending the code block. *)
+      let allow_result_block = delimiter <> "" in
+      let code_block_with_metadata metadata =
+        let content_offset = Lexing.lexeme_end lexbuf in
+        let metadata = Some { language_tag; tags = metadata } in
+        let prefix = Buffer.create 256 in
+        code_block allow_result_block start_offset content_offset metadata
+          prefix delimiter input lexbuf
       in
       match code_block_metadata_tail input lexbuf with
-      | Ok metadata -> code_block start_offset (Lexing.lexeme_end lexbuf) (Some metadata) (Buffer.create 256) delimiter input lexbuf
+      | Ok metadata -> code_block_with_metadata metadata
       | Error `Eof ->
           warning lexbuf input ~start_offset Parse_error.truncated_code_block_meta;
           emit_truncated_code_block ()
       | Error (`Invalid_char c) ->
-          let language_tag_invalid_char = 
-            Parse_error.language_tag_invalid_char lang_tag_ c 
-          in
-          warning lexbuf input ~start_offset language_tag_invalid_char;
-
-          (* NOTE : (@faycarsons) Metadata should not be `None` *)
-          code_block start_offset (Lexing.lexeme_end lexbuf) None (Buffer.create 256) delimiter input lexbuf
+          warning lexbuf input ~start_offset
+            (Parse_error.language_tag_invalid_char language_tag.Loc.value c);
+          code_block_with_metadata None
     }
 
   | "{@" horizontal_space* '['
     {
       warning lexbuf input Parse_error.no_language_tag_in_meta;
-      code_block (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf
+      code_block false (Lexing.lexeme_start lexbuf) (Lexing.lexeme_end lexbuf) None (Buffer.create 256) "" input lexbuf
     }
 
   | "{v"
@@ -872,13 +876,7 @@ and code_block_metadata_tail input = parse
    ((space_char* '[') as suffix)
     {
       let meta =
-        with_location_adjustments 
-          ~adjust_start_by:prefix 
-          ~adjust_end_by:suffix 
-          with_loc 
-          lexbuf 
-          input 
-          meta
+        with_location_adjustments ~adjust_start_by:prefix ~adjust_end_by:suffix (fun _ _ -> Loc.at) lexbuf input meta
       in
       Ok (Some meta)
     }
@@ -889,30 +887,78 @@ and code_block_metadata_tail input = parse
   | eof
     { Error `Eof }
 
-(* NOTE : (@faycarsons) This is currently broken!! *)
-and code_block start_offset content_offset metadata prefix delim input = parse
+and code_block allow_result_block start_offset content_offset metadata buffer delimiter input = parse
   | ("]" (delim_char* as delim') "[") as terminator
-    { if delim = delim' then 
-        emit_code_block ~content_offset ~lexbuf input None (Some delim) terminator prefix None
-      else
-        (Buffer.add_string prefix terminator;
-        code_block start_offset content_offset metadata prefix delim input lexbuf) }
+    { if delimiter = delim' && allow_result_block then 
+        emit_code_block 
+          lexbuf 
+          input 
+          ~content_offset 
+          ~metadata 
+          ~delimiter:(Some delimiter) 
+          ~terminator 
+          ~content:buffer 
+          true
+      else (
+        Buffer.add_string buffer terminator;
+        code_block 
+          allow_result_block 
+          start_offset 
+          content_offset metadata
+          buffer 
+          delimiter 
+          input 
+          lexbuf
+      )
+    }
   | ("]" (delim_char* as delim') "}") as terminator
     { 
-      if delim = delim' then 
-        emit_code_block ~content_offset ~lexbuf input None (Some delim ) terminator prefix None
+      if delimiter = delim' then 
+        emit_code_block 
+          lexbuf 
+          input 
+          ~content_offset 
+          ~metadata 
+          ~delimiter:(Some delimiter) 
+          ~terminator 
+          ~content:buffer 
+          false
       else (
-        Buffer.add_string prefix terminator;
-        code_block start_offset content_offset metadata prefix delim input lexbuf
+        Buffer.add_string buffer terminator;
+        code_block 
+          allow_result_block 
+          start_offset 
+          content_offset  
+          metadata
+          buffer 
+          delimiter 
+          input 
+          lexbuf
       )
     }
   | eof
     {
       warning lexbuf input ~start_offset Parse_error.truncated_code_block;
-      emit_code_block ~content_offset ~lexbuf input None (Some delim ) "" prefix None
+      emit_code_block 
+        lexbuf 
+        input 
+        ~content_offset 
+        ~metadata 
+        ~delimiter:(Some delimiter) 
+        ~terminator:"" 
+        ~content:buffer 
+        false
     }
   | (_ as c)
     {
-      Buffer.add_char prefix c;
-      code_block start_offset content_offset metadata prefix delim input lexbuf
+      Buffer.add_char buffer c;
+      code_block 
+        allow_result_block 
+        start_offset 
+        content_offset 
+        metadata
+        buffer 
+        delimiter 
+        input 
+        lexbuf
     }

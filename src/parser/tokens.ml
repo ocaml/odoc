@@ -17,6 +17,16 @@ let ast_list_kind : list_kind -> Ast.list_kind = function
   | Ordered -> `Ordered
   | Unordered -> `Unordered
 
+type code_block = {
+  metadata : meta option;
+  delimiter : string option;
+  content : string Loc.with_location;
+}
+and meta = {
+  language_tag : string Loc.with_location;
+  tags : string Loc.with_location option;
+}
+
 type token =
   | Space of string
   | Single_newline of string
@@ -32,7 +42,8 @@ type token =
   | Math_span of math
   | Math_block of math
   | Code_span of string
-  | Code_block of Ast.code_block
+  | Code_block of code_block
+  | Code_block_with_output of code_block
   | Word of string
   | Verbatim of string
   | RIGHT_CODE_DELIMITER
@@ -95,7 +106,7 @@ let print : token -> string = function
   | Math_span _ -> "{m"
   | Math_block _ -> "{math"
   | Code_span _ -> "["
-  | Code_block _ -> "{["
+  | Code_block _ | Code_block_with_output _ -> "{["
   | Word w -> w
   | Verbatim _ -> "{v"
   | RIGHT_CODE_DELIMITER -> "]}"
@@ -174,7 +185,7 @@ let describe : token -> string = function
   | Blank_line _ -> "blank line"
   | RIGHT_BRACE -> "'}'"
   | RIGHT_CODE_DELIMITER -> "']}'"
-  | Code_block _ -> "'{[...]}' (code block)"
+  | Code_block _ | Code_block_with_output _ -> "'{[...]}' (code block)"
   | Verbatim _ -> "'{v ... v}' (verbatim text)"
   | MODULES -> "'{!modules ...}'"
   | List Unordered -> "'{ul ...}' (bulleted list)"
@@ -207,23 +218,12 @@ let describe : token -> string = function
   | HIDDEN -> "'@hidden"
 
 let empty_code_block =
-  Ast.
-    {
-      meta = None;
-      delimiter = None;
-      content =
-        Loc.
-          {
-            value = "";
-            location =
-              {
-                file = "";
-                start = { line = 0; column = 0 };
-                end_ = { line = 0; column = 0 };
-              };
-          };
-      output = None;
-    }
+  {
+    metadata = None;
+    delimiter = None;
+    content =
+      Loc.at Loc.{ start = Loc.dummy_pos; end_ = Loc.dummy_pos; file = "" } "";
+  }
 
 let of_ast_style : Ast.style -> style = function
   | `Bold -> Bold

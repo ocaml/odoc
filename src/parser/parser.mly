@@ -180,7 +180,6 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
         | `Word _ | `Space _ -> true 
         | _ -> false) 
       @@ List.map Loc.value xs
-
 %}
 
 %token RIGHT_BRACE "{"
@@ -207,7 +206,8 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 
 %token <string option * string> Raw_markup "{%%}"
 
-%token <Ast.code_block> Code_block "{[]}"
+%token <Tokens.code_block> Code_block "{[]}" (* Self-contained code-block *)
+%token <Tokens.code_block> Code_block_with_output "{[][" (* Code block that expects some block elements *)
 %token <string> Code_span "[]" 
 
 %token <Tokens.list_kind> List "{ol" (* or '{ul' *)
@@ -965,10 +965,20 @@ let paragraph := items = sequence_nonempty(inline_element); {
   Writer.map paragraph items
 }
 
-let code_block := c = Code_block; { 
-  let span = Loc.of_position $sloc in
-  return (Loc.at span @@ `Code_block c) 
-}
+let code_block := 
+  | content = located(Code_block); {
+    return @@ Loc.map (fun Tokens.{metadata; delimiter; content} -> 
+      let meta = Option.map (fun Tokens.{language_tag; tags} -> Ast.{ language = language_tag; tags }) metadata in
+      `Code_block Ast.{ meta; delimiter; content; output = None }
+    ) content
+  }
+  | content = located(Code_block_with_output); output = sequence_nonempty(nestable_block_element); RIGHT_CODE_DELIMITER; {
+    let* output = output in
+    return @@ Loc.map (fun Tokens.{metadata; delimiter; content} -> 
+      let meta = Option.map (fun Tokens.{language_tag; tags} -> Ast.{ language = language_tag; tags }) metadata in
+      `Code_block Ast.{ meta; delimiter; content; output = Some output }
+    ) content
+  }
 
 let math_block := inner = located(Math_block); {
   let Loc.{ value ; location } = inner in
