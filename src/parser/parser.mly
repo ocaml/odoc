@@ -296,7 +296,7 @@ let line_break :=
 (* ENTRY *)
 
 let main :=  
-  | ~ = sequence_nonempty(toplevel); END; <>
+  | any_whitespace?; ~ = sequence_nonempty(toplevel); END; <>
   | any_whitespace?; END; { return [] }
 
 let toplevel :=
