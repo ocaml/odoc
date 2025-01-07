@@ -980,10 +980,10 @@ let nestable_block_element_inner :=
   | ~ = modules; <> 
   | ~ = paragraph_style; <>
 
-let paragraph_style := | style = Paragraph_style; ws = paragraph; RIGHT_BRACE; { 
+let paragraph_style := content = located(Paragraph_style); ws = paragraph; endpos = located(RIGHT_BRACE); { 
+    let span = Loc.delimited content endpos in
     let warning = 
-      let span = Loc.of_position $sloc in
-      let what = Tokens.describe @@ Paragraph_style style in
+      let what = Tokens.describe @@ Paragraph_style content.Loc.value in
       Writer.Warning (Parse_error.markup_should_not_be_used span ~what)
     in 
     Writer.warning warning ws
