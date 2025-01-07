@@ -695,7 +695,7 @@ end = struct
     let current_lib = current_library_of_input lib_roots input in
     find_current_package ~current_package page_roots input
     >>= fun current_package ->
-    let current_dir = Fs.File.dirname output in
+    let current_dir = Fs.File.dirname input in
     let roots =
       Some
         {
