@@ -387,7 +387,7 @@ let toplevel_error :=
 (* SECTION HEADING *)
 
 let section_heading := 
-  | content = located(Section_heading); children = sequence_nonempty(inline_element); endpos = located(RIGHT_BRACE); {
+  | content = located(Section_heading); children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); {
     let span = Loc.delimited content endpos in
     let (num, title) = content.Loc.value in
     Writer.map (fun c -> Loc.at span @@ `Heading (num, title, trim_start c)) children
@@ -548,9 +548,9 @@ let tag_bare :=
 
 (* INLINE ELEMENTS *)
 
-let inline_element := 
+let inline_element(ws) := 
   | ~ = inline_element_without_whitespace; <>
-  | s = located(inline_elt_legal_whitespace); { return s } 
+  | s = located(ws); { return s } 
 
 let inline_element_without_whitespace :=
   (* Single token inline elements which are mostly handled in the lexer *)
@@ -569,12 +569,8 @@ let inline_element_without_whitespace :=
   | ~ = reference; <>
   | ~ = link; <>
 
-let inline_elt_legal_whitespace := 
-  | ~ = Space; <`Space>
-  | ~ = Single_newline; <`Space>
-
 let style := 
-  | style = located(Style); children = sequence(inline_element); endpos = located(RIGHT_BRACE); { 
+  | style = located(Style); children = sequence(inline_element(whitespace)); endpos = located(RIGHT_BRACE); { 
     let span = Loc.delimited style endpos in
     let style = style.Loc.value in
     let warning = 
@@ -625,14 +621,14 @@ let style :=
 (* LINKS + REFS *)
 
 let reference := 
-  | ref_body = located(Simple_ref); children = sequence(inline_element); {
+  | ref_body = located(Simple_ref); children = sequence(inline_element(whitespace)); {
     let+ children = children in
     let startpos = Loc.nudge_start (-2) ref_body.Loc.location in
     let span = Loc.span @@ startpos :: List.map Loc.location children in
     let ref_body = Loc.at startpos ref_body.Loc.value in
     Loc.at span @@ `Reference (`Simple, ref_body, trim_start children)
   }
-  | ref_body = located(Ref_with_replacement); children = sequence_nonempty(inline_element); endpos = located(RIGHT_BRACE); { 
+  | ref_body = located(Ref_with_replacement); children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); { 
     let+ children = children in 
     let startpos = Loc.nudge_map_start (-3) ref_body in
     let ref_body = Loc.same startpos ref_body.Loc.value in
@@ -649,7 +645,7 @@ let reference :=
     in
     Writer.with_warning node warning
   }
-  | ref_body = located(Ref_with_replacement); children = sequence_nonempty(inline_element)?; endpos = located(END); {
+  | ref_body = located(Ref_with_replacement); children = sequence_nonempty(inline_element(whitespace))?; endpos = located(END); {
     let Loc.{value = ref_body_value; location} = ref_body in
     let startpos = Loc.nudge_start (-3) location in
     let ref_body : string Loc.with_location = Loc.at startpos ref_body_value in
@@ -679,7 +675,7 @@ let link :=
       else
         return node
     }
-  | link_body = located(Link_with_replacement); children = sequence_nonempty(inline_element); endpos = located(RIGHT_BRACE); 
+  | link_body = located(Link_with_replacement); children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); 
     { 
       let* c = children in 
       let span = Loc.delimited link_body endpos in
@@ -981,13 +977,13 @@ let nestable_block_element_inner :=
   | ~ = paragraph_style; <>
 
 let paragraph_style := content = located(Paragraph_style); ws = paragraph; endpos = located(RIGHT_BRACE); { 
-    let span = Loc.delimited content endpos in
-    let warning = 
-      let what = Tokens.describe @@ Paragraph_style content.Loc.value in
-      Writer.Warning (Parse_error.markup_should_not_be_used span ~what)
-    in 
-    Writer.warning warning ws
-  }
+  let span = Loc.delimited content endpos in
+  let warning = 
+    let what = Tokens.describe @@ Paragraph_style content.Loc.value in
+    Writer.Warning (Parse_error.markup_should_not_be_used span ~what)
+  in 
+  Writer.warning warning ws
+}
 
 let verbatim := verbatim = located(Verbatim); { 
   let Loc.{ value; location } = verbatim in
@@ -1002,7 +998,7 @@ let verbatim := verbatim = located(Verbatim); {
   |> Writer.map (Fun.const verbatim)
 }
 
-let paragraph := items = sequence_nonempty(inline_element); {
+let paragraph := items = sequence_nonempty(inline_element(horizontal_whitespace)); Single_newline?; {
   Writer.map paragraph items
 }
 
@@ -1033,7 +1029,7 @@ let math_block := inner = located(Math_block); {
   |> Writer.map (fun m -> Loc.at span @@ `Math_block m)
 }
 
-let modules := startpos = located(MODULES); modules = sequence(inline_element); endpos = located(RIGHT_BRACE); {
+let modules := startpos = located(MODULES); modules = sequence(inline_element(whitespace)); endpos = located(RIGHT_BRACE); {
     let in_what = Tokens.describe MODULES in
     let* modules = modules in
     let not_allowed =  
@@ -1067,7 +1063,7 @@ let modules := startpos = located(MODULES); modules = sequence(inline_element); 
     in
     return inner
   }
-  | startpos = located(MODULES); modules = sequence(inline_element); endpos = located(END); {
+  | startpos = located(MODULES); modules = sequence(inline_element(whitespace)); endpos = located(END); {
     let in_what = Tokens.describe MODULES in
     let* modules = modules in
     let span = Loc.span @@ List.map Loc.location modules in
