@@ -26,3 +26,7 @@ Ocamlary\.Op
 \f[CB]val\fR (!~) : int
 .sp 
 \f[CB]val\fR (#~) : int
+.sp 
+\f[CB]val\fR (or) : int
+.sp 
+\f[CB]val\fR (lsl) : int

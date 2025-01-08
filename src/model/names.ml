@@ -10,10 +10,11 @@ let operator_char = function
       true
   | _ -> false
 
-let parenthesise name =
-  match name with
-  | "asr" | "land" | "lor" | "lsl" | "lsr" | "lxor" | "mod" -> "(" ^ name ^ ")"
-  | _ -> if String.exists operator_char name then "(" ^ name ^ ")" else name
+let is_operator = function
+  | "asr" | "land" | "lor" | "lsl" | "lsr" | "lxor" | "mod" | "or" -> true
+  | name -> String.exists operator_char name
+
+let parenthesise name = if is_operator name then "(" ^ name ^ ")" else name
 
 let contains_double_underscore s =
   let len = String.length s in
