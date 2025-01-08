@@ -56,7 +56,7 @@ let init_stats (units : Odoc_unit.t list) =
 open Eio.Std
 
 type partial =
-  (string * Odoc_unit.intf Odoc_unit.unit list) list
+  ((string * string) * Odoc_unit.intf Odoc_unit.unit list) list
   * Odoc_unit.intf Odoc_unit.unit list Util.StringMap.t
 
 let unmarshal filename : partial =
@@ -155,11 +155,11 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
         (Odoc_unit.intf Odoc_unit.unit list, exn) Result.t =
      fun unit ->
       let hash = match unit.kind with `Intf { hash; _ } -> hash in
-      match Hashtbl.find_opt tbl hash with
+      match Hashtbl.find_opt tbl (hash, Odoc.Id.to_string unit.parent_id) with
       | Some p -> Promise.await p
       | None ->
           let p, r = Promise.create () in
-          Hashtbl.add tbl hash p;
+          Hashtbl.add tbl (hash, Odoc.Id.to_string unit.parent_id) p;
           let result = compile_one compile_mod hash in
           Promise.resolve r result;
           result
@@ -206,7 +206,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
   let zipped =
     List.filter_map
       (function
-        | Ok (Odoc_unit.{ kind = `Intf { hash; _ }; _ } :: _ as b) ->
+        | Ok (Odoc_unit.{ kind = `Intf { hash; _ }; parent_id; _ } :: _ as b) ->
             let l =
               List.filter_map
                 (function
@@ -216,7 +216,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
                   | _ -> None)
                 b
             in
-            Some (hash, l)
+            Some ((hash, Odoc.Id.to_string parent_id), l)
         | _ -> None)
       res
   in
