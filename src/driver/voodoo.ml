@@ -213,7 +213,7 @@ let of_voodoo pkg_name ~blessed =
       Fpath.(v !prep_path)
   in
   match contents with
-  | Error _ -> Util.StringMap.empty
+  | Error _ -> []
   | Ok c -> (
       let sorted = List.sort (fun p1 p2 -> Fpath.compare p1 p2) c in
       let last, packages =
@@ -244,13 +244,13 @@ let of_voodoo pkg_name ~blessed =
       match packages with
       | [ package ] ->
           let package = process_package package in
-          Util.StringMap.singleton pkg_name package
+          [ package ]
       | [] ->
           Logs.err (fun m -> m "No package found for %s" pkg_name);
-          Util.StringMap.empty
+          []
       | _ ->
           Logs.err (fun m -> m "Multiple packages found for %s" pkg_name);
-          Util.StringMap.empty)
+          [])
 
 type extra_paths = {
   pkgs : Fpath.t Util.StringMap.t;
@@ -300,8 +300,8 @@ let write_lib_markers odoc_dir pkgs =
     | Error (`Msg msg) ->
         Logs.err (fun m -> m "Failed to write lib marker: %s" msg)
   in
-  Util.StringMap.iter
-    (fun _ (pkg : Packages.t) ->
+  List.iter
+    (fun (pkg : Packages.t) ->
       let libs = pkg.libraries in
       let pkg_path = Odoc_unit.doc_dir pkg in
       let marker = Fpath.(odoc_dir // pkg_path / pkg_marker) in

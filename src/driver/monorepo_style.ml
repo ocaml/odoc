@@ -42,7 +42,7 @@ let of_dune_build dir =
     Bos.OS.Dir.fold_contents ~dotfiles:true (fun p acc -> p :: acc) [] dir
   in
   match contents with
-  | Error _ -> Util.StringMap.empty
+  | Error _ -> []
   | Ok c ->
       let sorted = List.sort (fun p1 p2 -> Fpath.compare p1 p2) c in
       let libs = dune_describe dir in
@@ -107,29 +107,24 @@ let of_dune_build dir =
                 ~cmtidir:(Some cmtidir) ~all_lib_deps ~cmi_only_libs:[] ))
           libs
       in
-      let packages =
-        List.filter_map
-          (fun (pkg_dir, lib) ->
-            match lib with
-            | [ lib ] ->
-                Some
-                  ( lib.Packages.lib_name,
-                    {
-                      Packages.name = lib.Packages.lib_name;
-                      version = "1.0";
-                      libraries = [ lib ];
-                      mlds = [];
-                      assets =
-                        []
-                        (* When dune has a notion of doc assets, do something *);
-                      selected = false;
-                      remaps = [];
-                      pkg_dir;
-                      doc_dir = pkg_dir;
-                      other_docs = [];
-                      config = Global_config.empty;
-                    } )
-            | _ -> None)
-          libs
-      in
-      Util.StringMap.of_list packages
+      List.filter_map
+        (fun (pkg_dir, lib) ->
+          match lib with
+          | [ lib ] ->
+              Some
+                {
+                  Packages.name = lib.Packages.lib_name;
+                  version = "1.0";
+                  libraries = [ lib ];
+                  mlds = [];
+                  assets =
+                    [] (* When dune has a notion of doc assets, do something *);
+                  selected = false;
+                  remaps = [];
+                  pkg_dir;
+                  doc_dir = pkg_dir;
+                  other_docs = [];
+                  config = Global_config.empty;
+                }
+          | _ -> None)
+        libs

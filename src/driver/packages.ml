@@ -290,8 +290,8 @@ let mk_mlds docs =
 
 let fix_missing_deps pkgs =
   let lib_name_by_hash =
-    Util.StringMap.fold
-      (fun _pkg_name pkg acc ->
+    List.fold_right
+      (fun pkg acc ->
         List.fold_left
           (fun acc lib ->
             List.fold_left
@@ -305,7 +305,7 @@ let fix_missing_deps pkgs =
           acc pkg.libraries)
       pkgs Util.StringMap.empty
   in
-  Util.StringMap.map
+  List.map
     (fun pkg ->
       let libraries =
         List.map
@@ -414,10 +414,11 @@ let of_libs ~packages_dir libs =
               acc)
       archives_by_dir Util.StringMap.empty
   in
+  let packages = Util.StringMap.bindings packages |> List.map snd in
   fix_missing_deps packages
 
 let of_packages ~packages_dir packages =
-  Logs.app (fun m -> m "Computing deps...");
+  Logs.app (fun m -> m "Deciding which packages to build...");
   let deps =
     if packages = [] then Opam.all_opam_packages () else Opam.deps packages
   in
@@ -442,11 +443,17 @@ let of_packages ~packages_dir packages =
   in
 
   let all = orig @ ps in
+  let all =
+    List.sort_uniq
+      (fun (a, _) (b, _) -> String.compare a.Opam.name b.Opam.name)
+      all
+  in
 
-  Logs.app (fun m -> m "Analyzing packages needed to be built...");
+  Logs.app (fun m -> m "Performing module-level dependency analysis...");
+
   let packages =
-    List.fold_left
-      (fun acc (pkg, files) ->
+    List.map
+      (fun (pkg, files) ->
         let libraries =
           List.fold_left
             (fun acc dir ->
@@ -481,23 +488,81 @@ let of_packages ~packages_dir packages =
             in
             (local_pkg_path, pkg_path) :: lib_paths
         in
-        Util.StringMap.add pkg.name
-          {
-            name = pkg.name;
-            version = pkg.version;
-            libraries;
-            mlds;
-            assets;
-            selected;
-            remaps;
-            other_docs = [];
-            pkg_dir;
-            doc_dir = pkg_dir;
-            config;
-          }
-          acc)
-      Util.StringMap.empty all
-  in
-  fix_missing_deps packages
 
-type set = t Util.StringMap.t
+        {
+          name = pkg.name;
+          version = pkg.version;
+          libraries;
+          mlds;
+          assets;
+          selected;
+          remaps;
+          other_docs = [];
+          pkg_dir;
+          doc_dir = pkg_dir;
+          config;
+        })
+      all
+  in
+  let res = fix_missing_deps packages in
+  Logs.debug (fun m -> m "Packages: %a" Fmt.Dump.(list pp) res);
+  res
+
+let remap_virtual_interfaces duplicate_hashes pkgs =
+  List.map
+    (fun pkg ->
+      {
+        pkg with
+        libraries =
+          pkg.libraries
+          |> List.map (fun lib ->
+                 {
+                   lib with
+                   modules =
+                     lib.modules
+                     |> List.map (fun m ->
+                            let m_intf =
+                              if
+                                Util.StringMap.mem m.m_intf.mif_hash
+                                  duplicate_hashes
+                                && Fpath.has_ext "cmt" m.m_intf.mif_path
+                              then
+                                match
+                                  List.filter
+                                    (fun intf ->
+                                      Fpath.has_ext "cmti" intf.mif_path)
+                                    (Util.StringMap.find m.m_intf.mif_hash
+                                       duplicate_hashes)
+                                with
+                                | [ x ] -> x
+                                | _ -> m.m_intf
+                              else m.m_intf
+                            in
+                            { m with m_intf });
+                 });
+      })
+    pkgs
+
+let remap_virtual all =
+  let virtual_check =
+    let hashes =
+      List.fold_left
+        (fun acc pkg ->
+          List.fold_left
+            (fun acc lib ->
+              List.fold_left
+                (fun acc m ->
+                  let hash = m.m_intf.mif_hash in
+                  Util.StringMap.update hash
+                    (function
+                      | None -> Some [ m.m_intf ]
+                      | Some l -> Some (m.m_intf :: l))
+                    acc)
+                acc lib.modules)
+            acc pkg.libraries)
+        Util.StringMap.empty all
+    in
+    Util.StringMap.filter (fun _hash intfs -> List.length intfs > 1) hashes
+  in
+
+  remap_virtual_interfaces virtual_check all
