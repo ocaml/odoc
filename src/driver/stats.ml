@@ -45,6 +45,85 @@ let stats =
     finished = false;
   }
 
+let render_stats env ~generate_json nprocs =
+  let if_app f =
+    match Logs.level () with Some (App | Warning) | None -> f () | _ -> ()
+  in
+  (* Avoids overkill indentation  *)
+  if_app @@ fun () ->
+  let open Progress in
+  let clock = Eio.Stdenv.clock env in
+  let total = Atomic.get stats.total_units in
+  let total_impls = Atomic.get stats.total_impls in
+  let total_mlds = Atomic.get stats.total_mlds in
+  let total_assets = Atomic.get stats.total_assets in
+  let total_indexes = Atomic.get stats.total_indexes in
+  let bar message total =
+    let open Progress.Line in
+    list [ lpad 16 (const message); bar total; rpad 10 (count_to total) ]
+  in
+  let procs total =
+    let open Progress.Line in
+    list [ lpad 16 (const "Processes"); bar total; rpad 10 (count_to total) ]
+  in
+  let description =
+    let open Progress.Line in
+    string
+  in
+  let descriptions = Multi.lines (List.init nprocs (fun _ -> description)) in
+
+  let non_hidden = Atomic.get stats.non_hidden_units in
+
+  let dline x y = Multi.line (bar x y) in
+  let config = Progress.Config.v ~persistent:false () in
+  let total_generate =
+    let units = total_impls + non_hidden + total_mlds in
+    if generate_json then 2 * units else units
+  in
+  with_reporters ~config
+    Multi.(
+      dline "Compiling" total
+      ++ dline "Compiling impls" total_impls
+      ++ dline "Compiling pages" total_mlds
+      ++ dline "Compiling assets" total_assets
+      ++ dline "Linking" non_hidden
+      ++ dline "Linking impls" total_impls
+      ++ dline "Linking mlds" total_mlds
+      ++ dline "Indexes" total_indexes
+      ++ dline "HTML" total_generate
+      ++ line (procs nprocs)
+      ++ descriptions)
+    (fun comp compimpl compmld compassets link linkimpl linkmld indexes html
+         procs descr ->
+      let rec inner (a, b, c, j, d, e, f, i, g, h) =
+        Eio.Time.sleep clock 0.1;
+        let a' = Atomic.get stats.compiled_units in
+        let b' = Atomic.get stats.compiled_impls in
+        let c' = Atomic.get stats.compiled_mlds in
+        let j' = Atomic.get stats.compiled_assets in
+        let d' = Atomic.get stats.linked_units in
+        let e' = Atomic.get stats.linked_impls in
+        let f' = Atomic.get stats.linked_mlds in
+        let i' = Atomic.get stats.generated_indexes in
+        let g' = Atomic.get stats.generated_units in
+        let h' = Atomic.get stats.processes in
+        List.iteri
+          (fun i descr -> descr (Atomic.get stats.process_activity.(i)))
+          descr;
+        comp (a' - a);
+        compimpl (b' - b);
+        compmld (c' - c);
+        compassets (j' - j);
+        link (d' - d);
+        linkimpl (e' - e);
+        linkmld (f' - f);
+        indexes (i' - i);
+        html (g' - g);
+        procs (h' - h);
+        if not stats.finished then inner (a', b', c', j', d', e', f', i', g', h')
+      in
+      inner (0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+
 let init_nprocs nprocs =
   stats.process_activity <- Array.init nprocs (fun _ -> Atomic.make "idle")
 

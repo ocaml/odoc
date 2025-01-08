@@ -83,11 +83,11 @@ type t = {
 
 val pp : Format.formatter -> t -> unit
 
-type set = t Util.StringMap.t
-
 val mk_mlds : Opam.doc_file list -> mld list * asset list * Fpath.t list
 
-val of_libs : packages_dir:Fpath.t option -> Util.StringSet.t -> set
+val of_libs : packages_dir:Fpath.t option -> Util.StringSet.t -> t list
 (** Turns a set of libraries into a map from package name to package *)
 
-val of_packages : packages_dir:Fpath.t option -> string list -> set
+val of_packages : packages_dir:Fpath.t option -> string list -> t list
+
+val remap_virtual : t list -> t list
