@@ -1,4 +1,6 @@
 (library
  (name ocamlary)
  (public_name odoc.ocamlary)
+ (enabled_if
+  (>= %{ocaml_version} 4.14.0))
  (virtual_modules ocamlary))

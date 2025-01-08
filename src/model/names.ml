@@ -1,3 +1,5 @@
+open Odoc_utils
+
 (** Returns [true] on chars that are part of operators. *)
 let operator_char = function
   (* https://ocaml.org/manual/5.2/lex.html#core-operator-char *)
