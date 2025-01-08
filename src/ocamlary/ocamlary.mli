@@ -1078,4 +1078,6 @@ module Op : sig
   val ( .%{;..}<- ) : int
   val ( !~ ) : int
   val ( #~ ) : int
+  val ( or ) : int
+  val ( lsl ) : int
 end
