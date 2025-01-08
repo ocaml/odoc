@@ -1,5 +1,6 @@
 (executable
  (public_name odoc_driver)
+ (modules odoc_driver)
  (package odoc-driver)
  (link_deps
   (package odoc)
@@ -9,6 +10,7 @@
 
 (executable
  (public_name odoc_driver_voodoo)
+ (modules odoc_driver_voodoo)
  (package odoc-driver)
  (link_deps
   (package odoc)
@@ -18,6 +20,7 @@
 
 (executable
  (public_name odoc_driver_monorepo)
+ (modules odoc_driver_monorepo)
  (package odoc-driver)
  (link_deps
   (package odoc)
