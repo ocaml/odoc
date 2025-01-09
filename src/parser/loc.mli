@@ -8,6 +8,7 @@
 type point = { line : int; column : int }
 (** A specific character *)
 
+val make_point : Lexing.position -> point
 val dummy_pos : point
 
 type span = { file : string; start : point; end_ : point }

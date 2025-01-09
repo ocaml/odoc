@@ -1,4 +1,9 @@
 type point = { line : int; column : int }
+
+let make_point : Lexing.position -> point =
+ fun Lexing.{ pos_lnum; pos_cnum; pos_bol; _ } ->
+  { line = pos_lnum; column = pos_cnum - pos_bol }
+
 type span = { file : string; start : point; end_ : point }
 type +'a with_location = { location : span; value : 'a }
 
@@ -14,10 +19,7 @@ let dummy_pos : point = { line = -1; column = -1 }
 let of_position : ?filename:string -> Lexing.position * Lexing.position -> span
     =
  fun ?filename (start, end_) ->
-  let to_point Lexing.{ pos_lnum; pos_cnum; pos_bol; _ } =
-    { line = pos_lnum; column = pos_cnum - pos_bol }
-  in
-  let start_point = to_point start and end_point = to_point end_ in
+  let start_point = make_point start and end_point = make_point end_ in
   {
     file = Option.value ~default:start.pos_fname filename;
     start = start_point;

@@ -1,6 +1,5 @@
 %{
   open Writer.Prelude
-  let ( let+ ) = Fun.flip Writer.map
   let wrap_location : Lexing.position * Lexing.position -> 'a -> 'a Loc.with_location =
   fun pos value ->
     let location = Loc.of_position pos in
@@ -202,14 +201,14 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 
 %token MODULES "{!modules:"
 
-%token <Tokens.math> Math_span "{m"
-%token <Tokens.math> Math_block "{math"
+%token <string Tokens.with_start_pos> Math_span "{m"
+%token <string Tokens.with_start_pos> Math_block "{math"
 
-%token <string option * string> Raw_markup "{%%}"
+%token <(string option * string) Tokens.with_start_pos> Raw_markup "{%%}"
 
-%token <Tokens.code_block> Code_block "{[]}" (* Self-contained code-block *)
-%token <Tokens.code_block> Code_block_with_output "{[][" (* Code block that expects some block elements *)
-%token <string> Code_span "[]" 
+%token <Tokens.code_block Tokens.with_start_pos> Code_block "{[]}" (* Self-contained code-block *)
+%token <Tokens.code_block Tokens.with_start_pos> Code_block_with_output "{[][" (* Code block that expects some block elements *)
+%token <string Tokens.with_start_pos> Code_span "[]" 
 
 %token <Tokens.list_kind> List "{ol" (* or '{ul' *)
 %token LI "{li" 
@@ -223,31 +222,31 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
 %token <Ast.table_cell_kind> Table_cell "{td" (* or '{th' for header *)
 
 (* Where N is an integer *)
-%token <int * string option> Section_heading "{N:"
+%token <(int * string option) Tokens.with_start_pos> Section_heading "{N:"
 
 (* Tags *)
-%token <string> Author "@author"
+%token <string Tokens.with_start_pos> Author "@author"
 %token DEPRECATED "@deprecated"
-%token <string> Param "@param"
-%token <string> Raise "@raise(s)"
+%token <string Tokens.with_start_pos> Param "@param"
+%token <string Tokens.with_start_pos> Raise "@raise(s)"
 %token RETURN "@return"
-%token <Tokens.internal_reference * string> See "@see"
-%token <string> Since "@since"
-%token <string> Before "@before"
-%token <string> Version "@version"
-%token <string> Canonical "@canonical"
+%token <(Tokens.internal_reference * string) Tokens.with_start_pos> See "@see"
+%token <string Tokens.with_start_pos> Since "@since"
+%token <string Tokens.with_start_pos> Before "@before"
+%token <string Tokens.with_start_pos> Version "@version"
+%token <string Tokens.with_start_pos> Canonical "@canonical"
 %token INLINE "@inline" 
 %token OPEN "@open" 
 %token CLOSED "@closed"
 %token HIDDEN "@hidden"
 
-%token <string> Simple_ref "{!" 
-%token <string> Ref_with_replacement "{{!" 
-%token <string> Simple_link "{:"
-%token <string> Link_with_replacement "{{:"
-%token <Tokens.media * Tokens.media_target> Media "{(format)!" 
-%token <Tokens.media * Tokens.media_target * string> Media_with_replacement "{(format):"  (* where 'format' is audio, video, image *)
-%token <string> Verbatim "{v"
+%token <string Tokens.with_start_pos> Simple_ref "{!" 
+%token <string Tokens.with_start_pos> Ref_with_replacement "{{!" 
+%token <string Tokens.with_start_pos> Simple_link "{:"
+%token <string Tokens.with_start_pos> Link_with_replacement "{{:"
+%token <(Tokens.media * Tokens.media_target) Tokens.with_start_pos> Media "{(format)!" 
+%token <(Tokens.media * Tokens.media_target * string) Tokens.with_start_pos> Media_with_replacement "{(format):"  (* where 'format' is audio, video, image *)
+%token <string Tokens.with_start_pos> Verbatim "{v"
 
 %token END
 
@@ -387,28 +386,31 @@ let toplevel_error :=
 (* SECTION HEADING *)
 
 let section_heading := 
-  | content = located(Section_heading); children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); {
-    let span = Loc.delimited content endpos in
-    let (num, title) = content.Loc.value in
+  | content = Section_heading; children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); {
+    let Tokens.{ inner = (num, title); start } = content in
+    let span = { endpos.Loc.location with start } in
     Writer.map (fun c -> Loc.at span @@ `Heading (num, title, trim_start c)) children
   }
-  | content = located(Section_heading); endpos = located(RIGHT_BRACE); { 
-    let span = Loc.delimited content endpos 
-    and (num, title) = content.Loc.value in
+  | content = Section_heading; endpos = located(RIGHT_BRACE); { 
+    let Tokens.{ inner = (num, title); start } = content in
+    let span = { endpos.Loc.location with start } in
     let should_not_be_empty = 
-      let what = Tokens.describe @@ Section_heading (num, title) in
+      let what = Tokens.describe @@ Section_heading content in
       Writer.Warning (Parse_error.should_not_be_empty ~what span)
     in
     let node = Loc.at span @@ `Heading (num, title, []) in
     Writer.with_warning node should_not_be_empty
   }
   | content = with_position(Section_heading); end_pos = position(error); {
-    let (num, title), start_pos = content in
-    let span = Loc.span @@ List.map Loc.of_position [start_pos; end_pos] in
+    let Tokens.{ inner; start }, start_pos = content in
+    let (num, title) = inner in
+    let end_ = Loc.make_point @@ snd end_pos in
+    let file = (fst end_pos).Lexing.pos_fname in
+    let span = Loc.{ file; start; end_; } in
     let start_pos = fst start_pos and end_pos = snd end_pos in
     let illegal = Writer.InputNeeded (fun input ->
       let err = Loc.extract ~input ~start_pos ~end_pos in
-      let in_what = Tokens.describe @@ Section_heading (num, title) in
+      let in_what = Tokens.describe @@ Section_heading (fst content) in
       Parse_error.illegal ~in_what err span) 
     in
     let inner = Loc.at span @@ `Heading (num, title, []) in
@@ -439,9 +441,10 @@ let return :=
   }
 
 let deprecated := 
-  | startpos = located(DEPRECATED); horizontal_whitespace; children = located(sequence_nonempty(nestable_block_element)); {
+  | startpos = located(DEPRECATED); horizontal_whitespace; children = locatedM(sequence_nonempty(nestable_block_element)); {
+    let* children = children in
     let span = Loc.delimited startpos children in
-    Writer.map (fun c -> Loc.at span @@ `Deprecated c) children.Loc.value 
+    return @@ Loc.at span (`Deprecated children.Loc.value)
   }
   | pos = located(DEPRECATED); horizontal_whitespace?;
     { return @@ { pos with Loc.value = `Deprecated [] } }
@@ -453,94 +456,106 @@ let deprecated :=
   }
 
 let before := 
-  | content = located(Before); horizontal_whitespace; children = sequence_nonempty(nestable_block_element); {
+  | content = Before; horizontal_whitespace; children = sequence_nonempty(nestable_block_element); {
     let* children = children in
-    let span = Loc.span @@ content.Loc.location :: List.map Loc.location children in
-    let inner = Loc.at span @@ `Before (content.Loc.value, children) in
+    let Tokens.{ inner; start } = content in
+    let child_span = Loc.span @@ List.map Loc.location children in
+    let span = { child_span with start } in
+    let inner = Loc.at span @@ `Before (inner, children) in
     return inner
   }
-  | version = located(Before); {
-    return { version with value = `Before (version.Loc.value, []) }
+  | content = located(Before); {
+    let Loc.{ value = Tokens.{ inner; start }; location } = content in
+    return { Loc.value = `Before (inner, []); location = { location with start } }
   }
 
 let raise := 
-  | exn = located(Raise); horizontal_whitespace; children = located(sequence_nonempty(nestable_block_element)); { 
-    let span = Loc.delimited exn children in
-    let exn = exn.Loc.value in
+  | content = located(Raise); horizontal_whitespace; children = located(sequence_nonempty(nestable_block_element)); { 
+    let Loc.{ value = Tokens.{ inner; start }; location } = content in
+    let location = { location with start } in
     let* children = children.Loc.value in
-    let inner = Loc.at span @@ `Raise (exn, children) in
+    let span = Loc.span @@ location :: List.map Loc.location children in
+    let inner = Loc.at span @@ `Raise (inner, children) in
     return inner
   }
-  | exn = located(Raise); horizontal_whitespace?; { 
-    return { exn with Loc.value = `Raise (exn.Loc.value, []) }
+  | content = located(Raise); horizontal_whitespace?; {
+    let Loc.{ value = Tokens.{ inner; start }; location } = content in
+    let location = { location with start } in
+    return @@ Loc.at location (`Raise ( inner, []))
   }
 
 let see := 
   | content = located(See); horizontal_whitespace; children = located(sequence_nonempty(nestable_block_element)); {
-    let span = Loc.delimited content children in
-    let (kind, href) = content.Loc.value in
+    let Loc.{ value = Tokens.{ inner = (kind, href); start }; location } = content in
+    let span = Loc.delimited { content with location = { location with start }} children in
     let* children = children.Loc.value in
     let inner = Loc.at span @@ `See (Tokens.to_ast_ref kind, href, children) in
     return inner
   }
   | content = located(See); horizontal_whitespace?; {
-    let (kind, href) = content.Loc.value in
-    return { content with value = `See (Tokens.to_ast_ref kind, href, []) }
+    let Loc.{ value = Tokens.{ inner = (kind, href); start }; location } = content in
+    let location = { location with start } in
+    return @@ Loc.at location @@ `See (Tokens.to_ast_ref kind, href, [])
   }
 
 let param := 
   | content = located(Param); horizontal_whitespace; children = sequence_nonempty(nestable_block_element); { 
     let* children = children in
-    let span = Loc.span @@ content.Loc.location :: List.map Loc.location children in
-    let ident = content.Loc.value in
-    let inner = Loc.at span @@ `Param (ident, children) in
+    let Loc.{ value = Tokens.{ inner; start }; location } = content in
+    let span = Loc.span @@ { location with start } :: List.map Loc.location children in
+    let inner = Loc.at span @@ `Param (inner, children) in
     return inner
   }
   | content = located(Param); horizontal_whitespace?; { 
-    return { content with Loc.value = `Param (content.Loc.value, []) }
+    let Loc.{ value = Tokens.{ inner; start }; location } = content in
+    return @@ Loc.at { location with start } (`Param (inner, []))
   }
 
 let tag_bare :=
-  | content = located(Version); horizontal_whitespace?;
-    {
-      let Loc.{ value = version; location } = content in
-      let what = Tokens.describe (Version version) in
-      let warning = 
-        Writer.Warning (Parse_error.should_not_be_empty ~what location)
-      in
-      Writer.ensure has_content warning (return version) 
-      |> Writer.map (fun v -> { content with value = `Version v }) 
-    }
-  | content = located(Since); 
-    {
-      let Loc.{ value = version; location } = content in
-      let what = Tokens.describe (Since version) in
-      let warning = 
-        Writer.Warning (Parse_error.should_not_be_empty ~what location)
-      in
-      Writer.ensure has_content warning (return version) 
-      |> Writer.map (fun v -> { content with value = `Since v }) 
-    }
-  | impl = located(Canonical); 
-    {
-      let what = Tokens.describe @@ Canonical "" in
-      let warning = 
-        let span = Loc.of_position $sloc in
-        Writer.Warning (Parse_error.should_not_be_empty ~what span)
-      in
-      Writer.ensure (Loc.is has_content) warning @@ return impl 
-      |> Writer.map (fun v -> Loc.at impl.Loc.location @@ `Canonical v) 
-    }
-  | content = located(Author); 
-    {
-      let Loc.{ value; location } = content in
-      let what = Tokens.describe @@ Author value in
-      let warning = 
-        Writer.Warning (Parse_error.should_not_be_empty ~what location)
-      in
-      Writer.ensure has_content warning @@ return value
-      |> Writer.map (fun a -> { content with value = `Author a }) 
-    }
+  | content = located(Version); horizontal_whitespace?; {
+    let Loc.{ value; location } = content in
+    let Tokens.{ inner; start } = value in
+    let span = { location with start } in
+    let what = Tokens.describe (Version value) in
+    let warning = 
+      Writer.Warning (Parse_error.should_not_be_empty ~what span)
+    in
+    Writer.ensure has_content warning (return inner) 
+    |> Writer.map (fun v -> Loc.at location @@ `Version v ) 
+  }
+  | content = located(Since); {
+    let Loc.{ value; location } = content in
+    let Tokens.{ inner; start } = value in
+    let location = { location with start } in
+    let what = Tokens.describe (Since value) in
+    let warning = 
+      Writer.Warning (Parse_error.should_not_be_empty ~what location)
+    in
+    Writer.ensure has_content warning (return inner) 
+    |> Writer.map (fun v -> Loc.at location @@ `Since v ) 
+  }
+  | content = located(Canonical); {
+    let Loc.{ value; location } = content in
+    let Tokens.{ inner; start } = value in
+    let what = Tokens.describe @@ Canonical value in
+    let warning = 
+      let span = Loc.of_position $sloc in
+      Writer.Warning (Parse_error.should_not_be_empty ~what span)
+    in
+    let location = { location with start } in
+    Writer.ensure has_content warning @@ return inner 
+    |> Writer.map (fun value -> Loc.at location @@ `Canonical (Loc.at location value)) 
+  }
+  | content = located(Author); {
+    let Loc.{ value; location } = content in
+    let Tokens.{ inner; start } = value in
+    let what = Tokens.describe @@ Author value in
+    let warning = 
+      Writer.Warning (Parse_error.should_not_be_empty ~what location)
+    in
+    Writer.ensure has_content warning @@ return inner
+    |> Writer.map (fun a -> { Loc.value = `Author a; location = { location with start } }) 
+  }
   | pos = position(OPEN); whitespace?; { let loc = Loc.of_position pos in return @@ Loc.at loc `Open }
   | pos = position(INLINE); whitespace?; { let loc = Loc.of_position pos in return @@ Loc.at loc `Inline }
   | pos = position(CLOSED); whitespace?; { let loc = Loc.of_position pos in return @@ Loc.at loc `Closed }
@@ -548,21 +563,30 @@ let tag_bare :=
 
 (* INLINE ELEMENTS *)
 
+(* 
+  If we're calling `inline_element` from another rule higher up the parse tree,
+  it should only accept horizontal whitespace. 
+  If we're calling it recursively from an inline element with some delimiters,
+  we can allow any whitespace
+*)
 let inline_element(ws) := 
   | ~ = inline_element_without_whitespace; <>
   | s = located(ws); { return s } 
 
 let inline_element_without_whitespace :=
   (* Single token inline elements which are mostly handled in the lexer *)
-  | c = located(Code_span); {
-    return @@ Loc.map (fun c -> `Code_span c) c
+  | content = located(Code_span); {
+    let Loc.{ value = Tokens.{ inner; start }; location } = content in
+    return @@ Loc.at { location with start } (`Code_span inner)
   }
-  | m = located(Raw_markup); { return @@ Loc.map (fun m -> `Raw_markup m) m }
+  | m = located(Raw_markup); { 
+    let Loc.{ value = Tokens.{ inner; start }; location } = m in
+    return @@ Loc.at { location with start } (`Raw_markup inner) 
+  }
   | w = located(Word); { return @@ Loc.map (fun w -> `Word w) w }
   | m = located(Math_span); { 
-    let Loc.{ value = Tokens.{ start; content }; location } = m in
-    let span = { location with start } in
-    return @@ Loc.at span (`Math_span content)
+    let Loc.{ value = Tokens.{ start; inner }; location } = m in
+    return @@ Loc.at { location with start } (`Math_span inner)
   }
   (* More complex/recursive inline elements should have their own rule *)
   | ~ = style; <>
@@ -610,7 +634,6 @@ let style :=
     let span = Loc.delimited style endpos in
     let style = style.Loc.value in
     let warning = 
-      let span = Loc.of_position $sloc in
       let in_what = Tokens.describe @@ Style style in
       Writer.Warning (Parse_error.end_not_allowed ~in_what span) 
     in
@@ -622,87 +645,78 @@ let style :=
 
 let reference := 
   | ref_body = located(Simple_ref); children = sequence(inline_element(whitespace)); {
-    let+ children = children in
-    let startpos = Loc.nudge_start (-2) ref_body.Loc.location in
-    let span = Loc.span @@ startpos :: List.map Loc.location children in
-    let ref_body = Loc.at startpos ref_body.Loc.value in
-    Loc.at span @@ `Reference (`Simple, ref_body, trim_start children)
+    let* children = children in
+    let Loc.{ value = Tokens.{ inner; start }; location } = ref_body in
+    let span = Loc.span @@ { location with start } :: List.map Loc.location children in
+    return @@ Loc.at span @@ `Reference (`Simple, Loc.at location inner, trim_start children)
   }
-  | ref_body = located(Ref_with_replacement); children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); { 
-    let+ children = children in 
-    let startpos = Loc.nudge_map_start (-3) ref_body in
-    let ref_body = Loc.same startpos ref_body.Loc.value in
-    let span = Loc.delimited startpos endpos in
-    Loc.at span @@ `Reference (`With_text, ref_body, trim_start children)
+  | ref_body = Ref_with_replacement; children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); { 
+    let* children = children in 
+    let Tokens.{ inner; start } = ref_body in
+    let span = { endpos.Loc.location with start } in
+    return @@ Loc.at span @@ `Reference (`With_text, Loc.at span inner, trim_start children)
   }
-  | ref_body = located(Ref_with_replacement); endpos = located(RIGHT_BRACE); {
-    let startpos = Loc.nudge_map_start (-3) ref_body in
-    let span = Loc.delimited startpos endpos in
-    let node = Loc.at span @@ `Reference (`With_text, ref_body, []) in
+  | ref_body = Ref_with_replacement; endpos = located(RIGHT_BRACE); {
+    let Tokens.{ inner; start } = ref_body in
+    let span = { endpos.Loc.location with start } in
+    let node = Loc.at span @@ `Reference (`With_text, Loc.at span inner, []) in
     let warning = 
-      let what = Tokens.describe @@ Ref_with_replacement (Loc.value ref_body) in
+      let what = Tokens.describe @@ Ref_with_replacement ref_body in
       Writer.Warning (Parse_error.should_not_be_empty ~what span) 
     in
     Writer.with_warning node warning
   }
-  | ref_body = located(Ref_with_replacement); children = sequence_nonempty(inline_element(whitespace))?; endpos = located(END); {
-    let Loc.{value = ref_body_value; location} = ref_body in
-    let startpos = Loc.nudge_start (-3) location in
-    let ref_body : string Loc.with_location = Loc.at startpos ref_body_value in
-    let span = Loc.delimited ref_body endpos in
+  | ref_body = Ref_with_replacement; children = sequence_nonempty(inline_element(whitespace))?; endpos = located(END); {
+    let Tokens.{ inner; start } = ref_body in 
+    let span = { endpos.Loc.location with start } in
     let not_allowed = 
-      let in_what = Tokens.describe (Ref_with_replacement ref_body_value) in
+      let in_what = Tokens.describe (Ref_with_replacement ref_body) in
       Writer.Warning (Parse_error.end_not_allowed ~in_what span)
     in
     let* children = Option.value ~default:(return []) children in
-    let node = Loc.at span @@ `Reference (`With_text, ref_body, children) in
+    let node = Loc.at span @@ `Reference (`With_text, Loc.at span inner, children) in
     Writer.with_warning node not_allowed
   }
 
 let link := 
-  | link_body = located(Simple_link); endpos = located(RIGHT_BRACE); 
-    { 
-      let span = Loc.delimited (Loc.nudge_map_start (-2) link_body) endpos in
-      let link_body = link_body.Loc.value in
-      let node = Loc.at span @@ `Link (link_body, []) in
-      let url = String.trim link_body in
-      if "" = url then 
-        let what = Tokens.describe @@ Simple_link link_body in
-        let warning = 
-          Writer.Warning (Parse_error.should_not_be_empty ~what span)
-        in
-        Writer.with_warning node warning
-      else
-        return node
-    }
-  | link_body = located(Link_with_replacement); children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); 
-    { 
-      let* c = children in 
-      let span = Loc.delimited link_body endpos in
-      let link_body = link_body.Loc.value in
-      let node = Loc.at span @@ `Link (link_body, c) in
-      if "" = link_body then
-        let what = Tokens.describe @@ Link_with_replacement link_body in
-        let warning =  
-          Writer.Warning (Parse_error.should_not_be_empty ~what span)
-        in
-        Writer.with_warning node warning
-      else 
-        return node
-    }
-  | link_body = located(Link_with_replacement); endpos = located(RIGHT_BRACE);
-    {
-      let span = 
-        Loc.delimited link_body endpos 
-      in
-      let link_body = link_body.Loc.value in
-      let node = Loc.at span @@ `Link (link_body, []) in
-      let what = Tokens.describe @@ Link_with_replacement link_body in
-      let warning =
-        Writer.Warning (Parse_error.should_not_be_empty ~what span) 
+  | content = Simple_link; endpos = located(RIGHT_BRACE); { 
+    let Tokens.{ inner; start } = content in
+    let span = { endpos.Loc.location with start } in
+    let node = Loc.at span @@ `Link (inner, []) in
+    let url = String.trim inner in
+    if "" = url then 
+      let what = Tokens.describe @@ Simple_link content in
+      let warning = 
+        Writer.Warning (Parse_error.should_not_be_empty ~what span)
       in
       Writer.with_warning node warning
-    }
+    else
+      return node
+  }
+  | content = Link_with_replacement; children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); { 
+    let* c = children in 
+    let Tokens.{ inner; start } = content in
+    let span = { endpos.Loc.location with start } in
+    let node = Loc.at span @@ `Link (inner, c) in
+    if "" = inner then
+      let what = Tokens.describe @@ Link_with_replacement content in
+      let warning =  
+        Writer.Warning (Parse_error.should_not_be_empty ~what span)
+      in
+      Writer.with_warning node warning
+    else 
+      return node
+  }
+  | content = Link_with_replacement; endpos = located(RIGHT_BRACE); {
+    let Tokens.{ inner; start } = content in
+    let span = { endpos.Loc.location with start } in
+    let node = Loc.at span @@ `Link (inner, []) in
+    let what = Tokens.describe @@ Link_with_replacement content in
+    let warning =
+      Writer.Warning (Parse_error.should_not_be_empty ~what span) 
+    in
+    Writer.with_warning node warning
+  }
 
 (* LIST *)
 
@@ -828,9 +842,9 @@ let odoc_list :=
 (* TABLES *)
 
 let cell_heavy := 
-  | cell_kind = Table_cell; whitespace?; children = sequence_nonempty(nestable_block_element); RIGHT_BRACE; whitespace?;
+  | cell_kind = Table_cell; whitespace*; children = sequence_nonempty(nestable_block_element); RIGHT_BRACE; whitespace*;
     { Writer.map (fun c -> (c, cell_kind)) children }
-  | cell_kind = Table_cell; RIGHT_BRACE; whitespace?;
+  | cell_kind = Table_cell; RIGHT_BRACE; whitespace*;
     { return ([], cell_kind) }
   | cell_kind = Table_cell; children = sequence_nonempty(nestable_block_element)?; errloc = position(error);
     {
@@ -847,8 +861,8 @@ let cell_heavy :=
     }
 
 let row_heavy := 
-  | TABLE_ROW; whitespace?; ~ = sequence_nonempty(cell_heavy); RIGHT_BRACE; whitespace?; <>
-  | TABLE_ROW; whitespace?; RIGHT_BRACE; whitespace?; { return [] }
+  | TABLE_ROW; whitespace*; ~ = sequence_nonempty(cell_heavy); RIGHT_BRACE; whitespace*; <>
+  | TABLE_ROW; whitespace*; RIGHT_BRACE; whitespace*; { return [] }
   | TABLE_ROW; children = sequence_nonempty(cell_heavy)?; errloc = position(error);
     {
       let warning = fun input ->
@@ -863,7 +877,7 @@ let row_heavy :=
     }
 
 let table_heavy :=
-  | grid = delimited_location(TABLE_HEAVY, whitespace?; sequence_nonempty(row_heavy), RIGHT_BRACE); {
+  | grid = delimited_location(TABLE_HEAVY, whitespace*; sequence_nonempty(row_heavy), RIGHT_BRACE); {
     Writer.map (Loc.map (fun grid -> `Table ((grid, None), `Heavy))) (Writer.sequence_loc grid)
   }
   | startpos = located(TABLE_HEAVY); endpos = located(RIGHT_BRACE); { 
@@ -871,7 +885,7 @@ let table_heavy :=
     let inner = Loc.at span @@ `Table (([], None), `Heavy) in
     return inner
   }
-  | startpos = located(TABLE_HEAVY); whitespace?; grid = sequence_nonempty(row_heavy)?; errloc = position(error);
+  | startpos = located(TABLE_HEAVY); whitespace*; grid = sequence_nonempty(row_heavy)?; errloc = position(error);
     {
       let warning = fun input ->
         let (start_pos, end_pos) as loc = errloc in 
@@ -942,25 +956,25 @@ let table :=
 
 (* MEDIA *)
 
-(* TODO: Naming needs some work here, multiple fields labeled as `kind` which
-   doesn't make sense *)
 let media := 
-  | media = located(Media); whitespace*; 
-    { 
-      let (located_media_kind, media_href) = split_simple_media media in 
-      let wrapped_located_kind = Loc.map href_of_media located_media_kind in 
-      let kind = media_kind_of_target media_href in
-      let inner = Loc.(at media.location @@ `Media (`Simple, wrapped_located_kind, "", kind)) in
-      return inner   
-    }
-  | media = located(Media_with_replacement); whitespace*;
-    { 
-      let (located_media_kind, media_href, content) = split_replacement_media media in 
-      let wrapped_located_kind = Loc.map href_of_media located_media_kind in 
-      let kind = media_kind_of_target media_href in
-      let inner = Loc.(at media.location @@ `Media (`With_text, wrapped_located_kind, content, kind)) in
-      return inner  
-    }
+  | content = located(Media); whitespace*; { 
+    let Loc.{ value = Tokens.{ inner; start }; location } = content in
+    let span = { location with start } in
+    let (located_media_kind, media_href) = split_simple_media @@ Loc.at span inner in
+    let wrapped_located_kind = Loc.map href_of_media located_media_kind in 
+    let kind = media_kind_of_target media_href in
+    let inner = Loc.at span @@ `Media (`Simple, wrapped_located_kind, "", kind) in
+    return inner   
+  }
+  | content = located(Media_with_replacement); whitespace*; { 
+    let Loc.{ value = Tokens.{ inner; start }; location } = content in
+    let span = { location with start } in
+    let (located_media_kind, media_href, content) = split_replacement_media @@ Loc.at span inner in 
+    let wrapped_located_kind = Loc.map href_of_media located_media_kind in 
+    let kind = media_kind_of_target media_href in
+    let inner = Loc.at span @@ `Media (`With_text, wrapped_located_kind, content, kind) in
+    return inner  
+  }
 
 (* TOP-LEVEL ELEMENTS *)
 
@@ -987,14 +1001,14 @@ let paragraph_style := content = located(Paragraph_style); ws = paragraph; endpo
 
 let verbatim := verbatim = located(Verbatim); { 
   let Loc.{ value; location } = verbatim in
+  let Tokens.{ start; inner } = value in
+  let span = { location with start } in
   let what = Tokens.describe @@ Verbatim value in
   let warning =  
-    let span = Loc.of_position $sloc in
     Writer.Warning (Parse_error.should_not_be_empty ~what span) 
   in
-  let location = Loc.nudge_start (-String.length "{v ") location in
-  let verbatim = Loc.at location @@ `Verbatim value in
-  Writer.ensure has_content warning (return value) 
+  let verbatim = Loc.at span @@ `Verbatim inner in
+  Writer.ensure has_content warning (return inner) 
   |> Writer.map (Fun.const verbatim)
 }
 
@@ -1004,28 +1018,30 @@ let paragraph := items = sequence_nonempty(inline_element(horizontal_whitespace)
 
 let code_block := 
   | content = located(Code_block); {
-    return @@ Loc.map (fun Tokens.{metadata; delimiter; content} -> 
-      let meta = Option.map (fun Tokens.{language_tag; tags} -> Ast.{ language = language_tag; tags }) metadata in
-      `Code_block Ast.{ meta; delimiter; content; output = None }
-    ) content
+    let Loc.{ value = Tokens.{ inner; start }; location } = content in
+    let Tokens.{metadata; delimiter; content} = inner in
+    let meta = Option.map (fun Tokens.{language_tag; tags} -> Ast.{ language = language_tag; tags }) metadata in
+    let node = `Code_block Ast.{ meta; delimiter; content; output = None } in
+    return @@ Loc.at { location with start } node
   }
   | content = located(Code_block_with_output); output = sequence_nonempty(nestable_block_element); RIGHT_CODE_DELIMITER; {
-    let* output = output in
-    return @@ Loc.map (fun Tokens.{metadata; delimiter; content} -> 
-      let meta = Option.map (fun Tokens.{language_tag; tags} -> Ast.{ language = language_tag; tags }) metadata in
-      `Code_block Ast.{ meta; delimiter; content; output = Some output }
-    ) content
+    let* output = Writer.map Option.some output in
+    let Loc.{ value = Tokens.{ inner; start }; location } = content in
+    let Tokens.{metadata; delimiter; content} = inner in
+    let meta = Option.map (fun Tokens.{language_tag; tags} -> Ast.{ language = language_tag; tags }) metadata in
+    let node = `Code_block Ast.{ meta; delimiter; content; output } in
+    return @@ Loc.at { location with start } node
   }
 
 let math_block := inner = located(Math_block); {
-  let Loc.{ value ; location } = inner in
-  let Tokens.{start; content} = value in
+  let Loc.{ value; location } = inner in
+  let Tokens.{ start; inner } = value in
   let span = { location with start } in
   let what = Tokens.describe @@ Math_block value in
   let warning = 
     Writer.Warning (Parse_error.should_not_be_empty ~what span) 
   in 
-  Writer.ensure has_content warning (return content) 
+  Writer.ensure has_content warning (return inner) 
   |> Writer.map (fun m -> Loc.at span @@ `Math_block m)
 }
 

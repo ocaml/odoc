@@ -17,6 +17,10 @@ let ast_list_kind : list_kind -> Ast.list_kind = function
   | Ordered -> `Ordered
   | Unordered -> `Unordered
 
+type 'a with_start_pos = { start : Loc.point; inner : 'a }
+let with_start_pos : Lexing.position -> 'a -> 'a with_start_pos =
+ fun start inner -> { start = Loc.make_point start; inner }
+
 type code_block = {
   metadata : meta option;
   delimiter : string option;
@@ -31,21 +35,21 @@ type token =
   | Space of string
   | Single_newline of string
   | Blank_line of string
-  | Simple_ref of string
-  | Ref_with_replacement of string
-  | Simple_link of string
-  | Link_with_replacement of string
+  | Simple_ref of string with_start_pos
+  | Ref_with_replacement of string with_start_pos
+  | Simple_link of string with_start_pos
+  | Link_with_replacement of string with_start_pos
   | MODULES
-  | Media of (media * media_target)
-  | Media_with_replacement of (media * media_target * string)
+  | Media of (media * media_target) with_start_pos
+  | Media_with_replacement of (media * media_target * string) with_start_pos
   (* Start location *)
-  | Math_span of math
-  | Math_block of math
-  | Code_span of string
-  | Code_block of code_block
-  | Code_block_with_output of code_block
+  | Math_span of string with_start_pos
+  | Math_block of string with_start_pos
+  | Code_span of string with_start_pos
+  | Code_block of code_block with_start_pos
+  | Code_block_with_output of code_block with_start_pos
   | Word of string
-  | Verbatim of string
+  | Verbatim of string with_start_pos
   | RIGHT_CODE_DELIMITER
   | RIGHT_BRACE
   | Paragraph_style of alignment
@@ -60,22 +64,22 @@ type token =
   | MINUS
   | PLUS
   | BAR
-  | Section_heading of (int * string option)
-  | Author of string
+  | Section_heading of (int * string option) with_start_pos
+  | Author of string with_start_pos
   | DEPRECATED
-  | Param of string
-  | Raise of string
+  | Param of string with_start_pos
+  | Raise of string with_start_pos
   | RETURN
-  | See of (internal_reference * string)
-  | Since of string
-  | Before of string
-  | Version of string
-  | Canonical of string
+  | See of (internal_reference * string) with_start_pos
+  | Since of string with_start_pos
+  | Before of string with_start_pos
+  | Version of string with_start_pos
+  | Canonical of string with_start_pos
   | INLINE
   | OPEN
   | CLOSED
   | HIDDEN
-  | Raw_markup of (string option * string)
+  | Raw_markup of (string option * string) with_start_pos
   | END
 
 let media_description ref_kind media_kind =
@@ -97,10 +101,10 @@ let print : token -> string = function
   | Simple_link _ -> "{:"
   | Link_with_replacement _ -> "{{:"
   | MODULES -> "{!modules:"
-  | Media (ref_kind, media_kind) ->
+  | Media { inner = ref_kind, media_kind; _ } ->
       let ref_kind, media_kind = media_description ref_kind media_kind in
       Printf.sprintf "{%s%s" media_kind ref_kind
-  | Media_with_replacement (ref_kind, media_kind, _) ->
+  | Media_with_replacement { inner = ref_kind, media_kind, _; _ } ->
       let ref_kind, media_kind = media_description ref_kind media_kind in
       Printf.sprintf "{{%s%s" media_kind ref_kind
   | Math_span _ -> "{m"
@@ -131,7 +135,7 @@ let print : token -> string = function
   | MINUS -> "'-'"
   | PLUS -> "'+'"
   | BAR -> "'|'"
-  | Section_heading (level, label) ->
+  | Section_heading { inner = level, label; _ } ->
       let label = match label with None -> "" | Some label -> ":" ^ label in
       Printf.sprintf "'{%i%s'" level label
   | Author _ -> "'@author'"
@@ -148,8 +152,8 @@ let print : token -> string = function
   | OPEN -> "'@open'"
   | CLOSED -> "'@closed'"
   | HIDDEN -> "'@hidden"
-  | Raw_markup (None, _) -> "'{%...%}'"
-  | Raw_markup (Some target, _) -> "'{%" ^ target ^ ":...%}'"
+  | Raw_markup { inner = None, _; _ } -> "'{%...%}'"
+  | Raw_markup { inner = Some target, _; _ } -> "'{%" ^ target ^ ":...%}'"
   | END -> "EOI"
 
 (* [`Minus] and [`Plus] are interpreted as if they start list items. Therefore,
@@ -157,10 +161,10 @@ let print : token -> string = function
    [`Minus] and [`Plus] should always be plausibly list item bullets. *)
 let describe : token -> string = function
   | Space _ -> "(horizontal space)"
-  | Media (ref_kind, media_kind) ->
+  | Media { inner = ref_kind, media_kind; _ } ->
       let ref_kind, media_kind = media_description ref_kind media_kind in
       Printf.sprintf "{%s%s" media_kind ref_kind
-  | Media_with_replacement (ref_kind, media_kind, _) ->
+  | Media_with_replacement { inner = ref_kind, media_kind, _; _ } ->
       let ref_kind, media_kind = media_description ref_kind media_kind in
       Printf.sprintf "{{%s%s" media_kind ref_kind
   | Word w -> Printf.sprintf "'%s'" w
@@ -200,7 +204,7 @@ let describe : token -> string = function
   | MINUS -> "'-' (bulleted list item)"
   | PLUS -> "'+' (numbered list item)"
   | BAR -> "'|'"
-  | Section_heading (level, _) ->
+  | Section_heading { inner = level, _; _ } ->
       Printf.sprintf "'{%i ...}' (section heading)" level
   | Author _ -> "'@author'"
   | DEPRECATED -> "'@deprecated'"
@@ -219,10 +223,16 @@ let describe : token -> string = function
 
 let empty_code_block =
   {
-    metadata = None;
-    delimiter = None;
-    content =
-      Loc.at Loc.{ start = Loc.dummy_pos; end_ = Loc.dummy_pos; file = "" } "";
+    inner =
+      {
+        metadata = None;
+        delimiter = None;
+        content =
+          Loc.at
+            Loc.{ start = Loc.dummy_pos; end_ = Loc.dummy_pos; file = "" }
+            "";
+      };
+    start = Loc.dummy_pos;
   }
 
 let of_ast_style : Ast.style -> style = function
@@ -243,15 +253,17 @@ let describe_inline : Ast.inline_element -> string = function
   | `Word w -> describe @@ Word w
   | `Space _ -> describe @@ Space ""
   | `Styled (style, _) -> describe @@ Style (of_ast_style style)
-  | `Code_span _ -> describe @@ Code_span ""
-  | `Math_span _ ->
-      describe @@ Math_span { start = Loc.dummy_pos; content = "" }
-  | `Raw_markup x -> describe @@ Raw_markup x
-  | `Link (l, []) -> describe @@ Simple_link l
-  | `Link (l, _ :: _) -> describe @@ Link_with_replacement l
-  | `Reference (`Simple, { value; _ }, _) -> describe @@ Simple_ref value
-  | `Reference (`With_text, { value; _ }, _) ->
-      describe @@ Ref_with_replacement value
+  | `Code_span _ -> describe @@ Code_span { inner = ""; start = Loc.dummy_pos }
+  | `Math_span _ -> describe @@ Math_span { start = Loc.dummy_pos; inner = "" }
+  | `Raw_markup inner -> describe @@ Raw_markup { inner; start = Loc.dummy_pos }
+  | `Link (inner, []) ->
+      describe @@ Simple_link { inner; start = Loc.dummy_pos }
+  | `Link (inner, _ :: _) ->
+      describe @@ Link_with_replacement { inner; start = Loc.dummy_pos }
+  | `Reference (`Simple, { value = inner; _ }, _) ->
+      describe @@ Simple_ref { inner; start = Loc.dummy_pos }
+  | `Reference (`With_text, { value = inner; _ }, _) ->
+      describe @@ Ref_with_replacement { inner; start = Loc.dummy_pos }
 
 let of_href = function `Reference s -> Reference s | `Link s -> Link s
 
@@ -262,7 +274,8 @@ let of_media_kind = function
 
 let of_media = function
   | `Media (_, Loc.{ value; _ }, _, kind) ->
-      Media (of_href value, of_media_kind kind)
+      Media
+        { inner = (of_href value, of_media_kind kind); start = Loc.dummy_pos }
 
 (* NOTE: Fix list *)
 let describe_nestable_block : Ast.nestable_block_element -> string = function
@@ -271,13 +284,13 @@ let describe_nestable_block : Ast.nestable_block_element -> string = function
       | Loc.{ value; _ } :: _ -> describe_inline value
       | [] -> describe @@ Word "")
   | `Code_block _ -> describe @@ Code_block empty_code_block
-  | `Verbatim _ -> describe @@ Verbatim ""
+  | `Verbatim _ -> describe @@ Verbatim { inner = ""; start = Loc.dummy_pos }
   | `Modules _ -> describe MODULES
   | `List (_, _, _) -> "List"
   | `Table (_, kind) ->
       describe @@ if kind = `Light then TABLE_LIGHT else TABLE_HEAVY
   | `Math_block _ ->
-      describe @@ Math_block { start = Loc.dummy_pos; content = "" }
+      describe @@ Math_block { start = Loc.dummy_pos; inner = "" }
   | `Media _ as media -> describe @@ of_media media
 
 let of_ast_ref : [ `Document | `File | `Url ] -> internal_reference = function
@@ -291,17 +304,19 @@ let to_ast_ref : internal_reference -> [ `Url | `File | `Document ] = function
   | Document -> `Document
 
 let describe_tag : Ast.tag -> string = function
-  | `See (kind, _, _) -> describe @@ See (of_ast_ref kind, "")
-  | `Author s -> describe @@ Author s
+  | `See (kind, _, _) ->
+      describe @@ See { inner = (of_ast_ref kind, ""); start = Loc.dummy_pos }
+  | `Author inner -> describe @@ Author { inner; start = Loc.dummy_pos }
   | `Deprecated _ -> describe DEPRECATED
-  | `Param (s, _) -> describe @@ Param s
-  | `Raise (s, _) -> describe @@ Raise s
+  | `Param (inner, _) -> describe @@ Param { inner; start = Loc.dummy_pos }
+  | `Raise (inner, _) -> describe @@ Raise { inner; start = Loc.dummy_pos }
   | `Return _ -> describe RETURN
-  | `Since v -> describe @@ Since v
-  | `Before (v, _) -> describe @@ Before v
-  | `Version v -> describe @@ Version v
+  | `Since inner -> describe @@ Since { inner; start = Loc.dummy_pos }
+  | `Before (inner, _) -> describe @@ Before { inner; start = Loc.dummy_pos }
+  | `Version inner -> describe @@ Version { inner; start = Loc.dummy_pos }
   | `Closed -> describe CLOSED
   | `Open -> describe OPEN
-  | `Canonical Loc.{ value; _ } -> describe @@ Canonical value
+  | `Canonical Loc.{ value = inner; _ } ->
+      describe @@ Canonical { inner; start = Loc.dummy_pos }
   | `Hidden -> describe HIDDEN
   | `Inline -> describe INLINE
