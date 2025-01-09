@@ -370,6 +370,8 @@ let toplevel_error :=
     in 
     Writer.with_warning (list :> Ast.block_element Loc.with_location) (Writer.Warning warning)
   }
+                        (*
+
   | illegal_elt = tag; {
       Writer.bind 
         illegal_elt
@@ -382,6 +384,7 @@ let toplevel_error :=
           let inner = (illegal_elt :> Ast.block_element  Loc.with_location) in
           Writer.with_warning inner should_begin_on_its_own_line) 
     }
+                        *)
 
 (* SECTION HEADING *)
 
@@ -629,6 +632,17 @@ let style :=
     return inner 
     |> Writer.warning not_allowed
     |> Writer.warning should_not_be_empty
+  }
+  | style = located(Style); errloc = position(error); {
+    let span = Loc.span [style.Loc.location; Loc.of_position errloc] in
+    let illegal = Writer.InputNeeded (fun input ->
+      let in_what = Tokens.describe @@ Style style.Loc.value in
+      let (start_pos, end_pos) = errloc in
+      let illegal_section = Loc.extract ~input ~start_pos ~end_pos in
+      Parse_error.illegal ~in_what illegal_section span
+      ) in
+    let inner = Loc.at span @@ `Styled (Tokens.to_ast_style style.Loc.value, []) in
+    Writer.with_warning inner illegal
   }
   | style = located(Style); endpos = located(END); {
     let span = Loc.delimited style endpos in
