@@ -8,6 +8,16 @@
   let not_empty : 'a list -> bool = function _ :: _ -> true | _ -> false
   let has_content : string -> bool = fun s -> String.length s > 0
 
+  let trim_start = function
+    | Loc.{value = `Space _; _ } :: xs -> xs
+    | xs -> xs
+
+  let paragraph : Ast.inline_element Loc.with_location list -> Ast.nestable_block_element Loc.with_location =
+    fun elts ->
+      let elts = trim_start elts in
+      let span = Loc.span @@ List.map Loc.location elts in
+      Loc.at span @@ `Paragraph elts
+
   type align_error =
     | Invalid_align (* An invalid align cell *)
     | Not_align (* Not an align cell *)
@@ -74,28 +84,18 @@
     | _ :: _, [] -> sequence align
     | _ -> Error Not_align
 
-  let to_paragraph :
-      Ast.inline_element Loc.with_location list ->
-      Ast.nestable_block_element Loc.with_location =
-  fun words ->
-    let span = Loc.span @@ List.map Loc.location words in
-    Loc.at span (`Paragraph words)
-
   (* Merges inline elements within a cell into a single paragraph element, and tags cells w/ tag *)
   let merged_tagged_row tag : 'a Loc.with_location list list -> 'b =
-    List.map (fun elts -> ([ to_paragraph elts ], tag))
+    List.map (fun elts -> ([ paragraph elts ], tag))
   let as_data = merged_tagged_row `Data
   let as_header = merged_tagged_row `Header
 
   let is_valid_align row = Result.is_ok @@ valid_align_row row
-
-(*
-
+  (*
   - If the first row is the alignment row then the rest should be data 
   - Otherwise the first should be the headers, the second align, and the rest data 
   - If there's only one row and it's not the align row, then it's data 
-*)
-
+  *)
   let construct_table : 
       span:Loc.span -> 
       Ast.inline_element Loc.with_location list list list ->
@@ -146,16 +146,6 @@
 
   let split_replacement_media Loc.{ location; value = media, target, content } =
     (Loc.at location media, target, content)
-
-  let trim_start = function
-    | Loc.{value = `Space _; _ } :: xs -> xs
-    | xs -> xs
-
-  let paragraph : Ast.inline_element Loc.with_location list -> Ast.nestable_block_element Loc.with_location =
-    fun elts ->
-      let elts = trim_start elts in
-      let span = Loc.span @@ List.map Loc.location elts in
-      Loc.at span @@ `Paragraph elts
 
   let rec inline_element_inner : Ast.inline_element -> string = function 
     | `Space s -> s 
@@ -324,6 +314,31 @@ let toplevel_error :=
     let as_text = Loc.at span @@ `Word "{" in
     let node = (Loc.same as_text @@ `Paragraph [ as_text ]) in
     Writer.with_warning node warning 
+  }
+  | err = located(list_opening); horizontal_whitespace; children = sequence_nonempty(inline_element(horizontal_whitespace)); endpos = located(RIGHT_BRACE)?; {
+    let endloc = Option.value ~default:(Writer.unwrap children |> List.rev |> List.hd |> Loc.map @@ Fun.const ()) endpos in
+    let span = Loc.delimited err endloc in
+    let not_allowed = Writer.Warning (
+        let what = Tokens.describe err.Loc.value in
+        let in_what = "top-level text" in
+        let suggestion = 
+          Printf.sprintf 
+            "Move %s into %s or %s" 
+            what 
+            (Tokens.describe @@ List Ordered) 
+            (Tokens.describe @@ List Unordered) 
+        in
+        Parse_error.not_allowed ~what ~in_what ~suggestion span) 
+    in
+    let unclosed = Writer.Warning (
+      Parse_error.unclosed_bracket ~bracket:(Tokens.print err.Loc.value) span) 
+    in
+    let* children = children in
+    let inner = { (paragraph children :> Ast.block_element Loc.with_location) with location = span } in
+    let m = Writer.with_warning inner not_allowed in
+    if Option.is_some endpos then m 
+    else 
+      Writer.warning unclosed m
   }
   | errloc = position(BAR); whitespace?; { 
     let span = Loc.of_position errloc in
@@ -657,11 +672,10 @@ let style :=
 (* LINKS + REFS *)
 
 let reference := 
-  | ref_body = located(Simple_ref); children = sequence(inline_element(whitespace)); {
-    let* children = children in
+  | ref_body = located(Simple_ref); {
     let Loc.{ value = Tokens.{ inner; start }; location } = ref_body in
-    let span = Loc.span @@ { location with start } :: List.map Loc.location children in
-    return @@ Loc.at span @@ `Reference (`Simple, Loc.at location inner, trim_start children)
+    let span = { location with start } in
+    return @@ Loc.at span @@ `Reference (`Simple, Loc.at location inner, [])
   }
   | ref_body = Ref_with_replacement; children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); { 
     let* children = children in 
@@ -692,13 +706,13 @@ let reference :=
   }
 
 let link := 
-  | content = Simple_link; endpos = located(RIGHT_BRACE); { 
-    let Tokens.{ inner; start } = content in
-    let span = { endpos.Loc.location with start } in
+  | content = located(Simple_link); { 
+    let Loc.{ value = Tokens.{ inner; start }; location } = content in
+    let span = { location with start } in
     let node = Loc.at span @@ `Link (inner, []) in
     let url = String.trim inner in
     if "" = url then 
-      let what = Tokens.describe @@ Simple_link content in
+      let what = Tokens.describe @@ Simple_link content.Loc.value in
       let warning = 
         Writer.Warning (Parse_error.should_not_be_empty ~what span)
       in
@@ -767,15 +781,19 @@ let list_light :=
     return inner
   }
 
+let list_opening := 
+  | LI; { Tokens.LI }
+  | DASH; { Tokens.DASH } 
+
 let item_heavy :=
-    | startpos = located(LI); whitespace; items = sequence(nestable_block_element); endpos = located(RIGHT_BRACE); whitespace?; {
-      let span = Loc.delimited startpos endpos in
+    | start_pos = located(list_opening); whitespace; items = sequence(nestable_block_element); RIGHT_BRACE; any_whitespace*; {
+      let Loc.{ value = token; location } = start_pos in
       let warning = 
-        Writer.Warning (Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span) 
+        Writer.Warning (Parse_error.should_not_be_empty ~what:(Tokens.describe token) location) 
       in
-      Writer.ensure not_empty warning items 
+      Writer.ensure not_empty warning items
     }
-    | startpos = located(LI); items = sequence(nestable_block_element); endpos = located(RIGHT_BRACE); whitespace?; {
+    | startpos = located(list_opening); items = sequence(nestable_block_element); endpos = located(RIGHT_BRACE); any_whitespace*; {
       let span = Loc.delimited startpos endpos in
       let should_be_followed_by_whitespace = 
         Writer.Warning (Parse_error.should_be_followed_by_whitespace ~what:(Tokens.describe LI) span)
@@ -786,14 +804,7 @@ let item_heavy :=
       Writer.ensure not_empty should_not_be_empty items 
       |> Writer.warning should_be_followed_by_whitespace 
     }
-    | startpos = located(DASH); whitespace?; items = sequence(nestable_block_element); endpos = located(RIGHT_BRACE); whitespace?; {
-      let warning = 
-        let span = Loc.delimited startpos endpos in
-        Writer.Warning (Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span) 
-      in
-      Writer.ensure not_empty warning items
-    }
-    | startpos = located(DASH); whitespace?; items = sequence_nonempty(nestable_block_element)?; endpos = located(END); {
+    | startpos = located(DASH); items = sequence_nonempty(nestable_block_element)?; endpos = located(END); {
       let end_not_allowed = 
         Writer.Warning (Parse_error.end_not_allowed ~in_what:(Tokens.describe DASH) endpos.Loc.location)
       in
@@ -915,10 +926,31 @@ let table_heavy :=
 
 (* LIGHT TABLE *)
 
-let cell_content_light := ~ = sequence_nonempty(inline_element(horizontal_whitespace)); <>
+let cell_inner := 
+  | ~ = inline_element(horizontal_whitespace); <> 
+  | (start_pos, end_pos) = position(error); {
+    let span = Loc.of_position (start_pos, end_pos) in
+    let illegal = Writer.InputNeeded (fun input ->
+      let text_span = Loc.extract ~start_pos ~end_pos ~input in 
+      Parse_error.illegal ~in_what:(Tokens.describe TABLE_LIGHT) text_span span)
+    in
+
+    (* NOTE: this is the best we can do right now, accepting a `nestable_block_element`
+        for example, causes a reduce/reduce conflict. So we have to lose some
+        information via the `error` keyword and return an empty word. 
+        Maybe if we refactored the way that block elements/tags/sections handle
+        whitespace we could remove the conflict while still being to match on those
+        elements
+    *)
+    Writer.with_warning (Loc.at span @@ `Word "") illegal 
+  }
+
+let cell_content_light := ~ = sequence_nonempty(cell_inner); <>
+
 let cell := 
   | ~ = cell_content_light; <>
   | ~ = cell_content_light; BAR; <>
+  | BAR; { return [] }
 
 let cells := BAR?; ~ = sequence_nonempty(cell); <>
 
