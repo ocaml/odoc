@@ -278,8 +278,7 @@ let separated_sequence(sep, rule) := xs = separated_list(sep, rule); { Writer.se
 
 (* WHITESPACE *)
 
-let horizontal_whitespace := 
-  | ~ = Space; <`Space>
+let horizontal_whitespace := ~ = Space; <`Space>
 
 let whitespace := 
   | ~ = horizontal_whitespace; <>
@@ -916,11 +915,7 @@ let table_heavy :=
 
 (* LIGHT TABLE *)
 
-let table_light_legal_elt := 
-  | s = located(horizontal_whitespace); { return s } 
-  | ~ = inline_element_without_whitespace; <>
-
-let cell_content_light := ~ = sequence_nonempty(table_light_legal_elt); <>
+let cell_content_light := ~ = sequence_nonempty(inline_element(horizontal_whitespace)); <>
 let cell := 
   | ~ = cell_content_light; <>
   | ~ = cell_content_light; BAR; <>
@@ -930,10 +925,13 @@ let cells := BAR?; ~ = sequence_nonempty(cell); <>
 let row_light :=
   | ~ = cells; <>
   | ~ = cells; Single_newline; <>
+  | ~ = cells; Single_newline; Space; <>
+  | ~ = cells; Blank_line; <>
+  | ~ = cells; Blank_line; Single_newline; <>
 
 let rows_light := ~ = sequence_nonempty(row_light); <>
 
-let table_start_light := startpos = located(TABLE_LIGHT); whitespace?; { startpos }
+let table_start_light := startpos = located(TABLE_LIGHT); any_whitespace*; { startpos }
 let table_light :=
     | startpos = table_start_light; data = rows_light; endpos = located(RIGHT_BRACE); { 
       let span = Loc.delimited startpos endpos in
