@@ -65,6 +65,8 @@
 
 ### Fixed
 
+- Fix issue #1001 where optional parameters would in rare cases cause an assertion
+  failure (@jonludlam, #1272)
 - Fix resolution of module synopses in {!modules} lists that require
   --open (@jonludlam, #1104}
 - Fix top comment not being taken from includes often enough (@panglesd, #1117)
