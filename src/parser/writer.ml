@@ -1,65 +1,57 @@
 (** An implementation of the Writer monad for parser error reporting *)
 
 type +'a t = Writer of ('a * warning list)
+
+(** A warning can either be totally self-contained, or a function requiring 
+    input. This is so that we can pass the input string in later in order 
+    to extract spans where errors occur *)
 and warning = InputNeeded of (string -> Warning.t) | Warning of Warning.t
 
-let run_warning : input:string -> warning -> Warning.t =
- fun ~input warning ->
-  match warning with InputNeeded f -> f input | Warning w -> w
-
 let return : 'a -> 'a t = fun x -> Writer (x, [])
-
-let bind : 'a t -> ('a -> 'b t) -> 'b t =
- fun (Writer (node, warnings)) f ->
+let bind : 'a t -> f:('a -> 'b t) -> 'b t =
+ fun (Writer (node, warnings)) ~f ->
   let (Writer (next, next_warnings)) = f node in
   Writer (next, warnings @ next_warnings)
 
-let map : ('a -> 'b) -> 'a t -> 'b t = fun f w -> bind w (fun x -> return (f x))
+let map : f:('a -> 'b) -> 'a t -> 'b t =
+ fun ~f (Writer (x, ws)) -> Writer (f x, ws)
 
-let seq_right : 'a t -> 'b t -> 'b t =
+let ( <$> ) f w = map ~f w
+
+let seq : 'a t -> 'b t -> 'b t =
  fun (Writer (_, ws)) (Writer (x, ws2)) -> Writer (x, ws @ ws2)
+let ( *> ) = seq
 
-let seq_left : 'a t -> 'b t -> 'a t =
- fun (Writer (x, ws)) (Writer (_, ws2)) -> Writer (x, ws @ ws2)
-
+(** Useful functions for working with Writer.t *)
 module Prelude = struct
   let return = return
-  let ( >>= ) = bind
-  let ( let* ) = bind
-  let ( and* ) = bind
-  let ( let+ ) w f = map f w
-  let ( <$> ) = map
-  let ( *> ) = seq_right
-  let ( <* ) = seq_left
+  let ( let* ) w f = bind w ~f
+  let ( <$> ) = ( <$> )
+  let ( *> ) = ( *> )
 end
-
-let warning warning (Writer (n, ws)) = Writer (n, warning :: ws)
 
 let sequence : 'a t list -> 'a list t =
  fun xs ->
-  let go (ns, ws) (Writer (n, w)) = (n :: ns, w @ ws) in
-  let xs, ws = List.fold_left go ([], []) xs in
-  Writer (List.rev xs, ws)
+  let xs, ws = List.map (fun (Writer (x, ws)) -> (x, ws)) xs |> List.split in
+  Writer (xs, List.flatten ws)
 
 let sequence_loc : 'a t Loc.with_location -> 'a Loc.with_location t =
- fun { value; location } -> map (Loc.at location) value
+ fun { value; location } -> Loc.at location <$> value
 
-let map2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t =
- fun f (Writer (a, ws)) (Writer (b, wsb)) -> Writer (f a b, wsb @ ws)
+(** [warning Warning.t Writer.t] is equivalent to Haskell's [tell] *)
+let warning warning (Writer (n, ws)) = Writer (n, warning :: ws)
 
-let traverse : ('a -> 'b t) -> 'a list -> 'b list t =
- fun f xs -> sequence (List.map f xs)
+let return_warning node warning = Writer (node, [ warning ])
 
-let with_warning node warning = Writer (node, [ warning ])
-
+(** [ensure pred warning Writer] Logs a warning if the predicate returns true 
+    for the contained value *)
 let ensure : ('a -> bool) -> warning -> 'a t -> 'a t =
  fun pred warning (Writer (x, ws) as self) ->
   if pred x then self else Writer (x, warning :: ws)
 
-let run : input:string -> Ast.t t -> Ast.t * Warning.t list =
+let run : input:string -> 'a t -> 'a * Warning.t list =
  fun ~input (Writer (tree, warnings)) ->
-  (tree, List.map (run_warning ~input) warnings)
+  let go input = function InputNeeded f -> f input | Warning w -> w in
+  (tree, List.map (go input) warnings)
 
-let unwrap : 'a t -> 'a = fun (Writer (x, _)) -> x
-let unwrap_located : 'a Loc.with_location t -> 'a =
- fun (Writer (Loc.{ value; _ }, _)) -> value
+let get : 'a t -> 'a = fun (Writer (x, _)) -> x

@@ -126,7 +126,7 @@ let unclosed_table
     match data with
     | Some data ->
         Writer.map
-          (fun data ->
+          ~f:(fun data ->
             Loc.at span @@ `Table ((List.map as_data data, None), `Light))
           data
     | None ->
@@ -169,3 +169,20 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
   not_empty xs
   && List.for_all (function `Word _ | `Space _ -> true | _ -> false)
      @@ List.map Loc.value xs
+
+let light_list_item start item =
+  let open Tokens in
+  match start with
+  | MINUS -> `Unordered item
+  | PLUS -> `Ordered item
+  | _ -> assert false (* unreachable *)
+
+let or_insert = function None -> Option.some | o -> Fun.const o
+
+let split_light_list_items items =
+  let rec go acc list_kind = function
+    | `Ordered x :: xs -> go (x :: acc) (or_insert list_kind `Ordered) xs
+    | `Unordered x :: xs -> go (x :: acc) (or_insert list_kind `Unordered) xs
+    | [] -> (Option.get list_kind, List.rev acc)
+  in
+  go [] None items
