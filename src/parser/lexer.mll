@@ -463,13 +463,13 @@ and token input = parse
     { Style Emphasis }
 
   | "{L"
-    { Paragraph_style Left }
+    { Paragraph_style { inner = Left; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf } }
 
   | "{C"
-    { Paragraph_style Center }
+    { Paragraph_style { inner = Center; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf } }
 
   | "{R"
-    { Paragraph_style Right }
+    { Paragraph_style { inner = Right; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf } }
 
   | "{^"
     { Style Superscript }

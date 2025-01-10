@@ -52,7 +52,7 @@ type token =
   | Verbatim of string with_start_pos
   | RIGHT_CODE_DELIMITER
   | RIGHT_BRACE
-  | Paragraph_style of alignment
+  | Paragraph_style of alignment with_start_pos
   | Style of style
   | List of list_kind
   | LI
@@ -115,9 +115,9 @@ let print : token -> string = function
   | Verbatim _ -> "{v"
   | RIGHT_CODE_DELIMITER -> "]}"
   | RIGHT_BRACE -> "}"
-  | Paragraph_style Left -> "'{L'"
-  | Paragraph_style Center -> "'{C'"
-  | Paragraph_style Right -> "'{R'"
+  | Paragraph_style { inner = Left; _ } -> "'{L'"
+  | Paragraph_style { inner = Center; _ } -> "'{C'"
+  | Paragraph_style { inner = Right; _ } -> "'{R'"
   | Style Bold -> "'{b'"
   | Style Italic -> "'{i'"
   | Style Emphasis -> "'{e'"
@@ -170,9 +170,9 @@ let describe : token -> string = function
   | Word w -> Printf.sprintf "'%s'" w
   | Code_span _ -> "'[...]' (code)"
   | Raw_markup _ -> "'{%...%}' (raw markup)"
-  | Paragraph_style Left -> "'{L ...}' (left alignment)"
-  | Paragraph_style Center -> "'{C ...}' (center alignment)"
-  | Paragraph_style Right -> "'{R ...}' (right alignment)"
+  | Paragraph_style { inner = Left; _ } -> "'{L ...}' (left alignment)"
+  | Paragraph_style { inner = Center; _ } -> "'{C ...}' (center alignment)"
+  | Paragraph_style { inner = Right; _ } -> "'{R ...}' (right alignment)"
   | Style Bold -> "'{b ...}' (boldface text)"
   | Style Italic -> "'{i ...}' (italic text)"
   | Style Emphasis -> "'{e ...}' (emphasized text)"

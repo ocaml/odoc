@@ -18,7 +18,7 @@
 %token <Tokens.style> Style "{i" (* or '{b' etc *)
 
 (* or '{C' or '{R', but this syntax has been deprecated and is only kept around so legacy codebases don't break :p *)
-%token <Tokens.alignment> Paragraph_style "{L" 
+%token <Tokens.alignment Tokens.with_start_pos> Paragraph_style "{L" 
 
 %token MODULES "{!modules:"
 
@@ -871,7 +871,11 @@ let paragraph_style := content = located(Paragraph_style); ws = paragraph; endpo
     let what = Tokens.describe @@ Paragraph_style content.Loc.value in
     Writer.Warning (Parse_error.markup_should_not_be_used span ~what)
   in 
-  Writer.warning warning ws
+  let start = content.Loc.value.Tokens.start in
+  let endloc = endpos.Loc.location in
+  Writer.bind ws (fun ws -> 
+    Writer.with_warning { ws with Loc.location = { endloc with start }} warning)
+    
 }
 
 let verbatim := verbatim = located(Verbatim); { 
