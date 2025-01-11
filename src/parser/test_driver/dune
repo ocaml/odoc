@@ -1,0 +1,5 @@
+(executable
+ (name tester)
+ (public_name tester)
+ (package odoc)
+ (libraries odoc_parser odoc_parser_test))

@@ -8,6 +8,9 @@
 type point = { line : int; column : int }
 (** A specific character *)
 
+val make_point : Lexing.position -> point
+val dummy_pos : point
+
 type span = { file : string; start : point; end_ : point }
 (** A range of characters between [start] and [end_] in a particular file *)
 
@@ -28,8 +31,28 @@ val nudge_end : int -> span -> span
 type +'a with_location = { location : span; value : 'a }
 (** Describes values located at a particular span *)
 
+val fmt : span -> string
+(** Format a `span` and return the resulting string *)
+
+val delimited : 'a with_location -> 'b with_location -> span
+(** Returns the span which contains both arguments *)
+
+val with_start_location : span -> 'a with_location -> 'a with_location
+(** [with_start_location start t] return t with it's starting point = start *)
+
+val nudge_map_start : int -> 'a with_location -> 'a with_location
+val nudge_map_end : int -> 'a with_location -> 'a with_location
+
 val at : span -> 'a -> 'a with_location
 (** Constructor for {!with_location} *)
+
+val of_position : ?filename:string -> Lexing.position * Lexing.position -> span
+(** Convert Menhir's `$loc` or `$sloc` into a span *)
+
+val extract :
+  input:string -> start_pos:Lexing.position -> end_pos:Lexing.position -> string
+(** Given a starting positon and an ending position extract the portion of the
+    input text between those positions *)
 
 val location : 'a with_location -> span
 (** Returns the location of a located value *)
@@ -39,6 +62,9 @@ val value : 'a with_location -> 'a
 
 val map : ('a -> 'b) -> 'a with_location -> 'b with_location
 (** Map over a located value without changing its location *)
+
+val is : ('a -> bool) -> 'a with_location -> bool
+(** Test a located value with a predicate *)
 
 val same : _ with_location -> 'b -> 'b with_location
 (** [same x y] retuns the value y wrapped in a {!with_location} whose
