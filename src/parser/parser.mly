@@ -126,26 +126,6 @@ let toplevel :=
   | ~ = toplevel_error; <>
 
 let toplevel_error :=
-  | errloc = position(PLUS); whitespace?; { 
-    let span = Loc.of_position errloc in
-    let warning = 
-      let what = Tokens.describe PLUS in 
-      Writer.Warning (Parse_error.bad_markup what span) 
-    in 
-    let as_text = Loc.at span @@ `Word "+" in
-    let node = (Loc.same as_text @@ `Paragraph [ as_text ]) in
-    Writer.return_warning node warning 
-  }
-  | errloc = position(MINUS); whitespace?; { 
-    let span = Loc.of_position errloc in
-    let warning = 
-      let what = Tokens.describe MINUS in 
-      Writer.Warning (Parse_error.bad_markup what span) 
-    in 
-    let as_text = Loc.at span @@ `Word "-" in
-    let node = (Loc.same as_text @@ `Paragraph [ as_text ]) in
-    Writer.return_warning node warning 
-  }
   | err = located(list_opening); horizontal_whitespace; children = sequence_nonempty(inline_element(horizontal_whitespace)); endpos = located(RIGHT_BRACE)?; {
     let default = 
       Writer.get children 
@@ -206,20 +186,6 @@ let toplevel_error :=
     let as_text = Loc.at span @@ `Word "{" in
     let node = Loc.same as_text @@ `Paragraph [ as_text ] in
     Writer.return_warning node warning 
-  }
-  | list = list_light; {
-    Writer.bind list ~f:(fun list -> 
-      let warning = 
-        let Loc.{ value; location } = list in
-        let what = Tokens.describe @@
-          match value with
-          | `List (`Ordered, `Light, _) -> Tokens.PLUS
-          | `List (`Unordered, `Light, _) -> Tokens.MINUS
-          | _ -> assert false (* Unreachable *)
-        in 
-        Parse_error.should_begin_on_its_own_line ~what location
-      in 
-      Writer.return_warning (list :> Ast.block_element Loc.with_location) (Writer.Warning warning))
   }
 
 (* SECTION HEADING *)
@@ -427,6 +393,14 @@ let inline_element_without_whitespace :=
     let Loc.{ value = Tokens.{ start; inner }; location } = m in
     return @@ Loc.at { location with start } (`Math_span inner)
   }
+  (*
+  | minus_or_plus = located( list_light_start ); {
+    return @@ 
+      Loc.map 
+        Tokens.(function MINUS -> `Word "-" | PLUS -> `Word "+" | _ -> assert false) 
+        minus_or_plus
+  }
+  *)
   (* More complex/recursive inline elements should have their own rule *)
   | ~ = style; <>
   | ~ = reference; <>
@@ -569,25 +543,29 @@ let link :=
 
 (* LIST *)
 
+(*TODO: For some reason this is always matching the `should_begin it's own line` branch?? *)
 let list_light_start := 
   | MINUS; { Tokens.MINUS }
   | PLUS; { Tokens.PLUS }
 
 let list_light_item := 
-  | start = list_light_start; horizontal_whitespace; item = nestable_block_element; {
-    light_list_item start <$> item
+  | start = located(list_light_start); item = nestable_block_element; {
+    let Loc.{ value; location } = start in
+    light_list_item value <$> (Loc.with_start_location location <$> item)
   }
-  | horizontal_whitespace; start = list_light_start; item = nestable_block_element; {
+  | horizontal_whitespace; start = located(list_light_start); item = nestable_block_element; {
     let should_begin_on_its_own_line = 
       let span = Loc.of_position $sloc in
       Writer.Warning (Parse_error.should_begin_on_its_own_line ~what:(Tokens.describe MINUS) span)
     in
-    (light_list_item start <$> item)
+    let Loc.{ value; location } = start in
+    Writer.map ~f:(Loc.with_start_location location) item 
+    |> Writer.map ~f:(light_list_item value)
     |> Writer.warning should_begin_on_its_own_line
   }
 
 let list_light := 
-  | children = separated_nonempty_sequence(Single_newline, list_light_item); {
+  | children = separated_nonempty_sequence(whitespace*, list_light_item); {
     Writer.bind children ~f:(fun c -> 
       let (list_kind, c) = split_light_list_items c in
       let span = Loc.span @@ List.map Loc.location c in
@@ -883,16 +861,16 @@ let paragraph := items = sequence_nonempty(inline_element(horizontal_whitespace)
 let code_block := 
   | content = located(Code_block); {
     let Loc.{ value = Tokens.{ inner; start }; location } = content in
-    let Tokens.{metadata; delimiter; content} = inner in
-    let meta = Option.map (fun Tokens.{language_tag; tags} -> Ast.{ language = language_tag; tags }) metadata in
+    let Tokens.{ metadata; delimiter; content } = inner in
+    let meta = Option.map (fun Tokens.{ language_tag; tags } -> Ast.{ language = language_tag; tags }) metadata in
     let node = `Code_block Ast.{ meta; delimiter; content; output = None } in
     return @@ Loc.at { location with start } node
   }
   | content = located(Code_block_with_output); output = sequence_nonempty(nestable_block_element); RIGHT_CODE_DELIMITER; {
     let* output = Option.some <$> output in
     let Loc.{ value = Tokens.{ inner; start }; location } = content in
-    let Tokens.{metadata; delimiter; content} = inner in
-    let meta = Option.map (fun Tokens.{language_tag; tags} -> Ast.{ language = language_tag; tags }) metadata in
+    let Tokens.{ metadata; delimiter; content } = inner in
+    let meta = Option.map (fun Tokens.{ language_tag; tags } -> Ast.{ language = language_tag; tags }) metadata in
     let node = `Code_block Ast.{ meta; delimiter; content; output } in
     return @@ Loc.at { location with start } node
   }

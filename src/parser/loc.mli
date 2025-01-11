@@ -37,6 +37,9 @@ val fmt : span -> string
 val delimited : 'a with_location -> 'b with_location -> span
 (** Returns the span which contains both arguments *)
 
+val with_start_location : span -> 'a with_location -> 'a with_location
+(** [with_start_location start t] return t with it's starting point = start *)
+
 val nudge_map_start : int -> 'a with_location -> 'a with_location
 val nudge_map_end : int -> 'a with_location -> 'a with_location
 

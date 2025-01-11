@@ -41,6 +41,9 @@ let fmt { file; start; end_ } =
     "file: %s\nstart: { line : %d, col : %d }\nend: { line: %d; col: %d }" file
     sline scol eline ecol
 
+let with_start_location : span -> 'a with_location -> 'a with_location =
+ fun { start; _ } self -> { self with location = { self.location with start } }
+
 let span spans =
   match spans with
   | [] ->
