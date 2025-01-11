@@ -617,16 +617,16 @@ and token input = parse
     { RETURN }
 
   | ("@children_order")
-    { emit input (`Tag `Children_order) }
+    { CHILDREN_ORDER }
 
   | ("@toc_status")
-    { emit input (`Tag `Toc_status) }
+    { TOC_STATUS }
 
   | ("@order_category")
-    { emit input (`Tag `Order_category) }
+    { ORDER_CATEGORY }
 
   | ("@short_title")
-    { emit input (`Tag `Short_title) }
+    { SHORT_TITLE }
 
   | "@see" horizontal_space* '<' ([^ '>']* as url) '>'
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in

@@ -79,6 +79,10 @@ type token =
   | OPEN
   | CLOSED
   | HIDDEN
+  | CHILDREN_ORDER
+  | TOC_STATUS
+  | ORDER_CATEGORY
+  | SHORT_TITLE
   | Raw_markup of (string option * string) with_start_pos
   | END
 
@@ -151,7 +155,11 @@ let print : token -> string = function
   | INLINE -> "'@inline'"
   | OPEN -> "'@open'"
   | CLOSED -> "'@closed'"
-  | HIDDEN -> "'@hidden"
+  | HIDDEN -> "'@hidden'"
+  | CHILDREN_ORDER -> "'@children_order"
+  | TOC_STATUS -> "'@toc_status'"
+  | ORDER_CATEGORY -> "'@order_category'"
+  | SHORT_TITLE -> "@'short_title'"
   | Raw_markup { inner = None, _; _ } -> "'{%...%}'"
   | Raw_markup { inner = Some target, _; _ } -> "'{%" ^ target ^ ":...%}'"
   | END -> "EOI"
@@ -219,7 +227,11 @@ let describe : token -> string = function
   | INLINE -> "'@inline'"
   | OPEN -> "'@open'"
   | CLOSED -> "'@closed'"
-  | HIDDEN -> "'@hidden"
+  | HIDDEN -> "'@hidden'"
+  | CHILDREN_ORDER -> "'@children_order"
+  | TOC_STATUS -> "'@toc_status'"
+  | ORDER_CATEGORY -> "'@order_category'"
+  | SHORT_TITLE -> "@'short_title'"
 
 let empty_code_block =
   {
@@ -320,3 +332,4 @@ let describe_tag : Ast.tag -> string = function
       describe @@ Canonical { inner; start = Loc.dummy_pos }
   | `Hidden -> describe HIDDEN
   | `Inline -> describe INLINE
+  | _ -> assert false (* New tags currently unreachable *)

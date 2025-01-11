@@ -164,6 +164,7 @@ module Ast_to_sexp = struct
     | `Open -> Atom "@open"
     | `Closed -> Atom "@closed"
     | `Hidden -> Atom "@hidden"
+    | _ -> failwith "TODO"
 
   let block_element at : Ast.block_element -> sexp = function
     | #Ast.nestable_block_element as e -> nestable_block_element at e

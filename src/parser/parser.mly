@@ -60,7 +60,10 @@
 %token OPEN "@open" 
 %token CLOSED "@closed"
 %token HIDDEN "@hidden"
-
+%token CHILDREN_ORDER "@children_order"
+%token TOC_STATUS "@toc_status"
+%token ORDER_CATEGORY "@order_category"
+%token SHORT_TITLE "@short_title"
 %token <string Tokens.with_start_pos> Simple_ref "{!" 
 %token <string Tokens.with_start_pos> Ref_with_replacement "{{!" 
 %token <string Tokens.with_start_pos> Simple_link "{:"

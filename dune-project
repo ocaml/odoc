@@ -4,8 +4,6 @@
 
 (documentation "https://ocaml.org/p/odoc")
 
-(using menhir 2.1)
-
 (source
  (github ocaml/odoc))
 
