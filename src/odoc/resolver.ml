@@ -219,9 +219,16 @@ let unit_name
     | Asset_content { root; _ } ) =
   root_name root
 
-let load_unit_from_file path = Odoc_file.load path >>= fun u -> Ok u.content
-
 let unit_cache = Hashtbl.create 42
+
+let load_unit_from_file path =
+  try Hashtbl.find unit_cache path
+  with Not_found ->
+    let r = Odoc_file.load path >>= fun u -> Ok u.content in
+    Hashtbl.add unit_cache path r;
+    r
+
+let self = ref None
 
 (** Load every units matching a given name. Cached. *)
 let load_units_from_name =
@@ -240,12 +247,15 @@ let load_units_from_name =
     let paths = Accessible_paths.find ap target_name in
     List.fold_right safe_read paths []
   in
+  let check_self name =
+    match !self with
+    | Some (n, unit) -> if n = name then Some unit else None
+    | None -> None
+  in
   fun ap target_name ->
-    try Hashtbl.find unit_cache target_name
-    with Not_found ->
-      let units = do_load ap target_name in
-      Hashtbl.add unit_cache target_name units;
-      units
+    match check_self target_name with
+    | Some unit -> [ unit ]
+    | None -> do_load ap target_name
 
 let rec find_map f = function
   | [] -> None
@@ -359,7 +369,7 @@ let add_unit_to_cache u =
     | Asset_content _ -> "asset-")
     ^ unit_name u
   in
-  Hashtbl.add unit_cache target_name [ u ]
+  self := Some (target_name, u)
 
 (** Resolve a path reference in the given named roots and hierarchy.
     [possible_unit_names] should return a list of possible file names for the
@@ -452,6 +462,7 @@ let lookup_asset ~pages ~hierarchy = function
 type t = {
   important_digests : bool;
   ap : Accessible_paths.t;
+  extended_ap : Accessible_paths.t;
   pages : Named_roots.t option;
   libs : Named_roots.t option;
   open_modules : string list;
@@ -487,7 +498,13 @@ let create ~important_digests ~directories ~open_modules ~roots =
         (Some pages, Some libs, Some current_dir, directories)
   in
   let ap = Accessible_paths.create ~directories in
-  { important_digests; ap; open_modules; pages; libs; current_dir }
+  let extended_directories =
+    match roots with
+    | None -> directories
+    | Some { lib_roots; _ } -> directories @ List.map snd lib_roots
+  in
+  let extended_ap = Accessible_paths.create ~directories:extended_directories in
+  { important_digests; ap; extended_ap; open_modules; pages; libs; current_dir }
 
 (** Helpers for creating xref2 env. *)
 
@@ -497,6 +514,7 @@ let build_compile_env_for_unit
     {
       important_digests;
       ap;
+      extended_ap = _;
       open_modules = open_units;
       pages = _;
       libs = _;
@@ -523,6 +541,7 @@ let build ?(imports_map = StringMap.empty) ?hierarchy_roots
     {
       important_digests;
       ap;
+      extended_ap;
       open_modules = open_units;
       pages;
       libs;
@@ -535,7 +554,7 @@ let build ?(imports_map = StringMap.empty) ?hierarchy_roots
     Some (Hierarchy.make ~hierarchy_root ~current_dir)
   in
   let lookup_unit =
-    lookup_unit ~important_digests ~imports_map ap ~libs ~hierarchy
+    lookup_unit ~important_digests ~imports_map extended_ap ~libs ~hierarchy
   and lookup_page = lookup_page ap ~pages ~hierarchy
   and lookup_asset = lookup_asset ~pages ~hierarchy
   and lookup_impl = lookup_impl ap in
