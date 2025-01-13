@@ -74,6 +74,10 @@ type dirs = {
   mld_dir : Fpath.t;
 }
 
+val fix_virtual :
+  precompiled_units:intf unit list Util.StringMap.t ->
+  units:intf unit list Util.StringMap.t ->
+  intf unit list Util.StringMap.t
 (** [fix_virtual ~precompiled_units ~units] replaces the input file
     in units representing implementations of virtual libraries.
     Implementation units have a [cmt] but no [cmti], even though
@@ -90,7 +94,3 @@ type dirs = {
     should not be changed. The types of the inputs and outputs
     are hashtbls of units, where the hashtable key is the
     interface hash. *)
-val fix_virtual :
-  precompiled_units:intf unit list Util.StringMap.t ->
-  units:intf unit list Util.StringMap.t ->
-  intf unit list Util.StringMap.t
