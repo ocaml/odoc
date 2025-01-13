@@ -120,17 +120,15 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
                  let deps = match unit.kind with `Intf { deps; _ } -> deps in
                  let _fibers =
                    Fiber.List.map
-                     (fun (other_unit : Odoc_unit.intf Odoc_unit.unit) ->
-                       match compile_other other_unit with
+                     (fun (other_unit_name, other_unit_hash) ->
+                       match compile_other other_unit_hash with
                        | Ok r -> Some r
                        | Error _exn ->
                            Logs.debug (fun m ->
                                m
                                  "Error during compilation of module %s (hash \
                                   %s, required by %s)"
-                                 (Fpath.filename other_unit.input_file)
-                                 (match other_unit.kind with
-                                 | `Intf { hash; _ } -> hash)
+                                 other_unit_name other_unit_hash
                                  (Fpath.filename unit.input_file));
                            None)
                      deps
@@ -151,26 +149,42 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
                units)
     in
     let rec compile_mod :
-        Odoc_unit.intf Odoc_unit.unit ->
-        (Odoc_unit.intf Odoc_unit.unit list, exn) Result.t =
-     fun unit ->
-      let hash = match unit.kind with `Intf { hash; _ } -> hash in
-      match Hashtbl.find_opt tbl (hash, Odoc.Id.to_string unit.parent_id) with
-      | Some p -> Promise.await p
-      | None ->
-          let p, r = Promise.create () in
-          Hashtbl.add tbl (hash, Odoc.Id.to_string unit.parent_id) p;
-          let result = compile_one compile_mod hash in
-          Promise.resolve r result;
-          result
+        string -> (Odoc_unit.intf Odoc_unit.unit list, exn) Result.t =
+     fun hash ->
+      let units = try Util.StringMap.find hash hashes with _ -> [] in
+      let r =
+        Fiber.List.map
+          (fun unit ->
+            match
+              Hashtbl.find_opt tbl
+                (hash, Odoc.Id.to_string unit.Odoc_unit.parent_id)
+            with
+            | Some p -> Promise.await p
+            | None ->
+                let p, r = Promise.create () in
+                Hashtbl.add tbl (hash, Odoc.Id.to_string unit.parent_id) p;
+                let result = compile_one compile_mod hash in
+                Promise.resolve r result;
+                result)
+          units
+      in
+      let r =
+        List.fold_left
+          (fun acc x ->
+            match (acc, x) with
+            | Error _, _ -> acc
+            | Ok acc, Ok x -> Ok (x @ acc)
+            | Ok _, Error x -> Error x)
+          (Ok []) r
+      in
+      r
     in
     compile_mod
   in
 
   let compile (unit : Odoc_unit.t) =
     match unit.kind with
-    | `Intf _ as kind ->
-        (compile_mod { unit with kind } :> (Odoc_unit.t list, _) Result.t)
+    | `Intf intf -> (compile_mod intf.hash :> (Odoc_unit.t list, _) Result.t)
     | `Impl src ->
         let includes =
           List.fold_left

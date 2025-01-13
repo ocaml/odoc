@@ -9,25 +9,18 @@ let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
   let extra_libs_paths = extra_paths.Voodoo.libs in
   let extra_pkg_paths = extra_paths.Voodoo.pkgs in
 
-  let module_of_hash, lib_dirs =
+  let lib_dirs =
     let open Packages in
-    let h = Util.StringMap.empty in
     let lds = extra_libs_paths in
     List.fold_left
-      (fun (h, lds) pkg ->
+      (fun lds pkg ->
         List.fold_left
-          (fun (h, lds) lib ->
-            let h' =
-              List.fold_left
-                (fun h mod_ ->
-                  Util.StringMap.add mod_.m_intf.mif_hash (pkg, lib, mod_) h)
-                h lib.modules
-            in
+          (fun lds lib ->
             let lib_dir = lib_dir pkg lib in
             let lds' = Util.StringMap.add lib.lib_name lib_dir lds in
-            (h', lds'))
-          (h, lds) pkg.libraries)
-      (h, lds) pkgs
+            lds')
+          lds pkg.libraries)
+      lds pkgs
   in
   let pkg_paths =
     List.fold_left
@@ -124,43 +117,18 @@ let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
       index = Some (index_of pkg);
     }
   in
-  let missing = ref Util.StringSet.empty in
 
-  let rec build_deps deps =
-    List.filter_map
-      (fun (_name, hash) ->
-        match Util.StringMap.find_opt hash module_of_hash with
-        | None ->
-            missing := Util.StringSet.add hash !missing;
-            None
-        | Some (pkg, lib, mod_) ->
-            let lib_deps = Util.StringSet.add lib.lib_name lib.lib_deps in
-            let result = of_intf mod_.m_hidden pkg lib lib_deps mod_.m_intf in
-            Some result)
-      deps
-  and of_intf =
-    (* Memoize (using the hash as the key) the creation of interface units, to
-       avoid creating them twice *)
-    let intf_cache : (string, intf unit) Hashtbl.t = Hashtbl.create 10 in
-    fun hidden pkg (lib : Packages.libty) lib_deps (intf : Packages.intf) :
-        intf unit ->
-      let do_ () : intf unit =
-        let rel_dir = lib_dir pkg lib in
-        let kind =
-          let deps = build_deps intf.mif_deps in
-          let kind = `Intf { hidden; hash = intf.mif_hash; deps } in
-          kind
-        in
-        let name = intf.mif_path |> Fpath.rem_ext |> Fpath.basename in
-        make_unit ~name ~kind ~rel_dir ~input_file:intf.mif_path ~pkg ~lib_deps
-          ~enable_warnings:pkg.selected ~to_output:pkg.selected
-      in
-      match Hashtbl.find_opt intf_cache intf.mif_hash with
-      | Some unit -> unit
-      | None ->
-          let unit = do_ () in
-          Hashtbl.add intf_cache intf.mif_hash unit;
-          unit
+  let of_intf hidden pkg (lib : Packages.libty) lib_deps (intf : Packages.intf)
+      : intf unit =
+    let rel_dir = lib_dir pkg lib in
+    let kind =
+      let deps = intf.mif_deps in
+      let kind = `Intf { hidden; hash = intf.mif_hash; deps } in
+      kind
+    in
+    let name = intf.mif_path |> Fpath.rem_ext |> Fpath.basename in
+    make_unit ~name ~kind ~rel_dir ~input_file:intf.mif_path ~pkg ~lib_deps
+      ~enable_warnings:pkg.selected ~to_output:pkg.selected
   in
   let of_impl pkg lib lib_deps (impl : Packages.impl) : impl unit option =
     match impl.mip_src_info with
