@@ -73,3 +73,8 @@ type dirs = {
   index_dir : Fpath.t;
   mld_dir : Fpath.t;
 }
+
+val fix_virtual :
+  intf unit list Util.StringMap.t ->
+  intf unit list Util.StringMap.t ->
+  intf unit list Util.StringMap.t
