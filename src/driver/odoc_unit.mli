@@ -3,12 +3,14 @@ module Pkg_args : sig
 
   val compiled_pages : t -> (string * Fpath.t) list
   val compiled_libs : t -> (string * Fpath.t) list
+  val includes : t -> Fpath.t list
   val linked_pages : t -> (string * Fpath.t) list
   val linked_libs : t -> (string * Fpath.t) list
 
   val v :
     odoc_dir:Fpath.t ->
     odocl_dir:Fpath.t ->
+    includes:Fpath.t list ->
     pages:(string * Fpath.t) list ->
     libs:(string * Fpath.t) list ->
     t

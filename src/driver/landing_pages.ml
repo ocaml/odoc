@@ -17,7 +17,7 @@ let make_index ~dirs ~rel_dir ?(libs = []) ?(pkgs = []) ?index ~content () =
       (fun (pkg, lib) -> (lib.Packages.lib_name, Odoc_unit.lib_dir pkg lib))
       libs
   in
-  let pkg_args = Pkg_args.v ~pages ~libs ~odoc_dir ~odocl_dir in
+  let pkg_args = Pkg_args.v ~pages ~libs ~includes:[] ~odoc_dir ~odocl_dir in
   Util.with_out_to input_file (fun oc ->
       fpf (Format.formatter_of_out_channel oc) "%t@?" content)
   |> Result.get_ok;
