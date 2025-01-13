@@ -26,9 +26,7 @@ let tag tag t = O.span ~attr:tag t
 let label t =
   match t with
   | Odoc_model.Lang.TypeExpr.Label s -> tag "label" (O.txt s)
-  | RawOptional _s ->
-      tag "error" (O.txt "Error: RawOptional found during rendering")
-  | Optional s -> tag "optlabel" (O.txt "?" ++ O.txt s)
+  | Optional s | RawOptional s -> tag "optlabel" (O.txt "?" ++ O.txt s)
 
 let type_var tv = tag "type-var" (O.txt tv)
 
@@ -422,6 +420,16 @@ module Make (Syntax : SYNTAX) = struct
               ++ O.txt " " ++ Syntax.Type.arrow)
             ++ O.sp ++ type_expr dst
             (* ++ O.end_hv *)
+          in
+          if not needs_parentheses then res else enclose ~l:"(" res ~r:")"
+      | Arrow (Some (RawOptional _ as lbl), _src, dst) ->
+          let res =
+            O.span
+              (O.box_hv
+              @@ label lbl ++ O.txt ":"
+                 ++ tag "error" (O.txt "???")
+                 ++ O.txt " " ++ Syntax.Type.arrow)
+            ++ O.sp ++ type_expr dst
           in
           if not needs_parentheses then res else enclose ~l:"(" res ~r:")"
       | Arrow (Some lbl, src, dst) ->
@@ -1089,6 +1097,13 @@ module Make (Syntax : SYNTAX) = struct
             (type_expr ~needs_parentheses:true src
             ++ O.txt " " ++ Syntax.Type.arrow)
           ++ O.txt " " ++ class_decl dst
+      | Arrow (Some (RawOptional _ as lbl), _src, dst) ->
+          O.span
+            (O.box_hv
+            @@ label lbl ++ O.txt ":"
+               ++ tag "error" (O.txt "???")
+               ++ O.txt " " ++ Syntax.Type.arrow)
+          ++ O.sp ++ class_decl dst
       | Arrow (Some lbl, src, dst) ->
           O.span
             (label lbl ++ O.txt ":"
