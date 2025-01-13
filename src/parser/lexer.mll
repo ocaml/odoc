@@ -150,7 +150,6 @@ type input = {
   mutable warnings : Warning.t list;
 }
 
-
 type math_kind =
   Inline | Block
 
@@ -200,7 +199,7 @@ let with_location_adjustments :
   k lexbuf input location value
 
 let warning =
-  with_location_adjustments @@ fun _lexbuf input location error ->
+  with_location_adjustments @@ fun _ input location error ->
     input.warnings <- error location :: input.warnings
 
 let reference_token lexbuf input media ~opening_delimiter ~start_offset ~inner =
@@ -239,10 +238,11 @@ let trim_leading_space_or_accept_whitespace lexbuf input start_offset text =
   | '\t' | '\r' | '\n' -> text
   | exception Invalid_argument _ -> ""
   | _ ->
-    warning lexbuf
-      input
-      ~start_offset
-      ~end_offset:(start_offset + 2)
+    warning 
+      lexbuf 
+      input 
+      ~start_offset 
+      ~end_offset:(start_offset + 2) 
       Parse_error.no_leading_whitespace_in_verbatim;
     text
 
@@ -272,27 +272,24 @@ let emit_verbatim lexbuf input start_offset buffer =
 let emit_code_block lexbuf input ~start_offset ~content_offset ~metadata ~delimiter ~terminator ~content has_output =
   let content = Buffer.contents content |> trim_trailing_blank_lines in
   let content_location = input.offset_to_location content_offset in
-  let content =
+  let content = 
     with_location_adjustments
-      (fun _ _location _ c ->
+      (fun _ _ _ c ->
          let first_line_offset = content_location.column in
          trim_leading_whitespace ~first_line_offset c)
       lexbuf
       input 
       content
+    |> trim_leading_blank_lines 
+    |> with_location_adjustments 
+        ~adjust_end_by:terminator 
+        ~start_offset:content_offset 
+        (fun _ _ -> Loc.at) 
+        lexbuf 
+        input 
   in
-  let content = trim_leading_blank_lines content in
-  let content = 
-    with_location_adjustments 
-      ~adjust_end_by:terminator 
-      ~start_offset:content_offset 
-      (fun _ _ -> Loc.at) 
-      lexbuf 
-      input 
-      content 
-  in
-  let inner = { metadata; delimiter; content } 
-  and start = input.offset_to_location start_offset in
+  let inner = { metadata; delimiter; content } in
+  let start = input.offset_to_location start_offset in
   if has_output then 
     Code_block_with_output { inner; start }
   else 
@@ -308,7 +305,7 @@ let heading_level lexbuf input level =
 let buffer_add_lexeme buffer lexbuf =
   Buffer.add_string buffer (Lexing.lexeme lexbuf)
 
-let trim_horizontal_start : string -> string = fun s -> 
+let trim_start_horizontal_whitespace : string -> string = fun s -> 
   let rec go idx = 
     let c = s.[idx] in
       if Char.equal c ' ' 
@@ -415,14 +412,14 @@ and token input = parse
     { END }
 
   | ((horizontal_space* newline as prefix)
-    horizontal_space* ((newline)+ as suffix) as ws)
+    horizontal_space* (((newline)+ as suffix) as ws) horizontal_space*)
     {
       (* Account for the first newline we got *)
       update_content_newlines ~content:("\n" ^ prefix ^ suffix) lexbuf;
       Blank_line ws
     }
 
-  | (horizontal_space* newline as ws)
+  | (horizontal_space* (newline as ws) horizontal_space*)
     {
       Lexing.new_line lexbuf;
       Single_newline ws 
@@ -600,7 +597,7 @@ and token input = parse
 
   | "@author" horizontal_space+ (([^ '\r' '\n']*)? as author)
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
-      Tag (Author { inner = (trim_horizontal_start author); start }) }
+      Tag (Author { inner = (trim_start_horizontal_whitespace author); start }) }
 
   | "@deprecated"
     { Tag_with_content DEPRECATED }
@@ -630,15 +627,15 @@ and token input = parse
 
   | "@see" horizontal_space* '<' ([^ '>']* as url) '>'
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
-      Tag_with_content (See { inner = (URL, trim_horizontal_start url); start }) }
+      Tag_with_content (See { inner = (URL, trim_start_horizontal_whitespace url); start }) }
 
   | "@see" horizontal_space* '\'' ([^ '\'']* as filename) '\''
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
-      Tag_with_content (See { inner = (File, trim_horizontal_start filename); start }) }
+      Tag_with_content (See { inner = (File, trim_start_horizontal_whitespace filename); start }) }
 
   | "@see" horizontal_space* '"' ([^ '"']* as name) '"'
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
-      Tag_with_content (See { inner = (Document, trim_horizontal_start name); start }) }
+      Tag_with_content (See { inner = (Document, trim_start_horizontal_whitespace name); start }) }
 
   | "@since" horizontal_space+ (([^ '\r' '\n']+) as inner)
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
@@ -861,12 +858,13 @@ and verbatim buffer last_false_terminator start_offset input = parse
   | eof
     { begin match last_false_terminator with
       | None ->
-        warning
-          lexbuf
-          input
-          (Parse_error.not_allowed
+        let not_allowed = 
+          Parse_error.not_allowed
             ~what:(Tokens.describe END)
-            ~in_what:(Tokens.describe (Verbatim {inner = ""; start = Loc.dummy_pos})))
+            ~in_what:(Tokens.describe (Verbatim {inner = ""; start = Loc.dummy_pos}))
+        in
+        warning lexbuf input not_allowed
+          
       | Some location ->
         warning
           lexbuf

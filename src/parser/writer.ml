@@ -16,6 +16,9 @@ let bind : 'a t -> f:('a -> 'b t) -> 'b t =
 let map : f:('a -> 'b) -> 'a t -> 'b t =
  fun ~f (Writer (x, ws)) -> Writer (f x, ws)
 
+let map2 : f:('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t =
+ fun ~f (Writer (a, aws)) (Writer (b, bws)) -> Writer (f a b, aws @ bws)
+
 let ( <$> ) f w = map ~f w
 
 let seq : 'a t -> 'b t -> 'b t =

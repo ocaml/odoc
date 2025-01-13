@@ -81,16 +81,16 @@ let delimited_location(opening, rule, closing) := startpos = located(opening); i
 
 (* 
    When we have to handle errors with Menhir's `error` token, we need 
-   `Lexing.position` as opposed to `Loc.with_location` so that we can cleanly
+   `Lexing.position` as opposed to `Loc.with_location`. Because we can cleanly
    take a slice of the input text with those positions, which would be 
-   difficult using `Loc.with_location` because of the way the lexbuf tracks 
-   position
+   difficult using `Loc.with_location`
 *)
 let with_position(rule) == inner = rule; { (inner, $sloc) } 
 let position(rule) == _ = rule; { $sloc }
 
 
-(* Utilities for working inside the Writer.t monad *)
+(* Wrappers around Menhir's built-in utilities that make working inside the 
+   Writer.t monad easier *)
 let sequence(rule) == xs = list(rule); { Writer.sequence xs }
 let sequence_nonempty(rule) == xs = nonempty_list(rule); { Writer.sequence xs }
 let separated_nonempty_sequence(sep, rule) := xs = separated_nonempty_list(sep, rule); { Writer.sequence xs }
@@ -123,6 +123,7 @@ let toplevel :=
   | ~ = section_heading; <>
   | ~ = toplevel_error; <>
 
+(* Tokens which cannot begin any block element *)
 let toplevel_error :=
   (* Stray heavy list items, `{li` or `{-` *)
   | err = located(list_opening); horizontal_whitespace; children = sequence_nonempty(inline_element(horizontal_whitespace)); endpos = located(RIGHT_BRACE)?; {
@@ -237,13 +238,15 @@ let tag_with_content := tag = located(Tag_with_content); horizontal_whitespace; 
       let span = Loc.span @@ start :: List.map Loc.location children in
       Loc.at span @@ Tokens.tag_with_content children value)
   }
-  | tag = located(Tag_with_content); {
+  | tag = located(Tag_with_content); horizontal_whitespace?; {
     return @@ { tag with Loc.value = Tokens.tag_with_content [] tag.Loc.value }
   }
 
-let tag_bare := tag = located(Tag); {
+  let tag_bare := tag = located(Tag); horizontal_whitespace?; {
     return @@ Loc.map (Fun.const @@ Tokens.tag_bare tag) tag
   }
+
+(* INLINE ELEMENTS *)
 
 let inline_element(ws) := 
   | ~ = inline_element_without_whitespace; <>
@@ -406,13 +409,12 @@ let link :=
 
 (* LIST *)
 
-(*TODO: For some reason this is always matching the `should_begin it's own line` branch?? *)
 let list_light_start := 
   | MINUS; { Tokens.MINUS }
   | PLUS; { Tokens.PLUS }
 
 let list_light_item := 
-  | start = located(list_light_start); item = nestable_block_element; {
+  | start = located(list_light_start); horizontal_whitespace*; item = nestable_block_element; {
     let Loc.{ value; location } = start in
     light_list_item value <$> (Loc.with_start_location location <$> item)
   }
@@ -583,6 +585,9 @@ let table_heavy :=
 
 let cell_inner := 
   | ~ = inline_element(horizontal_whitespace); <> 
+  | s = located(symbols_without_bar); {
+    return @@ Loc.map (fun w -> `Word w) s
+  }
   | (start_pos, end_pos) = position(error); {
     let span = Loc.of_position (start_pos, end_pos) in
     let illegal = Writer.InputNeeded (fun input ->
@@ -717,8 +722,18 @@ let verbatim := verbatim = located(Verbatim); {
   *> return verbatim
 }
 
-let paragraph := items = sequence_nonempty(inline_element(horizontal_whitespace)); {
-  paragraph <$> items
+let symbols_without_bar := 
+  | PLUS; { "+" }
+  | MINUS; { "-" }
+let symbols := 
+  | BAR; { "|" }
+  | ~ = symbols_without_bar; <>
+let paragraph_middle_element := 
+  | ~ = inline_element(horizontal_whitespace); <>
+  | s = located(symbols); { return @@ Loc.map (fun w -> `Word w) s }
+
+let paragraph := x = inline_element_without_whitespace; xs = sequence(paragraph_middle_element); {
+  paragraph <$> Writer.map2 ~f:List.cons x xs
 }
 
 let code_block := 
