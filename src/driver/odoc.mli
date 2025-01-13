@@ -39,6 +39,7 @@ val link :
   ?output_file:Fpath.t ->
   docs:(string * Fpath.t) list ->
   libs:(string * Fpath.t) list ->
+  includes:Fpath.t list ->
   ?current_package:string ->
   unit ->
   unit

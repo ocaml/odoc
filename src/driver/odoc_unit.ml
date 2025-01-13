@@ -2,19 +2,23 @@ module Pkg_args = struct
   type t = {
     odoc_dir : Fpath.t;
     odocl_dir : Fpath.t;
+    includes : Fpath.Set.t;
     pages : Fpath.t Util.StringMap.t;
     libs : Fpath.t Util.StringMap.t;
   }
 
-  let v ~odoc_dir ~odocl_dir ~pages ~libs =
+  let v ~odoc_dir ~odocl_dir ~includes ~pages ~libs =
+    let includes = Fpath.Set.of_list includes in
     let pages, libs = Util.StringMap.(of_list pages, of_list libs) in
-    { odoc_dir; odocl_dir; pages; libs }
+    { odoc_dir; odocl_dir; includes; pages; libs }
 
   let map_rel dir m =
     Util.StringMap.fold (fun a b acc -> (a, Fpath.(dir // b)) :: acc) m []
 
   let compiled_pages v = map_rel v.odoc_dir v.pages
   let compiled_libs v = map_rel v.odoc_dir v.libs
+  let includes (x : t) =
+    List.map (fun y -> Fpath.(x.odoc_dir // y)) (Fpath.Set.to_list x.includes)
   let linked_pages v = map_rel v.odocl_dir v.pages
   let linked_libs v = map_rel v.odocl_dir v.libs
 
@@ -26,6 +30,7 @@ module Pkg_args = struct
     {
       odoc_dir = v1.odoc_dir;
       odocl_dir = v1.odocl_dir;
+      includes = Fpath.Set.union v1.includes v2.includes;
       pages = Util.StringMap.union (fun _ x _ -> Some x) v1.pages v2.pages;
       libs = Util.StringMap.union (fun _ x _ -> Some x) v1.libs v2.libs;
     }
@@ -37,8 +42,14 @@ module Pkg_args = struct
             Format.fprintf fmt "(%s, %a)" a Fpath.pp b))
     in
     Format.fprintf fmt
-      "@[<hov>odoc_dir: %a@;odocl_dir: %a@;pages: [%a]@;libs: [%a]@]" Fpath.pp
-      x.odoc_dir Fpath.pp x.odocl_dir sfp_pp
+      "@[<hov>odoc_dir: %a@;\
+       odocl_dir: %a@;\
+       includes: %a@;\
+       pages: [%a]@;\
+       libs: [%a]@]" Fpath.pp x.odoc_dir Fpath.pp x.odocl_dir
+      Fmt.Dump.(list Fpath.pp)
+      (Fpath.Set.to_list x.includes)
+      sfp_pp
       (Util.StringMap.bindings x.pages)
       sfp_pp
       (Util.StringMap.bindings x.libs)

@@ -39,8 +39,16 @@ let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
   in
   let base_args pkg lib_deps : Pkg_args.t =
     let own_page = dash_p pkg.Packages.name (doc_dir pkg) in
-    let own_libs = List.concat_map dash_l (Util.StringSet.to_list lib_deps) in
-    Pkg_args.v ~pages:[ own_page ] ~libs:own_libs ~odoc_dir ~odocl_dir
+    let includes =
+      List.concat_map dash_l (Util.StringSet.to_list lib_deps) |> List.map snd
+    in
+    let libs =
+      List.fold_left
+        (fun acc lib -> Util.StringSet.add lib.Packages.lib_name acc)
+        lib_deps pkg.Packages.libraries
+    in
+    let libs = List.concat_map dash_l (Util.StringSet.to_list libs) in
+    Pkg_args.v ~pages:[ own_page ] ~libs ~includes ~odoc_dir ~odocl_dir
   in
   let args_of_config config : Pkg_args.t =
     let { Global_config.deps = { packages; libraries } } = config in
@@ -55,7 +63,7 @@ let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
         packages
     in
     let libs_rel = List.concat_map dash_l libraries in
-    Pkg_args.v ~pages:pages_rel ~libs:libs_rel ~odoc_dir ~odocl_dir
+    Pkg_args.v ~pages:pages_rel ~libs:libs_rel ~includes:[] ~odoc_dir ~odocl_dir
   in
   let args_of =
     let cache = Hashtbl.create 10 in
@@ -163,11 +171,6 @@ let packages ~dirs ~extra_paths ~remap ~gen_indices (pkgs : Packages.t list) :
   in
   let of_lib pkg (lib : Packages.libty) =
     let lib_deps = Util.StringSet.add lib.lib_name lib.lib_deps in
-    let lib_deps =
-      List.fold_left
-        (fun acc lib -> Util.StringSet.add lib.Packages.lib_name acc)
-        lib_deps pkg.Packages.libraries
-    in
     let index = index_of pkg in
     let units = List.concat_map (of_module pkg lib lib_deps) lib.modules in
     if remap && not pkg.selected then units
