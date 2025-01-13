@@ -41,7 +41,11 @@ type 'a unit = {
   kind : 'a;
 }
 
-type intf_extra = { hidden : bool; hash : string; deps : intf unit list }
+type intf_extra = {
+  hidden : bool;
+  hash : string;
+  deps : (string * Digest.t) list;
+}
 and intf = [ `Intf of intf_extra ]
 
 type impl_extra = { src_id : Odoc.Id.t; src_path : Fpath.t }

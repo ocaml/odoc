@@ -74,7 +74,11 @@ type 'a unit = {
   kind : 'a;
 }
 
-type intf_extra = { hidden : bool; hash : string; deps : intf unit list }
+type intf_extra = {
+  hidden : bool;
+  hash : string;
+  deps : (string * Digest.t) list;
+}
 
 and intf = [ `Intf of intf_extra ]
 
@@ -99,8 +103,8 @@ let rec pp_kind : all_kinds Fmt.t =
 
 and pp_intf_extra fmt x =
   Format.fprintf fmt "@[<hov>hidden: %b@;hash: %s@;deps: [%a]@]" x.hidden x.hash
-    Fmt.(list ~sep:comma Fpath.pp)
-  @@ List.map (fun x -> x.odoc_file) x.deps
+    Fmt.Dump.(list (pair string string))
+    x.deps
 
 and pp_impl_extra fmt x =
   Format.fprintf fmt "@[<hov>src_id: %s@;src_path: %a@]"
