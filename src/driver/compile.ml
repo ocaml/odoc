@@ -105,6 +105,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
       | Some _ -> find_partials partial_dir
       | None -> (Util.StringMap.empty, Hashtbl.create 10)
     in
+    let hashes = Odoc_unit.fix_virtual other_hashes hashes in
     let all_hashes =
       Util.StringMap.union (fun _x o1 o2 -> Some (o1 @ o2)) hashes other_hashes
     in

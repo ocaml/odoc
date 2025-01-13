@@ -153,3 +153,56 @@ type dirs = {
   index_dir : Fpath.t;
   mld_dir : Fpath.t;
 }
+
+let fix_virtual (precompiled_units : intf unit list Util.StringMap.t)
+    (units : intf unit list Util.StringMap.t) =
+  Logs.debug (fun m ->
+      m "Fixing virtual libraries: %d precompiled units, %d other units"
+        (Util.StringMap.cardinal precompiled_units)
+        (Util.StringMap.cardinal units));
+  let all =
+    Util.StringMap.union
+      (fun h x y ->
+        Logs.debug (fun m ->
+            m "Unifying hash %s (%d, %d)" h (List.length x) (List.length y));
+        Some (x @ y))
+      precompiled_units units
+  in
+  Util.StringMap.map
+    (fun units ->
+      List.map
+        (fun unit ->
+          let uhash = match unit.kind with `Intf { hash; _ } -> hash in
+          if not (Fpath.has_ext "cmt" unit.input_file) then unit
+          else
+            match Util.StringMap.find uhash all with
+            | [ _ ] -> unit
+            | xs -> (
+                Logs.debug (fun m ->
+                    m
+                      "Virtual library check: Selecting cmti for hash %s from \
+                       %d possibilities: %a"
+                      uhash (List.length xs) (Fmt.Dump.list pp)
+                      (xs :> t list));
+                let unit_name =
+                  Fpath.rem_ext unit.input_file |> Fpath.basename
+                in
+                match
+                  List.filter
+                    (fun (x : intf unit) ->
+                      (match x.kind with `Intf { hash; _ } -> uhash = hash)
+                      && Fpath.has_ext "cmti" x.input_file
+                      && Fpath.rem_ext x.input_file |> Fpath.basename
+                         = unit_name)
+                    xs
+                with
+                | [ x ] -> { unit with input_file = x.input_file }
+                | xs ->
+                    Logs.debug (fun m ->
+                        m
+                          "Duplicate hash found, but multiple (%d) matching \
+                           cmti found for %a"
+                          (List.length xs) Fpath.pp unit.input_file);
+                    unit))
+        units)
+    units
