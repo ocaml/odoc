@@ -114,8 +114,8 @@ let line_break :=
 (* ENTRY *)
 
 let main :=  
-  | any_whitespace?; ~ = sequence_nonempty(toplevel); END; <>
-  | any_whitespace?; END; { return [] }
+  | any_whitespace*; ~ = sequence_nonempty(toplevel); END; <>
+  | any_whitespace*; END; { return [] }
 
 let toplevel :=
   | block = nestable_block_element; { (block :> Ast.block_element Loc.with_location Writer.t) }
@@ -126,7 +126,7 @@ let toplevel :=
 (* Tokens which cannot begin any block element *)
 let toplevel_error :=
   (* Stray heavy list items, `{li` or `{-` *)
-  | err = located(list_opening); horizontal_whitespace; children = sequence_nonempty(inline_element(horizontal_whitespace)); endpos = located(RIGHT_BRACE)?; {
+  | err = located(list_opening); children = sequence_nonempty(inline_element(horizontal_whitespace)); endpos = located(RIGHT_BRACE)?; {
     let default = 
       Writer.get children 
       |> List.rev 
@@ -231,7 +231,7 @@ let tag :=
   | with_content = tag_with_content; line_break?; { with_content }
   | bare = tag_bare; line_break?; { bare }
 
-let tag_with_content := tag = located(Tag_with_content); horizontal_whitespace; children = sequence(nestable_block_element); {
+let tag_with_content := tag = located(Tag_with_content); children = sequence(nestable_block_element); {
     Writer.map children ~f:(fun children -> 
       let Loc.{ value; location } = tag in
       let start = Tokens.tag_with_content_start_point value |> Option.map (fun start -> { location with start }) |> Option.value ~default:location in
@@ -414,7 +414,7 @@ let list_light_start :=
   | PLUS; { Tokens.PLUS }
 
 let list_light_item := 
-  | start = located(list_light_start); horizontal_whitespace*; item = nestable_block_element; {
+  | start = located(list_light_start); horizontal_whitespace?; item = nestable_block_element; {
     let Loc.{ value; location } = start in
     light_list_item value <$> (Loc.with_start_location location <$> item)
   }
@@ -444,7 +444,7 @@ let list_opening :=
   | DASH; { Tokens.DASH } 
 
 let item_heavy :=
-  | start_pos = located(list_opening); whitespace; items = sequence(nestable_block_element); RIGHT_BRACE; any_whitespace*; {
+  | start_pos = located(list_opening); items = sequence(nestable_block_element); RIGHT_BRACE; any_whitespace*; {
     let Loc.{ value = token; location } = start_pos in
     let warning = 
       Writer.Warning (Parse_error.should_not_be_empty ~what:(Tokens.describe token) location) 
@@ -462,7 +462,7 @@ let item_heavy :=
     Writer.ensure not_empty should_not_be_empty items 
     |> Writer.warning should_be_followed_by_whitespace 
   }
-  | startpos = located(DASH); items = sequence_nonempty(nestable_block_element)?; endpos = located(END); {
+  | startpos = located(list_opening); items = sequence_nonempty(nestable_block_element)?; endpos = located(END); {
     let end_not_allowed = 
       Writer.Warning (Parse_error.end_not_allowed ~in_what:(Tokens.describe DASH) endpos.Loc.location)
     in
@@ -526,7 +526,7 @@ let odoc_list :=
 (* TABLES *)
 
 let cell_heavy := 
-  | cell_kind = Table_cell; whitespace*; children = sequence_nonempty(nestable_block_element); RIGHT_BRACE; whitespace*;
+  | cell_kind = Table_cell; children = sequence_nonempty(nestable_block_element); RIGHT_BRACE; whitespace*;
     { Writer.map ~f:(fun c -> (c, cell_kind)) children }
   | cell_kind = Table_cell; RIGHT_BRACE; whitespace*;
     { return ([], cell_kind) }
@@ -732,7 +732,7 @@ let paragraph_middle_element :=
   | ~ = inline_element(horizontal_whitespace); <>
   | s = located(symbols); { return @@ Loc.map (fun w -> `Word w) s }
 
-let paragraph := x = inline_element_without_whitespace; xs = sequence(paragraph_middle_element); {
+let paragraph := horizontal_whitespace?; x = inline_element_without_whitespace; xs = sequence(paragraph_middle_element); {
   paragraph <$> Writer.map2 ~f:List.cons x xs
 }
 

@@ -202,6 +202,10 @@ let warning =
   with_location_adjustments @@ fun _ input location error ->
     input.warnings <- error location :: input.warnings
 
+(* TODO: Opening delimiter position and parameter position need to be tweaked here
+    I think we probably need inner to be `string Loc.with_location` since 
+    a `Reference takes one as a parameter.
+*)
 let reference_token lexbuf input media ~opening_delimiter ~start_offset ~inner =
   let start = input.offset_to_location start_offset in
   match opening_delimiter with
@@ -412,14 +416,14 @@ and token input = parse
     { END }
 
   | ((horizontal_space* newline as prefix)
-    horizontal_space* (((newline)+ as suffix) as ws) horizontal_space*)
+    horizontal_space* (((newline)+ as suffix) as ws)) 
     {
       (* Account for the first newline we got *)
       update_content_newlines ~content:("\n" ^ prefix ^ suffix) lexbuf;
       Blank_line ws
     }
 
-  | (horizontal_space* (newline as ws) horizontal_space*)
+  | (horizontal_space* (newline as ws))
     {
       Lexing.new_line lexbuf;
       Single_newline ws 

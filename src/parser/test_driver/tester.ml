@@ -192,7 +192,95 @@ let dashes =
     ("option", "--option");
   ]
 
-let isolated = [ ("empty line", "    \n  @foo") ]
+let light_table_tests =
+  [
+    ("empty_table_light", "{t }");
+    ("unclosed_table", "{t ");
+    ("simple", {|
+        {t
+          | a |
+        }
+      |});
+    ("stars", "{t\n  |a|   *b*|\n  |*c| d* |\n}");
+    ("backquotes", "{t\n   | `a |`\n}");
+    ("no_header", "{t\n |---|---|\n | x | y |\n}");
+    ("no_align", "{t\n | x | y |\n | x | y |\n}");
+    ("only_align", "{t\n  |--|--|\n}");
+    ("no_data", "{t\n | x | y |\n |---|---|\n}");
+    ("alignment", "{t\n | a | b | c | d |\n |---|:--|--:|:-:|\n}");
+    ("no_bars", "{t\n  a | b | c | d\n ---|:--|--:|:-:\n  a | b | c | d\n}");
+    ( "light_table_new_lines",
+      "{t\n\n\
+      \ | a | b | c | d |\n\n\
+      \ |---|---|---|---|\n\n\
+      \ | a | b | c | d |\n\n\
+       }" );
+    ( "light_table_markup",
+      "{t\n\
+      \ | {i a} {:google.com} \\t | | {m b} {e c} {% xyz %} | {b d} [foo] |\n\
+      \ |---|---|---|---|\n\
+       }" );
+    ( "light_table_markup_with_newlines",
+      "{t | h1           | h2          |\n\
+      \    |--------------|-------------|\n\
+      \    | {e with\n\
+      \         newlines} | {b d} [foo] |\n\
+       }" );
+    ("no_space", "{t\n  | a | b |c| d |\n  |---|--:|:--|:-:|\n}");
+    ( "multiple_headers",
+      "{t\n||a|b|\n|:-|---:|\n|c|d|\n|cc|dd|\n|-:|:-:|\n|e|f|\n|g|h||\n}" );
+    ("block_element_in_cell", "{t\n| {[ a ]} | b |\n|---|---|\n}");
+    ("block_element_in_row", "{t\n{[ a ]}\n| a | b |\n|---|---|\n}");
+    ("more_cells_later", "{t\n | x | y |\n |---|---|\n | x | y | z |\n}");
+    ("less_cells_later", "{t\n | x | y |\n |---|---|\n x \n}");
+    ( "multiple_word",
+      "{t\n\
+       | Header and other word |\n\
+       |-----------------------|\n\
+       | cell and other words  |\n\
+       }" );
+    ( "multiple_word_header",
+      "{t\n\
+       | Header other word |\n\
+       |-------------------|\n\
+       | Header other word |\n\
+       }" );
+  ]
+
+let explicit_list_tests =
+  [
+    ("basic", "{ul {li foo}}");
+    ("ordered", "{ol {li foo}}");
+    ("two_items", "{ul {li foo} {li bar}}");
+    ("items_on_separate_lines", "{ul {li foo}\n{li bar}}");
+    ("blank_line", "{ul {li foo}\n\n{li bar}}");
+    ("blank_line_in_item", "{ul {li foo\n\nbar}}");
+    ("junk", "{ul foo}");
+    ("junk_with_no_whitespace", "{ulfoo}");
+    ("empty", "{ul}");
+    ("unterminated_list", "{ul");
+    ("no_whitespace", "{ul{li foo}}");
+    ("whitespace_at_end_of_item", "{ul {li foo\n\n\n}}");
+    ("unterminated_li_syntax", "{ul {li foo");
+    ("unterminated_left_curly_brace", "{ul {- foo");
+    ("empty_li_styntax", "{ul {li }}");
+    ("empty_left_curly_brace", "{ul {- }}");
+    ("li_syntax_without_whitespace", "{ul {lifoo}}");
+    ("li_syntax_followed_by_newline", "{ul {li\nfoo}}");
+    ("li_syntax_followed_by_cr_lf", "{ul {li\r\nfoo}}");
+    ("li_syntax_followed_by_blank_line", "{ul {li\n\nfoo}}");
+    ("left_curly_brace_without_whitespace", "{ul {-foo}}");
+    ("mixed_list_items", "{ul {li foo} {- bar}}");
+    ("nested", "{ul {li {ul {li foo}}}}");
+    ("shorthand_in_explicit", "{ul {li - foo\n- bar}}");
+    ("explicit_in_shorthand", "- {ul {li foo}}");
+    ("bare_li_syntax", "{li foo}");
+    ("bare_left_curly_brace", "{- foo");
+    ("after_code_block", "{[foo]} {ul {li bar}}");
+  ]
+
+let isolated =
+  [ ("light list horizontal offset", "- foo bar baz\n   - ba ba ba") ]
 
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
 let documentation_cases =
@@ -236,7 +324,7 @@ let documentation_cases =
 
 let all_tests =
   code_cases @ error_recovery @ open_t @ tags @ utf8 @ bad_markup
-  @ documentation_cases
+  @ documentation_cases @ explicit_list_tests
 
 open Test.Serialize
 
@@ -301,7 +389,7 @@ let run_test (label, case) =
     Right
       (mkfailure label exns
          (Option.get !offending_token)
-         !failure_index (List.rev !tokens))
+         !failure_index !tokens)
 
 let sep = String.init 80 @@ Fun.const '-'
 
@@ -340,8 +428,10 @@ let () =
       | "utf8" | "u" -> utf8
       | "isolated" | "i" -> isolated
       | "tags" | "t" -> tags
+      | "light" | "lt" -> light_table_tests
       | "all" -> all_tests
       | "dashes" | "ds" -> dashes
+      | "list" | "l" -> explicit_list_tests
       | _ ->
           print_endline "unrecognized argument - running documentation_cases";
           documentation_cases)
