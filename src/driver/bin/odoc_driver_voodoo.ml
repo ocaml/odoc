@@ -97,24 +97,17 @@ let blessed =
   let doc = "Blessed" in
   Arg.(value & flag & info [ "blessed" ] ~doc)
 
-let action_of_string = function
-  | "compile-only" -> Ok CompileOnly
-  | "link-and-gen" -> Ok LinkAndGen
-  | "all" -> Ok All
-  | _ ->
-      Error
-        (`Msg
-          "Invalid action. Options are 'compile-only', 'link-and-gen' or 'all'")
-
-let string_of_action fmt = function
-  | CompileOnly -> Format.fprintf fmt "compile-only"
-  | LinkAndGen -> Format.fprintf fmt "link-and-gen"
-  | All -> Format.fprintf fmt "all"
-
-let action_conv = Arg.conv (action_of_string, string_of_action)
+let action_conv =
+  Arg.enum
+    [
+      ("compile-only", CompileOnly); ("link-and-gen", LinkAndGen); ("all", All);
+    ]
 
 let actions =
-  let doc = "Actions to perform" in
+  let doc =
+    "Actions to perform. Valid values are 'compile-only', 'link-and-gen' and \
+     'all'."
+  in
   Arg.(value & opt action_conv All & info [ "actions" ] ~doc)
 
 let odoc_dir =
