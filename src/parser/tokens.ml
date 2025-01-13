@@ -66,26 +66,68 @@ type token =
   | PLUS
   | BAR
   | Section_heading of (int * string option) with_start_point
+  | Tag of tag
+  | Tag_with_content of tag_with_content
+  | Raw_markup of (string option * string) with_start_point
+  | END
+and tag =
   | Author of string with_start_point
-  | DEPRECATED
-  | Param of string with_start_point
-  | Raise of string with_start_point
-  | RETURN
-  | See of (internal_reference * string) with_start_point
   | Since of string with_start_point
-  | Before of string with_start_point
   | Version of string with_start_point
   | Canonical of string with_start_point
   | INLINE
   | OPEN
   | CLOSED
   | HIDDEN
+and tag_with_content =
+  | DEPRECATED
+  | Before of string with_start_point
+  | Raise of string with_start_point
+  | Param of string with_start_point
+  | See of (internal_reference * string) with_start_point
+  | RETURN
   | CHILDREN_ORDER
   | TOC_STATUS
   | ORDER_CATEGORY
   | SHORT_TITLE
-  | Raw_markup of (string option * string) with_start_point
-  | END
+
+let to_ref : internal_reference -> [ `Url | `File | `Document ] = function
+  | URL -> `Url
+  | File -> `File
+  | Document -> `Document
+
+let tag_with_content
+    (content : Ast.nestable_block_element Loc.with_location list) :
+    tag_with_content -> Ast.tag = function
+  | DEPRECATED -> `Deprecated content
+  | Before { inner; _ } -> `Before (inner, content)
+  | Raise { inner; _ } -> `Raise (inner, content)
+  | Param { inner; _ } -> `Param (inner, content)
+  | See { inner = kind, href; _ } -> `See (to_ref kind, href, content)
+  | RETURN -> `Return content
+  | CHILDREN_ORDER -> `Children_order content
+  | TOC_STATUS -> `Toc_status content
+  | ORDER_CATEGORY -> `Order_category content
+  | SHORT_TITLE -> `Short_title content
+
+let tag_with_content_start_point : tag_with_content -> Loc.point option =
+  function
+  | Before { start; _ }
+  | Raise { start; _ }
+  | Param { start; _ }
+  | See { start; _ } ->
+      Some start
+  | _ -> None
+
+let tag_bare : tag Loc.with_location -> Ast.tag = function
+  | { value = Author s; _ } -> `Author s.inner
+  | { value = Since s; _ } -> `Since s.inner
+  | { value = Version s; _ } -> `Version s.inner
+  | { value = Canonical s; _ } as loc -> `Canonical { loc with value = s.inner }
+  | { value = INLINE; _ } -> `Inline
+  | { value = OPEN; _ } -> `Open
+  | { value = CLOSED; _ } -> `Closed
+  | { value = HIDDEN; _ } -> `Hidden
 
 let media_description ref_kind media_kind =
   let media_kind =
@@ -143,24 +185,24 @@ let print : token -> string = function
   | Section_heading { inner = level, label; _ } ->
       let label = match label with None -> "" | Some label -> ":" ^ label in
       Printf.sprintf "'{%i%s'" level label
-  | Author _ -> "'@author'"
-  | DEPRECATED -> "'@deprecated'"
-  | Param _ -> "'@param'"
-  | Raise _ -> "'@raise'"
-  | RETURN -> "'@return'"
-  | See _ -> "'@see'"
-  | Since _ -> "'@since'"
-  | Before _ -> "'@before'"
-  | Version _ -> "'@version'"
-  | Canonical _ -> "'@canonical'"
-  | INLINE -> "'@inline'"
-  | OPEN -> "'@open'"
-  | CLOSED -> "'@closed'"
-  | HIDDEN -> "'@hidden'"
-  | CHILDREN_ORDER -> "'@children_order"
-  | TOC_STATUS -> "'@toc_status'"
-  | ORDER_CATEGORY -> "'@order_category'"
-  | SHORT_TITLE -> "@'short_title'"
+  | Tag (Author _) -> "'@author'"
+  | Tag_with_content DEPRECATED -> "'@deprecated'"
+  | Tag_with_content (Param _) -> "'@param'"
+  | Tag_with_content (Raise _) -> "'@raise'"
+  | Tag_with_content RETURN -> "'@return'"
+  | Tag_with_content (See _) -> "'@see'"
+  | Tag_with_content (Before _) -> "'@before'"
+  | Tag_with_content CHILDREN_ORDER -> "'@children_order"
+  | Tag_with_content TOC_STATUS -> "'@toc_status'"
+  | Tag_with_content ORDER_CATEGORY -> "'@order_category'"
+  | Tag_with_content SHORT_TITLE -> "@'short_title'"
+  | Tag (Since _) -> "'@since'"
+  | Tag (Version _) -> "'@version'"
+  | Tag (Canonical _) -> "'@canonical'"
+  | Tag INLINE -> "'@inline'"
+  | Tag OPEN -> "'@open'"
+  | Tag CLOSED -> "'@closed'"
+  | Tag HIDDEN -> "'@hidden'"
   | Raw_markup { inner = None, _; _ } -> "'{%...%}'"
   | Raw_markup { inner = Some target, _; _ } -> "'{%" ^ target ^ ":...%}'"
   | END -> "EOI"
@@ -215,24 +257,24 @@ let describe : token -> string = function
   | BAR -> "'|'"
   | Section_heading { inner = level, _; _ } ->
       Printf.sprintf "'{%i ...}' (section heading)" level
-  | Author _ -> "'@author'"
-  | DEPRECATED -> "'@deprecated'"
-  | Param _ -> "'@param'"
-  | Raise _ -> "'@raise'"
-  | RETURN -> "'@return'"
-  | See _ -> "'@see'"
-  | Since _ -> "'@since'"
-  | Before _ -> "'@before'"
-  | Version _ -> "'@version'"
-  | Canonical _ -> "'@canonical'"
-  | INLINE -> "'@inline'"
-  | OPEN -> "'@open'"
-  | CLOSED -> "'@closed'"
-  | HIDDEN -> "'@hidden'"
-  | CHILDREN_ORDER -> "'@children_order"
-  | TOC_STATUS -> "'@toc_status'"
-  | ORDER_CATEGORY -> "'@order_category'"
-  | SHORT_TITLE -> "@'short_title'"
+  | Tag (Author _) -> "'@author'"
+  | Tag_with_content DEPRECATED -> "'@deprecated'"
+  | Tag_with_content (Param _) -> "'@param'"
+  | Tag_with_content (Raise _) -> "'@raise'"
+  | Tag_with_content RETURN -> "'@return'"
+  | Tag_with_content (See _) -> "'@see'"
+  | Tag_with_content (Before _) -> "'@before'"
+  | Tag_with_content CHILDREN_ORDER -> "'@children_order"
+  | Tag_with_content TOC_STATUS -> "'@toc_status'"
+  | Tag_with_content ORDER_CATEGORY -> "'@order_category'"
+  | Tag_with_content SHORT_TITLE -> "@'short_title'"
+  | Tag (Since _) -> "'@since'"
+  | Tag (Version _) -> "'@version'"
+  | Tag (Canonical _) -> "'@canonical'"
+  | Tag INLINE -> "'@inline'"
+  | Tag OPEN -> "'@open'"
+  | Tag CLOSED -> "'@closed'"
+  | Tag HIDDEN -> "'@hidden'"
 
 let empty_code_block =
   {
@@ -311,29 +353,29 @@ let of_ast_ref : [ `Document | `File | `Url ] -> internal_reference = function
   | `File -> File
   | `Url -> URL
 
-let to_ast_ref : internal_reference -> [ `Url | `File | `Document ] = function
-  | URL -> `Url
-  | File -> `File
-  | Document -> `Document
-
 let describe_tag : Ast.tag -> string = function
   | `See (kind, _, _) ->
-      describe @@ See { inner = (of_ast_ref kind, ""); start = Loc.dummy_pos }
-  | `Author inner -> describe @@ Author { inner; start = Loc.dummy_pos }
-  | `Deprecated _ -> describe DEPRECATED
-  | `Param (inner, _) -> describe @@ Param { inner; start = Loc.dummy_pos }
-  | `Raise (inner, _) -> describe @@ Raise { inner; start = Loc.dummy_pos }
-  | `Return _ -> describe RETURN
-  | `Since inner -> describe @@ Since { inner; start = Loc.dummy_pos }
-  | `Before (inner, _) -> describe @@ Before { inner; start = Loc.dummy_pos }
-  | `Version inner -> describe @@ Version { inner; start = Loc.dummy_pos }
-  | `Closed -> describe CLOSED
-  | `Open -> describe OPEN
+      describe
+      @@ Tag_with_content
+           (See { inner = (of_ast_ref kind, ""); start = Loc.dummy_pos })
+  | `Author inner -> describe @@ Tag (Author { inner; start = Loc.dummy_pos })
+  | `Deprecated _ -> describe @@ Tag_with_content DEPRECATED
+  | `Param (inner, _) ->
+      describe @@ Tag_with_content (Param { inner; start = Loc.dummy_pos })
+  | `Raise (inner, _) ->
+      describe @@ Tag_with_content (Raise { inner; start = Loc.dummy_pos })
+  | `Return _ -> describe @@ Tag_with_content RETURN
+  | `Since inner -> describe @@ Tag (Since { inner; start = Loc.dummy_pos })
+  | `Before (inner, _) ->
+      describe @@ Tag_with_content (Before { inner; start = Loc.dummy_pos })
+  | `Version inner -> describe @@ Tag (Version { inner; start = Loc.dummy_pos })
+  | `Closed -> describe @@ Tag CLOSED
+  | `Open -> describe @@ Tag OPEN
   | `Canonical Loc.{ value = inner; _ } ->
-      describe @@ Canonical { inner; start = Loc.dummy_pos }
-  | `Hidden -> describe HIDDEN
-  | `Inline -> describe INLINE
-  | `Children_order _ -> describe CHILDREN_ORDER
-  | `Toc_status _ -> describe TOC_STATUS
-  | `Order_category _ -> describe ORDER_CATEGORY
-  | `Short_title _ -> describe SHORT_TITLE
+      describe @@ Tag (Canonical { inner; start = Loc.dummy_pos })
+  | `Hidden -> describe @@ Tag HIDDEN
+  | `Inline -> describe @@ Tag INLINE
+  | `Children_order _ -> describe @@ Tag_with_content CHILDREN_ORDER
+  | `Toc_status _ -> describe @@ Tag_with_content TOC_STATUS
+  | `Order_category _ -> describe @@ Tag_with_content ORDER_CATEGORY
+  | `Short_title _ -> describe @@ Tag_with_content SHORT_TITLE

@@ -17,13 +17,15 @@
 
 %token <Tokens.style> Style "{i" (* or '{b' etc *)
 
-(* or '{C' or '{R', but this syntax has been deprecated and is only kept around so legacy codebases don't break :p *)
+(* or '{C' or '{R', but this syntax has been deprecated *)
 %token <Tokens.alignment Tokens.with_start_point> Paragraph_style "{L" 
 
 %token MODULES "{!modules:"
 
 %token <string Tokens.with_start_point> Math_span "{m"
 %token <string Tokens.with_start_point> Math_block "{math"
+
+%token <string Tokens.with_start_point> Verbatim "{v"
 
 %token <(string option * string) Tokens.with_start_point> Raw_markup "{%%}"
 
@@ -46,31 +48,16 @@
 %token <(int * string option) Tokens.with_start_point> Section_heading "{N:"
 
 (* Tags *)
-%token <string Tokens.with_start_point> Author "@author"
-%token DEPRECATED "@deprecated"
-%token <string Tokens.with_start_point> Param "@param"
-%token <string Tokens.with_start_point> Raise "@raise(s)"
-%token RETURN "@return"
-%token <(Tokens.internal_reference * string) Tokens.with_start_point> See "@see"
-%token <string Tokens.with_start_point> Since "@since"
-%token <string Tokens.with_start_point> Before "@before"
-%token <string Tokens.with_start_point> Version "@version"
-%token <string Tokens.with_start_point> Canonical "@canonical"
-%token INLINE "@inline" 
-%token OPEN "@open" 
-%token CLOSED "@closed"
-%token HIDDEN "@hidden"
-%token CHILDREN_ORDER "@children_order"
-%token TOC_STATUS "@toc_status"
-%token ORDER_CATEGORY "@order_category"
-%token SHORT_TITLE "@short_title"
+%token <Tokens.tag> Tag
+%token <Tokens.tag_with_content> Tag_with_content
+
+(* Links and references *)
 %token <string Tokens.with_start_point> Simple_ref "{!" 
 %token <string Tokens.with_start_point> Ref_with_replacement "{{!" 
 %token <string Tokens.with_start_point> Simple_link "{:"
 %token <string Tokens.with_start_point> Link_with_replacement "{{:"
 %token <(Tokens.media * Tokens.media_target) Tokens.with_start_point> Media "{(format)!" 
 %token <(Tokens.media * Tokens.media_target * string) Tokens.with_start_point> Media_with_replacement "{(format):"  (* where 'format' is audio, video, image *)
-%token <string Tokens.with_start_point> Verbatim "{v"
 
 %token END
 
@@ -243,189 +230,20 @@ let tag :=
   | with_content = tag_with_content; line_break?; { with_content }
   | bare = tag_bare; line_break?; { bare }
 
-let tag_with_content := 
-  | ~ = before; <>
-  | ~ = raise; <>
-  | ~ = see; <>
-  | ~ = param; <>
-  | ~ = deprecated; <>
-  | ~ = return; <>
-  | ~ = children_order; <>
-  | ~ = toc_status; <>
-  | ~ = order_category; <>
-  | ~ = short_title; <>
-
-let return := 
-  | startpos = located(RETURN); horizontal_whitespace; children = located(sequence_nonempty(nestable_block_element)); {
-    let span = Loc.delimited startpos children in
-    Writer.map ~f:(fun c -> Loc.at span @@ `Return c) children.Loc.value 
+let tag_with_content := tag = located(Tag_with_content); horizontal_whitespace; children = sequence(nestable_block_element); {
+    Writer.map children ~f:(fun children -> 
+      let Loc.{ value; location } = tag in
+      let start = Tokens.tag_with_content_start_point value |> Option.map (fun start -> { location with start }) |> Option.value ~default:location in
+      let span = Loc.span @@ start :: List.map Loc.location children in
+      Loc.at span @@ Tokens.tag_with_content children value)
   }
-  | pos = located(RETURN); horizontal_whitespace?; {
-    return (Loc.same pos @@ `Return [])
+  | tag = located(Tag_with_content); {
+    return @@ { tag with Loc.value = Tokens.tag_with_content [] tag.Loc.value }
   }
 
-let deprecated := 
-  | startpos = located(DEPRECATED); horizontal_whitespace; children = locatedM(sequence_nonempty(nestable_block_element)); {
-    Writer.bind children ~f:(fun c -> 
-      let span = Loc.delimited startpos c in
-      return @@ Loc.at span (`Deprecated c.Loc.value))
+let tag_bare := tag = located(Tag); {
+    return @@ Loc.map (Fun.const @@ Tokens.tag_bare tag) tag
   }
-  | pos = located(DEPRECATED); horizontal_whitespace?;
-    { return @@ { pos with Loc.value = `Deprecated [] } }
-  | pos = located(DEPRECATED); horizontal_whitespace?; errloc = located(RIGHT_BRACE); {
-    let warning = 
-      Writer.Warning (Parse_error.unpaired_right_brace @@ errloc.Loc.location)
-    in
-    Writer.return_warning ({ pos with Loc.value = `Deprecated [] }) warning
-  }
-
-let before := 
-  | content = Before; horizontal_whitespace; children = sequence_nonempty(nestable_block_element); {
-    Writer.bind children ~f:(fun c ->
-      let Tokens.{ inner; start } = content in
-      let child_span = Loc.span @@ List.map Loc.location c in
-      let span = { child_span with start } in
-      let inner = Loc.at span @@ `Before (inner, c) in
-      return inner)
-  }
-  | content = located(Before); {
-    let Loc.{ value = Tokens.{ inner; start }; location } = content in
-    return { Loc.value = `Before (inner, []); location = { location with start } }
-  }
-
-let raise := 
-  | content = located(Raise); horizontal_whitespace; children = located(sequence_nonempty(nestable_block_element)); { 
-    let Loc.{ value = Tokens.{ inner; start }; location } = content in
-    let location = { location with start } in
-    Writer.bind children.Loc.value ~f:(fun c -> 
-      let span = Loc.span @@ location :: List.map Loc.location c in
-      let inner = Loc.at span @@ `Raise (inner, c) in
-      return inner)
-  }
-  | content = located(Raise); horizontal_whitespace?; {
-    let Loc.{ value = Tokens.{ inner; start }; location } = content in
-    let location = { location with start } in
-    return @@ Loc.at location (`Raise ( inner, []))
-  }
-
-let see := 
-  | content = located(See); horizontal_whitespace; children = located(sequence_nonempty(nestable_block_element)); {
-    let Loc.{ value = Tokens.{ inner = (kind, href); start }; location } = content in
-    let span = Loc.delimited { content with location = { location with start }} children in
-    Writer.bind children.Loc.value ~f:(fun c -> 
-      let inner = Loc.at span @@ `See (Tokens.to_ast_ref kind, href, c) in
-      return inner)
-  }
-  | content = located(See); horizontal_whitespace?; {
-    let Loc.{ value = Tokens.{ inner = (kind, href); start }; location } = content in
-    let location = { location with start } in
-    return @@ Loc.at location @@ `See (Tokens.to_ast_ref kind, href, [])
-  }
-
-let param := 
-  | content = located(Param); horizontal_whitespace; children = sequence_nonempty(nestable_block_element); { 
-    Writer.bind children ~f:(fun c -> 
-      let Loc.{ value = Tokens.{ inner; start }; location } = content in
-      let span = Loc.span @@ { location with start } :: List.map Loc.location c in
-      let inner = Loc.at span @@ `Param (inner, c) in
-      return inner)
-  }
-  | content = located(Param); horizontal_whitespace?; { 
-    let Loc.{ value = Tokens.{ inner; start }; location } = content in
-    return @@ Loc.at { location with start } (`Param (inner, []))
-  }
-
-
-let children_order := 
-  | start = located(CHILDREN_ORDER); horizontal_whitespace; children = sequence(nestable_block_element); { 
-    Writer.bind children ~f:(function 
-      | _ :: _ as children -> 
-        let span = Loc.span @@ start.Loc.location :: List.map Loc.location children in
-        return @@ Loc.at span (`Children_order children)
-      | [] -> 
-        return @@ Loc.map (Fun.const @@ `Children_order []) start)
-  }
-
-
-let toc_status := 
-  | start = located(TOC_STATUS); horizontal_whitespace; children = sequence(nestable_block_element); { 
-    Writer.bind children ~f:(function 
-      | _ :: _ as children -> 
-        let span = Loc.span @@ start.Loc.location :: List.map Loc.location children in
-        return @@ Loc.at span (`Toc_status children)
-      | [] -> 
-        return @@ Loc.map (Fun.const @@ `Toc_status []) start)
-  }
-
-let order_category := 
-  | start = located(ORDER_CATEGORY); horizontal_whitespace; children = sequence(nestable_block_element); { 
-    Writer.bind children ~f:(function 
-      | _ :: _ as children -> 
-        let span = Loc.span @@ start.Loc.location :: List.map Loc.location children in
-        return @@ Loc.at span (`Order_category children)
-      | [] -> 
-        return @@ Loc.map (Fun.const (`Order_category [])) start)
-  }
-
-let short_title := 
-  | start = located(SHORT_TITLE); horizontal_whitespace; children = sequence(nestable_block_element); { 
-    Writer.bind children ~f:(function 
-      | _ :: _ as children -> 
-        let span = Loc.span @@ start.Loc.location :: List.map Loc.location children in
-        return @@ Loc.at span (`Short_title children)
-      | [] -> 
-        return @@ Loc.map (Fun.const (`Short_title [])) start)
-  }
-
-let tag_bare :=
-  | content = located(Version); horizontal_whitespace?; {
-    let Loc.{ value; location } = content in
-    let Tokens.{ inner; start } = value in
-    let span = { location with start } in
-    let what = Tokens.describe (Version value) in
-    let warning = 
-      Writer.Warning (Parse_error.should_not_be_empty ~what span)
-    in
-    Writer.ensure has_content warning (return inner) 
-    |> Writer.map ~f:(fun v -> Loc.at location @@ `Version v ) 
-  }
-  | content = located(Since); {
-    let Loc.{ value; location } = content in
-    let Tokens.{ inner; start } = value in
-    let location = { location with start } in
-    let what = Tokens.describe (Since value) in
-    let warning = 
-      Writer.Warning (Parse_error.should_not_be_empty ~what location)
-    in
-    Writer.ensure has_content warning (return inner) 
-    |> Writer.map ~f:(fun v -> Loc.at location @@ `Since v ) 
-  }
-  | content = located(Canonical); {
-    let Loc.{ value; location } = content in
-    let Tokens.{ inner; start } = value in
-    let what = Tokens.describe @@ Canonical value in
-    let warning = 
-      let span = Loc.of_position $sloc in
-      Writer.Warning (Parse_error.should_not_be_empty ~what span)
-    in
-    let location = { location with start } in
-    Writer.ensure has_content warning @@ return inner 
-    |> Writer.map ~f:(fun value -> Loc.at location @@ `Canonical (Loc.at location value)) 
-  }
-  | content = located(Author); {
-    let Loc.{ value; location } = content in
-    let Tokens.{ inner; start } = value in
-    let what = Tokens.describe @@ Author value in
-    let warning = 
-      Writer.Warning (Parse_error.should_not_be_empty ~what location)
-    in
-    Writer.ensure has_content warning @@ return inner
-    |> Writer.map ~f:(fun a -> { Loc.value = `Author a; location = { location with start } }) 
-  }
-  | pos = position(OPEN); whitespace?; { let loc = Loc.of_position pos in return @@ Loc.at loc `Open }
-  | pos = position(INLINE); whitespace?; { let loc = Loc.of_position pos in return @@ Loc.at loc `Inline }
-  | pos = position(CLOSED); whitespace?; { let loc = Loc.of_position pos in return @@ Loc.at loc `Closed }
-  | pos = position(HIDDEN); whitespace?; { let loc = Loc.of_position pos in return @@ Loc.at loc `Hidden }
 
 let inline_element(ws) := 
   | ~ = inline_element_without_whitespace; <>

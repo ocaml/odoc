@@ -600,77 +600,77 @@ and token input = parse
 
   | "@author" horizontal_space+ (([^ '\r' '\n']*)? as author)
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
-      Author { inner = (trim_horizontal_start author); start } }
+      Tag (Author { inner = (trim_horizontal_start author); start }) }
 
   | "@deprecated"
-    { DEPRECATED }
+    { Tag_with_content DEPRECATED }
 
   | "@param" horizontal_space+ ((_ # space_char)+ as inner)
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
-      Param { inner; start } }
+      Tag_with_content (Param { inner; start }) }
 
   | ("@raise" | "@raises") horizontal_space+ ((_ # space_char)+ as inner)
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
-      Raise { inner; start } }
+      Tag_with_content (Raise { inner; start })}
 
   | ("@return" | "@returns")
-    { RETURN }
+    { Tag_with_content RETURN }
 
   | ("@children_order")
-    { CHILDREN_ORDER }
+    { Tag_with_content CHILDREN_ORDER }
 
   | ("@toc_status")
-    { TOC_STATUS }
+    { Tag_with_content TOC_STATUS }
 
   | ("@order_category")
-    { ORDER_CATEGORY }
+    { Tag_with_content ORDER_CATEGORY }
 
   | ("@short_title")
-    { SHORT_TITLE }
+    { Tag_with_content SHORT_TITLE }
 
   | "@see" horizontal_space* '<' ([^ '>']* as url) '>'
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
-      See { inner = (URL, trim_horizontal_start url); start } }
+      Tag_with_content (See { inner = (URL, trim_horizontal_start url); start }) }
 
   | "@see" horizontal_space* '\'' ([^ '\'']* as filename) '\''
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
-      See { inner = (File, trim_horizontal_start filename); start } }
+      Tag_with_content (See { inner = (File, trim_horizontal_start filename); start }) }
 
   | "@see" horizontal_space* '"' ([^ '"']* as name) '"'
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
-      See { inner = (Document, trim_horizontal_start name); start } }
+      Tag_with_content (See { inner = (Document, trim_horizontal_start name); start }) }
 
   | "@since" horizontal_space+ (([^ '\r' '\n']+) as inner)
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
-      Since { inner; start } }
+      Tag (Since { inner; start }) }
   | "@since" 
-    { Since { inner = ""; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf } }
+    { Tag (Since { inner = ""; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf }) }
 
   | "@before" horizontal_space+ ((_ # space_char)+ as inner)
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
-      Before { inner; start } }
+      Tag_with_content (Before { inner; start }) }
 
   | "@version" horizontal_space+ (([^ '\r' '\n']+) as inner)
-    { Version { inner; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf } }
+    { Tag (Version { inner; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf }) }
   | "@version" 
-    { Version { inner = ""; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf } }
+    { Tag (Version { inner = ""; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf }) }
 
   | "@canonical" horizontal_space+ (([^ '\r' '\n']+) as inner)
-    { Canonical { inner; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf } }
+    { Tag (Canonical { inner; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf }) }
   | "@canonical"
-    { Canonical { inner = ""; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf } }
+    { Tag (Canonical { inner = ""; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf }) }
 
   | "@inline"
-    { INLINE }
+    { Tag INLINE }
 
   | "@open"
-    { OPEN }
+    { Tag OPEN }
 
   | "@closed"
-    { CLOSED }
+    { Tag CLOSED }
 
   | "@hidden"
-    { HIDDEN }
+    { Tag HIDDEN }
 
   | "]}"
     { RIGHT_CODE_DELIMITER }
@@ -693,15 +693,15 @@ and token input = parse
 
   | "@param"
     { warning lexbuf input Parse_error.truncated_param;
-      Param { inner = ""; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf } }
+      Tag_with_content (Param { inner = ""; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf }) }
 
   | ("@raise" | "@raises") as tag
     { warning lexbuf input (Parse_error.truncated_raise tag);
-      Raise { inner = ""; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf } }
+      Tag_with_content (Raise { inner = ""; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf }) }
 
   | "@before"
     { warning lexbuf input Parse_error.truncated_before;
-      Before { inner = ""; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf } }
+      Tag_with_content (Before { inner = ""; start = input.offset_to_location @@ Lexing.lexeme_start lexbuf }) }
 
   | "@see"
     { warning lexbuf input Parse_error.truncated_see;
