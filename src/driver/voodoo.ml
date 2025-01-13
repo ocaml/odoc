@@ -75,18 +75,33 @@ let process_package pkg =
   in
 
   (* a map from libname to the set of dependencies of that library *)
-  let all_lib_deps : Util.StringSet.t Util.StringMap.t =
+  let (all_lib_deps, cmi_only_libs) :
+      Util.StringSet.t Util.StringMap.t * (Fpath.t * string) list =
     List.fold_left
-      (fun acc meta ->
+      (fun (d, c) meta ->
         let full_meta_path = Fpath.(pkg_path // meta) in
         let m = Library_names.process_meta_file full_meta_path in
-        List.fold_left
-          (fun acc lib ->
-            Util.StringMap.add lib.Library_names.name
-              (Util.StringSet.of_list ("stdlib" :: lib.Library_names.deps))
-              acc)
-          acc m.libraries)
-      Util.StringMap.empty metas
+        let d' =
+          List.fold_left
+            (fun acc lib ->
+              Util.StringMap.add lib.Library_names.name
+                (Util.StringSet.of_list ("stdlib" :: lib.Library_names.deps))
+                acc)
+            d m.libraries
+        in
+        let c' =
+          List.fold_left
+            (fun acc (lib : Library_names.library) ->
+              match (lib.archive_name, lib.dir) with
+              | None, Some dir ->
+                  Logs.debug (fun m -> m "Found cmi_only_lib in dir: %s" dir);
+                  (Fpath.(m.meta_dir / dir), lib.name) :: acc
+              | None, None -> acc
+              | Some _, _ -> acc)
+            c m.libraries
+        in
+        (d', c'))
+      (Util.StringMap.empty, []) metas
   in
 
   let ss_pp fmt ss = Format.fprintf fmt "[%d]" (Util.StringSet.cardinal ss) in
@@ -131,7 +146,7 @@ let process_package pkg =
                   Logs.debug (fun m ->
                       m "Processing directory: %a\n%!" Fpath.pp directory);
                   Packages.Lib.v ~libname_of_archive ~pkg_name:pkg.name
-                    ~dir:directory ~cmtidir:None ~all_lib_deps ~cmi_only_libs:[])
+                    ~dir:directory ~cmtidir:None ~all_lib_deps ~cmi_only_libs)
                 Fpath.(Set.to_list directories)))
     |> List.flatten
   in
