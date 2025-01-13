@@ -57,10 +57,10 @@ let run input_s parent_id_opt odoc_dir =
   let page = mk_page input_s id content in
 
   let output =
+    let fname = "page-" ^ page_name ^ ".odoc" in
     match parent_id_opt with
-    | None -> Fpath.(v odoc_dir / ("page-" ^ page_name ^ ".odoc"))
-    | Some parent_id_str ->
-        Fpath.(v odoc_dir // v parent_id_str / ("page-" ^ page_name ^ ".odoc"))
+    | None -> Fpath.(v odoc_dir / fname)
+    | Some parent_id_str -> Fpath.(v odoc_dir // v parent_id_str / fname)
   in
   Odoc_odoc.Odoc_file.save_page output ~warnings page
 
