@@ -18,18 +18,18 @@
 %token <Tokens.style> Style "{i" (* or '{b' etc *)
 
 (* or '{C' or '{R', but this syntax has been deprecated and is only kept around so legacy codebases don't break :p *)
-%token <Tokens.alignment Tokens.with_start_pos> Paragraph_style "{L" 
+%token <Tokens.alignment Tokens.with_start_point> Paragraph_style "{L" 
 
 %token MODULES "{!modules:"
 
-%token <string Tokens.with_start_pos> Math_span "{m"
-%token <string Tokens.with_start_pos> Math_block "{math"
+%token <string Tokens.with_start_point> Math_span "{m"
+%token <string Tokens.with_start_point> Math_block "{math"
 
-%token <(string option * string) Tokens.with_start_pos> Raw_markup "{%%}"
+%token <(string option * string) Tokens.with_start_point> Raw_markup "{%%}"
 
-%token <Tokens.code_block Tokens.with_start_pos> Code_block "{[]}" (* Self-contained code-block *)
-%token <Tokens.code_block Tokens.with_start_pos> Code_block_with_output "{[][" (* Code block that expects some block elements *)
-%token <string Tokens.with_start_pos> Code_span "[]" 
+%token <Tokens.code_block Tokens.with_start_point> Code_block "{[]}" (* Self-contained code-block *)
+%token <Tokens.code_block Tokens.with_start_point> Code_block_with_output "{[][" (* Code block that expects some block elements *)
+%token <string Tokens.with_start_point> Code_span "[]" 
 
 %token <Tokens.list_kind> List "{ol" (* or '{ul' *)
 %token LI "{li" 
@@ -43,19 +43,19 @@
 %token <Ast.table_cell_kind> Table_cell "{td" (* or '{th' for header *)
 
 (* Where N is an integer *)
-%token <(int * string option) Tokens.with_start_pos> Section_heading "{N:"
+%token <(int * string option) Tokens.with_start_point> Section_heading "{N:"
 
 (* Tags *)
-%token <string Tokens.with_start_pos> Author "@author"
+%token <string Tokens.with_start_point> Author "@author"
 %token DEPRECATED "@deprecated"
-%token <string Tokens.with_start_pos> Param "@param"
-%token <string Tokens.with_start_pos> Raise "@raise(s)"
+%token <string Tokens.with_start_point> Param "@param"
+%token <string Tokens.with_start_point> Raise "@raise(s)"
 %token RETURN "@return"
-%token <(Tokens.internal_reference * string) Tokens.with_start_pos> See "@see"
-%token <string Tokens.with_start_pos> Since "@since"
-%token <string Tokens.with_start_pos> Before "@before"
-%token <string Tokens.with_start_pos> Version "@version"
-%token <string Tokens.with_start_pos> Canonical "@canonical"
+%token <(Tokens.internal_reference * string) Tokens.with_start_point> See "@see"
+%token <string Tokens.with_start_point> Since "@since"
+%token <string Tokens.with_start_point> Before "@before"
+%token <string Tokens.with_start_point> Version "@version"
+%token <string Tokens.with_start_point> Canonical "@canonical"
 %token INLINE "@inline" 
 %token OPEN "@open" 
 %token CLOSED "@closed"
@@ -64,13 +64,13 @@
 %token TOC_STATUS "@toc_status"
 %token ORDER_CATEGORY "@order_category"
 %token SHORT_TITLE "@short_title"
-%token <string Tokens.with_start_pos> Simple_ref "{!" 
-%token <string Tokens.with_start_pos> Ref_with_replacement "{{!" 
-%token <string Tokens.with_start_pos> Simple_link "{:"
-%token <string Tokens.with_start_pos> Link_with_replacement "{{:"
-%token <(Tokens.media * Tokens.media_target) Tokens.with_start_pos> Media "{(format)!" 
-%token <(Tokens.media * Tokens.media_target * string) Tokens.with_start_pos> Media_with_replacement "{(format):"  (* where 'format' is audio, video, image *)
-%token <string Tokens.with_start_pos> Verbatim "{v"
+%token <string Tokens.with_start_point> Simple_ref "{!" 
+%token <string Tokens.with_start_point> Ref_with_replacement "{{!" 
+%token <string Tokens.with_start_point> Simple_link "{:"
+%token <string Tokens.with_start_point> Link_with_replacement "{{:"
+%token <(Tokens.media * Tokens.media_target) Tokens.with_start_point> Media "{(format)!" 
+%token <(Tokens.media * Tokens.media_target * string) Tokens.with_start_point> Media_with_replacement "{(format):"  (* where 'format' is audio, video, image *)
+%token <string Tokens.with_start_point> Verbatim "{v"
 
 %token END
 
@@ -87,12 +87,21 @@
 (* Utilities which wraps the return value of a rule in `Loc.with_location` *)
 let locatedM(rule) == inner = rule; { wrap_location $sloc <$> inner }
 let located(rule) == inner = rule; { wrap_location $sloc inner }
-let with_position(rule) == inner = rule; { (inner, $sloc) } 
-let position(rule) == _ = rule; { $sloc }
 let delimited_location(opening, rule, closing) := startpos = located(opening); inner = rule; endpos = located(closing); {
   let span = Loc.delimited startpos endpos in
   Loc.at span inner
 }
+
+(* 
+   When we have to handle errors with Menhir's `error` token, we need 
+   `Lexing.position` as opposed to `Loc.with_location` so that we can cleanly
+   take a slice of the input text with those positions, which would be 
+   difficult using `Loc.with_location` because of the way the lexbuf tracks 
+   position
+*)
+let with_position(rule) == inner = rule; { (inner, $sloc) } 
+let position(rule) == _ = rule; { $sloc }
+
 
 (* Utilities for working inside the Writer.t monad *)
 let sequence(rule) == xs = list(rule); { Writer.sequence xs }
@@ -101,7 +110,6 @@ let separated_nonempty_sequence(sep, rule) := xs = separated_nonempty_list(sep, 
 let separated_sequence(sep, rule) := xs = separated_list(sep, rule); { Writer.sequence xs } 
 
 (* WHITESPACE *)
-
 let horizontal_whitespace := ~ = Space; <`Space>
 
 let whitespace := 
@@ -129,6 +137,7 @@ let toplevel :=
   | ~ = toplevel_error; <>
 
 let toplevel_error :=
+  (* Stray heavy list items, `{li` or `{-` *)
   | err = located(list_opening); horizontal_whitespace; children = sequence_nonempty(inline_element(horizontal_whitespace)); endpos = located(RIGHT_BRACE)?; {
     let default = 
       Writer.get children 
@@ -160,6 +169,9 @@ let toplevel_error :=
       else 
         Writer.warning unclosed m)
   }
+  (* TODO: These(bar, +, -) need to be handled in paragraphs, where they should 
+     be turned into text without emitting a warning
+  *)
   | errloc = position(BAR); whitespace?; { 
     let span = Loc.of_position errloc in
     let warning = 
@@ -238,6 +250,10 @@ let tag_with_content :=
   | ~ = param; <>
   | ~ = deprecated; <>
   | ~ = return; <>
+  | ~ = children_order; <>
+  | ~ = toc_status; <>
+  | ~ = order_category; <>
+  | ~ = short_title; <>
 
 let return := 
   | startpos = located(RETURN); horizontal_whitespace; children = located(sequence_nonempty(nestable_block_element)); {
@@ -319,6 +335,48 @@ let param :=
     return @@ Loc.at { location with start } (`Param (inner, []))
   }
 
+
+let children_order := 
+  | start = located(CHILDREN_ORDER); horizontal_whitespace; children = sequence(nestable_block_element); { 
+    Writer.bind children ~f:(function 
+      | _ :: _ as children -> 
+        let span = Loc.span @@ start.Loc.location :: List.map Loc.location children in
+        return @@ Loc.at span (`Children_order children)
+      | [] -> 
+        return @@ Loc.map (Fun.const @@ `Children_order []) start)
+  }
+
+
+let toc_status := 
+  | start = located(TOC_STATUS); horizontal_whitespace; children = sequence(nestable_block_element); { 
+    Writer.bind children ~f:(function 
+      | _ :: _ as children -> 
+        let span = Loc.span @@ start.Loc.location :: List.map Loc.location children in
+        return @@ Loc.at span (`Toc_status children)
+      | [] -> 
+        return @@ Loc.map (Fun.const @@ `Toc_status []) start)
+  }
+
+let order_category := 
+  | start = located(ORDER_CATEGORY); horizontal_whitespace; children = sequence(nestable_block_element); { 
+    Writer.bind children ~f:(function 
+      | _ :: _ as children -> 
+        let span = Loc.span @@ start.Loc.location :: List.map Loc.location children in
+        return @@ Loc.at span (`Order_category children)
+      | [] -> 
+        return @@ Loc.map (Fun.const (`Order_category [])) start)
+  }
+
+let short_title := 
+  | start = located(SHORT_TITLE); horizontal_whitespace; children = sequence(nestable_block_element); { 
+    Writer.bind children ~f:(function 
+      | _ :: _ as children -> 
+        let span = Loc.span @@ start.Loc.location :: List.map Loc.location children in
+        return @@ Loc.at span (`Short_title children)
+      | [] -> 
+        return @@ Loc.map (Fun.const (`Short_title [])) start)
+  }
+
 let tag_bare :=
   | content = located(Version); horizontal_whitespace?; {
     let Loc.{ value; location } = content in
@@ -369,14 +427,6 @@ let tag_bare :=
   | pos = position(CLOSED); whitespace?; { let loc = Loc.of_position pos in return @@ Loc.at loc `Closed }
   | pos = position(HIDDEN); whitespace?; { let loc = Loc.of_position pos in return @@ Loc.at loc `Hidden }
 
-(* INLINE ELEMENTS *)
-
-(* 
-  If we're calling `inline_element` from another rule higher up the parse tree,
-  it should only accept horizontal whitespace. 
-  If we're calling it recursively from an inline element with some delimiters,
-  we can allow any whitespace
-*)
 let inline_element(ws) := 
   | ~ = inline_element_without_whitespace; <>
   | s = located(ws); { return s } 
@@ -396,14 +446,6 @@ let inline_element_without_whitespace :=
     let Loc.{ value = Tokens.{ start; inner }; location } = m in
     return @@ Loc.at { location with start } (`Math_span inner)
   }
-  (*
-  | minus_or_plus = located( list_light_start ); {
-    return @@ 
-      Loc.map 
-        Tokens.(function MINUS -> `Word "-" | PLUS -> `Word "+" | _ -> assert false) 
-        minus_or_plus
-  }
-  *)
   (* More complex/recursive inline elements should have their own rule *)
   | ~ = style; <>
   | ~ = reference; <>

@@ -640,11 +640,6 @@ and token input = parse
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
       See { inner = (Document, trim_horizontal_start name); start } }
 
-  (* NOTE: These tags will match the whitespace preceding the content and pass 
-     that to the token. I've tried to match on the whitespace as a separate 
-     thing from the token body but that seems to cause problems. 
-     This is (maybe?) an issue because the tests expect the token body to have 
-     no leading whitespace. What do we do here? *)
   | "@since" horizontal_space+ (([^ '\r' '\n']+) as inner)
     { let start = input.offset_to_location @@ Lexing.lexeme_start lexbuf in
       Since { inner; start } }

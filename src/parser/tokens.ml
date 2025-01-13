@@ -17,8 +17,8 @@ let ast_list_kind : list_kind -> Ast.list_kind = function
   | Ordered -> `Ordered
   | Unordered -> `Unordered
 
-type 'a with_start_pos = { start : Loc.point; inner : 'a }
-let with_start_pos : Lexing.position -> 'a -> 'a with_start_pos =
+type 'a with_start_point = { start : Loc.point; inner : 'a }
+let with_start_point : Lexing.position -> 'a -> 'a with_start_point =
  fun start inner -> { start = Loc.make_point start; inner }
 
 type code_block = {
@@ -31,28 +31,29 @@ and meta = {
   tags : string Loc.with_location option;
 }
 
+(* Token names follow Menhir conventions where ALL_CAPS denote a unit variant,
+   in this case generally representing a delimiter *)
 type token =
   | Space of string
   | Single_newline of string
   | Blank_line of string
-  | Simple_ref of string with_start_pos
-  | Ref_with_replacement of string with_start_pos
-  | Simple_link of string with_start_pos
-  | Link_with_replacement of string with_start_pos
+  | Simple_ref of string with_start_point
+  | Ref_with_replacement of string with_start_point
+  | Simple_link of string with_start_point
+  | Link_with_replacement of string with_start_point
   | MODULES
-  | Media of (media * media_target) with_start_pos
-  | Media_with_replacement of (media * media_target * string) with_start_pos
-  (* Start location *)
-  | Math_span of string with_start_pos
-  | Math_block of string with_start_pos
-  | Code_span of string with_start_pos
-  | Code_block of code_block with_start_pos
-  | Code_block_with_output of code_block with_start_pos
+  | Media of (media * media_target) with_start_point
+  | Media_with_replacement of (media * media_target * string) with_start_point
+  | Math_span of string with_start_point
+  | Math_block of string with_start_point
+  | Code_span of string with_start_point
+  | Code_block of code_block with_start_point
+  | Code_block_with_output of code_block with_start_point
   | Word of string
-  | Verbatim of string with_start_pos
+  | Verbatim of string with_start_point
   | RIGHT_CODE_DELIMITER
   | RIGHT_BRACE
-  | Paragraph_style of alignment with_start_pos
+  | Paragraph_style of alignment with_start_point
   | Style of style
   | List of list_kind
   | LI
@@ -64,17 +65,17 @@ type token =
   | MINUS
   | PLUS
   | BAR
-  | Section_heading of (int * string option) with_start_pos
-  | Author of string with_start_pos
+  | Section_heading of (int * string option) with_start_point
+  | Author of string with_start_point
   | DEPRECATED
-  | Param of string with_start_pos
-  | Raise of string with_start_pos
+  | Param of string with_start_point
+  | Raise of string with_start_point
   | RETURN
-  | See of (internal_reference * string) with_start_pos
-  | Since of string with_start_pos
-  | Before of string with_start_pos
-  | Version of string with_start_pos
-  | Canonical of string with_start_pos
+  | See of (internal_reference * string) with_start_point
+  | Since of string with_start_point
+  | Before of string with_start_point
+  | Version of string with_start_point
+  | Canonical of string with_start_point
   | INLINE
   | OPEN
   | CLOSED
@@ -83,7 +84,7 @@ type token =
   | TOC_STATUS
   | ORDER_CATEGORY
   | SHORT_TITLE
-  | Raw_markup of (string option * string) with_start_pos
+  | Raw_markup of (string option * string) with_start_point
   | END
 
 let media_description ref_kind media_kind =
@@ -332,4 +333,7 @@ let describe_tag : Ast.tag -> string = function
       describe @@ Canonical { inner; start = Loc.dummy_pos }
   | `Hidden -> describe HIDDEN
   | `Inline -> describe INLINE
-  | _ -> assert false (* New tags currently unreachable *)
+  | `Children_order _ -> describe CHILDREN_ORDER
+  | `Toc_status _ -> describe TOC_STATUS
+  | `Order_category _ -> describe ORDER_CATEGORY
+  | `Short_title _ -> describe SHORT_TITLE
