@@ -154,8 +154,8 @@ type dirs = {
   mld_dir : Fpath.t;
 }
 
-let fix_virtual (precompiled_units : intf unit list Util.StringMap.t)
-    (units : intf unit list Util.StringMap.t) =
+let fix_virtual ~(precompiled_units : intf unit list Util.StringMap.t)
+    ~(units : intf unit list Util.StringMap.t) =
   Logs.debug (fun m ->
       m "Fixing virtual libraries: %d precompiled units, %d other units"
         (Util.StringMap.cardinal precompiled_units)

@@ -74,7 +74,23 @@ type dirs = {
   mld_dir : Fpath.t;
 }
 
+(** [fix_virtual ~precompiled_units ~units] replaces the input file
+    in units representing implementations of virtual libraries.
+    Implementation units have a [cmt] but no [cmti], even though
+    the interface is actually constrained by a [mli]. The [cmi]
+    file for the implementation is actually taken from the virtual
+    library, so this function replaces the [cmt] used for the
+    interface rendering of the implemenetation library units with
+    the [cmti] taken from the virtual library. [units] should
+    contain all the units that might be changed by this function.
+    [precompiled_units] should be empty if this is being called
+    before any compilation has taken place - ie. in monorepo or
+    opam mode. In voodoo mode if the virtual library is in a
+    different package it will have already been compiled. and thus
+    should not be changed. The types of the inputs and outputs
+    are hashtbls of units, where the hashtable key is the
+    interface hash. *)
 val fix_virtual :
-  intf unit list Util.StringMap.t ->
-  intf unit list Util.StringMap.t ->
+  precompiled_units:intf unit list Util.StringMap.t ->
+  units:intf unit list Util.StringMap.t ->
   intf unit list Util.StringMap.t
