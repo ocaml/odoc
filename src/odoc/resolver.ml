@@ -495,6 +495,9 @@ let create ~important_digests ~directories ~open_modules ~roots =
         let page_roots = prepare page_roots in
         let pages = Named_roots.create ~current_root:current_package page_roots
         and libs = Named_roots.create ~current_root:current_lib lib_roots in
+        let directories =
+          List.sort_uniq Fs.Directory.compare (current_dir :: directories)
+        in
         (Some pages, Some libs, Some current_dir, directories)
   in
   let ap = Accessible_paths.create ~directories in
@@ -502,6 +505,9 @@ let create ~important_digests ~directories ~open_modules ~roots =
     match roots with
     | None -> directories
     | Some { lib_roots; _ } -> directories @ List.map snd lib_roots
+  in
+  let extended_directories =
+    List.sort_uniq Fs.Directory.compare extended_directories
   in
   let extended_ap = Accessible_paths.create ~directories:extended_directories in
   { important_digests; ap; extended_ap; open_modules; pages; libs; current_dir }

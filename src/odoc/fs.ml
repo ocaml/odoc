@@ -174,6 +174,8 @@ module Directory = struct
 
   let contains ~parentdir f = Fpath.is_rooted ~root:parentdir f
 
+  let compare = Fpath.compare
+
   let mkdir_p dir = mkdir_p dir
 
   let to_string = Fpath.to_string
