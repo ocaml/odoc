@@ -117,7 +117,7 @@ let main :=
   | any_whitespace*; END; { return [] }
 
 let toplevel :=
-  | block = nestable_block_element; { (block :> Ast.block_element Loc.with_location Writer.t) }
+  | block = nestable_block_element(paragraph); { (block :> Ast.block_element Loc.with_location Writer.t) }
   | t = tag; { Writer.map ~f:(fun loc -> Loc.{ loc with value = `Tag loc.value }) t }
   | ~ = section_heading; <>
   | ~ = toplevel_error; <>
@@ -217,7 +217,7 @@ let tag :=
   | with_content = tag_with_content; line_break?; { with_content }
   | bare = tag_bare; line_break?; { bare }
 
-let tag_with_content := tag = located(Tag_with_content); children = sequence(nestable_block_element); {
+let tag_with_content := tag = located(Tag_with_content); children = sequence(nestable_block_element(paragraph)); {
     Writer.map children ~f:(fun children -> 
       let Loc.{ value; location } = tag in
       let start = Tokens.tag_with_content_start_point value |> Option.map (fun start -> { location with start }) |> Option.value ~default:location in
@@ -400,12 +400,19 @@ let list_light_start :=
   | MINUS; { Tokens.MINUS }
   | PLUS; { Tokens.PLUS }
 
+let light_list_paragraph_item := 
+  | ~ = inline_element(whitespace); <>
+  | ~ = symbol_as_word(bar); <>
+let paragraph_no_list_symbols := horizontal_whitespace?; x = inline_element_without_whitespace; xs = sequence(light_list_paragraph_item); {
+  paragraph <$> Writer.map2 ~f:List.cons x xs
+}
+
 let list_light_item := 
-  | start = located(list_light_start); horizontal_whitespace?; item = nestable_block_element; {
+  | start = located(list_light_start); horizontal_whitespace?; item = nestable_block_element(paragraph_no_list_symbols); {
     let Loc.{ value; location } = start in
     light_list_item value <$> (Loc.with_start_location location <$> item)
   }
-  | horizontal_whitespace; start = located(list_light_start); item = nestable_block_element; {
+  | horizontal_whitespace; start = located(list_light_start); item = nestable_block_element(paragraph_no_list_symbols); {
     let should_begin_on_its_own_line = 
       let span = Loc.of_position $sloc in
       Writer.Warning (Parse_error.should_begin_on_its_own_line ~what:(Tokens.describe MINUS) span)
@@ -431,7 +438,7 @@ let list_opening :=
   | DASH; { Tokens.DASH } 
 
 let item_heavy :=
-  | startpos = located(list_opening); items = sequence(nestable_block_element); endpos = located(RIGHT_BRACE); any_whitespace*; {
+  | startpos = located(list_opening); items = sequence(nestable_block_element(paragraph)); endpos = located(RIGHT_BRACE); any_whitespace*; {
     let span = Loc.delimited startpos endpos in
     let should_be_followed_by_whitespace = 
       Writer.Warning (Parse_error.should_be_followed_by_whitespace ~what:(Tokens.describe LI) span)
@@ -442,7 +449,7 @@ let item_heavy :=
     Writer.ensure not_empty should_not_be_empty items 
     |> Writer.warning should_be_followed_by_whitespace 
   }
-  | startpos = located(list_opening); items = sequence_nonempty(nestable_block_element)?; endpos = located(END); {
+  | startpos = located(list_opening); items = sequence_nonempty(nestable_block_element(paragraph))?; endpos = located(END); {
     let end_not_allowed = 
       Writer.Warning (Parse_error.end_not_allowed ~in_what:(Tokens.describe DASH) endpos.Loc.location)
     in
@@ -506,11 +513,11 @@ let odoc_list :=
 (* TABLES *)
 
 let cell_heavy := 
-  | cell_kind = Table_cell; children = sequence_nonempty(nestable_block_element); RIGHT_BRACE; whitespace*;
+  | cell_kind = Table_cell; children = sequence_nonempty(nestable_block_element(paragraph)); RIGHT_BRACE; whitespace*;
     { Writer.map ~f:(fun c -> (c, cell_kind)) children }
   | cell_kind = Table_cell; RIGHT_BRACE; whitespace*;
     { return ([], cell_kind) }
-  | cell_kind = Table_cell; children = sequence_nonempty(nestable_block_element)?; errloc = position(error); {
+  | cell_kind = Table_cell; children = sequence_nonempty(nestable_block_element(paragraph))?; errloc = position(error); {
     let illegal = Writer.InputNeeded (fun input ->
       let (start_pos, end_pos) as loc = errloc in 
       let illegal_input = Loc.extract ~input ~start_pos ~end_pos in
@@ -682,8 +689,8 @@ let media :=
 
 (* TOP-LEVEL ELEMENTS *)
 
-let nestable_block_element := ~ = nestable_block_element_inner; any_whitespace?; <>
-let nestable_block_element_inner :=
+let nestable_block_element(paragraph) := ~ = nestable_block_element_inner(paragraph); any_whitespace?; <>
+let nestable_block_element_inner(paragraph) :=
   | ~ = verbatim; <>
   | ~ = code_block; <> 
   | ~ = odoc_list; <>
@@ -722,19 +729,26 @@ let verbatim := verbatim = located(Verbatim); {
   *> return verbatim
 }
 
+(* Split so that we can exclude bar in i.e. light tables *)
 let symbols_without_bar := 
   | PLUS; { "+" }
   | MINUS; { "-" }
-let symbols := 
+let bar := 
   | BAR; { "|" }
+
+let symbols := 
   | ~ = symbols_without_bar; <>
+  | ~ = bar; <>
+let symbol_as_word(symbols) == s = located(symbols); { return @@ Loc.map (fun w -> `Word w) s }
 let paragraph_middle_element := 
   | ~ = inline_element(whitespace); <>
-  | s = located(symbols); { return @@ Loc.map (fun w -> `Word w) s }
+  | ~ = symbol_as_word(symbols); <>
+  
 
 let paragraph := horizontal_whitespace?; x = inline_element_without_whitespace; xs = sequence(paragraph_middle_element); {
   paragraph <$> Writer.map2 ~f:List.cons x xs
 }
+
 
 let code_block := 
   | content = located(Code_block); {
@@ -744,7 +758,7 @@ let code_block :=
     let node = `Code_block Ast.{ meta; delimiter; content; output = None } in
     return @@ Loc.at { location with start } node
   }
-  | content = located(Code_block_with_output); output = sequence_nonempty(nestable_block_element); RIGHT_CODE_DELIMITER; {
+  | content = located(Code_block_with_output); output = sequence_nonempty(nestable_block_element(paragraph)); RIGHT_CODE_DELIMITER; {
     let* output = Option.some <$> output in
     let Loc.{ value = Tokens.{ inner; start }; location } = content in
     let Tokens.{ metadata; delimiter; content } = inner in
