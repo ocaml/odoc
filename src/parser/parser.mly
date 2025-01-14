@@ -729,7 +729,7 @@ let symbols :=
   | BAR; { "|" }
   | ~ = symbols_without_bar; <>
 let paragraph_middle_element := 
-  | ~ = inline_element(horizontal_whitespace); <>
+  | ~ = inline_element(whitespace); <>
   | s = located(symbols); { return @@ Loc.map (fun w -> `Word w) s }
 
 let paragraph := horizontal_whitespace?; x = inline_element_without_whitespace; xs = sequence(paragraph_middle_element); {

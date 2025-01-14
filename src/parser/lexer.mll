@@ -332,6 +332,10 @@ let or_insert_lazy default =
   | None -> Some (default ())
   | x -> x
 
+(* This is an attempt to prevent having to compute the lexeme start for every 
+   character in `reference_content`/`reference_paren_content`
+  Unsure if it's actually useful or worth keeping
+*)
 let ensure_lexeme_start lexbuf = 
   or_insert_lazy (Fun.const @@ Lexing.lexeme_start lexbuf)
 
