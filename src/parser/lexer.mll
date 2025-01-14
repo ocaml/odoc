@@ -23,8 +23,9 @@ let unescape_word : string -> string = fun s ->
         let c, increment =
           match c with
           | '\\' ->
-            if index + 1 < String.length s then
-              match s.[index + 1] with
+            let next = succ index in
+            if next < String.length s then
+              match s.[next] with
               | '{' | '}' | '[' | ']' | '@' as c -> c, 2
               | _ -> c, 1
             else c, 1
@@ -53,8 +54,8 @@ let trim_leading_blank_lines : string -> string = fun s ->
       String.length s
     else
       match s.[index] with
-      | ' ' | '\t' | '\r' -> scan_for_last_newline (index + 1) trim_until
-      | '\n' -> scan_for_last_newline (index + 1) (index + 1)
+      | ' ' | '\t' | '\r' -> scan_for_last_newline (succ index) trim_until
+      | '\n' -> let next = succ index in scan_for_last_newline next next
       | _ -> trim_until
   in
   let trim_until = scan_for_last_newline 0 0 in
@@ -206,30 +207,38 @@ let warning =
     I think we probably need inner to be `string Loc.with_location` since 
     a `Reference takes one as a parameter.
 *)
-let reference_token lexbuf input media ~opening_delimiter ~start_offset ~inner =
+let reference_token : 
+  Lexing.lexbuf 
+  -> input 
+  -> 'a 
+  -> opening_delimiter:string 
+  -> start_offset:int
+  -> content:string Loc.with_location
+  -> token
+  = fun lexbuf input media ~opening_delimiter ~start_offset ~content ->
   let start = input.offset_to_location start_offset in
   match opening_delimiter with
-  | "{!" -> Simple_ref { inner; start  }
-  | "{{!" -> Ref_with_replacement { inner; start }
-  | "{:" -> Simple_link { inner; start }
-  | "{{:" -> Link_with_replacement { inner; start }
+  | "{!" -> Simple_ref { inner = content; start  }
+  | "{{!" -> Ref_with_replacement { inner = content; start }
+  | "{:" -> Simple_link { inner = content.Loc.value; start }
+  | "{{:" -> Link_with_replacement { inner = content.Loc.value; start }
 
-  | "{image!" -> Media { inner = (Reference inner, Image); start }
-  | "{image:" -> Media { inner = (Link inner, Image); start }
-  | "{audio!" -> Media { inner = (Reference inner, Audio); start }
-  | "{audio:" -> Media { inner = (Link inner, Audio); start }
-  | "{video!" -> Media { inner = (Reference inner, Video); start }
-  | "{video:" -> Media { inner = (Link inner, Video); start }
+  | "{image!" -> Media { inner = (Reference content, Image); start }
+  | "{image:" -> Media { inner = (Link content, Image); start }
+  | "{audio!" -> Media { inner = (Reference content, Audio); start }
+  | "{audio:" -> Media { inner = (Link content, Audio); start }
+  | "{video!" -> Media { inner = (Reference content, Video); start }
+  | "{video:" -> Media { inner = (Link content, Video); start }
 
   | _ ->
      let target, kind =
        match opening_delimiter with
-       | "{{image!" -> Reference inner, Image
-       | "{{image:" -> Link inner, Image
-       | "{{audio!" -> Reference inner, Audio
-       | "{{audio:" -> Link inner, Audio
-       | "{{video!" -> Reference inner, Video
-       | "{{video:" -> Link inner, Video
+       | "{{image!" -> Reference content, Image
+       | "{{image:" -> Link content, Image
+       | "{{audio!" -> Reference content, Audio
+       | "{{audio:" -> Link content, Audio
+       | "{{video!" -> Reference content, Video
+       | "{{video:" -> Link content, Video
        | _ -> assert false
      in
      let token_descr = Tokens.describe (Media_with_replacement { inner = (target, kind, ""); start }) in
@@ -318,6 +327,14 @@ let trim_start_horizontal_whitespace : string -> string = fun s ->
   in 
   go 0
 
+let or_insert_lazy default = 
+  function 
+  | None -> Some (default ())
+  | x -> x
+
+let ensure_lexeme_start lexbuf = 
+  or_insert_lazy (Fun.const @@ Lexing.lexeme_start lexbuf)
+
 }
 
 let markup_char =
@@ -353,63 +370,112 @@ let language_tag_char =
 let delim_char =
   ['a'-'z' 'A'-'Z' '0'-'9' '_' ]
 
-rule reference_paren_content input start ref_offset start_offset depth_paren buffer =
+rule reference_paren_content input opening_delimiter start_offset content_offset depth_paren buffer =
   parse
   | '('
     {
       buffer_add_lexeme buffer lexbuf ;
-      reference_paren_content input start ref_offset start_offset
-        (depth_paren + 1) buffer lexbuf }
+      reference_paren_content 
+        input 
+        opening_delimiter
+        start_offset
+        content_offset
+        (succ depth_paren) 
+        buffer 
+        lexbuf }
   | ')'
     {
       buffer_add_lexeme buffer lexbuf ;
       if depth_paren = 0 then
-        reference_content input start ref_offset buffer lexbuf
+        reference_content 
+          input 
+          opening_delimiter
+          start_offset
+          content_offset 
+          buffer 
+          lexbuf
       else
-        reference_paren_content input start ref_offset start_offset
-          (depth_paren - 1) buffer lexbuf }
+        reference_paren_content 
+          input 
+          opening_delimiter
+          start_offset
+          content_offset
+          (pred depth_paren) 
+          buffer 
+          lexbuf }
   | eof
     { 
       let unclosed_bracket = 
         Parse_error.unclosed_bracket ~bracket:"("
       in
       warning lexbuf input ~start_offset unclosed_bracket;
-      Buffer.contents buffer 
+      let start = input.offset_to_location @@ Option.value ~default:(Lexing.lexeme_start lexbuf) content_offset 
+      and end_ = input.offset_to_location @@ Lexing.lexeme_end lexbuf in 
+      Loc.{ value = Buffer.contents buffer; location = { start; end_; file = input.file }}
     }
   | _
     {
       buffer_add_lexeme buffer lexbuf ;
-      reference_paren_content input start ref_offset start_offset depth_paren
-        buffer lexbuf }
+      reference_paren_content 
+        input 
+        opening_delimiter
+        start_offset 
+        content_offset
+        depth_paren
+        buffer 
+        lexbuf }
 
-and reference_content input start start_offset buffer = parse
+and reference_content input opening_delimiter start_offset content_offset buffer = 
+  parse
   | '}'
     {
-      Buffer.contents buffer
+      let start = input.offset_to_location @@ Option.value ~default:(Lexing.lexeme_start lexbuf) content_offset 
+      and end_ = input.offset_to_location @@ Lexing.lexeme_end lexbuf in 
+      Loc.{ value = Buffer.contents buffer; location = { start; end_; file = input.file }}
     }
   | '('
     {
-      buffer_add_lexeme buffer lexbuf ;
-      reference_paren_content input start start_offset
-        (Lexing.lexeme_start lexbuf) 0 buffer lexbuf
+      buffer_add_lexeme buffer lexbuf;
+      reference_paren_content 
+        input 
+        opening_delimiter 
+        start_offset
+        (ensure_lexeme_start lexbuf content_offset) (* get the content offset if we haven't *)
+        0 
+        buffer 
+        lexbuf
     }
   | '"' [^ '"']* '"'
     {
       buffer_add_lexeme buffer lexbuf ;
-      reference_content input start start_offset buffer lexbuf
+      reference_content 
+        input 
+        opening_delimiter 
+        start_offset 
+        (ensure_lexeme_start lexbuf content_offset)
+        buffer 
+        lexbuf
     }
   | eof
     { 
       let unclosed_bracket = 
-        Parse_error.unclosed_bracket ~bracket:start
+        Parse_error.unclosed_bracket ~bracket:opening_delimiter
       in
       warning lexbuf input ~start_offset unclosed_bracket;
-      Buffer.contents buffer 
+      let start = input.offset_to_location @@ Option.value ~default:(Lexing.lexeme_start lexbuf) content_offset 
+      and end_ = input.offset_to_location @@ Lexing.lexeme_end lexbuf in 
+      Loc.{ value = Buffer.contents buffer; location = { start; end_; file = input.file }}
     }
   | _
     {
-      buffer_add_lexeme buffer lexbuf ;
-      reference_content input start start_offset buffer lexbuf }
+      buffer_add_lexeme buffer lexbuf;
+      reference_content 
+        input 
+        opening_delimiter 
+        start_offset 
+        (ensure_lexeme_start lexbuf content_offset)
+        buffer 
+        lexbuf }
 
 and token input = parse
   | horizontal_space* eof
@@ -491,10 +557,10 @@ and token input = parse
 | (reference as opening_delimiter)
     {
       let start_offset = Lexing.lexeme_start lexbuf in
-      let inner =
-        reference_content input opening_delimiter start_offset (Buffer.create 16) lexbuf
+      let content =
+        reference_content input opening_delimiter start_offset None (Buffer.create 16) lexbuf
       in
-      reference_token lexbuf input media ~start_offset ~opening_delimiter ~inner 
+      reference_token lexbuf input media ~start_offset ~opening_delimiter ~content 
     }
 
   | "{["
@@ -733,7 +799,7 @@ and code_span buffer nesting_level start_offset input = parse
 
   | '['
     { Buffer.add_char buffer '[';
-      code_span buffer (nesting_level + 1) start_offset input lexbuf }
+      code_span buffer (succ nesting_level) start_offset input lexbuf }
 
   | '\\' ('[' | ']' as c)
     { Buffer.add_char buffer c;
@@ -825,12 +891,12 @@ and media tok_descr buffer nesting_level start_offset input = parse
         Buffer.contents buffer
       else begin
         Buffer.add_char buffer '}';
-        media tok_descr buffer (nesting_level - 1) start_offset input lexbuf
+        media tok_descr buffer (pred nesting_level) start_offset input lexbuf
       end
       }
   | '{'
     { Buffer.add_char buffer '{';
-      media tok_descr buffer (nesting_level + 1) start_offset input lexbuf }
+      media tok_descr buffer (succ nesting_level) start_offset input lexbuf }
   | ("\\{" | "\\}") as s
     { Buffer.add_string buffer s;
       media tok_descr buffer nesting_level start_offset input lexbuf }

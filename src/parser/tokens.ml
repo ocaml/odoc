@@ -1,8 +1,5 @@
 type ref_kind = Simple | With_replacement
 
-type media = Reference of string | Link of string
-type media_target = Audio | Video | Image
-
 type alignment = Left | Center | Right
 
 type style = Bold | Italic | Emphasis | Superscript | Subscript
@@ -37,8 +34,8 @@ type token =
   | Space of string
   | Single_newline of string
   | Blank_line of string
-  | Simple_ref of string with_start_point
-  | Ref_with_replacement of string with_start_point
+  | Simple_ref of string Loc.with_location with_start_point
+  | Ref_with_replacement of string Loc.with_location with_start_point
   | Simple_link of string with_start_point
   | Link_with_replacement of string with_start_point
   | MODULES
@@ -90,6 +87,10 @@ and tag_with_content =
   | TOC_STATUS
   | ORDER_CATEGORY
   | SHORT_TITLE
+and media =
+  | Reference of string Loc.with_location
+  | Link of string Loc.with_location
+and media_target = Audio | Video | Image
 
 let to_ref : internal_reference -> [ `Url | `File | `Document ] = function
   | URL -> `Url
@@ -304,6 +305,17 @@ let to_ast_style : style -> Ast.style = function
   | Superscript -> `Superscript
   | Subscript -> `Subscript
 
+let dummy_ref inner =
+  {
+    inner =
+      Loc.
+        {
+          value = inner;
+          location = { start = Loc.dummy_pos; end_ = Loc.dummy_pos; file = "" };
+        };
+    start = Loc.dummy_pos;
+  }
+
 let describe_inline : Ast.inline_element -> string = function
   | `Word w -> describe @@ Word w
   | `Space _ -> describe @@ Space ""
@@ -315,22 +327,35 @@ let describe_inline : Ast.inline_element -> string = function
       describe @@ Simple_link { inner; start = Loc.dummy_pos }
   | `Link (inner, _ :: _) ->
       describe @@ Link_with_replacement { inner; start = Loc.dummy_pos }
-  | `Reference (`Simple, { value = inner; _ }, _) ->
-      describe @@ Simple_ref { inner; start = Loc.dummy_pos }
-  | `Reference (`With_text, { value = inner; _ }, _) ->
-      describe @@ Ref_with_replacement { inner; start = Loc.dummy_pos }
+  | `Reference (`Simple, { value; _ }, _) ->
+      describe @@ Simple_ref (dummy_ref value)
+  | `Reference (`With_text, { value; _ }, _) ->
+      describe @@ Ref_with_replacement (dummy_ref value)
 
-let of_href = function `Reference s -> Reference s | `Link s -> Link s
+let of_href =
+  let open Loc in
+  function
+  | { value = `Reference value; location } -> Reference { value; location }
+  | { value = `Link value; location } -> Link { value; location }
 
 let of_media_kind = function
   | `Audio -> Audio
   | `Image -> Image
   | `Video -> Video
 
-let of_media = function
-  | `Media (_, Loc.{ value; _ }, _, kind) ->
+let of_media :
+    [> `Media of
+       Ast.reference_kind
+       * Ast.media_href Loc.with_location
+       * string
+       * Ast.media ] ->
+    token = function
+  | `Media (_, href, _, media_kind) ->
       Media
-        { inner = (of_href value, of_media_kind kind); start = Loc.dummy_pos }
+        {
+          inner = (of_href href, of_media_kind media_kind);
+          start = Loc.dummy_pos;
+        }
 
 (* NOTE: Fix list *)
 let describe_nestable_block : Ast.nestable_block_element -> string = function

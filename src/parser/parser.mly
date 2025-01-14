@@ -52,8 +52,8 @@
 %token <Tokens.tag_with_content> Tag_with_content
 
 (* Links and references *)
-%token <string Tokens.with_start_point> Simple_ref "{!" 
-%token <string Tokens.with_start_point> Ref_with_replacement "{{!" 
+%token <string Loc.with_location Tokens.with_start_point> Simple_ref "{!" 
+%token <string Loc.with_location Tokens.with_start_point> Ref_with_replacement "{{!" 
 %token <string Tokens.with_start_point> Simple_link "{:"
 %token <string Tokens.with_start_point> Link_with_replacement "{{:"
 %token <(Tokens.media * Tokens.media_target) Tokens.with_start_point> Media "{(format)!" 
@@ -319,22 +319,23 @@ let style :=
 
 (* LINKS + REFS *)
 
+(* TODO: See comment @ lexer.mll:205 *)
 let reference := 
   | ref_body = located(Simple_ref); {
     let Loc.{ value = Tokens.{ inner; start }; location } = ref_body in
     let span = { location with start } in
-    return @@ Loc.at span @@ `Reference (`Simple, Loc.at location inner, [])
+    return @@ Loc.at span @@ `Reference (`Simple, inner, [])
   }
   | ref_body = Ref_with_replacement; children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); { 
     Writer.bind children ~f:(fun c -> 
       let Tokens.{ inner; start } = ref_body in
       let span = { endpos.Loc.location with start } in
-      return @@ Loc.at span @@ `Reference (`With_text, Loc.at span inner, trim_start c))
+      return @@ Loc.at span @@ `Reference (`With_text, inner, trim_start c))
   }
   | ref_body = Ref_with_replacement; endpos = located(RIGHT_BRACE); {
     let Tokens.{ inner; start } = ref_body in
     let span = { endpos.Loc.location with start } in
-    let node = Loc.at span @@ `Reference (`With_text, Loc.at span inner, []) in
+    let node = Loc.at span @@ `Reference (`With_text, inner, []) in
     let warning = 
       let what = Tokens.describe @@ Ref_with_replacement ref_body in
       Writer.Warning (Parse_error.should_not_be_empty ~what span) 
@@ -349,7 +350,7 @@ let reference :=
       Writer.Warning (Parse_error.end_not_allowed ~in_what span)
     in
     let* children = Option.value ~default:(return []) children in
-    let node = Loc.at span @@ `Reference (`With_text, Loc.at span inner, children) in
+    let node = Loc.at span @@ `Reference (`With_text, inner, children) in
     Writer.return_warning node not_allowed
   }
 
@@ -641,22 +642,42 @@ let table :=
 
 let media := 
   | content = located(Media); whitespace*; { 
-    let Loc.{ value = Tokens.{ inner; start }; location } = content in
+    let Loc.{ value = Tokens.{ inner = ref_kind, media_kind; start }; location } = content in
     let span = { location with start } in
-    let (located_media_kind, media_href) = split_simple_media @@ Loc.at span inner in
-    let wrapped_located_kind = Loc.map href_of_media located_media_kind in 
-    let kind = media_kind_of_target media_href in
-    let inner = Loc.at span @@ `Media (`Simple, wrapped_located_kind, "", kind) in
-    return inner   
+    let ref_kind = 
+      let open Tokens in
+      match ref_kind with 
+      | Reference refr -> Loc.map (fun r -> `Reference r) refr
+      | Link link -> Loc.map (fun l -> `Link l) link
+    in
+    let media_kind = 
+      let open Tokens in
+      match media_kind with 
+      | Audio -> `Audio 
+      | Image -> `Image
+      | Video -> `Video
+    in
+    let inner = Loc.at span @@ `Media (`Simple, ref_kind, "", media_kind) in 
+    return inner
   }
   | content = located(Media_with_replacement); whitespace*; { 
-    let Loc.{ value = Tokens.{ inner; start }; location } = content in
+    let Loc.{ value = Tokens.{ inner = (ref_kind, media_kind, content); start }; location } = content in
     let span = { location with start } in
-    let (located_media_kind, media_href, content) = split_replacement_media @@ Loc.at span inner in 
-    let wrapped_located_kind = Loc.map href_of_media located_media_kind in 
-    let kind = media_kind_of_target media_href in
-    let inner = Loc.at span @@ `Media (`With_text, wrapped_located_kind, content, kind) in
-    return inner  
+    let ref_kind = 
+      let open Tokens in
+      match ref_kind with 
+      | Reference refr -> Loc.map (fun r -> `Reference r) refr
+      | Link link -> Loc.map (fun l -> `Link l) link
+    in
+    let media_kind = 
+      let open Tokens in
+      match media_kind with 
+      | Audio -> `Audio 
+      | Image -> `Image
+      | Video -> `Video
+    in
+    let inner = Loc.at span @@ `Media (`With_text, ref_kind, content, media_kind) in 
+    return inner
   }
 
 (* TOP-LEVEL ELEMENTS *)

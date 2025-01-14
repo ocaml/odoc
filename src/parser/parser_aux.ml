@@ -135,7 +135,7 @@ let unclosed_table
   in
   Writer.warning warning node
 
-let media_kind_of_target =
+let media_kind =
   let open Tokens in
   function Audio -> `Audio | Video -> `Video | Image -> `Image
 
