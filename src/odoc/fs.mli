@@ -38,6 +38,8 @@ module Directory : sig
 
   val contains : parentdir:t -> file -> bool
 
+  val compare : t -> t -> int
+
   val mkdir_p : t -> unit
 
   val of_file : file -> t
