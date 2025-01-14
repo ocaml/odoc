@@ -79,12 +79,10 @@ let delimited_location(opening, rule, closing) := startpos = located(opening); i
   Loc.at span inner
 }
 
-(* 
-   When we have to handle errors with Menhir's `error` token, we need 
+(* When we have to handle errors with Menhir's `error` token, we need 
    `Lexing.position` as opposed to `Loc.with_location`. Because we can cleanly
    take a slice of the input text with those positions, which would be 
-   difficult using `Loc.with_location`
-*)
+   difficult using `Loc.with_location` *)
 let with_position(rule) == inner = rule; { (inner, $sloc) } 
 let position(rule) == _ = rule; { $sloc }
 
@@ -93,8 +91,8 @@ let position(rule) == _ = rule; { $sloc }
    Writer.t monad easier *)
 let sequence(rule) == xs = list(rule); { Writer.sequence xs }
 let sequence_nonempty(rule) == xs = nonempty_list(rule); { Writer.sequence xs }
-let separated_nonempty_sequence(sep, rule) := xs = separated_nonempty_list(sep, rule); { Writer.sequence xs }
-let separated_sequence(sep, rule) := xs = separated_list(sep, rule); { Writer.sequence xs } 
+let sequence_separated_nonempty(sep, rule) := xs = separated_nonempty_list(sep, rule); { Writer.sequence xs }
+let sequence_separated(sep, rule) := xs = separated_list(sep, rule); { Writer.sequence xs } 
 
 (* WHITESPACE *)
 let horizontal_whitespace := ~ = Space; <`Space>
@@ -113,6 +111,7 @@ let line_break :=
 
 (* ENTRY *)
 
+(* Consume any leading whitespace *)
 let main :=  
   | any_whitespace*; ~ = sequence_nonempty(toplevel); END; <>
   | any_whitespace*; END; { return [] }
@@ -156,19 +155,6 @@ let toplevel_error :=
       if Option.is_some endpos then m 
       else 
         Writer.warning unclosed m)
-  }
-  (* TODO: These(bar, +, -) need to be handled in paragraphs, where they should 
-     be turned into text without emitting a warning
-  *)
-  | errloc = position(BAR); whitespace?; { 
-    let span = Loc.of_position errloc in
-    let warning = 
-      let what = Tokens.describe BAR in 
-      Writer.Warning (Parse_error.bad_markup what span) 
-    in 
-    let as_text = Loc.at span @@ `Word "|" in
-    let node = (Loc.same as_text @@ `Paragraph [ as_text ]) in
-    Writer.return_warning node warning 
   }
   | errloc = position(RIGHT_BRACE); whitespace?; { 
     let span = Loc.of_position errloc in
@@ -430,7 +416,7 @@ let list_light_item :=
   }
 
 let list_light := 
-  | children = separated_nonempty_sequence(whitespace*, list_light_item); {
+  | children = sequence_separated_nonempty(whitespace*, list_light_item); {
     Writer.bind children ~f:(fun c -> 
       let (list_kind, c) = split_light_list_items c in
       let span = Loc.span @@ List.map Loc.location c in
@@ -444,13 +430,6 @@ let list_opening :=
   | DASH; { Tokens.DASH } 
 
 let item_heavy :=
-  | start_pos = located(list_opening); items = sequence(nestable_block_element); RIGHT_BRACE; any_whitespace*; {
-    let Loc.{ value = token; location } = start_pos in
-    let warning = 
-      Writer.Warning (Parse_error.should_not_be_empty ~what:(Tokens.describe token) location) 
-    in
-    Writer.ensure not_empty warning items
-  }
   | startpos = located(list_opening); items = sequence(nestable_block_element); endpos = located(RIGHT_BRACE); any_whitespace*; {
     let span = Loc.delimited startpos endpos in
     let should_be_followed_by_whitespace = 
