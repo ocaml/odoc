@@ -6,7 +6,7 @@
 
 open Odoc_driver_lib
 
-let run path
+let run path extra_pkgs extra_libs
     {
       Common_args.verbose;
       html_dir;
@@ -35,7 +35,9 @@ let run path
   let () = Worker_pool.start_workers env sw nb_workers in
 
   let all, extra_paths, generate_json =
-    (Monorepo_style.of_dune_build path, Voodoo.empty_extra_paths, generate_json)
+    ( Monorepo_style.of_dune_build path ~extra_pkgs ~extra_libs,
+      Voodoo.empty_extra_paths,
+      generate_json )
   in
 
   let all = Packages.remap_virtual all in
@@ -93,9 +95,18 @@ let path =
     & pos 0 Common_args.fpath_arg (Fpath.v ".")
     & info ~doc ~docv:"PATH" [])
 
+let extra_pkgs =
+  let doc = "Extra packages to link with" in
+  Arg.(value & opt_all string [] & info [ "P" ] ~doc)
+
+let extra_libs =
+  let doc = "Extra libraries to link with" in
+  Arg.(value & opt_all string [] & info [ "L" ] ~doc)
+
 let cmd =
   let doc = "Generate documentation from a dune monorepo" in
   let info = Cmd.info "odoc_driver_monorepo" ~doc in
-  Cmd.v info Term.(const run $ path $ Common_args.term)
+  Cmd.v info
+    Term.(const run $ path $ extra_pkgs $ extra_libs $ Common_args.term)
 
 let _ = exit (Cmd.eval cmd)

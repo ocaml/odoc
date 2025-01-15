@@ -132,11 +132,11 @@ let content dir _pkg libs _src subdirs all_libs pfp =
     fpf pfp "{1 Subdirectories}\n";
     Fpath.Set.iter
       (fun subdir ->
-        fpf pfp "- {{!/pkg/%apage-index}%s}\n%!" Fpath.pp subdir
-          (Fpath.basename subdir))
+        fpf pfp "- {{!/%s/%apage-index}%s}\n%!" Monorepo_style.monorepo_pkg_name
+          Fpath.pp subdir (Fpath.basename subdir))
       subdirs);
 
-  if List.length libs > 0 then
+  if (not is_root) && List.length libs > 0 then
     List.iter
       (fun (_, lib) ->
         fpf pfp "{1 Library %s}" lib.Packages.lib_name;
@@ -248,8 +248,9 @@ let make_custom dirs index_of (pkg : Packages.t) :
         acc)
       else
         let libs =
+          let is_root = Fpath.to_string p = "./" in
           Fpath.Map.fold
-            (fun p' lib libs -> if p = p' then lib :: libs else libs)
+            (fun p' lib libs -> if p = p' || is_root then lib :: libs else libs)
             lib_dirs []
         in
         let src = Fpath.Map.find_opt p src_dirs in
