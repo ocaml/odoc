@@ -128,7 +128,11 @@ let pp_doc_file fmt { kind; file; rel_path } =
       | `Other -> "`Other"))
     kind Fpath.pp file Fpath.pp rel_path
 
-type installed_files = { libs : Fpath.set; docs : doc_file list }
+type installed_files = {
+  libs : Fpath.set;
+  docs : doc_file list;
+  odoc_config : Fpath.t option;
+}
 
 type package_of_fpath = package Fpath.map
 
@@ -140,10 +144,11 @@ let pp_fpath_set fmt set =
 
 let pp_fpaths_of_package fmt l =
   List.iter
-    (fun (p, { libs; docs }) ->
-      Format.fprintf fmt "%a:@,libs: %a@,docs: %a@," pp p pp_fpath_set libs
+    (fun (p, { libs; docs; odoc_config }) ->
+      Format.fprintf fmt "%a:@,libs: %a@,docs: %a@,odoc_config: %a@," pp p
+        pp_fpath_set libs
         Fmt.Dump.(list pp_doc_file)
-        docs)
+        docs (Fmt.option Fpath.pp) odoc_config)
     l
 
 let classify_docs prefix only_package contents =
@@ -204,6 +209,22 @@ let classify_libs prefix only_package contents =
   in
   libs
 
+let find_odoc_config prefix only_package contents =
+  let pkg_match pkg =
+    match only_package with None -> true | Some p -> p = pkg
+  in
+
+  let opt =
+    List.find_opt
+      (fun fpath ->
+        match Fpath.segs fpath with
+        | [ "doc"; pkg; "odoc-config.sexp" ] -> pkg_match pkg
+        | _ -> false)
+      contents
+  in
+
+  Option.map (fun p -> Fpath.(prefix // p)) opt
+
 let dune_overrides () =
   let ocamlpath = Sys.getenv_opt "OCAMLPATH" in
   match ocamlpath with
@@ -248,9 +269,11 @@ let dune_overrides () =
                 (fun pkg acc ->
                   let libs = classify_libs base (Some pkg) contents in
                   let docs = classify_docs base (Some pkg) contents in
+                  let odoc_config = find_odoc_config base (Some pkg) contents in
                   Logs.debug (fun m ->
                       m "pkg %s Found %d docs" pkg (List.length docs));
-                  ({ name = pkg; version = "dev" }, { libs; docs }) :: acc)
+                  ({ name = pkg; version = "dev" }, { libs; docs; odoc_config })
+                  :: acc)
                 packages []
           | Error (`Msg msg) ->
               Logs.err (fun m ->
@@ -268,7 +291,8 @@ let pkg_to_dir_map () =
         let contents = pkg_contents p in
         let libs = classify_libs (Fpath.v prefix) None contents in
         let docs = classify_docs (Fpath.v prefix) None contents in
-        (p, { libs; docs }))
+        let odoc_config = find_odoc_config (Fpath.v prefix) None contents in
+        (p, { libs; docs; odoc_config }))
       pkgs
   in
 

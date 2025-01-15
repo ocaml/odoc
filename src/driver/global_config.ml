@@ -4,6 +4,8 @@ type deps = { packages : string list; libraries : string list }
 
 type t = { deps : deps }
 
+let empty = { deps = { libraries = []; packages = [] } }
+
 module Ast = struct
   type item = Libraries of string list | Packages of string list
 
@@ -42,10 +44,16 @@ let parse s =
   let ast = List.filter_map parse_entry entries in
   of_ast ast
 
-let empty = { deps = { libraries = []; packages = [] } }
-
-let load pkg_name =
-  let config_file =
-    Fpath.(v (Opam.prefix ()) / "doc" / pkg_name / "odoc-config.sexp")
-  in
-  match Bos.OS.File.read config_file with Error _ -> empty | Ok s -> parse s
+let load config_file =
+  match Bos.OS.File.read config_file with
+  | Error _ ->
+      Logs.err (fun m ->
+          m "Failed to read odoc-config file: %a" Fpath.pp config_file);
+      empty
+  | Ok s -> (
+      try parse s
+      with e ->
+        Logs.err (fun m ->
+            m "Failed to parse config file %a: %s" Fpath.pp config_file
+              (Printexc.to_string e));
+        empty)

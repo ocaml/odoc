@@ -6,7 +6,11 @@ type doc_file = {
   rel_path : Fpath.t;
 }
 
-type installed_files = { libs : Fpath.set; docs : doc_file list }
+type installed_files = {
+  libs : Fpath.set;
+  docs : doc_file list;
+  odoc_config : Fpath.t option;
+}
 
 type package_of_fpath = package Fpath.map
 
