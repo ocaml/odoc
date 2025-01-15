@@ -7,7 +7,7 @@ Compile the modules:
 
   $ odoc link -I . src-a.odoc
   odoc: FILE.odoc argument: no 'src-a.odoc' file or directory
-  Usage: odoc link [--open=MODULE] [OPTION]… FILE.odoc
+  Usage: odoc link [--custom-layout] [--open=MODULE] [OPTION]… FILE.odoc
   Try 'odoc link --help' or 'odoc --help' for more information.
   [2]
   $ odoc link -I . a.odoc

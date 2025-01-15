@@ -29,22 +29,16 @@ A contains both parsing errors and a reference to B that isn't compiled yet:
 A contains linking errors:
 
   $ odoc link a.odoc --enable-missing-root-warning
-  File "a.odoc":
-  Warning: Couldn't find the following modules:
-    B
   File "a.mli", line 6, characters 47-65:
-  Warning: Failed to resolve reference unresolvedroot(B).doesn't_exist Couldn't find "B"
+  Warning: Failed to resolve reference unresolvedroot(B).doesn't_exist Couldn't find "doesn't_exist"
 
   $ odoc errors a.odocl
   File "a.mli", line 8, characters 20-23:
   Open bracket '{!' is never closed.
   File "a.mli", line 8, characters 22-23:
   Identifier in reference should not be empty.
-  File "a.odoc":
-  Couldn't find the following modules:
-    B
   File "a.mli", line 6, characters 47-65:
-  Failed to resolve reference unresolvedroot(B).doesn't_exist Couldn't find "B"
+  Failed to resolve reference unresolvedroot(B).doesn't_exist Couldn't find "doesn't_exist"
 
 It is possible to hide the warnings too:
 
