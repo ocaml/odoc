@@ -214,10 +214,10 @@ let section_heading :=
 (* TAGS *)
 
 let tag := 
-  | with_content = tag_with_content; line_break?; { with_content }
-  | bare = tag_bare; line_break?; { bare }
+  | with_content = tag_with_content; { with_content }
+  | bare = tag_bare; { bare }
 
-let tag_with_content := tag = located(Tag_with_content); children = sequence(nestable_block_element(paragraph)); {
+let tag_with_content := tag = located(Tag_with_content); children = sequence(nestable_block_element(paragraph)); Blank_line?; {
     Writer.map children ~f:(fun children -> 
       let Loc.{ value; location } = tag in
       let start = Tokens.tag_with_content_start_point value |> Option.map (fun start -> { location with start }) |> Option.value ~default:location in
@@ -227,10 +227,23 @@ let tag_with_content := tag = located(Tag_with_content); children = sequence(nes
   | tag = located(Tag_with_content); horizontal_whitespace?; {
     return @@ { tag with Loc.value = Tokens.tag_with_content [] tag.Loc.value }
   }
-
-  let tag_bare := tag = located(Tag); horizontal_whitespace?; {
-    return @@ Loc.map (Fun.const @@ Tokens.tag_bare tag) tag
+  (* NOTE: (@FayCarsons) Right now this is the only way to accept a newline 
+     after a tag_with_content, adding an optional newline causes unsolvable 
+     reduce conflicts. 
+     Maybe if the line break/whitespace handling for nestable block element were
+     refactored, we could remove this
+     *)
+  | tag = located(Tag_with_content); Single_newline; children = sequence(nestable_block_element(paragraph)); Blank_line?; {
+    Writer.map children ~f:(fun children -> 
+      let Loc.{ value; location } = tag in
+      let start = Tokens.tag_with_content_start_point value |> Option.map (fun start -> { location with start }) |> Option.value ~default:location in
+      let span = Loc.span @@ start :: List.map Loc.location children in
+      Loc.at span @@ Tokens.tag_with_content children value)
   }
+
+let tag_bare := tag = located(Tag); horizontal_whitespace?; {
+  return @@ Loc.map (Fun.const @@ Tokens.tag_bare tag) tag
+}
 
 (* INLINE ELEMENTS *)
 
@@ -440,14 +453,10 @@ let list_opening :=
 let item_heavy :=
   | startpos = located(list_opening); items = sequence(nestable_block_element(paragraph)); endpos = located(RIGHT_BRACE); any_whitespace*; {
     let span = Loc.delimited startpos endpos in
-    let should_be_followed_by_whitespace = 
-      Writer.Warning (Parse_error.should_be_followed_by_whitespace ~what:(Tokens.describe LI) span)
-    in
     let should_not_be_empty = 
       Writer.Warning (Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span) 
     in
     Writer.ensure not_empty should_not_be_empty items 
-    |> Writer.warning should_be_followed_by_whitespace 
   }
   | startpos = located(list_opening); items = sequence_nonempty(nestable_block_element(paragraph))?; endpos = located(END); {
     let end_not_allowed = 
@@ -689,7 +698,7 @@ let media :=
 
 (* TOP-LEVEL ELEMENTS *)
 
-let nestable_block_element(paragraph) := ~ = nestable_block_element_inner(paragraph); any_whitespace?; <>
+let nestable_block_element(paragraph) := ~ = nestable_block_element_inner(paragraph); whitespace?; <>
 let nestable_block_element_inner(paragraph) :=
   | ~ = verbatim; <>
   | ~ = code_block; <> 
