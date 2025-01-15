@@ -170,19 +170,45 @@ let legal_module_list : Ast.inline_element Loc.with_location list -> bool =
   && List.for_all (function `Word _ | `Space _ -> true | _ -> false)
      @@ List.map Loc.value xs
 
-let light_list_item start item =
+let light_list_item :
+    Tokens.token ->
+    Ast.nestable_block_element Loc.with_location ->
+    [< `Ordered of Ast.nestable_block_element
+    | `Unordered of Ast.nestable_block_element ]
+    Loc.with_location =
+ fun start ->
   let open Tokens in
-  match start with
-  | MINUS -> `Unordered item
-  | PLUS -> `Ordered item
-  | _ -> assert false (* unreachable *)
+  Loc.map (fun item ->
+      match start with
+      | MINUS -> `Unordered item
+      | PLUS -> `Ordered item
+      | _ -> assert false (* unreachable *))
 
 let or_insert = function None -> Option.some | o -> Fun.const o
 
-let split_light_list_items items =
+let split_light_list_items :
+    [< `Ordered of Ast.nestable_block_element
+    | `Unordered of Ast.nestable_block_element ]
+    Loc.with_location
+    list ->
+    ([< `Ordered | `Unordered ]
+    * Ast.nestable_block_element Loc.with_location list)
+    Loc.with_location =
+ fun items ->
   let rec go acc list_kind = function
-    | `Ordered x :: xs -> go (x :: acc) (or_insert list_kind `Ordered) xs
-    | `Unordered x :: xs -> go (x :: acc) (or_insert list_kind `Unordered) xs
+    | Loc.{ value = `Ordered x; location } :: xs ->
+        go
+          ((Loc.at location x, location) :: acc)
+          (or_insert list_kind `Ordered)
+          xs
+    | Loc.{ value = `Unordered x; location } :: xs ->
+        go
+          ((Loc.at location x, location) :: acc)
+          (or_insert list_kind `Unordered)
+          xs
     | [] -> (Option.get list_kind, List.rev acc)
   in
-  go [] None items
+  let list_kind, xs = go [] None items in
+  let elements, spans = List.split xs in
+  let location = Loc.span spans in
+  { Loc.value = (list_kind, elements); location }

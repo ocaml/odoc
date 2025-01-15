@@ -68,47 +68,6 @@
 %start <Ast.t Writer.t> main 
 
 %%
-
-(* UTILITIES *)
-
-(* Utilities which wraps the return value of a rule in `Loc.with_location` *)
-let locatedM(rule) == inner = rule; { wrap_location $sloc <$> inner }
-let located(rule) == inner = rule; { wrap_location $sloc inner }
-let delimited_location(opening, rule, closing) := startpos = located(opening); inner = rule; endpos = located(closing); {
-  let span = Loc.delimited startpos endpos in
-  Loc.at span inner
-}
-
-(* When we have to handle errors with Menhir's `error` token, we need 
-   `Lexing.position` as opposed to `Loc.with_location`. Because we can cleanly
-   take a slice of the input text with those positions, which would be 
-   difficult using `Loc.with_location` *)
-let with_position(rule) == inner = rule; { (inner, $sloc) } 
-let position(rule) == _ = rule; { $sloc }
-
-
-(* Wrappers around Menhir's built-in utilities that make working inside the 
-   Writer.t monad easier *)
-let sequence(rule) == xs = list(rule); { Writer.sequence xs }
-let sequence_nonempty(rule) == xs = nonempty_list(rule); { Writer.sequence xs }
-let sequence_separated_nonempty(sep, rule) := xs = separated_nonempty_list(sep, rule); { Writer.sequence xs }
-let sequence_separated(sep, rule) := xs = separated_list(sep, rule); { Writer.sequence xs } 
-
-(* WHITESPACE *)
-let horizontal_whitespace == ~ = Space; <`Space>
-
-let whitespace == 
-  | ~ = horizontal_whitespace; <>
-  | ~ = Single_newline; <`Space>
-
-let any_whitespace := 
-  | ~ = whitespace; <>
-  | ~ = Blank_line; <`Space>
-
-let line_break == 
-  | ~ = Single_newline; <>
-  | ~ = Blank_line; <>
-
 (* ENTRY *)
 
 (* Consume any leading whitespace *)
@@ -423,7 +382,9 @@ let paragraph_no_list_symbols := horizontal_whitespace?; x = inline_element_with
 let list_light_item := 
   | start = located(list_light_start); horizontal_whitespace?; item = nestable_block_element(paragraph_no_list_symbols); {
     let Loc.{ value; location } = start in
-    light_list_item value <$> (Loc.with_start_location location <$> item)
+    Writer.map ~f:(fun item ->
+      { item with Loc.location = Loc.span [location; item.Loc.location] }  
+    ) (light_list_item value <$> item)
   }
   | horizontal_whitespace; start = located(list_light_start); item = nestable_block_element(paragraph_no_list_symbols); {
     let should_begin_on_its_own_line = 
@@ -431,19 +392,17 @@ let list_light_item :=
       Writer.Warning (Parse_error.should_begin_on_its_own_line ~what:(Tokens.describe MINUS) span)
     in
     let Loc.{ value; location } = start in
-    Writer.map ~f:(Loc.with_start_location location) item 
-    |> Writer.map ~f:(light_list_item value)
+    Writer.map ~f:(fun item ->
+      { (light_list_item value item) with Loc.location = Loc.span [location; item.Loc.location] }  
+    ) item
     |> Writer.warning should_begin_on_its_own_line
   }
 
 let list_light := 
   | children = sequence_separated_nonempty(whitespace*, list_light_item); {
-    Writer.bind children ~f:(fun c -> 
-      let (list_kind, c) = split_light_list_items c in
-      let span = Loc.span @@ List.map Loc.location c in
-      `List (list_kind, `Light, [ c ])
-      |> Loc.at span
-      |> return)
+    Writer.map children ~f:(fun children -> 
+      let Loc.{ value = (list_kind, children); location } = split_light_list_items children in
+      Loc.at location @@ `List (list_kind, `Light,  [ children ]))
   }
 
 let item_open := 
@@ -836,3 +795,44 @@ let modules := startpos = located(MODULES); modules = sequence(inline_element(wh
       Writer.return_warning inner not_allowed 
       |> Writer.warning unexpected_end)
   }
+
+
+(* UTILITIES *)
+
+(* Utilities which wraps the return value of a rule in `Loc.with_location` *)
+let locatedM(rule) == inner = rule; { wrap_location $sloc <$> inner }
+let located(rule) == inner = rule; { wrap_location $sloc inner }
+let delimited_location(opening, rule, closing) := startpos = located(opening); inner = rule; endpos = located(closing); {
+  let span = Loc.delimited startpos endpos in
+  Loc.at span inner
+}
+
+(* When we have to handle errors with Menhir's `error` token, we need 
+   `Lexing.position` as opposed to `Loc.with_location`. Because we can cleanly
+   take a slice of the input text with those positions, which would be 
+   difficult using `Loc.with_location` *)
+let with_position(rule) == inner = rule; { (inner, $sloc) } 
+let position(rule) == _ = rule; { $sloc }
+
+
+(* Wrappers around Menhir's built-in utilities that make working inside the 
+   Writer.t monad easier *)
+let sequence(rule) == xs = list(rule); { Writer.sequence xs }
+let sequence_nonempty(rule) == xs = nonempty_list(rule); { Writer.sequence xs }
+let sequence_separated_nonempty(sep, rule) := xs = separated_nonempty_list(sep, rule); { Writer.sequence xs }
+let sequence_separated(sep, rule) := xs = separated_list(sep, rule); { Writer.sequence xs } 
+
+(* WHITESPACE *)
+let horizontal_whitespace == ~ = Space; <`Space>
+
+let whitespace == 
+  | ~ = horizontal_whitespace; <>
+  | ~ = Single_newline; <`Space>
+
+let any_whitespace := 
+  | ~ = whitespace; <>
+  | ~ = Blank_line; <`Space>
+
+let line_break == 
+  | ~ = Single_newline; <>
+  | ~ = Blank_line; <>
