@@ -383,7 +383,7 @@ let list_light_item :=
   | start = located(list_light_start); horizontal_whitespace?; item = nestable_block_element(paragraph_no_list_symbols); {
     let Loc.{ value; location } = start in
     Writer.map ~f:(fun item ->
-      { item with Loc.location = Loc.span [location; item.Loc.location] }  
+      (Loc.span [location; item.Loc.location], item)
     ) (light_list_item value <$> item)
   }
   | horizontal_whitespace; start = located(list_light_start); item = nestable_block_element(paragraph_no_list_symbols); {
@@ -393,16 +393,18 @@ let list_light_item :=
     in
     let Loc.{ value; location } = start in
     Writer.map ~f:(fun item ->
-      { (light_list_item value item) with Loc.location = Loc.span [location; item.Loc.location] }  
-    ) item
+      (Loc.span [location; item.Loc.location], item)
+    ) (light_list_item value <$> item)
     |> Writer.warning should_begin_on_its_own_line
   }
 
 let list_light := 
   | children = sequence_separated_nonempty(whitespace*, list_light_item); {
     Writer.map children ~f:(fun children -> 
-      let Loc.{ value = (list_kind, children); location } = split_light_list_items children in
-      Loc.at location @@ `List (list_kind, `Light,  [ children ]))
+      let spans, children = List.split children in
+      let span = Loc.span spans in
+      let list_kind, children = split_light_list_items children in
+      Loc.at span @@ `List (list_kind, `Light,  [ children ]))
   }
 
 let item_open := 

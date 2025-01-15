@@ -191,24 +191,15 @@ let split_light_list_items :
     | `Unordered of Ast.nestable_block_element ]
     Loc.with_location
     list ->
-    ([< `Ordered | `Unordered ]
-    * Ast.nestable_block_element Loc.with_location list)
-    Loc.with_location =
+    [< `Ordered | `Unordered ]
+    * Ast.nestable_block_element Loc.with_location list =
  fun items ->
   let rec go acc list_kind = function
     | Loc.{ value = `Ordered x; location } :: xs ->
-        go
-          ((Loc.at location x, location) :: acc)
-          (or_insert list_kind `Ordered)
-          xs
+        go (Loc.at location x :: acc) (or_insert list_kind `Ordered) xs
     | Loc.{ value = `Unordered x; location } :: xs ->
-        go
-          ((Loc.at location x, location) :: acc)
-          (or_insert list_kind `Unordered)
-          xs
+        go (Loc.at location x :: acc) (or_insert list_kind `Unordered) xs
     | [] -> (Option.get list_kind, List.rev acc)
   in
-  let list_kind, xs = go [] None items in
-  let elements, spans = List.split xs in
-  let location = Loc.span spans in
-  { Loc.value = (list_kind, elements); location }
+  let list_kind, elements = go [] None items in
+  (list_kind, elements)
