@@ -95,9 +95,9 @@ let sequence_separated_nonempty(sep, rule) := xs = separated_nonempty_list(sep, 
 let sequence_separated(sep, rule) := xs = separated_list(sep, rule); { Writer.sequence xs } 
 
 (* WHITESPACE *)
-let horizontal_whitespace := ~ = Space; <`Space>
+let horizontal_whitespace == ~ = Space; <`Space>
 
-let whitespace := 
+let whitespace == 
   | ~ = horizontal_whitespace; <>
   | ~ = Single_newline; <`Space>
 
@@ -105,7 +105,7 @@ let any_whitespace :=
   | ~ = whitespace; <>
   | ~ = Blank_line; <`Space>
 
-let line_break := 
+let line_break == 
   | ~ = Single_newline; <>
   | ~ = Blank_line; <>
 
@@ -117,15 +117,15 @@ let main :=
   | any_whitespace*; END; { return [] }
 
 let toplevel :=
-  | block = nestable_block_element(paragraph); { (block :> Ast.block_element Loc.with_location Writer.t) }
-  | t = tag; { Writer.map ~f:(fun loc -> Loc.{ loc with value = `Tag loc.value }) t }
+  | block = nestable_block_element(paragraph); any_whitespace?; { (block :> Ast.block_element Loc.with_location Writer.t) }
+  | t = tag; line_break?; { Writer.map ~f:(fun loc -> Loc.{ loc with value = `Tag loc.value }) t }
   | ~ = section_heading; <>
   | ~ = toplevel_error; <>
 
 (* Tokens which cannot begin any block element *)
 let toplevel_error :=
   (* Stray heavy list items, `{li` or `{-` *)
-  | err = located(list_opening); children = sequence_nonempty(inline_element(horizontal_whitespace)); endpos = located(RIGHT_BRACE)?; {
+  | err = located(item_open); children = sequence_nonempty(inline_element(horizontal_whitespace)); endpos = located(RIGHT_BRACE)?; {
     let default = 
       Writer.get children 
       |> List.rev 
@@ -217,7 +217,7 @@ let tag :=
   | with_content = tag_with_content; { with_content }
   | bare = tag_bare; { bare }
 
-let tag_with_content := tag = located(Tag_with_content); children = sequence(nestable_block_element(paragraph)); Blank_line?; {
+let tag_with_content := tag = located(Tag_with_content); children = sequence(nestable_block_element(paragraph)); {
     Writer.map children ~f:(fun children -> 
       let Loc.{ value; location } = tag in
       let start = Tokens.tag_with_content_start_point value |> Option.map (fun start -> { location with start }) |> Option.value ~default:location in
@@ -233,7 +233,7 @@ let tag_with_content := tag = located(Tag_with_content); children = sequence(nes
      Maybe if the line break/whitespace handling for nestable block element were
      refactored, we could remove this
      *)
-  | tag = located(Tag_with_content); Single_newline; children = sequence(nestable_block_element(paragraph)); Blank_line?; {
+  | tag = located(Tag_with_content); Single_newline; children = sequence(nestable_block_element(paragraph)); {
     Writer.map children ~f:(fun children -> 
       let Loc.{ value; location } = tag in
       let start = Tokens.tag_with_content_start_point value |> Option.map (fun start -> { location with start }) |> Option.value ~default:location in
@@ -446,19 +446,19 @@ let list_light :=
       |> return)
   }
 
-let list_opening := 
+let item_open := 
   | LI; { Tokens.LI }
   | DASH; { Tokens.DASH } 
 
 let item_heavy :=
-  | startpos = located(list_opening); items = sequence(nestable_block_element(paragraph)); endpos = located(RIGHT_BRACE); any_whitespace*; {
+| startpos = located(item_open); any_whitespace*; items = sequence(nestable_block_element(paragraph)); any_whitespace*; endpos = located(RIGHT_BRACE); {
     let span = Loc.delimited startpos endpos in
     let should_not_be_empty = 
       Writer.Warning (Parse_error.should_not_be_empty ~what:(Tokens.describe LI) span) 
     in
     Writer.ensure not_empty should_not_be_empty items 
   }
-  | startpos = located(list_opening); items = sequence_nonempty(nestable_block_element(paragraph))?; endpos = located(END); {
+  | startpos = located(item_open); any_whitespace*; items = sequence(nestable_block_element(paragraph))?; any_whitespace*; endpos = located(END); {
     let end_not_allowed = 
       Writer.Warning (Parse_error.end_not_allowed ~in_what:(Tokens.describe DASH) endpos.Loc.location)
     in
@@ -475,24 +475,20 @@ let item_heavy :=
   }
 
 let list_heavy := 
-  | list_kind = located(List); whitespace?; items = sequence_nonempty(item_heavy); endpos = located(RIGHT_BRACE); { 
-    let span = Loc.delimited list_kind endpos in
-    Writer.bind items ~f:(fun items -> 
-      `List (Tokens.ast_list_kind list_kind.Loc.value, `Heavy, items) 
-      |> Loc.at span
-      |> return)
-  }
-  | list_kind = located(List); endpos = located(RIGHT_BRACE); { 
+  | list_kind = located(List); whitespace*; items = sequence(item_heavy); whitespace*; endpos = located(RIGHT_BRACE); { 
     let span = Loc.delimited list_kind endpos in
     let should_not_be_empty = 
       let what = Tokens.describe @@ List list_kind.Loc.value in
       Writer.Warning (Parse_error.should_not_be_empty ~what span) 
     in
-    let node = Loc.at span @@ `List (Tokens.ast_list_kind list_kind.Loc.value, `Heavy, []) in
-    Writer.return_warning node should_not_be_empty
+    Writer.ensure not_empty should_not_be_empty items 
+    |> Writer.bind ~f:(fun items -> 
+        `List (Tokens.ast_list_kind list_kind.Loc.value, `Heavy, items) 
+        |> Loc.at span
+        |> return)
   }
-  | list_kind = located(List); whitespace?; items = sequence_nonempty(item_heavy); errloc = position(error); {
-    let span = Loc.(span [list_kind.location; Loc.of_position errloc]) in
+  | list_kind = located(List); whitespace*; items = sequence_nonempty(item_heavy); errloc = position(error); {
+    let span = Loc.(span [list_kind.location; of_position errloc]) in
     let illegal = Writer.InputNeeded (fun input ->
       let (start_pos, end_pos) = errloc in 
       let illegal_input = Loc.extract ~input ~start_pos ~end_pos in
@@ -503,8 +499,8 @@ let list_heavy :=
     let inner = Loc.at span @@ `List (Tokens.ast_list_kind list_kind.Loc.value, `Heavy, items) in
     return inner 
   }
-  | list_kind = located(List); whitespace?; errloc = position(error); {
-    let span = Loc.(span [list_kind.location; Loc.of_position errloc]) in
+  | list_kind = located(List); errloc = position(error); {
+    let span = Loc.(span [list_kind.location; of_position errloc]) in
     let illegal = Writer.InputNeeded (fun input ->
       let (start_pos, end_pos) = errloc in 
       let illegal_input = Loc.extract ~input ~start_pos ~end_pos in
@@ -698,7 +694,7 @@ let media :=
 
 (* TOP-LEVEL ELEMENTS *)
 
-let nestable_block_element(paragraph) := ~ = nestable_block_element_inner(paragraph); whitespace?; <>
+let nestable_block_element(paragraph) := ~ = nestable_block_element_inner(paragraph); <>
 let nestable_block_element_inner(paragraph) :=
   | ~ = verbatim; <>
   | ~ = code_block; <> 
@@ -757,7 +753,6 @@ let paragraph_middle_element :=
 let paragraph := horizontal_whitespace?; x = inline_element_without_whitespace; xs = sequence(paragraph_middle_element); {
   paragraph <$> Writer.map2 ~f:List.cons x xs
 }
-
 
 let code_block := 
   | content = located(Code_block); {
