@@ -136,8 +136,8 @@ let lib_args libs =
       v "-L" % s %% acc)
     Cmd.empty libs
 
-let link ?(ignore_output = false) ~custom_layout ~input_file:file ?output_file ~docs ~libs
-    ~includes ?current_package () =
+let link ?(ignore_output = false) ~custom_layout ~input_file:file ?output_file
+    ~docs ~libs ~includes ?current_package () =
   let open Cmd in
   let output_file =
     match output_file with Some f -> f | None -> Fpath.set_ext "odocl" file
@@ -160,11 +160,7 @@ let link ?(ignore_output = false) ~custom_layout ~input_file:file ?output_file ~
     if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd
   in
   let desc = Printf.sprintf "Linking %s" (Fpath.to_string file) in
-  let cmd =
-    if custom_layout then
-      cmd % "--custom-layout"
-    else cmd
-  in
+  let cmd = if custom_layout then cmd % "--custom-layout" else cmd in
   let log =
     if ignore_output then None else Some (`Link, Fpath.to_string file)
   in

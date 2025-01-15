@@ -1,9 +1,6 @@
 open Odoc_unit
 
-type indices_style =
-  | Voodoo
-  | Normal
-  | Custom
+type indices_style = Voodoo | Normal | Custom
 
 let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     t list =
@@ -278,21 +275,22 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     in
     match indices_style with
     | Normal | Voodoo ->
-      List.concat
-        ((pkg_index () :: src_index () :: lib_units)
-        @ mld_units @ asset_units @ md_units)
-    | Custom ->
-      if pkg.name = "pkg" then
-        let others :> t list = Landing_pages.make_custom dirs index_of (List.find (fun p -> p.Packages.name = "pkg") pkgs) in
-        others @ List.concat
-          (mld_units @ asset_units @ md_units @ lib_units)
-      else
         List.concat
           ((pkg_index () :: src_index () :: lib_units)
           @ mld_units @ asset_units @ md_units)
+    | Custom ->
+        if pkg.name = "pkg" then
+          let others :> t list =
+            Landing_pages.make_custom dirs index_of
+              (List.find (fun p -> p.Packages.name = "pkg") pkgs)
+          in
+          others @ List.concat (mld_units @ asset_units @ md_units @ lib_units)
+        else
+          List.concat
+            ((pkg_index () :: src_index () :: lib_units)
+            @ mld_units @ asset_units @ md_units)
   in
   if indices_style = Normal then
     let gen_indices :> t = Landing_pages.package_list ~dirs ~remap pkgs in
     gen_indices :: List.concat_map of_package pkgs
   else List.concat_map of_package pkgs
-  

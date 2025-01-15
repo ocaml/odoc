@@ -35,9 +35,7 @@ let run path
   let () = Worker_pool.start_workers env sw nb_workers in
 
   let all, extra_paths, generate_json =
-    ( Monorepo_style.of_dune_build path,
-      Voodoo.empty_extra_paths,
-      generate_json )
+    (Monorepo_style.of_dune_build path, Voodoo.empty_extra_paths, generate_json)
   in
 
   let all = Packages.remap_virtual all in
@@ -48,8 +46,8 @@ let run path
       (fun () ->
         let units =
           let dirs = { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir } in
-          Odoc_units_of.packages ~dirs ~indices_style:Odoc_units_of.Custom ~extra_paths ~remap:false
-            all
+          Odoc_units_of.packages ~dirs ~indices_style:Odoc_units_of.Custom
+            ~extra_paths ~remap:false all
         in
         Compile.init_stats units;
         let compiled = Compile.compile ~partial_dir:odoc_dir units in

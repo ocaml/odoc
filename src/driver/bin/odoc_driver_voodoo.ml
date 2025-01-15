@@ -43,7 +43,8 @@ let run package_name blessed actions odoc_dir odocl_dir
       let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
       { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir }
     in
-    Odoc_units_of.packages ~dirs ~indices_style:Odoc_units_of.Voodoo ~extra_paths ~remap:false all
+    Odoc_units_of.packages ~dirs ~indices_style:Odoc_units_of.Voodoo
+      ~extra_paths ~remap:false all
   in
   Compile.init_stats units;
   let compiled =

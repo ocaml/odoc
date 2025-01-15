@@ -113,101 +113,171 @@ let package_list ~dirs ~remap all =
   let rel_dir = Fpath.v "./" in
   make_index ~dirs ~rel_dir ~pkgs:all ~content ()
 
-let content dir _pkg libs _src subdirs all_libs =
-  fun pfp ->
-    let is_root = Fpath.to_string dir = "./" in
-    fpf pfp "{0 Directory: %a}\n\n" Fpath.pp dir;
+let content dir _pkg libs _src subdirs all_libs pfp =
+  let is_root = Fpath.to_string dir = "./" in
+  fpf pfp "{0 Directory: %a}\n\n" Fpath.pp dir;
 
-    if is_root then begin
-      fpf pfp "@short_title /\n";
-      fpf pfp "@children_order ";
-      Fpath.Set.iter (fun x -> if Fpath.basename x <> "opam_switch" then fpf pfp "%s/ " (Fpath.basename x)) subdirs;
-      fpf pfp "opam_switch\n%!";
-    end else
-      fpf pfp "@short_title %s\n" (Fpath.basename dir);
+  if is_root then (
+    fpf pfp "@short_title /\n";
+    fpf pfp "@children_order ";
+    Fpath.Set.iter
+      (fun x ->
+        if Fpath.basename x <> "opam_switch" then
+          fpf pfp "%s/ " (Fpath.basename x))
+      subdirs;
+    fpf pfp "opam_switch\n%!")
+  else fpf pfp "@short_title %s\n" (Fpath.basename dir);
 
-    if Fpath.Set.cardinal subdirs > 0 then begin
-      fpf pfp "{1 Subdirectories}\n";
-      Fpath.Set.iter (fun subdir ->
-        fpf pfp "- {{!/pkg/%apage-index}%s}\n%!" Fpath.pp subdir (Fpath.basename subdir)) subdirs
-    end;
-    
-    if List.length libs > 0 then begin
-      List.iter (fun (_, lib) -> 
-      fpf pfp "{1 Library %s}" lib.Packages.lib_name;
-      fpf pfp "%a@\n" module_list lib) libs
-    end;
+  if Fpath.Set.cardinal subdirs > 0 then (
+    fpf pfp "{1 Subdirectories}\n";
+    Fpath.Set.iter
+      (fun subdir ->
+        fpf pfp "- {{!/pkg/%apage-index}%s}\n%!" Fpath.pp subdir
+          (Fpath.basename subdir))
+      subdirs);
 
-    if is_root then begin
-      fpf pfp "{1 Libraries index}\n";
-      List.iter (fun lib ->
+  if List.length libs > 0 then
+    List.iter
+      (fun (_, lib) ->
+        fpf pfp "{1 Library %s}" lib.Packages.lib_name;
+        fpf pfp "%a@\n" module_list lib)
+      libs;
+
+  if is_root then (
+    fpf pfp "{1 Libraries index}\n";
+    List.iter
+      (fun lib ->
         fpf pfp "- Library [%s]\n" lib.Packages.lib_name;
-        fpf pfp "  %a@\n" module_list lib
-      ) all_libs
-    end
+        fpf pfp "  %a@\n" module_list lib)
+      all_libs)
 
-
-let make_custom dirs index_of (pkg : Packages.t) : Odoc_unit.mld Odoc_unit.unit list =
-  let pkgs = [pkg] in
+let make_custom dirs index_of (pkg : Packages.t) :
+    Odoc_unit.mld Odoc_unit.unit list =
+  let pkgs = [ pkg ] in
   let pkg_dirs =
-    List.fold_right (fun pkg dirs ->
-      Fpath.Map.add (Fpath.to_dir_path pkg.Packages.pkg_dir) pkg dirs) pkgs Fpath.Map.empty
+    List.fold_right
+      (fun pkg dirs ->
+        Fpath.Map.add (Fpath.to_dir_path pkg.Packages.pkg_dir) pkg dirs)
+      pkgs Fpath.Map.empty
   in
   let lib_dirs =
-    List.fold_right (fun pkg dirs ->
-      let libs = pkg.libraries in
-      List.fold_left (fun dirs lib ->
-        Fpath.Map.add (Fpath.to_dir_path (Odoc_unit.lib_dir pkg lib)) (pkg, lib) dirs) dirs libs) pkgs Fpath.Map.empty
+    List.fold_right
+      (fun pkg dirs ->
+        let libs = pkg.libraries in
+        List.fold_left
+          (fun dirs lib ->
+            Fpath.Map.add
+              (Fpath.to_dir_path (Odoc_unit.lib_dir pkg lib))
+              (pkg, lib) dirs)
+          dirs libs)
+      pkgs Fpath.Map.empty
   in
   let src_dirs =
-    List.fold_right (fun pkg dirs ->
-      let libs = pkg.libraries in
-      let x = List.fold_right (fun lib dirs ->
-      if List.exists (fun m ->
-          match m.Packages.m_impl with
-          | Some { mip_src_info = Some _; _ } -> true
-          | _ -> false) lib.modules
-        then Fpath.Map.add (Fpath.to_dir_path (Odoc_unit.src_lib_dir pkg lib)) (pkg, lib) dirs
-        else dirs
-      ) libs dirs in x) pkgs Fpath.Map.empty in
+    List.fold_right
+      (fun pkg dirs ->
+        let libs = pkg.libraries in
+        let x =
+          List.fold_right
+            (fun lib dirs ->
+              if
+                List.exists
+                  (fun m ->
+                    match m.Packages.m_impl with
+                    | Some { mip_src_info = Some _; _ } -> true
+                    | _ -> false)
+                  lib.modules
+              then
+                Fpath.Map.add
+                  (Fpath.to_dir_path (Odoc_unit.src_lib_dir pkg lib))
+                  (pkg, lib) dirs
+              else dirs)
+            libs dirs
+        in
+        x)
+      pkgs Fpath.Map.empty
+  in
   let pkg_src_dirs =
-    List.fold_left (fun acc pkg -> Fpath.Map.add (Odoc_unit.src_dir pkg |> Fpath.to_dir_path) pkg acc) Fpath.Map.empty pkgs in
-  let all_dirs = Fpath.Set.union (Fpath.Map.dom pkg_dirs) (Fpath.Set.union (Fpath.Map.dom lib_dirs) (Fpath.Map.dom src_dirs)) in
+    List.fold_left
+      (fun acc pkg ->
+        Fpath.Map.add (Odoc_unit.src_dir pkg |> Fpath.to_dir_path) pkg acc)
+      Fpath.Map.empty pkgs
+  in
+  let all_dirs =
+    Fpath.Set.union (Fpath.Map.dom pkg_dirs)
+      (Fpath.Set.union (Fpath.Map.dom lib_dirs) (Fpath.Map.dom src_dirs))
+  in
   let rec all_parents path =
     let parent, _ = Fpath.split_base path in
-    if Fpath.compare parent (Fpath.v "./") = 0 || Fpath.compare parent (Fpath.v "/") = 0 then [path] else path :: all_parents parent
+    if
+      Fpath.compare parent (Fpath.v "./") = 0
+      || Fpath.compare parent (Fpath.v "/") = 0
+    then [ path ]
+    else path :: all_parents parent
   in
-  let all_dirs = Fpath.Set.fold (fun p acc ->
-    let parents = all_parents p in
-    List.fold_right Fpath.Set.add parents acc) all_dirs all_dirs
+  let all_dirs =
+    Fpath.Set.fold
+      (fun p acc ->
+        let parents = all_parents p in
+        List.fold_right Fpath.Set.add parents acc)
+      all_dirs all_dirs
   in
 
-  let all_indexes = List.fold_right (fun pkg acc ->
-    let mlds = pkg.Packages.mlds in
-    let indexes = List.filter (fun mld -> Fpath.basename mld.mld_rel_path = "index.mld") mlds in
-    let index_paths = List.map (fun mld -> Fpath.(pkg.pkg_dir // mld.mld_rel_path |> parent)) indexes |> Fpath.Set.of_list in
-    Fpath.Set.union acc index_paths) pkgs Fpath.Set.empty in
+  let all_indexes =
+    List.fold_right
+      (fun pkg acc ->
+        let mlds = pkg.Packages.mlds in
+        let indexes =
+          List.filter
+            (fun mld -> Fpath.basename mld.mld_rel_path = "index.mld")
+            mlds
+        in
+        let index_paths =
+          List.map
+            (fun mld -> Fpath.(pkg.pkg_dir // mld.mld_rel_path |> parent))
+            indexes
+          |> Fpath.Set.of_list
+        in
+        Fpath.Set.union acc index_paths)
+      pkgs Fpath.Set.empty
+  in
 
-  Fpath.Set.fold (fun p acc ->
-    if Fpath.Set.mem p all_indexes
-    then (Logs.debug (fun m -> m "Skipping predefined index.mld: %a" Fpath.pp p); acc)
-    else begin
-      let libs = Fpath.Map.fold (fun p' lib libs -> if p=p' then lib::libs else libs) lib_dirs [] in
-      let src = Fpath.Map.find_opt p src_dirs in
-      let pkg_src = Fpath.Map.find_opt p pkg_src_dirs in
-      let subdirs = Fpath.Set.filter (fun p' -> Fpath.parent p' = p) all_dirs in
-      Logs.debug (fun x -> x "dir: %a pkg: %a lib: %a src: %a pkg_src: %a subdirs: %a" Fpath.pp p
-        (Fmt.string) pkg.Packages.name
-        (Fmt.Dump.list Fmt.string) (List.map (fun (_, p) -> p.Packages.lib_name) libs)
-        (Fmt.Dump.option Fmt.string) (Option.map (fun (_, p) -> p.Packages.lib_name) src)
-        (Fmt.Dump.option Fmt.string) (Option.map (fun p -> p.Packages.name) pkg_src)
-        (Fmt.Dump.list Fpath.pp) (Fpath.Set.elements subdirs)
-        );
-      let index = Some (index_of pkg) in
-      let pkgs = pkgs in
-      let all_libs = pkg.libraries in
-      Logs.debug (fun m -> m "pkgs: %a" Fmt.Dump.(list string) (List.map (fun p -> p.Packages.name) pkgs));
-      let idx = make_index ~dirs ~rel_dir:p ~libs ~pkgs ~content:(content p pkg libs src subdirs all_libs) ?index () in 
-      idx :: acc
-    end
-    ) all_dirs []
+  Fpath.Set.fold
+    (fun p acc ->
+      if Fpath.Set.mem p all_indexes then (
+        Logs.debug (fun m -> m "Skipping predefined index.mld: %a" Fpath.pp p);
+        acc)
+      else
+        let libs =
+          Fpath.Map.fold
+            (fun p' lib libs -> if p = p' then lib :: libs else libs)
+            lib_dirs []
+        in
+        let src = Fpath.Map.find_opt p src_dirs in
+        let pkg_src = Fpath.Map.find_opt p pkg_src_dirs in
+        let subdirs =
+          Fpath.Set.filter (fun p' -> Fpath.parent p' = p) all_dirs
+        in
+        Logs.debug (fun x ->
+            x "dir: %a pkg: %a lib: %a src: %a pkg_src: %a subdirs: %a" Fpath.pp
+              p Fmt.string pkg.Packages.name (Fmt.Dump.list Fmt.string)
+              (List.map (fun (_, p) -> p.Packages.lib_name) libs)
+              (Fmt.Dump.option Fmt.string)
+              (Option.map (fun (_, p) -> p.Packages.lib_name) src)
+              (Fmt.Dump.option Fmt.string)
+              (Option.map (fun p -> p.Packages.name) pkg_src)
+              (Fmt.Dump.list Fpath.pp)
+              (Fpath.Set.elements subdirs));
+        let index = Some (index_of pkg) in
+        let pkgs = pkgs in
+        let all_libs = pkg.libraries in
+        Logs.debug (fun m ->
+            m "pkgs: %a"
+              Fmt.Dump.(list string)
+              (List.map (fun p -> p.Packages.name) pkgs));
+        let idx =
+          make_index ~dirs ~rel_dir:p ~libs ~pkgs
+            ~content:(content p pkg libs src subdirs all_libs)
+            ?index ()
+        in
+        idx :: acc)
+    all_dirs []
