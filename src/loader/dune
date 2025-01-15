@@ -27,4 +27,5 @@
   odoc-parser
   syntax_highlighter
   odoc_document
-  odoc_utils))
+  odoc_utils
+  compiler-libs.optcomp))
