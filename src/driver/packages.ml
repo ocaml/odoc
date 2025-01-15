@@ -431,7 +431,17 @@ let of_packages ~packages_dir packages =
 
   let ps =
     List.filter_map
-      (fun pkg -> List.find_opt (fun (pkg', _) -> pkg = pkg') opam_map)
+      (fun pkg ->
+        match
+          List.find_opt
+            (fun (pkg', _) -> pkg.Opam.name = pkg'.Opam.name)
+            opam_map
+        with
+        | None ->
+            Logs.warn (fun m ->
+                m "Didn't find package %a in opam_map" Opam.pp pkg);
+            None
+        | x -> x)
       deps
   in
 
