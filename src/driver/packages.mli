@@ -89,6 +89,8 @@ type t = {
 
 val pp : Format.formatter -> t -> unit
 
+val fix_missing_deps : t list -> t list
+
 val mk_mlds : Opam.doc_file list -> mld list * asset list * md list
 
 val of_libs : packages_dir:Fpath.t option -> Util.StringSet.t -> t list

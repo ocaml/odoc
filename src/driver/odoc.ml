@@ -44,6 +44,7 @@ let compile ~output_dir ~input_file:file ~includes ~suppress_warnings ~parent_id
       (fun path acc -> Cmd.(acc % "-I" % p path))
       includes Cmd.empty
   in
+
   let output_file =
     let _, f = Fpath.split_base file in
     Some Fpath.(output_dir // Id.to_fpath parent_id // set_ext "odoc" f)
@@ -54,6 +55,11 @@ let compile ~output_dir ~input_file:file ~includes ~suppress_warnings ~parent_id
   in
   let cmd = cmd % "--parent-id" % Id.to_string parent_id in
   let cmd = if suppress_warnings then cmd % "--suppress-warnings" else cmd in
+  let dirname = Id.to_fpath parent_id |> Fpath.filename in
+  let cmd =
+    if Fpath.filename file = "index.mld" then cmd % "--short-title" % dirname
+    else cmd
+  in
   let desc = Printf.sprintf "Compiling %s" (Fpath.to_string file) in
   ignore
   @@ Cmd_outputs.submit
