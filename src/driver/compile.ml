@@ -252,8 +252,9 @@ let link : custom_layout:bool -> compiled list -> _ =
       let libs = Odoc_unit.Pkg_args.compiled_libs c.pkg_args in
       let pages = Odoc_unit.Pkg_args.compiled_pages c.pkg_args in
       let includes = Odoc_unit.Pkg_args.includes c.pkg_args in
-      Odoc.link ~custom_layout ~input_file ~output_file ~libs ~docs:pages ~includes
-        ~ignore_output:(not enable_warnings) ?current_package:c.pkgname ()
+      Odoc.link ~custom_layout ~input_file ~output_file ~libs ~docs:pages
+        ~includes ~ignore_output:(not enable_warnings)
+        ?current_package:c.pkgname ()
     in
     match c.kind with
     | `Intf { hidden = true; _ } ->
