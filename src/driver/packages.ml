@@ -387,8 +387,8 @@ let of_libs ~packages_dir libs =
                     Some { pkg with libraries }
                 | None ->
                     let pkg_dir = pkg_dir packages_dir pkg.name in
-                    let config = Global_config.load pkg.name in
-                    let _, { Opam.docs; _ } =
+
+                    let _, { Opam.docs; odoc_config; _ } =
                       List.find
                         (fun (pkg', _) ->
                           (* Logs.debug (fun m ->
@@ -396,6 +396,13 @@ let of_libs ~packages_dir libs =
                           pkg = pkg')
                         opam_map
                     in
+
+                    let config =
+                      match odoc_config with
+                      | None -> Global_config.empty
+                      | Some f -> Global_config.load f
+                    in
+
                     let mlds, assets, _ = mk_mlds docs in
                     Some
                       {
@@ -474,7 +481,11 @@ let of_packages ~packages_dir packages =
             (files.Opam.libs |> Fpath.Set.to_list)
         in
         let pkg_dir = pkg_dir packages_dir pkg.name in
-        let config = Global_config.load pkg.name in
+        let config =
+          match files.odoc_config with
+          | None -> Global_config.empty
+          | Some f -> Global_config.load f
+        in
         let mlds, assets, _ = mk_mlds files.docs in
         let selected = List.mem pkg.name packages in
         let remaps =

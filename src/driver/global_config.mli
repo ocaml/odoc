@@ -6,4 +6,4 @@ val empty : t
 
 val parse : string -> t
 
-val load : string -> t
+val load : Fpath.t -> t
