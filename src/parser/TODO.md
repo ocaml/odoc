@@ -1,5 +1,7 @@
-- Some locations are still not accurate, all necessary tokens should pass 
-  starting location so this should be trivial to fix
+- Some locations are still not accurate. This seems to be acting up in comments that span 
+  many lines. There is potentially an off-by-one error or similar in 
+  `Lexer.update_content_newlines` which is (supposed) to increment the lexbuf's line 
+  position for every newline encountered in some content (i.e. inside of a code or math block)
 - Top-level errors like two nestable block elements or headings on the same line
   need to be handled. Currently, they parse correctly but do not emit a warning. 
 - Repetition in `tag_with_content` parse rule(parser.mly:207). Two productions are identical 
