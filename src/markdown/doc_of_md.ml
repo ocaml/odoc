@@ -280,14 +280,12 @@ let rec link_reference_to_inline_element ~locator defs l m (is, warns) =
       (text @ is, warns)
   | Some ld ->
       let replace_md_mdx s =
-        let root =
-          if String.ends_with ~suffix:".md" s then
-            String.sub s 0 (String.length s - 3)
-          else if String.ends_with ~suffix:".mdx" s then
-            String.sub s 0 (String.length s - 4)
-          else s
-        in
-        root ^ ".html"
+        let add_html x = x ^ ".html" in
+        if String.ends_with ~suffix:".md" s then
+          String.sub s 0 (String.length s - 3) |> add_html
+        else if String.ends_with ~suffix:".mdx" s then
+          String.sub s 0 (String.length s - 4) |> add_html
+        else s
       in
       let link =
         match Link_definition.dest ld with

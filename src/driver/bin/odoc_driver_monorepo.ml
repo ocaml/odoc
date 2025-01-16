@@ -46,7 +46,7 @@ let run path
       (fun () ->
         let units =
           let dirs = { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir } in
-          Odoc_units_of.packages ~dirs ~indices_style:Odoc_units_of.Custom
+          Odoc_units_of.packages ~dirs ~indices_style:Odoc_units_of.Automatic
             ~extra_paths ~remap:false all
         in
         Compile.init_stats units;
