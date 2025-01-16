@@ -2,6 +2,9 @@
 open Bos
 open Sexplib.Std
 [@@@warning "-69-30"]
+
+let monorepo_pkg_name = "__pkg__"
+
 let dune = ref (Cmd.v "dune")
 
 type item = Library of library
@@ -31,7 +34,7 @@ and library_list = library list
 and uid = string [@@deriving sexp]
 
 (* Eurgh *)
-let internal_name_of_library : library -> string option =
+let internal_name_of_library : library -> (string * Fpath.t) option =
  fun l ->
   match l.modules with
   | [] -> None
@@ -42,9 +45,11 @@ let internal_name_of_library : library -> string option =
       | p :: _ -> (
           let p' = Fpath.relativize ~root:(Fpath.v l.source_dir) (Fpath.v p) in
           match Option.map Fpath.segs p' with
-          | Some (objdir :: _ :: _) -> (
+          | Some (objdir :: "byte" :: _) -> (
+              (* cmt files are expected to be in [library_path/.libname.objs/byte/name.cmt]. *)
               match Astring.String.fields ~is_sep:(fun c -> c = '.') objdir with
-              | [ ""; libname; _ ] -> Some libname
+              | [ ""; libname; "objs" ] ->
+                  Some (libname, Fpath.(parent (v p) |> rem_empty_seg))
               | _ -> None)
           | _ -> None))
 
@@ -71,6 +76,7 @@ let of_dune_build dir =
   match contents with
   | Error _ -> []
   | Ok c ->
+      let cset = Fpath.Set.of_list c in
       let libs = dune_describe dir in
       let local_libs =
         List.filter_map
@@ -87,8 +93,8 @@ let of_dune_build dir =
       List.iter
         (fun (lib : library) ->
           Logs.debug (fun m ->
-              m "lib %s internal name: %a" lib.name
-                Fmt.(option string)
+              m "lib %s internal name: (%a)" lib.name
+                Fmt.(option (pair string Fpath.pp))
                 (internal_name_of_library lib)))
         local_libs;
       let uid_to_libname =
@@ -100,9 +106,10 @@ let of_dune_build dir =
         List.fold_left
           (fun acc (l : library) ->
             Util.StringMap.add l.name
-              (List.filter_map
-                 (fun uid -> Util.StringMap.find_opt uid uid_to_libname)
-                 l.requires
+              ("stdlib"
+               :: List.filter_map
+                    (fun uid -> Util.StringMap.find_opt uid uid_to_libname)
+                    l.requires
               |> Util.StringSet.of_list)
               acc)
           Util.StringMap.empty local_libs
@@ -121,7 +128,7 @@ let of_dune_build dir =
             | Library lib -> (
                 let libname_opt = internal_name_of_library lib in
                 match libname_opt with
-                | Some libname ->
+                | Some (libname, _) ->
                     let archive =
                       Fpath.(append dir (v lib.source_dir / libname))
                     in
@@ -137,14 +144,8 @@ let of_dune_build dir =
           (fun (Library lib) ->
             match internal_name_of_library lib with
             | None -> None
-            | Some libname ->
-                let cmtidir =
-                  Fpath.(
-                    append dir
-                      (v lib.source_dir
-                      / Printf.sprintf ".%s.objs" libname
-                      / "byte"))
-                in
+            | Some (_, cmtidir) ->
+                let cmtidir = Fpath.(append dir cmtidir) in
                 let id_override =
                   Fpath.relativize
                     ~root:Fpath.(v "_build/default")
@@ -155,7 +156,7 @@ let of_dune_build dir =
                     m "this should never be 'None': %a"
                       Fmt.Dump.(option string)
                       id_override);
-                if List.mem cmtidir c then
+                if Fpath.Set.mem cmtidir cset then
                   Some
                     (Packages.Lib.v ~libname_of_archive ~pkg_name:lib.name
                        ~dir:(Fpath.append dir (Fpath.v lib.source_dir))
@@ -186,7 +187,7 @@ let of_dune_build dir =
       let local =
         [
           {
-            Packages.name = "pkg";
+            Packages.name = monorepo_pkg_name;
             version = "1.0";
             libraries = libs;
             mlds;

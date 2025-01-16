@@ -1,6 +1,9 @@
 open Odoc_unit
 
-type indices_style = Voodoo | Normal | Custom
+type indices_style =
+  | Voodoo
+  | Normal
+  | Automatic
 
 let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     t list =
@@ -273,22 +276,14 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
         [ Landing_pages.src ~dirs ~pkg ~index ]
       else []
     in
+    let std_units = mld_units @ asset_units @ md_units @ lib_units in
     match indices_style with
-    | Normal | Voodoo ->
-        List.concat
-          ((pkg_index () :: src_index () :: lib_units)
-          @ mld_units @ asset_units @ md_units)
-    | Custom ->
-        if pkg.name = "pkg" then
-          let others :> t list =
-            Landing_pages.make_custom dirs index_of
-              (List.find (fun p -> p.Packages.name = "pkg") pkgs)
-          in
-          others @ List.concat (mld_units @ asset_units @ md_units @ lib_units)
-        else
-          List.concat
-            ((pkg_index () :: src_index () :: lib_units)
-            @ mld_units @ asset_units @ md_units)
+    | Automatic when pkg.name = Monorepo_style.monorepo_pkg_name ->
+      let others :> t list = Landing_pages.make_custom dirs index_of (List.find (fun p -> p.Packages.name = Monorepo_style.monorepo_pkg_name) pkgs) in
+      others @ List.concat std_units
+    | Normal | Voodoo | Automatic ->
+      List.concat
+        (pkg_index () :: src_index () :: std_units)
   in
   if indices_style = Normal then
     let gen_indices :> t = Landing_pages.package_list ~dirs ~remap pkgs in

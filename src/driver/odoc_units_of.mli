@@ -1,6 +1,6 @@
 open Odoc_unit
 
-type indices_style = Voodoo | Normal | Custom
+type indices_style = Voodoo | Normal | Automatic
 
 val packages :
   dirs:dirs ->
