@@ -218,7 +218,7 @@ let source k (t : Source.t) =
     | Elt i -> k i
     | Tag (None, l) -> tokens l
     | Tag (Some s, l) -> [ Tag (s, tokens l) ]
-  and tokens t = Odoc_utils.List.concat_map t ~f:token in
+  and tokens t = Odoc_utils.List.concat_map token t in
   tokens t
 
 let rec internalref ~verbatim ~in_source (t : Target.internal) (c : Inline.t) =
@@ -310,7 +310,7 @@ let rec block ~in_source (l : Block.t) =
           Break Paragraph;
         ]
   in
-  Odoc_utils.List.concat_map l ~f:one
+  Odoc_utils.List.concat_map one l
 
 and table_block { Table.data; align } =
   let data =
