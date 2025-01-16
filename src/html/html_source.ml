@@ -1,3 +1,4 @@
+open Odoc_utils
 module HLink = Link
 open Odoc_document.Types
 open Tyxml
@@ -23,7 +24,7 @@ let html_of_doc ~config ~resolve docs =
     | Source_page.Plain_code s -> [ txt s ]
     | Tagged_code (info, docs) -> (
         let is_in_a = match info with Link _ -> true | _ -> is_in_a in
-        let children = List.concat @@ (List.rev_map (doc_to_html ~is_in_a) docs |> List.rev) in
+        let children = List.concat_map (doc_to_html ~is_in_a) docs in
         match info with
         | Syntax tok -> [ span ~a:[ a_class [ tok ] ] children ]
         (* Currently, we do not render links to documentation *)
@@ -33,9 +34,7 @@ let html_of_doc ~config ~resolve docs =
             [ a ~a:[ a_href href ] children ]
         | Anchor lbl -> [ span ~a:[ a_id lbl ] children ])
   in
-  let span_content_l = List.rev_map (doc_to_html ~is_in_a:false) docs |> List.rev in
-  (* This is List.concat, tail recursive version *)
-  let span_content = List.fold_left (fun acc x -> List.rev_append x acc) [] span_content_l |> List.rev in
+  let span_content = List.concat_map (doc_to_html ~is_in_a:false) docs in
   span ~a:[] span_content
 
 let count_lines_in_string s =
