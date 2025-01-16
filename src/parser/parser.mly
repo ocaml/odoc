@@ -78,8 +78,8 @@ let main :=
 let toplevel :=
   | block = nestable_block_element(paragraph); any_whitespace?; { (block :> Ast.block_element Loc.with_location Writer.t) }
   | t = tag; line_break?; { Writer.map ~f:(fun loc -> Loc.{ loc with value = `Tag loc.value }) t }
-  | ~ = section_heading; <>
-  | ~ = toplevel_error; <>
+  | ~ = section_heading; line_break?; <>
+  | ~ = toplevel_error; line_break?; <>
 
 (* Tokens which cannot begin any block element *)
 let toplevel_error :=
