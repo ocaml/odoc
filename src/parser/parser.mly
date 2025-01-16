@@ -87,6 +87,15 @@ let toplevel :=
   | ~ = toplevel_error; line_break*; <>
 
 (* Tokens which cannot begin any block element *)
+(* TODO: This should have cases for block elements on the same line:
+    nestable_block_element -> section_heading
+    nestable_block_element -> nestable_block_element
+    nestable_block_element -> tag 
+    etc
+    To do this we will need to refactor so that this returns a list of elements,
+    and `toplevel` is an explicit left-recursive list rule 
+    (see Menhir's `list` impl) that can concat those lists together
+*)
 let toplevel_error :=
   (* Stray heavy list items, `{li` or `{-` *)
   | err = located(item_open); children = sequence_nonempty(inline_element(horizontal_whitespace)); endpos = located(RIGHT_BRACE)?; {
@@ -184,12 +193,16 @@ let tag :=
 let tag_with_content := tag = located(Tag_with_content); children = sequence(nestable_block_element(paragraph)); {
     Writer.map children ~f:(fun children -> 
       let Loc.{ value; location } = tag in
-      let start = Tokens.tag_with_content_start_point value |> Option.map (fun start -> { location with start }) |> Option.value ~default:location in
+      let start = 
+        tag_with_content_start_point value 
+        |> Option.map (fun start -> { location with start }) 
+        |> Option.value ~default:location 
+      in
       let span = Loc.span @@ start :: List.map Loc.location children in
-      Loc.at span @@ Tokens.tag_with_content children value)
+      Loc.at span @@ tag_with_content children value)
   }
   | tag = located(Tag_with_content); horizontal_whitespace?; {
-    return @@ { tag with Loc.value = Tokens.tag_with_content [] tag.Loc.value }
+    return @@ { tag with Loc.value = tag_with_content [] tag.Loc.value }
   }
   (* NOTE: (@FayCarsons) Right now this is the only way to accept a newline 
      after a tag_with_content, adding an optional newline causes unsolvable 
@@ -199,13 +212,13 @@ let tag_with_content := tag = located(Tag_with_content); children = sequence(nes
   | tag = located(Tag_with_content); Single_newline; children = sequence(nestable_block_element(paragraph)); {
     Writer.map children ~f:(fun children -> 
       let Loc.{ value; location } = tag in
-      let start = Tokens.tag_with_content_start_point value |> Option.map (fun start -> { location with start }) |> Option.value ~default:location in
+      let start = tag_with_content_start_point value |> Option.map (fun start -> { location with start }) |> Option.value ~default:location in
       let span = Loc.span @@ start :: List.map Loc.location children in
-      Loc.at span @@ Tokens.tag_with_content children value)
+      Loc.at span @@ tag_with_content children value)
   }
 
 let tag_bare := tag = located(Tag); horizontal_whitespace?; {
-  return @@ Loc.map (Fun.const @@ Tokens.tag_bare tag) tag
+  return @@ Loc.map (Fun.const @@ tag_bare tag) tag
 }
 
 (* INLINE ELEMENTS *)
@@ -243,7 +256,7 @@ let style :=
       Writer.Warning (Parse_error.should_not_be_empty ~what span) 
     in
     Writer.ensure not_empty warning children
-    |> Writer.map ~f:(fun c -> Loc.at span @@ `Styled (Tokens.to_ast_style style, trim_start c)) 
+    |> Writer.map ~f:(fun c -> Loc.at span @@ `Styled (ast_style style, trim_start c)) 
   }
   | style = located(Style); endpos = located(RIGHT_BRACE); {
     let span = Loc.delimited style endpos in
@@ -252,7 +265,7 @@ let style :=
       let what = Tokens.describe @@ Style style in
       Writer.Warning (Parse_error.should_not_be_empty ~what span) 
     in
-    let inner = Loc.at span @@ `Styled (Tokens.to_ast_style style, []) in
+    let inner = Loc.at span @@ `Styled (ast_style style, []) in
     Writer.return_warning inner warning
   }
   | style = located(Style); endpos = located(RIGHT_CODE_DELIMITER); {
@@ -266,7 +279,7 @@ let style :=
     let should_not_be_empty = 
       Writer.Warning (Parse_error.should_not_be_empty ~what:style_desc span) 
     in
-    let inner = Loc.at span @@ `Styled (Tokens.to_ast_style style, []) in
+    let inner = Loc.at span @@ `Styled (ast_style style, []) in
     return inner 
     |> Writer.warning not_allowed
     |> Writer.warning should_not_be_empty
@@ -279,7 +292,7 @@ let style :=
       let illegal_section = Loc.extract ~input ~start_pos ~end_pos in
       Parse_error.illegal ~in_what illegal_section span) 
     in
-    let inner = Loc.at span @@ `Styled (Tokens.to_ast_style style.Loc.value, []) in
+    let inner = Loc.at span @@ `Styled (ast_style style.Loc.value, []) in
     Writer.return_warning inner illegal
   }
   | style = located(Style); endpos = located(END); {
@@ -289,7 +302,7 @@ let style :=
       let in_what = Tokens.describe @@ Style style in
       Writer.Warning (Parse_error.end_not_allowed ~in_what span) 
     in
-    let inner = Loc.at span @@ `Styled (Tokens.to_ast_style style, []) in
+    let inner = Loc.at span @@ `Styled (ast_style style, []) in
     Writer.return_warning inner warning
   }
 

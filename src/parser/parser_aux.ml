@@ -203,3 +203,48 @@ let split_light_list_items :
   in
   let list_kind, elements = go [] None items in
   (list_kind, elements)
+
+let tag_with_content_start_point : Tokens.tag_with_content -> Loc.point option =
+  function
+  | Before { start; _ }
+  | Raise { start; _ }
+  | Param { start; _ }
+  | See { start; _ } ->
+      Some start
+  | _ -> None
+
+let to_ref : Tokens.uri_kind -> [ `Url | `File | `Document ] = function
+  | URL -> `Url
+  | File -> `File
+  | Document -> `Document
+
+let tag_with_content
+    (content : Ast.nestable_block_element Loc.with_location list) :
+    Tokens.tag_with_content -> Ast.tag = function
+  | DEPRECATED -> `Deprecated content
+  | Before { inner; _ } -> `Before (inner, content)
+  | Raise { inner; _ } -> `Raise (inner, content)
+  | Param { inner; _ } -> `Param (inner, content)
+  | See { inner = kind, href; _ } -> `See (to_ref kind, href, content)
+  | RETURN -> `Return content
+  | CHILDREN_ORDER -> `Children_order content
+  | TOC_STATUS -> `Toc_status content
+  | ORDER_CATEGORY -> `Order_category content
+  | SHORT_TITLE -> `Short_title content
+
+let tag_bare : Tokens.tag Loc.with_location -> Ast.tag = function
+  | { value = Author s; _ } -> `Author s.inner
+  | { value = Since s; _ } -> `Since s.inner
+  | { value = Version s; _ } -> `Version s.inner
+  | { value = Canonical s; _ } as loc -> `Canonical { loc with value = s.inner }
+  | { value = INLINE; _ } -> `Inline
+  | { value = OPEN; _ } -> `Open
+  | { value = CLOSED; _ } -> `Closed
+  | { value = HIDDEN; _ } -> `Hidden
+
+let ast_style : Tokens.style -> Ast.style = function
+  | Bold -> `Bold
+  | Italic -> `Italic
+  | Emphasis -> `Emphasis
+  | Superscript -> `Superscript
+  | Subscript -> `Subscript

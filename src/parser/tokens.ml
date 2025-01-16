@@ -7,7 +7,7 @@ type table_cell_kind = Header | Data
 
 type list_kind = Ordered | Unordered
 
-type internal_reference = URL | File | Document
+type uri_kind = URL | File | Document
 type math = { start : Loc.point; content : string }
 
 let ast_list_kind : list_kind -> Ast.list_kind = function
@@ -31,104 +31,78 @@ and meta = {
 (* Token names follow Menhir conventions where ALL_CAPS denote a unit variant,
    in this case generally representing a delimiter *)
 type token =
-  | Space of string
-  | Single_newline of string
+  | Space of string (* ' ' *)
+  | Single_newline of string (* '\n' with optional leading horizontal space  *)
   | Blank_line of string
-  | Simple_ref of string Loc.with_location with_start_point
-  | Ref_with_replacement of string Loc.with_location with_start_point
-  | Simple_link of string with_start_point
-  | Link_with_replacement of string with_start_point
-  | MODULES
-  | Media of (media * media_target) with_start_point
+    (* '\n\n' with optional leading horizontal space for both newlines *)
+  | Simple_ref of string Loc.with_location with_start_point (* '{!Foo}' *)
+  | Ref_with_replacement of
+      string Loc.with_location with_start_point (* '{{!Foo} bar}' *)
+  | Simple_link of string with_start_point (* '{:janestreet.com}' *)
+  | Link_with_replacement of
+      string with_start_point (* '{{:janestreet.com}Jane Street}' *)
+  | MODULES (* {!modules *)
+  | Media of
+      (media * media_target) with_start_point (* i.e. '{audio!foo.wav}' *)
   | Media_with_replacement of (media * media_target * string) with_start_point
-  | Math_span of string with_start_point
-  | Math_block of string with_start_point
-  | Code_span of string with_start_point
-  | Code_block of code_block with_start_point
+    (* i.e. '{{audio!foo.wav} presentation on monadic fixpoints}' *)
+  | Math_span of string with_start_point (* '{m 2^32-1 }' *)
+  | Math_block of string with_start_point (* '{math \\sum_{i=0}^n x^i%}}' *)
+  | Code_span of string with_start_point (* '[bind m f]' *)
+  | Code_block of code_block with_start_point (* '{@haskell[fix f = f f]}' *)
   | Code_block_with_output of code_block with_start_point
-  | Word of string
-  | Verbatim of string with_start_point
-  | RIGHT_CODE_DELIMITER
-  | RIGHT_BRACE
-  | Paragraph_style of alignment with_start_point
-  | Style of style
-  | List of list_kind
-  | LI
-  | DASH
-  | TABLE_LIGHT
-  | TABLE_HEAVY
-  | TABLE_ROW
-  | Table_cell of Ast.table_cell_kind
-  | MINUS
-  | PLUS
-  | BAR
-  | Section_heading of (int * string option) with_start_point
-  | Tag of tag
-  | Tag_with_content of tag_with_content
+    (* '{@haskell[fix f = f f][Haskell can be cool]}' *)
+  | Word of string (* Any whitespace separated word *)
+  | Verbatim of string with_start_point (* '{v let foo = bar v}' *)
+  | RIGHT_CODE_DELIMITER (* ']}' *)
+  | RIGHT_BRACE (* '}' *)
+  | Paragraph_style of alignment with_start_point (* i.e. '{L' *)
+  | Style of style (* i.e. '{i italic}' or '{_ subscript}' *)
+  | List of list_kind (* '{ul' or '{ol'  *)
+  | LI (* '{li' *)
+  | DASH (* '{-' *)
+  | TABLE_LIGHT (* '{t' *)
+  | TABLE_HEAVY (* '{table' *)
+  | TABLE_ROW (* '{tr' *)
+  | Table_cell of Ast.table_cell_kind (* '{td' *)
+  | MINUS (* '-' *)
+  | PLUS (* '+' *)
+  | BAR (* '|' *)
+  | Section_heading of (int * string option) with_start_point (* '{2 Foo}' *)
+  | Tag of tag (* '@author Fay Carsons' *)
+  | Tag_with_content of tag_with_content (* i.e. '@raises Foo' *)
   | Raw_markup of (string option * string) with_start_point
-  | END
+    (* '{% <p>inline html!<\p> %}' *)
+  | END (* End of input *)
 and tag =
-  | Author of string with_start_point
-  | Since of string with_start_point
-  | Version of string with_start_point
-  | Canonical of string with_start_point
-  | INLINE
-  | OPEN
-  | CLOSED
-  | HIDDEN
+  | Author of string with_start_point (* '@author' *)
+  | Since of string with_start_point (* '@since' *)
+  | Version of string with_start_point (* '@version' *)
+  | Canonical of string with_start_point (* '@canonical' *)
+  | INLINE (* '@inline' *)
+  | OPEN (* '@open' *)
+  | CLOSED (* '@closed' *)
+  | HIDDEN (* '@hidden' *)
+
+(* A tag with content is a tag which may be followed by some number of block
+   elements delimited by a blank line *)
 and tag_with_content =
-  | DEPRECATED
-  | Before of string with_start_point
-  | Raise of string with_start_point
-  | Param of string with_start_point
-  | See of (internal_reference * string) with_start_point
-  | RETURN
-  | CHILDREN_ORDER
-  | TOC_STATUS
-  | ORDER_CATEGORY
-  | SHORT_TITLE
+  | DEPRECATED (* '@deprecated with the release of 1.0.1' *)
+  | Before of
+      string with_start_point (* '@before 1.0.1 this did something else' *)
+  | Raise of string with_start_point (* '@raises Foo' *)
+  | Param of string with_start_point (* '@param foo is a monad' *)
+  | See of (uri_kind * string) with_start_point
+    (* '@see <foo.com> for more info' *)
+  | RETURN (* '@return a monad' *)
+  | CHILDREN_ORDER (* '@children_order' *)
+  | TOC_STATUS (* '@toc_status' *)
+  | ORDER_CATEGORY (* '@order_category' *)
+  | SHORT_TITLE (* '@short_title' *)
 and media =
   | Reference of string Loc.with_location
   | Link of string Loc.with_location
 and media_target = Audio | Video | Image
-
-let to_ref : internal_reference -> [ `Url | `File | `Document ] = function
-  | URL -> `Url
-  | File -> `File
-  | Document -> `Document
-
-let tag_with_content
-    (content : Ast.nestable_block_element Loc.with_location list) :
-    tag_with_content -> Ast.tag = function
-  | DEPRECATED -> `Deprecated content
-  | Before { inner; _ } -> `Before (inner, content)
-  | Raise { inner; _ } -> `Raise (inner, content)
-  | Param { inner; _ } -> `Param (inner, content)
-  | See { inner = kind, href; _ } -> `See (to_ref kind, href, content)
-  | RETURN -> `Return content
-  | CHILDREN_ORDER -> `Children_order content
-  | TOC_STATUS -> `Toc_status content
-  | ORDER_CATEGORY -> `Order_category content
-  | SHORT_TITLE -> `Short_title content
-
-let tag_with_content_start_point : tag_with_content -> Loc.point option =
-  function
-  | Before { start; _ }
-  | Raise { start; _ }
-  | Param { start; _ }
-  | See { start; _ } ->
-      Some start
-  | _ -> None
-
-let tag_bare : tag Loc.with_location -> Ast.tag = function
-  | { value = Author s; _ } -> `Author s.inner
-  | { value = Since s; _ } -> `Since s.inner
-  | { value = Version s; _ } -> `Version s.inner
-  | { value = Canonical s; _ } as loc -> `Canonical { loc with value = s.inner }
-  | { value = INLINE; _ } -> `Inline
-  | { value = OPEN; _ } -> `Open
-  | { value = CLOSED; _ } -> `Closed
-  | { value = HIDDEN; _ } -> `Hidden
 
 let media_description ref_kind media_kind =
   let media_kind =
@@ -277,6 +251,9 @@ let describe : token -> string = function
   | Tag CLOSED -> "'@closed'"
   | Tag HIDDEN -> "'@hidden'"
 
+(* Functions and helpers for describing a parsed AST node
+   This is useful in error handling inside the Menhir parser *)
+
 let empty_code_block =
   {
     inner =
@@ -297,13 +274,6 @@ let of_ast_style : Ast.style -> style = function
   | `Emphasis -> Emphasis
   | `Superscript -> Superscript
   | `Subscript -> Subscript
-
-let to_ast_style : style -> Ast.style = function
-  | Bold -> `Bold
-  | Italic -> `Italic
-  | Emphasis -> `Emphasis
-  | Superscript -> `Superscript
-  | Subscript -> `Subscript
 
 let dummy_ref inner =
   {
@@ -357,7 +327,6 @@ let of_media :
           start = Loc.dummy_pos;
         }
 
-(* NOTE: Fix list *)
 let describe_nestable_block : Ast.nestable_block_element -> string = function
   | `Paragraph ws -> (
       match ws with
@@ -366,14 +335,17 @@ let describe_nestable_block : Ast.nestable_block_element -> string = function
   | `Code_block _ -> describe @@ Code_block empty_code_block
   | `Verbatim _ -> describe @@ Verbatim { inner = ""; start = Loc.dummy_pos }
   | `Modules _ -> describe MODULES
-  | `List (_, _, _) -> "List"
+  | `List (ordering, `Light, _) ->
+      describe @@ if ordering = `Ordered then PLUS else MINUS
+  | `List (ordering, `Heavy, _) ->
+      describe @@ List (if ordering = `Ordered then Ordered else Unordered)
   | `Table (_, kind) ->
       describe @@ if kind = `Light then TABLE_LIGHT else TABLE_HEAVY
   | `Math_block _ ->
       describe @@ Math_block { start = Loc.dummy_pos; inner = "" }
   | `Media _ as media -> describe @@ of_media media
 
-let of_ast_ref : [ `Document | `File | `Url ] -> internal_reference = function
+let of_ast_ref : [ `Document | `File | `Url ] -> uri_kind = function
   | `Document -> Document
   | `File -> File
   | `Url -> URL
