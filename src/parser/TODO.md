@@ -32,6 +32,11 @@ Notes for anyone working on this
   - Type errors will point towards unrelated sections of the parser or give you incorrect information 
     about what has gone wrong. 
 
+- If you need to emulate some sort of context like "paragraphs can't accept '|' tokens if they're inside 
+  tables", then you need to parameterize that rule by some other rule which dictates what it can accept. 
+  For example, toplevel block elements match `paragraph(any_symbol)` and tables match 
+  `paragraph(symbols_except_bar)`
+
 - Be as specific as possible. Avoid optional tokens when possible. Prefer the non-empty
   list rules (`sequence_nonempty`, `sequence_separated_nonempty`) over the alternatives. 
   Ambiguity will produce a compile-time reduce/reduce rule if you're lucky, unexpected 
