@@ -15,6 +15,7 @@ type t = {
   output_file : Fpath.t option;
   output : string;
   errors : string;
+  status : [ `Exited of int | `Signaled of int ];
 }
 
 (* Environment variables passed to commands. *)
@@ -43,7 +44,7 @@ let run env cmd output_file =
     |> Array.of_list
   in
   (* Logs.debug (fun m -> m "Running cmd %a" Fmt.(list ~sep:sp string) cmd); *)
-  let output, errors =
+  let output, errors, status =
     Eio.Switch.run ~name:"Process.parse_out" @@ fun sw ->
     let r, w = Eio.Process.pipe proc_mgr ~sw in
     let re, we = Eio.Process.pipe proc_mgr ~sw in
@@ -62,18 +63,8 @@ let run env cmd output_file =
       in
       Eio.Flow.close r;
       Eio.Flow.close re;
-      match Eio.Process.await child with
-      | `Exited 0 -> (output, err)
-      | `Exited n ->
-          Logs.err (fun m -> m "%d - Process exitted %d: stderr=%s" myn n err);
-          failwith "Error"
-      | `Signaled n ->
-          let err =
-            Format.sprintf "Error from %s\n%d - Signalled %d: stderr=%s"
-              (String.concat " " cmd) myn n err
-          in
-          Logs.err (fun m -> m "%s" err);
-          failwith err
+      let status = Eio.Process.await child in
+      (output, err, status)
     with Eio.Exn.Io _ as ex ->
       let bt = Printexc.get_raw_backtrace () in
       Eio.Exn.reraise_with_context ex bt "%d - running command: %a" myn
@@ -83,8 +74,26 @@ let run env cmd output_file =
       m "Finished running cmd %a" Fmt.(list ~sep:sp string) cmd); *)
   let t_end = Unix.gettimeofday () in
   let time = t_end -. t_start in
-  let result = { cmd; time; output_file; output; errors } in
+  let result = { cmd; time; output_file; output; errors; status } in
   commands := result :: !commands;
+  (match result.status with
+  | `Exited 0 -> ()
+  | _ ->
+      let verb, n =
+        match result.status with
+        | `Exited n -> ("exited", n)
+        | `Signaled n -> ("signaled", n)
+      in
+      Logs.err (fun m ->
+          m
+            "@[<2>Process %s with %d:@ '@[%a'@]@]@\n\n\
+             Stdout:\n\
+             %s\n\n\
+             Stderr:\n\
+             %s"
+            verb n
+            Fmt.(list ~sep:sp string)
+            result.cmd result.output result.errors));
   result
 
 (** Print an executed command and its time. *)

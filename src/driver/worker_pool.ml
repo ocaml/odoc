@@ -16,15 +16,20 @@ let stream : t = Eio.Stream.create 0
 
 let handle_job env request output_file = Run.run env request output_file
 
+exception Worker_failure of Run.t
+
 let rec run_worker env id : unit =
   let { request; output_file; description }, reply = Eio.Stream.take stream in
   Atomic.incr Stats.stats.processes;
   Atomic.set Stats.stats.process_activity.(id) description;
   (try
      let result = handle_job env request output_file in
-     Atomic.decr Stats.stats.processes;
-     Atomic.set Stats.stats.process_activity.(id) "idle";
-     Promise.resolve reply (Ok result)
+     match result.status with
+     | `Exited 0 ->
+         Atomic.decr Stats.stats.processes;
+         Atomic.set Stats.stats.process_activity.(id) "idle";
+         Promise.resolve reply (Ok result)
+     | _ -> Promise.resolve_error reply (Worker_failure result)
    with e -> Promise.resolve_error reply e);
   run_worker env id
 
