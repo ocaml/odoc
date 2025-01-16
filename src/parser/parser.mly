@@ -799,8 +799,14 @@ let code_block :=
     let Loc.{ value = Tokens.{ inner; start }; location } = content in
     let Tokens.{ metadata; delimiter; content } = inner in
     let meta = Option.map (fun Tokens.{ language_tag; tags } -> Ast.{ language = language_tag; tags }) metadata in
-    let node = `Code_block Ast.{ meta; delimiter; content; output = None } in
-    return @@ Loc.at { location with start } node
+    let span = { location with start } in
+    let should_not_be_empty = Writer.Warning (
+      let what = Tokens.describe @@ Code_block Tokens.{ inner; start } in
+      Parse_error.should_not_be_empty ~what span) 
+    in
+    let node = Loc.at span @@ `Code_block Ast.{ meta; delimiter; content; output = None } in
+    Fun.const node <$> Writer.ensure (Loc.is has_content) should_not_be_empty (return content)
+     
   }
   | content = located(Code_block_with_output); output = sequence_nonempty(nestable_block_element(paragraph)); RIGHT_CODE_DELIMITER; {
     let* output = Option.some <$> output in
