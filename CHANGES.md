@@ -79,6 +79,7 @@
 - Fix bug where source rendering would cause odoc to fail completely if it
   encounters invalid syntax (@jonludlam #1208)
 - Add missing parentheses in 'val (let*) : ...' (@Julow, #1268)
+- Fix syntax highlighting not working for very large files (@jonludlam, @Julow, #1277)
 
 # 2.4.4
 
