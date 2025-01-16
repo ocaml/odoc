@@ -78,7 +78,7 @@ let html_of_breadcrumbs (breadcrumbs : Types.breadcrumbs) =
   let sep = [ space; Html.entity "#x00BB"; space ] in
   let html =
     (* Create breadcrumbs *)
-    Odoc_utils.List.concat_map ~sep
+    List.concat_map_sep ~sep
       ~f:(fun (breadcrumb : Types.breadcrumb) ->
         match breadcrumb.href with
         | Some href ->

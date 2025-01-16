@@ -53,7 +53,8 @@ and count_lines l =
     match l with
     | [] -> acc
     | hd :: tl -> inner tl (count_lines_in_span hd + acc)
-  in inner l 0
+  in
+  inner l 0
 
 let rec line_numbers acc n =
   let open Html in

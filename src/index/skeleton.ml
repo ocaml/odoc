@@ -162,7 +162,7 @@ let rec unit (u : Compilation_unit.t) =
 
 and signature id (s : Signature.t) =
   let items = filter_signature s.items in
-  List.concat_map ~f:(signature_item (id :> Identifier.LabelParent.t)) items
+  List.concat_map (signature_item (id :> Identifier.LabelParent.t)) items
 
 and signature_item id s_item =
   match s_item with
@@ -215,8 +215,8 @@ and type_decl td =
     match td.representation with
     | None -> []
     | Some (Variant cl) ->
-        List.concat_map ~f:(constructor td.id td.equation.params) cl
-    | Some (Record fl) -> List.concat_map ~f:(field td.id td.equation.params) fl
+        List.concat_map (constructor td.id td.equation.params) cl
+    | Some (Record fl) -> List.concat_map (field td.id td.equation.params) fl
     | Some Extensible -> []
   in
   [ { Tree.node = entry; children } ]
@@ -288,7 +288,7 @@ and module_type_expr id mte =
 
 and class_signature id ct_expr =
   let items = filter_class_signature ct_expr.items in
-  List.concat_map ~f:(class_signature_item id) items
+  List.concat_map (class_signature_item id) items
 
 and class_signature_item id item =
   match item with

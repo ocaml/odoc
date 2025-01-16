@@ -86,7 +86,7 @@ and source k ?a (t : Source.t) =
         let content = tokens l in
         if content = [] then [] else [ Html.span content ]
     | Tag (Some s, l) -> [ Html.span ~a:[ Html.a_class [ s ] ] (tokens l) ]
-  and tokens t = Odoc_utils.List.concat_map t ~f:token in
+  and tokens t = List.concat_map token t in
   match tokens t with [] -> [] | l -> [ Html.code ?a l ]
 
 and styled style ~emph_level =
@@ -155,7 +155,7 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) :
     | Math s -> [ inline_math s ]
     | Raw_markup r -> raw_markup r
   in
-  Odoc_utils.List.concat_map ~f:one l
+  List.concat_map one l
 
 and inline_nolink ?(emph_level = 0) (l : Inline.t) :
     non_link_phrasing Html.elt list =
@@ -176,7 +176,7 @@ and inline_nolink ?(emph_level = 0) (l : Inline.t) :
     | Math s -> [ inline_math s ]
     | Raw_markup r -> raw_markup r
   in
-  Odoc_utils.List.concat_map ~f:one l
+  List.concat_map one l
 
 let heading ~config ~resolve (h : Heading.t) =
   let a, anchor =
@@ -290,7 +290,7 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
         mk_media_block image target alt
   in
 
-  Odoc_utils.List.concat_map l ~f:one
+  List.concat_map one l
 
 and mk_rows ~config ~resolve { align; data } =
   let mk_row row =
@@ -577,7 +577,7 @@ module Breadcrumbs = struct
     let find_parent =
       List.find_opt (function
         | ({ node = { url = { page; anchor = ""; _ }; _ }; _ } :
-            Odoc_document.Sidebar.entry Odoc_utils.Tree.t)
+            Odoc_document.Sidebar.entry Tree.t)
           when Url.Path.is_prefix page current_url ->
             true
         | _ -> false)

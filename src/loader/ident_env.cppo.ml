@@ -201,7 +201,7 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
 #else
   | { sig_desc = Tsig_type (_, decls); _} :: rest ->
 #endif
-    Odoc_utils.List.concat_map ~f:(fun decl ->
+    Odoc_utils.List.concat_map (fun decl ->
       if Btype.is_row_name (Ident.name decl.typ_id)
       then []
       else
@@ -337,7 +337,7 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
 #else
     | { str_desc = Tstr_type (_, decls); _ } :: rest -> (* TODO: handle rec_flag *)
 #endif
-  Odoc_utils.List.concat_map ~f:(fun decl ->
+  Odoc_utils.List.concat_map (fun decl ->
       `Type (decl.typ_id, hide_item, Some decl.typ_loc) ::
         (match decl.typ_kind with
           Ttype_abstract -> []
