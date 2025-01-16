@@ -280,7 +280,11 @@ let explicit_list_tests =
   ]
 
 let isolated =
-  [ ("light list horizontal offset", "- foo bar baz\n   - ba ba ba") ]
+  [
+    ("tag in list", "- @deprecated foo bar baz");
+    ("section in list", "- {2 Foo}");
+    ("Paragraph after section", "{2 Foo} bar");
+  ]
 
 (* Cases (mostly) taken from the 'odoc for library authors' document *)
 let documentation_cases =
@@ -389,7 +393,7 @@ let run_test (label, case) =
     Right
       (mkfailure label exns
          (Option.get !offending_token)
-         !failure_index !tokens)
+         !failure_index (List.rev !tokens))
 
 let sep = String.init 80 @@ Fun.const '-'
 

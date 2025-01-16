@@ -203,10 +203,6 @@ let warning =
   with_location_adjustments @@ fun _ input location error ->
     input.warnings <- error location :: input.warnings
 
-(* TODO: Opening delimiter position and parameter position need to be tweaked here
-    I think we probably need inner to be `string Loc.with_location` since 
-    a `Reference takes one as a parameter.
-*)
 let reference_token : 
   Lexing.lexbuf 
   -> input 

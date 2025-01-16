@@ -204,7 +204,7 @@ let tag_with_content := tag = located(Tag_with_content); children = sequence(nes
   | tag = located(Tag_with_content); horizontal_whitespace?; {
     return @@ { tag with Loc.value = tag_with_content [] tag.Loc.value }
   }
-  (* NOTE: (@FayCarsons) Right now this is the only way to accept a newline 
+  (* TODO: (@FayCarsons) Right now this is the only way to accept a newline 
      after a tag_with_content, adding an optional newline causes unsolvable 
      reduce conflicts. 
      Maybe if the line break/whitespace handling for nestable block element were
@@ -308,7 +308,6 @@ let style :=
 
 (* LINKS + REFS *)
 
-(* TODO: See comment @ lexer.mll:205 *)
 let reference := 
   | ref_body = located(Simple_ref); {
     let Loc.{ value = Tokens.{ inner; start }; location } = ref_body in
@@ -607,7 +606,7 @@ let cell_inner :=
       let text_span = Loc.extract ~start_pos ~end_pos ~input in 
       Parse_error.illegal ~in_what:(Tokens.describe TABLE_LIGHT) text_span span)
     in
-    (* NOTE: (@FayCarsons)
+    (* TODO: (@FayCarsons)
         This is the best we can do right now. Accepting a `nestable_block_element`,
         for example, causes a reduce/reduce conflict. 
         So we have to lose some information(what the invalid element was) via the 
