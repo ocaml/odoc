@@ -279,16 +279,17 @@ let emit_verbatim lexbuf input start_offset buffer =
    the value of the content in the tree has whitespace stripped from the beginning,
    and trailing empty lines removed. *)
 let emit_code_block lexbuf input ~start_offset ~content_offset ~metadata ~delimiter ~terminator ~content has_output =
-  let content = Buffer.contents content |> trim_trailing_blank_lines in
+  let content = Buffer.contents content in
   let content_location = input.offset_to_location content_offset in
+  update_content_newlines ~content lexbuf;
   let content = 
-    with_location_adjustments
-      (fun _ _ _ c ->
-         let first_line_offset = content_location.column in
-         trim_leading_whitespace ~first_line_offset c)
-      lexbuf
-      input 
-      content
+    trim_trailing_blank_lines content
+    |> with_location_adjustments
+        (fun _ _ _ c ->
+          let first_line_offset = content_location.column in
+          trim_leading_whitespace ~first_line_offset c)
+        lexbuf
+        input 
     |> trim_leading_blank_lines 
     |> with_location_adjustments 
         ~adjust_end_by:terminator 

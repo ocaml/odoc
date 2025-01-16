@@ -309,32 +309,32 @@ let style :=
 (* LINKS + REFS *)
 
 let reference := 
-  | ref_body = located(Simple_ref); {
-    let Loc.{ value = Tokens.{ inner; start }; location } = ref_body in
+  | content = located(Simple_ref); {
+    let Loc.{ value = Tokens.{ inner; start }; location } = content in
     let span = { location with start } in
     return @@ Loc.at span @@ `Reference (`Simple, inner, [])
   }
-  | ref_body = Ref_with_replacement; children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); { 
+  | content = Ref_with_replacement; children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); { 
     Writer.bind children ~f:(fun c -> 
-      let Tokens.{ inner; start } = ref_body in
+      let Tokens.{ inner; start } = content in
       let span = { endpos.Loc.location with start } in
       return @@ Loc.at span @@ `Reference (`With_text, inner, trim_start c))
   }
-  | ref_body = Ref_with_replacement; endpos = located(RIGHT_BRACE); {
-    let Tokens.{ inner; start } = ref_body in
+  | content = Ref_with_replacement; endpos = located(RIGHT_BRACE); {
+    let Tokens.{ inner; start } = content in
     let span = { endpos.Loc.location with start } in
     let node = Loc.at span @@ `Reference (`With_text, inner, []) in
     let warning = 
-      let what = Tokens.describe @@ Ref_with_replacement ref_body in
+      let what = Tokens.describe @@ Ref_with_replacement content in
       Writer.Warning (Parse_error.should_not_be_empty ~what span) 
     in
     Writer.return_warning node warning
   }
-  | ref_body = Ref_with_replacement; children = sequence_nonempty(inline_element(whitespace))?; endpos = located(END); {
-    let Tokens.{ inner; start } = ref_body in 
+  | content = Ref_with_replacement; children = sequence_nonempty(inline_element(whitespace))?; endpos = located(END); {
+    let Tokens.{ inner; start } = content in 
     let span = { endpos.Loc.location with start } in
     let not_allowed = 
-      let in_what = Tokens.describe (Ref_with_replacement ref_body) in
+      let in_what = Tokens.describe (Ref_with_replacement content) in
       Writer.Warning (Parse_error.end_not_allowed ~in_what span)
     in
     let* children = Option.value ~default:(return []) children in
