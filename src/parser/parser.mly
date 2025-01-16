@@ -65,7 +65,12 @@
 %type <Ast.tag Loc.with_location Writer.t> tag_with_content
 %type <Ast.tag Loc.with_location Writer.t> tag
 
+%on_error_reduce nestable_block_element(paragraph)
+%on_error_reduce tag_with_content
+%on_error_reduce section_heading
+
 %start <Ast.t Writer.t> main 
+
 
 %%
 (* ENTRY *)
@@ -76,10 +81,10 @@ let main :=
   | any_whitespace*; END; { return [] }
 
 let toplevel :=
-  | block = nestable_block_element(paragraph); any_whitespace?; { (block :> Ast.block_element Loc.with_location Writer.t) }
+  | block = nestable_block_element(paragraph); any_whitespace*; { (block :> Ast.block_element Loc.with_location Writer.t) }
   | t = tag; line_break?; { Writer.map ~f:(fun loc -> Loc.{ loc with value = `Tag loc.value }) t }
-  | ~ = section_heading; line_break?; <>
-  | ~ = toplevel_error; line_break?; <>
+  | ~ = section_heading; line_break*; <>
+  | ~ = toplevel_error; line_break*; <>
 
 (* Tokens which cannot begin any block element *)
 let toplevel_error :=
@@ -142,7 +147,7 @@ let section_heading :=
   | content = Section_heading; children = sequence_nonempty(inline_element(whitespace)); endpos = located(RIGHT_BRACE); {
     let Tokens.{ inner = (num, title); start } = content in
     let span = { endpos.Loc.location with start } in
-    Writer.map ~f:(fun c -> Loc.at span @@ `Heading (num, title, trim_start c)) children
+    Writer.map ~f:(fun c -> Loc.at span @@ `Heading (num, title, c)) children
   }
   | content = Section_heading; endpos = located(RIGHT_BRACE); { 
     let Tokens.{ inner = (num, title); start } = content in
@@ -190,8 +195,7 @@ let tag_with_content := tag = located(Tag_with_content); children = sequence(nes
      after a tag_with_content, adding an optional newline causes unsolvable 
      reduce conflicts. 
      Maybe if the line break/whitespace handling for nestable block element were
-     refactored, we could remove this
-     *)
+     refactored, we could remove this *)
   | tag = located(Tag_with_content); Single_newline; children = sequence(nestable_block_element(paragraph)); {
     Writer.map children ~f:(fun children -> 
       let Loc.{ value; location } = tag in
@@ -406,6 +410,49 @@ let list_light :=
       let list_kind, children = split_light_list_items children in
       Loc.at span @@ `List (list_kind, `Light,  [ children ]))
   }
+  | children = sequence_separated_nonempty(whitespace*, list_light_item); errpos = position(error); {
+    Writer.bind children ~f:(fun children -> 
+      let spans, children = List.split children in
+      
+      let start_pos, end_pos = errpos in
+      let errloc = Loc.of_position errpos in
+      let span = Loc.span (spans @ [errloc]) in
+      let list_kind, children = split_light_list_items children in
+
+      let illegal = Writer.InputNeeded (fun input -> 
+        let error_text = Loc.extract ~input ~start_pos ~end_pos in 
+        let in_what = Tokens.describe @@ 
+          match list_kind with `Ordered -> PLUS | `Unordered -> MINUS 
+        in
+        Parse_error.illegal ~in_what error_text span)
+      in
+      `List (list_kind, `Light, [ children ])
+      |> Loc.at span
+      |> return 
+      |> Writer.warning illegal)
+  }
+  | start = located(list_light_start); horizontal_whitespace?; errpos = position(error); {
+    let Loc.{ value; location } = start in
+    let list_kind = 
+      match value with 
+      | PLUS -> `Ordered 
+      | MINUS -> `Unordered 
+      | _ -> assert false (* unreachable *)
+    in
+    let errloc = Loc.of_position errpos in
+    let span = Loc.span [location; errloc] in
+    let illegal = Writer.InputNeeded (fun input -> 
+      let (start_pos, end_pos) = errpos in
+      let error_text = Loc.extract ~input ~start_pos ~end_pos in
+      let in_what = Tokens.describe value in
+      Parse_error.illegal ~in_what error_text span)
+    in
+    `List (list_kind, `Light, [])
+    |> Loc.at span
+    |> return
+    |> Writer.warning illegal
+  }
+  
 
 let item_open := 
   | LI; { Tokens.LI }
