@@ -341,6 +341,16 @@ let reference :=
     let node = Loc.at span @@ `Reference (`With_text, inner, children) in
     Writer.return_warning node not_allowed
   }
+  | content = Ref_with_replacement; endpos = located(END); {
+    let Tokens.{ inner; start } = content in
+    let span = { endpos.Loc.location with start } in
+    let in_what = Tokens.describe @@ Ref_with_replacement content in
+    let end_not_allowed = Writer.Warning (Parse_error.end_not_allowed ~in_what span) in
+    `Reference (`With_text, inner, [])
+    |> Loc.at span 
+    |> return 
+    |> Writer.warning end_not_allowed 
+  }
 
 let link := 
   | content = located(Simple_link); { 
@@ -376,10 +386,20 @@ let link :=
     let span = { endpos.Loc.location with start } in
     let node = Loc.at span @@ `Link (inner, []) in
     let what = Tokens.describe @@ Link_with_replacement content in
-    let warning =
+    let should_not_be_empty =
       Writer.Warning (Parse_error.should_not_be_empty ~what span) 
     in
-    Writer.return_warning node warning
+    Writer.return_warning node should_not_be_empty
+  }
+  | content = Link_with_replacement; endpos = located(END); {
+    let Tokens.{ inner; start } = content in
+    let span = { endpos.Loc.location with start } in
+    let in_what = Tokens.describe @@ Link_with_replacement content in
+    let end_not_allowed = Writer.Warning (Parse_error.end_not_allowed ~in_what span) in
+    `Link (inner, [])
+    |> Loc.at span 
+    |> return 
+    |> Writer.warning end_not_allowed 
   }
 
 (* LIST *)
