@@ -1,4 +1,17 @@
+type u = unit
+
 open Odoc_unit
+
+val make_index :
+  dirs:dirs ->
+  rel_dir:Fpath.t ->
+  ?libs:(Packages.t * Packages.libty) list ->
+  ?pkgs:Packages.t list ->
+  ?index:index ->
+  enable_warnings:bool ->
+  content:(Format.formatter -> u) ->
+  u ->
+  [> `Mld ] Odoc_unit.unit
 
 val library :
   dirs:dirs -> pkg:Packages.t -> index:index -> Packages.libty -> mld unit

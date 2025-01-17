@@ -1,6 +1,6 @@
 open Odoc_unit
 
-type indices_style = Voodoo | Normal | Automatic
+type indices_style = Voodoo | Normal of Fpath.t option | Automatic
 
 let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     t list =
@@ -283,10 +283,31 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
                pkgs)
         in
         others @ List.concat std_units
-    | Normal | Voodoo | Automatic ->
+    | Normal _ | Voodoo | Automatic ->
         List.concat (pkg_index () :: src_index () :: std_units)
   in
-  if indices_style = Normal then
-    let gen_indices :> t = Landing_pages.package_list ~dirs ~remap pkgs in
-    gen_indices :: List.concat_map of_package pkgs
-  else List.concat_map of_package pkgs
+  match indices_style with
+  | Normal None ->
+      let gen_indices :> t = Landing_pages.package_list ~dirs ~remap pkgs in
+      gen_indices :: List.concat_map of_package pkgs
+  | Normal (Some index_mld) -> (
+      match Bos.OS.File.read index_mld with
+      | Error (`Msg msg) ->
+          Logs.err (fun m ->
+              m "Failed to read index_mld file '%a': %s" Fpath.pp index_mld msg);
+          []
+      | Ok content ->
+          let content ppf = Format.fprintf ppf "%s" content in
+          let libs =
+            List.concat_map
+              (fun pkg ->
+                List.map (fun lib -> (pkg, lib)) pkg.Packages.libraries)
+              pkgs
+          in
+          let index =
+            Landing_pages.make_index ~dirs
+              ~rel_dir:Fpath.(v "./")
+              ~libs ~pkgs ~enable_warnings:true ~content ()
+          in
+          index :: List.concat_map of_package pkgs)
+  | Voodoo | Automatic -> List.concat_map of_package pkgs
