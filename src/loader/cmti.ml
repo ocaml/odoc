@@ -51,7 +51,7 @@ let rec read_core_type env container ctyp =
            argument since the 4.02.x representation includes it explicitly. *)
         let arg = match lbl with
           | None | Some(Label(_)) -> read_core_type env container arg
-          | Some(Optional(_)) ->
+          | Some(Optional(_)) | Some(RawOptional(_)) ->
               let arg' = match arg.ctyp_desc with
                 | Ttyp_constr(_, _, param :: _) -> param
                 | _ -> arg
