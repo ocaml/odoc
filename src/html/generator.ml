@@ -512,11 +512,11 @@ module Breadcrumbs = struct
     | { parent = None; _ } ->
         Some { Url.Path.parent = None; name = "index"; kind = `LeafPage }
 
-  let home_breadcrumb config current_url parent =
+  let home_breadcrumb config ~current_path ~home_path =
     let href =
       Some
-        (Link.href ~config ~resolve:(Current current_url)
-           (Odoc_document.Url.from_path parent))
+        (Link.href ~config ~resolve:(Current current_path)
+           (Odoc_document.Url.from_path home_path))
     in
     { href; name = [ Html.txt "🏠" ]; kind = `LeafPage }
 
@@ -568,8 +568,9 @@ module Breadcrumbs = struct
             let current = to_breadcrumb current in
             let parents = List.map to_breadcrumb parents |> List.rev in
             let home =
-              home_breadcrumb config url
-                { Url.Path.name = "index"; parent = None; kind = `LeafPage }
+              home_breadcrumb config ~current_path:url
+                ~home_path:
+                  { Url.Path.name = "index"; parent = None; kind = `LeafPage }
             in
             { current; parents = home :: parents; up_url })
 
@@ -618,7 +619,11 @@ module Breadcrumbs = struct
       | true, Some { node; _ } -> (
           match page_parent node.url.page with
           | None -> []
-          | Some parent -> [ home_breadcrumb config current_url parent ])
+          | Some parent ->
+              [
+                home_breadcrumb config ~current_path:current_url
+                  ~home_path:parent;
+              ])
       | _ -> []
     in
     extract escape sidebar
