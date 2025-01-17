@@ -1,9 +1,9 @@
-type compiled = Odoc_unit.t
+type compiled = Odoc_unit.any
 
-val init_stats : Odoc_unit.t list -> unit
+val init_stats : Odoc_unit.any list -> unit
 
 val compile :
-  ?partial:Fpath.t -> partial_dir:Fpath.t -> Odoc_unit.t list -> compiled list
+  ?partial:Fpath.t -> partial_dir:Fpath.t -> Odoc_unit.any list -> compiled list
 (** Use [partial] to reuse the output of a previous call to [compile]. Useful in
     the voodoo context.
 

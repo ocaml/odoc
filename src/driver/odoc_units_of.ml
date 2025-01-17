@@ -6,7 +6,7 @@ type indices_style =
   | Automatic
 
 let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
-    t list =
+    any list =
   let { odoc_dir; odocl_dir; index_dir; mld_dir = _ } = dirs in
   (* [module_of_hash] Maps a hash to the corresponding [Package.t], library name and
      [Packages.modulety]. [lib_dirs] maps a library name to the odoc dir containing its
@@ -102,7 +102,7 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
   in
 
   let make_unit ~name ~kind ~rel_dir ~input_file ~pkg ~lib_deps ~enable_warnings
-      ~to_output : _ unit =
+      ~to_output : _ t =
     let to_output = to_output || not remap in
     (* If we haven't got active remapping, we output everything *)
     let ( // ) = Fpath.( // ) in
@@ -132,7 +132,7 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
   in
 
   let of_intf hidden pkg (lib : Packages.libty) lib_deps (intf : Packages.intf)
-      : intf unit =
+      : intf t =
     let rel_dir = lib_dir pkg lib in
     let kind =
       let deps = intf.mif_deps in
@@ -143,7 +143,7 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     make_unit ~name ~kind ~rel_dir ~input_file:intf.mif_path ~pkg ~lib_deps
       ~enable_warnings:pkg.selected ~to_output:pkg.selected
   in
-  let of_impl pkg lib lib_deps (impl : Packages.impl) : impl unit option =
+  let of_impl pkg lib lib_deps (impl : Packages.impl) : impl t option =
     match impl.mip_src_info with
     | None -> None
     | Some { src_path } ->
@@ -167,9 +167,9 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
   in
 
   let of_module pkg (lib : Packages.libty) lib_deps (m : Packages.modulety) :
-      t list =
-    let i :> t = of_intf m.m_hidden pkg lib lib_deps m.m_intf in
-    let m :> t list =
+      any list =
+    let i :> any = of_intf m.m_hidden pkg lib lib_deps m.m_intf in
+    let m :> any list =
       Option.bind m.m_impl (of_impl pkg lib lib_deps) |> Option.to_list
     in
     i :: m
@@ -180,10 +180,10 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     let units = List.concat_map (of_module pkg lib lib_deps) lib.modules in
     if remap && not pkg.selected then units
     else
-      let landing_page :> t = Landing_pages.library ~dirs ~pkg ~index lib in
+      let landing_page :> any = Landing_pages.library ~dirs ~pkg ~index lib in
       landing_page :: units
   in
-  let of_mld pkg (mld : Packages.mld) : mld unit list =
+  let of_mld pkg (mld : Packages.mld) : mld t list =
     let open Fpath in
     let { Packages.mld_path; mld_rel_path } = mld in
     let rel_dir = doc_dir pkg // Fpath.parent mld_rel_path |> Fpath.normalize in
@@ -200,7 +200,7 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     in
     [ unit ]
   in
-  let of_md pkg (md : Packages.md) : md unit list =
+  let of_md pkg (md : Packages.md) : md t list =
     let ext = Fpath.get_ext md.md_path in
     match ext with
     | ".md" ->
@@ -224,7 +224,7 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
             m "Skipping non-markdown doc file %a" Fpath.pp md.md_path);
         []
   in
-  let of_asset pkg (asset : Packages.asset) : asset unit list =
+  let of_asset pkg (asset : Packages.asset) : asset t list =
     let open Fpath in
     let { Packages.asset_path; asset_rel_path } = asset in
     let rel_dir =
@@ -239,12 +239,12 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     [ unit ]
   in
 
-  let of_package (pkg : Packages.t) : t list =
-    let lib_units :> t list list = List.map (of_lib pkg) pkg.libraries in
-    let mld_units :> t list list = List.map (of_mld pkg) pkg.mlds in
-    let asset_units :> t list list = List.map (of_asset pkg) pkg.assets in
-    let md_units :> t list list = List.map (of_md pkg) pkg.other_docs in
-    let pkg_index () :> t list =
+  let of_package (pkg : Packages.t) : any list =
+    let lib_units :> any list list = List.map (of_lib pkg) pkg.libraries in
+    let mld_units :> any list list = List.map (of_mld pkg) pkg.mlds in
+    let asset_units :> any list list = List.map (of_asset pkg) pkg.assets in
+    let md_units :> any list list = List.map (of_md pkg) pkg.other_docs in
+    let pkg_index () :> any list =
       let has_index_page =
         List.exists
           (fun mld ->
@@ -258,7 +258,7 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
         let index = index_of pkg in
         [ Landing_pages.package ~dirs ~pkg ~index ]
     in
-    let src_index () :> t list =
+    let src_index () :> any list =
       if remap && not pkg.selected then []
       else if
         (* Some library has a module which has an implementation which has a source *)
@@ -279,7 +279,7 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     let std_units = mld_units @ asset_units @ md_units @ lib_units in
     match indices_style with
     | Automatic when pkg.name = Monorepo_style.monorepo_pkg_name ->
-        let others :> t list =
+        let others :> any list =
           Landing_pages.make_custom dirs index_of
             (List.find
                (fun p -> p.Packages.name = Monorepo_style.monorepo_pkg_name)
@@ -291,7 +291,7 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
   in
   match indices_style with
   | Normal { toplevel_content = None } ->
-      let gen_indices :> t = Landing_pages.package_list ~dirs ~remap pkgs in
+      let gen_indices :> any = Landing_pages.package_list ~dirs ~remap pkgs in
       gen_indices :: List.concat_map of_package pkgs
   | Normal { toplevel_content = Some content } ->
       let content ppf = Format.fprintf ppf "%s" content in
@@ -300,10 +300,10 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
           (fun pkg -> List.map (fun lib -> (pkg, lib)) pkg.Packages.libraries)
           pkgs
       in
-      let index =
+      let index :> any =
         Landing_pages.make_index ~dirs
           ~rel_dir:Fpath.(v "./")
-          ~libs ~pkgs ~enable_warnings:true ~content ()
+          ~libs ~pkgs ~enable_warnings:true ~content ~index:None
       in
       index :: List.concat_map of_package pkgs
   | Voodoo | Automatic -> List.concat_map of_package pkgs
