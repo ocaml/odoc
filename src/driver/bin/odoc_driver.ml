@@ -7,7 +7,7 @@ let with_dir dir pat f =
   | Some dir -> f dir ()
 
 let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
-    ~generate_grep ~index_grep ~remap packages
+    ~generate_grep ~index_grep ~remap ~index_mld packages
     {
       Common_args.verbose;
       html_dir;
@@ -45,8 +45,9 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
       (fun () ->
         let units =
           let dirs = { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir } in
-          Odoc_units_of.packages ~dirs ~indices_style:Odoc_units_of.Normal
-            ~extra_paths ~remap all
+          Odoc_units_of.packages ~dirs
+            ~indices_style:(Odoc_units_of.Normal index_mld) ~extra_paths ~remap
+            all
         in
         Compile.init_stats units;
         let compiled = Compile.compile ~partial_dir:odoc_dir units in
@@ -124,14 +125,14 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
   if stats then Stats.bench_results html_dir
 
 let run odoc_dir odocl_dir index_dir mld_dir compile_grep link_grep
-    generate_grep index_grep remap packages common () =
+    generate_grep index_grep remap packages index_mld common () =
   with_dir odoc_dir "odoc-%s" @@ fun odoc_dir () ->
   with_dir odocl_dir "odocl-%s" @@ fun odocl_dir () ->
   with_dir index_dir "index-%s" @@ fun index_dir () ->
   with_dir mld_dir "mld-%s" @@ fun mld_dir () ->
   let () =
     run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
-      ~generate_grep ~index_grep ~remap packages common
+      ~generate_grep ~index_grep ~remap ~index_mld packages common
   in
   ()
 
@@ -189,10 +190,20 @@ let remap =
 
 let packages = Arg.(value & pos_all string [] & info [] ~docv:"PACKAGES")
 
+let index_mld =
+  let doc =
+    "Provide an index.mld file to serve as the top-level index of the \
+     documentation"
+  in
+  Arg.(
+    value
+    & opt (some Common_args.fpath_arg) None
+    & info [ "index-mld" ] ~docv:"INDEX" ~doc)
+
 let cmd_term =
   Term.(
     const run $ odoc_dir $ odocl_dir $ index_dir $ mld_dir $ compile_grep
-    $ link_grep $ generate_grep $ index_grep $ remap $ packages
+    $ link_grep $ generate_grep $ index_grep $ remap $ packages $ index_mld
     $ Common_args.term $ const ())
 
 let cmd =

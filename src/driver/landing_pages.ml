@@ -1,9 +1,12 @@
+type u = unit
+
 open Odoc_unit
 open Packages
 
 let fpf = Format.fprintf
 
-let make_index ~dirs ~rel_dir ?(libs = []) ?(pkgs = []) ?index ~content () =
+let make_index ~dirs ~rel_dir ?(libs = []) ?(pkgs = []) ?index ~enable_warnings
+    ~content () =
   let { odoc_dir; odocl_dir; mld_dir; _ } = dirs in
   let input_file = Fpath.(mld_dir // rel_dir / "index.mld") in
   let odoc_file = Fpath.(odoc_dir // rel_dir / "page-index.odoc") in
@@ -29,7 +32,7 @@ let make_index ~dirs ~rel_dir ?(libs = []) ?(pkgs = []) ?index ~content () =
     input_file;
     odoc_file;
     odocl_file;
-    enable_warnings = false;
+    enable_warnings;
     to_output = true;
     kind = `Mld;
     index;
@@ -56,7 +59,7 @@ let library ~dirs ~pkg ~index lib =
   in
   let rel_dir = lib_dir pkg lib in
   let libs = [ (pkg, lib) ] in
-  make_index ~dirs ~rel_dir ~libs ~index ~content ()
+  make_index ~dirs ~rel_dir ~libs ~index ~content ~enable_warnings:false ()
 
 let package ~dirs ~pkg ~index =
   let library_list ppf pkg =
@@ -83,7 +86,8 @@ let package ~dirs ~pkg ~index =
   let content = content pkg in
   let rel_dir = doc_dir pkg in
   let libs = List.map (fun lib -> (pkg, lib)) pkg.libraries in
-  make_index ~dirs ~rel_dir ~index ~content ~pkgs:[ pkg ] ~libs ()
+  make_index ~dirs ~rel_dir ~index ~content ~pkgs:[ pkg ] ~libs
+    ~enable_warnings:false ()
 
 let src ~dirs ~pkg ~index =
   let content ppf =
@@ -95,7 +99,7 @@ let src ~dirs ~pkg ~index =
       pkg.name
   in
   let rel_dir = src_dir pkg in
-  make_index ~dirs ~rel_dir ~index ~content ()
+  make_index ~dirs ~rel_dir ~index ~content ~enable_warnings:true ()
 
 let package_list ~dirs ~remap all =
   let content all ppf =
@@ -111,7 +115,7 @@ let package_list ~dirs ~remap all =
   in
   let content = content all in
   let rel_dir = Fpath.v "./" in
-  make_index ~dirs ~rel_dir ~pkgs:all ~content ()
+  make_index ~dirs ~rel_dir ~pkgs:all ~content ~enable_warnings:true ()
 
 let content dir _pkg libs _src subdirs all_libs pfp =
   let is_root = Fpath.to_string dir = "./" in
@@ -278,7 +282,7 @@ let make_custom dirs index_of (pkg : Packages.t) :
         let idx =
           make_index ~dirs ~rel_dir:p ~libs ~pkgs
             ~content:(content p pkg libs src subdirs all_libs)
-            ?index ()
+            ?index ~enable_warnings:false ()
         in
         idx :: acc)
     all_dirs []
