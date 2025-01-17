@@ -27,6 +27,16 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
   Logs.set_reporter (Logs_fmt.reporter ());
   Stats.init_nprocs nb_workers;
 
+  let index_mld_content =
+    Option.bind index_mld (fun fpath ->
+        match Bos.OS.File.read fpath with
+        | Ok content -> Some content
+        | Error (`Msg msg) ->
+            Logs.err (fun m ->
+                m "Failed to read index_mld file '%a': %s" Fpath.pp fpath msg);
+            exit 1)
+  in
+
   Eio_main.run @@ fun env ->
   Eio.Switch.run @@ fun sw ->
   let () = Worker_pool.start_workers env sw nb_workers in
@@ -46,8 +56,9 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
         let units =
           let dirs = { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir } in
           Odoc_units_of.packages ~dirs
-            ~indices_style:(Odoc_units_of.Normal index_mld) ~extra_paths ~remap
-            all
+            ~indices_style:
+              (Odoc_units_of.Normal { toplevel_content = index_mld_content })
+            ~extra_paths ~remap all
         in
         Compile.init_stats units;
         let compiled = Compile.compile ~partial_dir:odoc_dir units in
