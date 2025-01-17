@@ -618,7 +618,7 @@ module Breadcrumbs = struct
       | true, Some { node; _ } -> (
           match page_parent node.url.page with
           | None -> []
-          | Some parent -> [ home_breadcrumb config parent current_url ])
+          | Some parent -> [ home_breadcrumb config current_url parent ])
       | _ -> []
     in
     extract escape sidebar
