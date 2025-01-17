@@ -1,12 +1,10 @@
-type u = unit
-
 open Odoc_unit
 open Packages
 
 let fpf = Format.fprintf
 
-let make_index ~dirs ~rel_dir ?(libs = []) ?(pkgs = []) ?index ~enable_warnings
-    ~content () =
+let make_index ~dirs ~rel_dir ~libs ~pkgs ~index ~enable_warnings ~content :
+    Odoc_unit.mld Odoc_unit.t =
   let { odoc_dir; odocl_dir; mld_dir; _ } = dirs in
   let input_file = Fpath.(mld_dir // rel_dir / "index.mld") in
   let odoc_file = Fpath.(odoc_dir // rel_dir / "page-index.odoc") in
@@ -59,7 +57,8 @@ let library ~dirs ~pkg ~index lib =
   in
   let rel_dir = lib_dir pkg lib in
   let libs = [ (pkg, lib) ] in
-  make_index ~dirs ~rel_dir ~libs ~index ~content ~enable_warnings:false ()
+  make_index ~dirs ~rel_dir ~libs ~pkgs:[] ~index:(Some index) ~content
+    ~enable_warnings:false
 
 let package ~dirs ~pkg ~index =
   let library_list ppf pkg =
@@ -86,8 +85,8 @@ let package ~dirs ~pkg ~index =
   let content = content pkg in
   let rel_dir = doc_dir pkg in
   let libs = List.map (fun lib -> (pkg, lib)) pkg.libraries in
-  make_index ~dirs ~rel_dir ~index ~content ~pkgs:[ pkg ] ~libs
-    ~enable_warnings:false ()
+  make_index ~dirs ~rel_dir ~index:(Some index) ~content ~pkgs:[ pkg ] ~libs
+    ~enable_warnings:false
 
 let src ~dirs ~pkg ~index =
   let content ppf =
@@ -99,7 +98,8 @@ let src ~dirs ~pkg ~index =
       pkg.name
   in
   let rel_dir = src_dir pkg in
-  make_index ~dirs ~rel_dir ~index ~content ~enable_warnings:true ()
+  make_index ~dirs ~pkgs:[] ~libs:[] ~rel_dir ~index:(Some index) ~content
+    ~enable_warnings:true
 
 let package_list ~dirs ~remap all =
   let content all ppf =
@@ -115,7 +115,8 @@ let package_list ~dirs ~remap all =
   in
   let content = content all in
   let rel_dir = Fpath.v "./" in
-  make_index ~dirs ~rel_dir ~pkgs:all ~content ~enable_warnings:true ()
+  make_index ~dirs ~rel_dir ~pkgs:all ~libs:[] ~index:None ~content
+    ~enable_warnings:true
 
 let content dir _pkg libs _src subdirs all_libs pfp =
   let is_root = Fpath.to_string dir = "./" in
@@ -156,7 +157,7 @@ let content dir _pkg libs _src subdirs all_libs pfp =
       all_libs)
 
 let make_custom dirs index_of (pkg : Packages.t) :
-    Odoc_unit.mld Odoc_unit.unit list =
+    Odoc_unit.mld Odoc_unit.t list =
   let pkgs = [ pkg ] in
   let pkg_dirs =
     List.fold_right
@@ -282,7 +283,7 @@ let make_custom dirs index_of (pkg : Packages.t) :
         let idx =
           make_index ~dirs ~rel_dir:p ~libs ~pkgs
             ~content:(content p pkg libs src subdirs all_libs)
-            ?index ~enable_warnings:false ()
+            ~index ~enable_warnings:false
         in
         idx :: acc)
     all_dirs []

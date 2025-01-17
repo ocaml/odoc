@@ -2,13 +2,13 @@
 
 open Bos
 
-type compiled = Odoc_unit.t
+type compiled = Odoc_unit.any
 
 let odoc_partial_filename = "__odoc_partial.m"
 
-let mk_byhash (pkgs : Odoc_unit.t list) =
+let mk_byhash (pkgs : Odoc_unit.any list) =
   List.fold_left
-    (fun acc (u : Odoc_unit.t) ->
+    (fun acc (u : Odoc_unit.any) ->
       match u.Odoc_unit.kind with
       | `Intf { hash; _ } as kind ->
           let elt = { u with kind } in
@@ -18,11 +18,11 @@ let mk_byhash (pkgs : Odoc_unit.t list) =
       | _ -> acc)
     Util.StringMap.empty pkgs
 
-let init_stats (units : Odoc_unit.t list) =
+let init_stats (units : Odoc_unit.any list) =
   let total, total_impl, non_hidden, mlds, assets, indexes =
     List.fold_left
       (fun (total, total_impl, non_hidden, mlds, assets, indexes)
-           (unit : Odoc_unit.t) ->
+           (unit : Odoc_unit.any) ->
         let total = match unit.kind with `Intf _ -> total + 1 | _ -> total in
         let total_impl =
           match unit.kind with `Impl _ -> total_impl + 1 | _ -> total_impl
@@ -56,8 +56,8 @@ let init_stats (units : Odoc_unit.t list) =
 open Eio.Std
 
 type partial =
-  ((string * string) * Odoc_unit.intf Odoc_unit.unit list) list
-  * Odoc_unit.intf Odoc_unit.unit list Util.StringMap.t
+  ((string * string) * Odoc_unit.intf Odoc_unit.t list) list
+  * Odoc_unit.intf Odoc_unit.t list Util.StringMap.t
 
 let unmarshal filename : partial =
   let ic = open_in_bin (Fpath.to_string filename) in
@@ -73,7 +73,7 @@ let marshal (v : partial) filename =
     (fun () -> Marshal.to_channel oc v [])
 
 let find_partials odoc_dir :
-    Odoc_unit.intf Odoc_unit.unit list Util.StringMap.t * _ =
+    Odoc_unit.intf Odoc_unit.t list Util.StringMap.t * _ =
   let tbl = Hashtbl.create 1000 in
   let hashes_result =
     OS.Dir.fold_contents ~dotfiles:false ~elements:`Dirs
@@ -94,7 +94,7 @@ let find_partials odoc_dir :
   | Ok h -> (h, tbl)
   | Error _ -> (* odoc_dir doesn't exist...? *) (Util.StringMap.empty, tbl)
 
-let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
+let compile ?partial ~partial_dir (all : Odoc_unit.any list) =
   let hashes = mk_byhash all in
   let compile_mod =
     (* Modules have a more complicated compilation because:
@@ -119,7 +119,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
       | Some units ->
           Ok
             (List.map
-               (fun (unit : Odoc_unit.intf Odoc_unit.unit) ->
+               (fun (unit : Odoc_unit.intf Odoc_unit.t) ->
                  let deps = match unit.kind with `Intf { deps; _ } -> deps in
                  let _fibers =
                    Fiber.List.map
@@ -152,7 +152,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
                units)
     in
     let rec compile_mod :
-        string -> (Odoc_unit.intf Odoc_unit.unit list, exn) Result.t =
+        string -> (Odoc_unit.intf Odoc_unit.t list, exn) Result.t =
      fun hash ->
       let units = try Util.StringMap.find hash hashes with _ -> [] in
       let r =
@@ -185,9 +185,9 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
     compile_mod
   in
 
-  let compile (unit : Odoc_unit.t) =
+  let compile (unit : Odoc_unit.any) =
     match unit.kind with
-    | `Intf intf -> (compile_mod intf.hash :> (Odoc_unit.t list, _) Result.t)
+    | `Intf intf -> (compile_mod intf.hash :> (Odoc_unit.any list, _) Result.t)
     | `Impl src ->
         let includes =
           List.fold_left
@@ -242,7 +242,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.t list) =
   | None -> ());
   all
 
-type linked = Odoc_unit.t
+type linked = Odoc_unit.any
 
 let link : custom_layout:bool -> compiled list -> _ =
  fun ~custom_layout compiled ->

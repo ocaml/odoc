@@ -71,7 +71,7 @@ let pp_index fmt x =
     (Fmt.list Fpath.pp) x.roots Fpath.pp x.output_file x.json Fpath.pp
     x.search_dir
 
-type 'a unit = {
+type 'a t = {
   parent_id : Odoc.Id.t;
   input_file : Fpath.t;
   output_dir : Fpath.t;
@@ -101,7 +101,7 @@ type md = [ `Md ]
 type asset = [ `Asset ]
 
 type all_kinds = [ impl | intf | mld | asset | md ]
-type t = all_kinds unit
+type any = all_kinds t
 
 let rec pp_kind : all_kinds Fmt.t =
  fun fmt x ->
@@ -122,7 +122,7 @@ and pp_impl_extra fmt x =
     (Odoc.Id.to_string x.src_id)
     Fpath.pp x.src_path
 
-and pp : all_kinds unit Fmt.t =
+and pp : all_kinds t Fmt.t =
  fun fmt x ->
   Format.fprintf fmt
     "@[<hov>parent_id: %s@;\
@@ -160,8 +160,8 @@ type dirs = {
   mld_dir : Fpath.t;
 }
 
-let fix_virtual ~(precompiled_units : intf unit list Util.StringMap.t)
-    ~(units : intf unit list Util.StringMap.t) =
+let fix_virtual ~(precompiled_units : intf t list Util.StringMap.t)
+    ~(units : intf t list Util.StringMap.t) =
   Logs.debug (fun m ->
       m "Fixing virtual libraries: %d precompiled units, %d other units"
         (Util.StringMap.cardinal precompiled_units)
@@ -189,13 +189,13 @@ let fix_virtual ~(precompiled_units : intf unit list Util.StringMap.t)
                       "Virtual library check: Selecting cmti for hash %s from \
                        %d possibilities: %a"
                       uhash (List.length xs) (Fmt.Dump.list pp)
-                      (xs :> t list));
+                      (xs :> any list));
                 let unit_name =
                   Fpath.rem_ext unit.input_file |> Fpath.basename
                 in
                 match
                   List.filter
-                    (fun (x : intf unit) ->
+                    (fun (x : intf t) ->
                       (match x.kind with `Intf { hash; _ } -> uhash = hash)
                       && Fpath.has_ext "cmti" x.input_file
                       && Fpath.rem_ext x.input_file |> Fpath.basename

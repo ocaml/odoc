@@ -29,7 +29,7 @@ type index = {
   sidebar : sidebar option;
 }
 
-type 'a unit = {
+type 'a t = {
   parent_id : Odoc.Id.t;
   input_file : Fpath.t;
   output_dir : Fpath.t;
@@ -57,9 +57,9 @@ type mld = [ `Mld ]
 type md = [ `Md ]
 type asset = [ `Asset ]
 
-type t = [ impl | intf | mld | asset | md ] unit
+type any = [ impl | intf | mld | asset | md ] t
 
-val pp : t Fmt.t
+val pp : any Fmt.t
 
 val pkg_dir : Packages.t -> Fpath.t
 val lib_dir : Packages.t -> Packages.libty -> Fpath.t
@@ -75,9 +75,9 @@ type dirs = {
 }
 
 val fix_virtual :
-  precompiled_units:intf unit list Util.StringMap.t ->
-  units:intf unit list Util.StringMap.t ->
-  intf unit list Util.StringMap.t
+  precompiled_units:intf t list Util.StringMap.t ->
+  units:intf t list Util.StringMap.t ->
+  intf t list Util.StringMap.t
 (** [fix_virtual ~precompiled_units ~units] replaces the input file
     in units representing implementations of virtual libraries.
     Implementation units have a [cmt] but no [cmti], even though
