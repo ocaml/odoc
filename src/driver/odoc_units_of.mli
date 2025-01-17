@@ -1,6 +1,9 @@
 open Odoc_unit
 
-type indices_style = Voodoo | Normal of Fpath.t option | Automatic
+type indices_style =
+  | Voodoo
+  | Normal of { toplevel_content : string option }
+  | Automatic
 
 val packages :
   dirs:dirs ->
