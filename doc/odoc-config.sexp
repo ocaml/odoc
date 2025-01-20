@@ -1,2 +1,2 @@
 (libraries fmt)
-(packages cmdliner)
+(packages odoc-driver cmdliner odig sherlodoc)

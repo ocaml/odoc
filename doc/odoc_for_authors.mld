@@ -15,6 +15,15 @@ To generate documentation for your project, you will almost always be using
 'drivers' of [odoc] at time of writing, each with their own strengths and
 weaknesses:
 
+- {{!/odoc-driver/page-index}The reference driver} is the most up-to-date driver,
+  and incorporates all of the features of odoc. It is also used for the docs
+  published on ocaml.org. It does not feature fast rebuilds, nor keeping a
+  switch-wide cache of documentation. Install the package to document via
+  [opam] and run
+{v
+$ odoc_driver <pkg>
+v}
+  to build the docs. The output will appear in the directory `_html` by default.
 - {{:https://dune.build/}Dune} is the best way to view docs while
   developing your project. We have a {{!page-dune}page} describing
   how to use it, but the short version is:
@@ -27,15 +36,70 @@ v}
 {v
 $ odig doc odig
 v}
-- {{!page-driver}The reference driver} is the simplest driver, useful if you
-  want to see how to integrate it with your own projects.
-- {{:https://github.com/ocaml-doc/voodoo}Voodoo} is the driver used to create
-  the docs for {{:https://ocaml.org/packages}the OCaml website}.
+
+{1:packagedocs Documenting a package}
+
+Documentation in OCaml is grouped together by {i package}. Each package may contain
+a number of documentation pages, organised into a hierarchy, and if the
+package contains {i libraries}, their interfaces form the rest of the package documentation.
+The pages are written in a subset of the usual {{!page-ocamldoc_differences}odoc markup},
+and the libraries are documented via in-line special comments in the source.
+Conceptually, the docs for every library are {i contained within} the docs of its package.
+
+{2 Quickstart}
+
+When a package is built with [dune], the simplest way to include docs in your package is
+to create a [doc] dir, write [doc/index.mld] file containing the documentation for your
+package:
+
+{v
+{0 My package documentation}
+
+This is the documentation for my package!
+v}
+
+then create the following [doc/dune] file:
+
+{v
+(documentation)
+v}
+
+More mld files can be added as necessary to the [doc] directory, and they will be included
+also.
+
+This will work if you've only got one package defined in your dune project. If you've got
+more than one, you'll need to let dune know which package the docs are associated with:
+
+{v
+(documentation
+  (package my_package))
+v}
+
+Any assets you have will also need to be handled, and as this is a new feature in odoc 3,
+at time of writing dune does not have a convenient syntax for this. However, it still can
+be done, so if, for example, you have an image [asset.jpg] that you'd like to include in your
+doc, you can add the following to your [doc/dune] file:
+
+{v
+(install
+  (section doc)
+  (files (asset.jpg as odoc-pages/asset.jpg)))
+v}
+
+Odoc 3.0 introduces a per-package configuration file, {{!section-config-file}odoc-config.sexp}, which is important if you'd like your
+documentation to link to the docs of other packages or libraries. If your documentation needs
+this configuration file, this will also need to be installed as follows:
+
+{v
+(install
+ (section doc)
+ (files odoc-config.sexp))
+v}
 
 {1:interfaces Documenting Your Interfaces}
 
-[odoc] is built to produce documentation for your {e libraries}, and the unit of
-organisation is the {e module}. Documentation is written by putting
+As well as doc pages, [odoc] is built to produce documentation for your {e libraries},
+and the unit of organisation for these is the {e module}. Documentation is written by putting
 {{!special_comments}special comments} into the source of the {e module interface} or,
 less commonly, your {e module implementation}. 
 
@@ -399,6 +463,11 @@ This is useful if there are several identifiers [bar] in module [Foo], e.g., a t
 - [odoc]: [ {!module-Foo.type-bar} ] - each element in the path may be prefixed by its type. This is
 useful if there are ambiguous elements in any part of the path, e.g., in this case perhaps there is a
 module type [Foo].
+- [odoc3]: [ {!/library_name/Module} ] - this is a path to them module [M] in library [library_name].
+This is useful if the module name is ambiguous, e.g., if there are two modules [M] in different libraries.
+You may need to add the library to the per-package config file.
+- [odoc3]: [ {!/package/path/to/page-foo} ] - this is a path to a page [foo] in the package [package].
+The package will need to be added to the per-package config file.
 
 The prefixes supported are:
 - [module]
@@ -663,13 +732,13 @@ would render as
 The light syntax has the advantages of being arguably more readable for small tables when viewing the source file directly. However, its content is restricted (for instance, no new line is allowed).
 The heavy syntax is easier to write, can be more readable for big tables, and supports having any kind of content inside. It does not support alignment (yet).
 
-{2:media Medias}
+{2:media Media}
 
-Odoc 3.0 introduced new markup for medias. Medias are nestable blocks,
+Odoc 3.0 introduced new markup for media. Media are nestable blocks,
 so they can be put inside lists and tables, but they cannot be
 inlined, for instance in a link.
 
-There are currently three kinds of medias: image, audio, and
+There are currently three kinds of media: image, audio, and
 video. Each of them can refer to the file either using an asset
 reference, or a direct link.
 
@@ -681,7 +750,7 @@ relative or absolute.
 The markup for videos and audios is similar, replacing [image] by respectively
 [video] and [audio].
 
-The replacement text is used for backends that do not support medias
+The replacement text is used for backends that do not support media
 (latex and man), and for when a reference is unresolved. In the case
 of an image, it is also used to generate an alternative text.
 
@@ -878,8 +947,13 @@ contents and thus should be used to introduce examples, comments, or other
 complementary notes. An alternative would be to consider splitting into
 multiple files.
 
-Finally, documentation pages should start with a level-0 heading, see
-{!section-"page-title"}. Level-0 headings should not be used elsewhere.
+Finally, documentation pages should start with a level-0 heading:
+
+{v
+{0 Title of the page}
+v}.
+
+Level-0 headings should not be used elsewhere.
 
 The syntax for declaring sections is as follows:
 
@@ -932,49 +1006,36 @@ you can use the following syntax:
 See {!page-a.foo} for details
 v}
 
-{1:doc-pages Writing Documentation Pages}
+{1:config-file Configuration file}
 
-Files with the [.mld] extension are called {e documentation pages} and should
-be used to complement API references with tutorials or guides. They are
-particularly suitable for OCaml and Reason because cross-references to
-definitions, both in the current package and for external packages, are
-supported.
+[odoc] 3.0 introduced a per-package configuration file, [odoc-config.sexp]. This file is required if you
+wish to make use of the cross-package linking feature, or sometimes if you wish to link to other libraries.
 
-{2 Markup}
+As an example, here is [odoc]'s configuration file:
 
-The format of these [.mld] files is simply text that should be marked-up with
-the usual [odoc] markup as described on this page. A documentation page can be seen
-as a single regular docstring in a separate file.
+{v
+(libraries fmt)
+(packages odoc-driver cmdliner odig)
+v}
 
-{2 Page Title}
+This file applies to all pages and all modules of all libraries in a package. With this config file, the
+modules of the [fmt] library, and the pages of the [odoc-driver], [cmdliner] and [odig] packages can be
+linked to via the following syntax:
 
-When defining a documentation page, make sure to supply a page title, as one is
-not generated by default (unlike for API reference documents where the module
-or module type name is used). The level-0 heading must be used for that
-purpose. For example:
+{v
+{!/fmt/module-Fmt}
+{!/odoc-driver/page-index}
+v}
 
-{@text[
-{0 My page}
-...
-]}
+Important note: In order for this to work on ocaml.org, it is necessary that the tool used to build the
+docs is aware that extra packages are required. If the package is already a dependency, then nothing needs
+to be done. If it can be added without introducing dependency cycles, it can be added to the normal
+dependencies field. If it would otherwise introduce a cycle into the dependencies, then it must be added
+to an extra field. In the case of odoc, because the docs of [odoc] wish to link to the docs of [odoc-driver],
+but [odoc-driver] depends on odoc, the following must be added to the [odoc]'s opam file:
 
-Only one title is allowed per page. The following heading levels should be in
-the range from 1 to 5 (inclusive). Don't worry, [odoc] will generate a warning
-if you accidentally forget to include multiple titles.
-
-{2 Usage}
-
-The recommended way to setup documentation pages for your project is by using
-the Dune build system. It will automatically find and generate HTML for all
-[.mld] files in your project. See
-{{:https://dune.readthedocs.io/en/latest/documentation.html#documentation-stanza}
-Dune's configuration instructions} for more details.
-
-{2 Referencing Pages}
-
-Currently the generated HTML pages are not be automatically referenced in the
-index page. You must manually add links to point to the pages in your document.
-
-For example, if you have a page called [my_page.mld], you can create a
-link to it with [{{!page-my_page}My page}] in your [index.mld] or
-anywhere else in your documentation.
+{v
+x-extra-doc-deps: [
+  "odoc-driver" {>= "3.0.0"}
+]
+v}

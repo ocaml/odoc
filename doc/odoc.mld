@@ -1,5 +1,5 @@
-@children_order dune odoc_for_authors cheatsheet features ocamldoc_differences interface parent_child_spec driver json
-@short_title [odoc]
+@children_order odoc_for_authors cheatsheet dune features ocamldoc_differences interface driver json deprecated/
+@short_title The odoc documentation generator
 
 {0 The [odoc] documentation generator}
 
@@ -41,23 +41,11 @@ module types, and more. So if you've ever been baffled by exactly what the [t] w
 - an {e expander}, which can expand complex module-type expressions while preserving their structure, including comment, includes, and
 more. If you've ever wondered what values there are in your module [M : Base.Applicative.S with type t := u], [odoc] will show you!
 
-{1 For Library Authors}
+{1 For Authors}
 
-For guidance on how to document your OCaml project, see {{!page-odoc_for_authors}[odoc] for authors}.
+For guidance on how to document your OCaml project, see {!page-odoc_for_authors}.
 
 {1 For Integrators}
 
 To integrate [odoc] into your tool, webpage or any other
 setting, you'll need to understand {{!page-driver}how to drive [odoc]}.
-
-{1 Page Index}
-
-The main other pages of this site:
-- {!page-odoc_for_authors} gives information for [odoc] authors.
-- {!page-cheatsheet} provides a quick quide for [odoc] markdown.
-- {!page-features} explores [odoc]'s language features.
-- {!page-driver} describes how [odoc] produces documentation.
-- {!page-ocamldoc_differences} outlines differences from OCamldoc.
-- {!page-dune} shows how to create docs using Dune.
-- {!page-parent_child_spec} delineates parent/child specifications.
-- {!page-interface} describes [odoc]'s public-facing interface and their support guarantees.
