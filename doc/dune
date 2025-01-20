@@ -9,6 +9,7 @@
   ocamldoc_differences
   odoc_for_authors
   cheatsheet
+  json
   parent_child_spec))
 
 ; Uncomment to run mdx on the documentation's code blocks.

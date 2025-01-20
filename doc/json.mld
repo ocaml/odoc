@@ -1,0 +1,121 @@
+{0 JSON output}
+
+In order to embed the output of odoc within another website,
+the html generator for odoc has a mode where instead of producing HTML files, it will produce JSON files
+where the HTML files would have been. For example, if the HTML generator would have produced a file 
+[/x/y/z/index.html], then when the [--as-json] flag is passed to [odoc html-generate], it will instead
+write the file [/x/y/z/index.html.json].
+
+In addition, there is a per-package 'global' sidebar json file.
+
+{1 Example page JSON}
+
+{@json[
+{
+  "type": "documentation",
+  "uses_katex": false,
+  "breadcrumbs": [
+    {
+      "name": "🏠",
+      "href": "../../../index.html",
+      "kind": "leaf-page"
+    },
+    {
+      "name": "ocaml-base-compiler",
+      "href": "../../index.html",
+      "kind": "leaf-page"
+    },
+    {
+      "name": "stdlib",
+      "href": null,
+      "kind": "leaf-page"
+    },
+    {
+      "name": "Stdlib",
+      "href": "#",
+      "kind": "module"
+    }
+  ],
+ "toc": [
+    {
+      "title": "Exceptions",
+      "href": "#exceptions",
+      "children": []
+    },
+    {
+      "title": "Integer arithmetic",
+      "href": "#integer-arithmetic",
+      "children": [
+        {
+          "title": "Bitwise operations",
+          "href": "#bitwise-operations",
+          "children": []
+        }
+      ]
+    },
+    "source_anchor": "../../src/stdlib/stdlib.ml.html",
+    "preamble": "<p>The OCaml Standard library.</p><p>This module is automatically opened at the beginning of each compilation. All components of this module can therefore be referred by their short name, without prefixing them by <code>Stdlib</code>.</
+p><p>In particular, it provides the basic operations over the built-in types (numbers, booleans, byte sequences, strings, exceptions, references, lists, arrays, input-output channels, ...) and the <a href=\"#modules\" title=\"modules\">standard librar
+y modules</a>.</p>",
+    "content": "<h2 id=\"exceptions\"><a href=\"#exceptions\" class=\"anchor\"></a>Exceptions</h2><div class=\"odoc-spec\"><div class=\"spec value external anchored\" id=\"val-raise\"><a href=\"#val-raise\" class=\"anchor\"></a><a href=\"../../src/stdli
+b/stdlib.ml.html#val-raise\" class=\"source_link\">Source</a><code><span><span class=\"keyword\">val</span> raise : <span>exn <span class=\"arrow\">&#45;&gt;</span></span> <span class=\"type-var\">'a</span></span></code></div><div class=\"spec-doc\"><
+p>Raise the given exception value</p></div></div><div class=\"odoc-spec\"><div class=\"spec value external anchored\" id=\"val-raise_notrace\"><a href=\"#val-raise_notrace\" class=\"anchor\"></a><a href=\"../../src/stdlib/stdlib.ml.html#val-raise_notr
+ace\" ...."
+}
+]}
+
+The fields of the JSON are as follows:
+
+- [type] field is either [documentation] or [source].
+- [uses_katex] is [true] if the page has math entries ([{m ...}] or [{math ...}]).
+- [breadcrumbs] is a list of breadcrumb entries with members [name], [href] and [kind]. If [href] is null then there is no index page at that location in the hierarchy. [kind] is one of
+[page], [module], [leaf-page], [module-type], [argument-<number>], [class], [class-type], [file] or [source]
+- [toc] contains the table-of-contents for the page. This consists of a list of objects containing fields [title], [href] and [children]. [title] is a string containing HTML. [href] is the anchor in the page, and [children] is a list of more of these entries representing the sub-items in the table-of-contents.
+- [source_anchor] is the URL of the corresponding source file, if it exists.
+- [preamble] is a string containing HTML for the preamble of the page.
+- [content] is a string containing HTML for the main content of the page.
+
+The data contained in these JSON files can be used to embed the HTML as rendered by odoc into a more complex site.
+The main requirement is that it is expected that an HTML page will exist at every location where a JSON file has been written.
+This is to ensure that relative links work. 
+
+
+{1 Example sidebar json}
+
+{@json[
+[
+  {
+    "node": {
+      "url": "ocaml-base-compiler/index.html",
+      "kind": "leaf-page",
+      "content": "ocaml-base-compiler"
+    },
+    "children": [
+      {
+        "node": {
+          "url": null,
+          "kind": null,
+          "content": "compiler-libs.bytecomp"
+        },
+        "children": [
+          {
+            "node": {
+              "url": "ocaml-base-compiler/compiler-libs.bytecomp/Bytegen/index.html",
+              "kind": "module",
+              "content": "Bytegen"
+            },
+            "children": []
+          },
+          {
+            "node": {
+              "url": "ocaml-base-compiler/compiler-libs.bytecomp/Bytelibrarian/index.html",
+              "kind": "module",
+              "content": "Bytelibrarian"
+            },
+            "children": []
+            ...
+]}
+
+The 'global' sidebar JSON file consists of a list of objects, each containing a [node] field and a [children] field.
+The [node] field contains an object containing a [url], [kind] and [content]. The [kind] page is similar to that in the breadcrumbs above.
+The [content] field is an HTML string, and the [url] field is a string. 
