@@ -41,7 +41,7 @@ let json_of_sidebar config sidebar =
   | None -> `Null
   | Some sidebar -> `String (json_of_html config sidebar)
 
-let make ~config ~preamble ~url ~breadcrumbs ~sidebar ~toc ~uses_katex
+let make ~config ~preamble ~url ~breadcrumbs ~toc ~uses_katex
     ~source_anchor content children =
   let filename = Link.Path.as_filename ~config url in
   let filename = Fpath.add_ext ".json" filename in
@@ -49,7 +49,6 @@ let make ~config ~preamble ~url ~breadcrumbs ~sidebar ~toc ~uses_katex
   let source_anchor =
     match source_anchor with Some url -> `String url | None -> `Null
   in
-  let global_toc = json_of_sidebar config sidebar in
   let content ppf =
     Format.pp_print_string ppf
       (json_to_string
@@ -59,7 +58,6 @@ let make ~config ~preamble ~url ~breadcrumbs ~sidebar ~toc ~uses_katex
              ("uses_katex", `Bool uses_katex);
              ("breadcrumbs", json_of_breadcrumbs config breadcrumbs);
              ("toc", json_of_toc toc);
-             ("global_toc", global_toc);
              ("source_anchor", source_anchor);
              ("preamble", `String (json_of_html config preamble));
              ("content", `String (json_of_html config content));
