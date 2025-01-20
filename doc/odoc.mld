@@ -1,4 +1,4 @@
-@children_order dune odoc_for_authors cheatsheet features ocamldoc_differences interface parent_child_spec driver
+@children_order dune odoc_for_authors cheatsheet features ocamldoc_differences interface parent_child_spec driver json
 @short_title [odoc]
 
 {0 The [odoc] documentation generator}
