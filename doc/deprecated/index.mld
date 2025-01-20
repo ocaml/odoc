@@ -1,0 +1,4 @@
+{0 Deprecated features}
+
+Odoc 2.x had a different way to specify the hierarchy of the output pages. This still works,
+though it is deprecated. Documentation for the feature may be found {{!page-parent_child_spec}here}.

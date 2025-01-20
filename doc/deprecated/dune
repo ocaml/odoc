@@ -1,0 +1,6 @@
+(install
+ (section doc)
+ (files
+  (parent_child_spec.mld as odoc-pages/deprecated/parent_child_spec.mld)
+  (index.mld as odoc-pages/deprecated/index.mld))
+ (package odoc))

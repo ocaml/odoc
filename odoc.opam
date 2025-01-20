@@ -62,6 +62,12 @@ depends: [
   ("ocaml" {< "4.07.0" & with-test} | "bisect_ppx" {with-test & > "2.5.0"})
 ]
 
+x-extra-doc-deps: [
+  "odoc-driver" {= version}
+  "sherlodoc" {= version}
+  "odig"
+]
+
 build: [
   ["dune" "subst"] {dev}
   [

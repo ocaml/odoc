@@ -30,7 +30,6 @@ let run package_name blessed actions odoc_dir odocl_dir
 
   let all = Packages.remap_virtual all in
 
-  Logs.debug (fun m -> m "all: %a" Fmt.Dump.(list Packages.pp) all);
   let partial =
     match all with
     | [ p ] ->

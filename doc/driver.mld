@@ -7,12 +7,12 @@ through several distinct phases until the HTML output is generated.
 For this reason, just like for building any multifiles OCaml project, [odoc]
 needs to be driven by a higher level tool. The driver will take care of calling
 the [odoc] command with the right arguments throughout the different
-phases. Several drivers for [odoc] exist, such as:
-{{:https://dune.readthedocs.io/en/stable/documentation.html}dune} and
-{{:https://erratique.ch/software/odig}odig}.
+phases. The {{!/odoc-driver/page-index}odoc-driver} package contains a "reference driver", that is kept up-to-date
+with the latest development of [odoc], 
 
-The [odoc] tool also contains a "reference driver", that is kept up-to-date
-with the latest development of [odoc].
+Several drivers for [odoc] exist, such as:
+{{:https://dune.readthedocs.io/en/stable/documentation.html}dune} and
+{{!/odig/page-index}odig}.
 
 This document explains how to drive [odoc], as of version 3. It is not needed to
 know any of this to {e use} [odoc], it is targeted at driver authors, tools that
