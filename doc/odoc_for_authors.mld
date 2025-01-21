@@ -16,14 +16,16 @@ To generate documentation for your project, you will almost always be using
 weaknesses:
 
 - {{!/odoc-driver/page-index}The reference driver} is the most up-to-date driver,
-  and incorporates all of the features of odoc. It is also used for the docs
-  published on ocaml.org. It does not feature fast rebuilds, nor keeping a
-  switch-wide cache of documentation. Install the package to document via
+  and incorporates all of the features of odoc. It is written to build the docs
+  locally as well as those published on ocaml.org. It does not feature fast rebuilds,
+  nor keeping a switch-wide cache of documentation. Install the driver and the package to document via
   [opam] and run
 {v
+$ opam install odoc-driver <pkg>
 $ odoc_driver <pkg>
 v}
   to build the docs. The output will appear in the directory `_html` by default.
+  Full documentation is available in the {{!/odoc-driver/page-index}reference driver package}.
 - {{:https://dune.build/}Dune} is the best way to view docs while
   developing your project. We have a {{!page-dune}page} describing
   how to use it, but the short version is:
