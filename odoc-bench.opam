@@ -44,4 +44,8 @@ depends: [
   "core" {= "v0.16.2"}
   "core_kernel" {= "v0.16.0"}
   "crunch"
+  "odig"
+  "base"
+  "alcotest"
+  "menhirLib"
 ]
