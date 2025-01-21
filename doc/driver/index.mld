@@ -91,9 +91,3 @@ The per-page JSON output is written into the HTML output directory alongside whe
 and the per-package sidebar is written to the package directory (ie, for package [odoc], with html output dir set to
 the default [_html], the sidebar JSON file is [_html/odoc/sidebar.json].
 
-
-
-
-
-
-
