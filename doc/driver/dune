@@ -3,7 +3,5 @@
 
 (install
  (section doc)
- (files
-  odoc-config.sexp)
+ (files odoc-config.sexp)
  (package odoc-driver))
-

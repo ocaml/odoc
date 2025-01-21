@@ -41,8 +41,8 @@ let json_of_sidebar config sidebar =
   | None -> `Null
   | Some sidebar -> `String (json_of_html config sidebar)
 
-let make ~config ~preamble ~url ~breadcrumbs ~toc ~uses_katex
-    ~source_anchor content children =
+let make ~config ~preamble ~url ~breadcrumbs ~toc ~uses_katex ~source_anchor
+    content children =
   let filename = Link.Path.as_filename ~config url in
   let filename = Fpath.add_ext ".json" filename in
   let json_to_string json = Json.to_string json in
