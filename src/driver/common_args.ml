@@ -22,7 +22,10 @@ let stats =
 
 let nb_workers =
   let doc = "Number of workers." in
-  Arg.(value & opt int 15 & info [ "j" ] ~doc ~docs:Manpage.s_common_options)
+  Arg.(
+    value
+    & opt int (Domain.recommended_domain_count () - 1)
+    & info [ "j" ] ~doc ~docs:Manpage.s_common_options)
 
 let odoc_bin =
   let doc = "Odoc binary to use" in
