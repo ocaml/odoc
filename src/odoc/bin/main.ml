@@ -484,8 +484,8 @@ module Indexing = struct
              || Fpath.has_ext "js" (Fpath.v file)) ->
         Error
           (`Msg
-            "When generating a json index, the output must have a .json file \
-             extension")
+            "When generating a json index, the output must have a .json or .js \
+             file extension")
     | Some file, `Marshall when not (Fpath.has_ext "odoc-index" (Fpath.v file))
       ->
         Error
@@ -542,7 +542,8 @@ module Indexing = struct
     in
     let wrap_json =
       let doc =
-        "whether to wrap the json file. Only has an effect in json output mode."
+        "Not intended for general use. Wraps the json output in a JavaScript \
+         variable assignment, and assumes the use of fuse.js"
       in
       Arg.(value & flag & info ~doc [ "wrap-json" ])
     in
