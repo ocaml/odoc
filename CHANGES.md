@@ -1,91 +1,121 @@
 # (unreleased)
 
+### Highlight
+
+- Hierarchical documentation (@jonludlam, @panglesd, @Julow)
+  Pages can now be organized in a directory tree structure.
+  Relative and absolute references are added:
+  `{!./other_page.label}`, `{!//other_page}`.
+
+- Improved sidebar and breadcrumbs navigation (@panglesd, @gpetiot)
+  The documentation pages and the libraries of the entire package are shown on
+  the left sidebar.
+
+- Added support for images, videos, audio and other assets
+  The syntax is `{image!/reference/to/asset}` or `{image:URL}` for images.
+  The syntax for `{video...}` and `{audio...}` is the same.
+  (@panglesd, @EmileTrotignon, #1170, #1171, #1184, #1185)
+
+- Search using Sherlodoc (@panglesd, @EmileTrotignon, @Julow)
+  A new search bar that supports full-text and type-based search.
+
 ### Added
 
-- Addded `--suppress-warnings` to the CLI to remove warnings from a unit, even
-  if they end up being raised in another unit through expansion (@jonludlam,
-  #1260)
-- Improve jump to implementation in rendered source code, and add a
-  `count-occurrences` flag and command to count occurrences of every identifiers
-  (@panglesd, #976)
-- Separate compilation of interface and implementation files, using a new
-  `compile-src` command (@panglesd, #1067, #1188).
+- Experimental driver (@jonludlam, @panglesd)
+  The driver builds the documentation for a collection of Opam packages using
+  the newer Odoc features. It supports linking external packages to ocaml.org
+  and markdown files.
+  This is experimental and will break in the future.
+
+- Cross-package references (@panglesd, @Julow)
+  Pages and modules from other packages can be referenced:
+  `{!/otherpackage/page}`, `{!/otherpackage/Module.t}`.
+
+- Option to remap links to other packages to ocaml.org or other site.
+  See the `--remap` option of the driver or the `--remap-file` option of `odoc html-generate`.
+  (@jonludlam, #1189, #1248)
+
+- Option to compute occurrences of use of each identifiers
+  The commands `aggregate-occurrences` and `count-occurrences` are added.
+  (@panglesd, #976, #1076, #1206)
+
+- Added the `odoc classify` command (@jonludlam, #1121)
+  Helps driver detecting which modules belong to which libraries.
+- Added `--suppress-warnings` to the CLI to remove warnings from a unit, even
+  if they end up being raised in another unit through expansion
+  (@jonludlam, #1260)
 - Add clock emoji before `@since` tag (@yawaramin, #1089)
 - Navigation for the search bar : use '/' to enter search, up and down arrows to
   select a result, and enter to follow the selected link. (@EmileTrotignon, #1088)
-- New driver package (@jonludlam, #1121)
 - Fix a big gap between the preamble and the content of a page (@EmileTrotignon, #1147)
-- Path-references to hierarchical pages and modules (@Julow, #1142, #1150, #1151, #1164)
-  Absolute (`{!/foo}`), relative (`{!./foo}`) and package-local (`{!//foo}`)
-  are added.
 - Add a marshalled search index consumable by sherlodoc (@EmileTrotignon, @panglesd, #1084)
-- Add a `odoc sidebar-generate` command to generate a sidebar file (@panglesd,
-  #1250)
-- Add a `--sidebar` argument to pass sidebars to the document generation
-  (@panglesd, #1145, #1250)
 - Allow referencing of polymorphic constructors in polymorphic variant type
   aliases (@panglesd, #1115)
-- Added a `--occurrences` argument to the `compile-index` command to output the
-  number of occurrences of each entry of the index in the json output
-  (@panglesd, #1076).
-- Added a `compile-asset` command (@EmileTrotignon, @panglesd, #1170)
-- Allow referencing assets (@panglesd, #1171)
-- Added a `--asset-path` arg to `html-generate` (@panglesd, #1185)
-- Added a `@children_order` and an `@order_category` tags to specify the order
-  in the sidebar (@panglesd, #1187, #1243, #1251)
-- Add a `@short_title` tag to specify the short title of a page for use in
-  the sidebar / breadcrumbs (@panglesd, #1246)
 - Added a home icon in the breacrumbs (@panglesd, #1251)
-- Added a CLI option to add or disable the home icon (@panglesd, #1251)
-- Add sidebar to the implementation pages (@panglesd, #1251)
-- Added a `@toc_status` tag, with possible values `open` and `hidden`, to define
-  the behavior of the entry in the sidebar and breadcrumbs (@panglesd, #1251)
-- Add a frontmatter syntax for mld pages (@panglesd, #1187)
-- Add 'remap' and 'remap-file' options to HTML generation for partial docsets
-  (@jonludlam, #1189, #1248)
-- Added an `html-generate-asset` command (@panglesd, #1185)
-- Added syntax for images, videos, audio (@panglesd, #1184)
-- Added the ability to order pages in the table of content (@panglesd, #1193)
+  It can be disabled with a CLI option.
+- Add a frontmatter syntax for mld pages (@panglesd, #1187, #1193, #1243, #1246, #1251)
+  Allows to specify the title of a page, the order of sub-pages and other
+  behaviors in the sidebar.
 - Added `odoc-md` to process standalone Markdown pages (@jonludlam, #1234)
 
 ### Changed
+
+- The command line interface changed to support the new features.
+  + Packages and libraries: `odoc link` must now be aware of packages and
+    libraries with the `-L libname:path` and `-P pkgname:path` options. The
+    module search path should still be passed with the `-I` option.
+    The current package should be specified with `--current-package=pkgname`.
+  + Hierarchy: `odoc compile` now outputs `.odoc` in the directory tree
+    specified with `--output-dir=DIR` and the parent identifier must be
+    specified with `--parent-id=PARENT`.
+    The option `--source-parent-file` is removed.
+  + Source code: Implementations are compiled with `compile-impl` instead of
+    with `compile`. The options `--cmt=..` and `--source-name=..` are removed.
+    Source code pages are generated with `html-generate-source`.
+  + Assets: The commands `compile-asset`, `html-generate-asset` are added.
+    The option `html-generate --asset` is removed.
+  + Sidebar: The index is built using `compile-index`. The sidebar data is
+    extracted from the index with `sidebar-generate` and passed to
+    `html-generate --sidebar=..`.
+
+- The syntax for `@tag` is now delimited (@panglesd, #1239)
+  A `@tag` can now be followed by a paragraph or other elements.
 
 - Updated colors for code fragments (@EmileTrotignon, #1023)
 - Fixed complexity of looking up `.odoc` files (@panglesd, #1075)
 - Normalize whitespaces in codespans (@gpetiot, #1085)
   A newline followed by any whitespaces is normalized as one space character.
-- Show all variant constructors, even if they contain hidden types
-  (@jonludlam, #1105)
-- `Odoc_html_frontend` does not use tyxml, for smaller javascript sizes.
+- Reduce size of `Odoc_html_frontend` when compiled to javascript
   (@EmileTrotignon, #1072)
 - Overhaul of module-type-of expansions and shadowing code (@jonludlam, #1081)
-- Output file paths and labels in the man and latex backends changed to avoid name clashes
-  (@Julow, #1191)
-- Change the scoping and placement rules for tags. Fixed #1138. (@panglesd, #1239)
+- Output file paths and labels in the man and latex backends changed to avoid
+  name clashes (@Julow, #1191)
 
 ### Fixed
 
-- Fix issue #1001 where optional parameters would in rare cases cause an assertion
-  failure (@jonludlam, #1272)
-- Fix resolution of module synopses in {!modules} lists that require
-  --open (@jonludlam, #1104}
+- Fix variant constructors being hidden if they contain hidden types
+  (@jonludlam, #1105)
+- Fix rare assertion failure due to optional parameters
+  (@jonludlam, #1272, issue #1001)
+- Fix resolution of module synopses in {!modules} lists that require --open
+  (@jonludlam, #1104}
 - Fix top comment not being taken from includes often enough (@panglesd, #1117)
 - Fixed 404 links from search results (@panglesd, #1108)
 - Fixed title content not being picked up across pages when rendering references
   (#1116, @panglesd)
 - Fix wrong links to standalone comments in search results (#1118, @panglesd)
-- Remove duplicated or unwanted comments (@Julow, #1133)
-  This could happen with inline includes.
+- Remove duplicated or unwanted comments with inline includes (@Julow, #1133)
 - Fix bug where source rendering would cause odoc to fail completely if it
   encounters invalid syntax (@jonludlam #1208)
 - Add missing parentheses in 'val (let*) : ...' (@Julow, #1268)
-- Fix syntax highlighting not working for very large files (@jonludlam, @Julow, #1277)
+- Fix syntax highlighting not working for very large files
+  (@jonludlam, @Julow, #1277)
 
 # 2.4.4
 
 ### Added
 
-- OCaml 5.3.0 compatibility (@Julow, #1202, #1254)
+- OCaml 5.3.0 compatibility (@Julow, #1202, #1222, #1254)
 
 # 2.4.3
 
