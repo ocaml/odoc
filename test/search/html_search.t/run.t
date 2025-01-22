@@ -235,7 +235,7 @@ Wrong file extensions:
   ERROR: When generating a binary index, the output must have a .odoc-index file extension
   [1]
   $ odoc compile-index  --json  -o index.odoc-index
-  ERROR: When generating a json index, the output must have a .json file extension
+  ERROR: When generating a json index, the output must have a .json or .js file extension
   [1]
 
 Passing a file which is not a correctly marshalled one:
