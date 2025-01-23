@@ -5,6 +5,7 @@ homepage: "https://github.com/ocaml/odoc"
 doc: "https://ocaml.github.io/odoc/"
 bug-reports: "https://github.com/ocaml/odoc/issues"
 license: "ISC"
+flags: [ avoid-version ]
 
 maintainer: [
   "Jon Ludlam <jon@recoil.org>"
@@ -45,3 +46,6 @@ build: [
     "@doc" {with-doc}
   ]
 ]
+
+x-maintenance-intent: ["(latest)"]
+

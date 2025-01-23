@@ -7,10 +7,11 @@ license: "MIT"
 homepage: "https://github.com/ocaml/odoc"
 doc: "https://ocaml.github.io/odoc/"
 bug-reports: "https://github.com/ocaml/odoc/issues"
+flags: [ avoid-version ]
 depends: [
   "dune" {>= "3.5"}
   "ocaml" {>= "4.0.8"}
-  "odoc" {>= "3.0.0"}
+  "odoc" {= version}
   "base64" {>= "3.5.1"}
   "bigstringaf" {>= "0.9.1"}
   "js_of_ocaml" {>= "5.6.0"}
@@ -45,3 +46,5 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/ocaml/odoc.git"
+x-maintenance-intent: ["(latest)"]
+
