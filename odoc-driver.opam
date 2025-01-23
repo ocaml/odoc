@@ -35,6 +35,7 @@ documentation for installed packages.
 depends: [
   "ocaml" {>= "5.1.0"}
   "odoc" {= version}
+  "odoc-md"
   "bos"
   "fpath"
   "yojson"
