@@ -5,6 +5,7 @@ homepage: "https://github.com/ocaml/odoc"
 doc: "https://ocaml.github.io/odoc/"
 bug-reports: "https://github.com/ocaml/odoc/issues"
 license: "ISC"
+flags: [ avoid-version ]
 
 maintainer: [
   "Daniel Bünzli <daniel.buenzli@erratique.ch>"
@@ -34,7 +35,7 @@ documentation for installed packages.
 
 depends: [
   "ocaml" {>= "5.1.0"}
-  "odoc" {= version}
+  "odoc" {>= "3.0.0"}
   "bos"
   "fpath"
   "yojson"
@@ -63,3 +64,6 @@ build: [
     "@doc" {with-doc}
   ]
 ]
+
+x-maintenance-intent: ["(latest)"]
+
