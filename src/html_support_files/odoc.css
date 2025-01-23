@@ -815,13 +815,13 @@ td.def-doc *:first-child {
 
 /* Odig package page */
 
-.package nav {
+.package nav, h1 nav {
   display: inline;
   font-size: 14px;
   font-weight: normal;
 }
 
-.package .version {
+.package .version, h1 .version {
   font-size: 14px;
 }
 
