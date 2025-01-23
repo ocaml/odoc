@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Logs_cli (logs.logs.cli.Logs_cli)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../../../';
+let search_urls = ['../../sherlodoc_db.js','../../../sherlodoc.js'];
+</script><script src="../../../odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="../../index.html">Up</a> – <a href="../../../index.html">🏠</a> &#x00BB; <a href="../../index.html">logs</a> &#x00BB; Library <code>logs.cli</code> &#x00BB; Logs_cli</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Type '/' to search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><h1>Module <code><span>Logs_cli</span></code></h1><p><a href="../../../cmdliner/cmdliner/Cmdliner/index.html"><code>Cmdliner</code></a> support for <a href="../../logs/Logs/index.html"><code>Logs</code></a>.</p><p>See a full <a href="#ex" title="ex">example</a>.</p><p><em>v0.7.0 - <a href="https://erratique.ch/software/logs">homepage</a></em></p></header><div class="odoc-tocs"><nav class="odoc-toc odoc-local-toc"><ul><li><a href="#options-for-setting-the-report-level">Options for setting the report level</a></li><li><a href="#ex">Example</a></li></ul></nav><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">logs</a><ul><li>Library <code>logs</code><ul><li><a href="../../logs/Logs/index.html">Logs</a></li></ul></li><li>Library <code>logs.browser</code><ul><li><a href="../../logs.browser/Logs_browser/index.html">Logs_browser</a></li></ul></li><li>Library <code>logs.cli</code><ul><li><a href="#" class="current_unit">Logs_cli</a></li></ul></li><li>Library <code>logs.fmt</code><ul><li><a href="../../logs.fmt/Logs_fmt/index.html">Logs_fmt</a></li></ul></li><li>Library <code>logs.lwt</code><ul><li><a href="../../logs.lwt/Logs_lwt/index.html">Logs_lwt</a></li></ul></li><li>Library <code>logs.threaded</code><ul><li><a href="../../logs.threaded/Logs_threaded/index.html">Logs_threaded</a></li></ul></li></ul></li></ul></nav></div><div class="odoc-content"><h2 id="options-for-setting-the-report-level"><a href="#options-for-setting-the-report-level" class="anchor"></a>Options for setting the report level</h2><div class="odoc-spec"><div class="spec value anchored" id="val-level"><a href="#val-level" class="anchor"></a><code><span><span class="keyword">val</span> level : 
+  <span><span class="optlabel">?env</span>:<a href="../../../cmdliner/cmdliner/Cmdliner/Arg/index.html#type-env">Cmdliner.Arg.env</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?docs</span>:string <span class="arrow">&#45;&gt;</span></span>
+  <span>unit <span class="arrow">&#45;&gt;</span></span>
+  <span><span><a href="../../logs/Logs/index.html#type-level">Logs.level</a> option</span> <a href="../../../cmdliner/cmdliner/Cmdliner/Term/index.html#type-t">Cmdliner.Term.t</a></span></span></code></div><div class="spec-doc"><p><code>level ?env ?docs ()</code> is a term for three <a href="../../../cmdliner/cmdliner/Cmdliner/index.html"><code>Cmdliner</code></a> options that can be used with <a href="../../logs/Logs/index.html#val-set_level"><code>Logs.set_level</code></a>. The options are documented under <code>docs</code> (defaults to the default of <a href="../../../cmdliner/cmdliner/Cmdliner/Arg/index.html#type-info"><code>Cmdliner.Arg.info</code></a>).</p><p>The options work as follows:</p><ul><li><code>-v</code> or <code>--verbose</code>, if it appears once, the value of the term is is <code>Some Logs.Info</code> and more than once <code>Some Logs.Debug</code>.</li><li><code>--verbosity=LEVEL</code>, the value of the term is <code>l</code> where <code>l</code> depends on on <code>LEVEL</code>. Takes over the option <code>-v</code>.</li><li><code>-q</code> or <code>--quiet</code>, the value of the term is <code>None</code>. Takes over the <code>-v</code> and <code>--verbosity</code> options.</li><li>If both options are absent the default value is <code>Some Logs.warning</code></li></ul><p>If <code>env</code> is provided, the default value in case all options are absent can be overridden by the corresponding environment variable.</p></div></div><h2 id="ex"><a href="#ex" class="anchor"></a>Example</h2><p>The following example shows how to setup <a href="../../logs/Logs/index.html"><code>Logs</code></a> and <code>Fmt</code> so that logging is performed on standard outputs with ANSI coloring if these are <code>tty</code>s. The command line interface provides options to control the use of colors and the log reporting level.</p><pre class="language-ocaml"><code>let hello () = Logs.app (fun m -&gt; m &quot;Hello horrible world!&quot;)
+
+let setup_log style_renderer level =
+  Fmt_tty.setup_std_outputs ?style_renderer ();
+  Logs.set_level level;
+  Logs.set_reporter (Logs_fmt.reporter ());
+  ()
+
+(* Command line interface *)
+
+open Cmdliner
+
+let setup_log =
+  Term.(const setup_log $ Fmt_cli.style_renderer () $ Logs_cli.level ())
+
+let main () =
+  match Term.(eval (const hello $ setup_log, Term.info &quot;tool&quot;)) with
+  | `Error _ -&gt; exit 1
+  | _ -&gt; exit (if Logs.err_count () &gt; 0 then 1 else 0)
+
+let () = main ()</code></pre></div></body></html>

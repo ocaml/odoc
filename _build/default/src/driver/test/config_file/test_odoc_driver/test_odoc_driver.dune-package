@@ -1,0 +1,30 @@
+(lang dune 3.16)
+(name test_odoc_driver)
+(sections (lib .) (libexec .) (doc ../../doc/test_odoc_driver))
+(files
+ (lib
+  (META
+   dune-package
+   opam
+   test_odoc_driver.a
+   test_odoc_driver.cma
+   test_odoc_driver.cmi
+   test_odoc_driver.cmt
+   test_odoc_driver.cmx
+   test_odoc_driver.cmxa
+   test_odoc_driver.ml))
+ (libexec (test_odoc_driver.cmxs))
+ (doc (odoc-config.sexp odoc-pages/yo.mld)))
+(library
+ (name test_odoc_driver)
+ (kind normal)
+ (archives (byte test_odoc_driver.cma) (native test_odoc_driver.cmxa))
+ (plugins (byte test_odoc_driver.cma) (native test_odoc_driver.cmxs))
+ (native_archives test_odoc_driver.a)
+ (main_module_name Test_odoc_driver)
+ (modes byte native)
+ (modules
+  (singleton
+   (obj_name test_odoc_driver)
+   (visibility public)
+   (source (path Test_odoc_driver) (impl (path test_odoc_driver.ml))))))

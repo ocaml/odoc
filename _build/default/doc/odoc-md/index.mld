@@ -1,0 +1,7 @@
+{0 odoc-md}
+
+This is a tool to allow the use of markdown formatted files in an odoc-built website.
+
+It is not a stand-alone tool, but needs to be integrated into the driver. See
+{{!/odoc-driver/page-index}odoc-driver} for an example integration.
+

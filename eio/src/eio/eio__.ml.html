@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: eio__.ml (eio.src.eio)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">eio</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; eio &#x00BB; eio__.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>eio__.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">eio</a><ul><li>Library <code>eio</code><ul><li><a href="../../eio/Eio/index.html">Eio</a></li></ul></li><li>Library <code>eio.core</code></li><li>Library <code>eio.mock</code><ul><li><a href="../../eio.mock/Eio_mock/index.html">Eio_mock</a></li></ul></li><li>Library <code>eio.runtime_events</code><ul><li><a href="../../eio.runtime_events/Eio_runtime_events/index.html">Eio_runtime_events</a></li></ul></li><li>Library <code>eio.unix</code><ul><li><a href="../../eio.unix/Eio_unix/index.html">Eio_unix</a></li></ul></li><li>Library <code>eio.utils</code><ul><li><a href="../../eio.utils/Eio_utils/index.html">Eio_utils</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>eio<ul><li><a href="buf_read.ml.html">buf_read.ml</a></li><li><a href="buf_write.ml.html">buf_write.ml</a></li><li><a href="condition.ml.html">condition.ml</a></li><li><a href="domain_manager.ml.html">domain_manager.ml</a></li><li><a href="eio.ml.html">eio.ml</a></li><li><a href="#" class="current_unit">eio__.ml</a></li><li><a href="eio_mutex.ml.html">eio_mutex.ml</a></li><li><a href="executor_pool.ml.html">executor_pool.ml</a></li><li><a href="file.ml.html">file.ml</a></li><li><a href="flow.ml.html">flow.ml</a></li><li><a href="fs.ml.html">fs.ml</a></li><li><a href="hook.ml.html">hook.ml</a></li><li><a href="lazy.ml.html">lazy.ml</a></li><li><a href="net.ml.html">net.ml</a></li><li><a href="path.ml.html">path.ml</a></li><li><a href="pool.ml.html">pool.ml</a></li><li><a href="process.ml.html">process.ml</a></li><li><a href="resource.ml.html">resource.ml</a></li><li><a href="sem_state.ml.html">sem_state.ml</a></li><li><a href="semaphore.ml.html">semaphore.ml</a></li><li><a href="std.ml.html">std.ml</a></li><li><a href="stream.ml.html">stream.ml</a></li><li><a href="sync.ml.html">sync.ml</a></li><li><a href="time.ml.html">time.ml</a></li><li><a href="waiters.ml.html">waiters.ml</a></li></ul></li><li>eio.core<ul><li><a href="../eio.core/broadcast.ml.html">broadcast.ml</a></li><li><a href="../eio.core/cancel.ml.html">cancel.ml</a></li><li><a href="../eio.core/cells.ml.html">cells.ml</a></li><li><a href="../eio.core/debug.ml.html">debug.ml</a></li><li><a href="../eio.core/dla.ml.html">dla.ml</a></li><li><a href="../eio.core/eio__core.ml.html">eio__core.ml</a></li><li><a href="../eio.core/eio__core__.ml.html">eio__core__.ml</a></li><li><a href="../eio.core/exn.ml.html">exn.ml</a></li><li><a href="../eio.core/fiber.ml.html">fiber.ml</a></li><li><a href="../eio.core/promise.ml.html">promise.ml</a></li><li><a href="../eio.core/single_waiter.ml.html">single_waiter.ml</a></li><li><a href="../eio.core/suspend.ml.html">suspend.ml</a></li><li><a href="../eio.core/switch.ml.html">switch.ml</a></li><li><a href="../eio.core/trace.ml.html">trace.ml</a></li></ul></li><li>eio.mock<ul><li><a href="../eio.mock/action.ml.html">action.ml</a></li><li><a href="../eio.mock/backend.ml.html">backend.ml</a></li><li><a href="../eio.mock/clock.ml.html">clock.ml</a></li><li><a href="../eio.mock/domain_manager.ml.html">domain_manager.ml</a></li><li><a href="../eio.mock/eio_mock.ml.html">eio_mock.ml</a></li><li><a href="../eio.mock/eio_mock__.ml.html">eio_mock__.ml</a></li><li><a href="../eio.mock/flow.ml.html">flow.ml</a></li><li><a href="../eio.mock/handler.ml.html">handler.ml</a></li><li><a href="../eio.mock/net.ml.html">net.ml</a></li></ul></li><li>eio.runtime_events<ul><li><a href="../eio.runtime_events/eio_runtime_events.ml.html">eio_runtime_events.ml</a></li></ul></li><li>eio.unix<ul><li><a href="../eio.unix/cap.ml.html">cap.ml</a></li><li><a href="../eio.unix/eio_unix.ml.html">eio_unix.ml</a></li><li><a href="../eio.unix/eio_unix__.ml.html">eio_unix__.ml</a></li><li><a href="../eio.unix/fd.ml.html">fd.ml</a></li><li><a href="../eio.unix/fork_action.ml.html">fork_action.ml</a></li><li><a href="../eio.unix/inherit_fds.ml.html">inherit_fds.ml</a></li><li><a href="../eio.unix/net.ml.html">net.ml</a></li><li><a href="../eio.unix/pi.ml.html">pi.ml</a></li><li><a href="../eio.unix/private.ml.html">private.ml</a></li><li><a href="../eio.unix/process.ml.html">process.ml</a></li><li><a href="../eio.unix/rcfd.ml.html">rcfd.ml</a></li><li><a href="../eio.unix/resource.ml.html">resource.ml</a></li><li><a href="../eio.unix/thread_pool.ml.html">thread_pool.ml</a></li><li><a href="../eio.unix/types.ml.html">types.ml</a></li></ul></li><li>eio.utils<ul><li><a href="../eio.utils/eio_utils.ml.html">eio_utils.ml</a></li><li><a href="../eio.utils/eio_utils__.ml.html">eio_utils__.ml</a></li><li><a href="../eio.utils/lf_queue.ml.html">lf_queue.ml</a></li><li><a href="../eio.utils/suspended.ml.html">suspended.ml</a></li><li><a href="../eio.utils/zzz.ml.html">zzz.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+</code><code class="source_code"><span><span class="COMMENT">(* generated by dune *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Buf_read *)</span><span class="EOL">
+</span><span id="module-Buf_read"><span class="MODULE">module</span> <span class="UIDENT">Buf_read</span> <span class="EQUAL">=</span> <a href="buf_read.ml.html"><span class="UIDENT">Eio__Buf_read</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Buf_write *)</span><span class="EOL">
+</span><span id="module-Buf_write"><span class="MODULE">module</span> <span class="UIDENT">Buf_write</span> <span class="EQUAL">=</span> <a href="buf_write.ml.html"><span class="UIDENT">Eio__Buf_write</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Condition *)</span><span class="EOL">
+</span><span id="module-Condition"><span class="MODULE">module</span> <span class="UIDENT">Condition</span> <span class="EQUAL">=</span> <a href="condition.ml.html"><span class="UIDENT">Eio__Condition</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Domain_manager *)</span><span class="EOL">
+</span><span id="module-Domain_manager"><span class="MODULE">module</span> <span class="UIDENT">Domain_manager</span> <span class="EQUAL">=</span> <a href="domain_manager.ml.html"><span class="UIDENT">Eio__Domain_manager</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Eio_mutex *)</span><span class="EOL">
+</span><span id="module-Eio_mutex"><span class="MODULE">module</span> <span class="UIDENT">Eio_mutex</span> <span class="EQUAL">=</span> <a href="eio_mutex.ml.html"><span class="UIDENT">Eio__Eio_mutex</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Executor_pool *)</span><span class="EOL">
+</span><span id="module-Executor_pool"><span class="MODULE">module</span> <span class="UIDENT">Executor_pool</span> <span class="EQUAL">=</span> <a href="executor_pool.ml.html"><span class="UIDENT">Eio__Executor_pool</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.File *)</span><span class="EOL">
+</span><span id="module-File"><span class="MODULE">module</span> <span class="UIDENT">File</span> <span class="EQUAL">=</span> <a href="file.ml.html"><span class="UIDENT">Eio__File</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Flow *)</span><span class="EOL">
+</span><span id="module-Flow"><span class="MODULE">module</span> <span class="UIDENT">Flow</span> <span class="EQUAL">=</span> <a href="flow.ml.html"><span class="UIDENT">Eio__Flow</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Fs *)</span><span class="EOL">
+</span><span id="module-Fs"><span class="MODULE">module</span> <span class="UIDENT">Fs</span> <span class="EQUAL">=</span> <a href="fs.ml.html"><span class="UIDENT">Eio__Fs</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Hook *)</span><span class="EOL">
+</span><span id="module-Hook"><span class="MODULE">module</span> <span class="UIDENT">Hook</span> <span class="EQUAL">=</span> <a href="hook.ml.html"><span class="UIDENT">Eio__Hook</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Lazy *)</span><span class="EOL">
+</span><span id="module-Lazy"><span class="MODULE">module</span> <span class="UIDENT">Lazy</span> <span class="EQUAL">=</span> <a href="lazy.ml.html"><span class="UIDENT">Eio__Lazy</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Net *)</span><span class="EOL">
+</span><span id="module-Net"><span class="MODULE">module</span> <span class="UIDENT">Net</span> <span class="EQUAL">=</span> <a href="net.ml.html"><span class="UIDENT">Eio__Net</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Path *)</span><span class="EOL">
+</span><span id="module-Path"><span class="MODULE">module</span> <span class="UIDENT">Path</span> <span class="EQUAL">=</span> <a href="path.ml.html"><span class="UIDENT">Eio__Path</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Pool *)</span><span class="EOL">
+</span><span id="module-Pool"><span class="MODULE">module</span> <span class="UIDENT">Pool</span> <span class="EQUAL">=</span> <a href="pool.ml.html"><span class="UIDENT">Eio__Pool</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Process *)</span><span class="EOL">
+</span><span id="module-Process"><span class="MODULE">module</span> <span class="UIDENT">Process</span> <span class="EQUAL">=</span> <a href="process.ml.html"><span class="UIDENT">Eio__Process</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Resource *)</span><span class="EOL">
+</span><span id="module-Resource"><span class="MODULE">module</span> <span class="UIDENT">Resource</span> <span class="EQUAL">=</span> <a href="resource.ml.html"><span class="UIDENT">Eio__Resource</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Sem_state *)</span><span class="EOL">
+</span><span id="module-Sem_state"><span class="MODULE">module</span> <span class="UIDENT">Sem_state</span> <span class="EQUAL">=</span> <a href="sem_state.ml.html"><span class="UIDENT">Eio__Sem_state</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Semaphore *)</span><span class="EOL">
+</span><span id="module-Semaphore"><span class="MODULE">module</span> <span class="UIDENT">Semaphore</span> <span class="EQUAL">=</span> <a href="semaphore.ml.html"><span class="UIDENT">Eio__Semaphore</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Std *)</span><span class="EOL">
+</span><span id="module-Std"><span class="MODULE">module</span> <span class="UIDENT">Std</span> <span class="EQUAL">=</span> <a href="std.ml.html"><span class="UIDENT">Eio__Std</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Stream *)</span><span class="EOL">
+</span><span id="module-Stream"><span class="MODULE">module</span> <span class="UIDENT">Stream</span> <span class="EQUAL">=</span> <a href="stream.ml.html"><span class="UIDENT">Eio__Stream</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Sync *)</span><span class="EOL">
+</span><span id="module-Sync"><span class="MODULE">module</span> <span class="UIDENT">Sync</span> <span class="EQUAL">=</span> <a href="sync.ml.html"><span class="UIDENT">Eio__Sync</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Time *)</span><span class="EOL">
+</span><span id="module-Time"><span class="MODULE">module</span> <span class="UIDENT">Time</span> <span class="EQUAL">=</span> <a href="time.ml.html"><span class="UIDENT">Eio__Time</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Eio.Waiters *)</span><span class="EOL">
+</span><span id="module-Waiters"><span class="MODULE">module</span> <span class="UIDENT">Waiters</span> <span class="EQUAL">=</span> <a href="waiters.ml.html"><span class="UIDENT">Eio__Waiters</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Eio__"><span class="MODULE">module</span> <span class="UIDENT">Eio__</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span> <span class="END">end</span><span class="EOL">
+</span><span class="LBRACKETATAT">[@@</span><span class="LIDENT">deprecated</span> <span class="STRING">&quot;this module is shadowed&quot;</span><span class="RBRACKET">]</span></span><span class="EOL">
+</span></span></code></pre></body></html>

@@ -1,0 +1,1 @@
+doc/examples/unexposed.mli:

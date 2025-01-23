@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: condition.ml (eio.src.eio)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">eio</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; eio &#x00BB; condition.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>condition.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">eio</a><ul><li>Library <code>eio</code><ul><li><a href="../../eio/Eio/index.html">Eio</a></li></ul></li><li>Library <code>eio.core</code></li><li>Library <code>eio.mock</code><ul><li><a href="../../eio.mock/Eio_mock/index.html">Eio_mock</a></li></ul></li><li>Library <code>eio.runtime_events</code><ul><li><a href="../../eio.runtime_events/Eio_runtime_events/index.html">Eio_runtime_events</a></li></ul></li><li>Library <code>eio.unix</code><ul><li><a href="../../eio.unix/Eio_unix/index.html">Eio_unix</a></li></ul></li><li>Library <code>eio.utils</code><ul><li><a href="../../eio.utils/Eio_utils/index.html">Eio_utils</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>eio<ul><li><a href="buf_read.ml.html">buf_read.ml</a></li><li><a href="buf_write.ml.html">buf_write.ml</a></li><li><a href="#" class="current_unit">condition.ml</a></li><li><a href="domain_manager.ml.html">domain_manager.ml</a></li><li><a href="eio.ml.html">eio.ml</a></li><li><a href="eio__.ml.html">eio__.ml</a></li><li><a href="eio_mutex.ml.html">eio_mutex.ml</a></li><li><a href="executor_pool.ml.html">executor_pool.ml</a></li><li><a href="file.ml.html">file.ml</a></li><li><a href="flow.ml.html">flow.ml</a></li><li><a href="fs.ml.html">fs.ml</a></li><li><a href="hook.ml.html">hook.ml</a></li><li><a href="lazy.ml.html">lazy.ml</a></li><li><a href="net.ml.html">net.ml</a></li><li><a href="path.ml.html">path.ml</a></li><li><a href="pool.ml.html">pool.ml</a></li><li><a href="process.ml.html">process.ml</a></li><li><a href="resource.ml.html">resource.ml</a></li><li><a href="sem_state.ml.html">sem_state.ml</a></li><li><a href="semaphore.ml.html">semaphore.ml</a></li><li><a href="std.ml.html">std.ml</a></li><li><a href="stream.ml.html">stream.ml</a></li><li><a href="sync.ml.html">sync.ml</a></li><li><a href="time.ml.html">time.ml</a></li><li><a href="waiters.ml.html">waiters.ml</a></li></ul></li><li>eio.core<ul><li><a href="../eio.core/broadcast.ml.html">broadcast.ml</a></li><li><a href="../eio.core/cancel.ml.html">cancel.ml</a></li><li><a href="../eio.core/cells.ml.html">cells.ml</a></li><li><a href="../eio.core/debug.ml.html">debug.ml</a></li><li><a href="../eio.core/dla.ml.html">dla.ml</a></li><li><a href="../eio.core/eio__core.ml.html">eio__core.ml</a></li><li><a href="../eio.core/eio__core__.ml.html">eio__core__.ml</a></li><li><a href="../eio.core/exn.ml.html">exn.ml</a></li><li><a href="../eio.core/fiber.ml.html">fiber.ml</a></li><li><a href="../eio.core/promise.ml.html">promise.ml</a></li><li><a href="../eio.core/single_waiter.ml.html">single_waiter.ml</a></li><li><a href="../eio.core/suspend.ml.html">suspend.ml</a></li><li><a href="../eio.core/switch.ml.html">switch.ml</a></li><li><a href="../eio.core/trace.ml.html">trace.ml</a></li></ul></li><li>eio.mock<ul><li><a href="../eio.mock/action.ml.html">action.ml</a></li><li><a href="../eio.mock/backend.ml.html">backend.ml</a></li><li><a href="../eio.mock/clock.ml.html">clock.ml</a></li><li><a href="../eio.mock/domain_manager.ml.html">domain_manager.ml</a></li><li><a href="../eio.mock/eio_mock.ml.html">eio_mock.ml</a></li><li><a href="../eio.mock/eio_mock__.ml.html">eio_mock__.ml</a></li><li><a href="../eio.mock/flow.ml.html">flow.ml</a></li><li><a href="../eio.mock/handler.ml.html">handler.ml</a></li><li><a href="../eio.mock/net.ml.html">net.ml</a></li></ul></li><li>eio.runtime_events<ul><li><a href="../eio.runtime_events/eio_runtime_events.ml.html">eio_runtime_events.ml</a></li></ul></li><li>eio.unix<ul><li><a href="../eio.unix/cap.ml.html">cap.ml</a></li><li><a href="../eio.unix/eio_unix.ml.html">eio_unix.ml</a></li><li><a href="../eio.unix/eio_unix__.ml.html">eio_unix__.ml</a></li><li><a href="../eio.unix/fd.ml.html">fd.ml</a></li><li><a href="../eio.unix/fork_action.ml.html">fork_action.ml</a></li><li><a href="../eio.unix/inherit_fds.ml.html">inherit_fds.ml</a></li><li><a href="../eio.unix/net.ml.html">net.ml</a></li><li><a href="../eio.unix/pi.ml.html">pi.ml</a></li><li><a href="../eio.unix/private.ml.html">private.ml</a></li><li><a href="../eio.unix/process.ml.html">process.ml</a></li><li><a href="../eio.unix/rcfd.ml.html">rcfd.ml</a></li><li><a href="../eio.unix/resource.ml.html">resource.ml</a></li><li><a href="../eio.unix/thread_pool.ml.html">thread_pool.ml</a></li><li><a href="../eio.unix/types.ml.html">types.ml</a></li></ul></li><li>eio.utils<ul><li><a href="../eio.utils/eio_utils.ml.html">eio_utils.ml</a></li><li><a href="../eio.utils/eio_utils__.ml.html">eio_utils__.ml</a></li><li><a href="../eio.utils/lf_queue.ml.html">lf_queue.ml</a></li><li><a href="../eio.utils/suspended.ml.html">suspended.ml</a></li><li><a href="../eio.utils/zzz.ml.html">zzz.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+</code><code class="source_code"><span><span class="COMMENT">(* Import these directly because we copy this file for the dscheck tests. *)</span><span class="EOL">
+</span><span id="module-Fiber_context"><span class="MODULE">module</span> <span class="UIDENT">Fiber_context</span> <span class="EQUAL">=</span> <a href="../eio.core/eio__core.ml.html#module-Private.module-Fiber_context"><span class="UIDENT">Eio__core</span><span class="DOT">.</span><span class="UIDENT">Private</span><span class="DOT">.</span><span class="UIDENT">Fiber_context</span></a></span><span class="EOL">
+</span><span id="module-Suspend"><span class="MODULE">module</span> <span class="UIDENT">Suspend</span> <span class="EQUAL">=</span> <a href="../eio.core/eio__core.ml.html#module-Private.module-Suspend"><span class="UIDENT">Eio__core</span><span class="DOT">.</span><span class="UIDENT">Private</span><span class="DOT">.</span><span class="UIDENT">Suspend</span></a></span><span class="EOL">
+</span><span id="module-Cancel"><span class="MODULE">module</span> <span class="UIDENT">Cancel</span> <span class="EQUAL">=</span> <a href="../eio.core/eio__core.ml.html#module-Cancel"><span class="UIDENT">Eio__core</span><span class="DOT">.</span><span class="UIDENT">Cancel</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <a href="../eio.core/broadcast.ml.html#type-t"><span class="UIDENT">Broadcast</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-create"><span class="LIDENT">create</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="../eio.core/broadcast.ml.html#val-create"><span class="UIDENT">Broadcast</span><span class="DOT">.</span><span class="LIDENT">create</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-lock_protected"><span class="LIDENT">lock_protected</span></span> <span id="local_m_1"><span class="LIDENT">m</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Cancel</span><span class="DOT">.</span><span class="LIDENT">protect</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="eio_mutex.ml.html#val-lock"><span class="UIDENT">Eio_mutex</span><span class="DOT">.</span><span class="LIDENT">lock</span></a> <a href="#local_m_1"><span class="LIDENT">m</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-await_generic"><span class="LIDENT">await_generic</span></span> <span class="QUESTION">?</span><span id="local_mutex_2"><span class="LIDENT">mutex</span></span> <span id="local_t_3"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span><span class="EOL">
+</span>    <span class="UIDENT">Suspend</span><span class="DOT">.</span><span class="LIDENT">enter_unchecked</span> <span class="STRING">&quot;Condition.await&quot;</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_ctx_4"><span class="LIDENT">ctx</span></span> <span id="local_enqueue_5"><span class="LIDENT">enqueue</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="MATCH">match</span> <span class="UIDENT">Fiber_context</span><span class="DOT">.</span><span class="LIDENT">get_error</span> <a href="#local_ctx_4"><span class="LIDENT">ctx</span></a> <span class="WITH">with</span><span class="EOL">
+</span>        <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_ex_6"><span class="LIDENT">ex</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>          <a href="../../../ocaml-base-compiler/src/stdlib/option.ml.html#val-iter"><span class="UIDENT">Option</span><span class="DOT">.</span><span class="LIDENT">iter</span></a> <a href="eio_mutex.ml.html#val-unlock"><span class="UIDENT">Eio_mutex</span><span class="DOT">.</span><span class="LIDENT">unlock</span></a> <a href="#local_mutex_2"><span class="LIDENT">mutex</span></a><span class="SEMI">;</span><span class="EOL">
+</span>          <a href="#local_enqueue_5"><span class="LIDENT">enqueue</span></a> <span class="LPAREN">(</span><span class="UIDENT">Error</span> <a href="#local_ex_6"><span class="LIDENT">ex</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>        <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>          <span class="MATCH">match</span> <a href="../eio.core/broadcast.ml.html#val-suspend"><span class="UIDENT">Broadcast</span><span class="DOT">.</span><span class="LIDENT">suspend</span></a> <a href="#local_t_3"><span class="LIDENT">t</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_enqueue_5"><span class="LIDENT">enqueue</span></a> <span class="LPAREN">(</span><span class="UIDENT">Ok</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>          <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>            <a href="../../../ocaml-base-compiler/src/stdlib/option.ml.html#val-iter"><span class="UIDENT">Option</span><span class="DOT">.</span><span class="LIDENT">iter</span></a> <a href="eio_mutex.ml.html#val-unlock"><span class="UIDENT">Eio_mutex</span><span class="DOT">.</span><span class="LIDENT">unlock</span></a> <a href="#local_mutex_2"><span class="LIDENT">mutex</span></a><span class="EOL">
+</span>          <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_request_7"><span class="LIDENT">request</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>            <a href="../../../ocaml-base-compiler/src/stdlib/option.ml.html#val-iter"><span class="UIDENT">Option</span><span class="DOT">.</span><span class="LIDENT">iter</span></a> <a href="eio_mutex.ml.html#val-unlock"><span class="UIDENT">Eio_mutex</span><span class="DOT">.</span><span class="LIDENT">unlock</span></a> <a href="#local_mutex_2"><span class="LIDENT">mutex</span></a><span class="SEMI">;</span><span class="EOL">
+</span>            <span class="UIDENT">Fiber_context</span><span class="DOT">.</span><span class="LIDENT">set_cancel_fn</span> <a href="#local_ctx_4"><span class="LIDENT">ctx</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_ex_8"><span class="LIDENT">ex</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>                <span class="IF">if</span> <a href="../eio.core/broadcast.ml.html#val-cancel"><span class="UIDENT">Broadcast</span><span class="DOT">.</span><span class="LIDENT">cancel</span></a> <a href="#local_request_7"><span class="LIDENT">request</span></a> <span class="THEN">then</span> <a href="#local_enqueue_5"><span class="LIDENT">enqueue</span></a> <span class="LPAREN">(</span><span class="UIDENT">Error</span> <a href="#local_ex_8"><span class="LIDENT">ex</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>                <span class="COMMENT">(* else already succeeded *)</span><span class="EOL">
+</span>              <span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/option.ml.html#val-iter"><span class="UIDENT">Option</span><span class="DOT">.</span><span class="LIDENT">iter</span></a> <span class="LIDENT">lock_protected</span> <a href="#local_mutex_2"><span class="LIDENT">mutex</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="EXCEPTION">exception</span> <span id="local_ex_9"><span class="LIDENT">ex</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_bt_10"><span class="LIDENT">bt</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/printexc.ml.html#val-get_raw_backtrace"><span class="UIDENT">Printexc</span><span class="DOT">.</span><span class="LIDENT">get_raw_backtrace</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/option.ml.html#val-iter"><span class="UIDENT">Option</span><span class="DOT">.</span><span class="LIDENT">iter</span></a> <span class="LIDENT">lock_protected</span> <a href="#local_mutex_2"><span class="LIDENT">mutex</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/printexc.ml.html#val-raise_with_backtrace"><span class="UIDENT">Printexc</span><span class="DOT">.</span><span class="LIDENT">raise_with_backtrace</span></a> <a href="#local_ex_9"><span class="LIDENT">ex</span></a> <a href="#local_bt_10"><span class="LIDENT">bt</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-await"><span class="LIDENT">await</span></span> <span id="local_t_11"><span class="LIDENT">t</span></span> <span id="local_mutex_12"><span class="LIDENT">mutex</span></span> <span class="EQUAL">=</span> <span class="LIDENT">await_generic</span> <span class="TILDE">~</span><a href="#local_mutex_12"><span class="LIDENT">mutex</span></a> <a href="#local_t_11"><span class="LIDENT">t</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-await_no_mutex"><span class="LIDENT">await_no_mutex</span></span> <span id="local_t_13"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span> <span class="LIDENT">await_generic</span> <a href="#local_t_13"><span class="LIDENT">t</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-broadcast"><span class="LIDENT">broadcast</span></span> <span class="EQUAL">=</span> <a href="../eio.core/broadcast.ml.html#val-resume_all"><span class="UIDENT">Broadcast</span><span class="DOT">.</span><span class="LIDENT">resume_all</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-request"><span class="TYPE">type</span> <span class="LIDENT">request</span> <span class="EQUAL">=</span> <a href="../eio.core/broadcast.ml.html#type-request"><span class="UIDENT">Broadcast</span><span class="DOT">.</span><span class="LIDENT">request</span></a> <span class="LIDENT">option</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-register_immediate"><span class="LIDENT">register_immediate</span></span> <span class="EQUAL">=</span> <a href="../eio.core/broadcast.ml.html#val-suspend"><span class="UIDENT">Broadcast</span><span class="DOT">.</span><span class="LIDENT">suspend</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-cancel"><span class="LIDENT">cancel</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_request_14"><span class="LIDENT">request</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="../eio.core/broadcast.ml.html#val-cancel"><span class="UIDENT">Broadcast</span><span class="DOT">.</span><span class="LIDENT">cancel</span></a> <a href="#local_request_14"><span class="LIDENT">request</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="FALSE">false</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-ensure_cancelled"><span class="LIDENT">ensure_cancelled</span></span> <span id="local_x_15"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-ignore"><span class="LIDENT">ignore</span></a> <span class="LPAREN">(</span><span class="LIDENT">cancel</span> <a href="#local_x_15"><span class="LIDENT">x</span></a> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-state"><span class="TYPE">type</span> <span class="LIDENT">state</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span id="type-state.constructor-Init"><span class="BAR">|</span> <span class="UIDENT">Init</span></span><span class="EOL">
+</span>  <span id="type-state.constructor-Waiting"><span class="BAR">|</span> <span class="UIDENT">Waiting</span> <span class="OF">of</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#type-result"><span class="LPAREN">(</span><span class="LIDENT">unit</span><span class="COMMA">,</span> <span class="LIDENT">exn</span><span class="RPAREN">)</span> <span class="LIDENT">result</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span><span class="RPAREN">)</span></span><span class="EOL">
+</span>  <span id="type-state.constructor-Done"><span class="BAR">|</span> <span class="UIDENT">Done</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* There main property want is that we don't suspend forever if a broadcast
+   happened after [fn] started, or if the fiber is cancelled.
+
+   1. We start in the Init state.
+   2. If a broadcast happens here we move to Done. If we later try to suspend, we'll resume immediately.
+   3. We run [fn]. If a broadcast happens during this we'll transition to Done as before.
+   4. If [fn] raises or wants to stop normally, we return without suspending at all.
+   5. Otherwise, we suspend the fiber.
+   6. We try to transition from Init to Waiting.
+      If a broadcast transitioned to Done before this, we resume immediately.
+      If a broadcast transitions afterwards, [wake] will see the [enqueue] function and wake us.
+      Therefore, we can only sleep forever if a broadcast never happens after starting [fn].
+   7. If the fiber is cancelled before suspending, we raise on suspend.
+      If cancelled after suspending and before the request succeeds, we cancel the request and raise.
+      If cancelled after the request succeeds, [wake] will resume us.
+*)</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-loop_no_mutex"><span class="LIDENT">loop_no_mutex</span></span> <span id="local_t_16"><span class="LIDENT">t</span></span> <span id="local_fn_17"><span class="LIDENT">fn</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_state_18"><span class="LIDENT">state</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-make"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="UIDENT">Init</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_wake_19"><span class="LIDENT">wake</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-exchange"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">exchange</span></a> <a href="#local_state_18"><span class="LIDENT">state</span></a> <span class="UIDENT">Done</span> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Init</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span>        <span class="COMMENT">(* Broadcast happened before we suspended; suspend will notice *)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Waiting</span> <span id="local_enqueue_20"><span class="LIDENT">enqueue</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_enqueue_20"><span class="LIDENT">enqueue</span></a> <span class="LPAREN">(</span><span class="UIDENT">Ok</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Done</span> <span class="MINUSGREATER">-&gt;</span> <span class="ASSERT">assert</span> <span class="FALSE">false</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_request_21"><span class="LIDENT">request</span></span> <span class="EQUAL">=</span> <a href="../eio.core/broadcast.ml.html#val-suspend"><span class="UIDENT">Broadcast</span><span class="DOT">.</span><span class="LIDENT">suspend</span></a> <a href="#local_t_16"><span class="LIDENT">t</span></a> <a href="#local_wake_19"><span class="LIDENT">wake</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="COMMENT">(* Note: to avoid memory leaks, make sure that [request] is finished in all cases. *)</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_fn_17"><span class="LIDENT">fn</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="EXCEPTION">exception</span> <span id="local_ex_22"><span class="LIDENT">ex</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_bt_23"><span class="LIDENT">bt</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/printexc.ml.html#val-get_raw_backtrace"><span class="UIDENT">Printexc</span><span class="DOT">.</span><span class="LIDENT">get_raw_backtrace</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LIDENT">ensure_cancelled</span> <a href="#local_request_21"><span class="LIDENT">request</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/printexc.ml.html#val-raise_with_backtrace"><span class="UIDENT">Printexc</span><span class="DOT">.</span><span class="LIDENT">raise_with_backtrace</span></a> <a href="#local_ex_22"><span class="LIDENT">ex</span></a> <a href="#local_bt_23"><span class="LIDENT">bt</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_x_24"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="LIDENT">ensure_cancelled</span> <a href="#local_request_21"><span class="LIDENT">request</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <a href="#local_x_24"><span class="LIDENT">x</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="UIDENT">Suspend</span><span class="DOT">.</span><span class="LIDENT">enter_unchecked</span> <span class="STRING">&quot;Condition.loop_no_mutex&quot;</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_ctx_25"><span class="LIDENT">ctx</span></span> <span id="local_enqueue_26"><span class="LIDENT">enqueue</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="MATCH">match</span> <span class="UIDENT">Fiber_context</span><span class="DOT">.</span><span class="LIDENT">get_error</span> <a href="#local_ctx_25"><span class="LIDENT">ctx</span></a> <span class="WITH">with</span><span class="EOL">
+</span>        <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_ex_27"><span class="LIDENT">ex</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>          <span class="LIDENT">ensure_cancelled</span> <a href="#local_request_21"><span class="LIDENT">request</span></a><span class="SEMI">;</span><span class="EOL">
+</span>          <span class="COMMENT">(* If a broadcast already happened, we still cancel. *)</span><span class="EOL">
+</span>          <a href="#local_enqueue_26"><span class="LIDENT">enqueue</span></a> <span class="LPAREN">(</span><span class="UIDENT">Error</span> <a href="#local_ex_27"><span class="LIDENT">ex</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>        <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>          <span class="LET">let</span> <span id="local_waiting_28"><span class="LIDENT">waiting</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Waiting</span> <a href="#local_enqueue_26"><span class="LIDENT">enqueue</span></a> <span class="IN">in</span><span class="EOL">
+</span>          <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-compare_and_set"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">compare_and_set</span></a> <a href="#local_state_18"><span class="LIDENT">state</span></a> <span class="UIDENT">Init</span> <a href="#local_waiting_28"><span class="LIDENT">waiting</span></a> <span class="THEN">then</span> <span class="LPAREN">(</span><span class="EOL">
+</span>            <span class="COMMENT">(* We were in Init, so [wake] hasn't yet done anything.
+               When it runs, it will resume us.
+               We're also not currently cancelled, because we checked above
+               and cancellations only come from the same thread. *)</span><span class="EOL">
+</span>            <span class="UIDENT">Fiber_context</span><span class="DOT">.</span><span class="LIDENT">set_cancel_fn</span> <a href="#local_ctx_25"><span class="LIDENT">ctx</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_ex_29"><span class="LIDENT">ex</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>                <span class="IF">if</span> <span class="LIDENT">cancel</span> <a href="#local_request_21"><span class="LIDENT">request</span></a> <span class="THEN">then</span> <span class="LPAREN">(</span><span class="EOL">
+</span>                  <span class="COMMENT">(* We could set the state to Done here, but there's no need;
+                     we're not racing with anything now. [wake] never runs. *)</span><span class="EOL">
+</span>                  <a href="#local_enqueue_26"><span class="LIDENT">enqueue</span></a> <span class="LPAREN">(</span><span class="UIDENT">Error</span> <a href="#local_ex_29"><span class="LIDENT">ex</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>                <span class="RPAREN">)</span> <span class="COMMENT">(* else we already got resumed *)</span><span class="EOL">
+</span>              <span class="RPAREN">)</span><span class="EOL">
+</span>          <span class="RPAREN">)</span> <span class="ELSE">else</span> <span class="LPAREN">(</span><span class="EOL">
+</span>            <span class="COMMENT">(* State is already Done, but [wake] couldn't wake us then
+               because we hadn't moved to [waiting]. Resume now. *)</span><span class="EOL">
+</span>            <a href="#local_enqueue_26"><span class="LIDENT">enqueue</span></a> <span class="LPAREN">(</span><span class="UIDENT">Ok</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>          <span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">loop_no_mutex</span> <a href="#local_t_16"><span class="LIDENT">t</span></a> <a href="#local_fn_17"><span class="LIDENT">fn</span></a><span class="EOL">
+</span></span></code></pre></body></html>

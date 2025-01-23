@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: xml_wrap.ml (tyxml.src.tyxml.functor)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">tyxml</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; tyxml.functor &#x00BB; xml_wrap.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>xml_wrap.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">tyxml</a><ul><li>Library <code>tyxml</code><ul><li><a href="../../tyxml/Tyxml/index.html">Tyxml</a></li><li><a href="../../tyxml/Tyxml_html/index.html">Tyxml_html</a></li><li><a href="../../tyxml/Tyxml_svg/index.html">Tyxml_svg</a></li><li><a href="../../tyxml/Tyxml_xml/index.html">Tyxml_xml</a></li></ul></li><li>Library <code>tyxml.functor</code><ul><li><a href="../../tyxml.functor/Html_f/index.html">Html_f</a></li><li><a href="../../tyxml.functor/Html_sigs/index.html">Html_sigs</a></li><li><a href="../../tyxml.functor/Html_types/index.html">Html_types</a></li><li><a href="../../tyxml.functor/Svg_f/index.html">Svg_f</a></li><li><a href="../../tyxml.functor/Svg_sigs/index.html">Svg_sigs</a></li><li><a href="../../tyxml.functor/Svg_types/index.html">Svg_types</a></li><li><a href="../../tyxml.functor/Xml_iter/index.html">Xml_iter</a></li><li><a href="../../tyxml.functor/Xml_print/index.html">Xml_print</a></li><li><a href="../../tyxml.functor/Xml_sigs/index.html">Xml_sigs</a></li><li><a href="../../tyxml.functor/Xml_stream/index.html">Xml_stream</a></li><li><a href="../../tyxml.functor/Xml_wrap/index.html">Xml_wrap</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>tyxml<ul><li><a href="../tyxml/tyxml.ml.html">tyxml.ml</a></li><li><a href="../tyxml/tyxml_html.ml.html">tyxml_html.ml</a></li><li><a href="../tyxml/tyxml_svg.ml.html">tyxml_svg.ml</a></li><li><a href="../tyxml/tyxml_xml.ml.html">tyxml_xml.ml</a></li></ul></li><li>tyxml.functor<ul><li><a href="html_f.ml.html">html_f.ml</a></li><li><a href="svg_f.ml.html">svg_f.ml</a></li><li><a href="xml_iter.ml.html">xml_iter.ml</a></li><li><a href="xml_print.ml.html">xml_print.ml</a></li><li><a href="xml_stream.ml.html">xml_stream.ml</a></li><li><a href="#" class="current_unit">xml_wrap.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+</code><code class="source_code"><span><span class="COMMENT">(* TyXML
+ * http://www.ocsigen.org/tyxml
+ * Copyright (C) 2013 Gabriel Radanne &lt;drupyog+caml@zoho.com&gt;
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, with linking exception;
+ * either version 2.1 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA 02110-1301, USA.
+*)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-T"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">T</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-T.type-t"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-T.val-return"><span class="VAL">val</span> <span class="LIDENT">return</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-type-T.type-ft"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="MINUS">-</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">ft</span></span><span class="EOL">
+</span>  <span id="module-type-T.val-fmap"><span class="VAL">val</span> <span class="LIDENT">fmap</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">ft</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">b</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-type-T.type-tlist"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">tlist</span></span><span class="EOL">
+</span>  <span id="module-type-T.val-nil"><span class="VAL">val</span> <span class="LIDENT">nil</span> <span class="COLON">:</span> <span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">tlist</span></span><span class="EOL">
+</span>  <span id="module-type-T.val-singleton"><span class="VAL">val</span> <span class="LIDENT">singleton</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">tlist</span></span><span class="EOL">
+</span>  <span id="module-type-T.val-cons"><span class="VAL">val</span> <span class="LIDENT">cons</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">tlist</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">tlist</span></span><span class="EOL">
+</span>  <span id="module-type-T.val-append"><span class="VAL">val</span> <span class="LIDENT">append</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">tlist</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">tlist</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">tlist</span></span><span class="EOL">
+</span>  <span id="module-type-T.val-map"><span class="VAL">val</span> <span class="LIDENT">map</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">ft</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">tlist</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">b</span> <span class="LIDENT">tlist</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-NoWrap"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">NoWrap</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">T</span> <span class="WITH">with</span> <span id="def_7"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span>     <span class="AND">and</span> <span id="def_8"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">tlist</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>     <span class="AND">and</span> <span id="def_9"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="MINUS">-</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">ft</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">b</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-NoWrap"><span class="MODULE">module</span> <span class="UIDENT">NoWrap</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-NoWrap.type-t"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span>  <span id="module-NoWrap.type-tlist"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">tlist</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>  <span id="module-NoWrap.type-ft"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="MINUS">-</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">ft</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">b</span></span><span class="EOL">
+</span>  <span id="module-NoWrap.val-return"><span class="EXTERNAL">external</span> <span class="LIDENT">return</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="EQUAL">=</span> <span class="STRING">&quot;%identity&quot;</span></span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-NoWrap.val-fmap"><span class="LIDENT">fmap</span></span> <span id="local_f_1"><span class="LIDENT">f</span></span> <span class="COLON">:</span>  <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">b</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <a href="#local_f_1"><span class="LIDENT">f</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-NoWrap.val-nil"><span class="LIDENT">nil</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-NoWrap.val-singleton"><span class="LIDENT">singleton</span></span> <span id="local_x_2"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span><a href="#local_x_2"><span class="LIDENT">x</span></a><span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-NoWrap.val-cons"><span class="LIDENT">cons</span></span> <span id="local_x_3"><span class="LIDENT">x</span></span> <span id="local_xs_4"><span class="LIDENT">xs</span></span> <span class="EQUAL">=</span> <a href="#local_x_3"><span class="LIDENT">x</span></a><span class="COLONCOLON">::</span><a href="#local_xs_4"><span class="LIDENT">xs</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-NoWrap.val-append"><span class="LIDENT">append</span></span> <span id="local_x_5"><span class="LIDENT">x</span></span> <span id="local_y_6"><span class="LIDENT">y</span></span><span class="EQUAL">=</span> <a href="#local_x_5"><span class="LIDENT">x</span></a><a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(@)"><span class="INFIXOP1">@</span></a><a href="#local_y_6"><span class="LIDENT">y</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-NoWrap.val-map"><span class="LIDENT">map</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-map"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

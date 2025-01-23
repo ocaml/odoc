@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: iso.ml (sedlex.src.sedlex.ppx)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">sedlex</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; sedlex.ppx &#x00BB; iso.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>iso.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">sedlex</a><ul><li>Library <code>sedlex</code><ul><li><a href="../../sedlex/Sedlexing/index.html">Sedlexing</a></li></ul></li><li>Library <code>sedlex.ppx</code><ul><li><a href="../../sedlex.ppx/Sedlex_ppx/index.html">Sedlex_ppx</a></li></ul></li><li>Library <code>sedlex.utils</code><ul><li><a href="../../sedlex.utils/Sedlex_utils/index.html">Sedlex_utils</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>sedlex<ul><li><a href="../sedlex/sedlexing.ml.html">sedlexing.ml</a></li></ul></li><li>sedlex.ppx<ul><li><a href="#" class="current_unit">iso.ml</a></li><li><a href="ppx_sedlex.ml.html">ppx_sedlex.ml</a></li><li><a href="sedlex.ml.html">sedlex.ml</a></li><li><a href="sedlex_cset.ml.html">sedlex_cset.ml</a></li><li><a href="sedlex_ppx.ml.html">sedlex_ppx.ml</a></li><li><a href="unicode.ml.html">unicode.ml</a></li><li><a href="xml.ml.html">xml.ml</a></li></ul></li><li>sedlex.utils<ul><li><a href="../sedlex.utils/cset.ml.html">cset.ml</a></li><li><a href="../sedlex.utils/sedlex_utils.ml.html">sedlex_utils.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+<a id="L121" class="source_line" href="#L121">121</a>
+<a id="L122" class="source_line" href="#L122">122</a>
+<a id="L123" class="source_line" href="#L123">123</a>
+<a id="L124" class="source_line" href="#L124">124</a>
+<a id="L125" class="source_line" href="#L125">125</a>
+<a id="L126" class="source_line" href="#L126">126</a>
+<a id="L127" class="source_line" href="#L127">127</a>
+<a id="L128" class="source_line" href="#L128">128</a>
+<a id="L129" class="source_line" href="#L129">129</a>
+<a id="L130" class="source_line" href="#L130">130</a>
+<a id="L131" class="source_line" href="#L131">131</a>
+<a id="L132" class="source_line" href="#L132">132</a>
+<a id="L133" class="source_line" href="#L133">133</a>
+<a id="L134" class="source_line" href="#L134">134</a>
+<a id="L135" class="source_line" href="#L135">135</a>
+<a id="L136" class="source_line" href="#L136">136</a>
+<a id="L137" class="source_line" href="#L137">137</a>
+<a id="L138" class="source_line" href="#L138">138</a>
+<a id="L139" class="source_line" href="#L139">139</a>
+<a id="L140" class="source_line" href="#L140">140</a>
+<a id="L141" class="source_line" href="#L141">141</a>
+<a id="L142" class="source_line" href="#L142">142</a>
+<a id="L143" class="source_line" href="#L143">143</a>
+<a id="L144" class="source_line" href="#L144">144</a>
+<a id="L145" class="source_line" href="#L145">145</a>
+<a id="L146" class="source_line" href="#L146">146</a>
+<a id="L147" class="source_line" href="#L147">147</a>
+<a id="L148" class="source_line" href="#L148">148</a>
+<a id="L149" class="source_line" href="#L149">149</a>
+<a id="L150" class="source_line" href="#L150">150</a>
+<a id="L151" class="source_line" href="#L151">151</a>
+<a id="L152" class="source_line" href="#L152">152</a>
+<a id="L153" class="source_line" href="#L153">153</a>
+<a id="L154" class="source_line" href="#L154">154</a>
+<a id="L155" class="source_line" href="#L155">155</a>
+<a id="L156" class="source_line" href="#L156">156</a>
+<a id="L157" class="source_line" href="#L157">157</a>
+<a id="L158" class="source_line" href="#L158">158</a>
+<a id="L159" class="source_line" href="#L159">159</a>
+<a id="L160" class="source_line" href="#L160">160</a>
+<a id="L161" class="source_line" href="#L161">161</a>
+<a id="L162" class="source_line" href="#L162">162</a>
+<a id="L163" class="source_line" href="#L163">163</a>
+<a id="L164" class="source_line" href="#L164">164</a>
+<a id="L165" class="source_line" href="#L165">165</a>
+<a id="L166" class="source_line" href="#L166">166</a>
+<a id="L167" class="source_line" href="#L167">167</a>
+<a id="L168" class="source_line" href="#L168">168</a>
+<a id="L169" class="source_line" href="#L169">169</a>
+<a id="L170" class="source_line" href="#L170">170</a>
+<a id="L171" class="source_line" href="#L171">171</a>
+<a id="L172" class="source_line" href="#L172">172</a>
+<a id="L173" class="source_line" href="#L173">173</a>
+<a id="L174" class="source_line" href="#L174">174</a>
+<a id="L175" class="source_line" href="#L175">175</a>
+<a id="L176" class="source_line" href="#L176">176</a>
+<a id="L177" class="source_line" href="#L177">177</a>
+<a id="L178" class="source_line" href="#L178">178</a>
+<a id="L179" class="source_line" href="#L179">179</a>
+<a id="L180" class="source_line" href="#L180">180</a>
+<a id="L181" class="source_line" href="#L181">181</a>
+<a id="L182" class="source_line" href="#L182">182</a>
+<a id="L183" class="source_line" href="#L183">183</a>
+<a id="L184" class="source_line" href="#L184">184</a>
+<a id="L185" class="source_line" href="#L185">185</a>
+<a id="L186" class="source_line" href="#L186">186</a>
+<a id="L187" class="source_line" href="#L187">187</a>
+<a id="L188" class="source_line" href="#L188">188</a>
+<a id="L189" class="source_line" href="#L189">189</a>
+<a id="L190" class="source_line" href="#L190">190</a>
+<a id="L191" class="source_line" href="#L191">191</a>
+<a id="L192" class="source_line" href="#L192">192</a>
+<a id="L193" class="source_line" href="#L193">193</a>
+<a id="L194" class="source_line" href="#L194">194</a>
+<a id="L195" class="source_line" href="#L195">195</a>
+<a id="L196" class="source_line" href="#L196">196</a>
+<a id="L197" class="source_line" href="#L197">197</a>
+<a id="L198" class="source_line" href="#L198">198</a>
+<a id="L199" class="source_line" href="#L199">199</a>
+<a id="L200" class="source_line" href="#L200">200</a>
+<a id="L201" class="source_line" href="#L201">201</a>
+<a id="L202" class="source_line" href="#L202">202</a>
+<a id="L203" class="source_line" href="#L203">203</a>
+<a id="L204" class="source_line" href="#L204">204</a>
+<a id="L205" class="source_line" href="#L205">205</a>
+<a id="L206" class="source_line" href="#L206">206</a>
+<a id="L207" class="source_line" href="#L207">207</a>
+<a id="L208" class="source_line" href="#L208">208</a>
+<a id="L209" class="source_line" href="#L209">209</a>
+<a id="L210" class="source_line" href="#L210">210</a>
+<a id="L211" class="source_line" href="#L211">211</a>
+<a id="L212" class="source_line" href="#L212">212</a>
+<a id="L213" class="source_line" href="#L213">213</a>
+<a id="L214" class="source_line" href="#L214">214</a>
+<a id="L215" class="source_line" href="#L215">215</a>
+<a id="L216" class="source_line" href="#L216">216</a>
+<a id="L217" class="source_line" href="#L217">217</a>
+</code><code class="source_code"><span><span class="COMMENT">(* The package sedlex is released under the terms of an MIT-like license. *)</span><span class="EOL">
+</span><span class="COMMENT">(* See the attached LICENSE file.                                         *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="OPEN">open</span> <a href="sedlex_cset.ml.html"><span class="UIDENT">Sedlex_cset</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-tr8876_ident_char"><span class="LIDENT">tr8876_ident_char</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_l_1"><span class="LIDENT">l</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LBRACKET">[</span><span class="EOL">
+</span>      <span class="COMMENT">(* ASCII *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0041</span><span class="COMMA">,</span> <span class="INT">0x005a</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0061</span><span class="COMMA">,</span> <span class="INT">0x007a</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Latin *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x00c0</span><span class="COMMA">,</span> <span class="INT">0x00d6</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x00d8</span><span class="COMMA">,</span> <span class="INT">0x00f6</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x00f8</span><span class="COMMA">,</span> <span class="INT">0x01f5</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x01fa</span><span class="COMMA">,</span> <span class="INT">0x0217</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0250</span><span class="COMMA">,</span> <span class="INT">0x02a8</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Greek *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0384</span><span class="COMMA">,</span> <span class="INT">0x0384</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0388</span><span class="COMMA">,</span> <span class="INT">0x038a</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x038c</span><span class="COMMA">,</span> <span class="INT">0x038c</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x038e</span><span class="COMMA">,</span> <span class="INT">0x03a1</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x03a3</span><span class="COMMA">,</span> <span class="INT">0x03ce</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x03d0</span><span class="COMMA">,</span> <span class="INT">0x03d6</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x03da</span><span class="COMMA">,</span> <span class="INT">0x03da</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x03dc</span><span class="COMMA">,</span> <span class="INT">0x03dc</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x03de</span><span class="COMMA">,</span> <span class="INT">0x03de</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x03e0</span><span class="COMMA">,</span> <span class="INT">0x03e0</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x03e2</span><span class="COMMA">,</span> <span class="INT">0x03f3</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Cyrillic *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0401</span><span class="COMMA">,</span> <span class="INT">0x040d</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x040f</span><span class="COMMA">,</span> <span class="INT">0x044f</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0451</span><span class="COMMA">,</span> <span class="INT">0x045c</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x045e</span><span class="COMMA">,</span> <span class="INT">0x0481</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0490</span><span class="COMMA">,</span> <span class="INT">0x04c4</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x04c7</span><span class="COMMA">,</span> <span class="INT">0x04c4</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x04cb</span><span class="COMMA">,</span> <span class="INT">0x04cc</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x04d0</span><span class="COMMA">,</span> <span class="INT">0x04eb</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x04ee</span><span class="COMMA">,</span> <span class="INT">0x04f5</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x04f8</span><span class="COMMA">,</span> <span class="INT">0x04f9</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Armenian *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0531</span><span class="COMMA">,</span> <span class="INT">0x0556</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0561</span><span class="COMMA">,</span> <span class="INT">0x0587</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x04d0</span><span class="COMMA">,</span> <span class="INT">0x04eb</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Hebrew *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x05d0</span><span class="COMMA">,</span> <span class="INT">0x05ea</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x05f0</span><span class="COMMA">,</span> <span class="INT">0x05f4</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Arabic *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0621</span><span class="COMMA">,</span> <span class="INT">0x063a</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0640</span><span class="COMMA">,</span> <span class="INT">0x0652</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0670</span><span class="COMMA">,</span> <span class="INT">0x06b7</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x06ba</span><span class="COMMA">,</span> <span class="INT">0x06be</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x06c0</span><span class="COMMA">,</span> <span class="INT">0x06ce</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x06e5</span><span class="COMMA">,</span> <span class="INT">0x06e7</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Devanagari *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0905</span><span class="COMMA">,</span> <span class="INT">0x0939</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0958</span><span class="COMMA">,</span> <span class="INT">0x0962</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Bengali *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0985</span><span class="COMMA">,</span> <span class="INT">0x098c</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x098f</span><span class="COMMA">,</span> <span class="INT">0x0990</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0993</span><span class="COMMA">,</span> <span class="INT">0x09a8</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x09aa</span><span class="COMMA">,</span> <span class="INT">0x09b0</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x09b2</span><span class="COMMA">,</span> <span class="INT">0x09b2</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x09b6</span><span class="COMMA">,</span> <span class="INT">0x09b9</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x09dc</span><span class="COMMA">,</span> <span class="INT">0x09dd</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x09df</span><span class="COMMA">,</span> <span class="INT">0x09e1</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x09f0</span><span class="COMMA">,</span> <span class="INT">0x09f1</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Gurmukhi *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0a05</span><span class="COMMA">,</span> <span class="INT">0x0a0a</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0a0f</span><span class="COMMA">,</span> <span class="INT">0x0a10</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0a13</span><span class="COMMA">,</span> <span class="INT">0x0a28</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0a2a</span><span class="COMMA">,</span> <span class="INT">0x0a30</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0a32</span><span class="COMMA">,</span> <span class="INT">0x0a33</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0a35</span><span class="COMMA">,</span> <span class="INT">0x0a36</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0a38</span><span class="COMMA">,</span> <span class="INT">0x0a39</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0a59</span><span class="COMMA">,</span> <span class="INT">0x0a5c</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0a5e</span><span class="COMMA">,</span> <span class="INT">0x0a5e</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Gunjarati *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0a85</span><span class="COMMA">,</span> <span class="INT">0x0a8b</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0a8d</span><span class="COMMA">,</span> <span class="INT">0x0a8d</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0a8f</span><span class="COMMA">,</span> <span class="INT">0x0a91</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0a93</span><span class="COMMA">,</span> <span class="INT">0x0aa8</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0aaa</span><span class="COMMA">,</span> <span class="INT">0x0ab0</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0ab2</span><span class="COMMA">,</span> <span class="INT">0x0ab3</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0ab5</span><span class="COMMA">,</span> <span class="INT">0x0ab9</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0ae0</span><span class="COMMA">,</span> <span class="INT">0x0ae0</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Oriya *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b05</span><span class="COMMA">,</span> <span class="INT">0x0b0c</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b0f</span><span class="COMMA">,</span> <span class="INT">0x0b10</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b13</span><span class="COMMA">,</span> <span class="INT">0x0b28</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b2a</span><span class="COMMA">,</span> <span class="INT">0x0b30</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b32</span><span class="COMMA">,</span> <span class="INT">0x0b33</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b36</span><span class="COMMA">,</span> <span class="INT">0x0b39</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b5c</span><span class="COMMA">,</span> <span class="INT">0x0b5d</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b5f</span><span class="COMMA">,</span> <span class="INT">0x0b61</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Tamil *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b85</span><span class="COMMA">,</span> <span class="INT">0x0b8a</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b8e</span><span class="COMMA">,</span> <span class="INT">0x0b90</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b92</span><span class="COMMA">,</span> <span class="INT">0x0b95</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b99</span><span class="COMMA">,</span> <span class="INT">0x0b9a</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b9c</span><span class="COMMA">,</span> <span class="INT">0x0b9c</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0b9e</span><span class="COMMA">,</span> <span class="INT">0x0b9f</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0ba3</span><span class="COMMA">,</span> <span class="INT">0x0ba4</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0ba8</span><span class="COMMA">,</span> <span class="INT">0x0baa</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0bae</span><span class="COMMA">,</span> <span class="INT">0x0bb5</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0bb7</span><span class="COMMA">,</span> <span class="INT">0x0bb9</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Telugu *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0c05</span><span class="COMMA">,</span> <span class="INT">0x0c0c</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0c0e</span><span class="COMMA">,</span> <span class="INT">0x0c10</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0c12</span><span class="COMMA">,</span> <span class="INT">0x0c28</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0c2a</span><span class="COMMA">,</span> <span class="INT">0x0c33</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0c35</span><span class="COMMA">,</span> <span class="INT">0x0c39</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0c60</span><span class="COMMA">,</span> <span class="INT">0x0c61</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Kannada *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0c85</span><span class="COMMA">,</span> <span class="INT">0x0c8c</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0c8e</span><span class="COMMA">,</span> <span class="INT">0x0c90</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0c92</span><span class="COMMA">,</span> <span class="INT">0x0ca8</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0caa</span><span class="COMMA">,</span> <span class="INT">0x0cb3</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0cb5</span><span class="COMMA">,</span> <span class="INT">0x0cb9</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0ce0</span><span class="COMMA">,</span> <span class="INT">0x0ce1</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Malayam *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0d05</span><span class="COMMA">,</span> <span class="INT">0x0d0c</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0d0e</span><span class="COMMA">,</span> <span class="INT">0x0d10</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0d12</span><span class="COMMA">,</span> <span class="INT">0x0d28</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0d2a</span><span class="COMMA">,</span> <span class="INT">0x0d39</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0d60</span><span class="COMMA">,</span> <span class="INT">0x0d61</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Thai *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0e01</span><span class="COMMA">,</span> <span class="INT">0x0e30</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0e32</span><span class="COMMA">,</span> <span class="INT">0x0e33</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0e40</span><span class="COMMA">,</span> <span class="INT">0x0e46</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0e4f</span><span class="COMMA">,</span> <span class="INT">0x0e5b</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Lao *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0e81</span><span class="COMMA">,</span> <span class="INT">0x0e82</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0e84</span><span class="COMMA">,</span> <span class="INT">0x0e84</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0e87</span><span class="COMMA">,</span> <span class="INT">0x0e88</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0e8a</span><span class="COMMA">,</span> <span class="INT">0x0e8a</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0e0d</span><span class="COMMA">,</span> <span class="INT">0x0e0d</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0e94</span><span class="COMMA">,</span> <span class="INT">0x0e97</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0e99</span><span class="COMMA">,</span> <span class="INT">0x0e9f</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0ea1</span><span class="COMMA">,</span> <span class="INT">0x0ea3</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0ea5</span><span class="COMMA">,</span> <span class="INT">0x0ea5</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0ea7</span><span class="COMMA">,</span> <span class="INT">0x0ea7</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0eaa</span><span class="COMMA">,</span> <span class="INT">0x0eab</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0ead</span><span class="COMMA">,</span> <span class="INT">0x0eb0</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0eb2</span><span class="COMMA">,</span> <span class="INT">0x0eb3</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0ebd</span><span class="COMMA">,</span> <span class="INT">0x0ebd</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0ec0</span><span class="COMMA">,</span> <span class="INT">0x0ec4</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x0ec6</span><span class="COMMA">,</span> <span class="INT">0x0ec6</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Georgian *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x10a0</span><span class="COMMA">,</span> <span class="INT">0x10c5</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x10d0</span><span class="COMMA">,</span> <span class="INT">0x10f6</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Hangul Jamo *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1100</span><span class="COMMA">,</span> <span class="INT">0x1159</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1161</span><span class="COMMA">,</span> <span class="INT">0x11a2</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x11a8</span><span class="COMMA">,</span> <span class="INT">0x11f9</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x11d0</span><span class="COMMA">,</span> <span class="INT">0x11f6</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Latin extensions *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1e00</span><span class="COMMA">,</span> <span class="INT">0x1e9a</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1ea0</span><span class="COMMA">,</span> <span class="INT">0x1ef9</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Greek extended *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1f00</span><span class="COMMA">,</span> <span class="INT">0x1f15</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1f18</span><span class="COMMA">,</span> <span class="INT">0x1f1d</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1f20</span><span class="COMMA">,</span> <span class="INT">0x1f45</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1f48</span><span class="COMMA">,</span> <span class="INT">0x1f4d</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1f50</span><span class="COMMA">,</span> <span class="INT">0x1f57</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1f59</span><span class="COMMA">,</span> <span class="INT">0x1f59</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1f5b</span><span class="COMMA">,</span> <span class="INT">0x1f5b</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1f5d</span><span class="COMMA">,</span> <span class="INT">0x1f5d</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1f5f</span><span class="COMMA">,</span> <span class="INT">0x1f7d</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1f80</span><span class="COMMA">,</span> <span class="INT">0x1fb4</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1fb6</span><span class="COMMA">,</span> <span class="INT">0x1fbc</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1fc2</span><span class="COMMA">,</span> <span class="INT">0x1fc4</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1fc6</span><span class="COMMA">,</span> <span class="INT">0x1fcc</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1fd0</span><span class="COMMA">,</span> <span class="INT">0x1fd3</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1fd6</span><span class="COMMA">,</span> <span class="INT">0x1fdb</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1fe0</span><span class="COMMA">,</span> <span class="INT">0x1fec</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1ff2</span><span class="COMMA">,</span> <span class="INT">0x1ff4</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x1ff6</span><span class="COMMA">,</span> <span class="INT">0x1ffc</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Hiragana *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x3041</span><span class="COMMA">,</span> <span class="INT">0x3094</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x309b</span><span class="COMMA">,</span> <span class="INT">0x309e</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Katakana *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x30a1</span><span class="COMMA">,</span> <span class="INT">0x30fe</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Bopmofo *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x3105</span><span class="COMMA">,</span> <span class="INT">0x312c</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* CJK Unified Ideographs *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0x4e00</span><span class="COMMA">,</span> <span class="INT">0x9fa5</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* CJK Compatibility Ideographs *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xf900</span><span class="COMMA">,</span> <span class="INT">0xfa2d</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Arabic Presentation Forms *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xfb1f</span><span class="COMMA">,</span> <span class="INT">0xfb36</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xfb38</span><span class="COMMA">,</span> <span class="INT">0xfb3c</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xfb3e</span><span class="COMMA">,</span> <span class="INT">0xfb3e</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xfb40</span><span class="COMMA">,</span> <span class="INT">0xfb41</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xfb42</span><span class="COMMA">,</span> <span class="INT">0xfb44</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xfb46</span><span class="COMMA">,</span> <span class="INT">0xfbb1</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xfbd3</span><span class="COMMA">,</span> <span class="INT">0xfd35</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Arabic Presentation Forms-A *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xfd50</span><span class="COMMA">,</span> <span class="INT">0xfd85</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xfd92</span><span class="COMMA">,</span> <span class="INT">0xfbc7</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xfdf0</span><span class="COMMA">,</span> <span class="INT">0xfdfb</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Arabic Presentation Forms-B *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xfe70</span><span class="COMMA">,</span> <span class="INT">0xfe72</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xfe74</span><span class="COMMA">,</span> <span class="INT">0xfe74</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xfe76</span><span class="COMMA">,</span> <span class="INT">0xfefc</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Half width and Fullwidth Forms *)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xff21</span><span class="COMMA">,</span> <span class="INT">0xff3a</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xff41</span><span class="COMMA">,</span> <span class="INT">0xff5a</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xff66</span><span class="COMMA">,</span> <span class="INT">0xffbe</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xffc2</span><span class="COMMA">,</span> <span class="INT">0xffc7</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xffca</span><span class="COMMA">,</span> <span class="INT">0xffcf</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xffd2</span><span class="COMMA">,</span> <span class="INT">0xffd7</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xffd2</span><span class="COMMA">,</span> <span class="INT">0xffd7</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="INT">0xffda</span><span class="COMMA">,</span> <span class="INT">0xffdc</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <a href="../sedlex.utils/cset.ml.html#val-union_list"><span class="LIDENT">union_list</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-map"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span id="local_a_2"><span class="LIDENT">a</span></span><span class="COMMA">,</span> <span id="local_b_3"><span class="LIDENT">b</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="../sedlex.utils/cset.ml.html#val-interval"><span class="LIDENT">interval</span></a> <a href="#local_a_2"><span class="LIDENT">a</span></a> <a href="#local_b_3"><span class="LIDENT">b</span></a><span class="RPAREN">)</span> <a href="#local_l_1"><span class="LIDENT">l</span></a><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

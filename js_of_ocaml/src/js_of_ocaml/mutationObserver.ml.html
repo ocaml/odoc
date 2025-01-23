@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: mutationObserver.ml (js_of_ocaml.src.js_of_ocaml)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">js_of_ocaml</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; js_of_ocaml &#x00BB; mutationObserver.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>mutationObserver.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">js_of_ocaml</a><ul><li>Library <code>js_of_ocaml</code><ul><li><a href="../../js_of_ocaml/Js_of_ocaml/index.html">Js_of_ocaml</a></li></ul></li><li>Library <code>js_of_ocaml.deriving</code><ul><li><a href="../../js_of_ocaml.deriving/Deriving_Json/index.html">Deriving_Json</a></li><li><a href="../../js_of_ocaml.deriving/Deriving_Json_import/index.html">Deriving_Json_import</a></li><li><a href="../../js_of_ocaml.deriving/Deriving_Json_lexer/index.html">Deriving_Json_lexer</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>js_of_ocaml<ul><li><a href="cSS.ml.html">cSS.ml</a></li><li><a href="dom.ml.html">dom.ml</a></li><li><a href="dom_events.ml.html">dom_events.ml</a></li><li><a href="dom_html.ml.html">dom_html.ml</a></li><li><a href="dom_svg.ml.html">dom_svg.ml</a></li><li><a href="eventSource.ml.html">eventSource.ml</a></li><li><a href="file.ml.html">file.ml</a></li><li><a href="firebug.ml.html">firebug.ml</a></li><li><a href="form.ml.html">form.ml</a></li><li><a href="geolocation.ml.html">geolocation.ml</a></li><li><a href="import.ml.html">import.ml</a></li><li><a href="intersectionObserver.ml.html">intersectionObserver.ml</a></li><li><a href="intl.ml.html">intl.ml</a></li><li><a href="js.ml.html">js.ml</a></li><li><a href="js_of_ocaml.ml.html">js_of_ocaml.ml</a></li><li><a href="js_of_ocaml__.ml.html">js_of_ocaml__.ml</a></li><li><a href="json.ml.html">json.ml</a></li><li><a href="jstable.ml.html">jstable.ml</a></li><li><a href="lib_version.ml.html">lib_version.ml</a></li><li><a href="#" class="current_unit">mutationObserver.ml</a></li><li><a href="performanceObserver.ml.html">performanceObserver.ml</a></li><li><a href="regexp.ml.html">regexp.ml</a></li><li><a href="resizeObserver.ml.html">resizeObserver.ml</a></li><li><a href="sys_js.ml.html">sys_js.ml</a></li><li><a href="typed_array.ml.html">typed_array.ml</a></li><li><a href="url.ml.html">url.ml</a></li><li><a href="webGL.ml.html">webGL.ml</a></li><li><a href="webSockets.ml.html">webSockets.ml</a></li><li><a href="worker.ml.html">worker.ml</a></li><li><a href="xmlHttpRequest.ml.html">xmlHttpRequest.ml</a></li></ul></li><li>js_of_ocaml.deriving<ul><li><a href="../js_of_ocaml.deriving/deriving_Json.ml.html">deriving_Json.ml</a></li><li><a href="../js_of_ocaml.deriving/deriving_Json_import.ml.html">deriving_Json_import.ml</a></li><li><a href="../js_of_ocaml.deriving/deriving_Json_lexer.ml.html">deriving_Json_lexer.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+</code><code class="source_code"><span><span class="COMMENT">(* Js_of_ocaml library
+ * http://www.ocsigen.org/js_of_ocaml/
+ * Copyright (C) 2015 Stéphane Legrand
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, with linking exception;
+ * either version 2.1 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *)</span><span class="EOL">
+</span><span class="OPEN">open</span><span class="BANG">!</span> <a href="import.ml.html"><span class="UIDENT">Import</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="CLASS">class</span> <span class="TYPE">type</span> <span id="class-type-mutationObserverInit"><span class="LIDENT">mutationObserverInit</span></span> <span class="EQUAL">=</span> <span class="OBJECT">object</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">childList</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-writeonly_prop"><span class="LIDENT">bool</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">writeonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">attributes</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-writeonly_prop"><span class="LIDENT">bool</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">writeonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">characterData</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-writeonly_prop"><span class="LIDENT">bool</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">writeonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">subtree</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-writeonly_prop"><span class="LIDENT">bool</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">writeonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">attributeOldValue</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-writeonly_prop"><span class="LIDENT">bool</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">writeonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">characterDataOldValue</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-writeonly_prop"><span class="LIDENT">bool</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">writeonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">attributeFilter</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-writeonly_prop"><a href="js.ml.html#module-Js.type-t"><a href="js.ml.html#class-type-js_array"><a href="js.ml.html#module-Js.type-t"><a href="js.ml.html#module-Js.class-type-js_string"><span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">js_string</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">js_array</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">writeonly_prop</span></a><span class="EOL">
+</span><span class="END">end</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="CLASS">class</span> <span class="TYPE">type</span> <span id="class-type-mutationRecord"><span class="LIDENT">mutationRecord</span></span> <span class="EQUAL">=</span> <span class="OBJECT">object</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">_type</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-readonly_prop"><a href="js.ml.html#module-Js.type-t"><a href="js.ml.html#module-Js.class-type-js_string"><span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">js_string</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">readonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">target</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-readonly_prop"><a href="js.ml.html#module-Js.type-t"><a href="dom.ml.html#class-type-node"><span class="UIDENT">Dom</span><span class="DOT">.</span><span class="LIDENT">node</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">readonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">addedNodes</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-readonly_prop"><a href="js.ml.html#module-Js.type-t"><a href="dom.ml.html#class-type-nodeList"><a href="dom.ml.html#class-type-node"><span class="UIDENT">Dom</span><span class="DOT">.</span><span class="LIDENT">node</span></a> <span class="UIDENT">Dom</span><span class="DOT">.</span><span class="LIDENT">nodeList</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">readonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">removedNodes</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-readonly_prop"><a href="js.ml.html#module-Js.type-t"><a href="dom.ml.html#class-type-nodeList"><a href="dom.ml.html#class-type-node"><span class="UIDENT">Dom</span><span class="DOT">.</span><span class="LIDENT">node</span></a> <span class="UIDENT">Dom</span><span class="DOT">.</span><span class="LIDENT">nodeList</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">readonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">previousSibling</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-readonly_prop"><a href="js.ml.html#module-Js.type-opt"><a href="js.ml.html#module-Js.type-t"><a href="dom.ml.html#class-type-node"><span class="UIDENT">Dom</span><span class="DOT">.</span><span class="LIDENT">node</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">opt</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">readonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">nextSibling</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-readonly_prop"><a href="js.ml.html#module-Js.type-opt"><a href="js.ml.html#module-Js.type-t"><a href="dom.ml.html#class-type-node"><span class="UIDENT">Dom</span><span class="DOT">.</span><span class="LIDENT">node</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">opt</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">readonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">attributeName</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-readonly_prop"><a href="js.ml.html#module-Js.type-opt"><a href="js.ml.html#module-Js.type-t"><a href="js.ml.html#module-Js.class-type-js_string"><span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">js_string</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">opt</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">readonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">attributeNamespace</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-readonly_prop"><a href="js.ml.html#module-Js.type-opt"><a href="js.ml.html#module-Js.type-t"><a href="js.ml.html#module-Js.class-type-js_string"><span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">js_string</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">opt</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">readonly_prop</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">oldValue</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-readonly_prop"><a href="js.ml.html#module-Js.type-opt"><a href="js.ml.html#module-Js.type-t"><a href="js.ml.html#module-Js.class-type-js_string"><span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">js_string</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">opt</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">readonly_prop</span></a><span class="EOL">
+</span><span class="END">end</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="CLASS">class</span> <span class="TYPE">type</span> <span id="class-type-mutationObserver"><span class="LIDENT">mutationObserver</span></span> <span class="EQUAL">=</span> <span class="OBJECT">object</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">observe</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-t"><span class="HASH">#</span><span class="UIDENT">Dom</span><span class="DOT">.</span><span class="LIDENT">node</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="js.ml.html#module-Js.type-t"><span class="LIDENT">mutationObserverInit</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="js.ml.html#module-Js.type-meth"><span class="LIDENT">unit</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">meth</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">disconnect</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-meth"><span class="LIDENT">unit</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">meth</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="METHOD">method</span> <span class="LIDENT">takeRecords</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-meth"><a href="js.ml.html#module-Js.type-t"><a href="js.ml.html#class-type-js_array"><a href="js.ml.html#module-Js.type-t"><span class="LIDENT">mutationRecord</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">js_array</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">meth</span></a><span class="EOL">
+</span><span class="END">end</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-empty_mutation_observer_init"><span class="LIDENT">empty_mutation_observer_init</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-t"><span class="LIDENT">mutationObserverInit</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span> <a href="js.ml.html#module-Js.module-Unsafe.val-obj"><span class="UIDENT">Js</span><span class="DOT">.</span><span class="UIDENT">Unsafe</span><span class="DOT">.</span><span class="LIDENT">obj</span></a> <span class="LBRACKETBAR">[|</span><span class="BARRBRACKET">|]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-{mutationObserver}1/shadowed/(js_of_ocaml-src-js_of_ocaml-mutationObserver.ml)"><span class="LIDENT">mutationObserver</span></span> <span class="EQUAL">=</span> <a href="js.ml.html#module-Js.module-Unsafe.val-global"><span class="UIDENT">Js</span><span class="DOT">.</span><span class="UIDENT">Unsafe</span><span class="DOT">.</span><span class="LIDENT">global</span></a><span class="HASHOP">##.</span><span class="LIDENT">_MutationObserver</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-is_supported"><span class="LIDENT">is_supported</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="js.ml.html#module-Js.module-Optdef.val-test"><span class="UIDENT">Js</span><span class="DOT">.</span><span class="UIDENT">Optdef</span><span class="DOT">.</span><span class="LIDENT">test</span></a> <span class="LIDENT">mutationObserver</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-mutationObserver"><span class="LIDENT">mutationObserver</span></span> <span class="COLON">:</span><span class="EOL">
+</span>    <a href="js.ml.html#module-Js.type-constr"><span class="LPAREN">(</span>   <a href="js.ml.html#module-Js.type-callback"><span class="LPAREN">(</span><a href="js.ml.html#module-Js.type-t"><a href="js.ml.html#class-type-js_array"><a href="js.ml.html#module-Js.type-t"><span class="LIDENT">mutationRecord</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">js_array</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="js.ml.html#module-Js.type-t"><span class="LIDENT">mutationObserver</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span><span class="RPAREN">)</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">callback</span></a><span class="EOL">
+</span>     <span class="MINUSGREATER">-&gt;</span> <a href="js.ml.html#module-Js.type-t"><span class="LIDENT">mutationObserver</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">constr</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LIDENT">mutationObserver</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-observe"><span class="LIDENT">observe</span></span><span class="EOL">
+</span>    <span class="TILDE">~</span><span class="LPAREN">(</span><span id="local_node_1"><span class="LIDENT">node</span></span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-t"><span class="HASH">#</span><span class="UIDENT">Dom</span><span class="DOT">.</span><span class="LIDENT">node</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="TILDE">~</span><span class="LPAREN">(</span><span id="local_f_2"><span class="LIDENT">f</span></span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-t"><a href="js.ml.html#class-type-js_array"><a href="js.ml.html#module-Js.type-t"><span class="LIDENT">mutationRecord</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">js_array</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="js.ml.html#module-Js.type-t"><span class="LIDENT">mutationObserver</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_child_list_3"><span class="LIDENT">child_list</span></span> <span class="COLON">:</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_attributes_4"><span class="LIDENT">attributes</span></span> <span class="COLON">:</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_character_data_5"><span class="LIDENT">character_data</span></span> <span class="COLON">:</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_subtree_6"><span class="LIDENT">subtree</span></span> <span class="COLON">:</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_attribute_old_value_7"><span class="LIDENT">attribute_old_value</span></span> <span class="COLON">:</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_character_data_old_value_8"><span class="LIDENT">character_data_old_value</span></span> <span class="COLON">:</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_attribute_filter_9"><span class="LIDENT">attribute_filter</span></span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-t"><a href="js.ml.html#module-Js.class-type-js_string"><span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">js_string</span></a> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">list</span> <span class="LIDENT">option</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="COLON">:</span> <a href="js.ml.html#module-Js.type-t"><span class="LIDENT">mutationObserver</span> <span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_opt_iter_10"><span class="LIDENT">opt_iter</span></span> <span id="local_x_11"><span class="LIDENT">x</span></span> <span id="local_f_12"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="#local_x_11"><span class="LIDENT">x</span></a> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_x_13"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_f_12"><span class="LIDENT">f</span></a> <a href="#local_x_13"><span class="LIDENT">x</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_obs_14"><span class="LIDENT">obs</span></span> <span class="EQUAL">=</span> <span class="NEW">new</span><span class="PERCENT">%</span><span class="LIDENT">js</span> <span class="LIDENT">mutationObserver</span> <span class="LPAREN">(</span><a href="js.ml.html#module-Js.val-wrap_callback"><span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">wrap_callback</span></a> <a href="#local_f_2"><span class="LIDENT">f</span></a><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_cfg_15"><span class="LIDENT">cfg</span></span> <span class="EQUAL">=</span> <span class="LIDENT">empty_mutation_observer_init</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="#local_opt_iter_10"><span class="LIDENT">opt_iter</span></a> <a href="#local_child_list_3"><span class="LIDENT">child_list</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_v_16"><span class="LIDENT">v</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_cfg_15"><span class="LIDENT">cfg</span></a><span class="HASHOP">##.</span><span class="LIDENT">childList</span> <span class="COLONEQUAL">:=</span> <a href="#local_v_16"><span class="LIDENT">v</span></a><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="#local_opt_iter_10"><span class="LIDENT">opt_iter</span></a> <a href="#local_attributes_4"><span class="LIDENT">attributes</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_v_17"><span class="LIDENT">v</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_cfg_15"><span class="LIDENT">cfg</span></a><span class="HASHOP">##.</span><span class="LIDENT">attributes</span> <span class="COLONEQUAL">:=</span> <a href="#local_v_17"><span class="LIDENT">v</span></a><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="#local_opt_iter_10"><span class="LIDENT">opt_iter</span></a> <a href="#local_character_data_5"><span class="LIDENT">character_data</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_v_18"><span class="LIDENT">v</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_cfg_15"><span class="LIDENT">cfg</span></a><span class="HASHOP">##.</span><span class="LIDENT">characterData</span> <span class="COLONEQUAL">:=</span> <a href="#local_v_18"><span class="LIDENT">v</span></a><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="#local_opt_iter_10"><span class="LIDENT">opt_iter</span></a> <a href="#local_subtree_6"><span class="LIDENT">subtree</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_v_19"><span class="LIDENT">v</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_cfg_15"><span class="LIDENT">cfg</span></a><span class="HASHOP">##.</span><span class="LIDENT">subtree</span> <span class="COLONEQUAL">:=</span> <a href="#local_v_19"><span class="LIDENT">v</span></a><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="#local_opt_iter_10"><span class="LIDENT">opt_iter</span></a> <a href="#local_attribute_old_value_7"><span class="LIDENT">attribute_old_value</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_v_20"><span class="LIDENT">v</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_cfg_15"><span class="LIDENT">cfg</span></a><span class="HASHOP">##.</span><span class="LIDENT">attributeOldValue</span> <span class="COLONEQUAL">:=</span> <a href="#local_v_20"><span class="LIDENT">v</span></a><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#local_opt_iter_10"><span class="LIDENT">opt_iter</span></a> <a href="#local_character_data_old_value_8"><span class="LIDENT">character_data_old_value</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_v_21"><span class="LIDENT">v</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_cfg_15"><span class="LIDENT">cfg</span></a><span class="HASHOP">##.</span><span class="LIDENT">characterDataOldValue</span> <span class="COLONEQUAL">:=</span> <a href="#local_v_21"><span class="LIDENT">v</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#local_opt_iter_10"><span class="LIDENT">opt_iter</span></a> <a href="#local_attribute_filter_9"><span class="LIDENT">attribute_filter</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_l_22"><span class="LIDENT">l</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <a href="#local_cfg_15"><span class="LIDENT">cfg</span></a><span class="HASHOP">##.</span><span class="LIDENT">attributeFilter</span> <span class="COLONEQUAL">:=</span> <a href="js.ml.html#val-array"><span class="UIDENT">Js</span><span class="DOT">.</span><span class="LIDENT">array</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/array.ml.html#val-of_list"><span class="UIDENT">Array</span><span class="DOT">.</span><span class="LIDENT">of_list</span></a> <a href="#local_l_22"><span class="LIDENT">l</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="#local_obs_14"><span class="LIDENT">obs</span></a><span class="HASHOP">##</span><span class="LIDENT">observe</span> <a href="#local_node_1"><span class="LIDENT">node</span></a> <a href="#local_cfg_15"><span class="LIDENT">cfg</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <a href="#local_obs_14"><span class="LIDENT">obs</span></a><span class="EOL">
+</span></span></code></pre></body></html>

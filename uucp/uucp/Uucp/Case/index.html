@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Case (uucp.uucp.Uucp.Case)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../../../../';
+let search_urls = ['../../../sherlodoc_db.js','../../../../sherlodoc.js'];
+</script><script src="../../../../odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../../../index.html">🏠</a> &#x00BB; <a href="../../../index.html">Uucp  <span class="version">v16.0.0</span></a> &#x00BB; Library <code>uucp</code> &#x00BB; <a href="../index.html">Uucp</a> &#x00BB; Case</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Type '/' to search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><h1>Module <code><span>Uucp.Case</span></code></h1><p>Case properties, mappings and foldings.</p><p>These properties can implement Unicode's default case detection, case conversion and caseless equality over Unicode text, see the <a href="#caseexamples" title="caseexamples">examples</a>.</p><p><b>References.</b></p><ul><li><a href="http://unicode.org/faq/casemap_charprop.html#casemap">The Unicode case mapping FAQ.</a></li><li><a href="http://www.unicode.org/charts/case/">The Unicode case mapping charts.</a></li></ul></header><div class="odoc-tocs"><nav class="odoc-toc odoc-local-toc"><ul><li><a href="#caseprops">Case properties</a></li><li><a href="#casemapfold">Case mappings and foldings</a></li><li><a href="#caseexamples">Examples</a><ul><li><a href="#caseconversion">Default case conversion on UTF-8 strings</a></li><li><a href="#caselesseq">Default caseless matching (equality) on UTF-8 strings</a></li></ul></li></ul></nav><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../../index.html">Uucp  <span class="version">v16.0.0</span></a><ul><li><a href="../../../unicode.html">Unicode</a></li><li>Library <code>uucp</code><ul><li><a href="../index.html">Uucp</a><ul><li><a href="../Age/index.html">Age</a></li><li><a href="../Alpha/index.html">Alpha</a></li><li><a href="../Block/index.html">Block</a></li><li><a href="../Break/index.html">Break</a></li><li><a href="#" class="current_unit">Case</a><ul><li><a href="Map/index.html">Map</a></li><li><a href="Fold/index.html">Fold</a></li><li><a href="Nfkc_fold/index.html">Nfkc_fold</a></li><li><a href="Nfkc_simple_fold/index.html">Nfkc_simple_fold</a></li></ul></li><li><a href="../Cjk/index.html">Cjk</a></li><li><a href="../Emoji/index.html">Emoji</a></li><li><a href="../Func/index.html">Func</a></li><li><a href="../Gc/index.html">Gc</a></li><li><a href="../Gen/index.html">Gen</a></li><li><a href="../Hangul/index.html">Hangul</a></li><li><a href="../Id/index.html">Id</a></li><li><a href="../Name/index.html">Name</a></li><li><a href="../Num/index.html">Num</a></li><li><a href="../Script/index.html">Script</a></li><li><a href="../White/index.html">White</a></li></ul></li></ul></li></ul></li></ul></nav></div><div class="odoc-content"><h2 id="caseprops"><a href="#caseprops" class="anchor"></a>Case properties</h2><div class="odoc-spec"><div class="spec value anchored" id="val-is_lower"><a href="#val-is_lower" class="anchor"></a><code><span><span class="keyword">val</span> is_lower : <span><a href="../../../../ocaml-base-compiler/stdlib/Stdlib/Uchar/index.html#type-t">Uchar.t</a> <span class="arrow">&#45;&gt;</span></span> bool</span></code></div><div class="spec-doc"><p><code>is_lower u</code> is <code>true</code> iff <code>u</code> has the <a href="http://www.unicode.org/reports/tr44/#Lowercase">Lowercase</a> derived property.</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-is_upper"><a href="#val-is_upper" class="anchor"></a><code><span><span class="keyword">val</span> is_upper : <span><a href="../../../../ocaml-base-compiler/stdlib/Stdlib/Uchar/index.html#type-t">Uchar.t</a> <span class="arrow">&#45;&gt;</span></span> bool</span></code></div><div class="spec-doc"><p><code>is_upper u</code> is <code>true</code> iff <code>u</code> has the <a href="http://www.unicode.org/reports/tr44/#Uppercase">Uppercase</a> derived property.</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-is_cased"><a href="#val-is_cased" class="anchor"></a><code><span><span class="keyword">val</span> is_cased : <span><a href="../../../../ocaml-base-compiler/stdlib/Stdlib/Uchar/index.html#type-t">Uchar.t</a> <span class="arrow">&#45;&gt;</span></span> bool</span></code></div><div class="spec-doc"><p><code>is_cased u</code> is <code>true</code> iff <code>u</code> has the <a href="http://www.unicode.org/reports/tr44/#Cased">Cased</a> derived property.</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-is_case_ignorable"><a href="#val-is_case_ignorable" class="anchor"></a><code><span><span class="keyword">val</span> is_case_ignorable : <span><a href="../../../../ocaml-base-compiler/stdlib/Stdlib/Uchar/index.html#type-t">Uchar.t</a> <span class="arrow">&#45;&gt;</span></span> bool</span></code></div><div class="spec-doc"><p><code>is_case_ignorable</code> is <code>true</code> iff <code>u</code> has the <a href="http://www.unicode.org/reports/tr44/#Case_Ignorable">Case_Ignorable</a> derived property.</p></div></div><h2 id="casemapfold"><a href="#casemapfold" class="anchor"></a>Case mappings and foldings</h2><p>These character mapping functions return <code>`Self</code> whenever a character maps to itself.</p><div class="odoc-spec"><div class="spec module anchored" id="module-Map"><a href="#module-Map" class="anchor"></a><code><span><span class="keyword">module</span> <a href="Map/index.html">Map</a></span><span> : <span class="keyword">sig</span> ... <span class="keyword">end</span></span></code></div><div class="spec-doc"><p>Case mappings.</p></div></div><div class="odoc-spec"><div class="spec module anchored" id="module-Fold"><a href="#module-Fold" class="anchor"></a><code><span><span class="keyword">module</span> <a href="Fold/index.html">Fold</a></span><span> : <span class="keyword">sig</span> ... <span class="keyword">end</span></span></code></div><div class="spec-doc"><p>Case folding.</p></div></div><div class="odoc-spec"><div class="spec module anchored" id="module-Nfkc_fold"><a href="#module-Nfkc_fold" class="anchor"></a><code><span><span class="keyword">module</span> <a href="Nfkc_fold/index.html">Nfkc_fold</a></span><span> : <span class="keyword">sig</span> ... <span class="keyword">end</span></span></code></div><div class="spec-doc"><p>NFKC case folding.</p></div></div><div class="odoc-spec"><div class="spec module anchored" id="module-Nfkc_simple_fold"><a href="#module-Nfkc_simple_fold" class="anchor"></a><code><span><span class="keyword">module</span> <a href="Nfkc_simple_fold/index.html">Nfkc_simple_fold</a></span><span> : <span class="keyword">sig</span> ... <span class="keyword">end</span></span></code></div><div class="spec-doc"><p>NFKC simple case folding.</p></div></div><h2 id="caseexamples"><a href="#caseexamples" class="anchor"></a>Examples</h2><p>All these examples replace invalid UTF-8 decodes by an <a href="../../../../ocaml-base-compiler/stdlib/Stdlib/Uchar/index.html#val-rep"><code>Uchar.rep</code></a>.</p><h3 id="caseconversion"><a href="#caseconversion" class="anchor"></a>Default case conversion on UTF-8 strings</h3><p>The value <code>casemap_utf_8 cmap s</code> is the UTF-8 encoded string resulting from applying the character map <code>cmap</code> to every character of the UTF-8 encoded string <code>s</code>.</p><pre class="language-ocaml"><code>let cmap_utf_8 cmap s =
+  let rec loop buf s i max =
+    if i &gt; max then Buffer.contents buf else
+    let dec = String.get_utf_8_uchar s i in
+    let u = Uchar.utf_decode_uchar dec in
+    begin match cmap u with
+    | `Self -&gt; Buffer.add_utf_8_uchar buf u
+    | `Uchars us -&gt; List.iter (Buffer.add_utf_8_uchar buf) us
+    end;
+    loop buf s (i + Uchar.utf_decode_length dec) max
+  in
+  let buf = Buffer.create (String.length s * 2) in
+  loop buf s 0 (String.length s - 1)</code></pre><p>Using the function <code>cmap_utf_8</code>, Unicode's default case conversions can be implemented with:</p><pre class="language-ocaml"><code>let lowercase_utf_8 s = cmap_utf_8 Uucp.Case.Map.to_lower s
+let uppercase_utf_8 s = cmap_utf_8 Uucp.Case.Map.to_upper s</code></pre><p>However strictly speaking <code>lowercase_utf_8</code> is not conformant as it doesn't handle the context sensitive mapping of capital sigma U+03A3 to final sigma U+03C2.</p><p>Note that applying Unicode's default case algorithms to a normalized string does not preserve its normalization form.</p><h3 id="caselesseq"><a href="#caselesseq" class="anchor"></a>Default caseless matching (equality) on UTF-8 strings</h3><p>These examples use <code>Uunf</code> to normalize character sequences</p><p>Unicode canonical caseless matching (D145) is defined by normalizing to NFD, applying the Case_Folding mapping, normalizing again to NFD and test the result for binary equality:</p><pre class="language-ocaml"><code>let canonical_caseless_key s =
+  let buf = Buffer.create (String.length s * 3) in
+  let to_nfd_and_utf_8 =
+    let n = Uunf.create `NFD in
+    let rec add v = match Uunf.add n v with
+    | `Await | `End -&gt; ()
+    | `Uchar u -&gt; Buffer.add_utf_8_uchar buf u; add `Await
+    in
+    add
+  in
+  let add =
+    let n = Uunf.create `NFD in
+    let rec add v = match Uunf.add n v with
+    | `Await | `End -&gt; ()
+    | `Uchar u -&gt;
+        begin match Uucp.Case.Fold.fold u with
+        | `Self -&gt; to_nfd_and_utf_8 (`Uchar u)
+        | `Uchars us -&gt; List.iter (fun u -&gt; to_nfd_and_utf_8 (`Uchar u)) us
+        end;
+        add `Await
+    in
+    add
+  in
+  let rec loop buf s i max =
+    if i &gt; max then (add `End; to_nfd_and_utf_8 `End; Buffer.contents buf) else
+    let dec = String.get_utf_8_uchar s i in
+    add (`Uchar (Uchar.utf_decode_uchar dec));
+    loop buf s (i + Uchar.utf_decode_length dec) max
+  in
+  loop buf s 0 (String.length s - 1)
+
+let canonical_caseless_eq s0 s1 =
+  canonical_caseless_key s0 = canonical_caseless_key s1</code></pre><p>Unicode's caseless matching for identifiers (D147, see also <a href="http://www.unicode.org/reports/tr31/">UAX 31</a>) is defined by normalizing to NFD, applying the NFKC_Casefold mapping and test the result for binary equality:</p><pre class="language-ocaml"><code>let id_caseless_key s =
+  let rec add buf normalizer v = match Uunf.add normalizer v with
+  | `Await | `End -&gt; ()
+  | `Uchar u -&gt;
+      match Uucp.Case.Nfkc_fold.fold u with
+      | `Self -&gt; Buffer.add_utf_8_uchar buf u; add buf normalizer `Await
+      | `Uchars us -&gt;
+          List.iter (Buffer.add_utf_8_uchar buf) us; add buf normalizer `Await
+  in
+  let rec loop buf s i max normalizer =
+    if i &gt; max then (add buf normalizer `End; Buffer.contents buf) else
+    let dec = String.get_utf_8_uchar s i in
+    add buf normalizer (`Uchar (Uchar.utf_decode_uchar dec));
+    loop buf s (i + Uchar.utf_decode_length dec) max normalizer
+  in
+  let buf = Buffer.create (String.length s * 3) in
+  let normalizer = Uunf.create `NFD in
+  loop buf s 0 (String.length s - 1) normalizer
+
+let id_caseless_eq s0 s1 = id_caseless_key s0 = id_caseless_key s1</code></pre></div></body></html>

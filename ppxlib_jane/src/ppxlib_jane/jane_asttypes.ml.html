@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: jane_asttypes.ml (ppxlib_jane.src.ppxlib_jane)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ppxlib_jane</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ppxlib_jane &#x00BB; jane_asttypes.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>jane_asttypes.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">ppxlib_jane</a><ul><li>Library <code>ppxlib_jane</code><ul><li><a href="../../ppxlib_jane/Ppxlib_jane/index.html">Ppxlib_jane</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ppxlib_jane<ul><li><a href="ast_builder.ml.html">ast_builder.ml</a></li><li><a href="ast_builder_intf.ml.html">ast_builder_intf.ml</a></li><li><a href="#" class="current_unit">jane_asttypes.ml</a></li><li><a href="jane_syntax.ml.html">jane_syntax.ml</a></li><li><a href="jane_syntax_parsing.ml.html">jane_syntax_parsing.ml</a></li><li><a href="language_extension.ml.html">language_extension.ml</a></li><li><a href="language_extension_kernel.ml.html">language_extension_kernel.ml</a></li><li><a href="ppxlib_jane.ml.html">ppxlib_jane.ml</a></li><li><a href="ppxlib_jane__.ml.html">ppxlib_jane__.ml</a></li><li><a href="shadow_compiler_distribution.ml.html">shadow_compiler_distribution.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+</code><code class="source_code"><span><span class="COMMENT">(*_ This file is manually imported from the Jane Street version of the
+   OCaml compiler. Don't make changes directly to this file. *)</span><span class="EOL">
+</span><span class="LBRACKETATATAT">[@@@</span><span class="LIDENT">ocaml</span><span class="DOT">.</span><span class="LIDENT">warning</span> <span class="STRING">&quot;-missing-record-field-pattern&quot;</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="OPEN">open</span><span class="BANG">!</span> <a href="shadow_compiler_distribution.ml.html"><span class="UIDENT">Shadow_compiler_distribution</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                 OCaml                                  *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*                   Nick Roberts, Jane Street, New York                  *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*   Copyright 2023 Jane Street Group LLC                                 *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*   All rights reserved.  This file is distributed under the terms of    *)</span><span class="EOL">
+</span><span class="COMMENT">(*   the GNU Lesser General Public License version 2.1, with the          *)</span><span class="EOL">
+</span><span class="COMMENT">(*   special exception on linking described in the file LICENSE.          *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-const_jkind"><span class="TYPE">type</span> <span class="LIDENT">const_jkind</span> <span class="EQUAL">=</span> <span class="LIDENT">string</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-jkind_of_string"><span class="LIDENT">jkind_of_string</span></span> <span id="local_x_1"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_x_1"><span class="LIDENT">x</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-jkind_to_string"><span class="LIDENT">jkind_to_string</span></span> <span id="local_x_2"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_x_2"><span class="LIDENT">x</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-jkind_annotation"><span class="TYPE">type</span> <span class="LIDENT">jkind_annotation</span> <span class="EQUAL">=</span> <span class="LIDENT">const_jkind</span> <span class="UIDENT">Location</span><span class="DOT">.</span><span class="LIDENT">loc</span></span><span class="EOL">
+</span></span></code></pre></body></html>

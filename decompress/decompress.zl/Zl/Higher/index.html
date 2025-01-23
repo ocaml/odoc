@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Higher (decompress.decompress.zl.Zl.Higher)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../../../../';
+let search_urls = ['../../../sherlodoc_db.js','../../../../sherlodoc.js'];
+</script><script src="../../../../odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../../../index.html">🏠</a> &#x00BB; <a href="../../../index.html">decompress</a> &#x00BB; Library <code>decompress.zl</code> &#x00BB; <a href="../index.html">Zl</a> &#x00BB; Higher</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Type '/' to search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><h1>Module <code><span>Zl.Higher</span></code><a href="../../../src/decompress.zl/zl.ml.html#module-Higher" class="source_link">Source</a></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../../index.html">decompress</a><ul><li>Library <code>decompress.de</code><ul><li><a href="../../../decompress.de/De/index.html">De</a></li></ul></li><li>Library <code>decompress.gz</code><ul><li><a href="../../../decompress.gz/Gz/index.html">Gz</a></li></ul></li><li>Library <code>decompress.lz</code><ul><li><a href="../../../decompress.lz/Lz/index.html">Lz</a></li></ul></li><li>Library <code>decompress.lzo</code><ul><li><a href="../../../decompress.lzo/Lzo/index.html">Lzo</a></li></ul></li><li>Library <code>decompress.zl</code><ul><li><a href="../index.html">Zl</a><ul><li><a href="../Inf/index.html">Inf</a></li><li><a href="../Def/index.html">Def</a></li><li><a href="#" class="current_unit">Higher</a></li></ul></li></ul></li><li><a href="../../../src/index.html">Sources</a></li></ul></li></ul></nav></div><div class="odoc-content"><div class="odoc-spec"><div class="spec value anchored" id="val-compress"><a href="#val-compress" class="anchor"></a><a href="../../../src/decompress.zl/zl.ml.html#module-Higher.val-compress" class="source_link">Source</a><code><span><span class="keyword">val</span> compress : 
+  <span><span class="optlabel">?level</span>:int <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?dynamic</span>:bool <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">w</span>:<a href="../../../decompress.de/De/Lz77/index.html#type-window">De.Lz77.window</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">q</span>:<a href="../../../decompress.de/De/Queue/index.html#type-t">De.Queue.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">refill</span>:<span>(<span><a href="../index.html#type-bigstring">bigstring</a> <span class="arrow">&#45;&gt;</span></span> int)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">flush</span>:<span>(<span><a href="../index.html#type-bigstring">bigstring</a> <span class="arrow">&#45;&gt;</span></span> <span>int <span class="arrow">&#45;&gt;</span></span> unit)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../index.html#type-bigstring">bigstring</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../index.html#type-bigstring">bigstring</a> <span class="arrow">&#45;&gt;</span></span>
+  unit</span></code></div><div class="spec-doc"><p><code>compress ?level ?dynamic ~w ~q ~refill ~flush i o</code> is <code>Zlib.compress</code> (with <code>~header:true</code>) provided by <code>camlzip</code> package.</p><ul><li><code>w</code> is the window used by LZ77 compression algorithm.</li><li><code>q</code> is shared-queue between compression algorithm and DEFLATE encoder.</li><li><code>i</code> is input buffer.</li><li><code>o</code> is output buffer.</li></ul><p>When <code>compress</code> wants more input, it calls <code>refill</code> with <code>i</code>. The client returns how many bytes he wrote into <code>i</code>. If he returns 0, he signals end of input.</p><p>When <code>compress</code> has written output buffer, it calls <code>flush</code> with <code>o</code> and how many bytes it wrote. Bytes into <code>o</code> must be <b>copied</b> and they will be lost at the next call to <code>flush</code>.</p><p>A simple example of how to use such interface is:</p><pre class="language-ocaml"><code>let deflate_string ?(level= 4) str =
+  let i = De.bigstring_create De.io_buffer_size in
+  let o = De.bigstring_create De.io_buffer_size in
+  let w = De.Lz77.make_window ~bits:15 in
+  let q = De.Queue.create 0x1000 in
+  let r = Buffer.create 0x1000 in
+  let p = ref 0 in
+  let refill buf =
+    let len = min (String.length str - !p) De.io_buffer_size in
+    Bigstringaf.blit_from_string str ~src_off:!p buf ~dst_off:0 ~len ;
+    p := !p + len ; len in
+  let flush buf len =
+    let str = Bigstringaf.substring buf ~off:0 ~len in
+    Buffer.add_string r str in
+  Zl.Higher.compress ~level ~dynamic:true
+    ~w ~q ~refill ~flush i o ;
+  Buffer.contents r</code></pre><p>As <a href="../../../decompress.de/De/Higher/index.html#val-compress"><code>De.Higher.compress</code></a>, several choices was made in this code and <code>decompress</code> don't want to be responsible of them. It's why such function exists only as example when lengths of buffers (such as <code>i</code>, <code>o</code> or <code>q</code>) changes the speed/compression ratio/memory consumption.</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-uncompress"><a href="#val-uncompress" class="anchor"></a><a href="../../../src/decompress.zl/zl.ml.html#module-Higher.val-uncompress" class="source_link">Source</a><code><span><span class="keyword">val</span> uncompress : 
+  <span><span class="label">allocate</span>:<span>(<span>int <span class="arrow">&#45;&gt;</span></span> <a href="../index.html#type-window">window</a>)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">refill</span>:<span>(<span><a href="../index.html#type-bigstring">bigstring</a> <span class="arrow">&#45;&gt;</span></span> int)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">flush</span>:<span>(<span><a href="../index.html#type-bigstring">bigstring</a> <span class="arrow">&#45;&gt;</span></span> <span>int <span class="arrow">&#45;&gt;</span></span> unit)</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../index.html#type-bigstring">bigstring</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="../index.html#type-bigstring">bigstring</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span>(unit, <span>[&gt; <span>`Msg of string</span> ]</span>)</span> <a href="../../../../ocaml-base-compiler/stdlib/Stdlib/index.html#type-result">result</a></span></span></code></div><div class="spec-doc"><p><code>uncompress ~allocate ~refill ~flush i o</code> is <code>Zlib.uncompress</code> (with <code>~header:true</code>) provided by <code>camlzip</code> package.</p><ul><li><code>allocate</code> is the allocator of window used by LZ77 uncompression algorithm</li><li><code>i</code> is input buffer.</li><li><code>o</code> is output buffer.</li></ul><p>When <code>uncompress</code> wants more input, it calls <code>refill</code> with <code>i</code>. The client returns how many bytes he wrote into <code>i</code>. If he returns 0, he signals end of input.</p><p>When <code>uncompress</code> has written output buffer, it calls <code>flush</code> with <code>o</code> and how many bytes it wrote. Bytes into <code>o</code> must be <b>copied</b> and they will be lost at the next call to <code>flush</code>.</p><p>A simple example of how to use such interface is:</p><pre class="language-ocaml"><code>let inflate_string str =
+  let i = De.bigstring_create De.io_buffer_size in
+  let o = De.bigstring_create De.io_buffer_size in
+  let allocate bits = De.make_window ~bits in
+  let r = Buffer.create 0x1000 in
+  let p = ref 0 in
+  let refill buf =
+    let len = min (String.length str - !p) De.io_buffer_size in
+    Bigstringaf.blit_from_string str ~src_off:!p buf ~dst_off:0 ~len ;
+    p := !p + len ; len in
+  let flush buf len =
+    let str = Bigstringaf.substring buf ~off:0 ~len in
+    Buffer.add_string r str in
+  match Zl.Higher.uncompress ~allocate ~refill ~flush i o with
+  | Ok () -&gt; Ok (Buffer.contents r)
+  | Error _ as err -&gt; err</code></pre><p>As you can see, several allocations appear. As long as you want to uncompress several contents for example, you can re-use the same <i>window</i> instead of an allocation of one per uncompression. Then, the throughput is mostly limited by <code>i</code> and <code>o</code> (even bigger, even faster but it requires memories). <code>decompress</code> don't want to be responsible about these choices, it's why such function exists only as an example.</p></div></div></div></body></html>

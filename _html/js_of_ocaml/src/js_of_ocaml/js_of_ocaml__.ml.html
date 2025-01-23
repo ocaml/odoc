@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: js_of_ocaml__.ml (js_of_ocaml.src.js_of_ocaml)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">js_of_ocaml</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; js_of_ocaml &#x00BB; js_of_ocaml__.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>js_of_ocaml__.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">js_of_ocaml</a><ul><li>Library <code>js_of_ocaml</code><ul><li><a href="../../js_of_ocaml/Js_of_ocaml/index.html">Js_of_ocaml</a></li></ul></li><li>Library <code>js_of_ocaml.deriving</code><ul><li><a href="../../js_of_ocaml.deriving/Deriving_Json/index.html">Deriving_Json</a></li><li><a href="../../js_of_ocaml.deriving/Deriving_Json_import/index.html">Deriving_Json_import</a></li><li><a href="../../js_of_ocaml.deriving/Deriving_Json_lexer/index.html">Deriving_Json_lexer</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>js_of_ocaml<ul><li><a href="cSS.ml.html">cSS.ml</a></li><li><a href="dom.ml.html">dom.ml</a></li><li><a href="dom_events.ml.html">dom_events.ml</a></li><li><a href="dom_html.ml.html">dom_html.ml</a></li><li><a href="dom_svg.ml.html">dom_svg.ml</a></li><li><a href="eventSource.ml.html">eventSource.ml</a></li><li><a href="file.ml.html">file.ml</a></li><li><a href="firebug.ml.html">firebug.ml</a></li><li><a href="form.ml.html">form.ml</a></li><li><a href="geolocation.ml.html">geolocation.ml</a></li><li><a href="import.ml.html">import.ml</a></li><li><a href="intersectionObserver.ml.html">intersectionObserver.ml</a></li><li><a href="intl.ml.html">intl.ml</a></li><li><a href="js.ml.html">js.ml</a></li><li><a href="js_of_ocaml.ml.html">js_of_ocaml.ml</a></li><li><a href="#" class="current_unit">js_of_ocaml__.ml</a></li><li><a href="json.ml.html">json.ml</a></li><li><a href="jstable.ml.html">jstable.ml</a></li><li><a href="lib_version.ml.html">lib_version.ml</a></li><li><a href="mutationObserver.ml.html">mutationObserver.ml</a></li><li><a href="performanceObserver.ml.html">performanceObserver.ml</a></li><li><a href="regexp.ml.html">regexp.ml</a></li><li><a href="resizeObserver.ml.html">resizeObserver.ml</a></li><li><a href="sys_js.ml.html">sys_js.ml</a></li><li><a href="typed_array.ml.html">typed_array.ml</a></li><li><a href="url.ml.html">url.ml</a></li><li><a href="webGL.ml.html">webGL.ml</a></li><li><a href="webSockets.ml.html">webSockets.ml</a></li><li><a href="worker.ml.html">worker.ml</a></li><li><a href="xmlHttpRequest.ml.html">xmlHttpRequest.ml</a></li></ul></li><li>js_of_ocaml.deriving<ul><li><a href="../js_of_ocaml.deriving/deriving_Json.ml.html">deriving_Json.ml</a></li><li><a href="../js_of_ocaml.deriving/deriving_Json_import.ml.html">deriving_Json_import.ml</a></li><li><a href="../js_of_ocaml.deriving/deriving_Json_lexer.ml.html">deriving_Json_lexer.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+</code><code class="source_code"><span><span class="COMMENT">(* generated by dune *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.CSS *)</span><span class="EOL">
+</span><span id="module-CSS"><span class="MODULE">module</span> <span class="UIDENT">CSS</span> <span class="EQUAL">=</span> <a href="cSS.ml.html"><span class="UIDENT">Js_of_ocaml__CSS</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Dom *)</span><span class="EOL">
+</span><span id="module-Dom"><span class="MODULE">module</span> <span class="UIDENT">Dom</span> <span class="EQUAL">=</span> <a href="dom.ml.html"><span class="UIDENT">Js_of_ocaml__Dom</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Dom_events *)</span><span class="EOL">
+</span><span id="module-Dom_events"><span class="MODULE">module</span> <span class="UIDENT">Dom_events</span> <span class="EQUAL">=</span> <a href="dom_events.ml.html"><span class="UIDENT">Js_of_ocaml__Dom_events</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Dom_html *)</span><span class="EOL">
+</span><span id="module-Dom_html"><span class="MODULE">module</span> <span class="UIDENT">Dom_html</span> <span class="EQUAL">=</span> <a href="dom_html.ml.html"><span class="UIDENT">Js_of_ocaml__Dom_html</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Dom_svg *)</span><span class="EOL">
+</span><span id="module-Dom_svg"><span class="MODULE">module</span> <span class="UIDENT">Dom_svg</span> <span class="EQUAL">=</span> <a href="dom_svg.ml.html"><span class="UIDENT">Js_of_ocaml__Dom_svg</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.EventSource *)</span><span class="EOL">
+</span><span id="module-EventSource"><span class="MODULE">module</span> <span class="UIDENT">EventSource</span> <span class="EQUAL">=</span> <a href="eventSource.ml.html"><span class="UIDENT">Js_of_ocaml__EventSource</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.File *)</span><span class="EOL">
+</span><span id="module-File"><span class="MODULE">module</span> <span class="UIDENT">File</span> <span class="EQUAL">=</span> <a href="file.ml.html"><span class="UIDENT">Js_of_ocaml__File</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Firebug *)</span><span class="EOL">
+</span><span id="module-Firebug"><span class="MODULE">module</span> <span class="UIDENT">Firebug</span> <span class="EQUAL">=</span> <a href="firebug.ml.html"><span class="UIDENT">Js_of_ocaml__Firebug</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Form *)</span><span class="EOL">
+</span><span id="module-Form"><span class="MODULE">module</span> <span class="UIDENT">Form</span> <span class="EQUAL">=</span> <a href="form.ml.html"><span class="UIDENT">Js_of_ocaml__Form</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Geolocation *)</span><span class="EOL">
+</span><span id="module-Geolocation"><span class="MODULE">module</span> <span class="UIDENT">Geolocation</span> <span class="EQUAL">=</span> <a href="geolocation.ml.html"><span class="UIDENT">Js_of_ocaml__Geolocation</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Import *)</span><span class="EOL">
+</span><span id="module-Import"><span class="MODULE">module</span> <span class="UIDENT">Import</span> <span class="EQUAL">=</span> <a href="import.ml.html"><span class="UIDENT">Js_of_ocaml__Import</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.IntersectionObserver *)</span><span class="EOL">
+</span><span id="module-IntersectionObserver"><span class="MODULE">module</span> <span class="UIDENT">IntersectionObserver</span> <span class="EQUAL">=</span> <a href="intersectionObserver.ml.html"><span class="UIDENT">Js_of_ocaml__IntersectionObserver</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Intl *)</span><span class="EOL">
+</span><span id="module-Intl"><span class="MODULE">module</span> <span class="UIDENT">Intl</span> <span class="EQUAL">=</span> <a href="intl.ml.html"><span class="UIDENT">Js_of_ocaml__Intl</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Js *)</span><span class="EOL">
+</span><span id="module-Js"><span class="MODULE">module</span> <span class="UIDENT">Js</span> <span class="EQUAL">=</span> <a href="js.ml.html"><span class="UIDENT">Js_of_ocaml__Js</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Json *)</span><span class="EOL">
+</span><span id="module-Json"><span class="MODULE">module</span> <span class="UIDENT">Json</span> <span class="EQUAL">=</span> <a href="json.ml.html"><span class="UIDENT">Js_of_ocaml__Json</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Jstable *)</span><span class="EOL">
+</span><span id="module-Jstable"><span class="MODULE">module</span> <span class="UIDENT">Jstable</span> <span class="EQUAL">=</span> <a href="jstable.ml.html"><span class="UIDENT">Js_of_ocaml__Jstable</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Lib_version *)</span><span class="EOL">
+</span><span id="module-Lib_version"><span class="MODULE">module</span> <span class="UIDENT">Lib_version</span> <span class="EQUAL">=</span> <a href="lib_version.ml.html"><span class="UIDENT">Js_of_ocaml__Lib_version</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.MutationObserver *)</span><span class="EOL">
+</span><span id="module-MutationObserver"><span class="MODULE">module</span> <span class="UIDENT">MutationObserver</span> <span class="EQUAL">=</span> <a href="mutationObserver.ml.html"><span class="UIDENT">Js_of_ocaml__MutationObserver</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.PerformanceObserver *)</span><span class="EOL">
+</span><span id="module-PerformanceObserver"><span class="MODULE">module</span> <span class="UIDENT">PerformanceObserver</span> <span class="EQUAL">=</span> <a href="performanceObserver.ml.html"><span class="UIDENT">Js_of_ocaml__PerformanceObserver</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Regexp *)</span><span class="EOL">
+</span><span id="module-Regexp"><span class="MODULE">module</span> <span class="UIDENT">Regexp</span> <span class="EQUAL">=</span> <a href="regexp.ml.html"><span class="UIDENT">Js_of_ocaml__Regexp</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.ResizeObserver *)</span><span class="EOL">
+</span><span id="module-ResizeObserver"><span class="MODULE">module</span> <span class="UIDENT">ResizeObserver</span> <span class="EQUAL">=</span> <a href="resizeObserver.ml.html"><span class="UIDENT">Js_of_ocaml__ResizeObserver</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Sys_js *)</span><span class="EOL">
+</span><span id="module-Sys_js"><span class="MODULE">module</span> <span class="UIDENT">Sys_js</span> <span class="EQUAL">=</span> <a href="sys_js.ml.html"><span class="UIDENT">Js_of_ocaml__Sys_js</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Typed_array *)</span><span class="EOL">
+</span><span id="module-Typed_array"><span class="MODULE">module</span> <span class="UIDENT">Typed_array</span> <span class="EQUAL">=</span> <a href="typed_array.ml.html"><span class="UIDENT">Js_of_ocaml__Typed_array</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Url *)</span><span class="EOL">
+</span><span id="module-Url"><span class="MODULE">module</span> <span class="UIDENT">Url</span> <span class="EQUAL">=</span> <a href="url.ml.html"><span class="UIDENT">Js_of_ocaml__Url</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.WebGL *)</span><span class="EOL">
+</span><span id="module-WebGL"><span class="MODULE">module</span> <span class="UIDENT">WebGL</span> <span class="EQUAL">=</span> <a href="webGL.ml.html"><span class="UIDENT">Js_of_ocaml__WebGL</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.WebSockets *)</span><span class="EOL">
+</span><span id="module-WebSockets"><span class="MODULE">module</span> <span class="UIDENT">WebSockets</span> <span class="EQUAL">=</span> <a href="webSockets.ml.html"><span class="UIDENT">Js_of_ocaml__WebSockets</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.Worker *)</span><span class="EOL">
+</span><span id="module-Worker"><span class="MODULE">module</span> <span class="UIDENT">Worker</span> <span class="EQUAL">=</span> <a href="worker.ml.html"><span class="UIDENT">Js_of_ocaml__Worker</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml.XmlHttpRequest *)</span><span class="EOL">
+</span><span id="module-XmlHttpRequest"><span class="MODULE">module</span> <span class="UIDENT">XmlHttpRequest</span> <span class="EQUAL">=</span> <a href="xmlHttpRequest.ml.html"><span class="UIDENT">Js_of_ocaml__XmlHttpRequest</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Js_of_ocaml__"><span class="MODULE">module</span> <span class="UIDENT">Js_of_ocaml__</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span> <span class="END">end</span><span class="EOL">
+</span><span class="LBRACKETATAT">[@@</span><span class="LIDENT">deprecated</span> <span class="STRING">&quot;this module is shadowed&quot;</span><span class="RBRACKET">]</span></span><span class="EOL">
+</span></span></code></pre></body></html>

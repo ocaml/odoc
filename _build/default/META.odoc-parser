@@ -1,0 +1,7 @@
+version = "dev"
+description = ""
+requires = "astring camlp-streams result"
+archive(byte) = "odoc_parser.cma"
+archive(native) = "odoc_parser.cmxa"
+plugin(byte) = "odoc_parser.cma"
+plugin(native) = "odoc_parser.cmxs"

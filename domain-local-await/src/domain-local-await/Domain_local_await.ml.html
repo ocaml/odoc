@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: Domain_local_await.ml (domain-local-await.src.domain-local-await)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">domain-local-await</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; domain-local-await &#x00BB; Domain_local_await.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>Domain_local_await.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">domain-local-await</a><ul><li>Library <code>domain-local-await</code><ul><li><a href="../../domain-local-await/Domain_local_await/index.html">Domain_local_await</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>domain-local-await<ul><li><a href="#" class="current_unit">Domain_local_await.ml</a></li><li><a href="Thread_intf.ml.html">Thread_intf.ml</a></li><li><a href="domain_local_await__.ml.html">domain_local_await__.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+</code><code class="source_code"><span><span id="type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_28"><span class="LIDENT">release</span> <span class="COLON">:</span> <span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span><span class="SEMI">;</span></span> <span id="def_34"><span class="LIDENT">await</span> <span class="COLON">:</span> <span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Default"><span class="MODULE">module</span> <span class="UIDENT">Default</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Default.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_31"><span class="LIDENT">mutex</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/mutex.ml.html#type-t"><span class="UIDENT">Mutex</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span> <span id="def_29"><span class="LIDENT">condition</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/condition.ml.html#type-t"><span class="UIDENT">Condition</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Default.val-init"><span class="LIDENT">init</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_t_1"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_mutex_2"><span class="LIDENT">mutex</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/mutex.ml.html#val-create"><span class="UIDENT">Mutex</span><span class="DOT">.</span><span class="LIDENT">create</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="AND">and</span> <span id="local_condition_3"><span class="LIDENT">condition</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/condition.ml.html#val-create"><span class="UIDENT">Condition</span><span class="DOT">.</span><span class="LIDENT">create</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LBRACE">{</span> <a href="#local_mutex_2"><span class="LIDENT">mutex</span></a><span class="SEMI">;</span> <a href="#local_condition_3"><span class="LIDENT">condition</span></a> <span class="RBRACE">}</span><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_released_4"><span class="LIDENT">released</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-ref"><span class="LIDENT">ref</span></a> <span class="FALSE">false</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_release_5"><span class="LIDENT">release</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>        <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-not"><span class="LIDENT">not</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><a href="#local_released_4"><span class="LIDENT">released</span></a> <span class="THEN">then</span> <span class="BEGIN">begin</span><span class="EOL">
+</span>          <a href="../../../ocaml-base-compiler/src/stdlib/mutex.ml.html#val-lock"><span class="UIDENT">Mutex</span><span class="DOT">.</span><span class="LIDENT">lock</span></a> <a href="#local_t_1"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">mutex</span><span class="SEMI">;</span><span class="EOL">
+</span>          <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-not"><span class="LIDENT">not</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><a href="#local_released_4"><span class="LIDENT">released</span></a> <span class="THEN">then</span> <span class="BEGIN">begin</span><span class="EOL">
+</span>            <a href="#local_released_4"><span class="LIDENT">released</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(:=)"><span class="COLONEQUAL">:=</span></a> <span class="TRUE">true</span><span class="SEMI">;</span><span class="EOL">
+</span>            <a href="../../../ocaml-base-compiler/src/stdlib/mutex.ml.html#val-unlock"><span class="UIDENT">Mutex</span><span class="DOT">.</span><span class="LIDENT">unlock</span></a> <a href="#local_t_1"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">mutex</span><span class="SEMI">;</span><span class="EOL">
+</span>            <a href="../../../ocaml-base-compiler/src/stdlib/condition.ml.html#val-broadcast"><span class="UIDENT">Condition</span><span class="DOT">.</span><span class="LIDENT">broadcast</span></a> <a href="#local_t_1"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">condition</span><span class="EOL">
+</span>          <span class="END">end</span><span class="EOL">
+</span>          <span class="ELSE">else</span> <a href="../../../ocaml-base-compiler/src/stdlib/mutex.ml.html#val-unlock"><span class="UIDENT">Mutex</span><span class="DOT">.</span><span class="LIDENT">unlock</span></a> <a href="#local_t_1"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">mutex</span><span class="EOL">
+</span>        <span class="END">end</span><span class="EOL">
+</span>      <span class="AND">and</span> <span id="local_await_6"><span class="LIDENT">await</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>        <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-not"><span class="LIDENT">not</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><a href="#local_released_4"><span class="LIDENT">released</span></a> <span class="THEN">then</span> <span class="BEGIN">begin</span><span class="EOL">
+</span>          <a href="../../../ocaml-base-compiler/src/stdlib/mutex.ml.html#val-lock"><span class="UIDENT">Mutex</span><span class="DOT">.</span><span class="LIDENT">lock</span></a> <a href="#local_t_1"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">mutex</span><span class="SEMI">;</span><span class="EOL">
+</span>          <span class="MATCH">match</span><span class="EOL">
+</span>            <span class="WHILE">while</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-not"><span class="LIDENT">not</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><a href="#local_released_4"><span class="LIDENT">released</span></a> <span class="DO">do</span><span class="EOL">
+</span>              <span class="COMMENT">(* NOTE: [Condition.wait] may raise an asynchronous exception. *)</span><span class="EOL">
+</span>              <a href="../../../ocaml-base-compiler/src/stdlib/condition.ml.html#val-wait"><span class="UIDENT">Condition</span><span class="DOT">.</span><span class="LIDENT">wait</span></a> <a href="#local_t_1"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">condition</span> <a href="#local_t_1"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">mutex</span><span class="EOL">
+</span>            <span class="DONE">done</span><span class="EOL">
+</span>          <span class="WITH">with</span><span class="EOL">
+</span>          <span class="BAR">|</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/mutex.ml.html#val-unlock"><span class="UIDENT">Mutex</span><span class="DOT">.</span><span class="LIDENT">unlock</span></a> <a href="#local_t_1"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">mutex</span><span class="EOL">
+</span>          <span class="BAR">|</span> <span class="EXCEPTION">exception</span> <span id="local_exn_7"><span class="LIDENT">exn</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>              <a href="../../../ocaml-base-compiler/src/stdlib/mutex.ml.html#val-unlock"><span class="UIDENT">Mutex</span><span class="DOT">.</span><span class="LIDENT">unlock</span></a> <a href="#local_t_1"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">mutex</span><span class="SEMI">;</span><span class="EOL">
+</span>              <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <a href="#local_exn_7"><span class="LIDENT">exn</span></a><span class="EOL">
+</span>        <span class="END">end</span><span class="EOL">
+</span>      <span class="IN">in</span><span class="EOL">
+</span>      <span class="LBRACE">{</span> <a href="#local_release_5"><span class="LIDENT">release</span></a><span class="SEMI">;</span> <a href="#local_await_6"><span class="LIDENT">await</span></a> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="INCLUDE">include</span> <a href="Thread_intf.ml.html"><span class="UIDENT">Thread_intf</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-config"><span class="TYPE">type</span> <span class="LIDENT">config</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span id="type-config.constructor-Per_domain"><span class="BAR">|</span> <span class="UIDENT">Per_domain</span> <span class="COLON">:</span> <span class="LBRACE">{</span> <span id="def_33"><span class="MUTABLE">mutable</span> <span class="LIDENT">prepare_for_await</span> <span class="COLON">:</span> <span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span></span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">config</span></span><span class="EOL">
+</span>  <span id="type-config.constructor-Per_thread"><span class="BAR">|</span> <span class="UIDENT">Per_thread</span> <span class="COLON">:</span> <span class="LBRACE">{</span><span class="EOL">
+</span>      <span id="def_30"><span class="MUTABLE">mutable</span> <span class="LIDENT">prepare_for_await</span> <span class="COLON">:</span> <span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_32"><span class="LIDENT">self</span> <span class="COLON">:</span> <span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">handle</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_35"><span class="LIDENT">id</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">handle</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">int</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_36"><span class="LIDENT">id_to_prepare</span> <span class="COLON">:</span> <a href="../../../thread-table/src/thread-table/thread_table.ml.html#type-t"><span class="LPAREN">(</span><span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span><span class="RPAREN">)</span> <span class="UIDENT">Thread_table</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span class="RBRACE">}</span><span class="EOL">
+</span>      <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">config</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-default_init"><span class="LIDENT">default_init</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-ref"><span class="LIDENT">ref</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-failwith"><span class="failwith">failwith</span></a> <span class="STRING">&quot;unimplemented&quot;</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-default"><span class="LIDENT">default</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><span class="LIDENT">default_init</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-key"><span class="LIDENT">key</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="../../../ocaml-base-compiler/src/stdlib/domain.ml.html#module-DLS.val-new_key"><span class="UIDENT">Domain</span><span class="DOT">.</span><span class="UIDENT">DLS</span><span class="DOT">.</span><span class="LIDENT">new_key</span></a> <span class="INFIXOP1">@@</span> <span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Per_domain</span> <span class="LBRACE">{</span> <span class="LIDENT">prepare_for_await</span> <span class="EQUAL">=</span> <span class="LIDENT">default</span> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* Below we use [@poll error] and [@inline never] to ensure that there are no
+   safe-points where thread switches might occur during critical section. *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span><span class="LBRACKETAT">[@</span><span class="LIDENT">poll</span> <span class="LIDENT">error</span><span class="RBRACKET">]</span> <span class="LBRACKETAT">[@</span><span class="LIDENT">inline</span> <span class="LIDENT">never</span><span class="RBRACKET">]</span> <span id="val-update_prepare_atomically"><span class="LIDENT">update_prepare_atomically</span></span> <span id="local_state_8"><span class="LIDENT">state</span></span><span class="EOL">
+</span>    <span id="local_prepare_for_await_9"><span class="LIDENT">prepare_for_await</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_state_8"><span class="LIDENT">state</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Per_domain</span> <span id="local_r_10"><span class="LIDENT">r</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_current_11"><span class="LIDENT">current</span></span> <span class="EQUAL">=</span> <a href="#local_r_10"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">prepare_for_await</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="#local_current_11"><span class="LIDENT">current</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(==)"><span class="INFIXOP0">==</span></a> <span class="LIDENT">default</span> <span class="THEN">then</span> <span class="BEGIN">begin</span><span class="EOL">
+</span>        <a href="#local_r_10"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">prepare_for_await</span> <span class="LESSMINUS">&lt;-</span> <a href="#local_prepare_for_await_9"><span class="LIDENT">prepare_for_await</span></a><span class="SEMI">;</span><span class="EOL">
+</span>        <a href="#local_prepare_for_await_9"><span class="LIDENT">prepare_for_await</span></a><span class="EOL">
+</span>      <span class="END">end</span><span class="EOL">
+</span>      <span class="ELSE">else</span> <a href="#local_current_11"><span class="LIDENT">current</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Per_thread</span> <span id="local_r_12"><span class="LIDENT">r</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_current_13"><span class="LIDENT">current</span></span> <span class="EQUAL">=</span> <a href="#local_r_12"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">prepare_for_await</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="#local_current_13"><span class="LIDENT">current</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(==)"><span class="INFIXOP0">==</span></a> <span class="LIDENT">default</span> <span class="THEN">then</span> <span class="BEGIN">begin</span><span class="EOL">
+</span>        <a href="#local_r_12"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">prepare_for_await</span> <span class="LESSMINUS">&lt;-</span> <a href="#local_prepare_for_await_9"><span class="LIDENT">prepare_for_await</span></a><span class="SEMI">;</span><span class="EOL">
+</span>        <a href="#local_prepare_for_await_9"><span class="LIDENT">prepare_for_await</span></a><span class="EOL">
+</span>      <span class="END">end</span><span class="EOL">
+</span>      <span class="ELSE">else</span> <a href="#local_current_13"><span class="LIDENT">current</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LIDENT">default_init</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(:=)"><span class="COLONEQUAL">:=</span></a><span class="EOL">
+</span>    <span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_prepare_for_await_14"><span class="LIDENT">prepare_for_await</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Default</span><span class="DOT">.</span><span class="LIDENT">init</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_prepare_for_await_15"><span class="LIDENT">prepare_for_await</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>        <span class="LIDENT">update_prepare_atomically</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/domain.ml.html#module-DLS.val-get"><span class="UIDENT">Domain</span><span class="DOT">.</span><span class="UIDENT">DLS</span><span class="DOT">.</span><span class="LIDENT">get</span></a> <span class="LIDENT">key</span><span class="RPAREN">)</span> <a href="#local_prepare_for_await_14"><span class="LIDENT">prepare_for_await</span></a><span class="EOL">
+</span>      <span class="IN">in</span><span class="EOL">
+</span>      <a href="#local_prepare_for_await_15"><span class="LIDENT">prepare_for_await</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-per_thread"><span class="LIDENT">per_thread</span></span> <span class="LPAREN">(</span><span class="MODULE">module</span> <span id="local_Thread_16"><span class="UIDENT">Thread</span></span> <span class="COLON">:</span> <span class="UIDENT">Thread</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/domain.ml.html#module-DLS.val-get"><span class="UIDENT">Domain</span><span class="DOT">.</span><span class="UIDENT">DLS</span><span class="DOT">.</span><span class="LIDENT">get</span></a> <span class="LIDENT">key</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Per_thread</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-failwith"><span class="failwith">failwith</span></a> <span class="STRING">&quot;Domain_local_await: per_thread called twice on a single domain&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Per_domain</span> <span class="LBRACE">{</span> <span id="local_prepare_for_await_17"><span class="LIDENT">prepare_for_await</span></span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span class="OPEN">open</span> <a href="#local_Thread_16"><span class="UIDENT">Thread</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_id_to_prepare_18"><span class="LIDENT">id_to_prepare</span></span> <span class="EQUAL">=</span> <a href="../../../thread-table/src/thread-table/thread_table.ml.html#val-create"><span class="UIDENT">Thread_table</span><span class="DOT">.</span><span class="LIDENT">create</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>      <a href="../../../ocaml-base-compiler/src/stdlib/domain.ml.html#module-DLS.val-set"><span class="UIDENT">Domain</span><span class="DOT">.</span><span class="UIDENT">DLS</span><span class="DOT">.</span><span class="LIDENT">set</span></a> <span class="LIDENT">key</span><span class="EOL">
+</span>        <span class="LPAREN">(</span><span class="UIDENT">Per_thread</span> <span class="LBRACE">{</span> <a href="#local_prepare_for_await_17"><span class="LIDENT">prepare_for_await</span></a><span class="SEMI">;</span> <span class="LIDENT">self</span><span class="SEMI">;</span> <span class="LIDENT">id</span><span class="SEMI">;</span> <a href="#local_id_to_prepare_18"><span class="LIDENT">id_to_prepare</span></a> <span class="RBRACE">}</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-using"><span class="LIDENT">using</span></span> <span class="TILDE">~</span><span id="local_prepare_for_await_19"><span class="LIDENT">prepare_for_await</span></span> <span class="TILDE">~</span><span id="local_while_running_20"><span class="LIDENT">while_running</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/domain.ml.html#module-DLS.val-get"><span class="UIDENT">Domain</span><span class="DOT">.</span><span class="UIDENT">DLS</span><span class="DOT">.</span><span class="LIDENT">get</span></a> <span class="LIDENT">key</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Per_domain</span> <span id="local_r_21"><span class="LIDENT">r</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_previous_22"><span class="LIDENT">previous</span></span> <span class="EQUAL">=</span> <a href="#local_r_21"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">prepare_for_await</span> <span class="IN">in</span><span class="EOL">
+</span>      <a href="#local_r_21"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">prepare_for_await</span> <span class="LESSMINUS">&lt;-</span> <a href="#local_prepare_for_await_19"><span class="LIDENT">prepare_for_await</span></a><span class="SEMI">;</span><span class="EOL">
+</span>      <a href="../../../ocaml-base-compiler/src/stdlib/fun.ml.html#val-protect"><span class="UIDENT">Fun</span><span class="DOT">.</span><span class="LIDENT">protect</span></a> <a href="#local_while_running_20"><span class="LIDENT">while_running</span></a> <span class="LABEL">~finally:</span><span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>          <a href="#local_r_21"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">prepare_for_await</span> <span class="LESSMINUS">&lt;-</span> <a href="#local_previous_22"><span class="LIDENT">previous</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Per_thread</span> <span id="local_r_23"><span class="LIDENT">r</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_id_24"><span class="LIDENT">id</span></span> <span class="EQUAL">=</span> <a href="#local_r_23"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">id</span> <span class="LPAREN">(</span><a href="#local_r_23"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">self</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>      <a href="../../../thread-table/src/thread-table/thread_table.ml.html#val-add"><span class="UIDENT">Thread_table</span><span class="DOT">.</span><span class="LIDENT">add</span></a> <a href="#local_r_23"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">id_to_prepare</span> <a href="#local_id_24"><span class="LIDENT">id</span></a> <a href="#local_prepare_for_await_19"><span class="LIDENT">prepare_for_await</span></a><span class="SEMI">;</span><span class="EOL">
+</span>      <a href="../../../ocaml-base-compiler/src/stdlib/fun.ml.html#val-protect"><span class="UIDENT">Fun</span><span class="DOT">.</span><span class="LIDENT">protect</span></a> <a href="#local_while_running_20"><span class="LIDENT">while_running</span></a> <span class="LABEL">~finally:</span><span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>          <a href="../../../thread-table/src/thread-table/thread_table.ml.html#val-remove"><span class="UIDENT">Thread_table</span><span class="DOT">.</span><span class="LIDENT">remove</span></a> <a href="#local_r_23"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">id_to_prepare</span> <a href="#local_id_24"><span class="LIDENT">id</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-prepare_for_await"><span class="LIDENT">prepare_for_await</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/domain.ml.html#module-DLS.val-get"><span class="UIDENT">Domain</span><span class="DOT">.</span><span class="UIDENT">DLS</span><span class="DOT">.</span><span class="LIDENT">get</span></a> <span class="LIDENT">key</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Per_domain</span> <span id="local_r_25"><span class="LIDENT">r</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_r_25"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">prepare_for_await</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Per_thread</span> <span id="local_r_26"><span class="LIDENT">r</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="BEGIN">begin</span><span class="EOL">
+</span>      <span class="MATCH">match</span> <a href="../../../thread-table/src/thread-table/thread_table.ml.html#val-find"><span class="UIDENT">Thread_table</span><span class="DOT">.</span><span class="LIDENT">find</span></a> <a href="#local_r_26"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">id_to_prepare</span> <span class="LPAREN">(</span><a href="#local_r_26"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">id</span> <span class="LPAREN">(</span><a href="#local_r_26"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">self</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span id="local_prepare_27"><span class="LIDENT">prepare</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_prepare_27"><span class="LIDENT">prepare</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="EXCEPTION">exception</span> <span class="UIDENT">Not_found</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_r_26"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">prepare_for_await</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="END">end</span><span class="EOL">
+</span></span></code></pre></body></html>

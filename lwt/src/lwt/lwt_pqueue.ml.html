@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: lwt_pqueue.ml (lwt.src.lwt)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">Lwt</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; lwt &#x00BB; lwt_pqueue.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>lwt_pqueue.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">Lwt</a><ul><li>Library <code>lwt</code><ul><li><a href="../../lwt/Lwt/index.html">Lwt</a></li><li><a href="../../lwt/Lwt_condition/index.html">Lwt_condition</a></li><li><a href="../../lwt/Lwt_list/index.html">Lwt_list</a></li><li><a href="../../lwt/Lwt_mutex/index.html">Lwt_mutex</a></li><li><a href="../../lwt/Lwt_mvar/index.html">Lwt_mvar</a></li><li><a href="../../lwt/Lwt_pool/index.html">Lwt_pool</a></li><li><a href="../../lwt/Lwt_pqueue/index.html">Lwt_pqueue</a></li><li><a href="../../lwt/Lwt_result/index.html">Lwt_result</a></li><li><a href="../../lwt/Lwt_seq/index.html">Lwt_seq</a></li><li><a href="../../lwt/Lwt_sequence/index.html">Lwt_sequence</a></li><li><a href="../../lwt/Lwt_stream/index.html">Lwt_stream</a></li><li><a href="../../lwt/Lwt_switch/index.html">Lwt_switch</a></li></ul></li><li>Library <code>lwt.unix</code><ul><li><a href="../../lwt.unix/Lwt_bytes/index.html">Lwt_bytes</a></li><li><a href="../../lwt.unix/Lwt_config/index.html">Lwt_config</a></li><li><a href="../../lwt.unix/Lwt_engine/index.html">Lwt_engine</a></li><li><a href="../../lwt.unix/Lwt_features/index.html">Lwt_features</a></li><li><a href="../../lwt.unix/Lwt_fmt/index.html">Lwt_fmt</a></li><li><a href="../../lwt.unix/Lwt_gc/index.html">Lwt_gc</a></li><li><a href="../../lwt.unix/Lwt_io/index.html">Lwt_io</a></li><li><a href="../../lwt.unix/Lwt_main/index.html">Lwt_main</a></li><li><a href="../../lwt.unix/Lwt_preemptive/index.html">Lwt_preemptive</a></li><li><a href="../../lwt.unix/Lwt_process/index.html">Lwt_process</a></li><li><a href="../../lwt.unix/Lwt_sys/index.html">Lwt_sys</a></li><li><a href="../../lwt.unix/Lwt_throttle/index.html">Lwt_throttle</a></li><li><a href="../../lwt.unix/Lwt_timeout/index.html">Lwt_timeout</a></li><li><a href="../../lwt.unix/Lwt_unix/index.html">Lwt_unix</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>lwt<ul><li><a href="lwt.ml.html">lwt.ml</a></li><li><a href="lwt_condition.ml.html">lwt_condition.ml</a></li><li><a href="lwt_list.ml.html">lwt_list.ml</a></li><li><a href="lwt_mutex.ml.html">lwt_mutex.ml</a></li><li><a href="lwt_mvar.ml.html">lwt_mvar.ml</a></li><li><a href="lwt_pool.ml.html">lwt_pool.ml</a></li><li><a href="#" class="current_unit">lwt_pqueue.ml</a></li><li><a href="lwt_result.ml.html">lwt_result.ml</a></li><li><a href="lwt_seq.ml.html">lwt_seq.ml</a></li><li><a href="lwt_sequence.ml.html">lwt_sequence.ml</a></li><li><a href="lwt_stream.ml.html">lwt_stream.ml</a></li><li><a href="lwt_switch.ml.html">lwt_switch.ml</a></li></ul></li><li>lwt.unix<ul><li><a href="../lwt.unix/lwt_bytes.ml.html">lwt_bytes.ml</a></li><li><a href="../lwt.unix/lwt_config.ml.html">lwt_config.ml</a></li><li><a href="../lwt.unix/lwt_engine.ml.html">lwt_engine.ml</a></li><li><a href="../lwt.unix/lwt_features.ml.html">lwt_features.ml</a></li><li><a href="../lwt.unix/lwt_fmt.ml.html">lwt_fmt.ml</a></li><li><a href="../lwt.unix/lwt_gc.ml.html">lwt_gc.ml</a></li><li><a href="../lwt.unix/lwt_io.ml.html">lwt_io.ml</a></li><li><a href="../lwt.unix/lwt_main.ml.html">lwt_main.ml</a></li><li><a href="../lwt.unix/lwt_preemptive.ml.html">lwt_preemptive.ml</a></li><li><a href="../lwt.unix/lwt_process.ml.html">lwt_process.ml</a></li><li><a href="../lwt.unix/lwt_sys.ml.html">lwt_sys.ml</a></li><li><a href="../lwt.unix/lwt_throttle.ml.html">lwt_throttle.ml</a></li><li><a href="../lwt.unix/lwt_timeout.ml.html">lwt_timeout.ml</a></li><li><a href="../lwt.unix/lwt_unix.ml.html">lwt_unix.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+</code><code class="source_code"><span><span class="COMMENT">(* This file is part of Lwt, released under the MIT license. See LICENSE.md for
+   details, or visit https://github.com/ocsigen/lwt/blob/master/LICENSE.md. *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-OrderedType"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">OrderedType</span> <span class="EQUAL">=</span><span class="EOL">
+</span><span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-OrderedType.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-OrderedType.val-compare"><span class="VAL">val</span> <span class="LIDENT">compare</span><span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">int</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-S"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">S</span> <span class="EQUAL">=</span><span class="EOL">
+</span><span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-S.type-elt"><span class="TYPE">type</span> <span class="LIDENT">elt</span></span><span class="EOL">
+</span>  <span id="module-type-S.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-S.val-empty"><span class="VAL">val</span> <span class="LIDENT">empty</span><span class="COLON">:</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-S.val-is_empty"><span class="VAL">val</span> <span class="LIDENT">is_empty</span><span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bool</span></span><span class="EOL">
+</span>  <span id="module-type-S.val-add"><span class="VAL">val</span> <span class="LIDENT">add</span><span class="COLON">:</span> <span class="LIDENT">elt</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-S.val-union"><span class="VAL">val</span> <span class="LIDENT">union</span><span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-S.val-find_min"><span class="VAL">val</span> <span class="LIDENT">find_min</span><span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">elt</span></span><span class="EOL">
+</span>  <span id="module-type-S.val-lookup_min"><span class="VAL">val</span> <span class="LIDENT">lookup_min</span><span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">elt</span> <span class="LIDENT">option</span></span><span class="EOL">
+</span>  <span id="module-type-S.val-remove_min"><span class="VAL">val</span> <span class="LIDENT">remove_min</span><span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-S.val-size"><span class="VAL">val</span> <span class="LIDENT">size</span><span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">int</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Make"><span class="MODULE">module</span> <span class="UIDENT">Make</span><span class="LPAREN">(</span><span class="UIDENT">Ord</span><span class="COLON">:</span> <span class="UIDENT">OrderedType</span><span class="RPAREN">)</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="UIDENT">S</span> <span class="WITH">with</span> <span id="def_51"><span class="TYPE">type</span> <span class="LIDENT">elt</span> <span class="EQUAL">=</span> <span class="UIDENT">Ord</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span><span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Make.type-elt"><span class="TYPE">type</span> <span class="LIDENT">elt</span> <span class="EQUAL">=</span> <span class="UIDENT">Ord</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Make.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LIDENT">tree</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>  <span id="module-Make.type-tree"><span class="AND">and</span> <span class="LIDENT">tree</span> <span class="EQUAL">=</span> <span id="module-Make.type-tree.constructor-Node"><span class="UIDENT">Node</span> <span class="OF">of</span> <span class="LIDENT">elt</span> <span class="STAR">*</span> <span class="LIDENT">int</span> <span class="STAR">*</span> <span class="LIDENT">tree</span> <span class="LIDENT">list</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Make.val-root"><span class="LIDENT">root</span></span> <span class="LPAREN">(</span><span class="UIDENT">Node</span> <span class="LPAREN">(</span><span id="local_x_1"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="#local_x_1"><span class="LIDENT">x</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Make.val-rank"><span class="LIDENT">rank</span></span> <span class="LPAREN">(</span><span class="UIDENT">Node</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span id="local_r_2"><span class="LIDENT">r</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="#local_r_2"><span class="LIDENT">r</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Make.val-link"><span class="LIDENT">link</span></span> <span class="LPAREN">(</span><span class="UIDENT">Node</span> <span class="LPAREN">(</span><span id="local_x1_4"><span class="LIDENT">x1</span></span><span class="COMMA">,</span> <span id="local_r1_5"><span class="LIDENT">r1</span></span><span class="COMMA">,</span> <span id="local_c1_6"><span class="LIDENT">c1</span></span><span class="RPAREN">)</span> <span class="AS">as</span> <span id="local_t1_3"><span class="LIDENT">t1</span></span><span class="RPAREN">)</span> <span class="LPAREN">(</span><span class="UIDENT">Node</span> <span class="LPAREN">(</span><span id="local_x2_8"><span class="LIDENT">x2</span></span><span class="COMMA">,</span> <span id="local_r2_9"><span class="LIDENT">r2</span></span><span class="COMMA">,</span> <span id="local_c2_10"><span class="LIDENT">c2</span></span><span class="RPAREN">)</span> <span class="AS">as</span> <span id="local_t2_7"><span class="LIDENT">t2</span></span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_c_11"><span class="LIDENT">c</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Ord</span><span class="DOT">.</span><span class="LIDENT">compare</span> <a href="#local_x1_4"><span class="LIDENT">x1</span></a> <a href="#local_x2_8"><span class="LIDENT">x2</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="IF">if</span> <a href="#local_c_11"><span class="LIDENT">c</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;=)"><span class="INFIXOP0">&lt;=</span></a> <span class="INT">0</span> <span class="THEN">then</span> <span class="UIDENT">Node</span> <span class="LPAREN">(</span><a href="#local_x1_4"><span class="LIDENT">x1</span></a><span class="COMMA">,</span> <a href="#local_r1_5"><span class="LIDENT">r1</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(+)"><span class="PLUS">+</span></a> <span class="INT">1</span><span class="COMMA">,</span> <a href="#local_t2_7"><span class="LIDENT">t2</span></a><span class="COLONCOLON">::</span><a href="#local_c1_6"><span class="LIDENT">c1</span></a><span class="RPAREN">)</span> <span class="ELSE">else</span> <span class="UIDENT">Node</span><span class="LPAREN">(</span><a href="#local_x2_8"><span class="LIDENT">x2</span></a><span class="COMMA">,</span> <a href="#local_r2_9"><span class="LIDENT">r2</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(+)"><span class="PLUS">+</span></a> <span class="INT">1</span><span class="COMMA">,</span> <a href="#local_t1_3"><span class="LIDENT">t1</span></a><span class="COLONCOLON">::</span><a href="#local_c2_10"><span class="LIDENT">c2</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="module-Make.val-ins"><span class="LIDENT">ins</span></span> <span id="local_t_12"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="FUNCTION">function</span><span class="EOL">
+</span>      <span class="LBRACKET">[</span><span class="RBRACKET">]</span>     <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LBRACKET">[</span><a href="#local_t_12"><span class="LIDENT">t</span></a><span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="LPAREN">(</span><span id="local_t'_14"><span class="LIDENT">t'</span></span><span class="COLONCOLON">::</span><span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="AS">as</span> <span id="local_ts_13"><span class="LIDENT">ts</span></span> <span class="WHEN">when</span> <span class="LIDENT">rank</span> <a href="#local_t_12"><span class="LIDENT">t</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;)"><span class="LESS">&lt;</span></a> <span class="LIDENT">rank</span> <a href="#local_t'_14"><span class="LIDENT">t'</span></a> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <a href="#local_t_12"><span class="LIDENT">t</span></a><span class="COLONCOLON">::</span><a href="#local_ts_13"><span class="LIDENT">ts</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span id="local_t'_15"><span class="LIDENT">t'</span></span><span class="COLONCOLON">::</span><span id="local_ts_16"><span class="LIDENT">ts</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LIDENT">ins</span> <span class="LPAREN">(</span><span class="LIDENT">link</span> <a href="#local_t_12"><span class="LIDENT">t</span></a> <a href="#local_t'_15"><span class="LIDENT">t'</span></a><span class="RPAREN">)</span> <a href="#local_ts_16"><span class="LIDENT">ts</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Make.val-empty"><span class="LIDENT">empty</span></span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Make.val-is_empty"><span class="LIDENT">is_empty</span></span> <span id="local_ts_17"><span class="LIDENT">ts</span></span> <span class="EQUAL">=</span> <a href="#local_ts_17"><span class="LIDENT">ts</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(=)"><span class="EQUAL">=</span></a> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Make.val-add"><span class="LIDENT">add</span></span> <span id="local_x_18"><span class="LIDENT">x</span></span> <span id="local_ts_19"><span class="LIDENT">ts</span></span> <span class="EQUAL">=</span> <span class="LIDENT">ins</span> <span class="LPAREN">(</span><span class="UIDENT">Node</span> <span class="LPAREN">(</span><a href="#local_x_18"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="INT">0</span><span class="COMMA">,</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <a href="#local_ts_19"><span class="LIDENT">ts</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="module-Make.val-union"><span class="LIDENT">union</span></span> <span id="local_ts_20"><span class="LIDENT">ts</span></span> <span id="local_ts'_21"><span class="LIDENT">ts'</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="#local_ts_20"><span class="LIDENT">ts</span></a><span class="COMMA">,</span> <a href="#local_ts'_21"><span class="LIDENT">ts'</span></a> <span class="WITH">with</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_ts'_21"><span class="LIDENT">ts'</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_ts_20"><span class="LIDENT">ts</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="LPAREN">(</span><span id="local_t1_22"><span class="LIDENT">t1</span></span><span class="COLONCOLON">::</span><span id="local_ts1_23"><span class="LIDENT">ts1</span></span><span class="COMMA">,</span> <span id="local_t2_24"><span class="LIDENT">t2</span></span><span class="COLONCOLON">::</span><span id="local_ts2_25"><span class="LIDENT">ts2</span></span><span class="RPAREN">)</span>  <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="IF">if</span> <span class="LIDENT">rank</span> <a href="#local_t1_22"><span class="LIDENT">t1</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;)"><span class="LESS">&lt;</span></a> <span class="LIDENT">rank</span> <a href="#local_t2_24"><span class="LIDENT">t2</span></a> <span class="THEN">then</span> <a href="#local_t1_22"><span class="LIDENT">t1</span></a> <span class="COLONCOLON">::</span> <span class="LIDENT">union</span> <a href="#local_ts1_23"><span class="LIDENT">ts1</span></a> <span class="LPAREN">(</span><a href="#local_t2_24"><span class="LIDENT">t2</span></a><span class="COLONCOLON">::</span><a href="#local_ts2_25"><span class="LIDENT">ts2</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="ELSE">else</span> <span class="IF">if</span> <span class="LIDENT">rank</span> <a href="#local_t2_24"><span class="LIDENT">t2</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;)"><span class="LESS">&lt;</span></a> <span class="LIDENT">rank</span> <a href="#local_t1_22"><span class="LIDENT">t1</span></a> <span class="THEN">then</span> <a href="#local_t2_24"><span class="LIDENT">t2</span></a> <span class="COLONCOLON">::</span> <span class="LIDENT">union</span> <span class="LPAREN">(</span><a href="#local_t1_22"><span class="LIDENT">t1</span></a><span class="COLONCOLON">::</span><a href="#local_ts1_23"><span class="LIDENT">ts1</span></a><span class="RPAREN">)</span> <a href="#local_ts2_25"><span class="LIDENT">ts2</span></a><span class="EOL">
+</span>      <span class="ELSE">else</span> <span class="LIDENT">ins</span> <span class="LPAREN">(</span><span class="LIDENT">link</span> <a href="#local_t1_22"><span class="LIDENT">t1</span></a> <a href="#local_t2_24"><span class="LIDENT">t2</span></a><span class="RPAREN">)</span> <span class="LPAREN">(</span><span class="LIDENT">union</span> <a href="#local_ts1_23"><span class="LIDENT">ts1</span></a> <a href="#local_ts2_25"><span class="LIDENT">ts2</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="module-Make.val-find_min"><span class="LIDENT">find_min</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="FUNCTION">function</span><span class="EOL">
+</span>      <span class="LBRACKET">[</span><span class="RBRACKET">]</span>    <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="UIDENT">Not_found</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="LBRACKET">[</span><span id="local_t_26"><span class="LIDENT">t</span></span><span class="RBRACKET">]</span>   <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">root</span> <a href="#local_t_26"><span class="LIDENT">t</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span id="local_t_27"><span class="LIDENT">t</span></span><span class="COLONCOLON">::</span><span id="local_ts_28"><span class="LIDENT">ts</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_x_29"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <span class="LIDENT">find_min</span> <a href="#local_ts_28"><span class="LIDENT">ts</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_c_30"><span class="LIDENT">c</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Ord</span><span class="DOT">.</span><span class="LIDENT">compare</span> <span class="LPAREN">(</span><span class="LIDENT">root</span> <a href="#local_t_27"><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <a href="#local_x_29"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="#local_c_30"><span class="LIDENT">c</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;)"><span class="LESS">&lt;</span></a> <span class="INT">0</span> <span class="THEN">then</span> <span class="LIDENT">root</span> <a href="#local_t_27"><span class="LIDENT">t</span></a> <span class="ELSE">else</span> <a href="#local_x_29"><span class="LIDENT">x</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="module-Make.val-lookup_min"><span class="LIDENT">lookup_min</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span>    <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="LBRACKET">[</span><span id="local_t_31"><span class="LIDENT">t</span></span><span class="RBRACKET">]</span>   <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="LIDENT">root</span> <a href="#local_t_31"><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span id="local_t_32"><span class="LIDENT">t</span></span><span class="COLONCOLON">::</span><span id="local_ts_33"><span class="LIDENT">ts</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="MATCH">match</span> <span class="LIDENT">lookup_min</span> <a href="#local_ts_33"><span class="LIDENT">ts</span></a> <span class="WITH">with</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_x_35"><span class="LIDENT">x</span></span> <span class="AS">as</span> <span id="local_result_34"><span class="LIDENT">result</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="LET">let</span> <span id="local_c_36"><span class="LIDENT">c</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Ord</span><span class="DOT">.</span><span class="LIDENT">compare</span> <span class="LPAREN">(</span><span class="LIDENT">root</span> <a href="#local_t_32"><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <a href="#local_x_35"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <span class="IF">if</span> <a href="#local_c_36"><span class="LIDENT">c</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;)"><span class="LESS">&lt;</span></a> <span class="INT">0</span> <span class="THEN">then</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="LIDENT">root</span> <a href="#local_t_32"><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="ELSE">else</span> <a href="#local_result_34"><span class="LIDENT">result</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="module-Make.val-get_min"><span class="LIDENT">get_min</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="FUNCTION">function</span><span class="EOL">
+</span>      <span class="LBRACKET">[</span><span class="RBRACKET">]</span>    <span class="MINUSGREATER">-&gt;</span> <span class="ASSERT">assert</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="LBRACKET">[</span><span id="local_t_37"><span class="LIDENT">t</span></span><span class="RBRACKET">]</span>   <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><a href="#local_t_37"><span class="LIDENT">t</span></a><span class="COMMA">,</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span id="local_t_38"><span class="LIDENT">t</span></span><span class="COLONCOLON">::</span><span id="local_ts_39"><span class="LIDENT">ts</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="def_52"><span class="LPAREN">(</span><span id="local_t'_40"><span class="LIDENT">t'</span></span><span class="COMMA">,</span> <span id="local_ts'_41"><span class="LIDENT">ts'</span></span><span class="RPAREN">)</span></span> <span class="EQUAL">=</span> <span class="LIDENT">get_min</span> <a href="#local_ts_39"><span class="LIDENT">ts</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_c_42"><span class="LIDENT">c</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Ord</span><span class="DOT">.</span><span class="LIDENT">compare</span> <span class="LPAREN">(</span><span class="LIDENT">root</span> <a href="#local_t_38"><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="LPAREN">(</span><span class="LIDENT">root</span> <a href="#local_t'_40"><span class="LIDENT">t'</span></a><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="#local_c_42"><span class="LIDENT">c</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;)"><span class="LESS">&lt;</span></a> <span class="INT">0</span> <span class="THEN">then</span> <span class="LPAREN">(</span><a href="#local_t_38"><span class="LIDENT">t</span></a><span class="COMMA">,</span> <a href="#local_ts_39"><span class="LIDENT">ts</span></a><span class="RPAREN">)</span> <span class="ELSE">else</span> <span class="LPAREN">(</span><a href="#local_t'_40"><span class="LIDENT">t'</span></a><span class="COMMA">,</span> <a href="#local_t_38"><span class="LIDENT">t</span></a><span class="COLONCOLON">::</span><a href="#local_ts'_41"><span class="LIDENT">ts'</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Make.val-remove_min"><span class="LIDENT">remove_min</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="FUNCTION">function</span><span class="EOL">
+</span>      <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="UIDENT">Not_found</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span id="local_ts_43"><span class="LIDENT">ts</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span class="LPAREN">(</span><span class="UIDENT">Node</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span id="local_c_44"><span class="LIDENT">c</span></span><span class="RPAREN">)</span><span class="COMMA">,</span> <span id="local_ts_45"><span class="LIDENT">ts</span></span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="LIDENT">get_min</span> <a href="#local_ts_43"><span class="LIDENT">ts</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LIDENT">union</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-rev"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">rev</span></a> <a href="#local_c_44"><span class="LIDENT">c</span></a><span class="RPAREN">)</span> <a href="#local_ts_45"><span class="LIDENT">ts</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="module-Make.val-size"><span class="LIDENT">size</span></span> <span id="local_l_46"><span class="LIDENT">l</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_sizetree_47"><span class="LIDENT">sizetree</span></span> <span class="LPAREN">(</span><span class="UIDENT">Node</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span><span id="local_tl_48"><span class="LIDENT">tl</span></span><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="INT">1</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(+)"><span class="PLUS">+</span></a> <span class="LIDENT">size</span> <a href="#local_tl_48"><span class="LIDENT">tl</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-fold_left"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">fold_left</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_s_49"><span class="LIDENT">s</span></span> <span id="local_t_50"><span class="LIDENT">t</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_s_49"><span class="LIDENT">s</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(+)"><span class="PLUS">+</span></a> <a href="#local_sizetree_47"><span class="LIDENT">sizetree</span></a> <a href="#local_t_50"><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="INT">0</span> <a href="#local_l_46"><span class="LIDENT">l</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

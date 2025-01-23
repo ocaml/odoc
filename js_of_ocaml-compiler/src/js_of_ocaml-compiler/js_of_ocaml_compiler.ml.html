@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: js_of_ocaml_compiler.ml (js_of_ocaml-compiler.src.js_of_ocaml-compiler)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">js_of_ocaml-compiler</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; js_of_ocaml-compiler &#x00BB; js_of_ocaml_compiler.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>js_of_ocaml_compiler.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">js_of_ocaml-compiler</a><ul><li>Library <code>js_of_ocaml-compiler</code><ul><li><a href="../../js_of_ocaml-compiler/Js_of_ocaml_compiler/index.html">Js_of_ocaml_compiler</a></li></ul></li><li>Library <code>js_of_ocaml-compiler.dynlink</code><ul><li><a href="../../js_of_ocaml-compiler.dynlink/Js_of_ocaml_compiler_dynlink/index.html">Js_of_ocaml_compiler_dynlink</a></li></ul></li><li>Library <code>js_of_ocaml-compiler.findlib-support</code><ul><li><a href="../../js_of_ocaml-compiler.findlib-support/Jsoo_findlib_support/index.html">Jsoo_findlib_support</a></li></ul></li><li>Library <code>js_of_ocaml-compiler.runtime</code><ul><li><a href="../../js_of_ocaml-compiler.runtime/Jsoo_runtime/index.html">Jsoo_runtime</a></li></ul></li><li>Library <code>js_of_ocaml-compiler.runtime-files</code><ul><li><a href="../../js_of_ocaml-compiler.runtime-files/Js_of_ocaml_compiler_runtime_files/index.html">Js_of_ocaml_compiler_runtime_files</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>js_of_ocaml-compiler<ul><li><a href="annot_lexer.ml.html">annot_lexer.ml</a></li><li><a href="annot_parser.ml.html">annot_parser.ml</a></li><li><a href="base64.ml.html">base64.ml</a></li><li><a href="build_info.ml.html">build_info.ml</a></li><li><a href="build_path_prefix_map.ml.html">build_path_prefix_map.ml</a></li><li><a href="builtins.ml.html">builtins.ml</a></li><li><a href="code.ml.html">code.ml</a></li><li><a href="compiler_version.ml.html">compiler_version.ml</a></li><li><a href="config.ml.html">config.ml</a></li><li><a href="constant.ml.html">constant.ml</a></li><li><a href="deadcode.ml.html">deadcode.ml</a></li><li><a href="debug.ml.html">debug.ml</a></li><li><a href="dgraph.ml.html">dgraph.ml</a></li><li><a href="driver.ml.html">driver.ml</a></li><li><a href="duplicate.ml.html">duplicate.ml</a></li><li><a href="effects.ml.html">effects.ml</a></li><li><a href="eval.ml.html">eval.ml</a></li><li><a href="findlib.ml.html">findlib.ml</a></li><li><a href="flow.ml.html">flow.ml</a></li><li><a href="flow_lexer.ml.html">flow_lexer.ml</a></li><li><a href="freevars.ml.html">freevars.ml</a></li><li><a href="fs.ml.html">fs.ml</a></li><li><a href="generate.ml.html">generate.ml</a></li><li><a href="generate_closure.ml.html">generate_closure.ml</a></li><li><a href="global_deadcode.ml.html">global_deadcode.ml</a></li><li><a href="global_flow.ml.html">global_flow.ml</a></li><li><a href="inline.ml.html">inline.ml</a></li><li><a href="instr.ml.html">instr.ml</a></li><li><a href="javascript.ml.html">javascript.ml</a></li><li><a href="js_assign.ml.html">js_assign.ml</a></li><li><a href="#" class="current_unit">js_of_ocaml_compiler.ml</a></li><li><a href="js_output.ml.html">js_output.ml</a></li><li><a href="js_parser.ml.html">js_parser.ml</a></li><li><a href="js_simpl.ml.html">js_simpl.ml</a></li><li><a href="js_token.ml.html">js_token.ml</a></li><li><a href="js_traverse.ml.html">js_traverse.ml</a></li><li><a href="lambda_lifting.ml.html">lambda_lifting.ml</a></li><li><a href="link_js.ml.html">link_js.ml</a></li><li><a href="linker.ml.html">linker.ml</a></li><li><a href="loc.ml.html">loc.ml</a></li><li><a href="macro.ml.html">macro.ml</a></li><li><a href="magic_number.ml.html">magic_number.ml</a></li><li><a href="mlvalue.ml.html">mlvalue.ml</a></li><li><a href="ocaml_compiler.ml.html">ocaml_compiler.ml</a></li><li><a href="ocaml_version.ml.html">ocaml_version.ml</a></li><li><a href="parse_bytecode.ml.html">parse_bytecode.ml</a></li><li><a href="parse_info.ml.html">parse_info.ml</a></li><li><a href="parse_js.ml.html">parse_js.ml</a></li><li><a href="partial_cps_analysis.ml.html">partial_cps_analysis.ml</a></li><li><a href="phisimpl.ml.html">phisimpl.ml</a></li><li><a href="pretty_print.ml.html">pretty_print.ml</a></li><li><a href="primitive.ml.html">primitive.ml</a></li><li><a href="pseudo_fs.ml.html">pseudo_fs.ml</a></li><li><a href="pure_fun.ml.html">pure_fun.ml</a></li><li><a href="reserved.ml.html">reserved.ml</a></li><li><a href="source_map.ml.html">source_map.ml</a></li><li><a href="source_map_io.ml.html">source_map_io.ml</a></li><li><a href="specialize.ml.html">specialize.ml</a></li><li><a href="specialize_js.ml.html">specialize_js.ml</a></li><li><a href="stdlib.ml.html">stdlib.ml</a></li><li><a href="strongly_connected_components.ml.html">strongly_connected_components.ml</a></li><li><a href="structure.ml.html">structure.ml</a></li><li><a href="subst.ml.html">subst.ml</a></li><li><a href="tailcall.ml.html">tailcall.ml</a></li><li><a href="target_env.ml.html">target_env.ml</a></li><li><a href="timer.ml.html">timer.ml</a></li><li><a href="unit_info.ml.html">unit_info.ml</a></li><li><a href="var_printer.ml.html">var_printer.ml</a></li><li><a href="vlq64.ml.html">vlq64.ml</a></li></ul></li><li>js_of_ocaml-compiler.dynlink<ul><li><a href="../js_of_ocaml-compiler.dynlink/js_of_ocaml_compiler_dynlink.ml.html">js_of_ocaml_compiler_dynlink.ml</a></li></ul></li><li>js_of_ocaml-compiler.findlib-support<ul><li><a href="../js_of_ocaml-compiler.findlib-support/jsoo_findlib_support.ml.html">jsoo_findlib_support.ml</a></li></ul></li><li>js_of_ocaml-compiler.runtime<ul><li><a href="../js_of_ocaml-compiler.runtime/jsoo_runtime.ml.html">jsoo_runtime.ml</a></li><li><a href="../js_of_ocaml-compiler.runtime/jsoo_runtime__.ml.html">jsoo_runtime__.ml</a></li><li><a href="../js_of_ocaml-compiler.runtime/runtime_version.ml.html">runtime_version.ml</a></li></ul></li><li>js_of_ocaml-compiler.runtime-files<ul><li><a href="../js_of_ocaml-compiler.runtime-files/files.ml.html">files.ml</a></li><li><a href="../js_of_ocaml-compiler.runtime-files/js_of_ocaml_compiler_runtime_files.ml.html">js_of_ocaml_compiler_runtime_files.ml</a></li><li><a href="../js_of_ocaml-compiler.runtime-files/js_of_ocaml_compiler_runtime_files__.ml.html">js_of_ocaml_compiler_runtime_files__.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+<a id="L121" class="source_line" href="#L121">121</a>
+<a id="L122" class="source_line" href="#L122">122</a>
+<a id="L123" class="source_line" href="#L123">123</a>
+<a id="L124" class="source_line" href="#L124">124</a>
+<a id="L125" class="source_line" href="#L125">125</a>
+<a id="L126" class="source_line" href="#L126">126</a>
+<a id="L127" class="source_line" href="#L127">127</a>
+<a id="L128" class="source_line" href="#L128">128</a>
+<a id="L129" class="source_line" href="#L129">129</a>
+<a id="L130" class="source_line" href="#L130">130</a>
+<a id="L131" class="source_line" href="#L131">131</a>
+<a id="L132" class="source_line" href="#L132">132</a>
+<a id="L133" class="source_line" href="#L133">133</a>
+<a id="L134" class="source_line" href="#L134">134</a>
+<a id="L135" class="source_line" href="#L135">135</a>
+<a id="L136" class="source_line" href="#L136">136</a>
+<a id="L137" class="source_line" href="#L137">137</a>
+<a id="L138" class="source_line" href="#L138">138</a>
+<a id="L139" class="source_line" href="#L139">139</a>
+<a id="L140" class="source_line" href="#L140">140</a>
+<a id="L141" class="source_line" href="#L141">141</a>
+<a id="L142" class="source_line" href="#L142">142</a>
+<a id="L143" class="source_line" href="#L143">143</a>
+<a id="L144" class="source_line" href="#L144">144</a>
+<a id="L145" class="source_line" href="#L145">145</a>
+<a id="L146" class="source_line" href="#L146">146</a>
+<a id="L147" class="source_line" href="#L147">147</a>
+<a id="L148" class="source_line" href="#L148">148</a>
+<a id="L149" class="source_line" href="#L149">149</a>
+<a id="L150" class="source_line" href="#L150">150</a>
+<a id="L151" class="source_line" href="#L151">151</a>
+<a id="L152" class="source_line" href="#L152">152</a>
+<a id="L153" class="source_line" href="#L153">153</a>
+<a id="L154" class="source_line" href="#L154">154</a>
+<a id="L155" class="source_line" href="#L155">155</a>
+<a id="L156" class="source_line" href="#L156">156</a>
+<a id="L157" class="source_line" href="#L157">157</a>
+<a id="L158" class="source_line" href="#L158">158</a>
+<a id="L159" class="source_line" href="#L159">159</a>
+<a id="L160" class="source_line" href="#L160">160</a>
+<a id="L161" class="source_line" href="#L161">161</a>
+<a id="L162" class="source_line" href="#L162">162</a>
+<a id="L163" class="source_line" href="#L163">163</a>
+<a id="L164" class="source_line" href="#L164">164</a>
+<a id="L165" class="source_line" href="#L165">165</a>
+<a id="L166" class="source_line" href="#L166">166</a>
+<a id="L167" class="source_line" href="#L167">167</a>
+<a id="L168" class="source_line" href="#L168">168</a>
+<a id="L169" class="source_line" href="#L169">169</a>
+<a id="L170" class="source_line" href="#L170">170</a>
+<a id="L171" class="source_line" href="#L171">171</a>
+<a id="L172" class="source_line" href="#L172">172</a>
+<a id="L173" class="source_line" href="#L173">173</a>
+<a id="L174" class="source_line" href="#L174">174</a>
+<a id="L175" class="source_line" href="#L175">175</a>
+<a id="L176" class="source_line" href="#L176">176</a>
+<a id="L177" class="source_line" href="#L177">177</a>
+<a id="L178" class="source_line" href="#L178">178</a>
+<a id="L179" class="source_line" href="#L179">179</a>
+<a id="L180" class="source_line" href="#L180">180</a>
+<a id="L181" class="source_line" href="#L181">181</a>
+<a id="L182" class="source_line" href="#L182">182</a>
+<a id="L183" class="source_line" href="#L183">183</a>
+<a id="L184" class="source_line" href="#L184">184</a>
+<a id="L185" class="source_line" href="#L185">185</a>
+<a id="L186" class="source_line" href="#L186">186</a>
+<a id="L187" class="source_line" href="#L187">187</a>
+<a id="L188" class="source_line" href="#L188">188</a>
+<a id="L189" class="source_line" href="#L189">189</a>
+<a id="L190" class="source_line" href="#L190">190</a>
+<a id="L191" class="source_line" href="#L191">191</a>
+<a id="L192" class="source_line" href="#L192">192</a>
+<a id="L193" class="source_line" href="#L193">193</a>
+<a id="L194" class="source_line" href="#L194">194</a>
+<a id="L195" class="source_line" href="#L195">195</a>
+<a id="L196" class="source_line" href="#L196">196</a>
+<a id="L197" class="source_line" href="#L197">197</a>
+<a id="L198" class="source_line" href="#L198">198</a>
+<a id="L199" class="source_line" href="#L199">199</a>
+<a id="L200" class="source_line" href="#L200">200</a>
+<a id="L201" class="source_line" href="#L201">201</a>
+<a id="L202" class="source_line" href="#L202">202</a>
+<a id="L203" class="source_line" href="#L203">203</a>
+<a id="L204" class="source_line" href="#L204">204</a>
+<a id="L205" class="source_line" href="#L205">205</a>
+</code><code class="source_code"><span><span class="COMMENT">(* generated by dune *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Annot_lexer *)</span><span class="EOL">
+</span><span id="module-Annot_lexer"><span class="MODULE">module</span> <span class="UIDENT">Annot_lexer</span> <span class="EQUAL">=</span> <a href="annot_lexer.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Annot_lexer</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Annot_parser *)</span><span class="EOL">
+</span><span id="module-Annot_parser"><span class="MODULE">module</span> <span class="UIDENT">Annot_parser</span> <span class="EQUAL">=</span> <a href="annot_parser.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Annot_parser</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Base64 *)</span><span class="EOL">
+</span><span id="module-Base64"><span class="MODULE">module</span> <span class="UIDENT">Base64</span> <span class="EQUAL">=</span> <a href="base64.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Base64</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Build_info *)</span><span class="EOL">
+</span><span id="module-Build_info"><span class="MODULE">module</span> <span class="UIDENT">Build_info</span> <span class="EQUAL">=</span> <a href="build_info.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Build_info</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Build_path_prefix_map *)</span><span class="EOL">
+</span><span id="module-Build_path_prefix_map"><span class="MODULE">module</span> <span class="UIDENT">Build_path_prefix_map</span> <span class="EQUAL">=</span> <a href="build_path_prefix_map.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Build_path_prefix_map</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Builtins *)</span><span class="EOL">
+</span><span id="module-Builtins"><span class="MODULE">module</span> <span class="UIDENT">Builtins</span> <span class="EQUAL">=</span> <a href="builtins.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Builtins</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Code *)</span><span class="EOL">
+</span><span id="module-Code"><span class="MODULE">module</span> <span class="UIDENT">Code</span> <span class="EQUAL">=</span> <a href="code.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Code</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Compiler_version *)</span><span class="EOL">
+</span><span id="module-Compiler_version"><span class="MODULE">module</span> <span class="UIDENT">Compiler_version</span> <span class="EQUAL">=</span> <a href="compiler_version.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Compiler_version</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Config *)</span><span class="EOL">
+</span><span id="module-Config"><span class="MODULE">module</span> <span class="UIDENT">Config</span> <span class="EQUAL">=</span> <a href="config.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Config</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Constant *)</span><span class="EOL">
+</span><span id="module-Constant"><span class="MODULE">module</span> <span class="UIDENT">Constant</span> <span class="EQUAL">=</span> <a href="constant.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Constant</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Deadcode *)</span><span class="EOL">
+</span><span id="module-Deadcode"><span class="MODULE">module</span> <span class="UIDENT">Deadcode</span> <span class="EQUAL">=</span> <a href="deadcode.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Deadcode</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Debug *)</span><span class="EOL">
+</span><span id="module-Debug"><span class="MODULE">module</span> <span class="UIDENT">Debug</span> <span class="EQUAL">=</span> <a href="debug.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Debug</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Dgraph *)</span><span class="EOL">
+</span><span id="module-Dgraph"><span class="MODULE">module</span> <span class="UIDENT">Dgraph</span> <span class="EQUAL">=</span> <a href="dgraph.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Dgraph</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Driver *)</span><span class="EOL">
+</span><span id="module-Driver"><span class="MODULE">module</span> <span class="UIDENT">Driver</span> <span class="EQUAL">=</span> <a href="driver.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Driver</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Duplicate *)</span><span class="EOL">
+</span><span id="module-Duplicate"><span class="MODULE">module</span> <span class="UIDENT">Duplicate</span> <span class="EQUAL">=</span> <a href="duplicate.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Duplicate</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Effects *)</span><span class="EOL">
+</span><span id="module-Effects"><span class="MODULE">module</span> <span class="UIDENT">Effects</span> <span class="EQUAL">=</span> <a href="effects.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Effects</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Eval *)</span><span class="EOL">
+</span><span id="module-Eval"><span class="MODULE">module</span> <span class="UIDENT">Eval</span> <span class="EQUAL">=</span> <a href="eval.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Eval</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Findlib *)</span><span class="EOL">
+</span><span id="module-Findlib"><span class="MODULE">module</span> <span class="UIDENT">Findlib</span> <span class="EQUAL">=</span> <a href="findlib.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Findlib</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Flow *)</span><span class="EOL">
+</span><span id="module-Flow"><span class="MODULE">module</span> <span class="UIDENT">Flow</span> <span class="EQUAL">=</span> <a href="flow.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Flow</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Flow_lexer *)</span><span class="EOL">
+</span><span id="module-Flow_lexer"><span class="MODULE">module</span> <span class="UIDENT">Flow_lexer</span> <span class="EQUAL">=</span> <a href="flow_lexer.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Flow_lexer</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Freevars *)</span><span class="EOL">
+</span><span id="module-Freevars"><span class="MODULE">module</span> <span class="UIDENT">Freevars</span> <span class="EQUAL">=</span> <a href="freevars.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Freevars</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Fs *)</span><span class="EOL">
+</span><span id="module-Fs"><span class="MODULE">module</span> <span class="UIDENT">Fs</span> <span class="EQUAL">=</span> <a href="fs.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Fs</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Generate *)</span><span class="EOL">
+</span><span id="module-Generate"><span class="MODULE">module</span> <span class="UIDENT">Generate</span> <span class="EQUAL">=</span> <a href="generate.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Generate</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Generate_closure *)</span><span class="EOL">
+</span><span id="module-Generate_closure"><span class="MODULE">module</span> <span class="UIDENT">Generate_closure</span> <span class="EQUAL">=</span> <a href="generate_closure.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Generate_closure</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Global_deadcode *)</span><span class="EOL">
+</span><span id="module-Global_deadcode"><span class="MODULE">module</span> <span class="UIDENT">Global_deadcode</span> <span class="EQUAL">=</span> <a href="global_deadcode.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Global_deadcode</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Global_flow *)</span><span class="EOL">
+</span><span id="module-Global_flow"><span class="MODULE">module</span> <span class="UIDENT">Global_flow</span> <span class="EQUAL">=</span> <a href="global_flow.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Global_flow</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Inline *)</span><span class="EOL">
+</span><span id="module-Inline"><span class="MODULE">module</span> <span class="UIDENT">Inline</span> <span class="EQUAL">=</span> <a href="inline.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Inline</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Instr *)</span><span class="EOL">
+</span><span id="module-Instr"><span class="MODULE">module</span> <span class="UIDENT">Instr</span> <span class="EQUAL">=</span> <a href="instr.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Instr</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Javascript *)</span><span class="EOL">
+</span><span id="module-Javascript"><span class="MODULE">module</span> <span class="UIDENT">Javascript</span> <span class="EQUAL">=</span> <a href="javascript.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Javascript</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Js_assign *)</span><span class="EOL">
+</span><span id="module-Js_assign"><span class="MODULE">module</span> <span class="UIDENT">Js_assign</span> <span class="EQUAL">=</span> <a href="js_assign.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Js_assign</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Js_output *)</span><span class="EOL">
+</span><span id="module-Js_output"><span class="MODULE">module</span> <span class="UIDENT">Js_output</span> <span class="EQUAL">=</span> <a href="js_output.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Js_output</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Js_parser *)</span><span class="EOL">
+</span><span id="module-Js_parser"><span class="MODULE">module</span> <span class="UIDENT">Js_parser</span> <span class="EQUAL">=</span> <a href="js_parser.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Js_parser</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Js_simpl *)</span><span class="EOL">
+</span><span id="module-Js_simpl"><span class="MODULE">module</span> <span class="UIDENT">Js_simpl</span> <span class="EQUAL">=</span> <a href="js_simpl.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Js_simpl</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Js_token *)</span><span class="EOL">
+</span><span id="module-Js_token"><span class="MODULE">module</span> <span class="UIDENT">Js_token</span> <span class="EQUAL">=</span> <a href="js_token.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Js_token</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Js_traverse *)</span><span class="EOL">
+</span><span id="module-Js_traverse"><span class="MODULE">module</span> <span class="UIDENT">Js_traverse</span> <span class="EQUAL">=</span> <a href="js_traverse.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Js_traverse</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Lambda_lifting *)</span><span class="EOL">
+</span><span id="module-Lambda_lifting"><span class="MODULE">module</span> <span class="UIDENT">Lambda_lifting</span> <span class="EQUAL">=</span> <a href="lambda_lifting.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Lambda_lifting</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Link_js *)</span><span class="EOL">
+</span><span id="module-Link_js"><span class="MODULE">module</span> <span class="UIDENT">Link_js</span> <span class="EQUAL">=</span> <a href="link_js.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Link_js</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Linker *)</span><span class="EOL">
+</span><span id="module-Linker"><span class="MODULE">module</span> <span class="UIDENT">Linker</span> <span class="EQUAL">=</span> <a href="linker.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Linker</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Loc *)</span><span class="EOL">
+</span><span id="module-Loc"><span class="MODULE">module</span> <span class="UIDENT">Loc</span> <span class="EQUAL">=</span> <a href="loc.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Loc</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Macro *)</span><span class="EOL">
+</span><span id="module-Macro"><span class="MODULE">module</span> <span class="UIDENT">Macro</span> <span class="EQUAL">=</span> <a href="macro.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Macro</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Magic_number *)</span><span class="EOL">
+</span><span id="module-Magic_number"><span class="MODULE">module</span> <span class="UIDENT">Magic_number</span> <span class="EQUAL">=</span> <a href="magic_number.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Magic_number</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Mlvalue *)</span><span class="EOL">
+</span><span id="module-Mlvalue"><span class="MODULE">module</span> <span class="UIDENT">Mlvalue</span> <span class="EQUAL">=</span> <a href="mlvalue.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Mlvalue</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Ocaml_compiler *)</span><span class="EOL">
+</span><span id="module-Ocaml_compiler"><span class="MODULE">module</span> <span class="UIDENT">Ocaml_compiler</span> <span class="EQUAL">=</span> <a href="ocaml_compiler.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Ocaml_compiler</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Ocaml_version *)</span><span class="EOL">
+</span><span id="module-Ocaml_version"><span class="MODULE">module</span> <span class="UIDENT">Ocaml_version</span> <span class="EQUAL">=</span> <a href="ocaml_version.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Ocaml_version</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Parse_bytecode *)</span><span class="EOL">
+</span><span id="module-Parse_bytecode"><span class="MODULE">module</span> <span class="UIDENT">Parse_bytecode</span> <span class="EQUAL">=</span> <a href="parse_bytecode.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Parse_bytecode</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Parse_info *)</span><span class="EOL">
+</span><span id="module-Parse_info"><span class="MODULE">module</span> <span class="UIDENT">Parse_info</span> <span class="EQUAL">=</span> <a href="parse_info.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Parse_info</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Parse_js *)</span><span class="EOL">
+</span><span id="module-Parse_js"><span class="MODULE">module</span> <span class="UIDENT">Parse_js</span> <span class="EQUAL">=</span> <a href="parse_js.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Parse_js</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Partial_cps_analysis *)</span><span class="EOL">
+</span><span id="module-Partial_cps_analysis"><span class="MODULE">module</span> <span class="UIDENT">Partial_cps_analysis</span> <span class="EQUAL">=</span> <a href="partial_cps_analysis.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Partial_cps_analysis</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Phisimpl *)</span><span class="EOL">
+</span><span id="module-Phisimpl"><span class="MODULE">module</span> <span class="UIDENT">Phisimpl</span> <span class="EQUAL">=</span> <a href="phisimpl.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Phisimpl</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Pretty_print *)</span><span class="EOL">
+</span><span id="module-Pretty_print"><span class="MODULE">module</span> <span class="UIDENT">Pretty_print</span> <span class="EQUAL">=</span> <a href="pretty_print.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Pretty_print</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Primitive *)</span><span class="EOL">
+</span><span id="module-Primitive"><span class="MODULE">module</span> <span class="UIDENT">Primitive</span> <span class="EQUAL">=</span> <a href="primitive.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Primitive</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Pseudo_fs *)</span><span class="EOL">
+</span><span id="module-Pseudo_fs"><span class="MODULE">module</span> <span class="UIDENT">Pseudo_fs</span> <span class="EQUAL">=</span> <a href="pseudo_fs.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Pseudo_fs</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Pure_fun *)</span><span class="EOL">
+</span><span id="module-Pure_fun"><span class="MODULE">module</span> <span class="UIDENT">Pure_fun</span> <span class="EQUAL">=</span> <a href="pure_fun.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Pure_fun</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Reserved *)</span><span class="EOL">
+</span><span id="module-Reserved"><span class="MODULE">module</span> <span class="UIDENT">Reserved</span> <span class="EQUAL">=</span> <a href="reserved.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Reserved</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Source_map *)</span><span class="EOL">
+</span><span id="module-Source_map"><span class="MODULE">module</span> <span class="UIDENT">Source_map</span> <span class="EQUAL">=</span> <a href="source_map.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Source_map</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Source_map_io *)</span><span class="EOL">
+</span><span id="module-Source_map_io"><span class="MODULE">module</span> <span class="UIDENT">Source_map_io</span> <span class="EQUAL">=</span> <a href="source_map_io.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Source_map_io</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Specialize *)</span><span class="EOL">
+</span><span id="module-Specialize"><span class="MODULE">module</span> <span class="UIDENT">Specialize</span> <span class="EQUAL">=</span> <a href="specialize.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Specialize</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Specialize_js *)</span><span class="EOL">
+</span><span id="module-Specialize_js"><span class="MODULE">module</span> <span class="UIDENT">Specialize_js</span> <span class="EQUAL">=</span> <a href="specialize_js.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Specialize_js</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Stdlib *)</span><span class="EOL">
+</span><span id="module-Stdlib"><span class="MODULE">module</span> <span class="UIDENT">Stdlib</span> <span class="EQUAL">=</span> <a href="stdlib.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Stdlib</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Strongly_connected_components *)</span><span class="EOL">
+</span><span id="module-Strongly_connected_components"><span class="MODULE">module</span> <span class="UIDENT">Strongly_connected_components</span> <span class="EQUAL">=</span> <a href="strongly_connected_components.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Strongly_connected_components</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Structure *)</span><span class="EOL">
+</span><span id="module-Structure"><span class="MODULE">module</span> <span class="UIDENT">Structure</span> <span class="EQUAL">=</span> <a href="structure.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Structure</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Subst *)</span><span class="EOL">
+</span><span id="module-Subst"><span class="MODULE">module</span> <span class="UIDENT">Subst</span> <span class="EQUAL">=</span> <a href="subst.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Subst</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Tailcall *)</span><span class="EOL">
+</span><span id="module-Tailcall"><span class="MODULE">module</span> <span class="UIDENT">Tailcall</span> <span class="EQUAL">=</span> <a href="tailcall.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Tailcall</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Target_env *)</span><span class="EOL">
+</span><span id="module-Target_env"><span class="MODULE">module</span> <span class="UIDENT">Target_env</span> <span class="EQUAL">=</span> <a href="target_env.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Target_env</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Timer *)</span><span class="EOL">
+</span><span id="module-Timer"><span class="MODULE">module</span> <span class="UIDENT">Timer</span> <span class="EQUAL">=</span> <a href="timer.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Timer</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Unit_info *)</span><span class="EOL">
+</span><span id="module-Unit_info"><span class="MODULE">module</span> <span class="UIDENT">Unit_info</span> <span class="EQUAL">=</span> <a href="unit_info.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Unit_info</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Var_printer *)</span><span class="EOL">
+</span><span id="module-Var_printer"><span class="MODULE">module</span> <span class="UIDENT">Var_printer</span> <span class="EQUAL">=</span> <a href="var_printer.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Var_printer</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Js_of_ocaml_compiler.Vlq64 *)</span><span class="EOL">
+</span><span id="module-Vlq64"><span class="MODULE">module</span> <span class="UIDENT">Vlq64</span> <span class="EQUAL">=</span> <a href="vlq64.ml.html"><span class="UIDENT">Js_of_ocaml_compiler__Vlq64</span></a></span><span class="EOL">
+</span></span></code></pre></body></html>

@@ -1,0 +1,19 @@
+lib: [
+  "_build/install/default/lib/test_odoc_driver/META"
+  "_build/install/default/lib/test_odoc_driver/dune-package"
+  "_build/install/default/lib/test_odoc_driver/opam"
+  "_build/install/default/lib/test_odoc_driver/test_odoc_driver.a"
+  "_build/install/default/lib/test_odoc_driver/test_odoc_driver.cma"
+  "_build/install/default/lib/test_odoc_driver/test_odoc_driver.cmi"
+  "_build/install/default/lib/test_odoc_driver/test_odoc_driver.cmt"
+  "_build/install/default/lib/test_odoc_driver/test_odoc_driver.cmx"
+  "_build/install/default/lib/test_odoc_driver/test_odoc_driver.cmxa"
+  "_build/install/default/lib/test_odoc_driver/test_odoc_driver.ml"
+]
+libexec: [
+  "_build/install/default/lib/test_odoc_driver/test_odoc_driver.cmxs"
+]
+doc: [
+  "_build/install/default/doc/test_odoc_driver/odoc-config.sexp"
+  "_build/install/default/doc/test_odoc_driver/odoc-pages/yo.mld" {"odoc-pages/yo.mld"}
+]

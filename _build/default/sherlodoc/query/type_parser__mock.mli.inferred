@@ -1,0 +1,22 @@
+type token =
+    WORD of string
+  | STAR
+  | POLY of string
+  | PARENS_OPEN
+  | PARENS_CLOSE
+  | EOF
+  | COMMA
+  | ARROW
+  | ANY
+module Printf : sig val eprintf : 'a -> unit end
+val menhir_begin_marker : int
+val xv_typs : Db.Typexpr.t list
+val xv_typ2 : Db.Typexpr.t
+val xv_typ1 : Db.Typexpr.t
+val xv_typ0 : Db.Typexpr.t
+val xv_typ : Db.Typexpr.t
+val xv_main : Db.Typexpr.t
+val xv_list1_typ1_STAR_ : Db.Typexpr.t list
+val xv_list1_typ_COMMA_ : Db.Typexpr.t list
+val xv_list_WORD_ : string list
+val menhir_end_marker : int

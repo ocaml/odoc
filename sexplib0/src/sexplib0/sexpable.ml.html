@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: sexpable.ml (sexplib0.src.sexplib0)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">sexplib0</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; sexplib0 &#x00BB; sexpable.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>sexpable.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">sexplib0</a><ul><li>Library <code>sexplib0</code><ul><li><a href="../../sexplib0/Sexplib0/index.html">Sexplib0</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>sexplib0<ul><li><a href="sexp.ml.html">sexp.ml</a></li><li><a href="sexp_conv.ml.html">sexp_conv.ml</a></li><li><a href="sexp_conv_error.ml.html">sexp_conv_error.ml</a></li><li><a href="sexp_conv_grammar.ml.html">sexp_conv_grammar.ml</a></li><li><a href="sexp_conv_record.ml.html">sexp_conv_record.ml</a></li><li><a href="sexp_grammar.ml.html">sexp_grammar.ml</a></li><li><a href="#" class="current_unit">sexpable.ml</a></li><li><a href="sexplib0.ml.html">sexplib0.ml</a></li><li><a href="sexplib0__.ml.html">sexplib0__.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+</code><code class="source_code"><span><span id="module-type-S"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">S</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-S.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-type-S.val-t_of_sexp"><span class="VAL">val</span> <span class="LIDENT">t_of_sexp</span> <span class="COLON">:</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-S.val-sexp_of_t"><span class="VAL">val</span> <span class="LIDENT">sexp_of_t</span> <span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-S1"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">S1</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-S1.type-t"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-type-S1.val-t_of_sexp"><span class="VAL">val</span> <span class="LIDENT">t_of_sexp</span> <span class="COLON">:</span> <span class="LPAREN">(</span><a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-S1.val-sexp_of_t"><span class="VAL">val</span> <span class="LIDENT">sexp_of_t</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-S2"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">S2</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-S2.type-t"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-type-S2.val-t_of_sexp"><span class="VAL">val</span> <span class="LIDENT">t_of_sexp</span> <span class="COLON">:</span> <span class="LPAREN">(</span><a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-S2.val-sexp_of_t"><span class="VAL">val</span> <span class="LIDENT">sexp_of_t</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">b</span> <span class="MINUSGREATER">-&gt;</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-S3"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">S3</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-S3.type-t"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">c</span><span class="RPAREN">)</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-type-S3.val-t_of_sexp"><span class="VAL">val</span> <span class="LIDENT">t_of_sexp</span><span class="EOL">
+</span>    <span class="COLON">:</span>  <span class="LPAREN">(</span><a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">c</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="MINUSGREATER">-&gt;</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="EOL">
+</span>    <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">c</span><span class="RPAREN">)</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-type-S3.val-sexp_of_t"><span class="VAL">val</span> <span class="LIDENT">sexp_of_t</span><span class="EOL">
+</span>    <span class="COLON">:</span>  <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">b</span> <span class="MINUSGREATER">-&gt;</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">c</span> <span class="MINUSGREATER">-&gt;</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">c</span><span class="RPAREN">)</span> <span class="LIDENT">t</span><span class="EOL">
+</span>    <span class="MINUSGREATER">-&gt;</span> <a href="sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

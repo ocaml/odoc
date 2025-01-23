@@ -1,0 +1,517 @@
+{0 How to Drive [odoc]}
+
+[odoc] is a CLI tool to create API and documentation for OCaml
+projects. However, it operates at a rather low level, taking individual files
+through several distinct phases until the HTML output is generated.
+
+For this reason, just like for building any multifiles OCaml project, [odoc]
+needs to be driven by a higher level tool. The driver will take care of calling
+the [odoc] command with the right arguments throughout the different
+phases. The {{!/odoc-driver/page-index}odoc-driver} package contains a "reference driver", that is kept up-to-date
+with the latest development of [odoc], 
+
+Several drivers for [odoc] exist, such as:
+{{:https://dune.readthedocs.io/en/stable/documentation.html}dune} and
+{{!/odig/page-index}odig}.
+
+This document explains how to drive [odoc], as of version 3. It is not needed to
+know any of this to {e use} [odoc], it is targeted at driver authors, tools that
+interact with [odoc], or any curious passerby. This includes several subjects:
+
+- A big picture view of the doc generation model,
+- A unified explanation for the various command line flags,
+- An explanation of the [odoc] pipeline,
+- A convention for building docs for [opam]-installed packages.
+
+In addition to the documentation, the reference driver is a good tool to
+understand how to build [odoc] projects. It can be useful to look at the
+implementation code, but it can also help to simply look at all invocations of
+[odoc] during a run of the driver.
+
+{1:units Trees of documentation}
+
+In its third major version, [odoc] has been improved so that the same
+documentation can work on multiple scenarios, from local switches to big
+monorepos, or the {{:https://ocaml.org/packages}ocaml.org} hub of documentation for all packages, without
+anything breaking, especially references.
+
+The idea is that we have named groups of documentation, that we'll call {e trees}
+here. We have two kinds of trees: page trees, and modules trees. Inside the
+trees, the hierarchy is managed by [odoc]. The driver is free to "root" them
+however they like in the overall hierarchy. So [odoc] is responsible for the
+hierarchy below the trees root, and the driver is responsible for the one
+outside of the trees. In order to reference another tree, a documentation author
+can use the name of the tree in the reference.
+
+Different situations will give different meanings to the trees. In the case of
+[opam] packages, though, there is a natural meaning to give to those trees
+(you'll find more details in the {{!label-conv}convention for opam-installed packages}). Any
+opam package will have an associated "documentation tree", named with the name
+of the package. Any of its libraries will have an associated "module tree",
+named with the name of the library. Another package can thus refer to the doc
+using the package name, or to any of its library using the library name, no
+matter where the package is located in the hierarchy.
+
+{1 The doc generation pipeline}
+
+Just like when compiling OCaml modules, generating docs for these modules need
+to be run in a specific order, as some information for generating docs for a
+file might reside in another one. However, [odoc] actually allows a particular
+file to reference a module that depends on it, seemingly creating a circular
+dependency.
+
+This circular dependency problem is one of the reasons we have several phases in
+[odoc]. Let's review them:
+
+- The [compile] phase, which is used to create the [.odoc] artifacts from
+  [.cm{i;t;ti}] and [.mld] files. This is where [odoc] does similar work to
+  that of the OCaml compiler, computing expansions for each module types. The dependencies
+  between are the same as the ones for the [.cm{i;t;ti}] input.
+
+- The [link] phase transforms the [.odoc] artifacts to [.odocl]. The main result
+  of this phase is to resolve odoc references, which also has an effect on
+  canonical modules.
+
+- The [indexing] phase generates [.odoc-index] files from sets of [.odocl]
+  files. These index files will be used both for generating a global sidebar,
+  and for generating a search index.
+
+- The [generation] phase takes the [.odocl] and [.odoc-index] files and turns
+  them into either HTML, man pages or Latex files.
+
+{2 The compile phase}
+
+The compile phase takes as input a set of [.cm{i;t;ti}] as well as [.mld] files,
+and builds a directory hierarchy of [.odoc] files.
+
+There are distinct commands for this phase: [odoc compile] for interfaces and
+pages, [odoc compile-impl] for implementations, and [odoc compile-asset] for
+assets.
+
+{3 Compiling interfaces}
+
+Let's have a look at a generic invocation of [odoc] during the compile phase:
+
+{@shell[
+  $ odoc compile --output-dir <od> --parent-id <pid> -I <dir1> -I <dir2> <input-file>.<ext>
+]}
+
+- [<input-file>.<ext>] is the input file, either a [.cm{i;t;ti}] file or an [.mld]
+  file. Prefer [.cmti] files over the other formats!
+
+- [--output-dir <od>] allows to specify the directory that will contain all the
+  [.odoc] files. This directory has to be fully managed by [odoc] and should not
+  be modified by another tool! The output file depends on the [--parent-id]
+  option.
+
+- [--parent-id <pid>] allows to place the output [.odoc] file in the
+  documentation hierarchy. This consists in a [/] separated sequence of non
+  empty strings (used as directory name). This "path" determines where the
+  [.odoc] file will be located below the [<od>] output dir. The name of the
+  output file is [<input-file>.odoc] for modules, and [page-<input-file>.odoc]
+  for pages. Documentation artifacts that will be in the same {{!units}unit of
+  documentation} need to hare a common root in their parent id.
+
+- [-I <dir>] corresponds to the search path for other [.odoc] files. Multiple
+  directory can be added to the search path, so every required [.odoc] file is
+  in the search path. The required [.odoc] files are the one generated from a
+  [.cm{i;t;ti}] file listed when calling [odoc compile-deps] on the input
+  file.
+
+A concrete example for such command would be:
+
+{@shell[
+  $ odoc compile
+       ~/.opam/5.2.0/lib/ppxlib/ppxlib__Extension.cmti
+       --output-dir _odoc/
+       -I _odoc/ocaml-base-compiler/compiler-libs.common
+       -I _odoc/ocaml-base-compiler/stdlib
+       -I _odoc/ocaml-compiler-libs/ocaml-compiler-libs.common
+       -I _odoc/ppxlib/ppxlib
+       -I _odoc/ppxlib/ppxlib.ast
+       -I _odoc/ppxlib/ppxlib.astlib
+       -I _odoc/ppxlib/ppxlib.stdppx
+       -I _odoc/ppxlib/ppxlib.traverse_builtins
+       -I _odoc/sexplib0/sexplib0
+       --parent-id ppxlib/ppxlib
+]}
+
+{3 Compiling implementations}
+
+A [compile-impl] command is pretty similar:
+
+{@shell[
+  $ odoc compile-impl --output-dir <od> --source-id <sid> --parent-id <pid> -I <dir1> -I <dir2> <input-file>.<ext>
+]}
+
+- [<input-file>.cmt] is the input file, it has to be a [.cmt] file.
+
+- [--output-dir <od>] has the same meaning as for [odoc compile].
+
+- [--parent-id <pid>] also has the same meaning as for [odoc compile]. However,
+  the name of the output file is [impl-<input-file>.odoc]. Implementations need
+  to be available through the [-I] search path, so it is very likely that one
+  wants the implementation and interface [.odoc] files to share the same parent
+  id.
+
+- [-I <dir>] also corresponds to the search path for other [.odoc] files.
+
+- [source-id <sid>] is a new argument specific to [compile-impl]. This corresponds to the location of the rendering of the source, which is required to generate links to it.
+
+A concrete example for such command would be:
+
+{@shell[
+  $ odoc compile-impl
+        ~/.opam/5.2.0/lib/ppxlib/ppxlib__Spellcheck.cmt
+        --output-dir _odoc/
+        -I _odoc/ocaml-base-compiler/compiler-libs.common
+        -I _odoc/ocaml-base-compiler/stdlib
+        -I _odoc/ocaml-compiler-libs/ocaml-compiler-libs.common
+        -I _odoc/ppxlib/ppxlib
+        -I _odoc/ppxlib/ppxlib.ast
+        -I _odoc/ppxlib/ppxlib.astlib
+        -I _odoc/ppxlib/ppxlib.stdppx
+        -I _odoc/sexplib0/sexplib0
+        --enable-missing-root-warning
+        --parent-id ppxlib/ppxlib
+        --source-id ppxlib/src/ppxlib/spellcheck.ml
+]}
+
+{3 Compiling assets}
+
+Assets are given during the generation phase. But we still need to create an
+[.odoc] file, for [odoc]'s resolution mechanism.
+
+{@shell[
+  $ odoc compile-asset --output-dir <od> --parent-id <pid> --name <assetname>
+]}
+
+- [--output-dir] and [--parent-id] are identical to the [compile] and
+  [compile-impl] commands,
+
+- [--name <assetname>] gives the asset name.
+
+- The output file name is computed from the previous values as
+  [<output-dir>/<parent-id>/asset-<assetname>.odoc].
+
+{2 The link phase}
+
+The link phase requires the directory of the [compile] phase to generate its set
+of [.odocl] files. This phase resolves references and canonicals.
+
+A generic link command is:
+
+{@shell[
+  $ odoc link
+      -I <dir1> -I <dir2>
+      -P <pname1>:<pdir1> -P <pname2>:<pdir2>
+      -L <lname1>:<ldir1> -L <lname2>:<ldir2>
+      <path/to/file.odoc>
+]}
+
+- [<path/to/file.odoc] is the input [.odoc] file. The result of this command is
+  [path/to/file.odocl]. This path was determined by [--output-dir] and
+  [--parent-id] from the link phase, and it is important for the indexing phase
+  that it stays in the same location.
+
+- [-P <name>:<dir>] are used to list the "page trees", used to resolve
+  references such as [{!/ocamlfind/index}].
+
+- [-L <name>:<dir>] are used to list the "module trees", used to resolve
+  references such as [{!/findlib.dynload/Fl_dynload}]. This also adds [<dir>] to
+  the search path.
+
+- [-I <dir>] adds [<dir>] to the search path. The search path is used to resolve
+  references that do not use the "named tree" mechanism, such as [{!Module}] and
+  [{!page-pagename}].
+
+{2 The indexing phase}
+
+The indexing phase refers to the "crunching" of information split in several
+[.odocl] files. Currently, there are two use-cases for this phase:
+
+- Generating a search index. This requires all information from linked
+  interfaces and pages, but also form linked implementations in order to sort
+  results (by number of occurrences).
+
+- Generating a global sidebar.
+
+{3 Counting occurrences}
+
+This step counts the number of occurrences of each value/type/... in the
+implementation, and stores them in a table. A generic invocation is:
+
+{@shell[
+  $ odoc count-occurrences <dir1> <dir2> -o <path/to/name.odoc-occurrences>
+]}
+
+An example of such command:
+
+{@shell[
+  $ odoc count-occurrences _odoc/ -o _odoc/occurrences-all.odoc-occurrences
+]}
+
+{3 Indexing entries}
+
+The [odoc compile-index] produces an [.odoc-index] file, from [.odocl] files,
+other [.odoc-index] files, and possibly some [.odoc-occurrences] files.
+
+To create an index for the page and documentation units, we use the [-P] and
+[-L] arguments.
+
+{@shell[
+  $ odoc compile-index
+      -o path/to/<indexname>.odoc-index
+      -P <pname1>:<ppath1>
+      -P <pname2>:<ppath2>
+      -L <lname1>:<lpath1>
+      -L <lname2>:<lpath2>
+      --occurrences <path/to/name.odoc-occurrences>
+]}
+
+An example of such command:
+
+{@shell[
+  $ odoc compile-index
+      -o _odoc/ppxlib/index.odoc-index
+      -P ppxlib:_odoc/ppxlib
+      -L ppxlib:_odoc/ppxlib/ppxlib
+      -L ppxlib.ast:_odoc/ppxlib/ppxlib.ast
+      -L ppxlib.astlib:_odoc/ppxlib/ppxlib.astlib
+      -L ppxlib.metaquot:_odoc/ppxlib/ppxlib.metaquot
+      -L ppxlib.metaquot_lifters:_odoc/ppxlib/ppxlib.metaquot_lifters
+      -L ppxlib.print_diff:_odoc/ppxlib/ppxlib.print_diff
+      -L ppxlib.runner:_odoc/ppxlib/ppxlib.runner
+      -L ppxlib.runner_as_ppx:_odoc/ppxlib/ppxlib.runner_as_ppx
+      -L ppxlib.stdppx:_odoc/ppxlib/ppxlib.stdppx
+      -L ppxlib.traverse:_odoc/ppxlib/ppxlib.traverse
+      -L ppxlib.traverse_builtins:_odoc/ppxlib/ppxlib.traverse_builtins
+      --occurrences _odoc/occurrences-all.odoc-occurrences
+]}
+
+{2 The generation phase}
+
+The generation phase is the phase that takes all information computed in
+previous files, and actually generates the documentation. It can take the form
+of HTML, Latex and manpages, although currently HTML is the [odoc] backend that
+supports the most functionalities (such as images, videos, ...).
+
+In this manual, we describe the HTML generation usecase. Usually,
+generating for other backend boils down to replacing [html-generate] by
+[latex-generate] or [man-generate], refer to the manpage to see the diverging
+options.
+
+Given an [.odocl] file, [odoc] might generate a single [.html] file, or a
+complete directory of [.html] files. The [--output-dir] option specifies the
+root for generating those outputs.
+
+{3 A JavaScript file for search requests}
+
+[odoc] provides a way to plugin a JavaScript file, containing the code to answer
+user's queries. In order to never block the UI, this file will be loaded in a
+web worker to perform searches:
+
+- The search query will be sent as a plain string to the web worker, using the
+  standard mechanism of message passing.
+
+- The web worker has to send back the result as a message to the main thread,
+  containing the results. The format for the result message is a string that can
+  be parsed as a list of JSON objects. Each object contain two keys-value pairs:
+  a key ["url"] which contains a relative URL from [--ouput-dir]; and a key
+  ["html"] which contain the html showing the search entry.
+
+- The JavaScript file must be manually put in the [--output-dir] values, the driver can
+  decide where.
+
+{3 Interfaces and pages}
+
+A generic [html-generate] command for interfaces has the following form:
+
+{@shell[
+  $ odoc html-generate
+    --output-dir <odir>
+    --index <path/to/file.odoc-index>
+    --search-uri <relative/to/output-dir/file.js>
+    --search-uri <relative/to/output-dir/file2.js>
+    <path/to/file.odocl>
+]}
+
+- [--output-dir <odir>] is used to specify the root output for the generated
+  [.html].
+
+- [--index <path/to/file.odoc-index>] is given to [odoc] for sidebar generation.
+
+- [--search-uri <relative/to/output-dir/file.js>] tells [odoc] which file(s) to
+  load in a web worker.
+
+The output directory or file can be computed from this command's [--output-dir],
+the initial [--parent-id] given when creating the [.odoc] file, as well as the
+unit name. In the case of a module, the output is a directory named with the
+name of the module. In the case of a page, the output is a file with the name of
+the page and the [.html] extension.
+
+An example of such command is:
+
+{@shell[
+  $ odoc html-generate
+      _odoc/ppxlib/page-index.odocl
+      --index _odoc/ppxlib/index.odoc-index
+      --search-uri ppxlib/sherlodoc_db.js
+      --search-uri sherlodoc.js
+      -o _html/
+]}
+
+{3 Source code}
+
+{@shell[
+  $ odoc html-generate-source --output-dir <odir> --impl <path/to/impl-file.odocl> <path/to/source/file.ml>
+]}
+
+- [--output-dir <odir>] has been covered already
+
+- [--impl <path/to/impl-file.odocl>] allows to give the implementation file.
+
+- [<path/to/source/file.ml>] is the source file.
+
+The output file can be computed from this command's [--output-dir], and the
+initial [--source-id] and [--name] given when creating the [impl-*.odoc] file.
+
+An example of such command is:
+
+{@shell[
+  $ odoc html-generate-source
+      --impl _odoc/ppxlib/ppxlib/impl-ppxlib__Reconcile.odocl
+      /home/panglesd/.opam/5.2.0/lib/ppxlib/reconcile.ml
+      -o _html/
+]}
+
+{3 Generating docs for assets}
+
+This is the phase where we pass the actual asset. We pass it as a positional
+argument, and give the asset unit using [--asset-unit].
+
+{@shell[
+  $ odoc html-generate-asset --output-dir <odir> --asset-unit <path/to/asset-file.odocl> <path/to/asset/file.ext>
+]}
+
+{1:conv Convention for installed packages}
+
+In order to build the documentation for installed packages, the driver needs to
+give a meaning to the various concepts above. In particular, it needs to
+define the pages and libraries trees, know where to find the pages and assets,
+what id to give them, when linking it needs to know to which trees the artifact
+may be linking...
+
+So that the different drivers and installed packages play well together, we
+define here a convention for building installed packages. If both the package
+and the driver follow it, building the docs should go well!
+
+{2 The [-P] and [-L] trees, and their root ids}
+
+Each package defines a set of trees, each of them having a root id. These roots
+will be used in [--parent-id] and in [-P] and [-L].
+
+The driver can decide any set of mutually disjoint set of roots, without posing
+problem to the reference resolution. For instance, both [-P
+pkg:<output_dir>/pkg] and [-P pkg:<output_dir>/pkg/version] are
+acceptable versions. However, we define here "canonical" roots:
+
+Each installed package [<p>] defines a single page root id: [<p>].
+
+For each package [<p>], each library [<l>] defines a library root id:
+[<p>/<l>].
+
+For instance, a package [foo] with two libraries: [foo] and [foo.bar] will
+define three trees:
+
+- A documentation tree named [foo], with root id [foo]. When referred
+  from other trees, a [-P foo:<odoc_dir>/foo] argument needs to be added
+  at the link phase.
+
+- A module tree named [foo], with root id [foo/foo]. When referred from
+  other trees, a [-L foo:<odoc_dir>/foo/foo] argument needs to be added
+  at the link phase.
+
+- A module tree named [foo.bar], with root id [foo/foo.bar]. When referred from
+  other trees, a [-L foo.bar:<odoc_dir>/foo/foo.bar] argument needs to be
+  added at the link phase.
+
+{2 Link-time dependencies}
+
+Installed OPAM packages need to specify which trees they may be referencing
+during the link phase, so that the proper [-P] and [-L] arguments are
+added. (Note that these dependencies can be circular, as they
+happen during the link phase and only require the artifact from the compile
+phase.)
+
+An installed package [<p>] specifies its tree dependencies in a file at
+[<opam root>/doc/<p>/odoc-config.sexp]. This file contains s-expressions.
+
+Stanzas of the form [(packages p1 p2 ...)] specifies that page trees [p1],
+[p2], ..., should be added using the [-P] argument: with the canonical roots, it
+would be [-P p1:<output_dir>/p1 -P p2:<output_dir>/p2 -P ...].
+
+Stanzas of the form [(libraries l1 l2 ...)] specifies that module trees [l1],
+[l2], ..., should be added using the [-L] argument: with the canonical roots, it
+would be [-L l1:<output_dir>/p1/l1 -L l2<output_dir>/p2/l2 -L ...],
+where [p1] is the package [l1] is in, etc.
+
+{2 The units}
+
+The module units of a package [p] are all files installed by [p] that can be
+found in [<opam root>/lib/p/] or a subdirectory.
+
+The page units are those files that can be found in [<opam
+root>/doc/odoc-pages/] or a subdirectory, and that have an [.mld] extension.
+
+The asset units are those files that can be found in [<opam
+root>/doc/odoc-pages/] or a subdirectory, but that do not have an [.mld]
+extension. Additionally, they are all files found in [<opam
+root>/doc/odoc-assets/].
+
+{2 The [--parent-id] arguments}
+
+Interface and implementation units have as parent id the root of the library
+tree they belong to: with "canonical" roots, [<pkgname>/<libname>].
+
+Page units that are found in [<opam
+root>/doc/<pkgname>/odoc-pages/<relpath>/<name>.mld] have the parent id from
+their page tree, followed by [<relpath>]. So, with canonical roots,
+[<pkgname>/<relpath>].
+
+Asset units that are found in [<opam
+root>/doc/<pkgname>/odoc-pages/<relpath>/<name>.<ext>] have the parent id from
+their page tree, followed by [<relpath>]. With canonical roots,
+[<pkgname>/<relpath>].
+
+Asset units that are found in [<opam root>/doc/<pkgname>/odoc-assets/<filename>]
+have the parent id from their page tree, followed by [_asset/<filename>]
+[<p>/_assets/<filename>].
+
+{2 The [--source-id] arguments}
+
+The driver could choose the source id without breaking references. However,
+following the canonical roots convention, implementation units must have as
+source id: [<pkgname>/src/<libraryname>/<filename>.ml].
+
+{2 Ordering the generated pages}
+
+The canonical hierarchy introduces directories (one per library) that may not be
+ordered by the author, either by omitting it in the [@children_order] tag or by
+not specifying any [@children_order] tag. In this case, [odoc] needs to come up
+with a reasonable default order, which may not be easy without some help from
+the driver.
+
+In auto-generated pages (either [index.mld] in a directory, or [page.mld]),
+[odoc] supports the [@order_category <category_name>] tag, to help sorting the
+pages, if it is not sorted by the parent's [@children_order]. The resulting
+order is:
+
+- First, pages in the order given in their parent's [@children_order],
+- Then, pages ordered lexicographically by their [@order_category]. An undefined
+  category comes before a defined one.
+- Inside a category, pages are ordered lexicographically by their first title,
+- Two pages with the same name will be ordered using their file name!
+
+Note that [@order_category] is not suitable for author use, as it may change in
+the future. Use this tag only in the driver's autogenerated pages!

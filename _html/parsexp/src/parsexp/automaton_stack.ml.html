@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: automaton_stack.ml (parsexp.src.parsexp)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">parsexp</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; parsexp &#x00BB; automaton_stack.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>automaton_stack.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">parsexp</a><ul><li>Library <code>parsexp</code><ul><li><a href="../../parsexp/Parsexp/index.html">Parsexp</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>parsexp<ul><li><a href="automaton.ml.html">automaton.ml</a></li><li><a href="automaton_action.ml.html">automaton_action.ml</a></li><li><a href="automaton_intf.ml.html">automaton_intf.ml</a></li><li><a href="#" class="current_unit">automaton_stack.ml</a></li><li><a href="automaton_stack_intf.ml.html">automaton_stack_intf.ml</a></li><li><a href="automaton_state.ml.html">automaton_state.ml</a></li><li><a href="automaton_state_intf.ml.html">automaton_state_intf.ml</a></li><li><a href="automaton_tables.ml.html">automaton_tables.ml</a></li><li><a href="conv.ml.html">conv.ml</a></li><li><a href="conv_error.ml.html">conv_error.ml</a></li><li><a href="conv_intf.ml.html">conv_intf.ml</a></li><li><a href="cst.ml.html">cst.ml</a></li><li><a href="import.ml.html">import.ml</a></li><li><a href="of_sexp_error.ml.html">of_sexp_error.ml</a></li><li><a href="old_parser_cont_state.ml.html">old_parser_cont_state.ml</a></li><li><a href="parse_error.ml.html">parse_error.ml</a></li><li><a href="parse_error_intf.ml.html">parse_error_intf.ml</a></li><li><a href="parser.ml.html">parser.ml</a></li><li><a href="parser_intf.ml.html">parser_intf.ml</a></li><li><a href="parsexp.ml.html">parsexp.ml</a></li><li><a href="parsexp__.ml.html">parsexp__.ml</a></li><li><a href="parsexp_intf.ml.html">parsexp_intf.ml</a></li><li><a href="positions.ml.html">positions.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+</code><code class="source_code"><span><span class="OPEN">open</span><span class="BANG">!</span> <a href="import.ml.html"><span class="UIDENT">Import</span></a><span class="EOL">
+</span><span class="INCLUDE">include</span> <a href="automaton_stack_intf.ml.html"><span class="UIDENT">Automaton_stack_intf</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-For_cst"><span class="MODULE">module</span> <span class="UIDENT">For_cst</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-For_cst.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-For_cst.type-t.constructor-Empty"><span class="BAR">|</span> <span class="UIDENT">Empty</span></span><span class="EOL">
+</span>    <span id="module-For_cst.type-t.constructor-T_or_comment"><span class="BAR">|</span> <span class="UIDENT">T_or_comment</span> <span class="OF">of</span> <a href="cst.ml.html#type-t_or_comment"><span class="UIDENT">Cst</span><span class="DOT">.</span><span class="LIDENT">t_or_comment</span></a> <span class="STAR">*</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-For_cst.type-t.constructor-Open"><span class="BAR">|</span> <span class="UIDENT">Open</span> <span class="OF">of</span> <a href="positions.ml.html#type-pos"><span class="UIDENT">Positions</span><span class="DOT">.</span><span class="LIDENT">pos</span></a> <span class="STAR">*</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-For_cst.type-t.constructor-In_sexp_comment"><span class="BAR">|</span> <span class="UIDENT">In_sexp_comment</span> <span class="OF">of</span><span class="EOL">
+</span>        <span class="LBRACE">{</span> <span id="def_14"><span class="LIDENT">hash_semi_pos</span> <span class="COLON">:</span> <a href="positions.ml.html#type-pos"><span class="UIDENT">Positions</span><span class="DOT">.</span><span class="LIDENT">pos</span></a><span class="EOL">
+</span>        <span class="SEMI">;</span></span> <span id="def_12"><span class="LIDENT">rev_comments</span> <span class="COLON">:</span> <a href="cst.ml.html#type-comment"><span class="UIDENT">Cst</span><span class="DOT">.</span><span class="LIDENT">comment</span></a> <span class="LIDENT">list</span><span class="EOL">
+</span>        <span class="SEMI">;</span></span> <span id="def_13"><span class="LIDENT">stack</span> <span class="COLON">:</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>        <span class="RBRACE">}</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-For_cst.val-empty"><span class="LIDENT">empty</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Empty</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-For_cst.val-get_many"><span class="LIDENT">get_many</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span class="REC">rec</span> <span id="local_loop_1"><span class="LIDENT">loop</span></span> <span id="local_acc_2"><span class="LIDENT">acc</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">Empty</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_acc_2"><span class="LIDENT">acc</span></a><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">T_or_comment</span> <span class="LPAREN">(</span><span id="local_t_3"><span class="LIDENT">t</span></span><span class="COMMA">,</span> <span id="local_stack_4"><span class="LIDENT">stack</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_loop_1"><span class="LIDENT">loop</span></a> <span class="LPAREN">(</span><a href="#local_t_3"><span class="LIDENT">t</span></a> <span class="COLONCOLON">::</span> <a href="#local_acc_2"><span class="LIDENT">acc</span></a><span class="RPAREN">)</span> <a href="#local_stack_4"><span class="LIDENT">stack</span></a><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">Open</span> <span class="UNDERSCORE">_</span> <span class="BAR">|</span> <span class="UIDENT">In_sexp_comment</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-failwith"><span class="failwith">failwith</span></a> <span class="STRING">&quot;Automaton_stack.For_cst.get_many&quot;</span><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <span class="FUN">fun</span> <span id="local_stack_5"><span class="LIDENT">stack</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_loop_1"><span class="LIDENT">loop</span></a> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <a href="#local_stack_5"><span class="LIDENT">stack</span></a><span class="EOL">
+</span>  <span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Just_positions"><span class="MODULE">module</span> <span class="UIDENT">Just_positions</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Just_positions.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LIDENT">unit</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Just_positions.val-empty"><span class="LIDENT">empty</span></span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span id="type-t.constructor-Empty"><span class="BAR">|</span> <span class="UIDENT">Empty</span></span><span class="EOL">
+</span>  <span id="type-t.constructor-Open"><span class="BAR">|</span> <span class="UIDENT">Open</span> <span class="OF">of</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="type-t.constructor-Sexp"><span class="BAR">|</span> <span class="UIDENT">Sexp</span> <span class="OF">of</span> <a href="../../../sexplib0/src/sexplib0/sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <span class="LIDENT">t</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-empty"><span class="LIDENT">empty</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Empty</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-get_single"><span class="LIDENT">get_single</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Sexp</span> <span class="LPAREN">(</span><span id="local_sexp_6"><span class="LIDENT">sexp</span></span><span class="COMMA">,</span> <span class="UIDENT">Empty</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_sexp_6"><span class="LIDENT">sexp</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-failwith"><span class="failwith">failwith</span></a> <span class="STRING">&quot;Automaton_stack.get_single&quot;</span><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-get_many"><span class="LIDENT">get_many</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="local_loop_7"><span class="LIDENT">loop</span></span> <span id="local_acc_8"><span class="LIDENT">acc</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Empty</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_acc_8"><span class="LIDENT">acc</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Open</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-failwith"><span class="failwith">failwith</span></a> <span class="STRING">&quot;Automaton_stack.get_many&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Sexp</span> <span class="LPAREN">(</span><span id="local_sexp_9"><span class="LIDENT">sexp</span></span><span class="COMMA">,</span> <span id="local_stack_10"><span class="LIDENT">stack</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_loop_7"><span class="LIDENT">loop</span></a> <span class="LPAREN">(</span><a href="#local_sexp_9"><span class="LIDENT">sexp</span></a> <span class="COLONCOLON">::</span> <a href="#local_acc_8"><span class="LIDENT">acc</span></a><span class="RPAREN">)</span> <a href="#local_stack_10"><span class="LIDENT">stack</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="FUN">fun</span> <span id="local_stack_11"><span class="LIDENT">stack</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_loop_7"><span class="LIDENT">loop</span></a> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <a href="#local_stack_11"><span class="LIDENT">stack</span></a><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span></span></code></pre></body></html>

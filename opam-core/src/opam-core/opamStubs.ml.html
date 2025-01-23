@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: opamStubs.ml (opam-core.src.opam-core)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">opam-core</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; opam-core &#x00BB; opamStubs.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>opamStubs.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">opam-core</a><ul><li>Library <code>opam-core</code><ul><li><a href="../../opam-core/OpamACL/index.html">OpamACL</a></li><li><a href="../../opam-core/OpamCached/index.html">OpamCached</a></li><li><a href="../../opam-core/OpamCompat/index.html">OpamCompat</a></li><li><a href="../../opam-core/OpamConsole/index.html">OpamConsole</a></li><li><a href="../../opam-core/OpamCoreConfig/index.html">OpamCoreConfig</a></li><li><a href="../../opam-core/OpamCoreConfigDeveloper/index.html">OpamCoreConfigDeveloper</a></li><li><a href="../../opam-core/OpamDirTrack/index.html">OpamDirTrack</a></li><li><a href="../../opam-core/OpamFilename/index.html">OpamFilename</a></li><li><a href="../../opam-core/OpamHash/index.html">OpamHash</a></li><li><a href="../../opam-core/OpamJson/index.html">OpamJson</a></li><li><a href="../../opam-core/OpamParallel/index.html">OpamParallel</a></li><li><a href="../../opam-core/OpamProcess/index.html">OpamProcess</a></li><li><a href="../../opam-core/OpamSHA/index.html">OpamSHA</a></li><li><a href="../../opam-core/OpamSWHID/index.html">OpamSWHID</a></li><li><a href="../../opam-core/OpamStd/index.html">OpamStd</a></li><li><a href="../../opam-core/OpamStubs/index.html">OpamStubs</a></li><li><a href="../../opam-core/OpamStubsTypes/index.html">OpamStubsTypes</a></li><li><a href="../../opam-core/OpamSystem/index.html">OpamSystem</a></li><li><a href="../../opam-core/OpamUrl/index.html">OpamUrl</a></li><li><a href="../../opam-core/OpamVersion/index.html">OpamVersion</a></li><li><a href="../../opam-core/OpamVersionCompare/index.html">OpamVersionCompare</a></li><li><a href="../../opam-core/OpamVersionInfo/index.html">OpamVersionInfo</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>opam-core<ul><li><a href="opamACL.ml.html">opamACL.ml</a></li><li><a href="opamCached.ml.html">opamCached.ml</a></li><li><a href="opamCompat.ml.html">opamCompat.ml</a></li><li><a href="opamConsole.ml.html">opamConsole.ml</a></li><li><a href="opamCoreConfig.ml.html">opamCoreConfig.ml</a></li><li><a href="opamCoreConfigDeveloper.ml.html">opamCoreConfigDeveloper.ml</a></li><li><a href="opamDirTrack.ml.html">opamDirTrack.ml</a></li><li><a href="opamFilename.ml.html">opamFilename.ml</a></li><li><a href="opamHash.ml.html">opamHash.ml</a></li><li><a href="opamJson.ml.html">opamJson.ml</a></li><li><a href="opamParallel.ml.html">opamParallel.ml</a></li><li><a href="opamProcess.ml.html">opamProcess.ml</a></li><li><a href="opamSHA.ml.html">opamSHA.ml</a></li><li><a href="opamSWHID.ml.html">opamSWHID.ml</a></li><li><a href="opamStd.ml.html">opamStd.ml</a></li><li><a href="#" class="current_unit">opamStubs.ml</a></li><li><a href="opamStubsTypes.ml.html">opamStubsTypes.ml</a></li><li><a href="opamSystem.ml.html">opamSystem.ml</a></li><li><a href="opamUrl.ml.html">opamUrl.ml</a></li><li><a href="opamVersion.ml.html">opamVersion.ml</a></li><li><a href="opamVersionCompare.ml.html">opamVersionCompare.ml</a></li><li><a href="opamVersionInfo.ml.html">opamVersionInfo.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+</code><code class="source_code"><span># 1 &quot;src/core/opamStubs.dummy.ml&quot;<span class="EOL">
+</span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*    Copyright 2018 MetaStack Solutions Ltd.                             *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  All rights reserved. This file is distributed under the terms of the  *)</span><span class="EOL">
+</span><span class="COMMENT">(*  GNU Lesser General Public License version 2.1, with the special       *)</span><span class="EOL">
+</span><span class="COMMENT">(*  exception on linking described in the file LICENSE.                   *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="INCLUDE">include</span> <a href="opamStubsTypes.ml.html"><span class="UIDENT">OpamStubsTypes</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-that's_a_no_no"><span class="LIDENT">that's_a_no_no</span></span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-failwith"><span class="failwith">failwith</span></a> <span class="STRING">&quot;Windows only. This function isn't implemented.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getCurrentProcessID"><span class="LIDENT">getCurrentProcessID</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getpid"><span class="LIDENT">getpid</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Unix</span><span class="DOT">.</span><span class="LIDENT">getpid</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getStdHandle"><span class="LIDENT">getStdHandle</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getConsoleScreenBufferInfo"><span class="LIDENT">getConsoleScreenBufferInfo</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-setConsoleTextAttribute"><span class="LIDENT">setConsoleTextAttribute</span></span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-fillConsoleOutputCharacter"><span class="LIDENT">fillConsoleOutputCharacter</span></span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getConsoleMode"><span class="LIDENT">getConsoleMode</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-setConsoleMode"><span class="LIDENT">setConsoleMode</span></span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getWindowsVersion"><span class="LIDENT">getWindowsVersion</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getArchitecture"><span class="LIDENT">getArchitecture</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-waitpids"><span class="LIDENT">waitpids</span></span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-readRegistry"><span class="LIDENT">readRegistry</span></span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-enumRegistry"><span class="LIDENT">enumRegistry</span></span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-writeRegistry"><span class="LIDENT">writeRegistry</span></span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getConsoleOutputCP"><span class="LIDENT">getConsoleOutputCP</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getCurrentConsoleFontEx"><span class="LIDENT">getCurrentConsoleFontEx</span></span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-create_glyph_checker"><span class="LIDENT">create_glyph_checker</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-delete_glyph_checker"><span class="LIDENT">delete_glyph_checker</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-has_glyph"><span class="LIDENT">has_glyph</span></span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getProcessArchitecture"><span class="LIDENT">getProcessArchitecture</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-process_putenv"><span class="LIDENT">process_putenv</span></span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getPathToHome"><span class="LIDENT">getPathToHome</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getPathToSystem"><span class="LIDENT">getPathToSystem</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getPathToLocalAppData"><span class="LIDENT">getPathToLocalAppData</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-sendMessageTimeout"><span class="LIDENT">sendMessageTimeout</span></span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getProcessAncestry"><span class="LIDENT">getProcessAncestry</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getConsoleAlias"><span class="LIDENT">getConsoleAlias</span></span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-win_create_process"><span class="LIDENT">win_create_process</span></span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getConsoleWindowClass"><span class="LIDENT">getConsoleWindowClass</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-setErrorMode"><span class="LIDENT">setErrorMode</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getErrorMode"><span class="LIDENT">getErrorMode</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-setConsoleToUTF8"><span class="LIDENT">setConsoleToUTF8</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-getVersionInfo"><span class="LIDENT">getVersionInfo</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-get_initial_environment"><span class="LIDENT">get_initial_environment</span></span> <span class="EQUAL">=</span> <span class="LIDENT">that's_a_no_no</span><span class="EOL">
+</span></span></code></pre></body></html>

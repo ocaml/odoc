@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>examples (ppxlib.examples)</title><meta charset="utf-8"/><link rel="stylesheet" href="../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../';
+let search_urls = ['sherlodoc_db.js','../sherlodoc.js'];
+</script><script src="../odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../index.html">🏠</a> &#x00BB; <a href="index.html"><code>ppxlib</code>'s user manual</a> &#x00BB; Examples</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Type '/' to search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><p> <div style="display: flex; justify-content:space-between"><div><a href="good-practices.html" title="good-practices">&lt; Good practices</a> </div><div> </div></div></p><h1 id="examples"><a href="#examples" class="anchor"></a>Examples</h1><p>This section is here to allow viewing complete examples of PPXs written using <code>ppxlib</code> directly in the documentation. However, they are not &quot;complete&quot; in the sense that the overall organization, such as the <code>dune</code> files, is not included.</p><p>In order to see a fully working complete example of a PPX written using <code>ppxlib</code>, that you can compile, modify and test, go to the <a href="https://github.com/ocaml-ppx/ppxlib/tree/main/examples">examples</a> folder of ppxlib sources.</p></header><div class="odoc-tocs"><nav class="odoc-toc odoc-local-toc"><ul><li><a href="#ppx_deriving_accesors"><code>ppx_deriving_accesors</code></a></li><li><a href="#ppx_get_env"><code>ppx_get_env</code></a></li></ul></nav><nav class="odoc-toc odoc-global-toc"><ul><li><a href="index.html"><code>ppxlib</code>'s user manual</a><ul><li><a href="ast-traversal.html">AST Traversals</a></li><li><a href="driver.html">How It Works</a></li><li><a href="#" class="current_unit">Examples</a></li><li><a href="generating-code.html">Generating AST Nodes</a></li><li><a href="good-practices.html">Good Practices</a></li><li><a href="matching-code.html">Destructing AST Nodes</a></li><li><a href="quick_intro.html">Introduction</a></li><li><a href="writing-ppxs.html">Writing a Transformation</a></li><li>Library <code>ppxlib</code><ul><li><a href="ppxlib/Ppxlib/index.html">Ppxlib</a></li></ul></li><li>Library <code>ppxlib.ast</code><ul><li><a href="ppxlib.ast/Ppxlib_ast/index.html">Ppxlib_ast</a></li></ul></li><li>Library <code>ppxlib.astlib</code><ul><li><a href="ppxlib.astlib/Astlib/index.html">Astlib</a></li></ul></li><li>Library <code>ppxlib.metaquot</code><ul><li><a href="ppxlib.metaquot/Ppxlib_metaquot/index.html">Ppxlib_metaquot</a></li></ul></li><li>Library <code>ppxlib.metaquot_lifters</code><ul><li><a href="ppxlib.metaquot_lifters/Ppxlib_metaquot_lifters/index.html">Ppxlib_metaquot_lifters</a></li></ul></li><li>Library <code>ppxlib.print_diff</code><ul><li><a href="ppxlib.print_diff/Ppxlib_print_diff/index.html">Ppxlib_print_diff</a></li></ul></li><li>Library <code>ppxlib.runner</code><ul><li><a href="ppxlib.runner/Ppxlib_runner/index.html">Ppxlib_runner</a></li></ul></li><li>Library <code>ppxlib.runner_as_ppx</code><ul><li><a href="ppxlib.runner_as_ppx/Ppxlib_runner_as_ppx/index.html">Ppxlib_runner_as_ppx</a></li></ul></li><li>Library <code>ppxlib.stdppx</code><ul><li><a href="ppxlib.stdppx/Stdppx/index.html">Stdppx</a></li></ul></li><li>Library <code>ppxlib.traverse</code><ul><li><a href="ppxlib.traverse/Ppxlib_traverse/index.html">Ppxlib_traverse</a></li></ul></li><li>Library <code>ppxlib.traverse_builtins</code><ul><li><a href="ppxlib.traverse_builtins/Ppxlib_traverse_builtins/index.html">Ppxlib_traverse_builtins</a></li></ul></li><li><a href="src/index.html">Sources</a></li></ul></li></ul></nav></div><div class="odoc-content"><h2 id="ppx_deriving_accesors"><a href="#ppx_deriving_accesors" class="anchor"></a><code>ppx_deriving_accesors</code></h2><p>The fully complete, ready-to-compile <code>ppx_deriving_accesors</code> example is accessible in <code>ppxlib</code>'s <a href="https://github.com/ocaml-ppx/ppxlib/tree/main/examples/simple-deriver">sources</a>.</p><p>This deriver will generate accessors for record fields, from the record type definition.</p><p>For example, this code:</p><pre class="language-ocaml"><code>type t =
+  { a : string
+  ; b : int
+  }
+  [@@deriving accessors]</code></pre><p>will generate the following, appended after the type definition:</p><pre class="language-ocaml"><code>let a x = x.a
+let b x = x.b</code></pre><p>The entire code is:</p><pre class="language-ocaml"><code>open Ppxlib
+module List = ListLabels
+open Ast_builder.Default
+
+let accessor_impl (ld : label_declaration) =
+  let loc = ld.pld_loc in
+  pstr_value ~loc Nonrecursive
+    [
+      {
+        pvb_pat = ppat_var ~loc ld.pld_name;
+        pvb_expr =
+          pexp_fun ~loc Nolabel None
+            (ppat_var ~loc { loc; txt = &quot;x&quot; })
+            (pexp_field ~loc
+               (pexp_ident ~loc { loc; txt = lident &quot;x&quot; })
+               { loc; txt = lident ld.pld_name.txt });
+        pvb_attributes = [];
+        pvb_loc = loc;
+      };
+    ]
+
+let accessor_intf ~ptype_name (ld : label_declaration) =
+  let loc = ld.pld_loc in
+  psig_value ~loc
+    {
+      pval_name = ld.pld_name;
+      pval_type =
+        ptyp_arrow ~loc Nolabel
+          (ptyp_constr ~loc { loc; txt = lident ptype_name.txt } [])
+          ld.pld_type;
+      pval_attributes = [];
+      pval_loc = loc;
+      pval_prim = [];
+    }
+
+let generate_impl ~ctxt (_rec_flag, type_declarations) =
+  let loc = Expansion_context.Deriver.derived_item_loc ctxt in
+  List.map type_declarations ~f:(fun (td : type_declaration) -&gt;
+      match td with
+      | {
+       ptype_kind = Ptype_abstract | Ptype_variant _ | Ptype_open;
+       ptype_loc;
+       _;
+      } -&gt;
+          let ext =
+            Location.error_extensionf ~loc:ptype_loc
+              &quot;Cannot derive accessors for non record types&quot;
+          in
+          [ Ast_builder.Default.pstr_extension ~loc ext [] ]
+      | { ptype_kind = Ptype_record fields; _ } -&gt;
+          List.map fields ~f:accessor_impl)
+  |&gt; List.concat
+
+let generate_intf ~ctxt (_rec_flag, type_declarations) =
+  let loc = Expansion_context.Deriver.derived_item_loc ctxt in
+  List.map type_declarations ~f:(fun (td : type_declaration) -&gt;
+      match td with
+      | {
+       ptype_kind = Ptype_abstract | Ptype_variant _ | Ptype_open;
+       ptype_loc;
+       _;
+      } -&gt;
+          let ext =
+            Location.error_extensionf ~loc:ptype_loc
+              &quot;Cannot derive accessors for non record types&quot;
+          in
+          [ Ast_builder.Default.psig_extension ~loc ext [] ]
+      | { ptype_kind = Ptype_record fields; ptype_name; _ } -&gt;
+          List.map fields ~f:(accessor_intf ~ptype_name))
+  |&gt; List.concat
+
+let impl_generator = Deriving.Generator.V2.make_noarg generate_impl
+let intf_generator = Deriving.Generator.V2.make_noarg generate_intf
+
+let my_deriver =
+  Deriving.add &quot;accessors&quot; ~str_type_decl:impl_generator
+    ~sig_type_decl:intf_generator</code></pre><h2 id="ppx_get_env"><a href="#ppx_get_env" class="anchor"></a><code>ppx_get_env</code></h2><p>The fully complete, ready-to-compile <code>ppx_get_env</code> example is accessible in <code>ppxlib</code>'s <a href="https://github.com/ocaml-ppx/ppxlib/tree/main/examples/simple-extension-rewriter">sources</a>.</p><p>A PPX rewriter that will expand <code>[%get_env &quot;SOME_ENV_VAR&quot;]</code> into the value of the env variable <code>SOME_ENV_VAR</code> at compile time, as a string.</p><p>E.g., assuming we set <code>MY_VAR=&quot;foo&quot;</code>, it will turn:</p><pre class="language-ocaml"><code>let () = print_string [%get_env &quot;foo&quot;]</code></pre><p>```</p><p>into:</p><pre class="language-ocaml"><code>let () = print_string &quot;foo&quot;</code></pre><p>Note that this is just a toy example, and we actually advise against this type of PPX that has side effects or relies heavily on the file system or <code>env</code> variables, unless you absolutely you know what you're doing.</p><p>In this case, it won't work well with Dune, since Dune won't know about the dependency on the env variables specified in the extension's payload.</p><p>The entire code is:</p><pre class="language-ocaml"><code>open Ppxlib
+
+let expand ~ctxt env_var =
+  let loc = Expansion_context.Extension.extension_point_loc ctxt in
+  match Sys.getenv env_var with
+  | value -&gt; Ast_builder.Default.estring ~loc value
+  | exception Not_found -&gt;
+      let ext =
+        Location.error_extensionf ~loc &quot;The environment variable %s is unbound&quot;
+          env_var
+      in
+      Ast_builder.Default.pexp_extension ~loc ext
+
+let my_extension =
+  Extension.V3.declare &quot;get_env&quot; Extension.Context.expression
+    Ast_pattern.(single_expr_payload (estring __))
+    expand
+
+let rule = Ppxlib.Context_free.Rule.extension my_extension
+let () = Driver.register_transformation ~rules:[ rule ] &quot;get_env&quot;</code></pre><p> <div style="display: flex; justify-content:space-between"><div><a href="good-practices.html" title="good-practices">&lt; Good practices</a> </div><div> </div></div></p></div></body></html>

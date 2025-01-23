@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: src_pos.ml (sexplib.src.sexplib)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">sexplib</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; sexplib &#x00BB; src_pos.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>src_pos.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">sexplib</a><ul><li>Library <code>sexplib</code><ul><li><a href="../../sexplib/Sexplib/index.html">Sexplib</a></li></ul></li><li>Library <code>sexplib.num</code><ul><li><a href="../../sexplib.num/Sexplib_num/index.html">Sexplib_num</a></li></ul></li><li>Library <code>sexplib.unix</code><ul><li><a href="../../sexplib.unix/Sexplib_unix/index.html">Sexplib_unix</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>sexplib<ul><li><a href="conv.ml.html">conv.ml</a></li><li><a href="conv_error.ml.html">conv_error.ml</a></li><li><a href="exn_magic.ml.html">exn_magic.ml</a></li><li><a href="lexer.ml.html">lexer.ml</a></li><li><a href="parser.ml.html">parser.ml</a></li><li><a href="parser_with_layout.ml.html">parser_with_layout.ml</a></li><li><a href="path.ml.html">path.ml</a></li><li><a href="pre_sexp.ml.html">pre_sexp.ml</a></li><li><a href="sexp.ml.html">sexp.ml</a></li><li><a href="sexp_grammar.ml.html">sexp_grammar.ml</a></li><li><a href="sexp_grammar_intf.ml.html">sexp_grammar_intf.ml</a></li><li><a href="sexp_intf.ml.html">sexp_intf.ml</a></li><li><a href="sexp_with_layout.ml.html">sexp_with_layout.ml</a></li><li><a href="sexplib.ml.html">sexplib.ml</a></li><li><a href="#" class="current_unit">src_pos.ml</a></li><li><a href="std.ml.html">std.ml</a></li><li><a href="type.ml.html">type.ml</a></li><li><a href="type_with_layout.ml.html">type_with_layout.ml</a></li></ul></li><li>sexplib.num<ul><li><a href="../sexplib.num/sexplib_num.ml.html">sexplib_num.ml</a></li><li><a href="../sexplib.num/sexplib_num_conv.ml.html">sexplib_num_conv.ml</a></li><li><a href="../sexplib.num/std.ml.html">std.ml</a></li></ul></li><li>sexplib.unix<ul><li><a href="../sexplib.unix/sexplib_unix.ml.html">sexplib_unix.ml</a></li><li><a href="../sexplib.unix/sexplib_unix_conv.ml.html">sexplib_unix_conv.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+</code><code class="source_code"><span><span class="COMMENT">(* for lexing positions:
+   - lnum starts from 1
+   - cnum starts from 0
+   - pos_bol is the position of the first character of the line
+
+   for absolute pos:
+   - row starts from 1
+   - col starts from 1
+
+   for relative pos, obviously 0 means same position
+*)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* operations that make sense for both absolute and relative positions *)</span><span class="EOL">
+</span><span id="module-Pos"><span class="MODULE">module</span> <span class="UIDENT">Pos</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Pos.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LBRACE">{</span> <span id="def_16"><span class="LIDENT">row</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_17"><span class="LIDENT">col</span> <span class="COLON">:</span> <span class="LIDENT">int</span></span><span class="EOL">
+</span>    <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Pos.val-sexp_of_t"><span class="LIDENT">sexp_of_t</span></span> <span class="LBRACE">{</span> <span id="local_row_1"><span class="LIDENT">row</span></span><span class="SEMI">;</span> <span id="local_col_2"><span class="LIDENT">col</span></span> <span class="RBRACE">}</span> <span class="EQUAL">=</span> <span class="UIDENT">Type</span><span class="DOT">.</span><span class="UIDENT">Atom</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/printf.ml.html#val-sprintf"><span class="UIDENT">Printf</span><span class="DOT">.</span><span class="LIDENT">sprintf</span></a> <span class="STRING">&quot;%d:%d&quot;</span> <a href="#local_row_1"><span class="LIDENT">row</span></a> <a href="#local_col_2"><span class="LIDENT">col</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Pos.val-add"><span class="LIDENT">add</span></span> <span id="local_t1_3"><span class="LIDENT">t1</span></span> <span id="local_t2_4"><span class="LIDENT">t2</span></span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">row</span> <span class="EQUAL">=</span> <a href="#local_t1_3"><span class="LIDENT">t1</span></a><span class="DOT">.</span><span class="LIDENT">row</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(+)"><span class="PLUS">+</span></a> <a href="#local_t2_4"><span class="LIDENT">t2</span></a><span class="DOT">.</span><span class="LIDENT">row</span><span class="SEMI">;</span> <span class="LIDENT">col</span> <span class="EQUAL">=</span> <a href="#local_t1_3"><span class="LIDENT">t1</span></a><span class="DOT">.</span><span class="LIDENT">col</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(+)"><span class="PLUS">+</span></a> <a href="#local_t2_4"><span class="LIDENT">t2</span></a><span class="DOT">.</span><span class="LIDENT">col</span> <span class="RBRACE">}</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Pos.val-sub"><span class="LIDENT">sub</span></span> <span id="local_t1_5"><span class="LIDENT">t1</span></span> <span id="local_t2_6"><span class="LIDENT">t2</span></span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">row</span> <span class="EQUAL">=</span> <a href="#local_t1_5"><span class="LIDENT">t1</span></a><span class="DOT">.</span><span class="LIDENT">row</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(-)"><span class="MINUS">-</span></a> <a href="#local_t2_6"><span class="LIDENT">t2</span></a><span class="DOT">.</span><span class="LIDENT">row</span><span class="SEMI">;</span> <span class="LIDENT">col</span> <span class="EQUAL">=</span> <a href="#local_t1_5"><span class="LIDENT">t1</span></a><span class="DOT">.</span><span class="LIDENT">col</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(-)"><span class="MINUS">-</span></a> <a href="#local_t2_6"><span class="LIDENT">t2</span></a><span class="DOT">.</span><span class="LIDENT">col</span> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Pos.val-compare"><span class="LIDENT">compare</span></span> <span class="LBRACE">{</span> <span class="LIDENT">row</span> <span class="EQUAL">=</span> <span id="local_r1_7"><span class="LIDENT">r1</span></span><span class="SEMI">;</span> <span class="LIDENT">col</span> <span class="EQUAL">=</span> <span id="local_c1_8"><span class="LIDENT">c1</span></span> <span class="RBRACE">}</span> <span class="LBRACE">{</span> <span class="LIDENT">row</span> <span class="EQUAL">=</span> <span id="local_r2_9"><span class="LIDENT">r2</span></span><span class="SEMI">;</span> <span class="LIDENT">col</span> <span class="EQUAL">=</span> <span id="local_c2_10"><span class="LIDENT">c2</span></span> <span class="RBRACE">}</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="IF">if</span> <a href="#local_r1_7"><span class="LIDENT">r1</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(=)"><span class="EQUAL">=</span></a> <a href="#local_r2_9"><span class="LIDENT">r2</span></a> <span class="THEN">then</span> <a href="#local_c1_8"><span class="LIDENT">c1</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(-)"><span class="MINUS">-</span></a> <a href="#local_c2_10"><span class="LIDENT">c2</span></a> <span class="ELSE">else</span> <a href="#local_r1_7"><span class="LIDENT">r1</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(-)"><span class="MINUS">-</span></a> <a href="#local_r2_9"><span class="LIDENT">r2</span></a><span class="EOL">
+</span>  <span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Pos.val-geq"><span class="LIDENT">geq</span></span> <span id="local_t1_11"><span class="LIDENT">t1</span></span> <span id="local_t2_12"><span class="LIDENT">t2</span></span> <span class="EQUAL">=</span> <span class="LIDENT">compare</span> <a href="#local_t1_11"><span class="LIDENT">t1</span></a> <a href="#local_t2_12"><span class="LIDENT">t2</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&gt;=)"><span class="INFIXOP0">&gt;=</span></a> <span class="INT">0</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Relative"><span class="MODULE">module</span> <span class="UIDENT">Relative</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="UIDENT">Pos</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Relative.val-zero"><span class="LIDENT">zero</span></span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">row</span> <span class="EQUAL">=</span> <span class="INT">0</span><span class="SEMI">;</span> <span class="LIDENT">col</span> <span class="EQUAL">=</span> <span class="INT">0</span> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Absolute"><span class="MODULE">module</span> <span class="UIDENT">Absolute</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="UIDENT">Pos</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Absolute.val-origin"><span class="LIDENT">origin</span></span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">row</span> <span class="EQUAL">=</span> <span class="INT">1</span><span class="SEMI">;</span> <span class="LIDENT">col</span> <span class="EQUAL">=</span> <span class="INT">1</span> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Absolute.val-of_lexing"><span class="LIDENT">of_lexing</span></span> <span class="LBRACE">{</span> <span id="local_pos_lnum_13"><span class="UIDENT">Lexing</span><span class="DOT">.</span><span class="LIDENT">pos_lnum</span></span><span class="SEMI">;</span> <span id="local_pos_cnum_15"><span class="LIDENT">pos_cnum</span></span><span class="SEMI">;</span> <span id="local_pos_bol_14"><span class="LIDENT">pos_bol</span></span><span class="SEMI">;</span> <span class="LIDENT">pos_fname</span> <span class="EQUAL">=</span> <span class="UNDERSCORE">_</span> <span class="RBRACE">}</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LBRACE">{</span> <span class="LIDENT">row</span> <span class="EQUAL">=</span> <a href="#local_pos_lnum_13"><span class="LIDENT">pos_lnum</span></a><span class="SEMI">;</span> <span class="LIDENT">col</span> <span class="EQUAL">=</span> <a href="#local_pos_cnum_15"><span class="LIDENT">pos_cnum</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(-)"><span class="MINUS">-</span></a> <a href="#local_pos_bol_14"><span class="LIDENT">pos_bol</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(+)"><span class="PLUS">+</span></a> <span class="INT">1</span> <span class="RBRACE">}</span><span class="EOL">
+</span>  <span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Absolute.val-diff"><span class="LIDENT">diff</span></span> <span class="EQUAL">=</span> <span class="LIDENT">sub</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

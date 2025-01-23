@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: lwt_seq.ml (lwt.src.lwt)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">Lwt</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; lwt &#x00BB; lwt_seq.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>lwt_seq.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">Lwt</a><ul><li>Library <code>lwt</code><ul><li><a href="../../lwt/Lwt/index.html">Lwt</a></li><li><a href="../../lwt/Lwt_condition/index.html">Lwt_condition</a></li><li><a href="../../lwt/Lwt_list/index.html">Lwt_list</a></li><li><a href="../../lwt/Lwt_mutex/index.html">Lwt_mutex</a></li><li><a href="../../lwt/Lwt_mvar/index.html">Lwt_mvar</a></li><li><a href="../../lwt/Lwt_pool/index.html">Lwt_pool</a></li><li><a href="../../lwt/Lwt_pqueue/index.html">Lwt_pqueue</a></li><li><a href="../../lwt/Lwt_result/index.html">Lwt_result</a></li><li><a href="../../lwt/Lwt_seq/index.html">Lwt_seq</a></li><li><a href="../../lwt/Lwt_sequence/index.html">Lwt_sequence</a></li><li><a href="../../lwt/Lwt_stream/index.html">Lwt_stream</a></li><li><a href="../../lwt/Lwt_switch/index.html">Lwt_switch</a></li></ul></li><li>Library <code>lwt.unix</code><ul><li><a href="../../lwt.unix/Lwt_bytes/index.html">Lwt_bytes</a></li><li><a href="../../lwt.unix/Lwt_config/index.html">Lwt_config</a></li><li><a href="../../lwt.unix/Lwt_engine/index.html">Lwt_engine</a></li><li><a href="../../lwt.unix/Lwt_features/index.html">Lwt_features</a></li><li><a href="../../lwt.unix/Lwt_fmt/index.html">Lwt_fmt</a></li><li><a href="../../lwt.unix/Lwt_gc/index.html">Lwt_gc</a></li><li><a href="../../lwt.unix/Lwt_io/index.html">Lwt_io</a></li><li><a href="../../lwt.unix/Lwt_main/index.html">Lwt_main</a></li><li><a href="../../lwt.unix/Lwt_preemptive/index.html">Lwt_preemptive</a></li><li><a href="../../lwt.unix/Lwt_process/index.html">Lwt_process</a></li><li><a href="../../lwt.unix/Lwt_sys/index.html">Lwt_sys</a></li><li><a href="../../lwt.unix/Lwt_throttle/index.html">Lwt_throttle</a></li><li><a href="../../lwt.unix/Lwt_timeout/index.html">Lwt_timeout</a></li><li><a href="../../lwt.unix/Lwt_unix/index.html">Lwt_unix</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>lwt<ul><li><a href="lwt.ml.html">lwt.ml</a></li><li><a href="lwt_condition.ml.html">lwt_condition.ml</a></li><li><a href="lwt_list.ml.html">lwt_list.ml</a></li><li><a href="lwt_mutex.ml.html">lwt_mutex.ml</a></li><li><a href="lwt_mvar.ml.html">lwt_mvar.ml</a></li><li><a href="lwt_pool.ml.html">lwt_pool.ml</a></li><li><a href="lwt_pqueue.ml.html">lwt_pqueue.ml</a></li><li><a href="lwt_result.ml.html">lwt_result.ml</a></li><li><a href="#" class="current_unit">lwt_seq.ml</a></li><li><a href="lwt_sequence.ml.html">lwt_sequence.ml</a></li><li><a href="lwt_stream.ml.html">lwt_stream.ml</a></li><li><a href="lwt_switch.ml.html">lwt_switch.ml</a></li></ul></li><li>lwt.unix<ul><li><a href="../lwt.unix/lwt_bytes.ml.html">lwt_bytes.ml</a></li><li><a href="../lwt.unix/lwt_config.ml.html">lwt_config.ml</a></li><li><a href="../lwt.unix/lwt_engine.ml.html">lwt_engine.ml</a></li><li><a href="../lwt.unix/lwt_features.ml.html">lwt_features.ml</a></li><li><a href="../lwt.unix/lwt_fmt.ml.html">lwt_fmt.ml</a></li><li><a href="../lwt.unix/lwt_gc.ml.html">lwt_gc.ml</a></li><li><a href="../lwt.unix/lwt_io.ml.html">lwt_io.ml</a></li><li><a href="../lwt.unix/lwt_main.ml.html">lwt_main.ml</a></li><li><a href="../lwt.unix/lwt_preemptive.ml.html">lwt_preemptive.ml</a></li><li><a href="../lwt.unix/lwt_process.ml.html">lwt_process.ml</a></li><li><a href="../lwt.unix/lwt_sys.ml.html">lwt_sys.ml</a></li><li><a href="../lwt.unix/lwt_throttle.ml.html">lwt_throttle.ml</a></li><li><a href="../lwt.unix/lwt_timeout.ml.html">lwt_timeout.ml</a></li><li><a href="../lwt.unix/lwt_unix.ml.html">lwt_unix.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+<a id="L121" class="source_line" href="#L121">121</a>
+<a id="L122" class="source_line" href="#L122">122</a>
+<a id="L123" class="source_line" href="#L123">123</a>
+<a id="L124" class="source_line" href="#L124">124</a>
+<a id="L125" class="source_line" href="#L125">125</a>
+<a id="L126" class="source_line" href="#L126">126</a>
+<a id="L127" class="source_line" href="#L127">127</a>
+<a id="L128" class="source_line" href="#L128">128</a>
+<a id="L129" class="source_line" href="#L129">129</a>
+<a id="L130" class="source_line" href="#L130">130</a>
+<a id="L131" class="source_line" href="#L131">131</a>
+<a id="L132" class="source_line" href="#L132">132</a>
+<a id="L133" class="source_line" href="#L133">133</a>
+<a id="L134" class="source_line" href="#L134">134</a>
+<a id="L135" class="source_line" href="#L135">135</a>
+<a id="L136" class="source_line" href="#L136">136</a>
+<a id="L137" class="source_line" href="#L137">137</a>
+<a id="L138" class="source_line" href="#L138">138</a>
+<a id="L139" class="source_line" href="#L139">139</a>
+<a id="L140" class="source_line" href="#L140">140</a>
+<a id="L141" class="source_line" href="#L141">141</a>
+<a id="L142" class="source_line" href="#L142">142</a>
+<a id="L143" class="source_line" href="#L143">143</a>
+<a id="L144" class="source_line" href="#L144">144</a>
+<a id="L145" class="source_line" href="#L145">145</a>
+<a id="L146" class="source_line" href="#L146">146</a>
+<a id="L147" class="source_line" href="#L147">147</a>
+<a id="L148" class="source_line" href="#L148">148</a>
+<a id="L149" class="source_line" href="#L149">149</a>
+<a id="L150" class="source_line" href="#L150">150</a>
+<a id="L151" class="source_line" href="#L151">151</a>
+<a id="L152" class="source_line" href="#L152">152</a>
+<a id="L153" class="source_line" href="#L153">153</a>
+<a id="L154" class="source_line" href="#L154">154</a>
+<a id="L155" class="source_line" href="#L155">155</a>
+<a id="L156" class="source_line" href="#L156">156</a>
+<a id="L157" class="source_line" href="#L157">157</a>
+<a id="L158" class="source_line" href="#L158">158</a>
+<a id="L159" class="source_line" href="#L159">159</a>
+<a id="L160" class="source_line" href="#L160">160</a>
+<a id="L161" class="source_line" href="#L161">161</a>
+<a id="L162" class="source_line" href="#L162">162</a>
+<a id="L163" class="source_line" href="#L163">163</a>
+<a id="L164" class="source_line" href="#L164">164</a>
+<a id="L165" class="source_line" href="#L165">165</a>
+<a id="L166" class="source_line" href="#L166">166</a>
+<a id="L167" class="source_line" href="#L167">167</a>
+<a id="L168" class="source_line" href="#L168">168</a>
+<a id="L169" class="source_line" href="#L169">169</a>
+<a id="L170" class="source_line" href="#L170">170</a>
+<a id="L171" class="source_line" href="#L171">171</a>
+<a id="L172" class="source_line" href="#L172">172</a>
+<a id="L173" class="source_line" href="#L173">173</a>
+<a id="L174" class="source_line" href="#L174">174</a>
+<a id="L175" class="source_line" href="#L175">175</a>
+<a id="L176" class="source_line" href="#L176">176</a>
+<a id="L177" class="source_line" href="#L177">177</a>
+<a id="L178" class="source_line" href="#L178">178</a>
+<a id="L179" class="source_line" href="#L179">179</a>
+<a id="L180" class="source_line" href="#L180">180</a>
+<a id="L181" class="source_line" href="#L181">181</a>
+<a id="L182" class="source_line" href="#L182">182</a>
+<a id="L183" class="source_line" href="#L183">183</a>
+<a id="L184" class="source_line" href="#L184">184</a>
+<a id="L185" class="source_line" href="#L185">185</a>
+<a id="L186" class="source_line" href="#L186">186</a>
+<a id="L187" class="source_line" href="#L187">187</a>
+<a id="L188" class="source_line" href="#L188">188</a>
+<a id="L189" class="source_line" href="#L189">189</a>
+<a id="L190" class="source_line" href="#L190">190</a>
+<a id="L191" class="source_line" href="#L191">191</a>
+<a id="L192" class="source_line" href="#L192">192</a>
+<a id="L193" class="source_line" href="#L193">193</a>
+<a id="L194" class="source_line" href="#L194">194</a>
+<a id="L195" class="source_line" href="#L195">195</a>
+<a id="L196" class="source_line" href="#L196">196</a>
+<a id="L197" class="source_line" href="#L197">197</a>
+<a id="L198" class="source_line" href="#L198">198</a>
+<a id="L199" class="source_line" href="#L199">199</a>
+<a id="L200" class="source_line" href="#L200">200</a>
+<a id="L201" class="source_line" href="#L201">201</a>
+<a id="L202" class="source_line" href="#L202">202</a>
+<a id="L203" class="source_line" href="#L203">203</a>
+<a id="L204" class="source_line" href="#L204">204</a>
+<a id="L205" class="source_line" href="#L205">205</a>
+<a id="L206" class="source_line" href="#L206">206</a>
+<a id="L207" class="source_line" href="#L207">207</a>
+<a id="L208" class="source_line" href="#L208">208</a>
+<a id="L209" class="source_line" href="#L209">209</a>
+<a id="L210" class="source_line" href="#L210">210</a>
+<a id="L211" class="source_line" href="#L211">211</a>
+<a id="L212" class="source_line" href="#L212">212</a>
+<a id="L213" class="source_line" href="#L213">213</a>
+<a id="L214" class="source_line" href="#L214">214</a>
+<a id="L215" class="source_line" href="#L215">215</a>
+<a id="L216" class="source_line" href="#L216">216</a>
+<a id="L217" class="source_line" href="#L217">217</a>
+<a id="L218" class="source_line" href="#L218">218</a>
+<a id="L219" class="source_line" href="#L219">219</a>
+<a id="L220" class="source_line" href="#L220">220</a>
+<a id="L221" class="source_line" href="#L221">221</a>
+<a id="L222" class="source_line" href="#L222">222</a>
+<a id="L223" class="source_line" href="#L223">223</a>
+<a id="L224" class="source_line" href="#L224">224</a>
+<a id="L225" class="source_line" href="#L225">225</a>
+<a id="L226" class="source_line" href="#L226">226</a>
+<a id="L227" class="source_line" href="#L227">227</a>
+<a id="L228" class="source_line" href="#L228">228</a>
+<a id="L229" class="source_line" href="#L229">229</a>
+<a id="L230" class="source_line" href="#L230">230</a>
+<a id="L231" class="source_line" href="#L231">231</a>
+<a id="L232" class="source_line" href="#L232">232</a>
+<a id="L233" class="source_line" href="#L233">233</a>
+<a id="L234" class="source_line" href="#L234">234</a>
+<a id="L235" class="source_line" href="#L235">235</a>
+<a id="L236" class="source_line" href="#L236">236</a>
+<a id="L237" class="source_line" href="#L237">237</a>
+<a id="L238" class="source_line" href="#L238">238</a>
+<a id="L239" class="source_line" href="#L239">239</a>
+<a id="L240" class="source_line" href="#L240">240</a>
+<a id="L241" class="source_line" href="#L241">241</a>
+<a id="L242" class="source_line" href="#L242">242</a>
+<a id="L243" class="source_line" href="#L243">243</a>
+<a id="L244" class="source_line" href="#L244">244</a>
+<a id="L245" class="source_line" href="#L245">245</a>
+<a id="L246" class="source_line" href="#L246">246</a>
+<a id="L247" class="source_line" href="#L247">247</a>
+<a id="L248" class="source_line" href="#L248">248</a>
+<a id="L249" class="source_line" href="#L249">249</a>
+<a id="L250" class="source_line" href="#L250">250</a>
+<a id="L251" class="source_line" href="#L251">251</a>
+<a id="L252" class="source_line" href="#L252">252</a>
+<a id="L253" class="source_line" href="#L253">253</a>
+<a id="L254" class="source_line" href="#L254">254</a>
+<a id="L255" class="source_line" href="#L255">255</a>
+<a id="L256" class="source_line" href="#L256">256</a>
+<a id="L257" class="source_line" href="#L257">257</a>
+<a id="L258" class="source_line" href="#L258">258</a>
+<a id="L259" class="source_line" href="#L259">259</a>
+<a id="L260" class="source_line" href="#L260">260</a>
+<a id="L261" class="source_line" href="#L261">261</a>
+<a id="L262" class="source_line" href="#L262">262</a>
+<a id="L263" class="source_line" href="#L263">263</a>
+<a id="L264" class="source_line" href="#L264">264</a>
+<a id="L265" class="source_line" href="#L265">265</a>
+<a id="L266" class="source_line" href="#L266">266</a>
+<a id="L267" class="source_line" href="#L267">267</a>
+<a id="L268" class="source_line" href="#L268">268</a>
+<a id="L269" class="source_line" href="#L269">269</a>
+<a id="L270" class="source_line" href="#L270">270</a>
+<a id="L271" class="source_line" href="#L271">271</a>
+<a id="L272" class="source_line" href="#L272">272</a>
+<a id="L273" class="source_line" href="#L273">273</a>
+<a id="L274" class="source_line" href="#L274">274</a>
+<a id="L275" class="source_line" href="#L275">275</a>
+<a id="L276" class="source_line" href="#L276">276</a>
+<a id="L277" class="source_line" href="#L277">277</a>
+<a id="L278" class="source_line" href="#L278">278</a>
+<a id="L279" class="source_line" href="#L279">279</a>
+<a id="L280" class="source_line" href="#L280">280</a>
+<a id="L281" class="source_line" href="#L281">281</a>
+<a id="L282" class="source_line" href="#L282">282</a>
+<a id="L283" class="source_line" href="#L283">283</a>
+<a id="L284" class="source_line" href="#L284">284</a>
+<a id="L285" class="source_line" href="#L285">285</a>
+<a id="L286" class="source_line" href="#L286">286</a>
+<a id="L287" class="source_line" href="#L287">287</a>
+<a id="L288" class="source_line" href="#L288">288</a>
+<a id="L289" class="source_line" href="#L289">289</a>
+<a id="L290" class="source_line" href="#L290">290</a>
+<a id="L291" class="source_line" href="#L291">291</a>
+<a id="L292" class="source_line" href="#L292">292</a>
+<a id="L293" class="source_line" href="#L293">293</a>
+<a id="L294" class="source_line" href="#L294">294</a>
+<a id="L295" class="source_line" href="#L295">295</a>
+<a id="L296" class="source_line" href="#L296">296</a>
+<a id="L297" class="source_line" href="#L297">297</a>
+<a id="L298" class="source_line" href="#L298">298</a>
+<a id="L299" class="source_line" href="#L299">299</a>
+<a id="L300" class="source_line" href="#L300">300</a>
+<a id="L301" class="source_line" href="#L301">301</a>
+<a id="L302" class="source_line" href="#L302">302</a>
+<a id="L303" class="source_line" href="#L303">303</a>
+<a id="L304" class="source_line" href="#L304">304</a>
+<a id="L305" class="source_line" href="#L305">305</a>
+<a id="L306" class="source_line" href="#L306">306</a>
+<a id="L307" class="source_line" href="#L307">307</a>
+<a id="L308" class="source_line" href="#L308">308</a>
+<a id="L309" class="source_line" href="#L309">309</a>
+<a id="L310" class="source_line" href="#L310">310</a>
+<a id="L311" class="source_line" href="#L311">311</a>
+<a id="L312" class="source_line" href="#L312">312</a>
+<a id="L313" class="source_line" href="#L313">313</a>
+<a id="L314" class="source_line" href="#L314">314</a>
+<a id="L315" class="source_line" href="#L315">315</a>
+<a id="L316" class="source_line" href="#L316">316</a>
+<a id="L317" class="source_line" href="#L317">317</a>
+<a id="L318" class="source_line" href="#L318">318</a>
+<a id="L319" class="source_line" href="#L319">319</a>
+<a id="L320" class="source_line" href="#L320">320</a>
+<a id="L321" class="source_line" href="#L321">321</a>
+<a id="L322" class="source_line" href="#L322">322</a>
+<a id="L323" class="source_line" href="#L323">323</a>
+<a id="L324" class="source_line" href="#L324">324</a>
+</code><code class="source_code"><span><span class="COMMENT">(* This file is part of Lwt, released under the MIT license. See LICENSE.md for
+   details, or visit https://github.com/ocsigen/lwt/blob/master/LICENSE.md. *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="OPEN">open</span> <a href="lwt.ml.html#module-Syntax"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="UIDENT">Syntax</span></a><span class="EOL">
+</span><span class="OPEN">open</span> <a href="lwt.ml.html#module-Infix"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="UIDENT">Infix</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-node"><span class="TYPE">type</span> <span class="PLUS">+</span><span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">node</span> <span class="EQUAL">=</span> <span id="type-node.constructor-Nil"><span class="UIDENT">Nil</span></span> <span id="type-node.constructor-Cons"><span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="OF">of</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="STAR">*</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="AND">and</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Public_types.type-t"><span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">node</span> <span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-return_nil"><span class="LIDENT">return_nil</span></span> <span class="EQUAL">=</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="UIDENT">Nil</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-empty"><span class="LIDENT">empty</span></span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-return"><span class="LIDENT">return</span></span> <span class="LPAREN">(</span><span id="local_x_1"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span><span class="RPAREN">)</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_1"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">empty</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-return_lwt"><span class="LIDENT">return_lwt</span></span> <span class="LPAREN">(</span><span id="local_x_2"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <a href="lwt.ml.html#module-Public_types.type-t"><span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>   <span class="LETOP">let+</span> <span id="local_x_3"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_x_2"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>   <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_3"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">empty</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-cons"><span class="LIDENT">cons</span></span> <span id="local_x_4"><span class="LIDENT">x</span></span> <span id="local_t_5"><span class="LIDENT">t</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_4"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <a href="#local_t_5"><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-cons_lwt"><span class="LIDENT">cons_lwt</span></span> <span id="local_x_6"><span class="LIDENT">x</span></span> <span id="local_t_7"><span class="LIDENT">t</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>   <span class="LETOP">let+</span> <span id="local_x_8"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_x_6"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>   <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_8"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <a href="#local_t_7"><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* A note on recursing through the seqs:
+   When traversing a seq, the first time we evaluate a suspended node we are
+   on the left of the first bind (&gt;&gt;=). In that case, we use apply to capture
+   exceptions into promise rejection.
+
+   This is only needed on the first iteration because we are within a callback
+   passed to Lwt on the right-hand side of a bind after that.
+
+   Throughout this file we use the same code pattern to achieve this: we
+   shadow the recursive traversal function with an identical-but-for-the-apply
+   non-recursive copy. *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-{append}1/shadowed/(lwt-src-lwt-lwt_seq.ml)"><span class="LIDENT">append</span></span> <span id="local_seq1_9"><span class="LIDENT">seq1</span></span> <span id="local_seq2_10"><span class="LIDENT">seq2</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="#local_seq1_9"><span class="LIDENT">seq1</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_seq2_10"><span class="LIDENT">seq2</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_11"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_12"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_11"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">append</span> <a href="#local_next_12"><span class="LIDENT">next</span></a> <a href="#local_seq2_10"><span class="LIDENT">seq2</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-append"><span class="LIDENT">append</span></span> <span id="local_seq1_13"><span class="LIDENT">seq1</span></span> <span id="local_seq2_14"><span class="LIDENT">seq2</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq1_13"><span class="LIDENT">seq1</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_seq2_14"><span class="LIDENT">seq2</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_15"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_16"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_15"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">append</span> <a href="#local_next_16"><span class="LIDENT">next</span></a> <a href="#local_seq2_14"><span class="LIDENT">seq2</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-{map}2/shadowed/(lwt-src-lwt-lwt_seq.ml)"><span class="LIDENT">map</span></span> <span id="local_f_17"><span class="LIDENT">f</span></span> <span id="local_seq_18"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="#local_seq_18"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;|=)"><span class="INFIXOP0">&gt;|=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_19"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_20"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_x_21"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_f_17"><span class="LIDENT">f</span></a> <a href="#local_x_19"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_21"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">map</span> <a href="#local_f_17"><span class="LIDENT">f</span></a> <a href="#local_next_20"><span class="LIDENT">next</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-map"><span class="LIDENT">map</span></span> <span id="local_f_22"><span class="LIDENT">f</span></span> <span id="local_seq_23"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_23"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;|=)"><span class="INFIXOP0">&gt;|=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_24"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_25"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_x_26"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_f_22"><span class="LIDENT">f</span></a> <a href="#local_x_24"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_26"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">map</span> <a href="#local_f_22"><span class="LIDENT">f</span></a> <a href="#local_next_25"><span class="LIDENT">next</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-{map_s}3/shadowed/(lwt-src-lwt-lwt_seq.ml)"><span class="LIDENT">map_s</span></span> <span id="local_f_27"><span class="LIDENT">f</span></span> <span id="local_seq_28"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="#local_seq_28"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_29"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_30"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LETOP">let+</span> <span id="local_x_31"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_f_27"><span class="LIDENT">f</span></a> <a href="#local_x_29"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_31"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">map_s</span> <a href="#local_f_27"><span class="LIDENT">f</span></a> <a href="#local_next_30"><span class="LIDENT">next</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-map_s"><span class="LIDENT">map_s</span></span> <span id="local_f_32"><span class="LIDENT">f</span></span> <span id="local_seq_33"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_33"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_34"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_35"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LETOP">let+</span> <span id="local_x_36"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_f_32"><span class="LIDENT">f</span></a> <a href="#local_x_34"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_36"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">map_s</span> <a href="#local_f_32"><span class="LIDENT">f</span></a> <a href="#local_next_35"><span class="LIDENT">next</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-{filter_map}4/shadowed/(lwt-src-lwt-lwt_seq.ml)"><span class="LIDENT">filter_map</span></span> <span id="local_f_37"><span class="LIDENT">f</span></span> <span id="local_seq_38"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="#local_seq_38"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_39"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_40"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_x_41"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_f_37"><span class="LIDENT">f</span></a> <a href="#local_x_39"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="MATCH">match</span> <a href="#local_x_41"><span class="LIDENT">x</span></a> <span class="WITH">with</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">filter_map</span> <a href="#local_f_37"><span class="LIDENT">f</span></a> <a href="#local_next_40"><span class="LIDENT">next</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_y_42"><span class="LIDENT">y</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_y_42"><span class="LIDENT">y</span></a><span class="COMMA">,</span> <span class="LIDENT">filter_map</span> <a href="#local_f_37"><span class="LIDENT">f</span></a> <a href="#local_next_40"><span class="LIDENT">next</span></a><span class="RPAREN">)</span> <span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-filter_map"><span class="LIDENT">filter_map</span></span> <span id="local_f_43"><span class="LIDENT">f</span></span> <span id="local_seq_44"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_44"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_45"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_46"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_x_47"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_f_43"><span class="LIDENT">f</span></a> <a href="#local_x_45"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="MATCH">match</span> <a href="#local_x_47"><span class="LIDENT">x</span></a> <span class="WITH">with</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">filter_map</span> <a href="#local_f_43"><span class="LIDENT">f</span></a> <a href="#local_next_46"><span class="LIDENT">next</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_y_48"><span class="LIDENT">y</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_y_48"><span class="LIDENT">y</span></a><span class="COMMA">,</span> <span class="LIDENT">filter_map</span> <a href="#local_f_43"><span class="LIDENT">f</span></a> <a href="#local_next_46"><span class="LIDENT">next</span></a><span class="RPAREN">)</span> <span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-{filter_map_s}5/shadowed/(lwt-src-lwt-lwt_seq.ml)"><span class="LIDENT">filter_map_s</span></span> <span id="local_f_49"><span class="LIDENT">f</span></span> <span id="local_seq_50"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="#local_seq_50"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_51"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_52"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="EOL">
+</span>      <span class="LETOP">let*</span> <span id="local_x_53"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_f_49"><span class="LIDENT">f</span></a> <a href="#local_x_51"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="MATCH">match</span> <a href="#local_x_53"><span class="LIDENT">x</span></a> <span class="WITH">with</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">filter_map_s</span> <a href="#local_f_49"><span class="LIDENT">f</span></a> <a href="#local_next_52"><span class="LIDENT">next</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_y_54"><span class="LIDENT">y</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_y_54"><span class="LIDENT">y</span></a><span class="COMMA">,</span> <span class="LIDENT">filter_map_s</span> <a href="#local_f_49"><span class="LIDENT">f</span></a> <a href="#local_next_52"><span class="LIDENT">next</span></a><span class="RPAREN">)</span> <span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-filter_map_s"><span class="LIDENT">filter_map_s</span></span> <span id="local_f_55"><span class="LIDENT">f</span></span> <span id="local_seq_56"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_56"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_57"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_58"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="EOL">
+</span>      <span class="LETOP">let*</span> <span id="local_x_59"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_f_55"><span class="LIDENT">f</span></a> <a href="#local_x_57"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="MATCH">match</span> <a href="#local_x_59"><span class="LIDENT">x</span></a> <span class="WITH">with</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">filter_map_s</span> <a href="#local_f_55"><span class="LIDENT">f</span></a> <a href="#local_next_58"><span class="LIDENT">next</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_y_60"><span class="LIDENT">y</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_y_60"><span class="LIDENT">y</span></a><span class="COMMA">,</span> <span class="LIDENT">filter_map_s</span> <a href="#local_f_55"><span class="LIDENT">f</span></a> <a href="#local_next_58"><span class="LIDENT">next</span></a><span class="RPAREN">)</span> <span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-{filter}6/shadowed/(lwt-src-lwt-lwt_seq.ml)"><span class="LIDENT">filter</span></span> <span id="local_f_61"><span class="LIDENT">f</span></span> <span id="local_seq_62"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="#local_seq_62"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_63"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_64"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_ok_65"><span class="LIDENT">ok</span></span> <span class="EQUAL">=</span> <a href="#local_f_61"><span class="LIDENT">f</span></a> <a href="#local_x_63"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="#local_ok_65"><span class="LIDENT">ok</span></a> <span class="THEN">then</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_63"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">filter</span> <a href="#local_f_61"><span class="LIDENT">f</span></a> <a href="#local_next_64"><span class="LIDENT">next</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="ELSE">else</span> <span class="LIDENT">filter</span> <a href="#local_f_61"><span class="LIDENT">f</span></a> <a href="#local_next_64"><span class="LIDENT">next</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-filter"><span class="LIDENT">filter</span></span> <span id="local_f_66"><span class="LIDENT">f</span></span> <span id="local_seq_67"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_67"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_68"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_69"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_ok_70"><span class="LIDENT">ok</span></span> <span class="EQUAL">=</span> <a href="#local_f_66"><span class="LIDENT">f</span></a> <a href="#local_x_68"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="#local_ok_70"><span class="LIDENT">ok</span></a> <span class="THEN">then</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_68"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">filter</span> <a href="#local_f_66"><span class="LIDENT">f</span></a> <a href="#local_next_69"><span class="LIDENT">next</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="ELSE">else</span> <span class="LIDENT">filter</span> <a href="#local_f_66"><span class="LIDENT">f</span></a> <a href="#local_next_69"><span class="LIDENT">next</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-{filter_s}7/shadowed/(lwt-src-lwt-lwt_seq.ml)"><span class="LIDENT">filter_s</span></span> <span id="local_f_71"><span class="LIDENT">f</span></span> <span id="local_seq_72"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="#local_seq_72"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_73"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_74"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LETOP">let*</span> <span id="local_ok_75"><span class="LIDENT">ok</span></span> <span class="EQUAL">=</span> <a href="#local_f_71"><span class="LIDENT">f</span></a> <a href="#local_x_73"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="#local_ok_75"><span class="LIDENT">ok</span></a> <span class="THEN">then</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_73"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">filter_s</span> <a href="#local_f_71"><span class="LIDENT">f</span></a> <a href="#local_next_74"><span class="LIDENT">next</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="ELSE">else</span> <span class="LIDENT">filter_s</span> <a href="#local_f_71"><span class="LIDENT">f</span></a> <a href="#local_next_74"><span class="LIDENT">next</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-filter_s"><span class="LIDENT">filter_s</span></span> <span id="local_f_76"><span class="LIDENT">f</span></span> <span id="local_seq_77"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_77"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_78"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_79"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LETOP">let*</span> <span id="local_ok_80"><span class="LIDENT">ok</span></span> <span class="EQUAL">=</span> <a href="#local_f_76"><span class="LIDENT">f</span></a> <a href="#local_x_78"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="#local_ok_80"><span class="LIDENT">ok</span></a> <span class="THEN">then</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_78"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">filter_s</span> <a href="#local_f_76"><span class="LIDENT">f</span></a> <a href="#local_next_79"><span class="LIDENT">next</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="ELSE">else</span> <span class="LIDENT">filter_s</span> <a href="#local_f_76"><span class="LIDENT">f</span></a> <a href="#local_next_79"><span class="LIDENT">next</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-{flat_map}8/shadowed/(lwt-src-lwt-lwt_seq.ml)"><span class="LIDENT">flat_map</span></span> <span id="local_f_81"><span class="LIDENT">f</span></span> <span id="local_seq_82"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="#local_seq_82"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_83"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_84"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LIDENT">flat_map_app</span> <a href="#local_f_81"><span class="LIDENT">f</span></a> <span class="LPAREN">(</span><a href="#local_f_81"><span class="LIDENT">f</span></a> <a href="#local_x_83"><span class="LIDENT">x</span></a><span class="RPAREN">)</span> <a href="#local_next_84"><span class="LIDENT">next</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* this is [append seq (flat_map f tail)] *)</span><span class="EOL">
+</span><span class="AND">and</span> <span id="val-flat_map_app"><span class="LIDENT">flat_map_app</span></span> <span id="local_f_85"><span class="LIDENT">f</span></span> <span id="local_seq_86"><span class="LIDENT">seq</span></span> <span id="local_tail_87"><span class="LIDENT">tail</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="#local_seq_86"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">flat_map</span> <a href="#local_f_85"><span class="LIDENT">f</span></a> <a href="#local_tail_87"><span class="LIDENT">tail</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_88"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_89"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_88"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">flat_map_app</span> <a href="#local_f_85"><span class="LIDENT">f</span></a> <a href="#local_next_89"><span class="LIDENT">next</span></a> <a href="#local_tail_87"><span class="LIDENT">tail</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-flat_map"><span class="LIDENT">flat_map</span></span> <span id="local_f_90"><span class="LIDENT">f</span></span> <span id="local_seq_91"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_91"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_92"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_93"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LIDENT">flat_map_app</span> <a href="#local_f_90"><span class="LIDENT">f</span></a> <span class="LPAREN">(</span><a href="#local_f_90"><span class="LIDENT">f</span></a> <a href="#local_x_92"><span class="LIDENT">x</span></a><span class="RPAREN">)</span> <a href="#local_next_93"><span class="LIDENT">next</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-fold_left"><span class="LIDENT">fold_left</span></span> <span id="local_f_94"><span class="LIDENT">f</span></span> <span id="local_acc_95"><span class="LIDENT">acc</span></span> <span id="local_seq_96"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="local_aux_97"><span class="LIDENT">aux</span></span> <span id="local_f_98"><span class="LIDENT">f</span></span> <span id="local_acc_99"><span class="LIDENT">acc</span></span> <span id="local_seq_100"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#local_seq_100"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <a href="#local_acc_99"><span class="LIDENT">acc</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_101"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_102"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="LET">let</span> <span id="local_acc_103"><span class="LIDENT">acc</span></span> <span class="EQUAL">=</span> <a href="#local_f_98"><span class="LIDENT">f</span></a> <a href="#local_acc_99"><span class="LIDENT">acc</span></a> <a href="#local_x_101"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <a href="#local_aux_97"><span class="LIDENT">aux</span></a> <a href="#local_f_98"><span class="LIDENT">f</span></a> <a href="#local_acc_103"><span class="LIDENT">acc</span></a> <a href="#local_next_102"><span class="LIDENT">next</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_aux_104"><span class="LIDENT">aux</span></span> <span id="local_f_105"><span class="LIDENT">f</span></span> <span id="local_acc_106"><span class="LIDENT">acc</span></span> <span id="local_seq_107"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_107"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <a href="#local_acc_106"><span class="LIDENT">acc</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_108"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_109"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="LET">let</span> <span id="local_acc_110"><span class="LIDENT">acc</span></span> <span class="EQUAL">=</span> <a href="#local_f_105"><span class="LIDENT">f</span></a> <a href="#local_acc_106"><span class="LIDENT">acc</span></a> <a href="#local_x_108"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <a href="#local_aux_97"><span class="LIDENT">aux</span></a> <a href="#local_f_105"><span class="LIDENT">f</span></a> <a href="#local_acc_110"><span class="LIDENT">acc</span></a> <a href="#local_next_109"><span class="LIDENT">next</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <a href="#local_aux_104"><span class="LIDENT">aux</span></a> <a href="#local_f_94"><span class="LIDENT">f</span></a> <a href="#local_acc_95"><span class="LIDENT">acc</span></a> <a href="#local_seq_96"><span class="LIDENT">seq</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-fold_left_s"><span class="LIDENT">fold_left_s</span></span> <span id="local_f_111"><span class="LIDENT">f</span></span> <span id="local_acc_112"><span class="LIDENT">acc</span></span> <span id="local_seq_113"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="local_aux_114"><span class="LIDENT">aux</span></span> <span id="local_f_115"><span class="LIDENT">f</span></span> <span id="local_acc_116"><span class="LIDENT">acc</span></span> <span id="local_seq_117"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#local_seq_117"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <a href="#local_acc_116"><span class="LIDENT">acc</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_118"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_119"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="LETOP">let*</span> <span id="local_acc_120"><span class="LIDENT">acc</span></span> <span class="EQUAL">=</span> <a href="#local_f_115"><span class="LIDENT">f</span></a> <a href="#local_acc_116"><span class="LIDENT">acc</span></a> <a href="#local_x_118"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <a href="#local_aux_114"><span class="LIDENT">aux</span></a> <a href="#local_f_115"><span class="LIDENT">f</span></a> <a href="#local_acc_120"><span class="LIDENT">acc</span></a> <a href="#local_next_119"><span class="LIDENT">next</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_aux_121"><span class="LIDENT">aux</span></span> <span id="local_f_122"><span class="LIDENT">f</span></span> <span id="local_acc_123"><span class="LIDENT">acc</span></span> <span id="local_seq_124"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_124"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <a href="#local_acc_123"><span class="LIDENT">acc</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_125"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_126"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="LETOP">let*</span> <span id="local_acc_127"><span class="LIDENT">acc</span></span> <span class="EQUAL">=</span> <a href="#local_f_122"><span class="LIDENT">f</span></a> <a href="#local_acc_123"><span class="LIDENT">acc</span></a> <a href="#local_x_125"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <a href="#local_aux_114"><span class="LIDENT">aux</span></a> <a href="#local_f_122"><span class="LIDENT">f</span></a> <a href="#local_acc_127"><span class="LIDENT">acc</span></a> <a href="#local_next_126"><span class="LIDENT">next</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <a href="#local_aux_121"><span class="LIDENT">aux</span></a> <a href="#local_f_111"><span class="LIDENT">f</span></a> <a href="#local_acc_112"><span class="LIDENT">acc</span></a> <a href="#local_seq_113"><span class="LIDENT">seq</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-iter"><span class="LIDENT">iter</span></span> <span id="local_f_128"><span class="LIDENT">f</span></span> <span id="local_seq_129"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="local_aux_130"><span class="LIDENT">aux</span></span> <span id="local_seq_131"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#local_seq_131"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return_unit"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return_unit</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_132"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_133"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <a href="#local_f_128"><span class="LIDENT">f</span></a> <a href="#local_x_132"><span class="LIDENT">x</span></a><span class="SEMI">;</span><span class="EOL">
+</span>        <a href="#local_aux_130"><span class="LIDENT">aux</span></a> <a href="#local_next_133"><span class="LIDENT">next</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_aux_134"><span class="LIDENT">aux</span></span> <span id="local_seq_135"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_135"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return_unit"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return_unit</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_136"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_137"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <a href="#local_f_128"><span class="LIDENT">f</span></a> <a href="#local_x_136"><span class="LIDENT">x</span></a><span class="SEMI">;</span><span class="EOL">
+</span>        <a href="#local_aux_130"><span class="LIDENT">aux</span></a> <a href="#local_next_137"><span class="LIDENT">next</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <a href="#local_aux_134"><span class="LIDENT">aux</span></a> <a href="#local_seq_129"><span class="LIDENT">seq</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-iter_s"><span class="LIDENT">iter_s</span></span> <span id="local_f_138"><span class="LIDENT">f</span></span> <span id="local_seq_139"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="local_aux_140"><span class="LIDENT">aux</span></span> <span id="local_seq_141"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#local_seq_141"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return_unit"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return_unit</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_142"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_143"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="LETOP">let*</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="#local_f_138"><span class="LIDENT">f</span></a> <a href="#local_x_142"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <a href="#local_aux_140"><span class="LIDENT">aux</span></a> <a href="#local_next_143"><span class="LIDENT">next</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_aux_144"><span class="LIDENT">aux</span></span> <span id="local_seq_145"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_145"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return_unit"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return_unit</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_146"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_147"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="LETOP">let*</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="#local_f_138"><span class="LIDENT">f</span></a> <a href="#local_x_146"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <a href="#local_aux_140"><span class="LIDENT">aux</span></a> <a href="#local_next_147"><span class="LIDENT">next</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <a href="#local_aux_144"><span class="LIDENT">aux</span></a> <a href="#local_seq_139"><span class="LIDENT">seq</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-iter_p"><span class="LIDENT">iter_p</span></span> <span id="local_f_148"><span class="LIDENT">f</span></span> <span id="local_seq_149"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="local_aux_150"><span class="LIDENT">aux</span></span> <span id="local_acc_151"><span class="LIDENT">acc</span></span> <span id="local_seq_152"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="#local_seq_152"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Concurrent_composition.val-join"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">join</span></a> <a href="#local_acc_151"><span class="LIDENT">acc</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_153"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_154"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="LET">let</span> <span id="local_p_155"><span class="LIDENT">p</span></span> <span class="EQUAL">=</span> <a href="#local_f_148"><span class="LIDENT">f</span></a> <a href="#local_x_153"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <a href="#local_aux_150"><span class="LIDENT">aux</span></a> <span class="LPAREN">(</span><a href="#local_p_155"><span class="LIDENT">p</span></a><span class="COLONCOLON">::</span><a href="#local_acc_151"><span class="LIDENT">acc</span></a><span class="RPAREN">)</span> <a href="#local_next_154"><span class="LIDENT">next</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_aux_156"><span class="LIDENT">aux</span></span> <span id="local_acc_157"><span class="LIDENT">acc</span></span> <span id="local_seq_158"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_158"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Concurrent_composition.val-join"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">join</span></a> <a href="#local_acc_157"><span class="LIDENT">acc</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_159"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_160"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="LET">let</span> <span id="local_p_161"><span class="LIDENT">p</span></span> <span class="EQUAL">=</span> <a href="#local_f_148"><span class="LIDENT">f</span></a> <a href="#local_x_159"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <a href="#local_aux_150"><span class="LIDENT">aux</span></a> <span class="LPAREN">(</span><a href="#local_p_161"><span class="LIDENT">p</span></a><span class="COLONCOLON">::</span><a href="#local_acc_157"><span class="LIDENT">acc</span></a><span class="RPAREN">)</span> <a href="#local_next_160"><span class="LIDENT">next</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <a href="#local_aux_156"><span class="LIDENT">aux</span></a> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <a href="#local_seq_149"><span class="LIDENT">seq</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-iter_n"><span class="LIDENT">iter_n</span></span> <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_max_concurrency_162"><span class="LIDENT">max_concurrency</span></span> <span class="EQUAL">=</span> <span class="INT">1</span><span class="RPAREN">)</span> <span id="local_f_163"><span class="LIDENT">f</span></span> <span id="local_seq_164"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="BEGIN">begin</span><span class="EOL">
+</span>    <span class="IF">if</span> <a href="#local_max_concurrency_162"><span class="LIDENT">max_concurrency</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;=)"><span class="INFIXOP0">&lt;=</span></a> <span class="INT">0</span> <span class="THEN">then</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_message_165"><span class="LIDENT">message</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>        <a href="../../../ocaml-base-compiler/src/stdlib/printf.ml.html#val-sprintf"><span class="UIDENT">Printf</span><span class="DOT">.</span><span class="LIDENT">sprintf</span></a><span class="EOL">
+</span>          <span class="STRING">&quot;Lwt_seq.iter_n: max_concurrency must be &gt; 0, %d given&quot;</span><span class="EOL">
+</span>          <a href="#local_max_concurrency_162"><span class="LIDENT">max_concurrency</span></a><span class="EOL">
+</span>      <span class="IN">in</span><span class="EOL">
+</span>      <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-invalid_arg"><span class="LIDENT">invalid_arg</span></a> <a href="#local_message_165"><span class="LIDENT">message</span></a><span class="EOL">
+</span>  <span class="END">end</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="local_loop_166"><span class="LIDENT">loop</span></span> <span id="local_running_167"><span class="LIDENT">running</span></span> <span id="local_available_168"><span class="LIDENT">available</span></span> <span id="local_seq_169"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="BEGIN">begin</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="#local_available_168"><span class="LIDENT">available</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&gt;)"><span class="GREATER">&gt;</span></a> <span class="INT">0</span> <span class="THEN">then</span> <span class="LPAREN">(</span><span class="EOL">
+</span>        <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><a href="#local_running_167"><span class="LIDENT">running</span></a><span class="COMMA">,</span> <a href="#local_available_168"><span class="LIDENT">available</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="ELSE">else</span> <span class="LPAREN">(</span><span class="EOL">
+</span>        <a href="lwt.ml.html#module-Concurrent_composition.val-nchoose_split"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">nchoose_split</span></a> <a href="#local_running_167"><span class="LIDENT">running</span></a> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUN">fun</span> <span class="LPAREN">(</span><span id="local_complete_170"><span class="LIDENT">complete</span></span><span class="COMMA">,</span> <span id="local_running_171"><span class="LIDENT">running</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><a href="#local_running_171"><span class="LIDENT">running</span></a><span class="COMMA">,</span> <a href="#local_available_168"><span class="LIDENT">available</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(+)"><span class="PLUS">+</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-length"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">length</span></a> <a href="#local_complete_170"><span class="LIDENT">complete</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="END">end</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUN">fun</span> <span class="LPAREN">(</span><span id="local_running_172"><span class="LIDENT">running</span></span><span class="COMMA">,</span> <span id="local_available_173"><span class="LIDENT">available</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <a href="#local_seq_169"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <a href="lwt.ml.html#module-Concurrent_composition.val-join"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">join</span></a> <a href="#local_running_172"><span class="LIDENT">running</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_elt_174"><span class="LIDENT">elt</span></span><span class="COMMA">,</span> <span id="local_seq_175"><span class="LIDENT">seq</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <a href="#local_loop_166"><span class="LIDENT">loop</span></a> <span class="LPAREN">(</span><a href="#local_f_163"><span class="LIDENT">f</span></a> <a href="#local_elt_174"><span class="LIDENT">elt</span></a> <span class="COLONCOLON">::</span> <a href="#local_running_172"><span class="LIDENT">running</span></a><span class="RPAREN">)</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-pred"><span class="LIDENT">pred</span></a> <a href="#local_available_173"><span class="LIDENT">available</span></a><span class="RPAREN">)</span> <a href="#local_seq_175"><span class="LIDENT">seq</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="COMMENT">(* because the recursion is more complicated here, we apply the seq directly at
+     the call-site instead *)</span><span class="EOL">
+</span>  <a href="#local_loop_166"><span class="LIDENT">loop</span></a> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <a href="#local_max_concurrency_162"><span class="LIDENT">max_concurrency</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_164"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-unfold"><span class="LIDENT">unfold</span></span> <span id="local_f_176"><span class="LIDENT">f</span></span> <span id="local_u_177"><span class="LIDENT">u</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_f_176"><span class="LIDENT">f</span></a> <a href="#local_u_177"><span class="LIDENT">u</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span id="local_x_178"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_u'_179"><span class="LIDENT">u'</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_178"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">unfold</span> <a href="#local_f_176"><span class="LIDENT">f</span></a> <a href="#local_u'_179"><span class="LIDENT">u'</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="EXCEPTION">exception</span> <span id="local_exc_180"><span class="LIDENT">exc</span></span> <span class="WHEN">when</span> <a href="lwt.ml.html#module-Exception_filter.val-run"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="UIDENT">Exception_filter</span><span class="DOT">.</span><span class="LIDENT">run</span></a> <a href="#local_exc_180"><span class="LIDENT">exc</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-fail"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">fail</span></a> <a href="#local_exc_180"><span class="LIDENT">exc</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-{unfold_lwt}9/shadowed/(lwt-src-lwt-lwt_seq.ml)"><span class="LIDENT">unfold_lwt</span></span> <span id="local_f_181"><span class="LIDENT">f</span></span> <span id="local_u_182"><span class="LIDENT">u</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LETOP">let*</span> <span id="local_x_183"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_f_181"><span class="LIDENT">f</span></a> <a href="#local_u_182"><span class="LIDENT">u</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_x_183"><span class="LIDENT">x</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span id="local_x_184"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_u'_185"><span class="LIDENT">u'</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_184"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">unfold_lwt</span> <a href="#local_f_181"><span class="LIDENT">f</span></a> <a href="#local_u'_185"><span class="LIDENT">u'</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-unfold_lwt"><span class="LIDENT">unfold_lwt</span></span> <span id="local_f_186"><span class="LIDENT">f</span></span> <span id="local_u_187"><span class="LIDENT">u</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LETOP">let*</span> <span id="local_x_188"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_f_186"><span class="LIDENT">f</span></a> <a href="#local_u_187"><span class="LIDENT">u</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_x_188"><span class="LIDENT">x</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span id="local_x_189"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_u'_190"><span class="LIDENT">u'</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_189"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LIDENT">unfold_lwt</span> <a href="#local_f_186"><span class="LIDENT">f</span></a> <a href="#local_u'_190"><span class="LIDENT">u'</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-of_list"><span class="LIDENT">of_list</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">empty</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_h_191"><span class="LIDENT">h</span></span> <span class="COLONCOLON">::</span> <span id="local_t_192"><span class="LIDENT">t</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">cons</span> <a href="#local_h_191"><span class="LIDENT">h</span></a> <span class="LPAREN">(</span><span class="LIDENT">of_list</span> <a href="#local_t_192"><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-{to_list}10/shadowed/(lwt-src-lwt-lwt_seq.ml)"><span class="LIDENT">to_list</span></span> <span id="local_seq_193"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="#local_seq_193"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return_nil"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return_nil</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_194"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_195"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="LETOP">let+</span> <span id="local_l_196"><span class="LIDENT">l</span></span> <span class="EQUAL">=</span> <span class="LIDENT">to_list</span> <a href="#local_next_195"><span class="LIDENT">next</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <a href="#local_x_194"><span class="LIDENT">x</span></a> <span class="COLONCOLON">::</span> <a href="#local_l_196"><span class="LIDENT">l</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-to_list"><span class="LIDENT">to_list</span></span> <span id="local_seq_197"><span class="LIDENT">seq</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_seq_197"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="lwt.ml.html#module-Infix.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-return_nil"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return_nil</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_198"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_199"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="LETOP">let+</span> <span id="local_l_200"><span class="LIDENT">l</span></span> <span class="EQUAL">=</span> <span class="LIDENT">to_list</span> <a href="#local_next_199"><span class="LIDENT">next</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <a href="#local_x_198"><span class="LIDENT">x</span></a> <span class="COLONCOLON">::</span> <a href="#local_l_200"><span class="LIDENT">l</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-of_seq"><span class="LIDENT">of_seq</span></span> <span id="local_seq_201"><span class="LIDENT">seq</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_seq_201"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Seq</span><span class="DOT">.</span><span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Seq</span><span class="DOT">.</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_202"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_203"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <a href="lwt.ml.html#module-Trivial_promises.val-return"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return</span></a> <span class="LPAREN">(</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_202"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <span class="LPAREN">(</span><span class="LIDENT">of_seq</span> <a href="#local_next_203"><span class="LIDENT">next</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="EXCEPTION">exception</span> <span id="local_exn_204"><span class="LIDENT">exn</span></span> <span class="WHEN">when</span> <a href="lwt.ml.html#module-Exception_filter.val-run"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="UIDENT">Exception_filter</span><span class="DOT">.</span><span class="LIDENT">run</span></a> <a href="#local_exn_204"><span class="LIDENT">exn</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-fail"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">fail</span></a> <a href="#local_exn_204"><span class="LIDENT">exn</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-{of_seq_lwt}11/shadowed/(lwt-src-lwt-lwt_seq.ml)"><span class="LIDENT">of_seq_lwt</span></span> <span class="LPAREN">(</span><span id="local_seq_205"><span class="LIDENT">seq</span></span><span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/seq.ml.html#type-t"><a href="lwt.ml.html#module-Public_types.type-t"><span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Seq</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="#local_seq_205"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Seq</span><span class="DOT">.</span><span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Seq</span><span class="DOT">.</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_206"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_207"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>       <span class="LETOP">let+</span> <span id="local_x_208"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_x_206"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>       <span class="LET">let</span> <span id="local_next_209"><span class="LIDENT">next</span></span> <span class="EQUAL">=</span> <span class="LIDENT">of_seq_lwt</span> <a href="#local_next_207"><span class="LIDENT">next</span></a> <span class="IN">in</span><span class="EOL">
+</span>       <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_208"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <a href="#local_next_209"><span class="LIDENT">next</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-of_seq_lwt"><span class="LIDENT">of_seq_lwt</span></span> <span class="LPAREN">(</span><span id="local_seq_210"><span class="LIDENT">seq</span></span><span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/seq.ml.html#type-t"><a href="lwt.ml.html#module-Public_types.type-t"><span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Seq</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="#local_seq_210"><span class="LIDENT">seq</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Seq</span><span class="DOT">.</span><span class="UIDENT">Nil</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">return_nil</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Seq</span><span class="DOT">.</span><span class="UIDENT">Cons</span> <span class="LPAREN">(</span><span id="local_x_211"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_next_212"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>       <span class="LETOP">let+</span> <span id="local_x_213"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_x_211"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>       <span class="LET">let</span> <span id="local_next_214"><span class="LIDENT">next</span></span> <span class="EQUAL">=</span> <span class="LIDENT">of_seq_lwt</span> <a href="#local_next_212"><span class="LIDENT">next</span></a> <span class="IN">in</span><span class="EOL">
+</span>       <span class="UIDENT">Cons</span> <span class="LPAREN">(</span><a href="#local_x_213"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <a href="#local_next_214"><span class="LIDENT">next</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="EXCEPTION">exception</span> <span id="local_exc_215"><span class="LIDENT">exc</span></span> <span class="WHEN">when</span> <a href="lwt.ml.html#module-Exception_filter.val-run"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="UIDENT">Exception_filter</span><span class="DOT">.</span><span class="LIDENT">run</span></a> <a href="#local_exc_215"><span class="LIDENT">exc</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Trivial_promises.val-fail"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">fail</span></a> <a href="#local_exc_215"><span class="LIDENT">exc</span></a><span class="EOL">
+</span></span></code></pre></body></html>

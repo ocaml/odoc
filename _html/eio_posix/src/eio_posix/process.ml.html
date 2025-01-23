@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: process.ml (eio_posix.src.eio_posix)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">eio_posix</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; eio_posix &#x00BB; process.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>process.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">eio_posix</a><ul><li>Library <code>eio_posix</code><ul><li><a href="../../eio_posix/Eio_posix/index.html">Eio_posix</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>eio_posix<ul><li><a href="config.ml.html">config.ml</a></li><li><a href="domain_mgr.ml.html">domain_mgr.ml</a></li><li><a href="eio_posix.ml.html">eio_posix.ml</a></li><li><a href="eio_posix__.ml.html">eio_posix__.ml</a></li><li><a href="err.ml.html">err.ml</a></li><li><a href="flow.ml.html">flow.ml</a></li><li><a href="fs.ml.html">fs.ml</a></li><li><a href="low_level.ml.html">low_level.ml</a></li><li><a href="net.ml.html">net.ml</a></li><li><a href="path.ml.html">path.ml</a></li><li><a href="#" class="current_unit">process.ml</a></li><li><a href="sched.ml.html">sched.ml</a></li><li><a href="time.ml.html">time.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+</code><code class="source_code"><span><span class="OPEN">open</span> <a href="../../../eio/src/eio/std.ml.html"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Std</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Process_impl"><span class="MODULE">module</span> <span class="UIDENT">Process_impl</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Process_impl.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <a href="low_level.ml.html#module-Process.type-t"><span class="UIDENT">Low_level</span><span class="DOT">.</span><span class="UIDENT">Process</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span>  <span id="module-Process_impl.type-tag"><span class="TYPE">type</span> <span class="LIDENT">tag</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Generic</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Unix</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Process_impl.val-pid"><span class="LIDENT">pid</span></span> <span class="EQUAL">=</span> <a href="low_level.ml.html#module-Process.val-pid"><span class="UIDENT">Low_level</span><span class="DOT">.</span><span class="UIDENT">Process</span><span class="DOT">.</span><span class="LIDENT">pid</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Process_impl.val-await"><span class="LIDENT">await</span></span> <span id="local_t_1"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="../../../eio/src/eio.core/promise.ml.html#val-await"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Promise</span><span class="DOT">.</span><span class="LIDENT">await</span></a> <span class="INFIXOP1">@@</span> <a href="low_level.ml.html#module-Process.val-exit_status"><span class="UIDENT">Low_level</span><span class="DOT">.</span><span class="UIDENT">Process</span><span class="DOT">.</span><span class="LIDENT">exit_status</span></a> <a href="#local_t_1"><span class="LIDENT">t</span></a> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Unix</span><span class="DOT">.</span><span class="UIDENT">WEXITED</span> <span id="local_i_2"><span class="LIDENT">i</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Exited</span> <a href="#local_i_2"><span class="LIDENT">i</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Unix</span><span class="DOT">.</span><span class="UIDENT">WSIGNALED</span> <span id="local_i_3"><span class="LIDENT">i</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Signaled</span> <a href="#local_i_3"><span class="LIDENT">i</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Unix</span><span class="DOT">.</span><span class="UIDENT">WSTOPPED</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="ASSERT">assert</span> <span class="FALSE">false</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Process_impl.val-signal"><span class="LIDENT">signal</span></span> <span class="EQUAL">=</span> <a href="low_level.ml.html#module-Process.val-signal"><span class="UIDENT">Low_level</span><span class="DOT">.</span><span class="UIDENT">Process</span><span class="DOT">.</span><span class="LIDENT">signal</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-process"><span class="LIDENT">process</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_handler_4"><span class="LIDENT">handler</span></span> <span class="EQUAL">=</span> <a href="../../../eio/src/eio/process.ml.html#module-Pi.val-process"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Process</span><span class="DOT">.</span><span class="UIDENT">Pi</span><span class="DOT">.</span><span class="LIDENT">process</span></a> <span class="LPAREN">(</span><span class="MODULE">module</span> <span class="UIDENT">Process_impl</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="FUN">fun</span> <span id="local_proc_5"><span class="LIDENT">proc</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Resource</span><span class="DOT">.</span><span class="UIDENT">T</span> <span class="LPAREN">(</span><a href="#local_proc_5"><span class="LIDENT">proc</span></a><span class="COMMA">,</span> <a href="#local_handler_4"><span class="LIDENT">handler</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Impl"><span class="MODULE">module</span> <span class="UIDENT">Impl</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Impl.module-T"><span class="MODULE">module</span> <span class="UIDENT">T</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>    <span id="module-Impl.module-T.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LIDENT">unit</span></span><span class="EOL">
+</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="module-Impl.module-T.val-spawn_unix"><span class="LIDENT">spawn_unix</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="TILDE">~</span><span id="local_sw_6"><span class="LIDENT">sw</span></span> <span class="QUESTION">?</span><span id="local_cwd_7"><span class="LIDENT">cwd</span></span> <span class="TILDE">~</span><span id="local_env_8"><span class="LIDENT">env</span></span> <span class="TILDE">~</span><span id="local_fds_9"><span class="LIDENT">fds</span></span> <span class="TILDE">~</span><span id="local_executable_10"><span class="LIDENT">executable</span></span> <span id="local_args_11"><span class="LIDENT">args</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_actions_12"><span class="LIDENT">actions</span></span> <span class="EQUAL">=</span> <a href="../../../eio/src/eio.unix/fork_action.ml.html"><span class="UIDENT">Low_level</span><span class="DOT">.</span><span class="UIDENT">Process</span><span class="DOT">.</span><span class="UIDENT">Fork_action</span></a><span class="DOT">.</span><span class="LBRACKET">[</span><span class="EOL">
+</span>          <a href="../../../eio/src/eio.unix/fork_action.ml.html#val-inherit_fds"><span class="LIDENT">inherit_fds</span></a> <a href="#local_fds_9"><span class="LIDENT">fds</span></a><span class="SEMI">;</span><span class="EOL">
+</span>          <a href="../../../eio/src/eio.unix/fork_action.ml.html#val-execve"><span class="LIDENT">execve</span></a> <a href="#local_executable_10"><span class="LIDENT">executable</span></a> <span class="LABEL">~argv:</span><span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/array.ml.html#val-of_list"><span class="UIDENT">Array</span><span class="DOT">.</span><span class="LIDENT">of_list</span></a> <a href="#local_args_11"><span class="LIDENT">args</span></a><span class="RPAREN">)</span> <span class="TILDE">~</span><a href="#local_env_8"><span class="LIDENT">env</span></a><span class="EOL">
+</span>      <span class="RBRACKET">]</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_with_actions_13"><span class="LIDENT">with_actions</span></span> <span id="local_cwd_14"><span class="LIDENT">cwd</span></span> <span id="local_fn_15"><span class="LIDENT">fn</span></span> <span class="EQUAL">=</span> <span class="MATCH">match</span> <a href="#local_cwd_14"><span class="LIDENT">cwd</span></a> <span class="WITH">with</span><span class="EOL">
+</span>        <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_fn_15"><span class="LIDENT">fn</span></a> <a href="#local_actions_12"><span class="LIDENT">actions</span></a><span class="EOL">
+</span>        <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="LPAREN">(</span><span id="local_dir_16"><span class="LIDENT">dir</span></span><span class="COMMA">,</span> <span id="local_path_17"><span class="LIDENT">path</span></span><span class="RPAREN">)</span> <span class="COLON">:</span> <a href="../../../eio/src/eio/path.ml.html#type-t"><a href="../../../eio/src/eio/fs.ml.html#type-dir_ty"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Fs</span><span class="DOT">.</span><span class="LIDENT">dir_ty</span></a> <span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>          <span class="MATCH">match</span> <a href="fs.ml.html#val-as_posix_dir"><span class="UIDENT">Fs</span><span class="DOT">.</span><span class="LIDENT">as_posix_dir</span></a> <a href="#local_dir_16"><span class="LIDENT">dir</span></a> <span class="WITH">with</span><span class="EOL">
+</span>          <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Fmt</span><span class="DOT">.</span><span class="LIDENT">invalid_arg</span> <span class="STRING">&quot;cwd is not an OS directory!&quot;</span><span class="EOL">
+</span>          <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_dirfd_18"><span class="LIDENT">dirfd</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>            <a href="../../../eio/src/eio.core/switch.ml.html#val-run"><span class="UIDENT">Switch</span><span class="DOT">.</span><span class="LIDENT">run</span></a> <span class="LABEL">~name:</span><span class="STRING">&quot;spawn_unix&quot;</span> <span class="INFIXOP1">@@</span> <span class="FUN">fun</span> <span id="local_launch_sw_19"><span class="LIDENT">launch_sw</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>            <span class="LET">let</span> <span id="local_cwd_20"><span class="LIDENT">cwd</span></span> <span class="EQUAL">=</span> <a href="low_level.ml.html#val-openat"><span class="UIDENT">Low_level</span><span class="DOT">.</span><span class="LIDENT">openat</span></a> <span class="LABEL">~sw:</span><a href="#local_launch_sw_19"><span class="LIDENT">launch_sw</span></a> <span class="LABEL">~mode:</span><span class="INT">0</span> <a href="#local_dirfd_18"><span class="LIDENT">dirfd</span></a> <a href="#local_path_17"><span class="LIDENT">path</span></a> <a href="low_level.ml.html#module-Open_flags"><span class="UIDENT">Low_level</span><span class="DOT">.</span><span class="UIDENT">Open_flags</span></a><span class="DOT">.</span><span class="LPAREN">(</span><a href="low_level.ml.html#module-Open_flags.val-rdonly"><span class="LIDENT">rdonly</span></a> <a href="low_level.ml.html#module-Open_flags.val-(+)"><span class="PLUS">+</span></a> <a href="low_level.ml.html#module-Open_flags.val-directory"><span class="LIDENT">directory</span></a><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>            <a href="#local_fn_15"><span class="LIDENT">fn</span></a> <span class="LPAREN">(</span><a href="../../../eio/src/eio.unix/fork_action.ml.html#val-fchdir"><span class="UIDENT">Low_level</span><span class="DOT">.</span><span class="UIDENT">Process</span><span class="DOT">.</span><span class="UIDENT">Fork_action</span><span class="DOT">.</span><span class="LIDENT">fchdir</span></a> <a href="#local_cwd_20"><span class="LIDENT">cwd</span></a> <span class="COLONCOLON">::</span> <a href="#local_actions_12"><span class="LIDENT">actions</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="IN">in</span><span class="EOL">
+</span>      <a href="#local_with_actions_13"><span class="LIDENT">with_actions</span></a> <a href="#local_cwd_7"><span class="LIDENT">cwd</span></a> <span class="INFIXOP1">@@</span> <span class="FUN">fun</span> <span id="local_actions_21"><span class="LIDENT">actions</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LIDENT">process</span> <span class="LPAREN">(</span><a href="low_level.ml.html#module-Process.val-spawn"><span class="UIDENT">Low_level</span><span class="DOT">.</span><span class="UIDENT">Process</span><span class="DOT">.</span><span class="LIDENT">spawn</span></a> <span class="TILDE">~</span><a href="#local_sw_6"><span class="LIDENT">sw</span></a> <a href="#local_actions_21"><span class="LIDENT">actions</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <a href="../../../eio/src/eio.unix/process.ml.html#module-Make_mgr"><span class="UIDENT">Eio_unix</span><span class="DOT">.</span><span class="UIDENT">Process</span><span class="DOT">.</span><span class="UIDENT">Make_mgr</span></a> <span class="LPAREN">(</span><span class="UIDENT">T</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-mgr"><span class="LIDENT">mgr</span></span> <span class="COLON">:</span> <a href="../../../eio/src/eio/std.ml.html#type-r"><a href="../../../eio/src/eio.unix/process.ml.html#type-mgr_ty"><span class="UIDENT">Eio_unix</span><span class="DOT">.</span><span class="UIDENT">Process</span><span class="DOT">.</span><span class="LIDENT">mgr_ty</span></a> <span class="LIDENT">r</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_h_22"><span class="LIDENT">h</span></span> <span class="EQUAL">=</span> <a href="../../../eio/src/eio.unix/process.ml.html#module-Pi.val-mgr_unix"><span class="UIDENT">Eio_unix</span><span class="DOT">.</span><span class="UIDENT">Process</span><span class="DOT">.</span><span class="UIDENT">Pi</span><span class="DOT">.</span><span class="LIDENT">mgr_unix</span></a> <span class="LPAREN">(</span><span class="MODULE">module</span> <span class="UIDENT">Impl</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Resource</span><span class="DOT">.</span><span class="UIDENT">T</span> <span class="LPAREN">(</span><span class="LPAREN">(</span><span class="RPAREN">)</span><span class="COMMA">,</span> <a href="#local_h_22"><span class="LIDENT">h</span></a><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

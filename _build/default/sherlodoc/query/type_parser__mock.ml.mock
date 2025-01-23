@@ -1,0 +1,282 @@
+
+type token = 
+  | WORD of (
+# 17 "sherlodoc/query/type_parser.mly"
+      (string)
+# 7 "sherlodoc/query/type_parser__mock.ml.mock"
+)
+  | STAR
+  | POLY of (
+# 18 "sherlodoc/query/type_parser.mly"
+      (string)
+# 13 "sherlodoc/query/type_parser__mock.ml.mock"
+)
+  | PARENS_OPEN
+  | PARENS_CLOSE
+  | EOF
+  | COMMA
+  | ARROW
+  | ANY
+
+# 4 "sherlodoc/query/type_parser.mly"
+  
+  module Printf = struct
+    (* Without the following placeholder, [menhir_fail] induces
+       a large dependency to [camlinternalFormat] in the js bundle. *)
+    let eprintf _ = ()
+  end
+
+  open Db.Typexpr
+
+# 32 "sherlodoc/query/type_parser__mock.ml.mock"
+
+let menhir_begin_marker =
+  0
+
+and (xv_typs, xv_typ2, xv_typ1, xv_typ0, xv_typ, xv_main, xv_list1_typ1_STAR_, xv_list1_typ_COMMA_, xv_list_WORD_) =
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 218 "<standard.mly>"
+         xs
+# 41 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_list_WORD_) (_startpos_xs_ : Lexing.position) (_endpos_xs_ : Lexing.position) (_startofs_xs_ : int) (_endofs_xs_ : int) (_loc_xs_ : Lexing.position * Lexing.position) (
+# 218 "<standard.mly>"
+  x
+# 45 "sherlodoc/query/type_parser__mock.ml.mock"
+   : (
+# 17 "sherlodoc/query/type_parser.mly"
+      (string)
+# 49 "sherlodoc/query/type_parser__mock.ml.mock"
+  )) (_startpos_x_ : Lexing.position) (_endpos_x_ : Lexing.position) (_startofs_x_ : int) (_endofs_x_ : int) (_loc_x_ : Lexing.position * Lexing.position) : 'tv_list_WORD_ ->
+    
+# 219 "<standard.mly>"
+    ( x :: xs )
+# 54 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) : 'tv_list_WORD_ ->
+    
+# 216 "<standard.mly>"
+    ( [] )
+# 60 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 54 "sherlodoc/query/type_parser.mly"
+                                    _3
+# 65 "sherlodoc/query/type_parser__mock.ml.mock"
+   : unit) (_startpos__3_ : Lexing.position) (_endpos__3_ : Lexing.position) (_startofs__3_ : int) (_endofs__3_ : int) (_loc__3_ : Lexing.position * Lexing.position) (
+# 54 "sherlodoc/query/type_parser.mly"
+                ts
+# 69 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_list1_typ_COMMA_) (_startpos_ts_ : Lexing.position) (_endpos_ts_ : Lexing.position) (_startofs_ts_ : int) (_endofs_ts_ : int) (_loc_ts_ : Lexing.position * Lexing.position) (
+# 54 "sherlodoc/query/type_parser.mly"
+   _1
+# 73 "sherlodoc/query/type_parser__mock.ml.mock"
+   : unit) (_startpos__1_ : Lexing.position) (_endpos__1_ : Lexing.position) (_startofs__1_ : int) (_endofs__1_ : int) (_loc__1_ : Lexing.position * Lexing.position) : 'tv_typs ->
+    
+# 54 "sherlodoc/query/type_parser.mly"
+                                                  ( ts )
+# 78 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 53 "sherlodoc/query/type_parser.mly"
+    t
+# 83 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_typ0) (_startpos_t_ : Lexing.position) (_endpos_t_ : Lexing.position) (_startofs_t_ : int) (_endofs_t_ : int) (_loc_t_ : Lexing.position * Lexing.position) : 'tv_typs ->
+    
+# 53 "sherlodoc/query/type_parser.mly"
+           ( [t] )
+# 88 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 35 "sherlodoc/query/type_parser.mly"
+    xs
+# 93 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_list1_typ1_STAR_) (_startpos_xs_ : Lexing.position) (_endpos_xs_ : Lexing.position) (_startofs_xs_ : int) (_endofs_xs_ : int) (_loc_xs_ : Lexing.position * Lexing.position) : 'tv_typ2 ->
+    
+# 35 "sherlodoc/query/type_parser.mly"
+                         ( tuple xs )
+# 98 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 41 "sherlodoc/query/type_parser.mly"
+                   ws
+# 103 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_list_WORD_) (_startpos_ws_ : Lexing.position) (_endpos_ws_ : Lexing.position) (_startofs_ws_ : int) (_endofs_ws_ : int) (_loc_ws_ : Lexing.position * Lexing.position) (
+# 41 "sherlodoc/query/type_parser.mly"
+            w
+# 107 "sherlodoc/query/type_parser__mock.ml.mock"
+   : (
+# 17 "sherlodoc/query/type_parser.mly"
+      (string)
+# 111 "sherlodoc/query/type_parser__mock.ml.mock"
+  )) (_startpos_w_ : Lexing.position) (_endpos_w_ : Lexing.position) (_startofs_w_ : int) (_endofs_w_ : int) (_loc_w_ : Lexing.position * Lexing.position) (
+# 41 "sherlodoc/query/type_parser.mly"
+    ts
+# 115 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_typs) (_startpos_ts_ : Lexing.position) (_endpos_ts_ : Lexing.position) (_startofs_ts_ : int) (_endofs_ts_ : int) (_loc_ts_ : Lexing.position * Lexing.position) : 'tv_typ1 ->
+    
+# 41 "sherlodoc/query/type_parser.mly"
+                                 (
+      List.fold_left (fun acc w -> Constr (w, [acc])) (Constr (w, ts)) ws
+    )
+# 122 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 40 "sherlodoc/query/type_parser.mly"
+    ts
+# 127 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_typs) (_startpos_ts_ : Lexing.position) (_endpos_ts_ : Lexing.position) (_startofs_ts_ : int) (_endofs_ts_ : int) (_loc_ts_ : Lexing.position * Lexing.position) : 'tv_typ1 ->
+    
+# 40 "sherlodoc/query/type_parser.mly"
+            ( tuple ts )
+# 132 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) : 'tv_typ1 ->
+    
+# 39 "sherlodoc/query/type_parser.mly"
+    ( Any )
+# 138 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 49 "sherlodoc/query/type_parser.mly"
+    w
+# 143 "sherlodoc/query/type_parser__mock.ml.mock"
+   : (
+# 17 "sherlodoc/query/type_parser.mly"
+      (string)
+# 147 "sherlodoc/query/type_parser__mock.ml.mock"
+  )) (_startpos_w_ : Lexing.position) (_endpos_w_ : Lexing.position) (_startofs_w_ : int) (_endofs_w_ : int) (_loc_w_ : Lexing.position * Lexing.position) : 'tv_typ0 ->
+    
+# 49 "sherlodoc/query/type_parser.mly"
+           ( Constr (w, []) )
+# 152 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 48 "sherlodoc/query/type_parser.mly"
+    w
+# 157 "sherlodoc/query/type_parser__mock.ml.mock"
+   : (
+# 18 "sherlodoc/query/type_parser.mly"
+      (string)
+# 161 "sherlodoc/query/type_parser__mock.ml.mock"
+  )) (_startpos_w_ : Lexing.position) (_endpos_w_ : Lexing.position) (_startofs_w_ : int) (_endofs_w_ : int) (_loc_w_ : Lexing.position * Lexing.position) : 'tv_typ0 ->
+    
+# 48 "sherlodoc/query/type_parser.mly"
+           ( Poly w )
+# 166 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 47 "sherlodoc/query/type_parser.mly"
+   _1
+# 171 "sherlodoc/query/type_parser__mock.ml.mock"
+   : unit) (_startpos__1_ : Lexing.position) (_endpos__1_ : Lexing.position) (_startofs__1_ : int) (_endofs__1_ : int) (_loc__1_ : Lexing.position * Lexing.position) : 'tv_typ0 ->
+    
+# 47 "sherlodoc/query/type_parser.mly"
+        ( Any )
+# 176 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 31 "sherlodoc/query/type_parser.mly"
+                 b
+# 181 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_typ) (_startpos_b_ : Lexing.position) (_endpos_b_ : Lexing.position) (_startofs_b_ : int) (_endofs_b_ : int) (_loc_b_ : Lexing.position * Lexing.position) (
+# 31 "sherlodoc/query/type_parser.mly"
+          _2
+# 185 "sherlodoc/query/type_parser__mock.ml.mock"
+   : unit) (_startpos__2_ : Lexing.position) (_endpos__2_ : Lexing.position) (_startofs__2_ : int) (_endofs__2_ : int) (_loc__2_ : Lexing.position * Lexing.position) (
+# 31 "sherlodoc/query/type_parser.mly"
+    a
+# 189 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_typ2) (_startpos_a_ : Lexing.position) (_endpos_a_ : Lexing.position) (_startofs_a_ : int) (_endofs_a_ : int) (_loc_a_ : Lexing.position * Lexing.position) : 'tv_typ ->
+    
+# 31 "sherlodoc/query/type_parser.mly"
+                       ( Arrow (a, b) )
+# 194 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 30 "sherlodoc/query/type_parser.mly"
+    t
+# 199 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_typ2) (_startpos_t_ : Lexing.position) (_endpos_t_ : Lexing.position) (_startofs_t_ : int) (_endofs_t_ : int) (_loc_t_ : Lexing.position * Lexing.position) : 'tv_typ ->
+    
+# 30 "sherlodoc/query/type_parser.mly"
+           ( t )
+# 204 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 26 "sherlodoc/query/type_parser.mly"
+         _2
+# 209 "sherlodoc/query/type_parser__mock.ml.mock"
+   : unit) (_startpos__2_ : Lexing.position) (_endpos__2_ : Lexing.position) (_startofs__2_ : int) (_endofs__2_ : int) (_loc__2_ : Lexing.position * Lexing.position) (
+# 26 "sherlodoc/query/type_parser.mly"
+    t
+# 213 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_typ) (_startpos_t_ : Lexing.position) (_endpos_t_ : Lexing.position) (_startofs_t_ : int) (_endofs_t_ : int) (_loc_t_ : Lexing.position * Lexing.position) : (
+# 21 "sherlodoc/query/type_parser.mly"
+     (Db.Typexpr.t)
+# 217 "sherlodoc/query/type_parser__mock.ml.mock"
+  ) ->
+    (
+# 26 "sherlodoc/query/type_parser.mly"
+              ( t )
+# 222 "sherlodoc/query/type_parser__mock.ml.mock"
+     : 'tv_main) in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 59 "sherlodoc/query/type_parser.mly"
+                     xs
+# 227 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_list1_typ1_STAR_) (_startpos_xs_ : Lexing.position) (_endpos_xs_ : Lexing.position) (_startofs_xs_ : int) (_endofs_xs_ : int) (_loc_xs_ : Lexing.position * Lexing.position) (
+# 59 "sherlodoc/query/type_parser.mly"
+          _2
+# 231 "sherlodoc/query/type_parser__mock.ml.mock"
+   : unit) (_startpos__2_ : Lexing.position) (_endpos__2_ : Lexing.position) (_startofs__2_ : int) (_endofs__2_ : int) (_loc__2_ : Lexing.position * Lexing.position) (
+# 59 "sherlodoc/query/type_parser.mly"
+    x
+# 235 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_typ1) (_startpos_x_ : Lexing.position) (_endpos_x_ : Lexing.position) (_startofs_x_ : int) (_endofs_x_ : int) (_loc_x_ : Lexing.position * Lexing.position) : 'tv_list1_typ1_STAR_ ->
+    
+# 59 "sherlodoc/query/type_parser.mly"
+                                               ( x::xs )
+# 240 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 58 "sherlodoc/query/type_parser.mly"
+    x
+# 245 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_typ1) (_startpos_x_ : Lexing.position) (_endpos_x_ : Lexing.position) (_startofs_x_ : int) (_endofs_x_ : int) (_loc_x_ : Lexing.position * Lexing.position) : 'tv_list1_typ1_STAR_ ->
+    
+# 58 "sherlodoc/query/type_parser.mly"
+           ( [x] )
+# 250 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 59 "sherlodoc/query/type_parser.mly"
+                     xs
+# 255 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_list1_typ_COMMA_) (_startpos_xs_ : Lexing.position) (_endpos_xs_ : Lexing.position) (_startofs_xs_ : int) (_endofs_xs_ : int) (_loc_xs_ : Lexing.position * Lexing.position) (
+# 59 "sherlodoc/query/type_parser.mly"
+          _2
+# 259 "sherlodoc/query/type_parser__mock.ml.mock"
+   : unit) (_startpos__2_ : Lexing.position) (_endpos__2_ : Lexing.position) (_startofs__2_ : int) (_endofs__2_ : int) (_loc__2_ : Lexing.position * Lexing.position) (
+# 59 "sherlodoc/query/type_parser.mly"
+    x
+# 263 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_typ) (_startpos_x_ : Lexing.position) (_endpos_x_ : Lexing.position) (_startofs_x_ : int) (_endofs_x_ : int) (_loc_x_ : Lexing.position * Lexing.position) : 'tv_list1_typ_COMMA_ ->
+    
+# 59 "sherlodoc/query/type_parser.mly"
+                                               ( x::xs )
+# 268 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  let _ = fun (_startpos : Lexing.position) (_endpos : Lexing.position) (_endpos__0_ : Lexing.position) (_symbolstartpos : Lexing.position) (_startofs : int) (_endofs : int) (_endofs__0_ : int) (_symbolstartofs : int) (_sloc : Lexing.position * Lexing.position) (_loc : Lexing.position * Lexing.position) (
+# 58 "sherlodoc/query/type_parser.mly"
+    x
+# 273 "sherlodoc/query/type_parser__mock.ml.mock"
+   : 'tv_typ) (_startpos_x_ : Lexing.position) (_endpos_x_ : Lexing.position) (_startofs_x_ : int) (_endofs_x_ : int) (_loc_x_ : Lexing.position * Lexing.position) : 'tv_list1_typ_COMMA_ ->
+    
+# 58 "sherlodoc/query/type_parser.mly"
+           ( [x] )
+# 278 "sherlodoc/query/type_parser__mock.ml.mock"
+     in
+  ((let rec diverge() = diverge() in diverge()) : 'tv_typs * 'tv_typ2 * 'tv_typ1 * 'tv_typ0 * 'tv_typ * 'tv_main * 'tv_list1_typ1_STAR_ * 'tv_list1_typ_COMMA_ * 'tv_list_WORD_)
+
+and menhir_end_marker =
+  0

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: lifted.ml (ppx_sexp_conv.src.ppx_sexp_conv.expander)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ppx_sexp_conv</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ppx_sexp_conv.expander &#x00BB; lifted.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>lifted.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">ppx_sexp_conv</a><ul><li>Library <code>ppx_sexp_conv</code><ul><li><a href="../../ppx_sexp_conv/Ppx_sexp_conv/index.html">Ppx_sexp_conv</a></li></ul></li><li>Library <code>ppx_sexp_conv.expander</code><ul><li><a href="../../ppx_sexp_conv.expander/Ppx_sexp_conv_expander/index.html">Ppx_sexp_conv_expander</a></li></ul></li><li>Library <code>ppx_sexp_conv.runtime-lib</code><ul><li><a href="../../ppx_sexp_conv.runtime-lib/Ppx_sexp_conv_lib/index.html">Ppx_sexp_conv_lib</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ppx_sexp_conv<ul><li><a href="../ppx_sexp_conv/ppx_sexp_conv.ml.html">ppx_sexp_conv.ml</a></li></ul></li><li>ppx_sexp_conv.expander<ul><li><a href="attrs.ml.html">attrs.ml</a></li><li><a href="conversion.ml.html">conversion.ml</a></li><li><a href="expand_of_sexp.ml.html">expand_of_sexp.ml</a></li><li><a href="expand_sexp_of.ml.html">expand_sexp_of.ml</a></li><li><a href="fresh_name.ml.html">fresh_name.ml</a></li><li><a href="helpers.ml.html">helpers.ml</a></li><li><a href="#" class="current_unit">lifted.ml</a></li><li><a href="ppx_sexp_conv_expander.ml.html">ppx_sexp_conv_expander.ml</a></li><li><a href="ppx_sexp_conv_expander__.ml.html">ppx_sexp_conv_expander__.ml</a></li><li><a href="ppx_sexp_conv_grammar.ml.html">ppx_sexp_conv_grammar.ml</a></li><li><a href="record_field_attrs.ml.html">record_field_attrs.ml</a></li><li><a href="renaming.ml.html">renaming.ml</a></li></ul></li><li>ppx_sexp_conv.runtime-lib<ul><li><a href="../ppx_sexp_conv.runtime-lib/ppx_sexp_conv_lib.ml.html">ppx_sexp_conv_lib.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+</code><code class="source_code"><span><span class="OPEN">open</span><span class="BANG">!</span> <a href="../../../base/src/base/base.ml.html"><span class="UIDENT">Base</span></a><span class="EOL">
+</span><span class="OPEN">open</span> <a href="../../../ppxlib/src/ppxlib/ppxlib.ml.html"><span class="UIDENT">Ppxlib</span></a><span class="EOL">
+</span><span class="OPEN">open</span> <a href="../../../ppxlib/src/ppxlib/ast_builder.ml.html#module-Default"><span class="UIDENT">Ast_builder</span><span class="DOT">.</span><span class="UIDENT">Default</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACE">{</span> <span id="def_27"><span class="LIDENT">value_bindings</span> <span class="COLON">:</span> <a href="../../../base/src/base/base.ml.html#module-Export.type-list"><a href="../../../ppxlib/src/ppxlib.ast/ast.ml.html#type-value_binding"><span class="LIDENT">value_binding</span></a> <span class="LIDENT">list</span></a><span class="EOL">
+</span>  <span class="SEMI">;</span></span> <span id="def_25"><span class="LIDENT">body</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="INCLUDE">include</span> <a href="../../../base/src/base/monad.ml.html#module-Make"><span class="UIDENT">Monad</span><span class="DOT">.</span><span class="UIDENT">Make</span></a> <span class="LPAREN">(</span><span class="STRUCT">struct</span><span class="EOL">
+</span>    <span id="def_26"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_return_1"><span class="LIDENT">return</span></span> <span id="local_body_2"><span class="LIDENT">body</span></span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">value_bindings</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="SEMI">;</span> <a href="#local_body_2"><span class="LIDENT">body</span></a> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_bind_3"><span class="LIDENT">bind</span></span> <span id="local_a_4"><span class="LIDENT">a</span></span> <span class="TILDE">~</span><span id="local_f_5"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_b_6"><span class="LIDENT">b</span></span> <span class="EQUAL">=</span> <a href="#local_f_5"><span class="LIDENT">f</span></a> <a href="#local_a_4"><span class="LIDENT">a</span></a><span class="DOT">.</span><span class="LIDENT">body</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LBRACE">{</span> <span class="LIDENT">value_bindings</span> <span class="EQUAL">=</span> <a href="#local_a_4"><span class="LIDENT">a</span></a><span class="DOT">.</span><span class="LIDENT">value_bindings</span> <a href="../../../base/src/base/list.ml.html#module-Infix.val-(@)"><span class="INFIXOP1">@</span></a> <a href="#local_b_6"><span class="LIDENT">b</span></a><span class="DOT">.</span><span class="LIDENT">value_bindings</span><span class="SEMI">;</span> <span class="LIDENT">body</span> <span class="EQUAL">=</span> <a href="#local_b_6"><span class="LIDENT">b</span></a><span class="DOT">.</span><span class="LIDENT">body</span> <span class="RBRACE">}</span><span class="EOL">
+</span>    <span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_map_7"><span class="LIDENT">map</span></span> <span class="EQUAL">=</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Define_using_bind</span><span class="EOL">
+</span>  <span class="END">end</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-create"><span class="LIDENT">create</span></span> <span class="TILDE">~</span><span id="local_loc_8"><span class="LIDENT">loc</span></span> <span class="TILDE">~</span><span id="local_prefix_9"><span class="LIDENT">prefix</span></span> <span class="TILDE">~</span><span id="local_ty_10"><span class="LIDENT">ty</span></span> <span id="local_rhs_11"><span class="LIDENT">rhs</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_name_12"><span class="LIDENT">name</span></span> <span class="EQUAL">=</span> <a href="../../../ppxlib/src/ppxlib/common.ml.html#val-gen_symbol"><span class="LIDENT">gen_symbol</span></a> <span class="TILDE">~</span><a href="#local_prefix_9"><span class="LIDENT">prefix</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_lhs_13"><span class="LIDENT">lhs</span></span> <span class="EQUAL">=</span> <a href="../../../ppxlib/src/ppxlib/ast_builder.ml.html#module-Default.val-pvar"><span class="LIDENT">pvar</span></a> <span class="TILDE">~</span><a href="#local_loc_8"><span class="LIDENT">loc</span></a> <a href="#local_name_12"><span class="LIDENT">name</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_body_14"><span class="LIDENT">body</span></span> <span class="EQUAL">=</span> <a href="../../../ppxlib/src/ppxlib/ast_builder.ml.html#module-Default.val-evar"><span class="LIDENT">evar</span></a> <span class="TILDE">~</span><a href="#local_loc_8"><span class="LIDENT">loc</span></a> <a href="#local_name_12"><span class="LIDENT">name</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="def_24"><span id="local_ty_15"><span class="LIDENT">ty</span></span><span class="COMMA">,</span> <span id="local_rhs_16"><span class="LIDENT">rhs</span></span><span class="COMMA">,</span> <span id="local_body_17"><span class="LIDENT">body</span></span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="IF">if</span> <a href="helpers.ml.html#val-is_value_expression"><span class="UIDENT">Helpers</span><span class="DOT">.</span><span class="LIDENT">is_value_expression</span></a> <a href="#local_rhs_11"><span class="LIDENT">rhs</span></a><span class="EOL">
+</span>    <span class="THEN">then</span> <a href="#local_ty_10"><span class="LIDENT">ty</span></a><span class="COMMA">,</span> <a href="#local_rhs_11"><span class="LIDENT">rhs</span></a><span class="COMMA">,</span> <a href="#local_body_14"><span class="LIDENT">body</span></a><span class="EOL">
+</span>    <span class="ELSE">else</span> <span class="LPAREN">(</span><span class="EOL">
+</span>      <span class="COMMENT">(* Thunkify the value to evaluate when referred to. *)</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_ty_18"><span class="LIDENT">ty</span></span> <span class="EQUAL">=</span> <span class="LBRACKETPERCENT">[%</span><span class="TYPE">type</span><span class="COLON">:</span> <span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="UIDENT">Unit</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKETPERCENT">[%</span><span class="LIDENT">t</span> <a href="#local_ty_10"><span class="LIDENT">ty</span></a><span class="RBRACKET">]</span><span class="RBRACKET">]</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_rhs_19"><span class="LIDENT">rhs</span></span> <span class="EQUAL">=</span> <span class="LBRACKETPERCENT">[%</span><span class="LIDENT">expr</span> <span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKETPERCENT">[%</span><span class="LIDENT">e</span> <a href="#local_rhs_11"><span class="LIDENT">rhs</span></a><span class="RBRACKET">]</span><span class="RBRACKET">]</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_body_20"><span class="LIDENT">body</span></span> <span class="EQUAL">=</span> <span class="LBRACKETPERCENT">[%</span><span class="LIDENT">expr</span> <span class="LBRACKETPERCENT">[%</span><span class="LIDENT">e</span> <a href="#local_body_14"><span class="LIDENT">body</span></a><span class="RBRACKET">]</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RBRACKET">]</span> <span class="IN">in</span><span class="EOL">
+</span>      <a href="#local_ty_18"><span class="LIDENT">ty</span></a><span class="COMMA">,</span> <a href="#local_rhs_19"><span class="LIDENT">rhs</span></a><span class="COMMA">,</span> <a href="#local_body_20"><span class="LIDENT">body</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LBRACE">{</span> <span class="LIDENT">value_bindings</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span> <a href="../../../ppxlib/src/ppxlib/ast_builder_generated.ml.html#module-M.val-value_binding"><span class="LIDENT">value_binding</span></a> <span class="TILDE">~</span><a href="#local_loc_8"><span class="LIDENT">loc</span></a> <span class="LABEL">~pat:</span><span class="LPAREN">(</span><a href="../../../ppxlib/src/ppxlib/ast_builder_generated.ml.html#module-M.val-ppat_constraint"><span class="LIDENT">ppat_constraint</span></a> <span class="TILDE">~</span><a href="#local_loc_8"><span class="LIDENT">loc</span></a> <a href="#local_lhs_13"><span class="LIDENT">lhs</span></a> <a href="#local_ty_15"><span class="LIDENT">ty</span></a><span class="RPAREN">)</span> <span class="LABEL">~expr:</span><a href="#local_rhs_16"><span class="LIDENT">rhs</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="SEMI">;</span> <a href="#local_body_17"><span class="LIDENT">body</span></a><span class="EOL">
+</span>  <span class="RBRACE">}</span><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-let_bind_user_expressions"><span class="LIDENT">let_bind_user_expressions</span></span> <span class="LBRACE">{</span> <span id="local_value_bindings_21"><span class="LIDENT">value_bindings</span></span><span class="SEMI">;</span> <span id="local_body_22"><span class="LIDENT">body</span></span> <span class="RBRACE">}</span> <span class="TILDE">~</span><span id="local_loc_23"><span class="LIDENT">loc</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="IF">if</span> <a href="../../../base/src/base/list1.ml.html#val-is_empty"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">is_empty</span></a> <a href="#local_value_bindings_21"><span class="LIDENT">value_bindings</span></a><span class="EOL">
+</span>  <span class="THEN">then</span> <a href="#local_body_22"><span class="LIDENT">body</span></a><span class="EOL">
+</span>  <span class="ELSE">else</span> <a href="../../../ppxlib/src/ppxlib/ast_builder_generated.ml.html#module-M.val-pexp_let"><span class="LIDENT">pexp_let</span></a> <span class="TILDE">~</span><a href="#local_loc_23"><span class="LIDENT">loc</span></a> <span class="UIDENT">Nonrecursive</span> <a href="#local_value_bindings_21"><span class="LIDENT">value_bindings</span></a> <a href="#local_body_22"><span class="LIDENT">body</span></a><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span></span></code></pre></body></html>

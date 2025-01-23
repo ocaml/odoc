@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: common_args.ml (odoc-driver.src.odoc-driver)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">The odoc reference driver</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; odoc-driver &#x00BB; common_args.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>common_args.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">The odoc reference driver</a><ul><li>Library <code>odoc-driver</code><ul><li><a href="../../odoc-driver/Odoc_driver_lib/index.html">Odoc_driver_lib</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>odoc-driver<ul><li><a href="cmd_outputs.ml.html">cmd_outputs.ml</a></li><li><a href="#" class="current_unit">common_args.ml</a></li><li><a href="compile.ml.html">compile.ml</a></li><li><a href="db.ml.html">db.ml</a></li><li><a href="global_config.ml.html">global_config.ml</a></li><li><a href="landing_pages.ml.html">landing_pages.ml</a></li><li><a href="library_names.ml.html">library_names.ml</a></li><li><a href="monorepo_style.ml.html">monorepo_style.ml</a></li><li><a href="ocamlfind.ml.html">ocamlfind.ml</a></li><li><a href="ocamlobjinfo.ml.html">ocamlobjinfo.ml</a></li><li><a href="odoc.ml.html">odoc.ml</a></li><li><a href="odoc_driver_lib.ml.html">odoc_driver_lib.ml</a></li><li><a href="odoc_unit.ml.html">odoc_unit.ml</a></li><li><a href="odoc_units_of.ml.html">odoc_units_of.ml</a></li><li><a href="opam.ml.html">opam.ml</a></li><li><a href="packages.ml.html">packages.ml</a></li><li><a href="run.ml.html">run.ml</a></li><li><a href="sherlodoc.ml.html">sherlodoc.ml</a></li><li><a href="stats.ml.html">stats.ml</a></li><li><a href="util.ml.html">util.ml</a></li><li><a href="voodoo.ml.html">voodoo.ml</a></li><li><a href="worker_pool.ml.html">worker_pool.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+</code><code class="source_code"><span><span class="OPEN">open</span> <span class="UIDENT">Cmdliner</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-fpath_arg"><span class="LIDENT">fpath_arg</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_print_1"><span class="LIDENT">print</span></span> <span id="local_ppf_2"><span class="LIDENT">ppf</span></span> <span id="local_v_3"><span class="LIDENT">v</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Fpath</span><span class="DOT">.</span><span class="LIDENT">pp</span> <a href="#local_ppf_2"><span class="LIDENT">ppf</span></a> <a href="#local_v_3"><span class="LIDENT">v</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Arg</span><span class="DOT">.</span><span class="LIDENT">conv</span> <span class="LPAREN">(</span><span class="UIDENT">Fpath</span><span class="DOT">.</span><span class="LIDENT">of_string</span><span class="COMMA">,</span> <a href="#local_print_1"><span class="LIDENT">print</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-html_dir"><span class="LIDENT">html_dir</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_doc_4"><span class="LIDENT">doc</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;Directory in which the generated HTML files go&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Arg</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="EOL">
+</span>    <span class="LIDENT">value</span><span class="EOL">
+</span>    <span class="AMPERSAND">&amp;</span> <span class="LIDENT">opt</span> <span class="LIDENT">fpath_arg</span> <span class="LPAREN">(</span><span class="UIDENT">Fpath</span><span class="DOT">.</span><span class="LIDENT">v</span> <span class="STRING">&quot;_html/&quot;</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="AMPERSAND">&amp;</span> <span class="LIDENT">info</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;html-dir&quot;</span> <span class="RBRACKET">]</span> <span class="TILDE">~</span><a href="#local_doc_4"><span class="LIDENT">doc</span></a> <span class="LABEL">~docs:</span><span class="UIDENT">Manpage</span><span class="DOT">.</span><span class="LIDENT">s_common_options</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-verbose"><span class="LIDENT">verbose</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_doc_5"><span class="LIDENT">doc</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;Enable verbose output&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Arg</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="EOL">
+</span>    <span class="LIDENT">value</span> <span class="AMPERSAND">&amp;</span> <span class="LIDENT">flag</span> <span class="AMPERSAND">&amp;</span> <span class="LIDENT">info</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;v&quot;</span><span class="SEMI">;</span> <span class="STRING">&quot;verbose&quot;</span> <span class="RBRACKET">]</span> <span class="TILDE">~</span><a href="#local_doc_5"><span class="LIDENT">doc</span></a> <span class="LABEL">~docs:</span><span class="UIDENT">Manpage</span><span class="DOT">.</span><span class="LIDENT">s_common_options</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-stats"><span class="LIDENT">stats</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_doc_6"><span class="LIDENT">doc</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;Produce 'driver-benchmarks.json' with run stats&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Arg</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="LIDENT">value</span> <span class="AMPERSAND">&amp;</span> <span class="LIDENT">flag</span> <span class="AMPERSAND">&amp;</span> <span class="LIDENT">info</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;stats&quot;</span> <span class="RBRACKET">]</span> <span class="TILDE">~</span><a href="#local_doc_6"><span class="LIDENT">doc</span></a> <span class="LABEL">~docs:</span><span class="UIDENT">Manpage</span><span class="DOT">.</span><span class="LIDENT">s_common_options</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-nb_workers"><span class="LIDENT">nb_workers</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_doc_7"><span class="LIDENT">doc</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;Number of workers.&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Arg</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="EOL">
+</span>    <span class="LIDENT">value</span><span class="EOL">
+</span>    <span class="AMPERSAND">&amp;</span> <span class="LIDENT">opt</span> <span class="LIDENT">int</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/domain.ml.html#val-recommended_domain_count"><span class="UIDENT">Domain</span><span class="DOT">.</span><span class="LIDENT">recommended_domain_count</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(-)"><span class="MINUS">-</span></a> <span class="INT">1</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="AMPERSAND">&amp;</span> <span class="LIDENT">info</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;j&quot;</span> <span class="RBRACKET">]</span> <span class="TILDE">~</span><a href="#local_doc_7"><span class="LIDENT">doc</span></a> <span class="LABEL">~docs:</span><span class="UIDENT">Manpage</span><span class="DOT">.</span><span class="LIDENT">s_common_options</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-odoc_bin"><span class="LIDENT">odoc_bin</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_doc_8"><span class="LIDENT">doc</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;Odoc binary to use&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Arg</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="EOL">
+</span>    <span class="LIDENT">value</span><span class="EOL">
+</span>    <span class="AMPERSAND">&amp;</span> <span class="LIDENT">opt</span> <span class="LPAREN">(</span><span class="LIDENT">some</span> <span class="LIDENT">string</span><span class="RPAREN">)</span> <span class="UIDENT">None</span><span class="EOL">
+</span>    <span class="AMPERSAND">&amp;</span> <span class="LIDENT">info</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;odoc&quot;</span> <span class="RBRACKET">]</span> <span class="TILDE">~</span><a href="#local_doc_8"><span class="LIDENT">doc</span></a> <span class="LABEL">~docs:</span><span class="UIDENT">Manpage</span><span class="DOT">.</span><span class="LIDENT">s_common_options</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-odoc_md_bin"><span class="LIDENT">odoc_md_bin</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_doc_9"><span class="LIDENT">doc</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;Odoc-md binary to use&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Arg</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="EOL">
+</span>    <span class="LIDENT">value</span><span class="EOL">
+</span>    <span class="AMPERSAND">&amp;</span> <span class="LIDENT">opt</span> <span class="LPAREN">(</span><span class="LIDENT">some</span> <span class="LIDENT">string</span><span class="RPAREN">)</span> <span class="UIDENT">None</span><span class="EOL">
+</span>    <span class="AMPERSAND">&amp;</span> <span class="LIDENT">info</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;odoc-md&quot;</span> <span class="RBRACKET">]</span> <span class="TILDE">~</span><a href="#local_doc_9"><span class="LIDENT">doc</span></a> <span class="LABEL">~docs:</span><span class="UIDENT">Manpage</span><span class="DOT">.</span><span class="LIDENT">s_common_options</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-generate_json"><span class="LIDENT">generate_json</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_doc_10"><span class="LIDENT">doc</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;Also generate json output&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Arg</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="EOL">
+</span>    <span class="LIDENT">value</span> <span class="AMPERSAND">&amp;</span> <span class="LIDENT">flag</span> <span class="AMPERSAND">&amp;</span> <span class="LIDENT">info</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;json-output&quot;</span> <span class="RBRACKET">]</span> <span class="TILDE">~</span><a href="#local_doc_10"><span class="LIDENT">doc</span></a> <span class="LABEL">~docs:</span><span class="UIDENT">Manpage</span><span class="DOT">.</span><span class="LIDENT">s_common_options</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span id="def_29"><span class="LIDENT">verbose</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_26"><span class="LIDENT">html_dir</span> <span class="COLON">:</span> <span class="UIDENT">Fpath</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_31"><span class="LIDENT">stats</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_28"><span class="LIDENT">nb_workers</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_30"><span class="LIDENT">odoc_bin</span> <span class="COLON">:</span> <span class="LIDENT">string</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_32"><span class="LIDENT">odoc_md_bin</span> <span class="COLON">:</span> <span class="LIDENT">string</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_27"><span class="LIDENT">generate_json</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span><span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-term"><span class="LIDENT">term</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <span class="UIDENT">Term</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_let+_11"><span class="LPAREN">(</span> <span class="LETOP">let+</span> <span class="RPAREN">)</span></span> <span id="local_t_12"><span class="LIDENT">t</span></span> <span id="local_f_13"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span> <span class="LIDENT">const</span> <a href="#local_f_13"><span class="LIDENT">f</span></a> <span class="INFIXOP0">$</span> <a href="#local_t_12"><span class="LIDENT">t</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_and+_14"><span class="LPAREN">(</span> <span class="ANDOP">and+</span> <span class="RPAREN">)</span></span> <span id="local_a_15"><span class="LIDENT">a</span></span> <span id="local_b_16"><span class="LIDENT">b</span></span> <span class="EQUAL">=</span> <span class="LIDENT">const</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_x_17"><span class="LIDENT">x</span></span> <span id="local_y_18"><span class="LIDENT">y</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><a href="#local_x_17"><span class="LIDENT">x</span></a><span class="COMMA">,</span> <a href="#local_y_18"><span class="LIDENT">y</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="INFIXOP0">$</span> <a href="#local_a_15"><span class="LIDENT">a</span></a> <span class="INFIXOP0">$</span> <a href="#local_b_16"><span class="LIDENT">b</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LETOP">let+</span> <span id="local_verbose_19"><span class="LIDENT">verbose</span></span> <span class="EQUAL">=</span> <span class="LIDENT">verbose</span><span class="EOL">
+</span>  <span class="ANDOP">and+</span> <span id="local_html_dir_20"><span class="LIDENT">html_dir</span></span> <span class="EQUAL">=</span> <span class="LIDENT">html_dir</span><span class="EOL">
+</span>  <span class="ANDOP">and+</span> <span id="local_stats_21"><span class="LIDENT">stats</span></span> <span class="EQUAL">=</span> <span class="LIDENT">stats</span><span class="EOL">
+</span>  <span class="ANDOP">and+</span> <span id="local_nb_workers_22"><span class="LIDENT">nb_workers</span></span> <span class="EQUAL">=</span> <span class="LIDENT">nb_workers</span><span class="EOL">
+</span>  <span class="ANDOP">and+</span> <span id="local_odoc_bin_23"><span class="LIDENT">odoc_bin</span></span> <span class="EQUAL">=</span> <span class="LIDENT">odoc_bin</span><span class="EOL">
+</span>  <span class="ANDOP">and+</span> <span id="local_odoc_md_bin_24"><span class="LIDENT">odoc_md_bin</span></span> <span class="EQUAL">=</span> <span class="LIDENT">odoc_md_bin</span><span class="EOL">
+</span>  <span class="ANDOP">and+</span> <span id="local_generate_json_25"><span class="LIDENT">generate_json</span></span> <span class="EQUAL">=</span> <span class="LIDENT">generate_json</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LBRACE">{</span> <a href="#local_verbose_19"><span class="LIDENT">verbose</span></a><span class="SEMI">;</span> <a href="#local_html_dir_20"><span class="LIDENT">html_dir</span></a><span class="SEMI">;</span> <a href="#local_stats_21"><span class="LIDENT">stats</span></a><span class="SEMI">;</span> <a href="#local_nb_workers_22"><span class="LIDENT">nb_workers</span></a><span class="SEMI">;</span> <a href="#local_odoc_bin_23"><span class="LIDENT">odoc_bin</span></a><span class="SEMI">;</span> <a href="#local_odoc_md_bin_24"><span class="LIDENT">odoc_md_bin</span></a><span class="SEMI">;</span> <a href="#local_generate_json_25"><span class="LIDENT">generate_json</span></a> <span class="RBRACE">}</span><span class="EOL">
+</span></span></code></pre></body></html>

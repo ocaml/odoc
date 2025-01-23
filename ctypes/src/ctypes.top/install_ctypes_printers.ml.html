@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: install_ctypes_printers.ml (ctypes.src.ctypes.top)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ctypes</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ctypes.top &#x00BB; install_ctypes_printers.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>install_ctypes_printers.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">ctypes</a><ul><li>Library <code>ctypes</code><ul><li><a href="../../ctypes/ComplexL/index.html">ComplexL</a></li><li><a href="../../ctypes/Cstubs_internals/index.html">Cstubs_internals</a></li><li><a href="../../ctypes/Ctypes/index.html">Ctypes</a></li><li><a href="../../ctypes/Ctypes_bigarray/index.html">Ctypes_bigarray</a></li><li><a href="../../ctypes/Ctypes_bigarray_stubs/index.html">Ctypes_bigarray_stubs</a></li><li><a href="../../ctypes/Ctypes_coerce/index.html">Ctypes_coerce</a></li><li><a href="../../ctypes/Ctypes_memory/index.html">Ctypes_memory</a></li><li><a href="../../ctypes/Ctypes_memory_stubs/index.html">Ctypes_memory_stubs</a></li><li><a href="../../ctypes/Ctypes_primitive_types/index.html">Ctypes_primitive_types</a></li><li><a href="../../ctypes/Ctypes_primitives/index.html">Ctypes_primitives</a></li><li><a href="../../ctypes/Ctypes_ptr/index.html">Ctypes_ptr</a></li><li><a href="../../ctypes/Ctypes_roots_stubs/index.html">Ctypes_roots_stubs</a></li><li><a href="../../ctypes/Ctypes_static/index.html">Ctypes_static</a></li><li><a href="../../ctypes/Ctypes_std_view_stubs/index.html">Ctypes_std_view_stubs</a></li><li><a href="../../ctypes/Ctypes_std_views/index.html">Ctypes_std_views</a></li><li><a href="../../ctypes/Ctypes_structs/index.html">Ctypes_structs</a></li><li><a href="../../ctypes/Ctypes_structs_computed/index.html">Ctypes_structs_computed</a></li><li><a href="../../ctypes/Ctypes_type_printing/index.html">Ctypes_type_printing</a></li><li><a href="../../ctypes/Ctypes_types/index.html">Ctypes_types</a></li><li><a href="../../ctypes/Ctypes_value_printing/index.html">Ctypes_value_printing</a></li><li><a href="../../ctypes/Ctypes_value_printing_stubs/index.html">Ctypes_value_printing_stubs</a></li><li><a href="../../ctypes/LDouble/index.html">LDouble</a></li><li><a href="../../ctypes/PosixTypes/index.html">PosixTypes</a></li></ul></li><li>Library <code>ctypes.stubs</code><ul><li><a href="../../ctypes.stubs/Cstubs/index.html">Cstubs</a></li><li><a href="../../ctypes.stubs/Cstubs_analysis/index.html">Cstubs_analysis</a></li><li><a href="../../ctypes.stubs/Cstubs_c_language/index.html">Cstubs_c_language</a></li><li><a href="../../ctypes.stubs/Cstubs_emit_c/index.html">Cstubs_emit_c</a></li><li><a href="../../ctypes.stubs/Cstubs_errors/index.html">Cstubs_errors</a></li><li><a href="../../ctypes.stubs/Cstubs_generate_c/index.html">Cstubs_generate_c</a></li><li><a href="../../ctypes.stubs/Cstubs_generate_ml/index.html">Cstubs_generate_ml</a></li><li><a href="../../ctypes.stubs/Cstubs_inverted/index.html">Cstubs_inverted</a></li><li><a href="../../ctypes.stubs/Cstubs_public_name/index.html">Cstubs_public_name</a></li><li><a href="../../ctypes.stubs/Cstubs_structs/index.html">Cstubs_structs</a></li><li><a href="../../ctypes.stubs/Ctypes_path/index.html">Ctypes_path</a></li></ul></li><li>Library <code>ctypes.top</code><ul><li><a href="../../ctypes.top/Ctypes_top/index.html">Ctypes_top</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ctypes<ul><li><a href="../ctypes/complexL.ml.html">complexL.ml</a></li><li><a href="../ctypes/cstubs_internals.ml.html">cstubs_internals.ml</a></li><li><a href="../ctypes/ctypes.ml.html">ctypes.ml</a></li><li><a href="../ctypes/ctypes_bigarray.ml.html">ctypes_bigarray.ml</a></li><li><a href="../ctypes/ctypes_bigarray_stubs.ml.html">ctypes_bigarray_stubs.ml</a></li><li><a href="../ctypes/ctypes_coerce.ml.html">ctypes_coerce.ml</a></li><li><a href="../ctypes/ctypes_memory.ml.html">ctypes_memory.ml</a></li><li><a href="../ctypes/ctypes_memory_stubs.ml.html">ctypes_memory_stubs.ml</a></li><li><a href="../ctypes/ctypes_primitive_types.ml.html">ctypes_primitive_types.ml</a></li><li><a href="../ctypes/ctypes_primitives.ml.html">ctypes_primitives.ml</a></li><li><a href="../ctypes/ctypes_ptr.ml.html">ctypes_ptr.ml</a></li><li><a href="../ctypes/ctypes_roots_stubs.ml.html">ctypes_roots_stubs.ml</a></li><li><a href="../ctypes/ctypes_static.ml.html">ctypes_static.ml</a></li><li><a href="../ctypes/ctypes_std_view_stubs.ml.html">ctypes_std_view_stubs.ml</a></li><li><a href="../ctypes/ctypes_std_views.ml.html">ctypes_std_views.ml</a></li><li><a href="../ctypes/ctypes_structs.ml.html">ctypes_structs.ml</a></li><li><a href="../ctypes/ctypes_structs_computed.ml.html">ctypes_structs_computed.ml</a></li><li><a href="../ctypes/ctypes_type_printing.ml.html">ctypes_type_printing.ml</a></li><li><a href="../ctypes/ctypes_value_printing.ml.html">ctypes_value_printing.ml</a></li><li><a href="../ctypes/ctypes_value_printing_stubs.ml.html">ctypes_value_printing_stubs.ml</a></li><li><a href="../ctypes/lDouble.ml.html">lDouble.ml</a></li><li><a href="../ctypes/posixTypes.ml.html">posixTypes.ml</a></li></ul></li><li>ctypes.stubs<ul><li><a href="../ctypes.stubs/cstubs.ml.html">cstubs.ml</a></li><li><a href="../ctypes.stubs/cstubs_analysis.ml.html">cstubs_analysis.ml</a></li><li><a href="../ctypes.stubs/cstubs_c_language.ml.html">cstubs_c_language.ml</a></li><li><a href="../ctypes.stubs/cstubs_emit_c.ml.html">cstubs_emit_c.ml</a></li><li><a href="../ctypes.stubs/cstubs_errors.ml.html">cstubs_errors.ml</a></li><li><a href="../ctypes.stubs/cstubs_generate_c.ml.html">cstubs_generate_c.ml</a></li><li><a href="../ctypes.stubs/cstubs_generate_ml.ml.html">cstubs_generate_ml.ml</a></li><li><a href="../ctypes.stubs/cstubs_inverted.ml.html">cstubs_inverted.ml</a></li><li><a href="../ctypes.stubs/cstubs_public_name.ml.html">cstubs_public_name.ml</a></li><li><a href="../ctypes.stubs/cstubs_structs.ml.html">cstubs_structs.ml</a></li><li><a href="../ctypes.stubs/ctypes_path.ml.html">ctypes_path.ml</a></li></ul></li><li>ctypes.top<ul><li><a href="ctypes_top.ml.html">ctypes_top.ml</a></li><li><a href="#" class="current_unit">install_ctypes_printers.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+</code><code class="source_code"><span><span class="COMMENT">(* Adapted from Anil Madhavapeddy's ocaml-uri package. *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-printers"><span class="LIDENT">printers</span></span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;fun fmt -&gt; Ctypes.format_typ fmt&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;fun fmt -&gt; Ctypes.format_fn fmt&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Signed.SInt.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Signed.Long.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Signed.LLong.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Unsigned.UChar.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Unsigned.UInt8.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Unsigned.UInt16.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Unsigned.UInt32.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Unsigned.UInt64.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Unsigned.Size_t.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Unsigned.UShort.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Unsigned.UInt.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Unsigned.ULong.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Unsigned.ULLong.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;fun fmt v -&gt; let open Ctypes in
+                    let typ = ptr (reference_type v) in
+                    Format.fprintf fmt \&quot;(%a) %a\&quot; (fun fmt -&gt; format_typ fmt) typ (format typ) v&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;fun fmt v -&gt;  Ctypes.(format (reference_type (addr v)) fmt v)&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;fun fmt v -&gt;  Ctypes.(format (reference_type (addr v)) fmt v)&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;fun fmt v -&gt;  Ctypes.(format CArray.(array (length v) (reference_type (start v))) fmt v)&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;fun fmt (Ctypes_static.OCamlRef (_, _, ty) as v) -&gt;  Ctypes.format (Ctypes_static.OCaml ty) fmt v&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;fun fmt v -&gt;  Ctypes.format PosixTypes.clock_t fmt v&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;fun fmt v -&gt;  Ctypes.format PosixTypes.dev_t fmt v&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;fun fmt v -&gt;  Ctypes.format PosixTypes.ino_t fmt v&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;fun fmt v -&gt;  Ctypes.format PosixTypes.mode_t fmt v&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;fun fmt v -&gt;  Ctypes.format PosixTypes.nlink_t fmt v&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;fun fmt v -&gt;  Ctypes.format PosixTypes.off_t fmt v&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;fun fmt v -&gt;  Ctypes.format PosixTypes.pid_t fmt v&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;PosixTypes.Ssize.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;PosixTypes.Time.pp&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Ctypes.format PosixTypes.useconds_t&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;(fun fmt v -&gt; Format.fprintf fmt \&quot;&lt;ldouble %s&gt;\&quot;
+                                (LDouble.to_string v))&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;(fun fmt v -&gt; Format.fprintf fmt \&quot;&lt;complexld %s + %si&gt;\&quot;
+                                (LDouble.to_string (ComplexL.re v)) (LDouble.to_string (ComplexL.im v)))&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-eval_string"><span class="LIDENT">eval_string</span></span><span class="EOL">
+</span>      <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_print_outcome_1"><span class="LIDENT">print_outcome</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="RPAREN">)</span> <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_err_formatter_2"><span class="LIDENT">err_formatter</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/format.ml.html#val-err_formatter"><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">err_formatter</span></a><span class="RPAREN">)</span> <span id="local_str_3"><span class="LIDENT">str</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_lexbuf_4"><span class="LIDENT">lexbuf</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/lexing.ml.html#val-from_string"><span class="UIDENT">Lexing</span><span class="DOT">.</span><span class="LIDENT">from_string</span></a> <a href="#local_str_3"><span class="LIDENT">str</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_phrase_5"><span class="LIDENT">phrase</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">parse_toplevel_phrase</span> <a href="#local_lexbuf_4"><span class="LIDENT">lexbuf</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">execute_phrase</span> <a href="#local_print_outcome_1"><span class="LIDENT">print_outcome</span></a> <a href="#local_err_formatter_2"><span class="LIDENT">err_formatter</span></a> <a href="#local_phrase_5"><span class="LIDENT">phrase</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-install_printer"><span class="LIDENT">install_printer</span></span> <span id="local_printer_6"><span class="LIDENT">printer</span></span> <span class="EQUAL">=</span> <span class="EOL">
+</span>  <span class="BEGIN">begin</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-ignore"><span class="LIDENT">ignore</span></a> <span class="LPAREN">(</span><span class="LIDENT">eval_string</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/printf.ml.html#val-sprintf"><span class="UIDENT">Printf</span><span class="DOT">.</span><span class="LIDENT">sprintf</span></a> <span class="STRING">&quot;let _printer = (%s);;&quot;</span> <a href="#local_printer_6"><span class="LIDENT">printer</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-ignore"><span class="LIDENT">ignore</span></a> <span class="LPAREN">(</span><span class="LIDENT">eval_string</span> <span class="STRING">&quot;#install_printer _printer;;&quot;</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="END">end</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-iter"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">iter</span></a> <span class="LIDENT">install_printer</span> <span class="LIDENT">printers</span><span class="EOL">
+</span></span></code></pre></body></html>

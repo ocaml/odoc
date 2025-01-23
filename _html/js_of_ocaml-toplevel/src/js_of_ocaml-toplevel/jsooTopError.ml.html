@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: jsooTopError.ml (js_of_ocaml-toplevel.src.js_of_ocaml-toplevel)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">js_of_ocaml-toplevel</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; js_of_ocaml-toplevel &#x00BB; jsooTopError.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>jsooTopError.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">js_of_ocaml-toplevel</a><ul><li>Library <code>js_of_ocaml-toplevel</code><ul><li><a href="../../js_of_ocaml-toplevel/Js_of_ocaml_toplevel/index.html">Js_of_ocaml_toplevel</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>js_of_ocaml-toplevel<ul><li><a href="js_of_ocaml_toplevel.ml.html">js_of_ocaml_toplevel.ml</a></li><li><a href="js_of_ocaml_toplevel__.ml.html">js_of_ocaml_toplevel__.ml</a></li><li><a href="jsooTop.ml.html">jsooTop.ml</a></li><li><a href="#" class="current_unit">jsooTopError.ml</a></li><li><a href="jsooTopPpx.ml.html">jsooTopPpx.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+</code><code class="source_code"><span><span class="COMMENT">(* Js_of_ocaml library
+ * http://www.ocsigen.org/js_of_ocaml/
+ * Copyright (C) 2017 Hugo Heuzard
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, with linking exception;
+ * either version 2.1 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-loc"><span class="LIDENT">loc</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Syntaxerr</span><span class="DOT">.</span><span class="UIDENT">Error</span> <span id="local_x_1"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="UIDENT">Syntaxerr</span><span class="DOT">.</span><span class="LIDENT">location_of_error</span> <a href="#local_x_1"><span class="LIDENT">x</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Lexer</span><span class="DOT">.</span><span class="UIDENT">Error</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span id="local_loc_2"><span class="LIDENT">loc</span></span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Typecore</span><span class="DOT">.</span><span class="UIDENT">Error</span> <span class="LPAREN">(</span><span id="local_loc_3"><span class="LIDENT">loc</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Typetexp</span><span class="DOT">.</span><span class="UIDENT">Error</span> <span class="LPAREN">(</span><span id="local_loc_4"><span class="LIDENT">loc</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Typeclass</span><span class="DOT">.</span><span class="UIDENT">Error</span> <span class="LPAREN">(</span><span id="local_loc_5"><span class="LIDENT">loc</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Typemod</span><span class="DOT">.</span><span class="UIDENT">Error</span> <span class="LPAREN">(</span><span id="local_loc_6"><span class="LIDENT">loc</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Typedecl</span><span class="DOT">.</span><span class="UIDENT">Error</span> <span class="LPAREN">(</span><span id="local_loc_7"><span class="LIDENT">loc</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Translcore</span><span class="DOT">.</span><span class="UIDENT">Error</span> <span class="LPAREN">(</span><span id="local_loc_8"><span class="LIDENT">loc</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Translclass</span><span class="DOT">.</span><span class="UIDENT">Error</span> <span class="LPAREN">(</span><span id="local_loc_9"><span class="LIDENT">loc</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Translmod</span><span class="DOT">.</span><span class="UIDENT">Error</span> <span class="LPAREN">(</span><span id="local_loc_10"><span class="LIDENT">loc</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Some</span> <a href="#local_loc_10"><span class="LIDENT">loc</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="EOL">
+</span></span></code></pre></body></html>

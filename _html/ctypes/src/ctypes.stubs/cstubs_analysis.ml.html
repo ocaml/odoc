@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: cstubs_analysis.ml (ctypes.src.ctypes.stubs)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ctypes</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ctypes.stubs &#x00BB; cstubs_analysis.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>cstubs_analysis.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">ctypes</a><ul><li>Library <code>ctypes</code><ul><li><a href="../../ctypes/ComplexL/index.html">ComplexL</a></li><li><a href="../../ctypes/Cstubs_internals/index.html">Cstubs_internals</a></li><li><a href="../../ctypes/Ctypes/index.html">Ctypes</a></li><li><a href="../../ctypes/Ctypes_bigarray/index.html">Ctypes_bigarray</a></li><li><a href="../../ctypes/Ctypes_bigarray_stubs/index.html">Ctypes_bigarray_stubs</a></li><li><a href="../../ctypes/Ctypes_coerce/index.html">Ctypes_coerce</a></li><li><a href="../../ctypes/Ctypes_memory/index.html">Ctypes_memory</a></li><li><a href="../../ctypes/Ctypes_memory_stubs/index.html">Ctypes_memory_stubs</a></li><li><a href="../../ctypes/Ctypes_primitive_types/index.html">Ctypes_primitive_types</a></li><li><a href="../../ctypes/Ctypes_primitives/index.html">Ctypes_primitives</a></li><li><a href="../../ctypes/Ctypes_ptr/index.html">Ctypes_ptr</a></li><li><a href="../../ctypes/Ctypes_roots_stubs/index.html">Ctypes_roots_stubs</a></li><li><a href="../../ctypes/Ctypes_static/index.html">Ctypes_static</a></li><li><a href="../../ctypes/Ctypes_std_view_stubs/index.html">Ctypes_std_view_stubs</a></li><li><a href="../../ctypes/Ctypes_std_views/index.html">Ctypes_std_views</a></li><li><a href="../../ctypes/Ctypes_structs/index.html">Ctypes_structs</a></li><li><a href="../../ctypes/Ctypes_structs_computed/index.html">Ctypes_structs_computed</a></li><li><a href="../../ctypes/Ctypes_type_printing/index.html">Ctypes_type_printing</a></li><li><a href="../../ctypes/Ctypes_types/index.html">Ctypes_types</a></li><li><a href="../../ctypes/Ctypes_value_printing/index.html">Ctypes_value_printing</a></li><li><a href="../../ctypes/Ctypes_value_printing_stubs/index.html">Ctypes_value_printing_stubs</a></li><li><a href="../../ctypes/LDouble/index.html">LDouble</a></li><li><a href="../../ctypes/PosixTypes/index.html">PosixTypes</a></li></ul></li><li>Library <code>ctypes.stubs</code><ul><li><a href="../../ctypes.stubs/Cstubs/index.html">Cstubs</a></li><li><a href="../../ctypes.stubs/Cstubs_analysis/index.html">Cstubs_analysis</a></li><li><a href="../../ctypes.stubs/Cstubs_c_language/index.html">Cstubs_c_language</a></li><li><a href="../../ctypes.stubs/Cstubs_emit_c/index.html">Cstubs_emit_c</a></li><li><a href="../../ctypes.stubs/Cstubs_errors/index.html">Cstubs_errors</a></li><li><a href="../../ctypes.stubs/Cstubs_generate_c/index.html">Cstubs_generate_c</a></li><li><a href="../../ctypes.stubs/Cstubs_generate_ml/index.html">Cstubs_generate_ml</a></li><li><a href="../../ctypes.stubs/Cstubs_inverted/index.html">Cstubs_inverted</a></li><li><a href="../../ctypes.stubs/Cstubs_public_name/index.html">Cstubs_public_name</a></li><li><a href="../../ctypes.stubs/Cstubs_structs/index.html">Cstubs_structs</a></li><li><a href="../../ctypes.stubs/Ctypes_path/index.html">Ctypes_path</a></li></ul></li><li>Library <code>ctypes.top</code><ul><li><a href="../../ctypes.top/Ctypes_top/index.html">Ctypes_top</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ctypes<ul><li><a href="../ctypes/complexL.ml.html">complexL.ml</a></li><li><a href="../ctypes/cstubs_internals.ml.html">cstubs_internals.ml</a></li><li><a href="../ctypes/ctypes.ml.html">ctypes.ml</a></li><li><a href="../ctypes/ctypes_bigarray.ml.html">ctypes_bigarray.ml</a></li><li><a href="../ctypes/ctypes_bigarray_stubs.ml.html">ctypes_bigarray_stubs.ml</a></li><li><a href="../ctypes/ctypes_coerce.ml.html">ctypes_coerce.ml</a></li><li><a href="../ctypes/ctypes_memory.ml.html">ctypes_memory.ml</a></li><li><a href="../ctypes/ctypes_memory_stubs.ml.html">ctypes_memory_stubs.ml</a></li><li><a href="../ctypes/ctypes_primitive_types.ml.html">ctypes_primitive_types.ml</a></li><li><a href="../ctypes/ctypes_primitives.ml.html">ctypes_primitives.ml</a></li><li><a href="../ctypes/ctypes_ptr.ml.html">ctypes_ptr.ml</a></li><li><a href="../ctypes/ctypes_roots_stubs.ml.html">ctypes_roots_stubs.ml</a></li><li><a href="../ctypes/ctypes_static.ml.html">ctypes_static.ml</a></li><li><a href="../ctypes/ctypes_std_view_stubs.ml.html">ctypes_std_view_stubs.ml</a></li><li><a href="../ctypes/ctypes_std_views.ml.html">ctypes_std_views.ml</a></li><li><a href="../ctypes/ctypes_structs.ml.html">ctypes_structs.ml</a></li><li><a href="../ctypes/ctypes_structs_computed.ml.html">ctypes_structs_computed.ml</a></li><li><a href="../ctypes/ctypes_type_printing.ml.html">ctypes_type_printing.ml</a></li><li><a href="../ctypes/ctypes_value_printing.ml.html">ctypes_value_printing.ml</a></li><li><a href="../ctypes/ctypes_value_printing_stubs.ml.html">ctypes_value_printing_stubs.ml</a></li><li><a href="../ctypes/lDouble.ml.html">lDouble.ml</a></li><li><a href="../ctypes/posixTypes.ml.html">posixTypes.ml</a></li></ul></li><li>ctypes.stubs<ul><li><a href="cstubs.ml.html">cstubs.ml</a></li><li><a href="#" class="current_unit">cstubs_analysis.ml</a></li><li><a href="cstubs_c_language.ml.html">cstubs_c_language.ml</a></li><li><a href="cstubs_emit_c.ml.html">cstubs_emit_c.ml</a></li><li><a href="cstubs_errors.ml.html">cstubs_errors.ml</a></li><li><a href="cstubs_generate_c.ml.html">cstubs_generate_c.ml</a></li><li><a href="cstubs_generate_ml.ml.html">cstubs_generate_ml.ml</a></li><li><a href="cstubs_inverted.ml.html">cstubs_inverted.ml</a></li><li><a href="cstubs_public_name.ml.html">cstubs_public_name.ml</a></li><li><a href="cstubs_structs.ml.html">cstubs_structs.ml</a></li><li><a href="ctypes_path.ml.html">ctypes_path.ml</a></li></ul></li><li>ctypes.top<ul><li><a href="../ctypes.top/ctypes_top.ml.html">ctypes_top.ml</a></li><li><a href="../ctypes.top/install_ctypes_printers.ml.html">install_ctypes_printers.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+</code><code class="source_code"><span><span class="COMMENT">(*
+ * Copyright (c) 2014 Jeremy Yallop.
+ *
+ * This file is distributed under the terms of the MIT License.
+ * See the file LICENSE for details.
+ *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* Analysis for stub generation *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="OPEN">open</span> <a href="../ctypes/ctypes_static.ml.html"><span class="UIDENT">Ctypes_static</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-is_float_primitive"><span class="LIDENT">is_float_primitive</span></span> <span class="COLON">:</span> <span class="TYPE">type</span> <span class="LIDENT">a</span><span class="DOT">.</span> <a href="../ctypes/ctypes_static.ml.html#type-typ"><span class="LIDENT">a</span> <span class="LIDENT">typ</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bool</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <a href="../ctypes/ctypes_primitive_types.ml.html"><span class="UIDENT">Ctypes_primitive_types</span></a> <span class="IN">in</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Primitive</span> <span class="UIDENT">Float</span> <span class="MINUSGREATER">-&gt;</span> <span class="TRUE">true</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Primitive</span> <span class="UIDENT">Double</span> <span class="MINUSGREATER">-&gt;</span> <span class="TRUE">true</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="FALSE">false</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-float"><span class="LIDENT">float</span></span> <span class="COLON">:</span> <span class="TYPE">type</span> <span class="LIDENT">a</span><span class="DOT">.</span> <a href="../ctypes/ctypes_static.ml.html#type-fn"><span class="LIDENT">a</span> <span class="LIDENT">fn</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bool</span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Returns</span> <span id="local_t_1"><span class="LIDENT">t</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">is_float_primitive</span> <a href="#local_t_1"><span class="LIDENT">t</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Function</span> <span class="LPAREN">(</span><span id="local_f_2"><span class="LIDENT">f</span></span><span class="COMMA">,</span> <span id="local_t_3"><span class="LIDENT">t</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">is_float_primitive</span> <a href="#local_f_2"><span class="LIDENT">f</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&amp;&amp;)"><span class="AMPERAMPER">&amp;&amp;</span></a> <span class="LIDENT">float</span> <a href="#local_t_3"><span class="LIDENT">t</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* A value of type 'a noalloc says that reading a value of type 'a
+   will not cause an OCaml allocation in C code. *)</span><span class="EOL">
+</span><span id="type-noalloc"><span class="TYPE">type</span> <span class="UNDERSCORE">_</span> <span class="LIDENT">noalloc</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span id="type-noalloc.constructor-Noalloc_unit"><span class="UIDENT">Noalloc_unit</span> <span class="COLON">:</span> <span class="LIDENT">unit</span> <span class="LIDENT">noalloc</span></span><span class="EOL">
+</span><span id="type-noalloc.constructor-Noalloc_int"><span class="BAR">|</span> <span class="UIDENT">Noalloc_int</span> <span class="COLON">:</span> <span class="LIDENT">int</span> <span class="LIDENT">noalloc</span></span><span class="EOL">
+</span><span id="type-noalloc.constructor-Noalloc_uint8_t"><span class="BAR">|</span> <span class="UIDENT">Noalloc_uint8_t</span> <span class="COLON">:</span> <a href="../../../integers/src/integers/unsigned.ml.html#type-uint8"><span class="UIDENT">Unsigned</span><span class="DOT">.</span><span class="LIDENT">uint8</span></a> <span class="LIDENT">noalloc</span></span><span class="EOL">
+</span><span id="type-noalloc.constructor-Noalloc_uint16_t"><span class="BAR">|</span> <span class="UIDENT">Noalloc_uint16_t</span> <span class="COLON">:</span> <a href="../../../integers/src/integers/unsigned.ml.html#type-uint16"><span class="UIDENT">Unsigned</span><span class="DOT">.</span><span class="LIDENT">uint16</span></a> <span class="LIDENT">noalloc</span></span><span class="EOL">
+</span><span id="type-noalloc.constructor-Noalloc_char"><span class="BAR">|</span> <span class="UIDENT">Noalloc_char</span> <span class="COLON">:</span> <span class="LIDENT">char</span> <span class="LIDENT">noalloc</span></span><span class="EOL">
+</span><span id="type-noalloc.constructor-Noalloc_bool"><span class="BAR">|</span> <span class="UIDENT">Noalloc_bool</span> <span class="COLON">:</span> <span class="LIDENT">bool</span> <span class="LIDENT">noalloc</span></span><span class="EOL">
+</span><span id="type-noalloc.constructor-Noalloc_view"><span class="BAR">|</span> <span class="UIDENT">Noalloc_view</span> <span class="COLON">:</span> <a href="../ctypes/ctypes_static.ml.html#type-view"><span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">view</span></a> <span class="STAR">*</span> <span class="QUOTE">'</span><span class="LIDENT">b</span> <span class="LIDENT">noalloc</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">noalloc</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* A value of type 'a alloc says that reading a value of type 'a
+   may cause an OCaml allocation in C code. *)</span><span class="EOL">
+</span><span id="type-alloc"><span class="TYPE">type</span> <span class="UNDERSCORE">_</span> <span class="LIDENT">alloc</span> <span class="EQUAL">=</span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_sint"><span class="BAR">|</span> <span class="UIDENT">Alloc_sint</span> <span class="COLON">:</span> <a href="../../../integers/src/integers/signed.ml.html#type-sint"><span class="UIDENT">Signed</span><span class="DOT">.</span><span class="LIDENT">sint</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_long"><span class="BAR">|</span> <span class="UIDENT">Alloc_long</span> <span class="COLON">:</span> <a href="../../../integers/src/integers/signed.ml.html#type-long"><span class="UIDENT">Signed</span><span class="DOT">.</span><span class="LIDENT">long</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_llong"><span class="BAR">|</span> <span class="UIDENT">Alloc_llong</span> <span class="COLON">:</span> <a href="../../../integers/src/integers/signed.ml.html#type-llong"><span class="UIDENT">Signed</span><span class="DOT">.</span><span class="LIDENT">llong</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_uint"><span class="BAR">|</span> <span class="UIDENT">Alloc_uint</span> <span class="COLON">:</span> <a href="../../../integers/src/integers/unsigned.ml.html#type-uint"><span class="UIDENT">Unsigned</span><span class="DOT">.</span><span class="LIDENT">uint</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_uchar"><span class="BAR">|</span> <span class="UIDENT">Alloc_uchar</span> <span class="COLON">:</span> <a href="../../../integers/src/integers/unsigned.ml.html#type-uchar"><span class="UIDENT">Unsigned</span><span class="DOT">.</span><span class="LIDENT">uchar</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_ushort"><span class="BAR">|</span> <span class="UIDENT">Alloc_ushort</span> <span class="COLON">:</span> <a href="../../../integers/src/integers/unsigned.ml.html#type-ushort"><span class="UIDENT">Unsigned</span><span class="DOT">.</span><span class="LIDENT">ushort</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_ulong"><span class="BAR">|</span> <span class="UIDENT">Alloc_ulong</span> <span class="COLON">:</span> <a href="../../../integers/src/integers/unsigned.ml.html#type-ulong"><span class="UIDENT">Unsigned</span><span class="DOT">.</span><span class="LIDENT">ulong</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_ullong"><span class="BAR">|</span> <span class="UIDENT">Alloc_ullong</span> <span class="COLON">:</span> <a href="../../../integers/src/integers/unsigned.ml.html#type-ullong"><span class="UIDENT">Unsigned</span><span class="DOT">.</span><span class="LIDENT">ullong</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_size_t"><span class="BAR">|</span> <span class="UIDENT">Alloc_size_t</span> <span class="COLON">:</span> <a href="../../../integers/src/integers/unsigned.ml.html#type-size_t"><span class="UIDENT">Unsigned</span><span class="DOT">.</span><span class="LIDENT">size_t</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_int32_t"><span class="BAR">|</span> <span class="UIDENT">Alloc_int32_t</span> <span class="COLON">:</span> <span class="LIDENT">int32</span> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_int64_t"><span class="BAR">|</span> <span class="UIDENT">Alloc_int64_t</span> <span class="COLON">:</span> <span class="LIDENT">int64</span> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_uint32_t"><span class="BAR">|</span> <span class="UIDENT">Alloc_uint32_t</span> <span class="COLON">:</span> <a href="../../../integers/src/integers/unsigned.ml.html#type-uint32"><span class="UIDENT">Unsigned</span><span class="DOT">.</span><span class="LIDENT">uint32</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_uint64_t"><span class="BAR">|</span> <span class="UIDENT">Alloc_uint64_t</span> <span class="COLON">:</span> <a href="../../../integers/src/integers/unsigned.ml.html#type-uint64"><span class="UIDENT">Unsigned</span><span class="DOT">.</span><span class="LIDENT">uint64</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_nativeint"><span class="BAR">|</span> <span class="UIDENT">Alloc_nativeint</span> <span class="COLON">:</span> <span class="LIDENT">nativeint</span> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_float"><span class="BAR">|</span> <span class="UIDENT">Alloc_float</span> <span class="COLON">:</span> <span class="LIDENT">float</span> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_ldouble"><span class="BAR">|</span> <span class="UIDENT">Alloc_ldouble</span> <span class="COLON">:</span> <a href="../ctypes/lDouble.ml.html#type-t"><span class="UIDENT">LDouble</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_complex"><span class="BAR">|</span> <span class="UIDENT">Alloc_complex</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/complex.ml.html#type-t"><span class="UIDENT">Complex</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_complexld"><span class="BAR">|</span> <span class="UIDENT">Alloc_complexld</span> <span class="COLON">:</span> <a href="../ctypes/complexL.ml.html#type-t"><span class="UIDENT">ComplexL</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_pointer"><span class="BAR">|</span> <span class="UIDENT">Alloc_pointer</span> <span class="COLON">:</span> <a href="../ctypes/ctypes_static.ml.html#type-pointer"><span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="LIDENT">pointer</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_funptr"><span class="BAR">|</span> <span class="UIDENT">Alloc_funptr</span> <span class="COLON">:</span> <a href="../ctypes/ctypes_static.ml.html#type-static_funptr"><span class="UNDERSCORE">_</span> <span class="LIDENT">static_funptr</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_structured"><span class="BAR">|</span> <span class="UIDENT">Alloc_structured</span> <span class="COLON">:</span> <a href="../ctypes/ctypes_static.ml.html#type-structured"><span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="LIDENT">structured</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_array"><span class="BAR">|</span> <span class="UIDENT">Alloc_array</span> <span class="COLON">:</span> <a href="../ctypes/ctypes_static.ml.html#type-carray"><span class="UNDERSCORE">_</span> <span class="LIDENT">carray</span></a> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_bigarray"><span class="BAR">|</span> <span class="UIDENT">Alloc_bigarray</span> <span class="COLON">:</span> <a href="../ctypes/ctypes_bigarray.ml.html#type-t"><span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="UIDENT">Ctypes_bigarray</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">alloc</span></span><span class="EOL">
+</span><span id="type-alloc.constructor-Alloc_view"><span class="BAR">|</span> <span class="UIDENT">Alloc_view</span> <span class="COLON">:</span> <a href="../ctypes/ctypes_static.ml.html#type-view"><span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">view</span></a> <span class="STAR">*</span> <span class="QUOTE">'</span><span class="LIDENT">b</span> <span class="LIDENT">alloc</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">alloc</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-allocation"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">allocation</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="OF">of</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">noalloc</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="OF">of</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">alloc</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-primitive_allocation"><span class="LIDENT">primitive_allocation</span></span> <span class="COLON">:</span> <span class="TYPE">type</span> <span class="LIDENT">a</span><span class="DOT">.</span> <a href="../ctypes/ctypes_primitive_types.ml.html#type-prim"><span class="LIDENT">a</span> <span class="UIDENT">Ctypes_primitive_types</span><span class="DOT">.</span><span class="LIDENT">prim</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">a</span> <span class="LIDENT">allocation</span> <span class="EQUAL">=</span><span class="EOL">
+</span> <span class="LET">let</span> <span class="OPEN">open</span> <a href="../ctypes/ctypes_primitive_types.ml.html"><span class="UIDENT">Ctypes_primitive_types</span></a> <span class="IN">in</span> <span class="FUNCTION">function</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Char</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="UIDENT">Noalloc_char</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Bool</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="UIDENT">Noalloc_bool</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Schar</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="UIDENT">Noalloc_int</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Short</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="UIDENT">Noalloc_int</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Int</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="UIDENT">Noalloc_int</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Int8_t</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="UIDENT">Noalloc_int</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Int16_t</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="UIDENT">Noalloc_int</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Uint8_t</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="UIDENT">Noalloc_uint8_t</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Uint16_t</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="UIDENT">Noalloc_uint16_t</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Camlint</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="UIDENT">Noalloc_int</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Long</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_long</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Llong</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_llong</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Ushort</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_ushort</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Uchar</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_uchar</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Sint</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_sint</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Uint</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_uint</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Ulong</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_ulong</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Ullong</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_ullong</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Size_t</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_size_t</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Int32_t</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_int32_t</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Int64_t</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_int64_t</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Uint32_t</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_uint32_t</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Uint64_t</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_uint64_t</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Nativeint</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_nativeint</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Float</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_float</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Double</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_float</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">LDouble</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_ldouble</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Complex32</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_complex</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Complex64</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_complex</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Complexld</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_complexld</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-allocation"><span class="LIDENT">allocation</span></span> <span class="COLON">:</span> <span class="TYPE">type</span> <span class="LIDENT">a</span><span class="DOT">.</span> <a href="../ctypes/ctypes_static.ml.html#type-typ"><span class="LIDENT">a</span> <span class="LIDENT">typ</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">a</span> <span class="LIDENT">allocation</span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Void</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="UIDENT">Noalloc_unit</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Primitive</span> <span id="local_p_4"><span class="LIDENT">p</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">primitive_allocation</span> <a href="#local_p_4"><span class="LIDENT">p</span></a><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Pointer</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_pointer</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Funptr</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_funptr</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Struct</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_structured</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Union</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_structured</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Abstract</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_structured</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">View</span> <span id="local_v_5"><span class="LIDENT">v</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>   <span class="BEGIN">begin</span> <span class="MATCH">match</span> <span class="LIDENT">allocation</span> <a href="#local_v_5"><span class="LIDENT">v</span></a><span class="DOT">.</span><span class="LIDENT">ty</span> <span class="WITH">with</span><span class="EOL">
+</span>   <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span id="local_a_6"><span class="LIDENT">a</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="LPAREN">(</span><span class="UIDENT">Alloc_view</span> <span class="LPAREN">(</span><a href="#local_v_5"><span class="LIDENT">v</span></a><span class="COMMA">,</span> <a href="#local_a_6"><span class="LIDENT">a</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>   <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span id="local_na_7"><span class="LIDENT">na</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="LPAREN">(</span><span class="UIDENT">Noalloc_view</span> <span class="LPAREN">(</span><a href="#local_v_5"><span class="LIDENT">v</span></a><span class="COMMA">,</span> <a href="#local_na_7"><span class="LIDENT">na</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>   <span class="END">end</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Qualified</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span id="local_ty_8"><span class="LIDENT">ty</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">allocation</span> <a href="#local_ty_8"><span class="LIDENT">ty</span></a><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Array</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_array</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">Bigarray</span> <span id="local_ba_9"><span class="LIDENT">ba</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="LPAREN">(</span><span class="UIDENT">Alloc_bigarray</span> <a href="#local_ba_9"><span class="LIDENT">ba</span></a><span class="RPAREN">)</span><span class="EOL">
+</span> <span class="BAR">|</span> <span class="UIDENT">OCaml</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UIDENT">Alloc_pointer</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-may_allocate"><span class="LIDENT">may_allocate</span></span> <span class="COLON">:</span> <span class="TYPE">type</span> <span class="LIDENT">a</span><span class="DOT">.</span> <a href="../ctypes/ctypes_static.ml.html#type-fn"><span class="LIDENT">a</span> <span class="LIDENT">fn</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bool</span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Returns</span> <span id="local_t_10"><span class="LIDENT">t</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="BEGIN">begin</span> <span class="MATCH">match</span> <span class="LIDENT">allocation</span> <a href="#local_t_10"><span class="LIDENT">t</span></a> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Noalloc</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Alloc</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="TRUE">true</span><span class="EOL">
+</span>    <span class="END">end</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Function</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span id="local_t_11"><span class="LIDENT">t</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">may_allocate</span> <a href="#local_t_11"><span class="LIDENT">t</span></a><span class="EOL">
+</span></span></code></pre></body></html>

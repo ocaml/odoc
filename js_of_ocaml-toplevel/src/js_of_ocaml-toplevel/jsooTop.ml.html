@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: jsooTop.ml (js_of_ocaml-toplevel.src.js_of_ocaml-toplevel)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">js_of_ocaml-toplevel</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; js_of_ocaml-toplevel &#x00BB; jsooTop.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>jsooTop.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">js_of_ocaml-toplevel</a><ul><li>Library <code>js_of_ocaml-toplevel</code><ul><li><a href="../../js_of_ocaml-toplevel/Js_of_ocaml_toplevel/index.html">Js_of_ocaml_toplevel</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>js_of_ocaml-toplevel<ul><li><a href="js_of_ocaml_toplevel.ml.html">js_of_ocaml_toplevel.ml</a></li><li><a href="js_of_ocaml_toplevel__.ml.html">js_of_ocaml_toplevel__.ml</a></li><li><a href="#" class="current_unit">jsooTop.ml</a></li><li><a href="jsooTopError.ml.html">jsooTopError.ml</a></li><li><a href="jsooTopPpx.ml.html">jsooTopPpx.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+</code><code class="source_code"><span><span class="COMMENT">(* Js_of_ocaml library
+ * http://www.ocsigen.org/js_of_ocaml/
+ * Copyright (C) 2014 Hugo Heuzard
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, with linking exception;
+ * either version 2.1 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="OPEN">open</span> <a href="../../../js_of_ocaml-compiler/src/js_of_ocaml-compiler/js_of_ocaml_compiler.ml.html"><span class="UIDENT">Js_of_ocaml_compiler</span></a><span class="EOL">
+</span><span class="OPEN">open</span> <a href="../../../js_of_ocaml-compiler/src/js_of_ocaml-compiler/stdlib.ml.html"><span class="UIDENT">Js_of_ocaml_compiler</span><span class="DOT">.</span><span class="UIDENT">Stdlib</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-setup"><span class="LIDENT">setup</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LAZY">lazy</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="UIDENT">Topdirs</span><span class="DOT">.</span><span class="LIDENT">dir_directory</span> <span class="STRING">&quot;/static/cmis&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>     <span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">add_directive</span><span class="EOL">
+</span>       <span class="STRING">&quot;enable&quot;</span><span class="EOL">
+</span>       <span class="LPAREN">(</span><span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="UIDENT">Directive_string</span> <a href="../../../js_of_ocaml-compiler/src/js_of_ocaml-compiler/config.ml.html#module-Flag.val-enable"><span class="UIDENT">Config</span><span class="DOT">.</span><span class="UIDENT">Flag</span><span class="DOT">.</span><span class="LIDENT">enable</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>       <span class="LBRACE">{</span> <span class="LIDENT">section</span> <span class="EQUAL">=</span> <span class="STRING">&quot;js_of_ocaml&quot;</span><span class="SEMI">;</span> <span class="LIDENT">doc</span> <span class="EQUAL">=</span> <span class="STRING">&quot;Enable the given flag&quot;</span> <span class="RBRACE">}</span><span class="SEMI">;</span><span class="EOL">
+</span>     <span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">add_directive</span><span class="EOL">
+</span>       <span class="STRING">&quot;disable&quot;</span><span class="EOL">
+</span>       <span class="LPAREN">(</span><span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="UIDENT">Directive_string</span> <a href="../../../js_of_ocaml-compiler/src/js_of_ocaml-compiler/config.ml.html#module-Flag.val-disable"><span class="UIDENT">Config</span><span class="DOT">.</span><span class="UIDENT">Flag</span><span class="DOT">.</span><span class="LIDENT">disable</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>       <span class="LBRACE">{</span> <span class="LIDENT">section</span> <span class="EQUAL">=</span> <span class="STRING">&quot;js_of_ocaml&quot;</span><span class="SEMI">;</span> <span class="LIDENT">doc</span> <span class="EQUAL">=</span> <span class="STRING">&quot;Disable the given flag&quot;</span> <span class="RBRACE">}</span><span class="SEMI">;</span><span class="EOL">
+</span>     <span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">add_directive</span><span class="EOL">
+</span>       <span class="STRING">&quot;debug_on&quot;</span><span class="EOL">
+</span>       <span class="LPAREN">(</span><span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="UIDENT">Directive_string</span> <a href="../../../js_of_ocaml-compiler/src/js_of_ocaml-compiler/debug.ml.html#val-enable"><span class="UIDENT">Debug</span><span class="DOT">.</span><span class="LIDENT">enable</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>       <span class="LBRACE">{</span> <span class="LIDENT">section</span> <span class="EQUAL">=</span> <span class="STRING">&quot;js_of_ocaml&quot;</span><span class="SEMI">;</span> <span class="LIDENT">doc</span> <span class="EQUAL">=</span> <span class="STRING">&quot;Enable debug for the given section&quot;</span> <span class="RBRACE">}</span><span class="SEMI">;</span><span class="EOL">
+</span>     <span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">add_directive</span><span class="EOL">
+</span>       <span class="STRING">&quot;debug_off&quot;</span><span class="EOL">
+</span>       <span class="LPAREN">(</span><span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="UIDENT">Directive_string</span> <a href="../../../js_of_ocaml-compiler/src/js_of_ocaml-compiler/debug.ml.html#val-disable"><span class="UIDENT">Debug</span><span class="DOT">.</span><span class="LIDENT">disable</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>       <span class="LBRACE">{</span> <span class="LIDENT">section</span> <span class="EQUAL">=</span> <span class="STRING">&quot;js_of_ocaml&quot;</span><span class="SEMI">;</span> <span class="LIDENT">doc</span> <span class="EQUAL">=</span> <span class="STRING">&quot;Disable debug for the given section&quot;</span> <span class="RBRACE">}</span><span class="SEMI">;</span><span class="EOL">
+</span>     <span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">add_directive</span><span class="EOL">
+</span>       <span class="STRING">&quot;tailcall&quot;</span><span class="EOL">
+</span>       <span class="LPAREN">(</span><span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="UIDENT">Directive_string</span> <span class="LPAREN">(</span><a href="../../../js_of_ocaml-compiler/src/js_of_ocaml-compiler/config.ml.html#module-Param.val-set"><span class="UIDENT">Config</span><span class="DOT">.</span><span class="UIDENT">Param</span><span class="DOT">.</span><span class="LIDENT">set</span></a> <span class="STRING">&quot;tc&quot;</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>       <span class="LBRACE">{</span> <span class="LIDENT">section</span> <span class="EQUAL">=</span> <span class="STRING">&quot;js_of_ocaml&quot;</span><span class="EOL">
+</span>       <span class="SEMI">;</span> <span class="LIDENT">doc</span> <span class="EQUAL">=</span> <span class="STRING">&quot;Set the depth of tail calls before going through a trampoline&quot;</span><span class="EOL">
+</span>       <span class="RBRACE">}</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-refill_lexbuf"><span class="LIDENT">refill_lexbuf</span></span> <span id="local_s_1"><span class="LIDENT">s</span></span> <span id="local_p_2"><span class="LIDENT">p</span></span> <span id="local_ppf_3"><span class="LIDENT">ppf</span></span> <span id="local_buffer_4"><span class="LIDENT">buffer</span></span> <span id="local_len_5"><span class="LIDENT">len</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><a href="#local_p_2"><span class="LIDENT">p</span></a> <a href="../../../js_of_ocaml-compiler/src/js_of_ocaml-compiler/stdlib.ml.html#module-Int_replace_polymorphic_compare.val-(=)"><span class="EQUAL">=</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/string.ml.html#val-length"><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">length</span></a> <a href="#local_s_1"><span class="LIDENT">s</span></a><span class="EOL">
+</span>  <span class="THEN">then</span> <span class="INT">0</span><span class="EOL">
+</span>  <span class="ELSE">else</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="def_23"><span id="local_len'_6"><span class="LIDENT">len'</span></span><span class="COMMA">,</span> <span id="local_nl_7"><span class="LIDENT">nl</span></span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="TRY">try</span> <a href="../../../ocaml-base-compiler/src/stdlib/string.ml.html#val-index_from"><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">index_from</span></a> <a href="#local_s_1"><span class="LIDENT">s</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><a href="#local_p_2"><span class="LIDENT">p</span></a> <span class="CHAR">'\n'</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(-)"><span class="MINUS">-</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><a href="#local_p_2"><span class="LIDENT">p</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(+)"><span class="PLUS">+</span></a> <span class="INT">1</span><span class="COMMA">,</span> <span class="FALSE">false</span><span class="EOL">
+</span>      <span class="WITH">with</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/string.ml.html#val-length"><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">length</span></a> <a href="#local_s_1"><span class="LIDENT">s</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(-)"><span class="MINUS">-</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><a href="#local_p_2"><span class="LIDENT">p</span></a><span class="COMMA">,</span> <span class="TRUE">true</span><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_len''_8"><span class="LIDENT">len''</span></span> <span class="EQUAL">=</span> <a href="../../../js_of_ocaml-compiler/src/js_of_ocaml-compiler/stdlib.ml.html#module-Int_replace_polymorphic_compare.val-min"><span class="LIDENT">min</span></a> <a href="#local_len_5"><span class="LIDENT">len</span></a> <a href="#local_len'_6"><span class="LIDENT">len'</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/string.ml.html#val-blit"><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">blit</span></a> <span class="LABEL">~src:</span><a href="#local_s_1"><span class="LIDENT">s</span></a> <span class="LABEL">~src_pos:</span><a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><a href="#local_p_2"><span class="LIDENT">p</span></a> <span class="LABEL">~dst:</span><a href="#local_buffer_4"><span class="LIDENT">buffer</span></a> <span class="LABEL">~dst_pos:</span><span class="INT">0</span> <span class="LABEL">~len:</span><a href="#local_len''_8"><span class="LIDENT">len''</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="MATCH">match</span> <a href="#local_ppf_3"><span class="LIDENT">ppf</span></a> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_ppf_9"><span class="LIDENT">ppf</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <a href="../../../ocaml-base-compiler/src/stdlib/format.ml.html#val-fprintf"><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">fprintf</span></a> <a href="#local_ppf_9"><span class="LIDENT">ppf</span></a> <span class="STRING">&quot;%s&quot;</span> <span class="LPAREN">(</span><a href="../../../js_of_ocaml-compiler/src/js_of_ocaml-compiler/stdlib.ml.html#module-Bytes.val-sub_string"><span class="UIDENT">Bytes</span><span class="DOT">.</span><span class="LIDENT">sub_string</span></a> <a href="#local_buffer_4"><span class="LIDENT">buffer</span></a> <span class="LABEL">~pos:</span><span class="INT">0</span> <span class="LABEL">~len:</span><a href="#local_len''_8"><span class="LIDENT">len''</span></a><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>        <span class="IF">if</span> <a href="#local_nl_7"><span class="LIDENT">nl</span></a> <span class="THEN">then</span> <a href="../../../ocaml-base-compiler/src/stdlib/format.ml.html#val-pp_print_newline"><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">pp_print_newline</span></a> <a href="#local_ppf_9"><span class="LIDENT">ppf</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>        <a href="../../../ocaml-base-compiler/src/stdlib/format.ml.html#val-pp_print_flush"><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">pp_print_flush</span></a> <a href="#local_ppf_9"><span class="LIDENT">ppf</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <a href="#local_p_2"><span class="LIDENT">p</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(:=)"><span class="COLONEQUAL">:=</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><a href="#local_p_2"><span class="LIDENT">p</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(+)"><span class="PLUS">+</span></a> <a href="#local_len''_8"><span class="LIDENT">len''</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <a href="#local_len''_8"><span class="LIDENT">len''</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">use</span> <span class="LIDENT">ffp</span> <span class="LIDENT">content</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="LIDENT">fname</span><span class="COMMA">,</span> <span class="LIDENT">oc</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="UIDENT">Filename</span><span class="DOT">.</span><span class="LIDENT">open_temp_file</span> <span class="LABEL">~mode:</span><span class="LBRACKET">[</span> <span class="UIDENT">Open_binary</span> <span class="RBRACKET">]</span> <span class="STRING">&quot;jsoo_toplevel&quot;</span> <span class="STRING">&quot;fake_stdin&quot;</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LIDENT">output_string</span> <span class="LIDENT">oc</span> <span class="LIDENT">content</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">close_out</span> <span class="LIDENT">oc</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="TRY">try</span><span class="EOL">
+</span>    <span class="LET">let</span> <span class="LIDENT">b</span> <span class="EQUAL">=</span> <span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">use_silently</span> <span class="LIDENT">ffp</span> <span class="LIDENT">fname</span> <span class="IN">in</span><span class="EOL">
+</span>    <span class="UIDENT">Sys</span><span class="DOT">.</span><span class="LIDENT">remove</span> <span class="LIDENT">fname</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">b</span><span class="EOL">
+</span>  <span class="WITH">with</span> <span class="LIDENT">e</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="UIDENT">Sys</span><span class="DOT">.</span><span class="LIDENT">remove</span> <span class="LIDENT">fname</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">raise</span> <span class="LIDENT">e</span><span class="EOL">
+</span><span class="LBRACKETATAT">[@@</span><span class="IF">if</span> <span class="LIDENT">ocaml_version</span> <span class="LESS">&lt;</span> <span class="LPAREN">(</span><span class="INT">4</span><span class="COMMA">,</span> <span class="INT">14</span><span class="COMMA">,</span> <span class="INT">0</span><span class="RPAREN">)</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-use"><span class="LIDENT">use</span></span> <span id="local_ffp_10"><span class="LIDENT">ffp</span></span> <span id="local_content_11"><span class="LIDENT">content</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">use_silently</span> <a href="#local_ffp_10"><span class="LIDENT">ffp</span></a> <span class="LPAREN">(</span><span class="UIDENT">String</span> <a href="#local_content_11"><span class="LIDENT">content</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="LBRACKETATAT">[@@</span><span class="IF">if</span> <span class="LIDENT">ocaml_version</span> <span class="INFIXOP0">&gt;=</span> <span class="LPAREN">(</span><span class="INT">4</span><span class="COMMA">,</span> <span class="INT">14</span><span class="COMMA">,</span> <span class="INT">0</span><span class="RPAREN">)</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-execute"><span class="LIDENT">execute</span></span> <span id="local_printval_12"><span class="LIDENT">printval</span></span> <span class="QUESTION">?</span><span id="local_pp_code_13"><span class="LIDENT">pp_code</span></span> <span class="QUESTION">?</span><span id="local_highlight_location_14"><span class="LIDENT">highlight_location</span></span> <span id="local_pp_answer_15"><span class="LIDENT">pp_answer</span></span> <span id="local_s_16"><span class="LIDENT">s</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_lb_17"><span class="LIDENT">lb</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/lexing.ml.html#val-from_function"><span class="UIDENT">Lexing</span><span class="DOT">.</span><span class="LIDENT">from_function</span></a> <span class="LPAREN">(</span><span class="LIDENT">refill_lexbuf</span> <a href="#local_s_16"><span class="LIDENT">s</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-ref"><span class="LIDENT">ref</span></a> <span class="INT">0</span><span class="RPAREN">)</span> <a href="#local_pp_code_13"><span class="LIDENT">pp_code</span></a><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LPAREN">(</span><span class="TRY">try</span><span class="EOL">
+</span>     <span class="WHILE">while</span> <span class="TRUE">true</span> <span class="DO">do</span><span class="EOL">
+</span>       <span class="TRY">try</span><span class="EOL">
+</span>         <span class="LET">let</span> <span id="local_phr_18"><span class="LIDENT">phr</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">parse_toplevel_phrase</span> <a href="#local_lb_17"><span class="LIDENT">lb</span></a> <span class="IN">in</span><span class="EOL">
+</span>         <span class="LET">let</span> <span id="local_phr_19"><span class="LIDENT">phr</span></span> <span class="EQUAL">=</span> <a href="jsooTopPpx.ml.html#val-preprocess_phrase"><span class="UIDENT">JsooTopPpx</span><span class="DOT">.</span><span class="LIDENT">preprocess_phrase</span></a> <a href="#local_phr_18"><span class="LIDENT">phr</span></a> <span class="IN">in</span><span class="EOL">
+</span>         <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-ignore"><span class="LIDENT">ignore</span></a> <span class="LPAREN">(</span><span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">execute_phrase</span> <a href="#local_printval_12"><span class="LIDENT">printval</span></a> <a href="#local_pp_answer_15"><span class="LIDENT">pp_answer</span></a> <a href="#local_phr_19"><span class="LIDENT">phr</span></a> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="RPAREN">)</span><span class="EOL">
+</span>       <span class="WITH">with</span><span class="EOL">
+</span>       <span class="BAR">|</span> <span class="UIDENT">End_of_file</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="UIDENT">End_of_file</span><span class="EOL">
+</span>       <span class="BAR">|</span> <span id="local_x_20"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>           <span class="LPAREN">(</span><span class="MATCH">match</span> <a href="#local_highlight_location_14"><span class="LIDENT">highlight_location</span></a> <span class="WITH">with</span><span class="EOL">
+</span>           <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>           <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_f_21"><span class="LIDENT">f</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="EOL">
+</span>               <span class="MATCH">match</span> <a href="jsooTopError.ml.html#val-loc"><span class="UIDENT">JsooTopError</span><span class="DOT">.</span><span class="LIDENT">loc</span></a> <a href="#local_x_20"><span class="LIDENT">x</span></a> <span class="WITH">with</span><span class="EOL">
+</span>               <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>               <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_loc_22"><span class="LIDENT">loc</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_f_21"><span class="LIDENT">f</span></a> <a href="#local_loc_22"><span class="LIDENT">loc</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>           <span class="UIDENT">Errors</span><span class="DOT">.</span><span class="LIDENT">report_error</span> <a href="../../../ocaml-base-compiler/src/stdlib/format.ml.html#val-err_formatter"><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">err_formatter</span></a> <a href="#local_x_20"><span class="LIDENT">x</span></a><span class="EOL">
+</span>     <span class="DONE">done</span><span class="EOL">
+</span>   <span class="WITH">with</span> <span class="UIDENT">End_of_file</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>  <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-flush_all"><span class="LIDENT">flush_all</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-initialize"><span class="LIDENT">initialize</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="../../../ocaml-base-compiler/src/stdlib/sys.ml.html#val-interactive"><span class="UIDENT">Sys</span><span class="DOT">.</span><span class="LIDENT">interactive</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(:=)"><span class="COLONEQUAL">:=</span></a> <span class="FALSE">false</span><span class="SEMI">;</span><span class="EOL">
+</span>  <a href="../../../ocaml-base-compiler/src/stdlib/lazy.ml.html#val-force"><span class="UIDENT">Lazy</span><span class="DOT">.</span><span class="LIDENT">force</span></a> <span class="LIDENT">setup</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">initialize_toplevel_env</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">input_name</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(:=)"><span class="COLONEQUAL">:=</span></a> <span class="STRING">&quot;//toplevel//&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>  <a href="../../../ocaml-base-compiler/src/stdlib/sys.ml.html#val-interactive"><span class="UIDENT">Sys</span><span class="DOT">.</span><span class="LIDENT">interactive</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(:=)"><span class="COLONEQUAL">:=</span></a> <span class="TRUE">true</span><span class="EOL">
+</span></span></code></pre></body></html>

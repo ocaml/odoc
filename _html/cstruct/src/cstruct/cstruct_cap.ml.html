@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: cstruct_cap.ml (cstruct.src.cstruct)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">cstruct</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; cstruct &#x00BB; cstruct_cap.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>cstruct_cap.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">cstruct</a><ul><li>Library <code>cstruct</code><ul><li><a href="../../cstruct/Cstruct/index.html">Cstruct</a></li><li><a href="../../cstruct/Cstruct_cap/index.html">Cstruct_cap</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>cstruct<ul><li><a href="cstruct.ml.html">cstruct.ml</a></li><li><a href="#" class="current_unit">cstruct_cap.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+</code><code class="source_code"><span><span class="COMMENT">(*
+ * Copyright (c) 2012-2019 Anil Madhavapeddy &lt;anil@recoil.org&gt;
+ * Copyright (c) 2019 Romain Calascibetta &lt;romain.calascibetta@gmail.com&gt;
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="INCLUDE">include</span> <span class="LPAREN">(</span><a href="cstruct.ml.html"><span class="UIDENT">Cstruct</span></a> <span class="COLON">:</span> <span class="MODULE">module</span> <span class="TYPE">type</span> <span class="OF">of</span> <a href="cstruct.ml.html"><span class="UIDENT">Cstruct</span></a> <span class="WITH">with</span> <span id="def_36"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="COLONEQUAL">:=</span> <a href="cstruct.ml.html#type-t"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-rd"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">rd</span> <span class="EQUAL">=</span> <span class="LESS">&lt;</span> <span class="LIDENT">rd</span><span class="COLON">:</span> <span class="LIDENT">unit</span><span class="SEMI">;</span> <span class="DOTDOT">..</span> <span class="GREATER">&gt;</span> <span class="AS">as</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span><span id="type-wr"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">wr</span> <span class="EQUAL">=</span> <span class="LESS">&lt;</span> <span class="LIDENT">wr</span><span class="COLON">:</span> <span class="LIDENT">unit</span><span class="SEMI">;</span> <span class="DOTDOT">..</span> <span class="GREATER">&gt;</span> <span class="AS">as</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <a href="cstruct.ml.html#type-t"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-rdwr"><span class="TYPE">type</span> <span class="LIDENT">rdwr</span> <span class="EQUAL">=</span>  <span class="LESS">&lt;</span> <span class="LIDENT">rd</span><span class="COLON">:</span> <span class="LIDENT">unit</span><span class="SEMI">;</span> <span class="LIDENT">wr</span><span class="COLON">:</span> <span class="LIDENT">unit</span><span class="SEMI">;</span> <span class="GREATER">&gt;</span></span><span class="EOL">
+</span><span id="type-ro"><span class="TYPE">type</span> <span class="LIDENT">ro</span> <span class="EQUAL">=</span> <span class="LESS">&lt;</span> <span class="LIDENT">rd</span><span class="COLON">:</span> <span class="LIDENT">unit</span><span class="SEMI">;</span> <span class="GREATER">&gt;</span></span><span class="EOL">
+</span><span id="type-wo"><span class="TYPE">type</span> <span class="LIDENT">wo</span> <span class="EQUAL">=</span> <span class="LESS">&lt;</span> <span class="LIDENT">wr</span><span class="COLON">:</span> <span class="LIDENT">unit</span><span class="SEMI">;</span> <span class="GREATER">&gt;</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="val-ro"><span class="EXTERNAL">external</span> <span class="LIDENT">ro</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">rd</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">ro</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="STRING">&quot;%identity&quot;</span></span><span class="EOL">
+</span><span id="val-wo"><span class="EXTERNAL">external</span> <span class="LIDENT">wo</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">wr</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">wo</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="STRING">&quot;%identity&quot;</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-of_string"><span class="LIDENT">of_string</span></span> <span class="EQUAL">=</span> <a href="cstruct.ml.html#val-of_string"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">of_string</span></a> <span class="OPTLABEL">?allocator:</span><span class="UIDENT">None</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-of_bytes"><span class="LIDENT">of_bytes</span></span> <span class="EQUAL">=</span> <a href="cstruct.ml.html#val-of_bytes"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">of_bytes</span></a> <span class="OPTLABEL">?allocator:</span><span class="UIDENT">None</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-pp"><span class="LIDENT">pp</span></span> <span id="local_ppf_1"><span class="LIDENT">ppf</span></span> <span id="local_t_2"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span> <a href="cstruct.ml.html#val-hexdump_pp"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">hexdump_pp</span></a> <a href="#local_ppf_1"><span class="LIDENT">ppf</span></a> <a href="#local_t_2"><span class="LIDENT">t</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-length"><span class="LIDENT">length</span></span> <span class="EQUAL">=</span> <a href="cstruct.ml.html#val-length"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">length</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-blit"><span class="LIDENT">blit</span></span> <span id="local_src_3"><span class="LIDENT">src</span></span> <span class="TILDE">~</span><span id="local_src_off_4"><span class="LIDENT">src_off</span></span> <span id="local_dst_5"><span class="LIDENT">dst</span></span> <span class="TILDE">~</span><span id="local_dst_off_6"><span class="LIDENT">dst_off</span></span> <span class="TILDE">~</span><span id="local_len_7"><span class="LIDENT">len</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="cstruct.ml.html#val-blit"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">blit</span></a> <a href="#local_src_3"><span class="LIDENT">src</span></a> <a href="#local_src_off_4"><span class="LIDENT">src_off</span></a> <a href="#local_dst_5"><span class="LIDENT">dst</span></a> <a href="#local_dst_off_6"><span class="LIDENT">dst_off</span></a> <a href="#local_len_7"><span class="LIDENT">len</span></a><span class="EOL">
+</span><span class="LBRACKETATAT">[@@</span><span class="LIDENT">inline</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-blit_from_string"><span class="LIDENT">blit_from_string</span></span> <span id="local_src_8"><span class="LIDENT">src</span></span> <span class="TILDE">~</span><span id="local_src_off_9"><span class="LIDENT">src_off</span></span> <span id="local_dst_10"><span class="LIDENT">dst</span></span> <span class="TILDE">~</span><span id="local_dst_off_11"><span class="LIDENT">dst_off</span></span> <span class="TILDE">~</span><span id="local_len_12"><span class="LIDENT">len</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="cstruct.ml.html#val-blit_from_string"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">blit_from_string</span></a> <a href="#local_src_8"><span class="LIDENT">src</span></a> <a href="#local_src_off_9"><span class="LIDENT">src_off</span></a> <a href="#local_dst_10"><span class="LIDENT">dst</span></a> <a href="#local_dst_off_11"><span class="LIDENT">dst_off</span></a> <a href="#local_len_12"><span class="LIDENT">len</span></a><span class="EOL">
+</span><span class="LBRACKETATAT">[@@</span><span class="LIDENT">inline</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-blit_from_bytes"><span class="LIDENT">blit_from_bytes</span></span> <span id="local_src_13"><span class="LIDENT">src</span></span> <span class="TILDE">~</span><span id="local_src_off_14"><span class="LIDENT">src_off</span></span> <span id="local_dst_15"><span class="LIDENT">dst</span></span> <span class="TILDE">~</span><span id="local_dst_off_16"><span class="LIDENT">dst_off</span></span> <span class="TILDE">~</span><span id="local_len_17"><span class="LIDENT">len</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="cstruct.ml.html#val-blit_from_bytes"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">blit_from_bytes</span></a> <a href="#local_src_13"><span class="LIDENT">src</span></a> <a href="#local_src_off_14"><span class="LIDENT">src_off</span></a> <a href="#local_dst_15"><span class="LIDENT">dst</span></a> <a href="#local_dst_off_16"><span class="LIDENT">dst_off</span></a> <a href="#local_len_17"><span class="LIDENT">len</span></a><span class="EOL">
+</span><span class="LBRACKETATAT">[@@</span><span class="LIDENT">inline</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-blit_to_bytes"><span class="LIDENT">blit_to_bytes</span></span> <span id="local_src_18"><span class="LIDENT">src</span></span> <span class="TILDE">~</span><span id="local_src_off_19"><span class="LIDENT">src_off</span></span> <span id="local_dst_20"><span class="LIDENT">dst</span></span> <span class="TILDE">~</span><span id="local_dst_off_21"><span class="LIDENT">dst_off</span></span> <span class="TILDE">~</span><span id="local_len_22"><span class="LIDENT">len</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="cstruct.ml.html#val-blit_to_bytes"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">blit_to_bytes</span></a> <a href="#local_src_18"><span class="LIDENT">src</span></a> <a href="#local_src_off_19"><span class="LIDENT">src_off</span></a> <a href="#local_dst_20"><span class="LIDENT">dst</span></a> <a href="#local_dst_off_21"><span class="LIDENT">dst_off</span></a> <a href="#local_len_22"><span class="LIDENT">len</span></a><span class="EOL">
+</span><span class="LBRACKETATAT">[@@</span><span class="LIDENT">inline</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-sub"><span class="LIDENT">sub</span></span> <span id="local_t_23"><span class="LIDENT">t</span></span> <span class="TILDE">~</span><span id="local_off_24"><span class="LIDENT">off</span></span> <span class="TILDE">~</span><span id="local_len_25"><span class="LIDENT">len</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="cstruct.ml.html#val-sub"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">sub</span></a> <a href="#local_t_23"><span class="LIDENT">t</span></a> <a href="#local_off_24"><span class="LIDENT">off</span></a> <a href="#local_len_25"><span class="LIDENT">len</span></a><span class="EOL">
+</span><span class="LBRACKETATAT">[@@</span><span class="LIDENT">inline</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-sub_copy"><span class="LIDENT">sub_copy</span></span> <span id="local_t_26"><span class="LIDENT">t</span></span> <span class="TILDE">~</span><span id="local_off_27"><span class="LIDENT">off</span></span> <span class="TILDE">~</span><span id="local_len_28"><span class="LIDENT">len</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="cstruct.ml.html#val-sub_copy"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">sub_copy</span></a> <a href="#local_t_26"><span class="LIDENT">t</span></a> <a href="#local_off_27"><span class="LIDENT">off</span></a> <a href="#local_len_28"><span class="LIDENT">len</span></a><span class="EOL">
+</span><span class="LBRACKETATAT">[@@</span><span class="LIDENT">inline</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-unsafe_to_bigarray"><span class="LIDENT">unsafe_to_bigarray</span></span> <span class="EQUAL">=</span> <a href="cstruct.ml.html#val-to_bigarray"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">to_bigarray</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-concat"><span class="LIDENT">concat</span></span> <span id="local_vss_29"><span class="LIDENT">vss</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_res_30"><span class="LIDENT">res</span></span> <span class="EQUAL">=</span> <span class="LIDENT">create_unsafe</span> <span class="LPAREN">(</span><a href="cstruct.ml.html#val-sum_lengths"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">sum_lengths</span></a> <span class="LABEL">~caller:</span><span class="STRING">&quot;Cstruct.Cap.concat&quot;</span> <a href="#local_vss_29"><span class="LIDENT">vss</span></a><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_go_31"><span class="LIDENT">go</span></span> <span id="local_off_32"><span class="LIDENT">off</span></span> <span id="local_v_33"><span class="LIDENT">v</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_len_34"><span class="LIDENT">len</span></span> <span class="EQUAL">=</span> <a href="cstruct.ml.html#val-length"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">length</span></a> <a href="#local_v_33"><span class="LIDENT">v</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <a href="cstruct.ml.html#val-blit"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">blit</span></a> <a href="#local_v_33"><span class="LIDENT">v</span></a> <span class="INT">0</span> <a href="#local_res_30"><span class="LIDENT">res</span></a> <a href="#local_off_32"><span class="LIDENT">off</span></a> <a href="#local_len_34"><span class="LIDENT">len</span></a> <span class="SEMI">;</span><span class="EOL">
+</span>    <a href="#local_off_32"><span class="LIDENT">off</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(+)"><span class="PLUS">+</span></a> <a href="#local_len_34"><span class="LIDENT">len</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_len_35"><span class="LIDENT">len</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-fold_left"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">fold_left</span></a> <a href="#local_go_31"><span class="LIDENT">go</span></a> <span class="INT">0</span> <a href="#local_vss_29"><span class="LIDENT">vss</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="ASSERT">assert</span> <span class="LPAREN">(</span><a href="#local_len_35"><span class="LIDENT">len</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(=)"><span class="EQUAL">=</span></a> <a href="cstruct.ml.html#val-length"><span class="UIDENT">Cstruct</span><span class="DOT">.</span><span class="LIDENT">length</span></a> <a href="#local_res_30"><span class="LIDENT">res</span></a><span class="RPAREN">)</span> <span class="SEMI">;</span><span class="EOL">
+</span>  <a href="#local_res_30"><span class="LIDENT">res</span></a><span class="EOL">
+</span></span></code></pre></body></html>

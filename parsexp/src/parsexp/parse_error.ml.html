@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: parse_error.ml (parsexp.src.parsexp)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">parsexp</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; parsexp &#x00BB; parse_error.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>parse_error.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">parsexp</a><ul><li>Library <code>parsexp</code><ul><li><a href="../../parsexp/Parsexp/index.html">Parsexp</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>parsexp<ul><li><a href="automaton.ml.html">automaton.ml</a></li><li><a href="automaton_action.ml.html">automaton_action.ml</a></li><li><a href="automaton_intf.ml.html">automaton_intf.ml</a></li><li><a href="automaton_stack.ml.html">automaton_stack.ml</a></li><li><a href="automaton_stack_intf.ml.html">automaton_stack_intf.ml</a></li><li><a href="automaton_state.ml.html">automaton_state.ml</a></li><li><a href="automaton_state_intf.ml.html">automaton_state_intf.ml</a></li><li><a href="automaton_tables.ml.html">automaton_tables.ml</a></li><li><a href="conv.ml.html">conv.ml</a></li><li><a href="conv_error.ml.html">conv_error.ml</a></li><li><a href="conv_intf.ml.html">conv_intf.ml</a></li><li><a href="cst.ml.html">cst.ml</a></li><li><a href="import.ml.html">import.ml</a></li><li><a href="of_sexp_error.ml.html">of_sexp_error.ml</a></li><li><a href="old_parser_cont_state.ml.html">old_parser_cont_state.ml</a></li><li><a href="#" class="current_unit">parse_error.ml</a></li><li><a href="parse_error_intf.ml.html">parse_error_intf.ml</a></li><li><a href="parser.ml.html">parser.ml</a></li><li><a href="parser_intf.ml.html">parser_intf.ml</a></li><li><a href="parsexp.ml.html">parsexp.ml</a></li><li><a href="parsexp__.ml.html">parsexp__.ml</a></li><li><a href="parsexp_intf.ml.html">parsexp_intf.ml</a></li><li><a href="positions.ml.html">positions.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+</code><code class="source_code"><span><span class="OPEN">open</span><span class="BANG">!</span> <a href="import.ml.html"><span class="UIDENT">Import</span></a><span class="EOL">
+</span><span class="INCLUDE">include</span> <a href="parse_error_intf.ml.html"><span class="UIDENT">Parse_error_intf</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACE">{</span> <span id="def_20"><span class="LIDENT">position</span> <span class="COLON">:</span> <a href="positions.ml.html#type-pos"><span class="UIDENT">Positions</span><span class="DOT">.</span><span class="LIDENT">pos</span></a><span class="EOL">
+</span>  <span class="SEMI">;</span></span> <span id="def_19"><span class="LIDENT">message</span> <span class="COLON">:</span> <span class="LIDENT">string</span><span class="EOL">
+</span>  <span class="SEMI">;</span></span> <span id="def_21"><span class="LIDENT">old_parser_exn</span> <span class="COLON">:</span> <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Parse_error</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Failure</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-sexp_of_t"><span class="LIDENT">sexp_of_t</span></span> <span class="LBRACE">{</span> <span id="local_position_1"><span class="LIDENT">position</span></span><span class="SEMI">;</span> <span id="local_message_2"><span class="LIDENT">message</span></span><span class="SEMI">;</span> <span class="LIDENT">old_parser_exn</span> <span class="EQUAL">=</span> <span class="UNDERSCORE">_</span> <span class="RBRACE">}</span> <span class="COLON">:</span> <a href="../../../sexplib0/src/sexplib0/sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">List</span><span class="EOL">
+</span>    <span class="LBRACKET">[</span> <span class="UIDENT">List</span> <span class="LBRACKET">[</span> <span class="UIDENT">Atom</span> <span class="STRING">&quot;position&quot;</span><span class="SEMI">;</span> <a href="positions.ml.html#val-sexp_of_pos"><span class="UIDENT">Positions</span><span class="DOT">.</span><span class="LIDENT">sexp_of_pos</span></a> <a href="#local_position_1"><span class="LIDENT">position</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="SEMI">;</span> <span class="UIDENT">List</span> <span class="LBRACKET">[</span> <span class="UIDENT">Atom</span> <span class="STRING">&quot;message&quot;</span><span class="SEMI">;</span> <a href="../../../sexplib0/src/sexplib0/sexp_conv.ml.html#val-sexp_of_string"><span class="LIDENT">sexp_of_string</span></a> <a href="#local_message_2"><span class="LIDENT">message</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="RBRACKET">]</span><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-position"><span class="LIDENT">position</span></span> <span id="local_t_3"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span> <a href="#local_t_3"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">position</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-message"><span class="LIDENT">message</span></span> <span id="local_t_4"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span> <a href="#local_t_4"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">message</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-old_parser_exn"><span class="LIDENT">old_parser_exn</span></span> <span id="local_t_5"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span> <a href="#local_t_5"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">old_parser_exn</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-report"><span class="LIDENT">report</span></span> <span id="local_ppf_6"><span class="LIDENT">ppf</span></span> <span class="TILDE">~</span><span id="local_filename_7"><span class="LIDENT">filename</span></span> <span id="local_t_8"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_pos_9"><span class="LIDENT">pos</span></span> <span class="EQUAL">=</span> <span class="LIDENT">position</span> <a href="#local_t_8"><span class="LIDENT">t</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_msg_10"><span class="LIDENT">msg</span></span> <span class="EQUAL">=</span> <span class="LIDENT">message</span> <a href="#local_t_8"><span class="LIDENT">t</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <a href="../../../ocaml-base-compiler/src/stdlib/format.ml.html#val-fprintf"><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">fprintf</span></a><span class="EOL">
+</span>    <a href="#local_ppf_6"><span class="LIDENT">ppf</span></a><span class="EOL">
+</span>    <span class="STRING">&quot;File \&quot;%s\&quot;, line %d, character %d:\nError: s-expression parsing error;\n%s\n&quot;</span><span class="EOL">
+</span>    <a href="#local_filename_7"><span class="LIDENT">filename</span></a><span class="EOL">
+</span>    <a href="#local_pos_9"><span class="LIDENT">pos</span></a><span class="DOT">.</span><span class="LIDENT">line</span><span class="EOL">
+</span>    <a href="#local_pos_9"><span class="LIDENT">pos</span></a><span class="DOT">.</span><span class="LIDENT">col</span><span class="EOL">
+</span>    <a href="#local_msg_10"><span class="LIDENT">msg</span></a><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="exception-Parse_error"><span class="EXCEPTION">exception</span> <span class="UIDENT">Parse_error</span> <span class="OF">of</span> <span class="LIDENT">t</span></span> <span class="LBRACKETATAT">[@@</span><span class="LIDENT">deriving_inline</span> <span class="LIDENT">sexp</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="../../../sexplib0/src/sexplib0/sexp_conv.ml.html#module-Exn_converter.val-add"><span class="UIDENT">Sexplib0</span><span class="DOT">.</span><span class="UIDENT">Sexp_conv</span><span class="DOT">.</span><span class="UIDENT">Exn_converter</span><span class="DOT">.</span><span class="LIDENT">add</span></a> <span class="LBRACKETPERCENT">[%</span><span class="LIDENT">extension_constructor</span> <span class="UIDENT">Parse_error</span><span class="RBRACKET">]</span> <span class="LPAREN">(</span><span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Parse_error</span> <span id="local_arg0__001__11"><span class="LIDENT">arg0__001_</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_res0__002__12"><span class="LIDENT">res0__002_</span></span> <span class="EQUAL">=</span> <span class="LIDENT">sexp_of_t</span> <a href="#local_arg0__001__11"><span class="LIDENT">arg0__001_</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="UIDENT">Sexplib0</span><span class="DOT">.</span><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="UIDENT">List</span> <span class="LBRACKET">[</span> <span class="UIDENT">Sexplib0</span><span class="DOT">.</span><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="UIDENT">Atom</span> <span class="STRING">&quot;parse_error.ml.Parse_error&quot;</span><span class="SEMI">;</span> <a href="#local_res0__002__12"><span class="LIDENT">res0__002_</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="ASSERT">assert</span> <span class="FALSE">false</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LBRACKETATATAT">[@@@</span><span class="END">end</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-raise"><span class="LIDENT">raise</span></span> <span class="LPAREN">(</span><span id="local_reason_13"><span class="LIDENT">reason</span></span> <span class="COLON">:</span> <span class="UIDENT">Reason</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="RPAREN">)</span> <span id="local_position_14"><span class="LIDENT">position</span></span> <span class="TILDE">~</span><span id="local_at_eof_15"><span class="LIDENT">at_eof</span></span> <span class="TILDE">~</span><span id="local_atom_buffer_16"><span class="LIDENT">atom_buffer</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_message_17"><span class="LIDENT">message</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="COMMENT">(* These messages where choosen such that we can build the various Sexplib parsing
+       functions on top of Parsexp and keep the same exceptions.
+
+       At the time of writing this, a simple layer on top of parsexp to implement the
+       sexplib API is passing all the sexplib tests.
+
+       Note that parsexp matches the semantic of Sexp.parse which is slightly
+       different from the ocamllex/ocamlyacc based parser of Sexplib. The latter one
+       is less tested and assumed to be less used. *)</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="#local_reason_13"><span class="LIDENT">reason</span></a> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Unexpected_char_parsing_hex_escape</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;unterminated hexadecimal escape sequence&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Unexpected_char_parsing_dec_escape</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;unterminated decimal escape sequence&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Unterminated_quoted_string</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;unterminated quoted string&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Unterminated_block_comment</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;unterminated block comment&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Escape_sequence_out_of_range</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;escape sequence in quoted string out of range&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Unclosed_paren</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;unclosed parentheses at end of input&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Too_many_sexps</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;s-expression followed by data&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Closed_paren_without_opened</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;unexpected character: ')'&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Comment_token_in_unquoted_atom</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/string.ml.html#val-equal"><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">equal</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/buffer.ml.html#val-contents"><span class="UIDENT">Buffer</span><span class="DOT">.</span><span class="LIDENT">contents</span></a> <a href="#local_atom_buffer_16"><span class="LIDENT">atom_buffer</span></a><span class="RPAREN">)</span> <span class="STRING">&quot;|&quot;</span><span class="EOL">
+</span>      <span class="THEN">then</span> <span class="STRING">&quot;illegal end of comment&quot;</span><span class="EOL">
+</span>      <span class="ELSE">else</span> <span class="STRING">&quot;comment tokens in unquoted atom&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Sexp_comment_without_sexp</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;unterminated sexp comment&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Unexpected_character_after_cr</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="#local_at_eof_15"><span class="LIDENT">at_eof</span></a><span class="EOL">
+</span>      <span class="THEN">then</span> <span class="STRING">&quot;unexpected end of input after carriage return&quot;</span><span class="EOL">
+</span>      <span class="ELSE">else</span> <span class="STRING">&quot;unexpected character after carriage return&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">No_sexp_found_in_input</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;no s-expression found in input&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Automaton_in_error_state</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-failwith"><span class="failwith">failwith</span></a> <span class="STRING">&quot;Parsexp.Parser_automaton: parser is dead&quot;</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_old_parser_exn_18"><span class="LIDENT">old_parser_exn</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="#local_reason_13"><span class="LIDENT">reason</span></a><span class="COMMA">,</span> <a href="#local_at_eof_15"><span class="LIDENT">at_eof</span></a> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Too_many_sexps</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span> <span class="BAR">|</span> <span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="TRUE">true</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Failure</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Comment_token_in_unquoted_atom</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="EOL">
+</span>      <span class="WHEN">when</span> <a href="../../../ocaml-base-compiler/src/stdlib/string.ml.html#val-equal"><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">equal</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/buffer.ml.html#val-contents"><span class="UIDENT">Buffer</span><span class="DOT">.</span><span class="LIDENT">contents</span></a> <a href="#local_atom_buffer_16"><span class="LIDENT">atom_buffer</span></a><span class="RPAREN">)</span> <span class="STRING">&quot;|&quot;</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Failure</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Parse_error</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="LPAREN">(</span><span class="UIDENT">Parse_error</span> <span class="LBRACE">{</span> <a href="#local_position_14"><span class="LIDENT">position</span></a><span class="SEMI">;</span> <a href="#local_message_17"><span class="LIDENT">message</span></a><span class="SEMI">;</span> <a href="#local_old_parser_exn_18"><span class="LIDENT">old_parser_exn</span></a> <span class="RBRACE">}</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Private"><span class="MODULE">module</span> <span class="UIDENT">Private</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Private.module-Reason"><span class="MODULE">module</span> <span class="UIDENT">Reason</span> <span class="EQUAL">=</span> <span class="UIDENT">Reason</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Private.val-old_parser_exn"><span class="LIDENT">old_parser_exn</span></span> <span class="EQUAL">=</span> <span class="LIDENT">old_parser_exn</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Private.val-raise"><span class="LIDENT">raise</span></span> <span class="EQUAL">=</span> <span class="LIDENT">raise</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

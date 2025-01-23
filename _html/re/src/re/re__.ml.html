@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: re__.ml (re.src.re)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">re</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; re &#x00BB; re__.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>re__.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">re</a><ul><li>Library <code>re</code><ul><li><a href="../../re/Re/index.html">Re</a></li></ul></li><li>Library <code>re.emacs</code><ul><li><a href="../../re.emacs/Re_emacs/index.html">Re_emacs</a></li></ul></li><li>Library <code>re.glob</code><ul><li><a href="../../re.glob/Re_glob/index.html">Re_glob</a></li></ul></li><li>Library <code>re.pcre</code><ul><li><a href="../../re.pcre/Re_pcre/index.html">Re_pcre</a></li></ul></li><li>Library <code>re.perl</code><ul><li><a href="../../re.perl/Re_perl/index.html">Re_perl</a></li></ul></li><li>Library <code>re.posix</code><ul><li><a href="../../re.posix/Re_posix/index.html">Re_posix</a></li></ul></li><li>Library <code>re.str</code><ul><li><a href="../../re.str/Re_str/index.html">Re_str</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>re<ul><li><a href="ast.ml.html">ast.ml</a></li><li><a href="automata.ml.html">automata.ml</a></li><li><a href="bit_vector.ml.html">bit_vector.ml</a></li><li><a href="category.ml.html">category.ml</a></li><li><a href="color_map.ml.html">color_map.ml</a></li><li><a href="compile.ml.html">compile.ml</a></li><li><a href="core.ml.html">core.ml</a></li><li><a href="cset.ml.html">cset.ml</a></li><li><a href="emacs.ml.html">emacs.ml</a></li><li><a href="fmt.ml.html">fmt.ml</a></li><li><a href="glob.ml.html">glob.ml</a></li><li><a href="group.ml.html">group.ml</a></li><li><a href="import.ml.html">import.ml</a></li><li><a href="mark_infos.ml.html">mark_infos.ml</a></li><li><a href="parse_buffer.ml.html">parse_buffer.ml</a></li><li><a href="pcre.ml.html">pcre.ml</a></li><li><a href="perl.ml.html">perl.ml</a></li><li><a href="pmark.ml.html">pmark.ml</a></li><li><a href="posix.ml.html">posix.ml</a></li><li><a href="posix_class.ml.html">posix_class.ml</a></li><li><a href="re.ml.html">re.ml</a></li><li><a href="#" class="current_unit">re__.ml</a></li><li><a href="replace.ml.html">replace.ml</a></li><li><a href="search.ml.html">search.ml</a></li><li><a href="str.ml.html">str.ml</a></li><li><a href="view.ml.html">view.ml</a></li></ul></li><li>re.emacs<ul><li><a href="../re.emacs/re_emacs.ml.html">re_emacs.ml</a></li></ul></li><li>re.glob<ul><li><a href="../re.glob/re_glob.ml.html">re_glob.ml</a></li></ul></li><li>re.pcre<ul><li><a href="../re.pcre/re_pcre.ml.html">re_pcre.ml</a></li></ul></li><li>re.perl<ul><li><a href="../re.perl/re_perl.ml.html">re_perl.ml</a></li></ul></li><li>re.posix<ul><li><a href="../re.posix/re_posix.ml.html">re_posix.ml</a></li></ul></li><li>re.str<ul><li><a href="../re.str/re_str.ml.html">re_str.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+</code><code class="source_code"><span><span class="COMMENT">(* generated by dune *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Ast *)</span><span class="EOL">
+</span><span id="module-Ast"><span class="MODULE">module</span> <span class="UIDENT">Ast</span> <span class="EQUAL">=</span> <a href="ast.ml.html"><span class="UIDENT">Re__Ast</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Automata *)</span><span class="EOL">
+</span><span id="module-Automata"><span class="MODULE">module</span> <span class="UIDENT">Automata</span> <span class="EQUAL">=</span> <a href="automata.ml.html"><span class="UIDENT">Re__Automata</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Bit_vector *)</span><span class="EOL">
+</span><span id="module-Bit_vector"><span class="MODULE">module</span> <span class="UIDENT">Bit_vector</span> <span class="EQUAL">=</span> <a href="bit_vector.ml.html"><span class="UIDENT">Re__Bit_vector</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Category *)</span><span class="EOL">
+</span><span id="module-Category"><span class="MODULE">module</span> <span class="UIDENT">Category</span> <span class="EQUAL">=</span> <a href="category.ml.html"><span class="UIDENT">Re__Category</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Color_map *)</span><span class="EOL">
+</span><span id="module-Color_map"><span class="MODULE">module</span> <span class="UIDENT">Color_map</span> <span class="EQUAL">=</span> <a href="color_map.ml.html"><span class="UIDENT">Re__Color_map</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Compile *)</span><span class="EOL">
+</span><span id="module-Compile"><span class="MODULE">module</span> <span class="UIDENT">Compile</span> <span class="EQUAL">=</span> <a href="compile.ml.html"><span class="UIDENT">Re__Compile</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Core *)</span><span class="EOL">
+</span><span id="module-Core"><span class="MODULE">module</span> <span class="UIDENT">Core</span> <span class="EQUAL">=</span> <a href="core.ml.html"><span class="UIDENT">Re__Core</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Cset *)</span><span class="EOL">
+</span><span id="module-Cset"><span class="MODULE">module</span> <span class="UIDENT">Cset</span> <span class="EQUAL">=</span> <a href="cset.ml.html"><span class="UIDENT">Re__Cset</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Emacs *)</span><span class="EOL">
+</span><span id="module-Emacs"><span class="MODULE">module</span> <span class="UIDENT">Emacs</span> <span class="EQUAL">=</span> <a href="emacs.ml.html"><span class="UIDENT">Re__Emacs</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Fmt *)</span><span class="EOL">
+</span><span id="module-Fmt"><span class="MODULE">module</span> <span class="UIDENT">Fmt</span> <span class="EQUAL">=</span> <a href="fmt.ml.html"><span class="UIDENT">Re__Fmt</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Glob *)</span><span class="EOL">
+</span><span id="module-Glob"><span class="MODULE">module</span> <span class="UIDENT">Glob</span> <span class="EQUAL">=</span> <a href="glob.ml.html"><span class="UIDENT">Re__Glob</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Group *)</span><span class="EOL">
+</span><span id="module-Group"><span class="MODULE">module</span> <span class="UIDENT">Group</span> <span class="EQUAL">=</span> <a href="group.ml.html"><span class="UIDENT">Re__Group</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Import *)</span><span class="EOL">
+</span><span id="module-Import"><span class="MODULE">module</span> <span class="UIDENT">Import</span> <span class="EQUAL">=</span> <a href="import.ml.html"><span class="UIDENT">Re__Import</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Mark_infos *)</span><span class="EOL">
+</span><span id="module-Mark_infos"><span class="MODULE">module</span> <span class="UIDENT">Mark_infos</span> <span class="EQUAL">=</span> <a href="mark_infos.ml.html"><span class="UIDENT">Re__Mark_infos</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Parse_buffer *)</span><span class="EOL">
+</span><span id="module-Parse_buffer"><span class="MODULE">module</span> <span class="UIDENT">Parse_buffer</span> <span class="EQUAL">=</span> <a href="parse_buffer.ml.html"><span class="UIDENT">Re__Parse_buffer</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Pcre *)</span><span class="EOL">
+</span><span id="module-Pcre"><span class="MODULE">module</span> <span class="UIDENT">Pcre</span> <span class="EQUAL">=</span> <a href="pcre.ml.html"><span class="UIDENT">Re__Pcre</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Perl *)</span><span class="EOL">
+</span><span id="module-Perl"><span class="MODULE">module</span> <span class="UIDENT">Perl</span> <span class="EQUAL">=</span> <a href="perl.ml.html"><span class="UIDENT">Re__Perl</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Pmark *)</span><span class="EOL">
+</span><span id="module-Pmark"><span class="MODULE">module</span> <span class="UIDENT">Pmark</span> <span class="EQUAL">=</span> <a href="pmark.ml.html"><span class="UIDENT">Re__Pmark</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Posix *)</span><span class="EOL">
+</span><span id="module-Posix"><span class="MODULE">module</span> <span class="UIDENT">Posix</span> <span class="EQUAL">=</span> <a href="posix.ml.html"><span class="UIDENT">Re__Posix</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Posix_class *)</span><span class="EOL">
+</span><span id="module-Posix_class"><span class="MODULE">module</span> <span class="UIDENT">Posix_class</span> <span class="EQUAL">=</span> <a href="posix_class.ml.html"><span class="UIDENT">Re__Posix_class</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Replace *)</span><span class="EOL">
+</span><span id="module-Replace"><span class="MODULE">module</span> <span class="UIDENT">Replace</span> <span class="EQUAL">=</span> <a href="replace.ml.html"><span class="UIDENT">Re__Replace</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Search *)</span><span class="EOL">
+</span><span id="module-Search"><span class="MODULE">module</span> <span class="UIDENT">Search</span> <span class="EQUAL">=</span> <a href="search.ml.html"><span class="UIDENT">Re__Search</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.Str *)</span><span class="EOL">
+</span><span id="module-Str"><span class="MODULE">module</span> <span class="UIDENT">Str</span> <span class="EQUAL">=</span> <a href="str.ml.html"><span class="UIDENT">Re__Str</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Re.View *)</span><span class="EOL">
+</span><span id="module-View"><span class="MODULE">module</span> <span class="UIDENT">View</span> <span class="EQUAL">=</span> <a href="view.ml.html"><span class="UIDENT">Re__View</span></a></span><span class="EOL">
+</span></span></code></pre></body></html>

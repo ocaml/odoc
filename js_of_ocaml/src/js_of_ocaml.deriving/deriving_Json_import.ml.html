@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: deriving_Json_import.ml (js_of_ocaml.src.js_of_ocaml.deriving)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">js_of_ocaml</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; js_of_ocaml.deriving &#x00BB; deriving_Json_import.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>deriving_Json_import.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">js_of_ocaml</a><ul><li>Library <code>js_of_ocaml</code><ul><li><a href="../../js_of_ocaml/Js_of_ocaml/index.html">Js_of_ocaml</a></li></ul></li><li>Library <code>js_of_ocaml.deriving</code><ul><li><a href="../../js_of_ocaml.deriving/Deriving_Json/index.html">Deriving_Json</a></li><li><a href="../../js_of_ocaml.deriving/Deriving_Json_import/index.html">Deriving_Json_import</a></li><li><a href="../../js_of_ocaml.deriving/Deriving_Json_lexer/index.html">Deriving_Json_lexer</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>js_of_ocaml<ul><li><a href="../js_of_ocaml/cSS.ml.html">cSS.ml</a></li><li><a href="../js_of_ocaml/dom.ml.html">dom.ml</a></li><li><a href="../js_of_ocaml/dom_events.ml.html">dom_events.ml</a></li><li><a href="../js_of_ocaml/dom_html.ml.html">dom_html.ml</a></li><li><a href="../js_of_ocaml/dom_svg.ml.html">dom_svg.ml</a></li><li><a href="../js_of_ocaml/eventSource.ml.html">eventSource.ml</a></li><li><a href="../js_of_ocaml/file.ml.html">file.ml</a></li><li><a href="../js_of_ocaml/firebug.ml.html">firebug.ml</a></li><li><a href="../js_of_ocaml/form.ml.html">form.ml</a></li><li><a href="../js_of_ocaml/geolocation.ml.html">geolocation.ml</a></li><li><a href="../js_of_ocaml/import.ml.html">import.ml</a></li><li><a href="../js_of_ocaml/intersectionObserver.ml.html">intersectionObserver.ml</a></li><li><a href="../js_of_ocaml/intl.ml.html">intl.ml</a></li><li><a href="../js_of_ocaml/js.ml.html">js.ml</a></li><li><a href="../js_of_ocaml/js_of_ocaml.ml.html">js_of_ocaml.ml</a></li><li><a href="../js_of_ocaml/js_of_ocaml__.ml.html">js_of_ocaml__.ml</a></li><li><a href="../js_of_ocaml/json.ml.html">json.ml</a></li><li><a href="../js_of_ocaml/jstable.ml.html">jstable.ml</a></li><li><a href="../js_of_ocaml/lib_version.ml.html">lib_version.ml</a></li><li><a href="../js_of_ocaml/mutationObserver.ml.html">mutationObserver.ml</a></li><li><a href="../js_of_ocaml/performanceObserver.ml.html">performanceObserver.ml</a></li><li><a href="../js_of_ocaml/regexp.ml.html">regexp.ml</a></li><li><a href="../js_of_ocaml/resizeObserver.ml.html">resizeObserver.ml</a></li><li><a href="../js_of_ocaml/sys_js.ml.html">sys_js.ml</a></li><li><a href="../js_of_ocaml/typed_array.ml.html">typed_array.ml</a></li><li><a href="../js_of_ocaml/url.ml.html">url.ml</a></li><li><a href="../js_of_ocaml/webGL.ml.html">webGL.ml</a></li><li><a href="../js_of_ocaml/webSockets.ml.html">webSockets.ml</a></li><li><a href="../js_of_ocaml/worker.ml.html">worker.ml</a></li><li><a href="../js_of_ocaml/xmlHttpRequest.ml.html">xmlHttpRequest.ml</a></li></ul></li><li>js_of_ocaml.deriving<ul><li><a href="deriving_Json.ml.html">deriving_Json.ml</a></li><li><a href="#" class="current_unit">deriving_Json_import.ml</a></li><li><a href="deriving_Json_lexer.ml.html">deriving_Json_lexer.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+</code><code class="source_code"><span><span class="COMMENT">(* Js_of_ocaml
+ * http://www.ocsigen.org/js_of_ocaml/
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, with linking exception;
+ * either version 2.1 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Poly"><span class="MODULE">module</span> <span class="UIDENT">Poly</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Poly.val-(&lt;)"><span class="EXTERNAL">external</span> <span class="LPAREN">(</span> <span class="LESS">&lt;</span> <span class="RPAREN">)</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bool</span> <span class="EQUAL">=</span> <span class="STRING">&quot;%lessthan&quot;</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Poly.val-(&lt;=)"><span class="EXTERNAL">external</span> <span class="LPAREN">(</span> <span class="INFIXOP0">&lt;=</span> <span class="RPAREN">)</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bool</span> <span class="EQUAL">=</span> <span class="STRING">&quot;%lessequal&quot;</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Poly.val-(&lt;&gt;)"><span class="EXTERNAL">external</span> <span class="LPAREN">(</span> <span class="INFIXOP0">&lt;&gt;</span> <span class="RPAREN">)</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bool</span> <span class="EQUAL">=</span> <span class="STRING">&quot;%notequal&quot;</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Poly.val-(=)"><span class="EXTERNAL">external</span> <span class="LPAREN">(</span> <span class="EQUAL">=</span> <span class="RPAREN">)</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bool</span> <span class="EQUAL">=</span> <span class="STRING">&quot;%equal&quot;</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Poly.val-(&gt;)"><span class="EXTERNAL">external</span> <span class="LPAREN">(</span> <span class="GREATER">&gt;</span> <span class="RPAREN">)</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bool</span> <span class="EQUAL">=</span> <span class="STRING">&quot;%greaterthan&quot;</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Poly.val-(&gt;=)"><span class="EXTERNAL">external</span> <span class="LPAREN">(</span> <span class="INFIXOP0">&gt;=</span> <span class="RPAREN">)</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bool</span> <span class="EQUAL">=</span> <span class="STRING">&quot;%greaterequal&quot;</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Poly.val-compare"><span class="EXTERNAL">external</span> <span class="LIDENT">compare</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">int</span> <span class="EQUAL">=</span> <span class="STRING">&quot;%compare&quot;</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Poly.val-equal"><span class="EXTERNAL">external</span> <span class="LIDENT">equal</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bool</span> <span class="EQUAL">=</span> <span class="STRING">&quot;%equal&quot;</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Int_replace_polymorphic_compare"><span class="MODULE">module</span> <span class="UIDENT">Int_replace_polymorphic_compare</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Int_replace_polymorphic_compare.val-(&lt;)"><span class="LPAREN">(</span> <span class="LESS">&lt;</span> <span class="RPAREN">)</span></span> <span class="LPAREN">(</span><span id="local_x_1"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="RPAREN">)</span> <span id="local_y_2"><span class="LIDENT">y</span></span> <span class="EQUAL">=</span> <a href="#local_x_1"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;)"><span class="LESS">&lt;</span></a> <a href="#local_y_2"><span class="LIDENT">y</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Int_replace_polymorphic_compare.val-(&lt;=)"><span class="LPAREN">(</span> <span class="INFIXOP0">&lt;=</span> <span class="RPAREN">)</span></span> <span class="LPAREN">(</span><span id="local_x_3"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="RPAREN">)</span> <span id="local_y_4"><span class="LIDENT">y</span></span> <span class="EQUAL">=</span> <a href="#local_x_3"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;=)"><span class="INFIXOP0">&lt;=</span></a> <a href="#local_y_4"><span class="LIDENT">y</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Int_replace_polymorphic_compare.val-(&lt;&gt;)"><span class="LPAREN">(</span> <span class="INFIXOP0">&lt;&gt;</span> <span class="RPAREN">)</span></span> <span class="LPAREN">(</span><span id="local_x_5"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="RPAREN">)</span> <span id="local_y_6"><span class="LIDENT">y</span></span> <span class="EQUAL">=</span> <a href="#local_x_5"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;&gt;)"><span class="INFIXOP0">&lt;&gt;</span></a> <a href="#local_y_6"><span class="LIDENT">y</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Int_replace_polymorphic_compare.val-(=)"><span class="LPAREN">(</span> <span class="EQUAL">=</span> <span class="RPAREN">)</span></span> <span class="LPAREN">(</span><span id="local_x_7"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="RPAREN">)</span> <span id="local_y_8"><span class="LIDENT">y</span></span> <span class="EQUAL">=</span> <a href="#local_x_7"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(=)"><span class="EQUAL">=</span></a> <a href="#local_y_8"><span class="LIDENT">y</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Int_replace_polymorphic_compare.val-(&gt;)"><span class="LPAREN">(</span> <span class="GREATER">&gt;</span> <span class="RPAREN">)</span></span> <span class="LPAREN">(</span><span id="local_x_9"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="RPAREN">)</span> <span id="local_y_10"><span class="LIDENT">y</span></span> <span class="EQUAL">=</span> <a href="#local_x_9"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&gt;)"><span class="GREATER">&gt;</span></a> <a href="#local_y_10"><span class="LIDENT">y</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Int_replace_polymorphic_compare.val-(&gt;=)"><span class="LPAREN">(</span> <span class="INFIXOP0">&gt;=</span> <span class="RPAREN">)</span></span> <span class="LPAREN">(</span><span id="local_x_11"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="RPAREN">)</span> <span id="local_y_12"><span class="LIDENT">y</span></span> <span class="EQUAL">=</span> <a href="#local_x_11"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&gt;=)"><span class="INFIXOP0">&gt;=</span></a> <a href="#local_y_12"><span class="LIDENT">y</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Int_replace_polymorphic_compare.val-compare"><span class="LIDENT">compare</span></span> <span class="LPAREN">(</span><span id="local_x_13"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="RPAREN">)</span> <span id="local_y_14"><span class="LIDENT">y</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-compare"><span class="LIDENT">compare</span></a> <a href="#local_x_13"><span class="LIDENT">x</span></a> <a href="#local_y_14"><span class="LIDENT">y</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Int_replace_polymorphic_compare.val-equal"><span class="LIDENT">equal</span></span> <span class="LPAREN">(</span><span id="local_x_15"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="RPAREN">)</span> <span id="local_y_16"><span class="LIDENT">y</span></span> <span class="EQUAL">=</span> <a href="#local_x_15"><span class="LIDENT">x</span></a> <span class="EQUAL">=</span> <a href="#local_y_16"><span class="LIDENT">y</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Int_replace_polymorphic_compare.val-max"><span class="LIDENT">max</span></span> <span class="LPAREN">(</span><span id="local_x_17"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="RPAREN">)</span> <span id="local_y_18"><span class="LIDENT">y</span></span> <span class="EQUAL">=</span> <span class="IF">if</span> <a href="#local_x_17"><span class="LIDENT">x</span></a> <span class="INFIXOP0">&gt;=</span> <a href="#local_y_18"><span class="LIDENT">y</span></a> <span class="THEN">then</span> <a href="#local_x_17"><span class="LIDENT">x</span></a> <span class="ELSE">else</span> <a href="#local_y_18"><span class="LIDENT">y</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Int_replace_polymorphic_compare.val-min"><span class="LIDENT">min</span></span> <span class="LPAREN">(</span><span id="local_x_19"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="RPAREN">)</span> <span id="local_y_20"><span class="LIDENT">y</span></span> <span class="EQUAL">=</span> <span class="IF">if</span> <a href="#local_x_19"><span class="LIDENT">x</span></a> <span class="INFIXOP0">&lt;=</span> <a href="#local_y_20"><span class="LIDENT">y</span></a> <span class="THEN">then</span> <a href="#local_x_19"><span class="LIDENT">x</span></a> <span class="ELSE">else</span> <a href="#local_y_20"><span class="LIDENT">y</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-String"><span class="MODULE">module</span> <span class="UIDENT">String</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <a href="../../../ocaml-base-compiler/src/stdlib/string.ml.html"><span class="UIDENT">String</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-String.val-equal"><span class="LIDENT">equal</span></span> <span class="LPAREN">(</span><span id="local_x_21"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="LIDENT">string</span><span class="RPAREN">)</span> <span class="LPAREN">(</span><span id="local_y_22"><span class="LIDENT">y</span></span> <span class="COLON">:</span> <span class="LIDENT">string</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="UIDENT">Poly</span><span class="DOT">.</span><span class="LIDENT">equal</span> <a href="#local_x_21"><span class="LIDENT">x</span></a> <a href="#local_y_22"><span class="LIDENT">y</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Char"><span class="MODULE">module</span> <span class="UIDENT">Char</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <a href="../../../ocaml-base-compiler/src/stdlib/char.ml.html"><span class="UIDENT">Char</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Char.val-equal"><span class="LIDENT">equal</span></span> <span class="LPAREN">(</span><span id="local_x_23"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="LIDENT">char</span><span class="RPAREN">)</span> <span class="LPAREN">(</span><span id="local_y_24"><span class="LIDENT">y</span></span> <span class="COLON">:</span> <span class="LIDENT">char</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="UIDENT">Poly</span><span class="DOT">.</span><span class="LIDENT">equal</span> <a href="#local_x_23"><span class="LIDENT">x</span></a> <a href="#local_y_24"><span class="LIDENT">y</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="INCLUDE">include</span> <span class="UIDENT">Int_replace_polymorphic_compare</span><span class="EOL">
+</span></span></code></pre></body></html>

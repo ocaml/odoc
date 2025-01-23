@@ -1,0 +1,263 @@
+package "__private__" (
+  directory = "__private__"
+  package "odoc_model_semantics_test" (
+    directory = "odoc_model_semantics_test"
+    version = "dev"
+    description = ""
+    requires =
+    "odoc.__private__.type_desc_to_yojson
+     odoc.model
+     ppx_expect.collector
+     ppx_expect.config
+     ppx_here.runtime-lib
+     ppx_inline_test.config
+     ppx_inline_test.runtime-lib
+     sexplib0"
+    archive(byte) = "odoc_model_semantics_test.cma"
+    archive(native) = "odoc_model_semantics_test.cmxa"
+    plugin(byte) = "odoc_model_semantics_test.cma"
+    plugin(native) = "odoc_model_semantics_test.cmxs"
+  )
+  package "type_desc_to_yojson" (
+    directory = "type_desc_to_yojson"
+    version = "dev"
+    description = ""
+    requires = "odoc.model_desc yojson"
+    archive(byte) = "type_desc_to_yojson.cma"
+    archive(native) = "type_desc_to_yojson.cmxa"
+    plugin(byte) = "type_desc_to_yojson.cma"
+    plugin(native) = "type_desc_to_yojson.cmxs"
+  )
+)
+package "document" (
+  directory = "document"
+  version = "dev"
+  description = ""
+  requires =
+  "astring
+   fpath
+   odoc.index
+   odoc.model
+   odoc.odoc_utils
+   odoc.syntax_highlighter"
+  archive(byte) = "odoc_document.cma"
+  archive(native) = "odoc_document.cmxa"
+  plugin(byte) = "odoc_document.cma"
+  plugin(native) = "odoc_document.cmxs"
+)
+package "examples" (
+  directory = "examples"
+  version = "dev"
+  description = ""
+  requires = ""
+  archive(byte) = "odoc_examples.cma"
+  archive(native) = "odoc_examples.cmxa"
+  plugin(byte) = "odoc_examples.cma"
+  plugin(native) = "odoc_examples.cmxs"
+)
+package "html" (
+  directory = "html"
+  version = "dev"
+  description = ""
+  requires = "odoc.document odoc.model tyxml"
+  archive(byte) = "odoc_html.cma"
+  archive(native) = "odoc_html.cmxa"
+  plugin(byte) = "odoc_html.cma"
+  plugin(native) = "odoc_html.cmxs"
+)
+package "html_support_files" (
+  directory = "html_support_files"
+  version = "dev"
+  description = ""
+  requires = ""
+  archive(byte) = "odoc_html_support_files.cma"
+  archive(native) = "odoc_html_support_files.cmxa"
+  plugin(byte) = "odoc_html_support_files.cma"
+  plugin(native) = "odoc_html_support_files.cmxs"
+)
+package "index" (
+  directory = "index"
+  version = "dev"
+  description = ""
+  requires = "odoc.model odoc.odoc_utils odoc.search_html_frontend tyxml"
+  archive(byte) = "odoc_index.cma"
+  archive(native) = "odoc_index.cmxa"
+  plugin(byte) = "odoc_index.cma"
+  plugin(native) = "odoc_index.cmxs"
+)
+package "json_index" (
+  directory = "json_index"
+  version = "dev"
+  description = ""
+  requires = "odoc.model odoc.occurrences odoc.search tyxml"
+  archive(byte) = "odoc_json_index.cma"
+  archive(native) = "odoc_json_index.cmxa"
+  plugin(byte) = "odoc_json_index.cma"
+  plugin(native) = "odoc_json_index.cmxs"
+)
+package "latex" (
+  directory = "latex"
+  version = "dev"
+  description = ""
+  requires = "fmt fpath odoc.document odoc.model odoc.odoc_utils"
+  archive(byte) = "odoc_latex.cma"
+  archive(native) = "odoc_latex.cmxa"
+  plugin(byte) = "odoc_latex.cma"
+  plugin(native) = "odoc_latex.cmxs"
+)
+package "loader" (
+  directory = "loader"
+  version = "dev"
+  description = ""
+  requires =
+  "compiler-libs.optcomp
+   odoc-parser
+   odoc.document
+   odoc.model
+   odoc.odoc_utils
+   odoc.syntax_highlighter"
+  archive(byte) = "odoc_loader.cma"
+  archive(native) = "odoc_loader.cmxa"
+  plugin(byte) = "odoc_loader.cma"
+  plugin(native) = "odoc_loader.cmxs"
+)
+package "manpage" (
+  directory = "manpage"
+  version = "dev"
+  description = ""
+  requires = "odoc.document odoc.model"
+  archive(byte) = "odoc_manpage.cma"
+  archive(native) = "odoc_manpage.cmxa"
+  plugin(byte) = "odoc_manpage.cma"
+  plugin(native) = "odoc_manpage.cmxs"
+)
+package "model" (
+  directory = "model"
+  version = "dev"
+  description = ""
+  requires = "compiler-libs.common odoc-parser odoc.odoc_utils result"
+  archive(byte) = "odoc_model.cma"
+  archive(native) = "odoc_model.cmxa"
+  plugin(byte) = "odoc_model.cma"
+  plugin(native) = "odoc_model.cmxs"
+)
+package "model_desc" (
+  directory = "model_desc"
+  version = "dev"
+  description = ""
+  requires = "odoc.model"
+  archive(byte) = "odoc_model_desc.cma"
+  archive(native) = "odoc_model_desc.cmxa"
+  plugin(byte) = "odoc_model_desc.cma"
+  plugin(native) = "odoc_model_desc.cmxs"
+)
+package "ocamlary" (
+  directory = "ocamlary"
+  version = "dev"
+  description = ""
+  requires = ""
+  archive(byte) = ""
+  archive(native) = ""
+  plugin(byte) = ""
+  plugin(native) = ""
+)
+package "occurrences" (
+  directory = "occurrences"
+  version = "dev"
+  description = ""
+  requires = "odoc.model"
+  archive(byte) = "odoc_occurrences.cma"
+  archive(native) = "odoc_occurrences.cmxa"
+  plugin(byte) = "odoc_occurrences.cma"
+  plugin(native) = "odoc_occurrences.cmxs"
+)
+package "odoc" (
+  directory = "odoc"
+  version = "dev"
+  description = ""
+  requires =
+  "compiler-libs.common
+   fpath
+   odoc.html
+   odoc.html_support_files
+   odoc.json_index
+   odoc.latex
+   odoc.loader
+   odoc.manpage
+   odoc.model
+   odoc.occurrences
+   odoc.xref2
+   tyxml
+   unix"
+  archive(byte) = "odoc_odoc.cma"
+  archive(native) = "odoc_odoc.cmxa"
+  plugin(byte) = "odoc_odoc.cma"
+  plugin(native) = "odoc_odoc.cmxs"
+)
+package "odoc_utils" (
+  directory = "odoc_utils"
+  version = "dev"
+  description = ""
+  requires = "astring result"
+  archive(byte) = "odoc_utils.cma"
+  archive(native) = "odoc_utils.cmxa"
+  plugin(byte) = "odoc_utils.cma"
+  plugin(native) = "odoc_utils.cmxs"
+)
+package "search" (
+  directory = "search"
+  version = "dev"
+  description = ""
+  requires =
+  "odoc.html odoc.model odoc.odoc_utils odoc.search_html_frontend tyxml"
+  archive(byte) = "odoc_search.cma"
+  archive(native) = "odoc_search.cmxa"
+  plugin(byte) = "odoc_search.cma"
+  plugin(native) = "odoc_search.cmxs"
+)
+package "search_html_frontend" (
+  directory = "search_html_frontend"
+  version = "dev"
+  description = ""
+  requires = "odoc.odoc_utils tyxml"
+  archive(byte) = "odoc_html_frontend.cma"
+  archive(native) = "odoc_html_frontend.cmxa"
+  plugin(byte) = "odoc_html_frontend.cma"
+  plugin(native) = "odoc_html_frontend.cmxs"
+)
+package "syntax_highlighter" (
+  directory = "syntax_highlighter"
+  version = "dev"
+  description = ""
+  requires = "compiler-libs.common"
+  archive(byte) = "syntax_highlighter.cma"
+  archive(native) = "syntax_highlighter.cmxa"
+  plugin(byte) = "syntax_highlighter.cma"
+  plugin(native) = "syntax_highlighter.cmxs"
+)
+package "xref2" (
+  directory = "xref2"
+  version = "dev"
+  description = ""
+  requires = "odoc.model odoc.odoc_utils"
+  archive(byte) = "odoc_xref2.cma"
+  archive(native) = "odoc_xref2.cmxa"
+  plugin(byte) = "odoc_xref2.cma"
+  plugin(native) = "odoc_xref2.cmxs"
+)
+package "xref_test" (
+  directory = "xref_test"
+  version = "dev"
+  description = ""
+  requires =
+  "compiler-libs.common
+   compiler-libs.toplevel
+   odoc.model
+   odoc.odoc
+   odoc.xref2
+   tyxml"
+  archive(byte) = "odoc_xref_test.cma"
+  archive(native) = ""
+  plugin(byte) = "odoc_xref_test.cma"
+  plugin(native) = ""
+)

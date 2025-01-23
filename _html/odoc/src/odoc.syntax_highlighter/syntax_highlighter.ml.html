@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: syntax_highlighter.ml (odoc.src.odoc.syntax_highlighter)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">The odoc documentation generator</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; odoc.syntax_highlighter &#x00BB; syntax_highlighter.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>syntax_highlighter.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">The odoc documentation generator</a><ul><li><a href="../../odoc_for_authors.html"><code>odoc</code> for Authors</a></li><li><a href="../../cheatsheet.html">Cheatsheet</a></li><li><a href="../../dune.html">Dune and odoc</a></li><li><a href="../../features.html">Language Features</a></li><li><a href="../../ocamldoc_differences.html">Markup Differences From OCamldoc</a></li><li><a href="../../interface.html"><code>odoc</code> Interface Guarantees</a></li><li><a href="../../driver.html">How to Drive <code>odoc</code></a></li><li><a href="../../json.html">JSON output</a></li><li><a href="../../deprecated/index.html">Deprecated features</a></li><li>Library <code>odoc.document</code><ul><li><a href="../../odoc.document/Odoc_document/index.html">Odoc_document</a></li></ul></li><li>Library <code>odoc.examples</code><ul><li><a href="../../odoc.examples/Odoc_examples/index.html">Odoc_examples</a></li></ul></li><li>Library <code>odoc.html</code><ul><li><a href="../../odoc.html/Odoc_html/index.html">Odoc_html</a></li></ul></li><li>Library <code>odoc.html_support_files</code><ul><li><a href="../../odoc.html_support_files/Odoc_html_support_files/index.html">Odoc_html_support_files</a></li></ul></li><li>Library <code>odoc.index</code><ul><li><a href="../../odoc.index/Odoc_index/index.html">Odoc_index</a></li></ul></li><li>Library <code>odoc.json_index</code><ul><li><a href="../../odoc.json_index/Odoc_json_index/index.html">Odoc_json_index</a></li></ul></li><li>Library <code>odoc.latex</code><ul><li><a href="../../odoc.latex/Odoc_latex/index.html">Odoc_latex</a></li></ul></li><li>Library <code>odoc.loader</code><ul><li><a href="../../odoc.loader/Odoc_loader/index.html">Odoc_loader</a></li></ul></li><li>Library <code>odoc.manpage</code><ul><li><a href="../../odoc.manpage/Odoc_manpage/index.html">Odoc_manpage</a></li></ul></li><li>Library <code>odoc.model</code><ul><li><a href="../../odoc.model/Odoc_model/index.html">Odoc_model</a></li></ul></li><li>Library <code>odoc.model_desc</code><ul><li><a href="../../odoc.model_desc/Odoc_model_desc/index.html">Odoc_model_desc</a></li></ul></li><li>Library <code>odoc.ocamlary</code><ul><li><a href="../../odoc.ocamlary/Ocamlary/index.html">Ocamlary</a></li></ul></li><li>Library <code>odoc.occurrences</code><ul><li><a href="../../odoc.occurrences/Odoc_occurrences/index.html">Odoc_occurrences</a></li></ul></li><li>Library <code>odoc.odoc</code><ul><li><a href="../../odoc.odoc/Odoc_odoc/index.html">Odoc_odoc</a></li></ul></li><li>Library <code>odoc.odoc_utils</code><ul><li><a href="../../odoc.odoc_utils/Odoc_utils/index.html">Odoc_utils</a></li></ul></li><li>Library <code>odoc.search</code><ul><li><a href="../../odoc.search/Odoc_search/index.html">Odoc_search</a></li></ul></li><li>Library <code>odoc.search_html_frontend</code><ul><li><a href="../../odoc.search_html_frontend/Odoc_html_frontend/index.html">Odoc_html_frontend</a></li></ul></li><li>Library <code>odoc.syntax_highlighter</code><ul><li><a href="../../odoc.syntax_highlighter/Syntax_highlighter/index.html">Syntax_highlighter</a></li></ul></li><li>Library <code>odoc.xref2</code><ul><li><a href="../../odoc.xref2/Odoc_xref2/index.html">Odoc_xref2</a></li></ul></li><li>Library <code>odoc.xref_test</code><ul><li><a href="../../odoc.xref_test/Odoc_xref_test/index.html">Odoc_xref_test</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>odoc.document<ul><li><a href="../odoc.document/ML.ml.html">ML.ml</a></li><li><a href="../odoc.document/codefmt.ml.html">codefmt.ml</a></li><li><a href="../odoc.document/comment.ml.html">comment.ml</a></li><li><a href="../odoc.document/compat.ml.html">compat.ml</a></li><li><a href="../odoc.document/doctree.ml.html">doctree.ml</a></li><li><a href="../odoc.document/generator.ml.html">generator.ml</a></li><li><a href="../odoc.document/generator_signatures.ml.html">generator_signatures.ml</a></li><li><a href="../odoc.document/odoc_document.ml.html">odoc_document.ml</a></li><li><a href="../odoc.document/reason.ml.html">reason.ml</a></li><li><a href="../odoc.document/renderer.ml.html">renderer.ml</a></li><li><a href="../odoc.document/sidebar.ml.html">sidebar.ml</a></li><li><a href="../odoc.document/targets.ml.html">targets.ml</a></li><li><a href="../odoc.document/types.ml.html">types.ml</a></li><li><a href="../odoc.document/url.ml.html">url.ml</a></li><li><a href="../odoc.document/utils.ml.html">utils.ml</a></li></ul></li><li>odoc.examples<ul><li><a href="../odoc.examples/odoc_examples.ml.html">odoc_examples.ml</a></li><li><a href="../odoc.examples/odoc_examples__.ml.html">odoc_examples__.ml</a></li></ul></li><li>odoc.html<ul><li><a href="../odoc.html/config.ml.html">config.ml</a></li><li><a href="../odoc.html/generator.ml.html">generator.ml</a></li><li><a href="../odoc.html/html_fragment_json.ml.html">html_fragment_json.ml</a></li><li><a href="../odoc.html/html_page.ml.html">html_page.ml</a></li><li><a href="../odoc.html/html_source.ml.html">html_source.ml</a></li><li><a href="../odoc.html/link.ml.html">link.ml</a></li><li><a href="../odoc.html/odoc_html.ml.html">odoc_html.ml</a></li><li><a href="../odoc.html/odoc_html__.ml.html">odoc_html__.ml</a></li><li><a href="../odoc.html/sidebar.ml.html">sidebar.ml</a></li><li><a href="../odoc.html/types.ml.html">types.ml</a></li></ul></li><li>odoc.html_support_files<ul><li><a href="../odoc.html_support_files/odoc_html_support_files.ml.html">odoc_html_support_files.ml</a></li></ul></li><li>odoc.index<ul><li><a href="../odoc.index/entry.ml.html">entry.ml</a></li><li><a href="../odoc.index/in_progress.ml.html">in_progress.ml</a></li><li><a href="../odoc.index/odoc_index.ml.html">odoc_index.ml</a></li><li><a href="../odoc.index/odoc_index__.ml.html">odoc_index__.ml</a></li><li><a href="../odoc.index/skeleton.ml.html">skeleton.ml</a></li><li><a href="../odoc.index/skeleton_of.ml.html">skeleton_of.ml</a></li></ul></li><li>odoc.json_index<ul><li><a href="../odoc.json_index/json_display.ml.html">json_display.ml</a></li><li><a href="../odoc.json_index/json_search.ml.html">json_search.ml</a></li><li><a href="../odoc.json_index/odoc_json_index.ml.html">odoc_json_index.ml</a></li></ul></li><li>odoc.latex<ul><li><a href="../odoc.latex/generator.ml.html">generator.ml</a></li><li><a href="../odoc.latex/odoc_latex.ml.html">odoc_latex.ml</a></li><li><a href="../odoc.latex/raw.ml.html">raw.ml</a></li><li><a href="../odoc.latex/types.ml.html">types.ml</a></li></ul></li><li>odoc.loader<ul><li><a href="../odoc.loader/cmi.ml.html">cmi.ml</a></li><li><a href="../odoc.loader/cmt.ml.html">cmt.ml</a></li><li><a href="../odoc.loader/cmti.ml.html">cmti.ml</a></li><li><a href="../odoc.loader/doc_attr.ml.html">doc_attr.ml</a></li><li><a href="../odoc.loader/ident_env.ml.html">ident_env.ml</a></li><li><a href="../odoc.loader/implementation.ml.html">implementation.ml</a></li><li><a href="../odoc.loader/odoc_loader.ml.html">odoc_loader.ml</a></li><li><a href="../odoc.loader/odoc_loader__.ml.html">odoc_loader__.ml</a></li><li><a href="../odoc.loader/typedtree_traverse.ml.html">typedtree_traverse.ml</a></li></ul></li><li>odoc.manpage<ul><li><a href="../odoc.manpage/generator.ml.html">generator.ml</a></li><li><a href="../odoc.manpage/link.ml.html">link.ml</a></li><li><a href="../odoc.manpage/odoc_manpage.ml.html">odoc_manpage.ml</a></li></ul></li><li>odoc.model<ul><li><a href="../odoc.model/comment.ml.html">comment.ml</a></li><li><a href="../odoc.model/compat.ml.html">compat.ml</a></li><li><a href="../odoc.model/error.ml.html">error.ml</a></li><li><a href="../odoc.model/frontmatter.ml.html">frontmatter.ml</a></li><li><a href="../odoc.model/lang.ml.html">lang.ml</a></li><li><a href="../odoc.model/location_.ml.html">location_.ml</a></li><li><a href="../odoc.model/names.ml.html">names.ml</a></li><li><a href="../odoc.model/odoc_model.ml.html">odoc_model.ml</a></li><li><a href="../odoc.model/odoc_model__.ml.html">odoc_model__.ml</a></li><li><a href="../odoc.model/paths.ml.html">paths.ml</a></li><li><a href="../odoc.model/paths_types.ml.html">paths_types.ml</a></li><li><a href="../odoc.model/reference.ml.html">reference.ml</a></li><li><a href="../odoc.model/root.ml.html">root.ml</a></li><li><a href="../odoc.model/semantics.ml.html">semantics.ml</a></li></ul></li><li>odoc.model_desc<ul><li><a href="../odoc.model_desc/comment_desc.ml.html">comment_desc.ml</a></li><li><a href="../odoc.model_desc/lang_desc.ml.html">lang_desc.ml</a></li><li><a href="../odoc.model_desc/odoc_model_desc.ml.html">odoc_model_desc.ml</a></li><li><a href="../odoc.model_desc/paths_desc.ml.html">paths_desc.ml</a></li><li><a href="../odoc.model_desc/type_desc.ml.html">type_desc.ml</a></li></ul></li><li>odoc.occurrences<ul><li><a href="../odoc.occurrences/odoc_occurrences.ml.html">odoc_occurrences.ml</a></li><li><a href="../odoc.occurrences/odoc_occurrences__.ml.html">odoc_occurrences__.ml</a></li><li><a href="../odoc.occurrences/table.ml.html">table.ml</a></li></ul></li><li>odoc.odoc<ul><li><a href="../odoc.odoc/asset.ml.html">asset.ml</a></li><li><a href="../odoc.odoc/classify.ml.html">classify.ml</a></li><li><a href="../odoc.odoc/compile.ml.html">compile.ml</a></li><li><a href="../odoc.odoc/depends.ml.html">depends.ml</a></li><li><a href="../odoc.odoc/fs.ml.html">fs.ml</a></li><li><a href="../odoc.odoc/html_fragment.ml.html">html_fragment.ml</a></li><li><a href="../odoc.odoc/html_page.ml.html">html_page.ml</a></li><li><a href="../odoc.odoc/indexing.ml.html">indexing.ml</a></li><li><a href="../odoc.odoc/latex.ml.html">latex.ml</a></li><li><a href="../odoc.odoc/man_page.ml.html">man_page.ml</a></li><li><a href="../odoc.odoc/occurrences.ml.html">occurrences.ml</a></li><li><a href="../odoc.odoc/odoc_file.ml.html">odoc_file.ml</a></li><li><a href="../odoc.odoc/odoc_link.ml.html">odoc_link.ml</a></li><li><a href="../odoc.odoc/odoc_odoc.ml.html">odoc_odoc.ml</a></li><li><a href="../odoc.odoc/or_error.ml.html">or_error.ml</a></li><li><a href="../odoc.odoc/rendering.ml.html">rendering.ml</a></li><li><a href="../odoc.odoc/resolver.ml.html">resolver.ml</a></li><li><a href="../odoc.odoc/sidebar.ml.html">sidebar.ml</a></li><li><a href="../odoc.odoc/source.ml.html">source.ml</a></li><li><a href="../odoc.odoc/support_files.ml.html">support_files.ml</a></li><li><a href="../odoc.odoc/url.ml.html">url.ml</a></li></ul></li><li>odoc.odoc_utils<ul><li><a href="../odoc.odoc_utils/json.ml.html">json.ml</a></li><li><a href="../odoc.odoc_utils/odoc_list.ml.html">odoc_list.ml</a></li><li><a href="../odoc.odoc_utils/odoc_utils.ml.html">odoc_utils.ml</a></li><li><a href="../odoc.odoc_utils/odoc_utils__.ml.html">odoc_utils__.ml</a></li><li><a href="../odoc.odoc_utils/tree.ml.html">tree.ml</a></li></ul></li><li>odoc.search<ul><li><a href="../odoc.search/html.ml.html">html.ml</a></li><li><a href="../odoc.search/odoc_search.ml.html">odoc_search.ml</a></li><li><a href="../odoc.search/text.ml.html">text.ml</a></li></ul></li><li>odoc.search_html_frontend<ul><li><a href="../odoc.search_html_frontend/odoc_html_frontend.ml.html">odoc_html_frontend.ml</a></li></ul></li><li>odoc.syntax_highlighter<ul><li><a href="#" class="current_unit">syntax_highlighter.ml</a></li></ul></li><li>odoc.xref2<ul><li><a href="../odoc.xref2/cfrag.ml.html">cfrag.ml</a></li><li><a href="../odoc.xref2/compile.ml.html">compile.ml</a></li><li><a href="../odoc.xref2/component.ml.html">component.ml</a></li><li><a href="../odoc.xref2/cpath.ml.html">cpath.ml</a></li><li><a href="../odoc.xref2/env.ml.html">env.ml</a></li><li><a href="../odoc.xref2/errors.ml.html">errors.ml</a></li><li><a href="../odoc.xref2/expand_tools.ml.html">expand_tools.ml</a></li><li><a href="../odoc.xref2/find.ml.html">find.ml</a></li><li><a href="../odoc.xref2/ident.ml.html">ident.ml</a></li><li><a href="../odoc.xref2/lang_of.ml.html">lang_of.ml</a></li><li><a href="../odoc.xref2/link.ml.html">link.ml</a></li><li><a href="../odoc.xref2/lookup_failures.ml.html">lookup_failures.ml</a></li><li><a href="../odoc.xref2/odoc_xref2.ml.html">odoc_xref2.ml</a></li><li><a href="../odoc.xref2/ref_tools.ml.html">ref_tools.ml</a></li><li><a href="../odoc.xref2/shape_tools.ml.html">shape_tools.ml</a></li><li><a href="../odoc.xref2/strengthen.ml.html">strengthen.ml</a></li><li><a href="../odoc.xref2/subst.ml.html">subst.ml</a></li><li><a href="../odoc.xref2/tools.ml.html">tools.ml</a></li></ul></li><li>odoc.xref_test<ul><li><a href="../odoc.xref_test/common.ml.html">common.ml</a></li><li><a href="../odoc.xref_test/odoc_xref_test.ml.html">odoc_xref_test.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+<a id="L121" class="source_line" href="#L121">121</a>
+<a id="L122" class="source_line" href="#L122">122</a>
+<a id="L123" class="source_line" href="#L123">123</a>
+<a id="L124" class="source_line" href="#L124">124</a>
+<a id="L125" class="source_line" href="#L125">125</a>
+<a id="L126" class="source_line" href="#L126">126</a>
+<a id="L127" class="source_line" href="#L127">127</a>
+<a id="L128" class="source_line" href="#L128">128</a>
+<a id="L129" class="source_line" href="#L129">129</a>
+<a id="L130" class="source_line" href="#L130">130</a>
+<a id="L131" class="source_line" href="#L131">131</a>
+<a id="L132" class="source_line" href="#L132">132</a>
+<a id="L133" class="source_line" href="#L133">133</a>
+<a id="L134" class="source_line" href="#L134">134</a>
+<a id="L135" class="source_line" href="#L135">135</a>
+<a id="L136" class="source_line" href="#L136">136</a>
+<a id="L137" class="source_line" href="#L137">137</a>
+<a id="L138" class="source_line" href="#L138">138</a>
+<a id="L139" class="source_line" href="#L139">139</a>
+<a id="L140" class="source_line" href="#L140">140</a>
+<a id="L141" class="source_line" href="#L141">141</a>
+<a id="L142" class="source_line" href="#L142">142</a>
+<a id="L143" class="source_line" href="#L143">143</a>
+<a id="L144" class="source_line" href="#L144">144</a>
+<a id="L145" class="source_line" href="#L145">145</a>
+<a id="L146" class="source_line" href="#L146">146</a>
+<a id="L147" class="source_line" href="#L147">147</a>
+<a id="L148" class="source_line" href="#L148">148</a>
+<a id="L149" class="source_line" href="#L149">149</a>
+<a id="L150" class="source_line" href="#L150">150</a>
+<a id="L151" class="source_line" href="#L151">151</a>
+<a id="L152" class="source_line" href="#L152">152</a>
+<a id="L153" class="source_line" href="#L153">153</a>
+<a id="L154" class="source_line" href="#L154">154</a>
+<a id="L155" class="source_line" href="#L155">155</a>
+<a id="L156" class="source_line" href="#L156">156</a>
+<a id="L157" class="source_line" href="#L157">157</a>
+<a id="L158" class="source_line" href="#L158">158</a>
+<a id="L159" class="source_line" href="#L159">159</a>
+<a id="L160" class="source_line" href="#L160">160</a>
+<a id="L161" class="source_line" href="#L161">161</a>
+<a id="L162" class="source_line" href="#L162">162</a>
+<a id="L163" class="source_line" href="#L163">163</a>
+<a id="L164" class="source_line" href="#L164">164</a>
+<a id="L165" class="source_line" href="#L165">165</a>
+<a id="L166" class="source_line" href="#L166">166</a>
+<a id="L167" class="source_line" href="#L167">167</a>
+<a id="L168" class="source_line" href="#L168">168</a>
+<a id="L169" class="source_line" href="#L169">169</a>
+<a id="L170" class="source_line" href="#L170">170</a>
+<a id="L171" class="source_line" href="#L171">171</a>
+<a id="L172" class="source_line" href="#L172">172</a>
+<a id="L173" class="source_line" href="#L173">173</a>
+<a id="L174" class="source_line" href="#L174">174</a>
+<a id="L175" class="source_line" href="#L175">175</a>
+<a id="L176" class="source_line" href="#L176">176</a>
+<a id="L177" class="source_line" href="#L177">177</a>
+<a id="L178" class="source_line" href="#L178">178</a>
+<a id="L179" class="source_line" href="#L179">179</a>
+<a id="L180" class="source_line" href="#L180">180</a>
+</code><code class="source_code"><span><span class="TYPE">type</span> <span class="LIDENT">infos</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="LIDENT">string</span> <span class="STAR">*</span> <span class="LPAREN">(</span><span class="LIDENT">int</span> <span class="STAR">*</span> <span class="LIDENT">int</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="LIDENT">list</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">tag_o<span id="type-infos">f_token</span></span> <span class="LPAREN">(</span><span class="LIDENT">tok</span> <span class="COLON">:</span> <span class="UIDENT">Parse</span>r<span class="DOT">.</span><span class="LIDENT">token</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <span class="LIDENT">t</span>ok <span class="WITH">wit<span id="val-tag_of_token">h</span></span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">AMPERAMP<span id="local_tok_1">ER</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;AMPERAMPER&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">AMPERSA<a href="#local_tok_1">ND</a></span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;AMPERSAND&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">AND</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;AND&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">AS</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;AS&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">ASSERT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;ASSERT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">BACKQUOTE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;BACKQUOTE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">BANG</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;BANG&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">BAR</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;BAR&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">BARBAR</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;BARBAR&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">BARRBRACKET</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;BARRBRACKET&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">BEGIN</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;BEGIN&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">CHAR</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;CHAR&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">CLASS</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;CLASS&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">COLON</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;COLON&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">COLONCOLON</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;COLONCOLON&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">COLONEQUAL</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;COLONEQUAL&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">COLONGREATER</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;COLONGREATER&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">COMMA</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;COMMA&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">COMMENT</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;COMMENT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">CONSTRAINT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;CONSTRAINT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">DO</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;DO&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">DOCSTRING</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;DOCSTRING&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">DONE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;DONE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">DOT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;DOT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">DOTDOT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;DOTDOT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">DOWNTO</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;DOWNTO&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">ELSE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;ELSE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">END</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;END&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">EOF</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;EOF&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">EOL</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;EOL&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">EQUAL</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;EQUAL&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">EXCEPTION</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;EXCEPTION&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">EXTERNAL</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;EXTERNAL&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">FALSE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;FALSE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">FLOAT</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;FLOAT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">FOR</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;FOR&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">FUN</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;FUN&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">FUNCTION</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;FUNCTION&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">FUNCTOR</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;FUNCTOR&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">GREATER</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;GREATER&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">GREATERRBRACE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;GREATERRBRACE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">GREATERRBRACKET</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;GREATERRBRACKET&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">IF</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;IF&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">IN</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;IN&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">INCLUDE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;INCLUDE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">INFIXOP0</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;INFIXOP0&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">INFIXOP1</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;INFIXOP1&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">INFIXOP2</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;INFIXOP2&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">INFIXOP3</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;INFIXOP3&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">INFIXOP4</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;INFIXOP4&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">INHERIT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;INHERIT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">INITIALIZER</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;INITIALIZER&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">INT</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;INT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LABEL</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LABEL&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LAZY</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LAZY&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LBRACE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LBRACE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LBRACELESS</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LBRACELESS&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LBRACKET</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LBRACKET&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LBRACKETAT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LBRACKETAT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LBRACKETATAT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LBRACKETATAT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LBRACKETATATAT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LBRACKETATATAT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LBRACKETBAR</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LBRACKETBAR&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LBRACKETGREATER</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LBRACKETGREATER&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LBRACKETLESS</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LBRACKETLESS&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LBRACKETPERCENT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LBRACKETPERCENT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LBRACKETPERCENTPERCENT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LBRACKETPERCENTPERCENT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LESS</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LESS&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LESSMINUS</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LESSMINUS&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LET</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LET&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LIDENT</span> <span class="STRING">&quot;failwith&quot;</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;failwith&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LIDENT</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LIDENT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LPAREN</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LPAREN&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">MATCH</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;MATCH&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">METHOD</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;METHOD&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">MINUS</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;MINUS&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">MINUSDOT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;MINUSDOT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">MINUSGREATER</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;MINUSGREATER&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">MODULE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;MODULE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">MUTABLE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;MUTABLE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">NEW</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;NEW&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">NONREC</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;NONREC&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">OBJECT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;OBJECT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">OF</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;OF&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">OPEN</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;OPEN&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">OPTLABEL</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;OPTLABEL&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">OR</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;OR&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">PERCENT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;PERCENT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">PLUS</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;PLUS&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">PLUSDOT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;PLUSDOT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">PLUSEQ</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;PLUSEQ&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">PREFIXOP</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;PREFIXOP&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">PRIVATE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;PRIVATE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">QUESTION</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;QUESTION&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">QUOTE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;QUOTE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">RBRACE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;RBRACE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">RBRACKET</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;RBRACKET&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">REC</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;REC&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">RPAREN</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;RPAREN&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">SEMI</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;SEMI&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">SEMISEMI</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;SEMISEMI&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">SIG</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;SIG&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">STAR</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;STAR&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">STRING</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;STRING&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">STRUCT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;STRUCT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">THEN</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;THEN&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">TILDE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;TILDE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">TO</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;TO&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">TRUE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;TRUE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">TRY</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;TRY&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">TYPE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;TYPE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">UIDENT</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;UIDENT&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">UNDERSCORE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;UNDERSCORE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">VAL</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;VAL&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">VIRTUAL</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;VIRTUAL&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">WHEN</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;WHEN&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">WHILE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;WHILE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">WITH</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;WITH&quot;</span><span class="EOL">
+</span><span class="COMMENT">(* Removed *)</span><span class="EOL">
+</span><span class="HASH">#</span><span class="IF">if</span> <span class="UIDENT">OCAML_VERSION</span> <span class="INFIXOP0">&lt;=</span> <span class="LPAREN">(</span><span class="INT">4</span><span class="COMMA">,</span><span class="INT">2</span><span class="COMMA">,</span><span class="INT">3</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">INT32</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;INT32&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">INT64</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;INT64&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">NATIVEINT</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;NATIVEINT&quot;</span><span class="EOL">
+</span><span class="HASH">#</span><span class="LIDENT">endif</span><span class="EOL">
+</span><span class="HASH">#</span><span class="IF">if</span> <span class="UIDENT">OCAML_VERSION</span> <span class="INFIXOP0">&lt;=</span> <span class="LPAREN">(</span><span class="INT">4</span><span class="COMMA">,</span><span class="INT">3</span><span class="COMMA">,</span><span class="INT">0</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">SHARP</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;SHARP&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">SHARPOP</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;SHARPOP&quot;</span><span class="EOL">
+</span><span class="HASH">#</span><span class="LIDENT">endif</span><span class="EOL">
+</span><span class="COMMENT">(* Added *)</span><span class="EOL">
+</span><span class="HASH">#</span><span class="IF">if</span> <span class="UIDENT">OCAML_VERSION</span> <span class="INFIXOP0">&gt;=</span> <span class="LPAREN">(</span><span class="INT">4</span><span class="COMMA">,</span><span class="INT">4</span><span class="COMMA">,</span><span class="INT">0</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">HASH</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;HASH&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">HASHOP</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;HASHOP&quot;</span><span class="EOL">
+</span><span class="HASH">#</span><span class="LIDENT">endif</span><span class="EOL">
+</span><span class="HASH">#</span><span class="IF">if</span> <span class="UIDENT">OCAML_VERSION</span> <span class="INFIXOP0">&gt;=</span> <span class="LPAREN">(</span><span class="INT">4</span><span class="COMMA">,</span><span class="INT">6</span><span class="COMMA">,</span><span class="INT">0</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">DOTOP</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;DOTOP&quot;</span><span class="EOL">
+</span><span class="HASH">#</span><span class="LIDENT">endif</span><span class="EOL">
+</span><span class="HASH">#</span><span class="IF">if</span> <span class="UIDENT">OCAML_VERSION</span> <span class="INFIXOP0">&gt;=</span> <span class="LPAREN">(</span><span class="INT">4</span><span class="COMMA">,</span><span class="INT">11</span><span class="COMMA">,</span><span class="INT">0</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">QUOTED_STRING_EXPR</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;QUOTED_STRING_EXPR&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">QUOTED_STRING_ITEM</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;QUOTED_STRING_ITEM&quot;</span><span class="EOL">
+</span><span class="HASH">#</span><span class="LIDENT">endif</span><span class="EOL">
+</span><span class="HASH">#</span><span class="IF">if</span> <span class="UIDENT">OCAML_VERSION</span> <span class="INFIXOP0">&gt;=</span> <span class="LPAREN">(</span><span class="INT">4</span><span class="COMMA">,</span><span class="INT">8</span><span class="COMMA">,</span><span class="INT">0</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">ANDOP</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;ANDOP&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">LETOP</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;LETOP&quot;</span><span class="EOL">
+</span><span class="HASH">#</span><span class="LIDENT">endif</span><span class="EOL">
+</span><span class="HASH">#</span><span class="IF">if</span> <span class="UIDENT">OCAML_VERSION</span> <span class="INFIXOP0">&gt;=</span> <span class="LPAREN">(</span><span class="INT">5</span><span class="COMMA">,</span><span class="INT">3</span><span class="COMMA">,</span><span class="INT">0</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">METAOCAML_E<span id="val-syntax_highlighting_locs">SCAPE</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;METAOCAML_ESCAP<span id="local_src_2">E&quot;</span></span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">METAOCAML_BRACKET_OPEN</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;METAO<span id="local_lexbuf_3">CAML_B</span>RAC<a href="../../../ocaml-base-compiler/src/stdlib/lexing.ml.html#val-from_string">KET_OPEN&quot;</a></span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">METAOCAML_BRACKET_CLOSE</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;METAOCAML_BRACKET_CLOSE&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">EFFECT</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;EFFECT&quot;</span><span class="EOL">
+</span><span class="HASH">#</span><span class="LIDENT">endif</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">syntax_highlighting_locs</span> <span class="LIDENT">src</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="TRY">try</span><span class="EOL">
+</span>    <span class="UIDENT">Lexer</span><span class="DOT">.</span><span class="LIDENT">init</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span class="LIDENT">lexbuf</span> <span class="EQUAL">=</span> <span class="UIDENT">Lexin<a href="#local_src_2">g</a></span><span class="DOT">.</span><span class="LIDENT">from_string</span><span class="EOL">
+</span>  <span class="HASH">#</span><span class="IF">if</span><span id="local_collect_4"> <span class="UIDENT">OCAML_</span></span>V<span id="local_lexbuf_5">ERSION</span> <span id="local_tokens_6"><span class="INFIXOP0">&gt;=</span> <span class="LPAREN">(</span><span class="INT">4</span><span class="COMMA">,</span></span><span class="INT">8</span><span class="COMMA">,</span><span class="INT">0</span><span class="RPAREN">)</span><span class="EOL">
+</span>        <span class="LABEL"><span id="local_tok_7">~wi</span>th_positions:</span><span class="TRUE">true</span><span class="EOL">
+</span>  <span class="HASH">#</span><span class="LIDENT">endif</span><span class="EOL">
+</span>  <a href="#local_lexbuf_5">      </a><span class="LIDENT">src</span> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span><span id="def_16"><span id="local_loc_start_8"> <span class="REC">rec</span> <span class="LIDENT">coll</span></span>ec<span id="local_loc_end_9">t <span class="LIDENT">lexbu</span></span></span>f <span class="LIDENT">to<a href="#local_lexbuf_5">kens</a></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="LET">let</span> <span class="LIDENT">tok</span><a href="#local_lexbuf_5"> <span class="EQUAL">=</span> <span class="UIDENT">Lex</span></a>er<span class="DOT">.</span><span class="LIDENT">token_with_comments</span> <span class="LIDENT">lex<span id="local_tag_10">buf</span></span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span class="LIDENT">lo<a href="#local_tok_7">c_s</a>tart</span><span class="COMMA">,</span> <span class="LIDENT">loc_end</span> <span class="EQUAL">=</span> <a href="#local_tok_7"><span class="LPAREN">(</span><span class="LIDENT">le</span></a>xbuf<span class="DOT">.</span><span class="LIDENT">lex_start_p</span><span class="COMMA">,</span> <span class="LIDENT">lex<a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-rev">buf</a></span><span class="DOT">.</span><span class="LIDENT">lex_c<a href="#local_tokens_6">urr_p</a></span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LET">let</span> <span class="LIDENT">tag</span> <span class="EQUAL">=</span> <span class="LIDENT">t<span id="local_loc_11">ag_</span>of_token</span> <span class="LIDENT">tok</span> <span class="IN">in</span><a href="#local_collect_4"><span class="EOL">
+</span>      </a><span class="MATCH">m<a href="#local_lexbuf_5">atch</a></span> <span class="LIDENT">tok</span> <span class="WITH"><a href="#local_tag_10">wit</a>h</span><span class="EOL">
+</span> <a href="#local_loc_11">   </a>  <span class="BAR">|</span> <span class="UIDENT">EOF</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">rev</span> <span class="LIDENT">t<a href="#local_loc_11">oke</a>ns</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">COMMENT</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <a href="#local_tokens_6"><span class="LIDENT">loc</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-</span></a>&gt;<span class="EOL">
+</span>          <span class="LIDENT">collect</span> <span class="LIDENT"><span id="local_doc_12">lex</span>buf</span> <span class="LPAREN">(</span><span class="LPAREN">(</span><span class="LIDENT">tag</span><span class="COMMA">,</span> <span class="LPAREN">(</span><span class="LIDENT">loc</span><span class="DOT">.</span><span class="LIDENT">lo<span id="local_loc_13">c_s</span>tart</span><span class="DOT">.</span><span class="LIDENT">pos_cnum</span><span class="COMMA">,</span> <span class="LIDENT">loc</span><span class="DOT">.</span><span class="LIDENT">loc_end</span><span class="DOT">.</span><span class="LIDENT">p<a href="#local_doc_12">os_</a>cnum</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="COLONCOLON">::</span> <span class="LIDENT">toke<a href="#local_collect_4">ns</a></span><span class="RPAREN">)</span><span class="EOL">
+</span>    <a href="#local_lexbuf_5">  <span class="BAR">|</span> <span class="UIDENT">DO</span></a>CST<a href="#local_tag_10">RIN</a>G <span class="LIDENT">d<a href="#local_loc_13">oc</a></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>          <span class="LET">let</span> <span class="LIDENT">loc</span> <a href="#local_loc_13"><span class="EQUAL">=</span> <span class="UIDENT">D</span></a>ocstrings<span class="DOT">.</span><span class="LIDENT">docstring_loc</span><a href="#local_tokens_6"> <span class="LIDENT">doc</span> <span class="IN">i</span></a>n<span class="EOL">
+</span>          <span class="LIDENT">col<a href="#local_collect_4">lect</a></span> <span class="LIDENT">lex<a href="#local_lexbuf_5">buf</a></span> <span class="LPAREN">(</span><span class="LPAREN">(</span><span class="LIDENT">tag</span><a href="#local_tag_10"><span class="COMMA">,</span> <span class="LPAREN">(</span></a><span class="LIDENT">loc</span><a href="#local_loc_start_8"><span class="DOT">.</span><span class="LIDENT">loc_star</span></a>t<span class="DOT">.</span><span class="LIDENT">pos_cnum</span><span class="COMMA">,</span><a href="#local_loc_end_9"> <span class="LIDENT">loc</span><span class="DOT">.</span><span class="LIDENT">lo</span></a>c_end<span class="DOT">.</span><span class="LIDENT">pos_cnum</span><span class="RPAREN">)</span><a href="#local_tokens_6"><span class="RPAREN">)</span> <span class="COLONCOLON">::</span> <span class="LIDENT">t</span></a>okens<span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span id="local_result_14"><span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">col</span></span>lec<a href="#local_collect_4">t <span class="LIDENT">lexbu</span></a>f<a href="#local_lexbuf_3"> <span class="LPAREN">(</span><span class="LPAREN">(</span><span class="LIDENT">tag</span></a><span class="COMMA">,</span> <span class="LPAREN">(</span><span class="LIDENT">loc_star<a href="#local_result_14">t</a></span><span class="DOT">.</span><span class="LIDENT">pos_cnum</span><span class="COMMA">,</span> <span class="LIDENT">lo<span id="local_e_15">c</span>_end</span><span class="DOT">.</span><span class="LIDENT">pos<a href="../../../ocaml-base-compiler/src/stdlib/format.ml.html#val-eprintf">_cnum</a></span><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="COLONCOLON">::</span> <span class="LIDENT">tokens</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span class="LIDENT">result</span> <span class="EQUAL">=</span> <span class="LIDENT">collect</span> <span class="LIDENT">lexbuf</span> <span class="LBRACKET">[</span><a href="../../../ocaml-base-compiler/src/stdlib/printexc.ml.html#val-to_string"><span class="RBRACKET">]</span> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LIDENT">result</span><span class="EOL">
+</span>  </a><span class="WITH">w<a href="#local_e_15">i</a>th</span> <span class="LIDENT">e</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">eprintf</span> <span class="STRING">&quot;Error during syntax highlighting: %s\n%!&quot;</span> <span class="LPAREN">(</span><span class="UIDENT">Printexc</span><span class="DOT">.</span><span class="LIDENT">to_string</span> <span class="LIDENT">e</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="EOL">
+</span></span></code></pre></body></html>

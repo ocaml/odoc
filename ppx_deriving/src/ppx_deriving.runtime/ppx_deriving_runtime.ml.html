@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: ppx_deriving_runtime.ml (ppx_deriving.src.ppx_deriving.runtime)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ppx_deriving</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ppx_deriving.runtime &#x00BB; ppx_deriving_runtime.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>ppx_deriving_runtime.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">ppx_deriving</a><ul><li>Library <code>ppx_deriving.api</code><ul><li><a href="../../ppx_deriving.api/Ppx_deriving/index.html">Ppx_deriving</a></li></ul></li><li>Library <code>ppx_deriving.create</code><ul><li><a href="../../ppx_deriving.create/Ppx_deriving_create/index.html">Ppx_deriving_create</a></li></ul></li><li>Library <code>ppx_deriving.enum</code><ul><li><a href="../../ppx_deriving.enum/Ppx_deriving_enum/index.html">Ppx_deriving_enum</a></li></ul></li><li>Library <code>ppx_deriving.eq</code><ul><li><a href="../../ppx_deriving.eq/Ppx_deriving_eq/index.html">Ppx_deriving_eq</a></li></ul></li><li>Library <code>ppx_deriving.fold</code><ul><li><a href="../../ppx_deriving.fold/Ppx_deriving_fold/index.html">Ppx_deriving_fold</a></li></ul></li><li>Library <code>ppx_deriving.iter</code><ul><li><a href="../../ppx_deriving.iter/Ppx_deriving_iter/index.html">Ppx_deriving_iter</a></li></ul></li><li>Library <code>ppx_deriving.make</code><ul><li><a href="../../ppx_deriving.make/Ppx_deriving_make/index.html">Ppx_deriving_make</a></li></ul></li><li>Library <code>ppx_deriving.map</code><ul><li><a href="../../ppx_deriving.map/Ppx_deriving_map/index.html">Ppx_deriving_map</a></li></ul></li><li>Library <code>ppx_deriving.ord</code><ul><li><a href="../../ppx_deriving.ord/Ppx_deriving_ord/index.html">Ppx_deriving_ord</a></li></ul></li><li>Library <code>ppx_deriving.runtime</code><ul><li><a href="../../ppx_deriving.runtime/Ppx_deriving_runtime/index.html">Ppx_deriving_runtime</a></li></ul></li><li>Library <code>ppx_deriving.show</code><ul><li><a href="../../ppx_deriving.show/Ppx_deriving_show/index.html">Ppx_deriving_show</a></li></ul></li><li>Library <code>ppx_deriving.std</code><ul><li><a href="../../ppx_deriving.std/Ppx_deriving_std/index.html">Ppx_deriving_std</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ppx_deriving.api<ul><li><a href="../ppx_deriving.api/ppx_deriving.ml.html">ppx_deriving.ml</a></li></ul></li><li>ppx_deriving.create<ul><li><a href="../ppx_deriving.create/ppx_deriving_create.ml.html">ppx_deriving_create.ml</a></li></ul></li><li>ppx_deriving.enum<ul><li><a href="../ppx_deriving.enum/ppx_deriving_enum.ml.html">ppx_deriving_enum.ml</a></li></ul></li><li>ppx_deriving.eq<ul><li><a href="../ppx_deriving.eq/ppx_deriving_eq.ml.html">ppx_deriving_eq.ml</a></li></ul></li><li>ppx_deriving.fold<ul><li><a href="../ppx_deriving.fold/ppx_deriving_fold.ml.html">ppx_deriving_fold.ml</a></li></ul></li><li>ppx_deriving.iter<ul><li><a href="../ppx_deriving.iter/ppx_deriving_iter.ml.html">ppx_deriving_iter.ml</a></li></ul></li><li>ppx_deriving.make<ul><li><a href="../ppx_deriving.make/ppx_deriving_make.ml.html">ppx_deriving_make.ml</a></li></ul></li><li>ppx_deriving.map<ul><li><a href="../ppx_deriving.map/ppx_deriving_map.ml.html">ppx_deriving_map.ml</a></li></ul></li><li>ppx_deriving.ord<ul><li><a href="../ppx_deriving.ord/ppx_deriving_ord.ml.html">ppx_deriving_ord.ml</a></li></ul></li><li>ppx_deriving.runtime<ul><li><a href="#" class="current_unit">ppx_deriving_runtime.ml</a></li></ul></li><li>ppx_deriving.show<ul><li><a href="../ppx_deriving.show/ppx_deriving_show.ml.html">ppx_deriving_show.ml</a></li></ul></li><li>ppx_deriving.std<ul><li><a href="../ppx_deriving.std/ppx_deriving_std.ml.html">ppx_deriving_std.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+</code><code class="source_code"><span><span id="exception-Undefined_recursive_module"></span><span id="exception-Sys_blocked_io"></span><span id="exception-Division_by_zero"></span><span id="exception-End_of_file"></span><span id="exception-Sys_error"></span><span id="exception-Stack_overflow"></span><span id="exception-Out_of_memory"></span><span id="exception-Not_found"></span><span id="exception-Failure"></span><span id="exception-Invalid_argument"></span><span id="exception-Assert_failure"></span><span id="exception-Match_failure"></span><span id="exception-Exit"></span># 1 &quot;ppx_deriving_runtime.cppo.ml&quot;<span class="EOL">
+</span><span id="type-int"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="LIDENT">int</span> <span class="EQUAL">=</span> <span class="LIDENT">int</span></span><span class="EOL">
+</span><span id="type-char"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="LIDENT">char</span> <span class="EQUAL">=</span> <span class="LIDENT">char</span></span><span class="EOL">
+</span><span id="type-string"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="LIDENT">string</span> <span class="EQUAL">=</span> <span class="LIDENT">string</span></span><span class="EOL">
+</span><span id="type-float"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="LIDENT">float</span> <span class="EQUAL">=</span> <span class="LIDENT">float</span></span><span class="EOL">
+</span><span id="type-bool"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="LIDENT">bool</span> <span class="EQUAL">=</span> <span class="LIDENT">bool</span></span><span class="EOL">
+</span><span id="type-unit"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="LIDENT">unit</span> <span class="EQUAL">=</span> <span class="LIDENT">unit</span></span><span class="EOL">
+</span><span id="type-exn"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="LIDENT">exn</span> <span class="EQUAL">=</span> <span class="LIDENT">exn</span></span><span class="EOL">
+</span><span id="type-array"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">array</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">array</span></span><span class="EOL">
+</span><span id="type-list"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">list</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span><span id="type-option"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">option</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">option</span></span><span class="EOL">
+</span><span id="type-nativeint"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="LIDENT">nativeint</span> <span class="EQUAL">=</span> <span class="LIDENT">nativeint</span></span><span class="EOL">
+</span><span id="type-int32"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="LIDENT">int32</span> <span class="EQUAL">=</span> <span class="LIDENT">int32</span></span><span class="EOL">
+</span><span id="type-int64"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="LIDENT">int64</span> <span class="EQUAL">=</span> <span class="LIDENT">int64</span></span><span class="EOL">
+</span><span id="type-lazy_t"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">lazy_t</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">lazy_t</span></span><span class="EOL">
+</span><span id="type-bytes"><span class="TYPE">type</span> <span class="NONREC">nonrec</span> <span class="LIDENT">bytes</span> <span class="EQUAL">=</span> <span class="LIDENT">bytes</span></span><span class="EOL">
+</span><span class="EOL">
+</span># 18 &quot;ppx_deriving_runtime.cppo.ml&quot;<span class="EOL">
+</span><span class="COMMENT">(* We require 4.08 while 4.07 already has a Stdlib module.
+   In 4.07, the type equalities on Stdlib.Pervasives
+   are not strong enough for the 'include Stdlib'
+   below to satisfy the signature constraints on
+   Ppx_deriving_runtime.Pervasives. *)</span><span class="EOL">
+</span><span id="module-Stdlib"><span class="MODULE">module</span> <span class="UIDENT">Stdlib</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html"><span class="UIDENT">Stdlib</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="INCLUDE">include</span> <span class="UIDENT">Stdlib</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Result"><span class="MODULE">module</span> <span class="UIDENT">Result</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Result.type-t"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">result</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Result.type-t.constructor-Ok"><span class="BAR">|</span> <span class="UIDENT">Ok</span> <span class="OF">of</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span>    <span id="module-Result.type-t.constructor-Error"><span class="BAR">|</span> <span class="UIDENT">Error</span> <span class="OF">of</span> <span class="QUOTE">'</span><span class="LIDENT">b</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Result.type-result"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">result</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">b</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Result.type-result.constructor-Ok"><span class="BAR">|</span> <span class="UIDENT">Ok</span> <span class="OF">of</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span>    <span id="module-Result.type-result.constructor-Error"><span class="BAR">|</span> <span class="UIDENT">Error</span> <span class="OF">of</span> <span class="QUOTE">'</span><span class="LIDENT">b</span></span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

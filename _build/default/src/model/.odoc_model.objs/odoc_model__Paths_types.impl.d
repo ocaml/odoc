@@ -1,0 +1,1 @@
+src/model/paths_types.ml: AssetName ConstructorName DefName ExceptionName ExtensionName FieldName InstanceVariableName LabelName LocalName MethodName ModuleName ModuleTypeName Names PageName TypeName ValueName

@@ -1,0 +1,49 @@
+{0 [odoc] Interface Guarantees}
+
+[odoc] has several 'public facing' parts with varying levels of support guarantees.
+This document describes what those interfaces are, what the support levels are
+now, and what we aim for in the future.
+
+{2 Documentation Comments}
+
+The first and most important is the syntax of the documentation comments present in the source code.
+This is relevant to everyone who is writing code that’s intended to be documented by [odoc], so it applies to the widest set of people.
+We have a separate page describing the {{!page-ocamldoc_differences}markup differences from OCamldoc}.
+
+{2 CLI Interface}
+
+The way in which we invoke the [odoc] CLI is not trivial, and it requires careful
+ordering and accurate arguments to produce correctly linked documentation. It’s not expected that
+end users will invoke [odoc] by hand, but rather it will be driven by separate tools. As a consequence, it’s important to preserve the tools’ ability to create good documentation with
+each [odoc] release, so we’ll ensure CLI backward compatibility as much as possible.
+There are currently three ‘first class’ tools that 'drive' [odoc]. We will not make
+releases of [odoc] whilst knowingly breaking these tools. These are:
+
+- Odig
+- Dune
+- OCaml
+
+Here, OCaml refers to the newly-merged configure option (from 4.12.0) that builds the standard library documentation with
+[odoc]. If the recommended way of invoking [odoc] changes, we will work with these projects' maintainers
+to ensure they are updated accordingly.
+
+Additionally, there will be a reference implementation of a tool to build [odoc]'s documentation, which should
+serve as a guide for anyone building other 'drivers' of [odoc].
+
+{2 Output Formats}
+
+[odoc] currently outputs HTML files, man pages, and LaTex documents. In a similar vein to the CLI interface,
+we will try to ensure that any changes to the outputs will not break the three tools described above. 
+That is, they will succeed and produce ‘correct’ documentation. However, we don’t make any
+guarantees about the internal structure of the output documents; e.g., the exact nesting of
+tags or sequence of LaTex commands may not be preserved. We will attempt to ensure that the HTML anchors are preserved, implying that the filenames will also be preserved.
+
+{2 Libraries}
+
+[odoc]'s libraries are not currently intended to be used by other projects. There are
+no guarantees about the stability of the API.
+
+{2 Intermediate Files}
+
+The intermediate files that [odoc] produces ([.odoc] and [.odocl]) should be considered internal only
+and tied to the specific version of [odoc].

@@ -1,0 +1,14 @@
+lib: [
+  "_build/install/default/lib/sherlodoc/META"
+  "_build/install/default/lib/sherlodoc/dune-package"
+  "_build/install/default/lib/sherlodoc/opam"
+]
+bin: [
+  "_build/install/default/bin/sherlodoc"
+]
+doc: [
+  "_build/install/default/doc/sherlodoc/CHANGES.md"
+  "_build/install/default/doc/sherlodoc/LICENSE"
+  "_build/install/default/doc/sherlodoc/README.md"
+  "_build/install/default/doc/sherlodoc/odoc-pages/index.mld" {"odoc-pages/index.mld"}
+]

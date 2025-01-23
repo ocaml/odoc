@@ -1,0 +1,6 @@
+description = ""
+requires = ""
+archive(byte) = "test_odoc_driver.cma"
+archive(native) = "test_odoc_driver.cmxa"
+plugin(byte) = "test_odoc_driver.cma"
+plugin(native) = "test_odoc_driver.cmxs"

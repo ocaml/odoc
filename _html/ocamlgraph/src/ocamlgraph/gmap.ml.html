@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: gmap.ml (ocamlgraph.src.ocamlgraph)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ocamlgraph</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ocamlgraph &#x00BB; gmap.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>gmap.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">ocamlgraph</a><ul><li>Library <code>ocamlgraph</code><ul><li><a href="../../ocamlgraph/Graph/index.html">Graph</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ocamlgraph<ul><li><a href="blocks.ml.html">blocks.ml</a></li><li><a href="builder.ml.html">builder.ml</a></li><li><a href="chaoticIteration.ml.html">chaoticIteration.ml</a></li><li><a href="classic.ml.html">classic.ml</a></li><li><a href="clique.ml.html">clique.ml</a></li><li><a href="cliquetree.ml.html">cliquetree.ml</a></li><li><a href="coloring.ml.html">coloring.ml</a></li><li><a href="components.ml.html">components.ml</a></li><li><a href="contraction.ml.html">contraction.ml</a></li><li><a href="cycles.ml.html">cycles.ml</a></li><li><a href="dGraphModel.ml.html">dGraphModel.ml</a></li><li><a href="dGraphRandModel.ml.html">dGraphRandModel.ml</a></li><li><a href="dGraphSubTree.ml.html">dGraphSubTree.ml</a></li><li><a href="dGraphTreeLayout.ml.html">dGraphTreeLayout.ml</a></li><li><a href="dGraphTreeModel.ml.html">dGraphTreeModel.ml</a></li><li><a href="delaunay.ml.html">delaunay.ml</a></li><li><a href="dominator.ml.html">dominator.ml</a></li><li><a href="dot.ml.html">dot.ml</a></li><li><a href="dot_lexer.ml.html">dot_lexer.ml</a></li><li><a href="dot_parser.ml.html">dot_parser.ml</a></li><li><a href="eulerian.ml.html">eulerian.ml</a></li><li><a href="fixpoint.ml.html">fixpoint.ml</a></li><li><a href="flow.ml.html">flow.ml</a></li><li><a href="#" class="current_unit">gmap.ml</a></li><li><a href="gml.ml.html">gml.ml</a></li><li><a href="graph.ml.html">graph.ml</a></li><li><a href="graph__.ml.html">graph__.ml</a></li><li><a href="graphml.ml.html">graphml.ml</a></li><li><a href="graphviz.ml.html">graphviz.ml</a></li><li><a href="imperative.ml.html">imperative.ml</a></li><li><a href="kruskal.ml.html">kruskal.ml</a></li><li><a href="leaderlist.ml.html">leaderlist.ml</a></li><li><a href="mcs_m.ml.html">mcs_m.ml</a></li><li><a href="md.ml.html">md.ml</a></li><li><a href="merge.ml.html">merge.ml</a></li><li><a href="mincut.ml.html">mincut.ml</a></li><li><a href="minsep.ml.html">minsep.ml</a></li><li><a href="nonnegative.ml.html">nonnegative.ml</a></li><li><a href="oper.ml.html">oper.ml</a></li><li><a href="pack.ml.html">pack.ml</a></li><li><a href="path.ml.html">path.ml</a></li><li><a href="persistent.ml.html">persistent.ml</a></li><li><a href="prim.ml.html">prim.ml</a></li><li><a href="rand.ml.html">rand.ml</a></li><li><a href="strat.ml.html">strat.ml</a></li><li><a href="topological.ml.html">topological.ml</a></li><li><a href="traverse.ml.html">traverse.ml</a></li><li><a href="util.ml.html">util.ml</a></li><li><a href="weakTopological.ml.html">weakTopological.ml</a></li><li><a href="xDot.ml.html">xDot.ml</a></li><li><a href="xDotDraw.ml.html">xDotDraw.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+</code><code class="source_code"><span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  Ocamlgraph: a generic graph library for OCaml                         *)</span><span class="EOL">
+</span><span class="COMMENT">(*  Copyright (C) 2004-2010                                               *)</span><span class="EOL">
+</span><span class="COMMENT">(*  Sylvain Conchon, Jean-Christophe Filliatre and Julien Signoles        *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  This software is free software; you can redistribute it and/or        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  modify it under the terms of the GNU Library General Public           *)</span><span class="EOL">
+</span><span class="COMMENT">(*  License version 2.1, with the special exception on linking            *)</span><span class="EOL">
+</span><span class="COMMENT">(*  described in file LICENSE.                                            *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  This software is distributed in the hope that it will be useful,      *)</span><span class="EOL">
+</span><span class="COMMENT">(*  but WITHOUT ANY WARRANTY; without even the implied warranty of        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                  *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {2 Mapping of vertices} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-V_SRC"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">V_SRC</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-V_SRC.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-V_SRC.module-V"><span class="MODULE">module</span> <span class="UIDENT">V</span> <span class="COLON">:</span> <span class="UIDENT">Sig</span><span class="DOT">.</span><span class="UIDENT">HASHABLE</span></span><span class="EOL">
+</span>  <span id="module-type-V_SRC.val-fold_vertex"><span class="VAL">val</span> <span class="LIDENT">fold_vertex</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-V_DST"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">V_DST</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-V_DST.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-V_DST.type-vertex"><span class="TYPE">type</span> <span class="LIDENT">vertex</span></span><span class="EOL">
+</span>  <span id="module-type-V_DST.val-empty"><span class="VAL">val</span> <span class="LIDENT">empty</span> <span class="COLON">:</span> <span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-V_DST.val-add_vertex"><span class="VAL">val</span> <span class="LIDENT">add_vertex</span> <span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">vertex</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Vertex"><span class="MODULE">module</span> <span class="UIDENT">Vertex</span><span class="LPAREN">(</span><span class="UIDENT">G_Src</span> <span class="COLON">:</span> <span class="UIDENT">V_SRC</span><span class="RPAREN">)</span><span class="LPAREN">(</span><span class="UIDENT">G_Dst</span> <span class="COLON">:</span> <span class="UIDENT">V_DST</span> <span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Vertex.module-H"><span class="MODULE">module</span> <span class="UIDENT">H</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/hashtbl.ml.html#module-Make"><span class="UIDENT">Hashtbl</span><span class="DOT">.</span><span class="UIDENT">Make</span></a><span class="LPAREN">(</span><span class="UIDENT">G_Src</span><span class="DOT">.</span><span class="UIDENT">V</span><span class="RPAREN">)</span></span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Vertex.val-vertices"><span class="LIDENT">vertices</span></span> <span class="EQUAL">=</span> <span class="UIDENT">H</span><span class="DOT">.</span><span class="LIDENT">create</span> <span class="INT">97</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Vertex.val-convert_vertex"><span class="LIDENT">convert_vertex</span></span> <span id="local_f_1"><span class="LIDENT">f</span></span> <span id="local_x_2"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="TRY">try</span><span class="EOL">
+</span>      <span class="UIDENT">H</span><span class="DOT">.</span><span class="LIDENT">find</span> <span class="LIDENT">vertices</span> <a href="#local_x_2"><span class="LIDENT">x</span></a><span class="EOL">
+</span>    <span class="WITH">with</span> <span class="UIDENT">Not_found</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_x'_3"><span class="LIDENT">x'</span></span> <span class="EQUAL">=</span> <a href="#local_f_1"><span class="LIDENT">f</span></a> <a href="#local_x_2"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="UIDENT">H</span><span class="DOT">.</span><span class="LIDENT">add</span> <span class="LIDENT">vertices</span> <a href="#local_x_2"><span class="LIDENT">x</span></a> <a href="#local_x'_3"><span class="LIDENT">x'</span></a><span class="SEMI">;</span><span class="EOL">
+</span>      <a href="#local_x'_3"><span class="LIDENT">x'</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Vertex.val-map"><span class="LIDENT">map</span></span> <span id="local_f_4"><span class="LIDENT">f</span></span> <span id="local_g_5"><span class="LIDENT">g</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="UIDENT">H</span><span class="DOT">.</span><span class="LIDENT">clear</span> <span class="LIDENT">vertices</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="UIDENT">G_Src</span><span class="DOT">.</span><span class="LIDENT">fold_vertex</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_x_6"><span class="LIDENT">x</span></span> <span id="local_g_7"><span class="LIDENT">g</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">G_Dst</span><span class="DOT">.</span><span class="LIDENT">add_vertex</span> <a href="#local_g_7"><span class="LIDENT">g</span></a> <span class="LPAREN">(</span><span class="LIDENT">convert_vertex</span> <a href="#local_f_4"><span class="LIDENT">f</span></a> <a href="#local_x_6"><span class="LIDENT">x</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <a href="#local_g_5"><span class="LIDENT">g</span></a> <span class="LPAREN">(</span><span class="UIDENT">G_Dst</span><span class="DOT">.</span><span class="LIDENT">empty</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Vertex.val-filter_map"><span class="LIDENT">filter_map</span></span> <span id="local_f_8"><span class="LIDENT">f</span></span> <span id="local_g_9"><span class="LIDENT">g</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="UIDENT">G_Src</span><span class="DOT">.</span><span class="LIDENT">fold_vertex</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_x_10"><span class="LIDENT">x</span></span> <span id="local_g_11"><span class="LIDENT">g</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="MATCH">match</span> <a href="#local_f_8"><span class="LIDENT">f</span></a> <a href="#local_x_10"><span class="LIDENT">x</span></a> <span class="WITH">with</span><span class="EOL">
+</span>         <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_e_12"><span class="LIDENT">e</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">G_Dst</span><span class="DOT">.</span><span class="LIDENT">add_vertex</span> <a href="#local_g_11"><span class="LIDENT">g</span></a> <a href="#local_e_12"><span class="LIDENT">e</span></a><span class="EOL">
+</span>         <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_g_11"><span class="LIDENT">g</span></a><span class="EOL">
+</span>      <span class="RPAREN">)</span> <a href="#local_g_9"><span class="LIDENT">g</span></a> <span class="LPAREN">(</span><span class="UIDENT">G_Dst</span><span class="DOT">.</span><span class="LIDENT">empty</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {2 Mapping of edges} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-E_SRC"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">E_SRC</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-E_SRC.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-E_SRC.module-E"><span class="MODULE">module</span> <span class="UIDENT">E</span> <span class="COLON">:</span> <span class="UIDENT">Sig</span><span class="DOT">.</span><span class="UIDENT">ORDERED_TYPE</span></span><span class="EOL">
+</span>  <span id="module-type-E_SRC.val-fold_edges_e"><span class="VAL">val</span> <span class="LIDENT">fold_edges_e</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-E_DST"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">E_DST</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-E_DST.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-E_DST.type-edge"><span class="TYPE">type</span> <span class="LIDENT">edge</span></span><span class="EOL">
+</span>  <span id="module-type-E_DST.val-empty"><span class="VAL">val</span> <span class="LIDENT">empty</span> <span class="COLON">:</span> <span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-E_DST.val-add_edge_e"><span class="VAL">val</span> <span class="LIDENT">add_edge_e</span> <span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">edge</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Edge"><span class="MODULE">module</span> <span class="UIDENT">Edge</span><span class="LPAREN">(</span><span class="UIDENT">G_Src</span><span class="COLON">:</span> <span class="UIDENT">E_SRC</span><span class="RPAREN">)</span><span class="LPAREN">(</span><span class="UIDENT">G_Dst</span><span class="COLON">:</span> <span class="UIDENT">E_DST</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Edge.module-M"><span class="MODULE">module</span> <span class="UIDENT">M</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/map.ml.html#module-Make"><span class="UIDENT">Map</span><span class="DOT">.</span><span class="UIDENT">Make</span></a><span class="LPAREN">(</span><span class="UIDENT">G_Src</span><span class="DOT">.</span><span class="UIDENT">E</span><span class="RPAREN">)</span></span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Edge.val-edges"><span class="LIDENT">edges</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-ref"><span class="LIDENT">ref</span></a> <span class="UIDENT">M</span><span class="DOT">.</span><span class="LIDENT">empty</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Edge.val-convert_edge"><span class="LIDENT">convert_edge</span></span> <span id="local_f_13"><span class="LIDENT">f</span></span> <span id="local_x_14"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="TRY">try</span><span class="EOL">
+</span>      <span class="UIDENT">M</span><span class="DOT">.</span><span class="LIDENT">find</span> <a href="#local_x_14"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><span class="LIDENT">edges</span><span class="EOL">
+</span>    <span class="WITH">with</span> <span class="UIDENT">Not_found</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_x'_15"><span class="LIDENT">x'</span></span> <span class="EQUAL">=</span> <a href="#local_f_13"><span class="LIDENT">f</span></a> <a href="#local_x_14"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LIDENT">edges</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(:=)"><span class="COLONEQUAL">:=</span></a> <span class="UIDENT">M</span><span class="DOT">.</span><span class="LIDENT">add</span> <a href="#local_x_14"><span class="LIDENT">x</span></a> <a href="#local_x'_15"><span class="LIDENT">x'</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><span class="LIDENT">edges</span><span class="SEMI">;</span><span class="EOL">
+</span>      <a href="#local_x'_15"><span class="LIDENT">x'</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Edge.val-map"><span class="LIDENT">map</span></span> <span id="local_f_16"><span class="LIDENT">f</span></span> <span id="local_g_17"><span class="LIDENT">g</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LIDENT">edges</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(:=)"><span class="COLONEQUAL">:=</span></a> <span class="UIDENT">M</span><span class="DOT">.</span><span class="LIDENT">empty</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="UIDENT">G_Src</span><span class="DOT">.</span><span class="LIDENT">fold_edges_e</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_x_18"><span class="LIDENT">x</span></span> <span id="local_g_19"><span class="LIDENT">g</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">G_Dst</span><span class="DOT">.</span><span class="LIDENT">add_edge_e</span> <a href="#local_g_19"><span class="LIDENT">g</span></a> <span class="LPAREN">(</span><span class="LIDENT">convert_edge</span> <a href="#local_f_16"><span class="LIDENT">f</span></a> <a href="#local_x_18"><span class="LIDENT">x</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <a href="#local_g_17"><span class="LIDENT">g</span></a> <span class="LPAREN">(</span><span class="UIDENT">G_Dst</span><span class="DOT">.</span><span class="LIDENT">empty</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Edge.val-filter_map"><span class="LIDENT">filter_map</span></span> <span id="local_f_20"><span class="LIDENT">f</span></span> <span id="local_g_21"><span class="LIDENT">g</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="UIDENT">G_Src</span><span class="DOT">.</span><span class="LIDENT">fold_edges_e</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_x_22"><span class="LIDENT">x</span></span> <span id="local_g_23"><span class="LIDENT">g</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="MATCH">match</span> <a href="#local_f_20"><span class="LIDENT">f</span></a> <a href="#local_x_22"><span class="LIDENT">x</span></a> <span class="WITH">with</span><span class="EOL">
+</span>         <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_e_24"><span class="LIDENT">e</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">G_Dst</span><span class="DOT">.</span><span class="LIDENT">add_edge_e</span> <a href="#local_g_23"><span class="LIDENT">g</span></a> <a href="#local_e_24"><span class="LIDENT">e</span></a><span class="EOL">
+</span>         <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_g_23"><span class="LIDENT">g</span></a><span class="EOL">
+</span>      <span class="RPAREN">)</span> <a href="#local_g_21"><span class="LIDENT">g</span></a> <span class="LPAREN">(</span><span class="UIDENT">G_Dst</span><span class="DOT">.</span><span class="LIDENT">empty</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(*
+  Vertex
+  (struct include G_Src module V = E let fold_vertex = fold_edges_e end)
+  (struct include G_Dst type vertex = edge let add_vertex = add_edge_e end)
+*)</span><span class="EOL">
+</span></span></code></pre></body></html>

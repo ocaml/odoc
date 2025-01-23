@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: parsexp__.ml (parsexp.src.parsexp)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">parsexp</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; parsexp &#x00BB; parsexp__.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>parsexp__.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">parsexp</a><ul><li>Library <code>parsexp</code><ul><li><a href="../../parsexp/Parsexp/index.html">Parsexp</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>parsexp<ul><li><a href="automaton.ml.html">automaton.ml</a></li><li><a href="automaton_action.ml.html">automaton_action.ml</a></li><li><a href="automaton_intf.ml.html">automaton_intf.ml</a></li><li><a href="automaton_stack.ml.html">automaton_stack.ml</a></li><li><a href="automaton_stack_intf.ml.html">automaton_stack_intf.ml</a></li><li><a href="automaton_state.ml.html">automaton_state.ml</a></li><li><a href="automaton_state_intf.ml.html">automaton_state_intf.ml</a></li><li><a href="automaton_tables.ml.html">automaton_tables.ml</a></li><li><a href="conv.ml.html">conv.ml</a></li><li><a href="conv_error.ml.html">conv_error.ml</a></li><li><a href="conv_intf.ml.html">conv_intf.ml</a></li><li><a href="cst.ml.html">cst.ml</a></li><li><a href="import.ml.html">import.ml</a></li><li><a href="of_sexp_error.ml.html">of_sexp_error.ml</a></li><li><a href="old_parser_cont_state.ml.html">old_parser_cont_state.ml</a></li><li><a href="parse_error.ml.html">parse_error.ml</a></li><li><a href="parse_error_intf.ml.html">parse_error_intf.ml</a></li><li><a href="parser.ml.html">parser.ml</a></li><li><a href="parser_intf.ml.html">parser_intf.ml</a></li><li><a href="parsexp.ml.html">parsexp.ml</a></li><li><a href="#" class="current_unit">parsexp__.ml</a></li><li><a href="parsexp_intf.ml.html">parsexp_intf.ml</a></li><li><a href="positions.ml.html">positions.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+</code><code class="source_code"><span><span class="COMMENT">(* generated by dune *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Automaton *)</span><span class="EOL">
+</span><span id="module-Automaton"><span class="MODULE">module</span> <span class="UIDENT">Automaton</span> <span class="EQUAL">=</span> <a href="automaton.ml.html"><span class="UIDENT">Parsexp__Automaton</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Automaton_action *)</span><span class="EOL">
+</span><span id="module-Automaton_action"><span class="MODULE">module</span> <span class="UIDENT">Automaton_action</span> <span class="EQUAL">=</span> <a href="automaton_action.ml.html"><span class="UIDENT">Parsexp__Automaton_action</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Automaton_intf *)</span><span class="EOL">
+</span><span id="module-Automaton_intf"><span class="MODULE">module</span> <span class="UIDENT">Automaton_intf</span> <span class="EQUAL">=</span> <a href="automaton_intf.ml.html"><span class="UIDENT">Parsexp__Automaton_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Automaton_stack *)</span><span class="EOL">
+</span><span id="module-Automaton_stack"><span class="MODULE">module</span> <span class="UIDENT">Automaton_stack</span> <span class="EQUAL">=</span> <a href="automaton_stack.ml.html"><span class="UIDENT">Parsexp__Automaton_stack</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Automaton_stack_intf *)</span><span class="EOL">
+</span><span id="module-Automaton_stack_intf"><span class="MODULE">module</span> <span class="UIDENT">Automaton_stack_intf</span> <span class="EQUAL">=</span> <a href="automaton_stack_intf.ml.html"><span class="UIDENT">Parsexp__Automaton_stack_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Automaton_state *)</span><span class="EOL">
+</span><span id="module-Automaton_state"><span class="MODULE">module</span> <span class="UIDENT">Automaton_state</span> <span class="EQUAL">=</span> <a href="automaton_state.ml.html"><span class="UIDENT">Parsexp__Automaton_state</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Automaton_state_intf *)</span><span class="EOL">
+</span><span id="module-Automaton_state_intf"><span class="MODULE">module</span> <span class="UIDENT">Automaton_state_intf</span> <span class="EQUAL">=</span> <a href="automaton_state_intf.ml.html"><span class="UIDENT">Parsexp__Automaton_state_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Automaton_tables *)</span><span class="EOL">
+</span><span id="module-Automaton_tables"><span class="MODULE">module</span> <span class="UIDENT">Automaton_tables</span> <span class="EQUAL">=</span> <a href="automaton_tables.ml.html"><span class="UIDENT">Parsexp__Automaton_tables</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Conv *)</span><span class="EOL">
+</span><span id="module-Conv"><span class="MODULE">module</span> <span class="UIDENT">Conv</span> <span class="EQUAL">=</span> <a href="conv.ml.html"><span class="UIDENT">Parsexp__Conv</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Conv_error *)</span><span class="EOL">
+</span><span id="module-Conv_error"><span class="MODULE">module</span> <span class="UIDENT">Conv_error</span> <span class="EQUAL">=</span> <a href="conv_error.ml.html"><span class="UIDENT">Parsexp__Conv_error</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Conv_intf *)</span><span class="EOL">
+</span><span id="module-Conv_intf"><span class="MODULE">module</span> <span class="UIDENT">Conv_intf</span> <span class="EQUAL">=</span> <a href="conv_intf.ml.html"><span class="UIDENT">Parsexp__Conv_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Cst *)</span><span class="EOL">
+</span><span id="module-Cst"><span class="MODULE">module</span> <span class="UIDENT">Cst</span> <span class="EQUAL">=</span> <a href="cst.ml.html"><span class="UIDENT">Parsexp__Cst</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Import *)</span><span class="EOL">
+</span><span id="module-Import"><span class="MODULE">module</span> <span class="UIDENT">Import</span> <span class="EQUAL">=</span> <a href="import.ml.html"><span class="UIDENT">Parsexp__Import</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Of_sexp_error *)</span><span class="EOL">
+</span><span id="module-Of_sexp_error"><span class="MODULE">module</span> <span class="UIDENT">Of_sexp_error</span> <span class="EQUAL">=</span> <a href="of_sexp_error.ml.html"><span class="UIDENT">Parsexp__Of_sexp_error</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Old_parser_cont_state *)</span><span class="EOL">
+</span><span id="module-Old_parser_cont_state"><span class="MODULE">module</span> <span class="UIDENT">Old_parser_cont_state</span> <span class="EQUAL">=</span> <a href="old_parser_cont_state.ml.html"><span class="UIDENT">Parsexp__Old_parser_cont_state</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Parse_error *)</span><span class="EOL">
+</span><span id="module-Parse_error"><span class="MODULE">module</span> <span class="UIDENT">Parse_error</span> <span class="EQUAL">=</span> <a href="parse_error.ml.html"><span class="UIDENT">Parsexp__Parse_error</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Parse_error_intf *)</span><span class="EOL">
+</span><span id="module-Parse_error_intf"><span class="MODULE">module</span> <span class="UIDENT">Parse_error_intf</span> <span class="EQUAL">=</span> <a href="parse_error_intf.ml.html"><span class="UIDENT">Parsexp__Parse_error_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Parser *)</span><span class="EOL">
+</span><span id="module-Parser"><span class="MODULE">module</span> <span class="UIDENT">Parser</span> <span class="EQUAL">=</span> <a href="parser.ml.html"><span class="UIDENT">Parsexp__Parser</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Parser_intf *)</span><span class="EOL">
+</span><span id="module-Parser_intf"><span class="MODULE">module</span> <span class="UIDENT">Parser_intf</span> <span class="EQUAL">=</span> <a href="parser_intf.ml.html"><span class="UIDENT">Parsexp__Parser_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Parsexp_intf *)</span><span class="EOL">
+</span><span id="module-Parsexp_intf"><span class="MODULE">module</span> <span class="UIDENT">Parsexp_intf</span> <span class="EQUAL">=</span> <a href="parsexp_intf.ml.html"><span class="UIDENT">Parsexp__Parsexp_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Parsexp.Positions *)</span><span class="EOL">
+</span><span id="module-Positions"><span class="MODULE">module</span> <span class="UIDENT">Positions</span> <span class="EQUAL">=</span> <a href="positions.ml.html"><span class="UIDENT">Parsexp__Positions</span></a></span><span class="EOL">
+</span></span></code></pre></body></html>

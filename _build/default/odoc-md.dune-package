@@ -1,0 +1,8 @@
+(lang dune 3.16)
+(name odoc-md)
+(version dev)
+(sections (lib .) (bin ../../bin) (doc ../../doc/odoc-md))
+(files
+ (lib (META dune-package opam))
+ (bin (odoc-md))
+ (doc (CHANGES.md LICENSE README.md odoc-config.sexp odoc-pages/index.mld)))

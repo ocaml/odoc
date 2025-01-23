@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: ppx_sexp_conv_expander.ml (ppx_sexp_conv.src.ppx_sexp_conv.expander)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ppx_sexp_conv</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ppx_sexp_conv.expander &#x00BB; ppx_sexp_conv_expander.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>ppx_sexp_conv_expander.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">ppx_sexp_conv</a><ul><li>Library <code>ppx_sexp_conv</code><ul><li><a href="../../ppx_sexp_conv/Ppx_sexp_conv/index.html">Ppx_sexp_conv</a></li></ul></li><li>Library <code>ppx_sexp_conv.expander</code><ul><li><a href="../../ppx_sexp_conv.expander/Ppx_sexp_conv_expander/index.html">Ppx_sexp_conv_expander</a></li></ul></li><li>Library <code>ppx_sexp_conv.runtime-lib</code><ul><li><a href="../../ppx_sexp_conv.runtime-lib/Ppx_sexp_conv_lib/index.html">Ppx_sexp_conv_lib</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ppx_sexp_conv<ul><li><a href="../ppx_sexp_conv/ppx_sexp_conv.ml.html">ppx_sexp_conv.ml</a></li></ul></li><li>ppx_sexp_conv.expander<ul><li><a href="attrs.ml.html">attrs.ml</a></li><li><a href="conversion.ml.html">conversion.ml</a></li><li><a href="expand_of_sexp.ml.html">expand_of_sexp.ml</a></li><li><a href="expand_sexp_of.ml.html">expand_sexp_of.ml</a></li><li><a href="fresh_name.ml.html">fresh_name.ml</a></li><li><a href="helpers.ml.html">helpers.ml</a></li><li><a href="lifted.ml.html">lifted.ml</a></li><li><a href="#" class="current_unit">ppx_sexp_conv_expander.ml</a></li><li><a href="ppx_sexp_conv_expander__.ml.html">ppx_sexp_conv_expander__.ml</a></li><li><a href="ppx_sexp_conv_grammar.ml.html">ppx_sexp_conv_grammar.ml</a></li><li><a href="record_field_attrs.ml.html">record_field_attrs.ml</a></li><li><a href="renaming.ml.html">renaming.ml</a></li></ul></li><li>ppx_sexp_conv.runtime-lib<ul><li><a href="../ppx_sexp_conv.runtime-lib/ppx_sexp_conv_lib.ml.html">ppx_sexp_conv_lib.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+</code><code class="source_code"><span><span class="OPEN">open</span> <a href="../../../base/src/base/base.ml.html"><span class="UIDENT">Base</span></a><span class="EOL">
+</span><span class="OPEN">open</span> <a href="../../../ppxlib/src/ppxlib/ppxlib.ml.html"><span class="UIDENT">Ppxlib</span></a><span class="EOL">
+</span><span class="OPEN">open</span> <a href="../../../ppxlib/src/ppxlib/ast_builder.ml.html#module-Default"><span class="UIDENT">Ast_builder</span><span class="DOT">.</span><span class="UIDENT">Default</span></a><span class="EOL">
+</span><span id="module-Attrs"><span class="MODULE">module</span> <span class="UIDENT">Attrs</span> <span class="EQUAL">=</span> <a href="attrs.ml.html"><span class="UIDENT">Attrs</span></a></span><span class="EOL">
+</span><span id="module-Record_field_attrs"><span class="MODULE">module</span> <span class="UIDENT">Record_field_attrs</span> <span class="EQUAL">=</span> <a href="record_field_attrs.ml.html"><span class="UIDENT">Record_field_attrs</span></a></span><span class="EOL">
+</span><span class="OPEN">open</span> <a href="expand_sexp_of.ml.html"><span class="UIDENT">Expand_sexp_of</span></a><span class="EOL">
+</span><span class="OPEN">open</span> <a href="expand_of_sexp.ml.html"><span class="UIDENT">Expand_of_sexp</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Sexp_of"><span class="MODULE">module</span> <span class="UIDENT">Sexp_of</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Sexp_of.val-type_extension"><span class="LIDENT">type_extension</span></span> <span id="local_ty_1"><span class="LIDENT">ty</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="expand_sexp_of.ml.html#module-Sig_generate_sexp_of.val-type_of_sexp_of"><span class="UIDENT">Sig_generate_sexp_of</span><span class="DOT">.</span><span class="LIDENT">type_of_sexp_of</span></a> <span class="LABEL">~loc:</span><span class="LBRACE">{</span> <a href="#local_ty_1"><span class="LIDENT">ty</span></a><span class="DOT">.</span><span class="LIDENT">ptyp_loc</span> <span class="WITH">with</span> <span class="LIDENT">loc_ghost</span> <span class="EQUAL">=</span> <span class="TRUE">true</span> <span class="RBRACE">}</span> <a href="#local_ty_1"><span class="LIDENT">ty</span></a><span class="EOL">
+</span>  <span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Sexp_of.val-core_type"><span class="LIDENT">core_type</span></span> <span id="local_ty_2"><span class="LIDENT">ty</span></span> <span class="EQUAL">=</span> <a href="expand_sexp_of.ml.html#module-Str_generate_sexp_of.val-sexp_of_core_type"><span class="UIDENT">Str_generate_sexp_of</span><span class="DOT">.</span><span class="LIDENT">sexp_of_core_type</span></a> <a href="#local_ty_2"><span class="LIDENT">ty</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Sexp_of.val-sig_type_decl"><span class="LIDENT">sig_type_decl</span></span> <span class="EQUAL">=</span> <a href="expand_sexp_of.ml.html#module-Sig_generate_sexp_of.val-mk_sig"><span class="UIDENT">Sig_generate_sexp_of</span><span class="DOT">.</span><span class="LIDENT">mk_sig</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Sexp_of.val-sig_exception"><span class="LIDENT">sig_exception</span></span> <span class="EQUAL">=</span> <a href="expand_sexp_of.ml.html#module-Sig_generate_sexp_of.val-mk_sig_exn"><span class="UIDENT">Sig_generate_sexp_of</span><span class="DOT">.</span><span class="LIDENT">mk_sig_exn</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Sexp_of.val-str_type_decl"><span class="LIDENT">str_type_decl</span></span> <span class="EQUAL">=</span> <a href="expand_sexp_of.ml.html#module-Str_generate_sexp_of.val-sexp_of_tds"><span class="UIDENT">Str_generate_sexp_of</span><span class="DOT">.</span><span class="LIDENT">sexp_of_tds</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Sexp_of.val-str_exception"><span class="LIDENT">str_exception</span></span> <span class="EQUAL">=</span> <a href="expand_sexp_of.ml.html#module-Str_generate_sexp_of.val-sexp_of_exn"><span class="UIDENT">Str_generate_sexp_of</span><span class="DOT">.</span><span class="LIDENT">sexp_of_exn</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Sexp_grammar"><span class="MODULE">module</span> <span class="UIDENT">Sexp_grammar</span> <span class="EQUAL">=</span> <a href="ppx_sexp_conv_grammar.ml.html"><span class="UIDENT">Ppx_sexp_conv_grammar</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Of_sexp"><span class="MODULE">module</span> <span class="UIDENT">Of_sexp</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Of_sexp.val-type_extension"><span class="LIDENT">type_extension</span></span> <span id="local_ty_3"><span class="LIDENT">ty</span></span> <span class="EQUAL">=</span> <a href="expand_of_sexp.ml.html#module-Sig_generate_of_sexp.val-type_of_of_sexp"><span class="UIDENT">Sig_generate_of_sexp</span><span class="DOT">.</span><span class="LIDENT">type_of_of_sexp</span></a> <span class="LABEL">~loc:</span><a href="#local_ty_3"><span class="LIDENT">ty</span></a><span class="DOT">.</span><span class="LIDENT">ptyp_loc</span> <a href="#local_ty_3"><span class="LIDENT">ty</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Of_sexp.val-core_type"><span class="LIDENT">core_type</span></span> <span class="EQUAL">=</span> <a href="expand_of_sexp.ml.html#module-Str_generate_of_sexp.val-core_type_of_sexp"><span class="UIDENT">Str_generate_of_sexp</span><span class="DOT">.</span><span class="LIDENT">core_type_of_sexp</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Of_sexp.val-sig_type_decl"><span class="LIDENT">sig_type_decl</span></span> <span class="TILDE">~</span><span id="local_poly_4"><span class="LIDENT">poly</span></span> <span class="TILDE">~</span><span id="local_loc_5"><span class="LIDENT">loc</span></span> <span class="TILDE">~</span><span id="local_path_6"><span class="LIDENT">path</span></span> <span id="local_tds_7"><span class="LIDENT">tds</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="expand_of_sexp.ml.html#module-Sig_generate_of_sexp.val-mk_sig"><span class="UIDENT">Sig_generate_of_sexp</span><span class="DOT">.</span><span class="LIDENT">mk_sig</span></a> <span class="TILDE">~</span><a href="#local_poly_4"><span class="LIDENT">poly</span></a> <span class="TILDE">~</span><a href="#local_loc_5"><span class="LIDENT">loc</span></a> <span class="TILDE">~</span><a href="#local_path_6"><span class="LIDENT">path</span></a> <a href="#local_tds_7"><span class="LIDENT">tds</span></a><span class="EOL">
+</span>  <span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Of_sexp.val-str_type_decl"><span class="LIDENT">str_type_decl</span></span> <span class="TILDE">~</span><span id="local_loc_8"><span class="LIDENT">loc</span></span> <span class="TILDE">~</span><span id="local_poly_9"><span class="LIDENT">poly</span></span> <span class="TILDE">~</span><span id="local_path_10"><span class="LIDENT">path</span></span> <span id="local_tds_11"><span class="LIDENT">tds</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="expand_of_sexp.ml.html#module-Str_generate_of_sexp.val-tds_of_sexp"><span class="UIDENT">Str_generate_of_sexp</span><span class="DOT">.</span><span class="LIDENT">tds_of_sexp</span></a> <span class="TILDE">~</span><a href="#local_loc_8"><span class="LIDENT">loc</span></a> <span class="TILDE">~</span><a href="#local_poly_9"><span class="LIDENT">poly</span></a> <span class="TILDE">~</span><a href="#local_path_10"><span class="LIDENT">path</span></a> <a href="#local_tds_11"><span class="LIDENT">tds</span></a><span class="EOL">
+</span>  <span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Sig_sexp"><span class="MODULE">module</span> <span class="UIDENT">Sig_sexp</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Sig_sexp.val-mk_sig"><span class="LIDENT">mk_sig</span></span> <span class="TILDE">~</span><span id="local_loc_12"><span class="LIDENT">loc</span></span> <span class="TILDE">~</span><span id="local_path_13"><span class="LIDENT">path</span></span> <span id="local_decls_14"><span class="LIDENT">decls</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="../../../base/src/base/list.ml.html#val-concat"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">concat</span></a><span class="EOL">
+</span>      <span class="LBRACKET">[</span> <a href="expand_sexp_of.ml.html#module-Sig_generate_sexp_of.val-mk_sig"><span class="UIDENT">Sig_generate_sexp_of</span><span class="DOT">.</span><span class="LIDENT">mk_sig</span></a> <span class="TILDE">~</span><a href="#local_loc_12"><span class="LIDENT">loc</span></a> <span class="TILDE">~</span><a href="#local_path_13"><span class="LIDENT">path</span></a> <a href="#local_decls_14"><span class="LIDENT">decls</span></a><span class="EOL">
+</span>      <span class="SEMI">;</span> <a href="expand_of_sexp.ml.html#module-Sig_generate_of_sexp.val-mk_sig"><span class="UIDENT">Sig_generate_of_sexp</span><span class="DOT">.</span><span class="LIDENT">mk_sig</span></a> <span class="LABEL">~poly:</span><span class="FALSE">false</span> <span class="TILDE">~</span><a href="#local_loc_12"><span class="LIDENT">loc</span></a> <span class="TILDE">~</span><a href="#local_path_13"><span class="LIDENT">path</span></a> <a href="#local_decls_14"><span class="LIDENT">decls</span></a><span class="EOL">
+</span>      <span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Sig_sexp.val-sig_type_decl"><span class="LIDENT">sig_type_decl</span></span> <span class="TILDE">~</span><span id="local_loc_15"><span class="LIDENT">loc</span></span> <span class="TILDE">~</span><span id="local_path_16"><span class="LIDENT">path</span></span> <span class="LPAREN">(</span><span class="LPAREN">(</span><span id="local__rf_18"><span class="LIDENT">_rf</span></span><span class="COMMA">,</span> <span id="local_tds_19"><span class="LIDENT">tds</span></span><span class="RPAREN">)</span> <span class="AS">as</span> <span id="local_decls_17"><span class="LIDENT">decls</span></span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span><span class="EOL">
+</span>      <a href="../../../ppxlib/src/ppxlib/common.ml.html#val-mk_named_sig"><span class="LIDENT">mk_named_sig</span></a><span class="EOL">
+</span>        <span class="TILDE">~</span><a href="#local_loc_15"><span class="LIDENT">loc</span></a><span class="EOL">
+</span>        <span class="LABEL">~sg_name:</span><span class="STRING">&quot;Sexplib0.Sexpable.S&quot;</span><span class="EOL">
+</span>        <span class="LABEL">~handle_polymorphic_variant:</span><span class="FALSE">false</span><span class="EOL">
+</span>        <a href="#local_tds_19"><span class="LIDENT">tds</span></a><span class="EOL">
+</span>    <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_include_infos_20"><span class="LIDENT">include_infos</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LBRACKET">[</span> <a href="../../../ppxlib/src/ppxlib/ast_builder_generated.ml.html#module-M.val-psig_include"><span class="LIDENT">psig_include</span></a> <span class="TILDE">~</span><a href="#local_loc_15"><span class="LIDENT">loc</span></a> <a href="#local_include_infos_20"><span class="LIDENT">include_infos</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">mk_sig</span> <span class="TILDE">~</span><a href="#local_loc_15"><span class="LIDENT">loc</span></a> <span class="TILDE">~</span><a href="#local_path_16"><span class="LIDENT">path</span></a> <a href="#local_decls_17"><span class="LIDENT">decls</span></a><span class="EOL">
+</span>  <span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

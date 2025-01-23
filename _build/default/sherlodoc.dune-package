@@ -1,0 +1,8 @@
+(lang dune 3.16)
+(name sherlodoc)
+(version dev)
+(sections (lib .) (bin ../../bin) (doc ../../doc/sherlodoc))
+(files
+ (lib (META dune-package opam))
+ (bin (sherlodoc))
+ (doc (CHANGES.md LICENSE README.md odoc-pages/index.mld)))

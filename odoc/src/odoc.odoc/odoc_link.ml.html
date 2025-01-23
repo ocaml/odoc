@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: odoc_link.ml (odoc.src.odoc.odoc)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">The odoc documentation generator</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; odoc.odoc &#x00BB; odoc_link.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>odoc_link.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">The odoc documentation generator</a><ul><li><a href="../../odoc_for_authors.html"><code>odoc</code> for Authors</a></li><li><a href="../../cheatsheet.html">Cheatsheet</a></li><li><a href="../../dune.html">Dune and odoc</a></li><li><a href="../../features.html">Language Features</a></li><li><a href="../../ocamldoc_differences.html">Markup Differences From OCamldoc</a></li><li><a href="../../interface.html"><code>odoc</code> Interface Guarantees</a></li><li><a href="../../driver.html">How to Drive <code>odoc</code></a></li><li><a href="../../json.html">JSON output</a></li><li><a href="../../deprecated/index.html">Deprecated features</a></li><li>Library <code>odoc.document</code><ul><li><a href="../../odoc.document/Odoc_document/index.html">Odoc_document</a></li></ul></li><li>Library <code>odoc.examples</code><ul><li><a href="../../odoc.examples/Odoc_examples/index.html">Odoc_examples</a></li></ul></li><li>Library <code>odoc.html</code><ul><li><a href="../../odoc.html/Odoc_html/index.html">Odoc_html</a></li></ul></li><li>Library <code>odoc.html_support_files</code><ul><li><a href="../../odoc.html_support_files/Odoc_html_support_files/index.html">Odoc_html_support_files</a></li></ul></li><li>Library <code>odoc.index</code><ul><li><a href="../../odoc.index/Odoc_index/index.html">Odoc_index</a></li></ul></li><li>Library <code>odoc.json_index</code><ul><li><a href="../../odoc.json_index/Odoc_json_index/index.html">Odoc_json_index</a></li></ul></li><li>Library <code>odoc.latex</code><ul><li><a href="../../odoc.latex/Odoc_latex/index.html">Odoc_latex</a></li></ul></li><li>Library <code>odoc.loader</code><ul><li><a href="../../odoc.loader/Odoc_loader/index.html">Odoc_loader</a></li></ul></li><li>Library <code>odoc.manpage</code><ul><li><a href="../../odoc.manpage/Odoc_manpage/index.html">Odoc_manpage</a></li></ul></li><li>Library <code>odoc.model</code><ul><li><a href="../../odoc.model/Odoc_model/index.html">Odoc_model</a></li></ul></li><li>Library <code>odoc.model_desc</code><ul><li><a href="../../odoc.model_desc/Odoc_model_desc/index.html">Odoc_model_desc</a></li></ul></li><li>Library <code>odoc.ocamlary</code><ul><li><a href="../../odoc.ocamlary/Ocamlary/index.html">Ocamlary</a></li></ul></li><li>Library <code>odoc.occurrences</code><ul><li><a href="../../odoc.occurrences/Odoc_occurrences/index.html">Odoc_occurrences</a></li></ul></li><li>Library <code>odoc.odoc</code><ul><li><a href="../../odoc.odoc/Odoc_odoc/index.html">Odoc_odoc</a></li></ul></li><li>Library <code>odoc.odoc_utils</code><ul><li><a href="../../odoc.odoc_utils/Odoc_utils/index.html">Odoc_utils</a></li></ul></li><li>Library <code>odoc.search</code><ul><li><a href="../../odoc.search/Odoc_search/index.html">Odoc_search</a></li></ul></li><li>Library <code>odoc.search_html_frontend</code><ul><li><a href="../../odoc.search_html_frontend/Odoc_html_frontend/index.html">Odoc_html_frontend</a></li></ul></li><li>Library <code>odoc.syntax_highlighter</code><ul><li><a href="../../odoc.syntax_highlighter/Syntax_highlighter/index.html">Syntax_highlighter</a></li></ul></li><li>Library <code>odoc.xref2</code><ul><li><a href="../../odoc.xref2/Odoc_xref2/index.html">Odoc_xref2</a></li></ul></li><li>Library <code>odoc.xref_test</code><ul><li><a href="../../odoc.xref_test/Odoc_xref_test/index.html">Odoc_xref_test</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>odoc.document<ul><li><a href="../odoc.document/ML.ml.html">ML.ml</a></li><li><a href="../odoc.document/codefmt.ml.html">codefmt.ml</a></li><li><a href="../odoc.document/comment.ml.html">comment.ml</a></li><li><a href="../odoc.document/compat.ml.html">compat.ml</a></li><li><a href="../odoc.document/doctree.ml.html">doctree.ml</a></li><li><a href="../odoc.document/generator.ml.html">generator.ml</a></li><li><a href="../odoc.document/generator_signatures.ml.html">generator_signatures.ml</a></li><li><a href="../odoc.document/odoc_document.ml.html">odoc_document.ml</a></li><li><a href="../odoc.document/reason.ml.html">reason.ml</a></li><li><a href="../odoc.document/renderer.ml.html">renderer.ml</a></li><li><a href="../odoc.document/sidebar.ml.html">sidebar.ml</a></li><li><a href="../odoc.document/targets.ml.html">targets.ml</a></li><li><a href="../odoc.document/types.ml.html">types.ml</a></li><li><a href="../odoc.document/url.ml.html">url.ml</a></li><li><a href="../odoc.document/utils.ml.html">utils.ml</a></li></ul></li><li>odoc.examples<ul><li><a href="../odoc.examples/odoc_examples.ml.html">odoc_examples.ml</a></li><li><a href="../odoc.examples/odoc_examples__.ml.html">odoc_examples__.ml</a></li></ul></li><li>odoc.html<ul><li><a href="../odoc.html/config.ml.html">config.ml</a></li><li><a href="../odoc.html/generator.ml.html">generator.ml</a></li><li><a href="../odoc.html/html_fragment_json.ml.html">html_fragment_json.ml</a></li><li><a href="../odoc.html/html_page.ml.html">html_page.ml</a></li><li><a href="../odoc.html/html_source.ml.html">html_source.ml</a></li><li><a href="../odoc.html/link.ml.html">link.ml</a></li><li><a href="../odoc.html/odoc_html.ml.html">odoc_html.ml</a></li><li><a href="../odoc.html/odoc_html__.ml.html">odoc_html__.ml</a></li><li><a href="../odoc.html/sidebar.ml.html">sidebar.ml</a></li><li><a href="../odoc.html/types.ml.html">types.ml</a></li></ul></li><li>odoc.html_support_files<ul><li><a href="../odoc.html_support_files/odoc_html_support_files.ml.html">odoc_html_support_files.ml</a></li></ul></li><li>odoc.index<ul><li><a href="../odoc.index/entry.ml.html">entry.ml</a></li><li><a href="../odoc.index/in_progress.ml.html">in_progress.ml</a></li><li><a href="../odoc.index/odoc_index.ml.html">odoc_index.ml</a></li><li><a href="../odoc.index/odoc_index__.ml.html">odoc_index__.ml</a></li><li><a href="../odoc.index/skeleton.ml.html">skeleton.ml</a></li><li><a href="../odoc.index/skeleton_of.ml.html">skeleton_of.ml</a></li></ul></li><li>odoc.json_index<ul><li><a href="../odoc.json_index/json_display.ml.html">json_display.ml</a></li><li><a href="../odoc.json_index/json_search.ml.html">json_search.ml</a></li><li><a href="../odoc.json_index/odoc_json_index.ml.html">odoc_json_index.ml</a></li></ul></li><li>odoc.latex<ul><li><a href="../odoc.latex/generator.ml.html">generator.ml</a></li><li><a href="../odoc.latex/odoc_latex.ml.html">odoc_latex.ml</a></li><li><a href="../odoc.latex/raw.ml.html">raw.ml</a></li><li><a href="../odoc.latex/types.ml.html">types.ml</a></li></ul></li><li>odoc.loader<ul><li><a href="../odoc.loader/cmi.ml.html">cmi.ml</a></li><li><a href="../odoc.loader/cmt.ml.html">cmt.ml</a></li><li><a href="../odoc.loader/cmti.ml.html">cmti.ml</a></li><li><a href="../odoc.loader/doc_attr.ml.html">doc_attr.ml</a></li><li><a href="../odoc.loader/ident_env.ml.html">ident_env.ml</a></li><li><a href="../odoc.loader/implementation.ml.html">implementation.ml</a></li><li><a href="../odoc.loader/odoc_loader.ml.html">odoc_loader.ml</a></li><li><a href="../odoc.loader/odoc_loader__.ml.html">odoc_loader__.ml</a></li><li><a href="../odoc.loader/typedtree_traverse.ml.html">typedtree_traverse.ml</a></li></ul></li><li>odoc.manpage<ul><li><a href="../odoc.manpage/generator.ml.html">generator.ml</a></li><li><a href="../odoc.manpage/link.ml.html">link.ml</a></li><li><a href="../odoc.manpage/odoc_manpage.ml.html">odoc_manpage.ml</a></li></ul></li><li>odoc.model<ul><li><a href="../odoc.model/comment.ml.html">comment.ml</a></li><li><a href="../odoc.model/compat.ml.html">compat.ml</a></li><li><a href="../odoc.model/error.ml.html">error.ml</a></li><li><a href="../odoc.model/frontmatter.ml.html">frontmatter.ml</a></li><li><a href="../odoc.model/lang.ml.html">lang.ml</a></li><li><a href="../odoc.model/location_.ml.html">location_.ml</a></li><li><a href="../odoc.model/names.ml.html">names.ml</a></li><li><a href="../odoc.model/odoc_model.ml.html">odoc_model.ml</a></li><li><a href="../odoc.model/odoc_model__.ml.html">odoc_model__.ml</a></li><li><a href="../odoc.model/paths.ml.html">paths.ml</a></li><li><a href="../odoc.model/paths_types.ml.html">paths_types.ml</a></li><li><a href="../odoc.model/reference.ml.html">reference.ml</a></li><li><a href="../odoc.model/root.ml.html">root.ml</a></li><li><a href="../odoc.model/semantics.ml.html">semantics.ml</a></li></ul></li><li>odoc.model_desc<ul><li><a href="../odoc.model_desc/comment_desc.ml.html">comment_desc.ml</a></li><li><a href="../odoc.model_desc/lang_desc.ml.html">lang_desc.ml</a></li><li><a href="../odoc.model_desc/odoc_model_desc.ml.html">odoc_model_desc.ml</a></li><li><a href="../odoc.model_desc/paths_desc.ml.html">paths_desc.ml</a></li><li><a href="../odoc.model_desc/type_desc.ml.html">type_desc.ml</a></li></ul></li><li>odoc.occurrences<ul><li><a href="../odoc.occurrences/odoc_occurrences.ml.html">odoc_occurrences.ml</a></li><li><a href="../odoc.occurrences/odoc_occurrences__.ml.html">odoc_occurrences__.ml</a></li><li><a href="../odoc.occurrences/table.ml.html">table.ml</a></li></ul></li><li>odoc.odoc<ul><li><a href="asset.ml.html">asset.ml</a></li><li><a href="classify.ml.html">classify.ml</a></li><li><a href="compile.ml.html">compile.ml</a></li><li><a href="depends.ml.html">depends.ml</a></li><li><a href="fs.ml.html">fs.ml</a></li><li><a href="html_fragment.ml.html">html_fragment.ml</a></li><li><a href="html_page.ml.html">html_page.ml</a></li><li><a href="indexing.ml.html">indexing.ml</a></li><li><a href="latex.ml.html">latex.ml</a></li><li><a href="man_page.ml.html">man_page.ml</a></li><li><a href="occurrences.ml.html">occurrences.ml</a></li><li><a href="odoc_file.ml.html">odoc_file.ml</a></li><li><a href="#" class="current_unit">odoc_link.ml</a></li><li><a href="odoc_odoc.ml.html">odoc_odoc.ml</a></li><li><a href="or_error.ml.html">or_error.ml</a></li><li><a href="rendering.ml.html">rendering.ml</a></li><li><a href="resolver.ml.html">resolver.ml</a></li><li><a href="sidebar.ml.html">sidebar.ml</a></li><li><a href="source.ml.html">source.ml</a></li><li><a href="support_files.ml.html">support_files.ml</a></li><li><a href="url.ml.html">url.ml</a></li></ul></li><li>odoc.odoc_utils<ul><li><a href="../odoc.odoc_utils/json.ml.html">json.ml</a></li><li><a href="../odoc.odoc_utils/odoc_list.ml.html">odoc_list.ml</a></li><li><a href="../odoc.odoc_utils/odoc_utils.ml.html">odoc_utils.ml</a></li><li><a href="../odoc.odoc_utils/odoc_utils__.ml.html">odoc_utils__.ml</a></li><li><a href="../odoc.odoc_utils/tree.ml.html">tree.ml</a></li></ul></li><li>odoc.search<ul><li><a href="../odoc.search/html.ml.html">html.ml</a></li><li><a href="../odoc.search/odoc_search.ml.html">odoc_search.ml</a></li><li><a href="../odoc.search/text.ml.html">text.ml</a></li></ul></li><li>odoc.search_html_frontend<ul><li><a href="../odoc.search_html_frontend/odoc_html_frontend.ml.html">odoc_html_frontend.ml</a></li></ul></li><li>odoc.syntax_highlighter<ul><li><a href="../odoc.syntax_highlighter/syntax_highlighter.ml.html">syntax_highlighter.ml</a></li></ul></li><li>odoc.xref2<ul><li><a href="../odoc.xref2/cfrag.ml.html">cfrag.ml</a></li><li><a href="../odoc.xref2/compile.ml.html">compile.ml</a></li><li><a href="../odoc.xref2/component.ml.html">component.ml</a></li><li><a href="../odoc.xref2/cpath.ml.html">cpath.ml</a></li><li><a href="../odoc.xref2/env.ml.html">env.ml</a></li><li><a href="../odoc.xref2/errors.ml.html">errors.ml</a></li><li><a href="../odoc.xref2/expand_tools.ml.html">expand_tools.ml</a></li><li><a href="../odoc.xref2/find.ml.html">find.ml</a></li><li><a href="../odoc.xref2/ident.ml.html">ident.ml</a></li><li><a href="../odoc.xref2/lang_of.ml.html">lang_of.ml</a></li><li><a href="../odoc.xref2/link.ml.html">link.ml</a></li><li><a href="../odoc.xref2/lookup_failures.ml.html">lookup_failures.ml</a></li><li><a href="../odoc.xref2/odoc_xref2.ml.html">odoc_xref2.ml</a></li><li><a href="../odoc.xref2/ref_tools.ml.html">ref_tools.ml</a></li><li><a href="../odoc.xref2/shape_tools.ml.html">shape_tools.ml</a></li><li><a href="../odoc.xref2/strengthen.ml.html">strengthen.ml</a></li><li><a href="../odoc.xref2/subst.ml.html">subst.ml</a></li><li><a href="../odoc.xref2/tools.ml.html">tools.ml</a></li></ul></li><li>odoc.xref_test<ul><li><a href="../odoc.xref_test/common.ml.html">common.ml</a></li><li><a href="../odoc.xref_test/odoc_xref_test.ml.html">odoc_xref_test.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+</code><code class="source_code"><span><span class="OPEN">open</span> <a href="or_error.ml.html"><span class="UIDENT">Or_error</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-link_page"><span class="LIDENT">link_page</span></span> <span class="TILDE">~</span><span id="local_resolver_1"><span class="LIDENT">resolver</span></span> <span class="TILDE">~</span><span id="local_filename_2"><span class="LIDENT">filename</span></span> <span id="local_page_3"><span class="LIDENT">page</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_env_4"><span class="LIDENT">env</span></span> <span class="EQUAL">=</span> <a href="resolver.ml.html#val-build_env_for_page"><span class="UIDENT">Resolver</span><span class="DOT">.</span><span class="LIDENT">build_env_for_page</span></a> <a href="#local_resolver_1"><span class="LIDENT">resolver</span></a> <a href="#local_page_3"><span class="LIDENT">page</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <a href="../odoc.xref2/link.ml.html#val-resolve_page"><span class="UIDENT">Odoc_xref2</span><span class="DOT">.</span><span class="UIDENT">Link</span><span class="DOT">.</span><span class="LIDENT">resolve_page</span></a> <span class="TILDE">~</span><a href="#local_filename_2"><span class="LIDENT">filename</span></a> <a href="#local_env_4"><span class="LIDENT">env</span></a> <a href="#local_page_3"><span class="LIDENT">page</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-link_impl"><span class="LIDENT">link_impl</span></span> <span class="TILDE">~</span><span id="local_resolver_5"><span class="LIDENT">resolver</span></span> <span class="TILDE">~</span><span id="local_filename_6"><span class="LIDENT">filename</span></span> <span id="local_impl_7"><span class="LIDENT">impl</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_env_8"><span class="LIDENT">env</span></span> <span class="EQUAL">=</span> <a href="resolver.ml.html#val-build_link_env_for_impl"><span class="UIDENT">Resolver</span><span class="DOT">.</span><span class="LIDENT">build_link_env_for_impl</span></a> <a href="#local_resolver_5"><span class="LIDENT">resolver</span></a> <a href="#local_impl_7"><span class="LIDENT">impl</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <a href="../odoc.xref2/link.ml.html#val-resolve_impl"><span class="UIDENT">Odoc_xref2</span><span class="DOT">.</span><span class="UIDENT">Link</span><span class="DOT">.</span><span class="LIDENT">resolve_impl</span></a> <span class="TILDE">~</span><a href="#local_filename_6"><span class="LIDENT">filename</span></a> <a href="#local_env_8"><span class="LIDENT">env</span></a> <a href="#local_impl_7"><span class="LIDENT">impl</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-content_for_hidden_modules"><span class="LIDENT">content_for_hidden_modules</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <a href="../odoc.model/odoc_model.ml.html"><span class="UIDENT">Odoc_model</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <a href="../odoc.model/lang.ml.html#module-Signature"><span class="UIDENT">Lang</span><span class="DOT">.</span><span class="UIDENT">Signature</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_with_loc_9"><span class="LIDENT">with_loc</span></span> <span id="local_v_10"><span class="LIDENT">v</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span class="OPEN">open</span> <a href="../odoc.model/location_.ml.html"><span class="UIDENT">Location_</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LBRACE">{</span><span class="EOL">
+</span>      <span class="LIDENT">location</span> <span class="EQUAL">=</span><span class="EOL">
+</span>        <span class="LBRACE">{</span><span class="EOL">
+</span>          <span class="LIDENT">file</span> <span class="EQUAL">=</span> <span class="STRING">&quot;_none_&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>          <span class="LIDENT">start</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">line</span> <span class="EQUAL">=</span> <span class="INT">1</span><span class="SEMI">;</span> <span class="LIDENT">column</span> <span class="EQUAL">=</span> <span class="INT">0</span> <span class="RBRACE">}</span><span class="SEMI">;</span><span class="EOL">
+</span>          <span class="LIDENT">end_</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">line</span> <span class="EQUAL">=</span> <span class="INT">1</span><span class="SEMI">;</span> <span class="LIDENT">column</span> <span class="EQUAL">=</span> <span class="INT">0</span> <span class="RBRACE">}</span><span class="SEMI">;</span><span class="EOL">
+</span>        <span class="RBRACE">}</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LIDENT">value</span> <span class="EQUAL">=</span> <a href="#local_v_10"><span class="LIDENT">v</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="RBRACE">}</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_sentence_11"><span class="LIDENT">sentence</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LBRACKET">[</span><span class="EOL">
+</span>      <span class="BACKQUOTE">`</span><span class="UIDENT">Word</span> <span class="STRING">&quot;This&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="BACKQUOTE">`</span><span class="UIDENT">Space</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="BACKQUOTE">`</span><span class="UIDENT">Word</span> <span class="STRING">&quot;module&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="BACKQUOTE">`</span><span class="UIDENT">Space</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="BACKQUOTE">`</span><span class="UIDENT">Word</span> <span class="STRING">&quot;is&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="BACKQUOTE">`</span><span class="UIDENT">Space</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="BACKQUOTE">`</span><span class="UIDENT">Word</span> <span class="STRING">&quot;hidden.&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LBRACKET">[</span><span class="EOL">
+</span>    <span class="UIDENT">Comment</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="BACKQUOTE">`</span><span class="UIDENT">Docs</span><span class="EOL">
+</span>        <span class="LBRACE">{</span><span class="EOL">
+</span>          <span class="LIDENT">elements</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span> <a href="#local_with_loc_9"><span class="LIDENT">with_loc</span></a> <span class="INFIXOP1">@@</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Paragraph</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-map"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span></a> <a href="#local_with_loc_9"><span class="LIDENT">with_loc</span></a> <a href="#local_sentence_11"><span class="LIDENT">sentence</span></a><span class="RPAREN">)</span> <span class="RBRACKET">]</span><span class="SEMI">;</span><span class="EOL">
+</span>          <span class="LIDENT">suppress_warnings</span> <span class="EQUAL">=</span> <span class="TRUE">true</span><span class="SEMI">;</span><span class="EOL">
+</span>        <span class="RBRACE">}</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-link_unit"><span class="LIDENT">link_unit</span></span> <span class="TILDE">~</span><span id="local_resolver_12"><span class="LIDENT">resolver</span></span> <span class="TILDE">~</span><span id="local_filename_13"><span class="LIDENT">filename</span></span> <span id="local_m_14"><span class="LIDENT">m</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <a href="../odoc.model/odoc_model.ml.html"><span class="UIDENT">Odoc_model</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <a href="../odoc.model/lang.ml.html#module-Compilation_unit"><span class="UIDENT">Lang</span><span class="DOT">.</span><span class="UIDENT">Compilation_unit</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_m_15"><span class="LIDENT">m</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="IF">if</span> <a href="../odoc.model/root.ml.html#module-Odoc_file.val-hidden"><span class="UIDENT">Root</span><span class="DOT">.</span><span class="UIDENT">Odoc_file</span><span class="DOT">.</span><span class="LIDENT">hidden</span></a> <a href="#local_m_14"><span class="LIDENT">m</span></a><span class="DOT">.</span><span class="LIDENT">root</span><span class="DOT">.</span><span class="LIDENT">file</span> <span class="THEN">then</span><span class="EOL">
+</span>      <span class="LBRACE">{</span><span class="EOL">
+</span>        <a href="#local_m_14"><span class="LIDENT">m</span></a> <span class="WITH">with</span><span class="EOL">
+</span>        <span class="LIDENT">content</span> <span class="EQUAL">=</span><span class="EOL">
+</span>          <span class="UIDENT">Module</span><span class="EOL">
+</span>            <span class="LBRACE">{</span><span class="EOL">
+</span>              <span class="LIDENT">items</span> <span class="EQUAL">=</span> <span class="LIDENT">content_for_hidden_modules</span><span class="SEMI">;</span><span class="EOL">
+</span>              <span class="LIDENT">compiled</span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="SEMI">;</span><span class="EOL">
+</span>              <span class="LIDENT">removed</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="SEMI">;</span><span class="EOL">
+</span>              <span class="LIDENT">doc</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">elements</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="SEMI">;</span> <span class="LIDENT">suppress_warnings</span> <span class="EQUAL">=</span> <span class="FALSE">false</span> <span class="RBRACE">}</span><span class="SEMI">;</span><span class="EOL">
+</span>            <span class="RBRACE">}</span><span class="SEMI">;</span><span class="EOL">
+</span>        <span class="LIDENT">expansion</span> <span class="EQUAL">=</span> <span class="UIDENT">None</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="RBRACE">}</span><span class="EOL">
+</span>    <span class="ELSE">else</span> <a href="#local_m_14"><span class="LIDENT">m</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_env_16"><span class="LIDENT">env</span></span> <span class="EQUAL">=</span> <a href="resolver.ml.html#val-build_link_env_for_unit"><span class="UIDENT">Resolver</span><span class="DOT">.</span><span class="LIDENT">build_link_env_for_unit</span></a> <a href="#local_resolver_12"><span class="LIDENT">resolver</span></a> <a href="#local_m_15"><span class="LIDENT">m</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <a href="../odoc.xref2/link.ml.html#val-link"><span class="UIDENT">Odoc_xref2</span><span class="DOT">.</span><span class="UIDENT">Link</span><span class="DOT">.</span><span class="LIDENT">link</span></a> <span class="TILDE">~</span><a href="#local_filename_13"><span class="LIDENT">filename</span></a> <a href="#local_env_16"><span class="LIDENT">env</span></a> <a href="#local_m_15"><span class="LIDENT">m</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** [~input_warnings] are the warnings stored in the input file *)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-handle_warnings"><span class="LIDENT">handle_warnings</span></span> <span class="TILDE">~</span><span id="local_input_warnings_17"><span class="LIDENT">input_warnings</span></span> <span class="TILDE">~</span><span id="local_warnings_options_18"><span class="LIDENT">warnings_options</span></span> <span id="local_ww_19"><span class="LIDENT">ww</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="def_40"><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span id="local_warnings_20"><span class="LIDENT">warnings</span></span></span> <span class="EQUAL">=</span> <a href="../odoc.model/error.ml.html#val-unpack_warnings"><span class="UIDENT">Odoc_model</span><span class="DOT">.</span><span class="UIDENT">Error</span><span class="DOT">.</span><span class="LIDENT">unpack_warnings</span></a> <a href="#local_ww_19"><span class="LIDENT">ww</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <a href="../odoc.model/error.ml.html#val-handle_warnings"><span class="UIDENT">Odoc_model</span><span class="DOT">.</span><span class="UIDENT">Error</span><span class="DOT">.</span><span class="LIDENT">handle_warnings</span></a> <span class="TILDE">~</span><a href="#local_warnings_options_18"><span class="LIDENT">warnings_options</span></a> <a href="#local_ww_19"><span class="LIDENT">ww</span></a> <a href="or_error.ml.html#val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUN">fun</span> <span id="local_res_21"><span class="LIDENT">res</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="UIDENT">Ok</span> <span class="LPAREN">(</span><a href="#local_res_21"><span class="LIDENT">res</span></a><span class="COMMA">,</span> <a href="#local_input_warnings_17"><span class="LIDENT">input_warnings</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(@)"><span class="INFIXOP1">@</span></a> <a href="#local_warnings_20"><span class="LIDENT">warnings</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** Read the input file and write to the output file.
+    Also return the resulting tree. *)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-from_odoc"><span class="LIDENT">from_odoc</span></span> <span class="TILDE">~</span><span id="local_resolver_22"><span class="LIDENT">resolver</span></span> <span class="TILDE">~</span><span id="local_warnings_options_23"><span class="LIDENT">warnings_options</span></span> <span id="local_input_24"><span class="LIDENT">input</span></span> <span id="local_output_25"><span class="LIDENT">output</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_filename_26"><span class="LIDENT">filename</span></span> <span class="EQUAL">=</span> <a href="fs.ml.html#module-File.val-to_string"><span class="UIDENT">Fs</span><span class="DOT">.</span><span class="UIDENT">File</span><span class="DOT">.</span><span class="LIDENT">to_string</span></a> <a href="#local_input_24"><span class="LIDENT">input</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <a href="odoc_file.ml.html#val-load"><span class="UIDENT">Odoc_file</span><span class="DOT">.</span><span class="LIDENT">load</span></a> <a href="#local_input_24"><span class="LIDENT">input</span></a> <a href="or_error.ml.html#val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUN">fun</span> <span id="local_unit_27"><span class="LIDENT">unit</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_input_warnings_28"><span class="LIDENT">input_warnings</span></span> <span class="EQUAL">=</span> <a href="#local_unit_27"><span class="LIDENT">unit</span></a><span class="DOT">.</span><span class="UIDENT">Odoc_file</span><span class="DOT">.</span><span class="LIDENT">warnings</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_unit_27"><span class="LIDENT">unit</span></a><span class="DOT">.</span><span class="LIDENT">content</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Impl_content</span> <span id="local_impl_29"><span class="LIDENT">impl</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LIDENT">link_impl</span> <span class="TILDE">~</span><a href="#local_resolver_22"><span class="LIDENT">resolver</span></a> <span class="TILDE">~</span><a href="#local_filename_26"><span class="LIDENT">filename</span></a> <a href="#local_impl_29"><span class="LIDENT">impl</span></a><span class="EOL">
+</span>      <span class="INFIXOP0">|&gt;</span> <span class="LIDENT">handle_warnings</span> <span class="TILDE">~</span><a href="#local_input_warnings_28"><span class="LIDENT">input_warnings</span></a> <span class="TILDE">~</span><a href="#local_warnings_options_23"><span class="LIDENT">warnings_options</span></a><span class="EOL">
+</span>      <a href="or_error.ml.html#val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUN">fun</span> <span class="LPAREN">(</span><span id="local_impl_30"><span class="LIDENT">impl</span></span><span class="COMMA">,</span> <span id="local_warnings_31"><span class="LIDENT">warnings</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="COMMENT">(* Remove the shape here so that we only depend upon odoc types
+         rather than odoc and ocaml types. This means we don't break
+         being able save an odocl file with odoc x.y compiled with one
+         version of the compiler and load it in odoc x.y compiled with
+         a different version of the compiler, provided the compiler
+         itself doesn't break cross-version marshalling! This ability
+         is currently being used by voodoo. *)</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_impl_32"><span class="LIDENT">impl</span></span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <a href="#local_impl_30"><span class="LIDENT">impl</span></a> <span class="WITH">with</span> <span class="LIDENT">shape_info</span> <span class="EQUAL">=</span> <span class="UIDENT">None</span> <span class="RBRACE">}</span> <span class="IN">in</span><span class="EOL">
+</span>      <a href="odoc_file.ml.html#val-save_impl"><span class="UIDENT">Odoc_file</span><span class="DOT">.</span><span class="LIDENT">save_impl</span></a> <a href="#local_output_25"><span class="LIDENT">output</span></a> <span class="TILDE">~</span><a href="#local_warnings_31"><span class="LIDENT">warnings</span></a> <a href="#local_impl_32"><span class="LIDENT">impl</span></a><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="UIDENT">Ok</span> <span class="LPAREN">(</span><span class="BACKQUOTE">`</span><span class="UIDENT">Impl</span> <a href="#local_impl_32"><span class="LIDENT">impl</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Page_content</span> <span id="local_page_33"><span class="LIDENT">page</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LIDENT">link_page</span> <span class="TILDE">~</span><a href="#local_resolver_22"><span class="LIDENT">resolver</span></a> <span class="TILDE">~</span><a href="#local_filename_26"><span class="LIDENT">filename</span></a> <a href="#local_page_33"><span class="LIDENT">page</span></a><span class="EOL">
+</span>      <span class="INFIXOP0">|&gt;</span> <span class="LIDENT">handle_warnings</span> <span class="TILDE">~</span><a href="#local_input_warnings_28"><span class="LIDENT">input_warnings</span></a> <span class="TILDE">~</span><a href="#local_warnings_options_23"><span class="LIDENT">warnings_options</span></a><span class="EOL">
+</span>      <a href="or_error.ml.html#val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUN">fun</span> <span class="LPAREN">(</span><span id="local_page_34"><span class="LIDENT">page</span></span><span class="COMMA">,</span> <span id="local_warnings_35"><span class="LIDENT">warnings</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <a href="odoc_file.ml.html#val-save_page"><span class="UIDENT">Odoc_file</span><span class="DOT">.</span><span class="LIDENT">save_page</span></a> <a href="#local_output_25"><span class="LIDENT">output</span></a> <span class="TILDE">~</span><a href="#local_warnings_35"><span class="LIDENT">warnings</span></a> <a href="#local_page_34"><span class="LIDENT">page</span></a><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="UIDENT">Ok</span> <span class="LPAREN">(</span><span class="BACKQUOTE">`</span><span class="UIDENT">Page</span> <a href="#local_page_34"><span class="LIDENT">page</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Unit_content</span> <span id="local_m_36"><span class="LIDENT">m</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LIDENT">link_unit</span> <span class="TILDE">~</span><a href="#local_resolver_22"><span class="LIDENT">resolver</span></a> <span class="TILDE">~</span><a href="#local_filename_26"><span class="LIDENT">filename</span></a> <a href="#local_m_36"><span class="LIDENT">m</span></a><span class="EOL">
+</span>      <span class="INFIXOP0">|&gt;</span> <span class="LIDENT">handle_warnings</span> <span class="TILDE">~</span><a href="#local_input_warnings_28"><span class="LIDENT">input_warnings</span></a> <span class="TILDE">~</span><a href="#local_warnings_options_23"><span class="LIDENT">warnings_options</span></a><span class="EOL">
+</span>      <a href="or_error.ml.html#val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUN">fun</span> <span class="LPAREN">(</span><span id="local_m_37"><span class="LIDENT">m</span></span><span class="COMMA">,</span> <span id="local_warnings_38"><span class="LIDENT">warnings</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <a href="odoc_file.ml.html#val-save_unit"><span class="UIDENT">Odoc_file</span><span class="DOT">.</span><span class="LIDENT">save_unit</span></a> <a href="#local_output_25"><span class="LIDENT">output</span></a> <span class="TILDE">~</span><a href="#local_warnings_38"><span class="LIDENT">warnings</span></a> <a href="#local_m_37"><span class="LIDENT">m</span></a><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="UIDENT">Ok</span> <span class="LPAREN">(</span><span class="BACKQUOTE">`</span><span class="UIDENT">Module</span> <a href="#local_m_37"><span class="LIDENT">m</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Asset_content</span> <span id="local_a_39"><span class="LIDENT">a</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <a href="odoc_file.ml.html#val-save_asset"><span class="UIDENT">Odoc_file</span><span class="DOT">.</span><span class="LIDENT">save_asset</span></a> <a href="#local_output_25"><span class="LIDENT">output</span></a> <span class="LABEL">~warnings:</span><span class="LBRACKET">[</span><span class="RBRACKET">]</span> <a href="#local_a_39"><span class="LIDENT">a</span></a><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="UIDENT">Ok</span> <span class="LPAREN">(</span><span class="BACKQUOTE">`</span><span class="UIDENT">Asset</span> <a href="#local_a_39"><span class="LIDENT">a</span></a><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

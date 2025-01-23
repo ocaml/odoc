@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: common.ml (ocaml_intrinsics_kernel.src.ocaml_intrinsics_kernel)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ocaml_intrinsics_kernel</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ocaml_intrinsics_kernel &#x00BB; common.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>common.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">ocaml_intrinsics_kernel</a><ul><li>Library <code>ocaml_intrinsics_kernel</code><ul><li><a href="../../ocaml_intrinsics_kernel/Ocaml_intrinsics_kernel/index.html">Ocaml_intrinsics_kernel</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ocaml_intrinsics_kernel<ul><li><a href="#" class="current_unit">common.ml</a></li><li><a href="conditional.ml.html">conditional.ml</a></li><li><a href="float.ml.html">float.ml</a></li><li><a href="int.ml.html">int.ml</a></li><li><a href="int32.ml.html">int32.ml</a></li><li><a href="int64.ml.html">int64.ml</a></li><li><a href="naive_ints.ml.html">naive_ints.ml</a></li><li><a href="nativeint.ml.html">nativeint.ml</a></li><li><a href="ocaml_intrinsics_kernel.ml.html">ocaml_intrinsics_kernel.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+</code><code class="source_code"><span><span class="LET">let</span> <span id="val-available"><span class="LIDENT">available</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/sys.ml.html#val-backend_type"><span class="UIDENT">Sys</span><span class="DOT">.</span><span class="LIDENT">backend_type</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Native</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="COMMENT">(* (match Sys.unix with
+     *  | false -&gt; false
+     *  | true -&gt;
+     *    (match Sys.architecture with
+     *     | &quot;amd64&quot; | &quot;arm64&quot; -&gt; true
+     *     | _ -&gt; false)) *)</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/sys.ml.html#val-unix"><span class="UIDENT">Sys</span><span class="DOT">.</span><span class="LIDENT">unix</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Bytecode</span> <span class="BAR">|</span> <span class="UIDENT">Other</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="FALSE">false</span><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span></span></code></pre></body></html>

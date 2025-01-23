@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: time.ml (eio_posix.src.eio_posix)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">eio_posix</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; eio_posix &#x00BB; time.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>time.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">eio_posix</a><ul><li>Library <code>eio_posix</code><ul><li><a href="../../eio_posix/Eio_posix/index.html">Eio_posix</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>eio_posix<ul><li><a href="config.ml.html">config.ml</a></li><li><a href="domain_mgr.ml.html">domain_mgr.ml</a></li><li><a href="eio_posix.ml.html">eio_posix.ml</a></li><li><a href="eio_posix__.ml.html">eio_posix__.ml</a></li><li><a href="err.ml.html">err.ml</a></li><li><a href="flow.ml.html">flow.ml</a></li><li><a href="fs.ml.html">fs.ml</a></li><li><a href="low_level.ml.html">low_level.ml</a></li><li><a href="net.ml.html">net.ml</a></li><li><a href="path.ml.html">path.ml</a></li><li><a href="process.ml.html">process.ml</a></li><li><a href="sched.ml.html">sched.ml</a></li><li><a href="#" class="current_unit">time.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+</code><code class="source_code"><span><span class="OPEN">open</span> <a href="../../../eio/src/eio/std.ml.html"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Std</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Mono_clock"><span class="MODULE">module</span> <span class="UIDENT">Mono_clock</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Mono_clock.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LIDENT">unit</span></span><span class="EOL">
+</span>  <span id="module-Mono_clock.type-time"><span class="TYPE">type</span> <span class="LIDENT">time</span> <span class="EQUAL">=</span> <span class="UIDENT">Mtime</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Mono_clock.val-now"><span class="LIDENT">now</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="UIDENT">Mtime_clock</span><span class="DOT">.</span><span class="LIDENT">now</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Mono_clock.val-sleep_until"><span class="LIDENT">sleep_until</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span id="local_time_1"><span class="LIDENT">time</span></span> <span class="EQUAL">=</span> <a href="low_level.ml.html#val-sleep_until"><span class="UIDENT">Low_level</span><span class="DOT">.</span><span class="LIDENT">sleep_until</span></a> <a href="#local_time_1"><span class="LIDENT">time</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-mono_clock"><span class="LIDENT">mono_clock</span></span> <span class="COLON">:</span> <a href="../../../eio/src/eio/std.ml.html#type-r"><a href="../../../eio/src/eio/time.ml.html#type-clock_ty"><span class="UIDENT">Mtime</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Time</span><span class="DOT">.</span><span class="LIDENT">clock_ty</span></a> <span class="LIDENT">r</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_handler_2"><span class="LIDENT">handler</span></span> <span class="EQUAL">=</span> <a href="../../../eio/src/eio/time.ml.html#module-Pi.val-clock"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Time</span><span class="DOT">.</span><span class="UIDENT">Pi</span><span class="DOT">.</span><span class="LIDENT">clock</span></a> <span class="LPAREN">(</span><span class="MODULE">module</span> <span class="UIDENT">Mono_clock</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Resource</span><span class="DOT">.</span><span class="UIDENT">T</span> <span class="LPAREN">(</span><span class="LPAREN">(</span><span class="RPAREN">)</span><span class="COMMA">,</span> <a href="#local_handler_2"><span class="LIDENT">handler</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Clock"><span class="MODULE">module</span> <span class="UIDENT">Clock</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Clock.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LIDENT">unit</span></span><span class="EOL">
+</span>  <span id="module-Clock.type-time"><span class="TYPE">type</span> <span class="LIDENT">time</span> <span class="EQUAL">=</span> <span class="LIDENT">float</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Clock.val-now"><span class="LIDENT">now</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="UIDENT">Unix</span><span class="DOT">.</span><span class="LIDENT">gettimeofday</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Clock.val-sleep_until"><span class="LIDENT">sleep_until</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span id="local_time_3"><span class="LIDENT">time</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="COMMENT">(* todo: use the realtime clock directly instead of converting to monotonic time.
+       That is needed to handle adjustments to the system clock correctly. *)</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_d_4"><span class="LIDENT">d</span></span> <span class="EQUAL">=</span> <a href="#local_time_3"><span class="LIDENT">time</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(-.)"><span class="MINUSDOT">-.</span></a> <span class="UIDENT">Unix</span><span class="DOT">.</span><span class="LIDENT">gettimeofday</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>    <a href="../../../eio/src/eio/time.ml.html#module-Mono.val-sleep"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Time</span><span class="DOT">.</span><span class="UIDENT">Mono</span><span class="DOT">.</span><span class="LIDENT">sleep</span></a> <span class="LIDENT">mono_clock</span> <a href="#local_d_4"><span class="LIDENT">d</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-clock"><span class="LIDENT">clock</span></span> <span class="COLON">:</span> <a href="../../../eio/src/eio/std.ml.html#type-r"><a href="../../../eio/src/eio/time.ml.html#type-clock_ty"><span class="LIDENT">float</span> <span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Time</span><span class="DOT">.</span><span class="LIDENT">clock_ty</span></a> <span class="LIDENT">r</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_handler_5"><span class="LIDENT">handler</span></span> <span class="EQUAL">=</span> <a href="../../../eio/src/eio/time.ml.html#module-Pi.val-clock"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Time</span><span class="DOT">.</span><span class="UIDENT">Pi</span><span class="DOT">.</span><span class="LIDENT">clock</span></a> <span class="LPAREN">(</span><span class="MODULE">module</span> <span class="UIDENT">Clock</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Resource</span><span class="DOT">.</span><span class="UIDENT">T</span> <span class="LPAREN">(</span><span class="LPAREN">(</span><span class="RPAREN">)</span><span class="COMMA">,</span> <a href="#local_handler_5"><span class="LIDENT">handler</span></a><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

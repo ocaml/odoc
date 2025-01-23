@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: sexplib_unix_conv.ml (sexplib.src.sexplib.unix)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">sexplib</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; sexplib.unix &#x00BB; sexplib_unix_conv.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>sexplib_unix_conv.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">sexplib</a><ul><li>Library <code>sexplib</code><ul><li><a href="../../sexplib/Sexplib/index.html">Sexplib</a></li></ul></li><li>Library <code>sexplib.num</code><ul><li><a href="../../sexplib.num/Sexplib_num/index.html">Sexplib_num</a></li></ul></li><li>Library <code>sexplib.unix</code><ul><li><a href="../../sexplib.unix/Sexplib_unix/index.html">Sexplib_unix</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>sexplib<ul><li><a href="../sexplib/conv.ml.html">conv.ml</a></li><li><a href="../sexplib/conv_error.ml.html">conv_error.ml</a></li><li><a href="../sexplib/exn_magic.ml.html">exn_magic.ml</a></li><li><a href="../sexplib/lexer.ml.html">lexer.ml</a></li><li><a href="../sexplib/parser.ml.html">parser.ml</a></li><li><a href="../sexplib/parser_with_layout.ml.html">parser_with_layout.ml</a></li><li><a href="../sexplib/path.ml.html">path.ml</a></li><li><a href="../sexplib/pre_sexp.ml.html">pre_sexp.ml</a></li><li><a href="../sexplib/sexp.ml.html">sexp.ml</a></li><li><a href="../sexplib/sexp_grammar.ml.html">sexp_grammar.ml</a></li><li><a href="../sexplib/sexp_grammar_intf.ml.html">sexp_grammar_intf.ml</a></li><li><a href="../sexplib/sexp_intf.ml.html">sexp_intf.ml</a></li><li><a href="../sexplib/sexp_with_layout.ml.html">sexp_with_layout.ml</a></li><li><a href="../sexplib/sexplib.ml.html">sexplib.ml</a></li><li><a href="../sexplib/src_pos.ml.html">src_pos.ml</a></li><li><a href="../sexplib/std.ml.html">std.ml</a></li><li><a href="../sexplib/type.ml.html">type.ml</a></li><li><a href="../sexplib/type_with_layout.ml.html">type_with_layout.ml</a></li></ul></li><li>sexplib.num<ul><li><a href="../sexplib.num/sexplib_num.ml.html">sexplib_num.ml</a></li><li><a href="../sexplib.num/sexplib_num_conv.ml.html">sexplib_num_conv.ml</a></li><li><a href="../sexplib.num/std.ml.html">std.ml</a></li></ul></li><li>sexplib.unix<ul><li><a href="sexplib_unix.ml.html">sexplib_unix.ml</a></li><li><a href="#" class="current_unit">sexplib_unix_conv.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+</code><code class="source_code"><span><span class="DOCSTRING">(** Exception sexp converters that are Unix-specific. Handles [Unix.Unix_error].
+
+    Write [let () = Sexplib_unix.Sexplib_unix_conv.linkme] in your program to ensure that
+    the code in this module is run, i.e. the unix-specific exception converters are added.
+    This is already done by [Core], so any application that uses Core need not worry
+    about this module at all. *)</span><span class="EOL">
+</span><span class="OPEN">open</span> <a href="../sexplib/sexp.ml.html"><span class="UIDENT">Sexplib</span><span class="DOT">.</span><span class="UIDENT">Sexp</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="OPEN">open</span> <a href="../sexplib/conv.ml.html"><span class="UIDENT">Sexplib</span><span class="DOT">.</span><span class="UIDENT">Conv</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="../../../sexplib0/src/sexplib0/sexp_conv.ml.html#module-Exn_converter.val-add"><span class="UIDENT">Exn_converter</span><span class="DOT">.</span><span class="LIDENT">add</span></a><span class="EOL">
+</span>    <span class="LABEL">~printexc:</span><span class="FALSE">false</span><span class="EOL">
+</span>    <span class="LABEL">~finalise:</span><span class="FALSE">false</span><span class="EOL">
+</span>    <span class="LBRACKETPERCENT">[%</span><span class="LIDENT">extension_constructor</span> <span class="UIDENT">Unix</span><span class="DOT">.</span><span class="UIDENT">Unix_error</span><span class="RBRACKET">]</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="FUNCTION">function</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UIDENT">Unix</span><span class="DOT">.</span><span class="UIDENT">Unix_error</span> <span class="LPAREN">(</span><span id="local_err_1"><span class="LIDENT">err</span></span><span class="COMMA">,</span> <span id="local_loc_2"><span class="LIDENT">loc</span></span><span class="COMMA">,</span> <span id="local_arg_3"><span class="LIDENT">arg</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="LET">let</span> <span id="local_err_str_4"><span class="LIDENT">err_str</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Unix</span><span class="DOT">.</span><span class="LIDENT">error_message</span> <a href="#local_err_1"><span class="LIDENT">err</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <span class="UIDENT">List</span> <span class="LBRACKET">[</span> <span class="UIDENT">Atom</span> <span class="STRING">&quot;Unix.Unix_error&quot;</span><span class="SEMI">;</span> <span class="UIDENT">Atom</span> <a href="#local_err_str_4"><span class="LIDENT">err_str</span></a><span class="SEMI">;</span> <span class="UIDENT">Atom</span> <a href="#local_loc_2"><span class="LIDENT">loc</span></a><span class="SEMI">;</span> <span class="UIDENT">Atom</span> <a href="#local_arg_3"><span class="LIDENT">arg</span></a> <span class="RBRACKET">]</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="ASSERT">assert</span> <span class="FALSE">false</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-linkme"><span class="LIDENT">linkme</span></span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

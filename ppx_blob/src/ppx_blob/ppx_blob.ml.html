@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: ppx_blob.ml (ppx_blob.src.ppx_blob)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ppx_blob</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ppx_blob &#x00BB; ppx_blob.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>ppx_blob.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">ppx_blob</a><ul><li>Library <code>ppx_blob</code><ul><li><a href="../../ppx_blob/Ppx_blob/index.html">Ppx_blob</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ppx_blob<ul><li><a href="#" class="current_unit">ppx_blob.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+</code><code class="source_code"><span><span class="LET">let</span> <span id="val-location_errorf"><span class="LIDENT">location_errorf</span></span> <span class="TILDE">~</span><span id="local_loc_1"><span class="LIDENT">loc</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="../../../ocaml-base-compiler/src/stdlib/format.ml.html#val-ksprintf"><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">ksprintf</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_err_2"><span class="LIDENT">err</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="LPAREN">(</span><span class="UIDENT">Ocaml_common</span><span class="DOT">.</span><span class="UIDENT">Location</span><span class="DOT">.</span><span class="UIDENT">Error</span> <span class="LPAREN">(</span><span class="UIDENT">Ocaml_common</span><span class="DOT">.</span><span class="UIDENT">Location</span><span class="DOT">.</span><span class="LIDENT">error</span> <span class="TILDE">~</span><a href="#local_loc_1"><span class="LIDENT">loc</span></a> <a href="#local_err_2"><span class="LIDENT">err</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* Same as [List.find_map] introduced in OCaml 4.10. *)</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-find_map"><span class="LIDENT">find_map</span></span> <span id="local_f_3"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_x_4"><span class="LIDENT">x</span></span> <span class="COLONCOLON">::</span> <span id="local_l_5"><span class="LIDENT">l</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>     <span class="LPAREN">(</span><span class="MATCH">match</span> <a href="#local_f_3"><span class="LIDENT">f</span></a> <a href="#local_x_4"><span class="LIDENT">x</span></a> <span class="WITH">with</span><span class="EOL">
+</span>       <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="UNDERSCORE">_</span> <span class="AS">as</span> <span id="local_result_6"><span class="LIDENT">result</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_result_6"><span class="LIDENT">result</span></a><span class="EOL">
+</span>       <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">find_map</span> <a href="#local_f_3"><span class="LIDENT">f</span></a> <a href="#local_l_5"><span class="LIDENT">l</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* Return the list of paths we should try using, in order. *)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-get_candidate_paths"><span class="LIDENT">get_candidate_paths</span></span> <span class="TILDE">~</span><span id="local_loc_7"><span class="LIDENT">loc</span></span> <span id="local_path_8"><span class="LIDENT">path</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_source_dir_9"><span class="LIDENT">source_dir</span></span> <span class="EQUAL">=</span> <a href="#local_loc_7"><span class="LIDENT">loc</span></a><span class="DOT">.</span><span class="UIDENT">Ocaml_common</span><span class="DOT">.</span><span class="UIDENT">Location</span><span class="DOT">.</span><span class="LIDENT">loc_start</span><span class="DOT">.</span><span class="LIDENT">pos_fname</span> <span class="INFIXOP0">|&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/filename.ml.html#module-Sysdeps"><span class="UIDENT">Filename</span><span class="DOT">.</span><span class="LIDENT">dirname</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/filename.ml.html#module-Sysdeps"><span class="UIDENT">Filename</span><span class="DOT">.</span><span class="LIDENT">is_relative</span></a> <a href="#local_path_8"><span class="LIDENT">path</span></a> <span class="THEN">then</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_absolute_path_10"><span class="LIDENT">absolute_path</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/filename.ml.html#val-concat"><span class="UIDENT">Filename</span><span class="DOT">.</span><span class="LIDENT">concat</span></a> <a href="#local_source_dir_9"><span class="LIDENT">source_dir</span></a> <a href="#local_path_8"><span class="LIDENT">path</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="COMMENT">(* Try the path relative to the source file first, then the one relative to the
+       current working directory (typically, the build directory). *)</span><span class="EOL">
+</span>    <span class="LBRACKET">[</span><a href="#local_absolute_path_10"><span class="LIDENT">absolute_path</span></a><span class="SEMI">;</span> <a href="#local_path_8"><span class="LIDENT">path</span></a><span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="ELSE">else</span><span class="EOL">
+</span>    <span class="COMMENT">(* The user passed an absolute path. Use as is. *)</span><span class="EOL">
+</span>    <span class="LBRACKET">[</span><a href="#local_path_8"><span class="LIDENT">path</span></a><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-read_file"><span class="LIDENT">read_file</span></span> <span id="local_path_11"><span class="LIDENT">path</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="TRY">try</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_file_12"><span class="LIDENT">file</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-open_in_bin"><span class="LIDENT">open_in_bin</span></a> <a href="#local_path_11"><span class="LIDENT">path</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/fun.ml.html#val-protect"><span class="UIDENT">Fun</span><span class="DOT">.</span><span class="LIDENT">protect</span></a><span class="EOL">
+</span>      <span class="LABEL">~finally:</span><span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-close_in_noerr"><span class="LIDENT">close_in_noerr</span></a> <a href="#local_file_12"><span class="LIDENT">file</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="UIDENT">Some</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-really_input_string"><span class="LIDENT">really_input_string</span></a> <a href="#local_file_12"><span class="LIDENT">file</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-in_channel_length"><span class="LIDENT">in_channel_length</span></a> <a href="#local_file_12"><span class="LIDENT">file</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="WITH">with</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="UIDENT">None</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-get_blob"><span class="LIDENT">get_blob</span></span> <span class="TILDE">~</span><span id="local_loc_13"><span class="LIDENT">loc</span></span> <span id="local_path_14"><span class="LIDENT">path</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <span class="LIDENT">find_map</span> <span class="LIDENT">read_file</span> <span class="LPAREN">(</span><span class="LIDENT">get_candidate_paths</span> <span class="TILDE">~</span><a href="#local_loc_13"><span class="LIDENT">loc</span></a> <a href="#local_path_14"><span class="LIDENT">path</span></a><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_blob_15"><span class="LIDENT">blob</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_blob_15"><span class="LIDENT">blob</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">location_errorf</span> <span class="TILDE">~</span><a href="#local_loc_13"><span class="LIDENT">loc</span></a> <span class="STRING">&quot;[%%blob] could not find or load file %s&quot;</span> <a href="#local_path_14"><span class="LIDENT">path</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-expand"><span class="LIDENT">expand</span></span> <span class="TILDE">~</span><span id="local_ctxt_16"><span class="LIDENT">ctxt</span></span> <span id="local_path_17"><span class="LIDENT">path</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <a href="../../../ppxlib/src/ppxlib/ppxlib.ml.html"><span class="UIDENT">Ppxlib</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_loc_18"><span class="LIDENT">loc</span></span> <span class="EQUAL">=</span> <a href="../../../ppxlib/src/ppxlib/expansion_context.ml.html#module-Extension.val-extension_point_loc"><span class="UIDENT">Expansion_context</span><span class="DOT">.</span><span class="UIDENT">Extension</span><span class="DOT">.</span><span class="LIDENT">extension_point_loc</span></a> <a href="#local_ctxt_16"><span class="LIDENT">ctxt</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <a href="../../../ppxlib/src/ppxlib/ast_builder.ml.html#module-Default.val-estring"><span class="UIDENT">Ast_builder</span><span class="DOT">.</span><span class="UIDENT">Default</span><span class="DOT">.</span><span class="LIDENT">estring</span></a> <span class="TILDE">~</span><a href="#local_loc_18"><span class="LIDENT">loc</span></a> <span class="LPAREN">(</span><span class="LIDENT">get_blob</span> <span class="TILDE">~</span><a href="#local_loc_18"><span class="LIDENT">loc</span></a> <a href="#local_path_17"><span class="LIDENT">path</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-extension"><span class="LIDENT">extension</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <a href="../../../ppxlib/src/ppxlib/ppxlib.ml.html"><span class="UIDENT">Ppxlib</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <a href="../../../ppxlib/src/ppxlib/extension.ml.html#module-V3.val-declare"><span class="UIDENT">Extension</span><span class="DOT">.</span><span class="UIDENT">V3</span><span class="DOT">.</span><span class="LIDENT">declare</span></a> <span class="STRING">&quot;blob&quot;</span> <a href="../../../ppxlib/src/ppxlib/extension.ml.html#module-Context.val-expression"><span class="UIDENT">Extension</span><span class="DOT">.</span><span class="UIDENT">Context</span><span class="DOT">.</span><span class="LIDENT">expression</span></a><span class="EOL">
+</span>    <a href="../../../ppxlib/src/ppxlib/ast_pattern.ml.html"><span class="UIDENT">Ast_pattern</span></a><span class="DOT">.</span><span class="LPAREN">(</span><a href="../../../ppxlib/src/ppxlib/ast_pattern.ml.html#val-single_expr_payload"><span class="LIDENT">single_expr_payload</span></a> <span class="LPAREN">(</span><a href="../../../ppxlib/src/ppxlib/ast_pattern.ml.html#val-estring"><span class="LIDENT">estring</span></a> <a href="../../../ppxlib/src/ppxlib/ast_pattern.ml.html#val-__"><span class="LIDENT">__</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LIDENT">expand</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-rule"><span class="LIDENT">rule</span></span> <span class="EQUAL">=</span> <a href="../../../ppxlib/src/ppxlib/context_free.ml.html#module-Rule.val-extension"><span class="UIDENT">Ppxlib</span><span class="DOT">.</span><span class="UIDENT">Context_free</span><span class="DOT">.</span><span class="UIDENT">Rule</span><span class="DOT">.</span><span class="LIDENT">extension</span></a> <span class="LIDENT">extension</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="../../../ppxlib/src/ppxlib/driver.ml.html#val-register_transformation"><span class="UIDENT">Ppxlib</span><span class="DOT">.</span><span class="UIDENT">Driver</span><span class="DOT">.</span><span class="LIDENT">register_transformation</span></a> <span class="LABEL">~rules:</span><span class="LBRACKET">[</span><span class="LIDENT">rule</span><span class="RBRACKET">]</span> <span class="STRING">&quot;ppx_blob&quot;</span><span class="EOL">
+</span></span></code></pre></body></html>

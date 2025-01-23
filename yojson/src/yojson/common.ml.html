@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: common.ml (yojson.src.yojson)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">The <code>yojson</code> library</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; yojson &#x00BB; common.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>common.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">The <code>yojson</code> library</a><ul><li>Library <code>yojson</code><ul><li><a href="../../yojson/Yojson/index.html">Yojson</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>yojson<ul><li><a href="basic.ml.html">basic.ml</a></li><li><a href="codec.ml.html">codec.ml</a></li><li><a href="#" class="current_unit">common.ml</a></li><li><a href="lexer_utils.ml.html">lexer_utils.ml</a></li><li><a href="raw.ml.html">raw.ml</a></li><li><a href="safe.ml.html">safe.ml</a></li><li><a href="t.ml.html">t.ml</a></li><li><a href="yojson.ml.html">yojson.ml</a></li><li><a href="yojson__.ml.html">yojson__.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+</code><code class="source_code"><span><span class="LET">let</span> <span id="val-version"><span class="LIDENT">version</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;2.2.2&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="exception-Json_error"><span class="EXCEPTION">exception</span> <span class="UIDENT">Json_error</span> <span class="OF">of</span> <span class="LIDENT">string</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-json_error"><span class="LIDENT">json_error</span></span> <span id="local_s_1"><span class="LIDENT">s</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="LPAREN">(</span><span class="UIDENT">Json_error</span> <a href="#local_s_1"><span class="LIDENT">s</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="exception-End_of_array"><span class="EXCEPTION">exception</span> <span class="UIDENT">End_of_array</span></span><span class="EOL">
+</span><span id="exception-End_of_object"><span class="EXCEPTION">exception</span> <span class="UIDENT">End_of_object</span></span><span class="EOL">
+</span><span id="exception-End_of_tuple"><span class="EXCEPTION">exception</span> <span class="UIDENT">End_of_tuple</span></span><span class="EOL">
+</span><span id="exception-End_of_input"><span class="EXCEPTION">exception</span> <span class="UIDENT">End_of_input</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-lexer_state"><span class="TYPE">type</span> <span class="LIDENT">lexer_state</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span id="def_11"><span class="LIDENT">buf</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/buffer.ml.html#type-t"><span class="UIDENT">Buffer</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span> <span class="COMMENT">(* Buffer used to accumulate substrings *)</span><span class="EOL">
+</span>  <span id="def_10"><span class="MUTABLE">mutable</span> <span class="LIDENT">lnum</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="SEMI">;</span></span> <span class="COMMENT">(* Current line number (starting from 1) *)</span><span class="EOL">
+</span>  <span id="def_14"><span class="MUTABLE">mutable</span> <span class="LIDENT">bol</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span class="COMMENT">(* Absolute position of the first character of the current line
+         (starting from 0) *)</span><span class="EOL">
+</span>  <span id="def_13"><span class="MUTABLE">mutable</span> <span class="LIDENT">fname</span> <span class="COLON">:</span> <span class="LIDENT">string</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span> <span class="COMMENT">(* Name describing the input file *)</span><span class="EOL">
+</span><span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Lexer_state"><span class="MODULE">module</span> <span class="UIDENT">Lexer_state</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Lexer_state.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LIDENT">lexer_state</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_7"><span class="LIDENT">buf</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/buffer.ml.html#type-t"><span class="UIDENT">Buffer</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_8"><span class="MUTABLE">mutable</span> <span class="LIDENT">lnum</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_12"><span class="MUTABLE">mutable</span> <span class="LIDENT">bol</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_9"><span class="MUTABLE">mutable</span> <span class="LIDENT">fname</span> <span class="COLON">:</span> <span class="LIDENT">string</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-init_lexer"><span class="LIDENT">init_lexer</span></span> <span class="QUESTION">?</span><span id="local_buf_2"><span class="LIDENT">buf</span></span> <span class="QUESTION">?</span><span id="local_fname_3"><span class="LIDENT">fname</span></span> <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_lnum_4"><span class="LIDENT">lnum</span></span> <span class="EQUAL">=</span> <span class="INT">1</span><span class="RPAREN">)</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_buf_5"><span class="LIDENT">buf</span></span> <span class="EQUAL">=</span> <span class="MATCH">match</span> <a href="#local_buf_2"><span class="LIDENT">buf</span></a> <span class="WITH">with</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/buffer.ml.html#val-create"><span class="UIDENT">Buffer</span><span class="DOT">.</span><span class="LIDENT">create</span></a> <span class="INT">256</span> <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_buf_6"><span class="LIDENT">buf</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_buf_6"><span class="LIDENT">buf</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LBRACE">{</span> <a href="#local_buf_5"><span class="LIDENT">buf</span></a><span class="SEMI">;</span> <a href="#local_lnum_4"><span class="LIDENT">lnum</span></a><span class="SEMI">;</span> <span class="LIDENT">bol</span> <span class="EQUAL">=</span> <span class="INT">0</span><span class="SEMI">;</span> <a href="#local_fname_3"><span class="LIDENT">fname</span></a> <span class="RBRACE">}</span><span class="EOL">
+</span></span></code></pre></body></html>

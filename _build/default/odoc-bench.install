@@ -1,0 +1,10 @@
+lib: [
+  "_build/install/default/lib/odoc-bench/META"
+  "_build/install/default/lib/odoc-bench/dune-package"
+  "_build/install/default/lib/odoc-bench/opam"
+]
+doc: [
+  "_build/install/default/doc/odoc-bench/CHANGES.md"
+  "_build/install/default/doc/odoc-bench/LICENSE"
+  "_build/install/default/doc/odoc-bench/README.md"
+]

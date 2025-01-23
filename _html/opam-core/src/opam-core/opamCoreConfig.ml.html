@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: opamCoreConfig.ml (opam-core.src.opam-core)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">opam-core</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; opam-core &#x00BB; opamCoreConfig.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>opamCoreConfig.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">opam-core</a><ul><li>Library <code>opam-core</code><ul><li><a href="../../opam-core/OpamACL/index.html">OpamACL</a></li><li><a href="../../opam-core/OpamCached/index.html">OpamCached</a></li><li><a href="../../opam-core/OpamCompat/index.html">OpamCompat</a></li><li><a href="../../opam-core/OpamConsole/index.html">OpamConsole</a></li><li><a href="../../opam-core/OpamCoreConfig/index.html">OpamCoreConfig</a></li><li><a href="../../opam-core/OpamCoreConfigDeveloper/index.html">OpamCoreConfigDeveloper</a></li><li><a href="../../opam-core/OpamDirTrack/index.html">OpamDirTrack</a></li><li><a href="../../opam-core/OpamFilename/index.html">OpamFilename</a></li><li><a href="../../opam-core/OpamHash/index.html">OpamHash</a></li><li><a href="../../opam-core/OpamJson/index.html">OpamJson</a></li><li><a href="../../opam-core/OpamParallel/index.html">OpamParallel</a></li><li><a href="../../opam-core/OpamProcess/index.html">OpamProcess</a></li><li><a href="../../opam-core/OpamSHA/index.html">OpamSHA</a></li><li><a href="../../opam-core/OpamSWHID/index.html">OpamSWHID</a></li><li><a href="../../opam-core/OpamStd/index.html">OpamStd</a></li><li><a href="../../opam-core/OpamStubs/index.html">OpamStubs</a></li><li><a href="../../opam-core/OpamStubsTypes/index.html">OpamStubsTypes</a></li><li><a href="../../opam-core/OpamSystem/index.html">OpamSystem</a></li><li><a href="../../opam-core/OpamUrl/index.html">OpamUrl</a></li><li><a href="../../opam-core/OpamVersion/index.html">OpamVersion</a></li><li><a href="../../opam-core/OpamVersionCompare/index.html">OpamVersionCompare</a></li><li><a href="../../opam-core/OpamVersionInfo/index.html">OpamVersionInfo</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>opam-core<ul><li><a href="opamACL.ml.html">opamACL.ml</a></li><li><a href="opamCached.ml.html">opamCached.ml</a></li><li><a href="opamCompat.ml.html">opamCompat.ml</a></li><li><a href="opamConsole.ml.html">opamConsole.ml</a></li><li><a href="#" class="current_unit">opamCoreConfig.ml</a></li><li><a href="opamCoreConfigDeveloper.ml.html">opamCoreConfigDeveloper.ml</a></li><li><a href="opamDirTrack.ml.html">opamDirTrack.ml</a></li><li><a href="opamFilename.ml.html">opamFilename.ml</a></li><li><a href="opamHash.ml.html">opamHash.ml</a></li><li><a href="opamJson.ml.html">opamJson.ml</a></li><li><a href="opamParallel.ml.html">opamParallel.ml</a></li><li><a href="opamProcess.ml.html">opamProcess.ml</a></li><li><a href="opamSHA.ml.html">opamSHA.ml</a></li><li><a href="opamSWHID.ml.html">opamSWHID.ml</a></li><li><a href="opamStd.ml.html">opamStd.ml</a></li><li><a href="opamStubs.ml.html">opamStubs.ml</a></li><li><a href="opamStubsTypes.ml.html">opamStubsTypes.ml</a></li><li><a href="opamSystem.ml.html">opamSystem.ml</a></li><li><a href="opamUrl.ml.html">opamUrl.ml</a></li><li><a href="opamVersion.ml.html">opamVersion.ml</a></li><li><a href="opamVersionCompare.ml.html">opamVersionCompare.ml</a></li><li><a href="opamVersionInfo.ml.html">opamVersionInfo.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+<a id="L121" class="source_line" href="#L121">121</a>
+<a id="L122" class="source_line" href="#L122">122</a>
+<a id="L123" class="source_line" href="#L123">123</a>
+<a id="L124" class="source_line" href="#L124">124</a>
+<a id="L125" class="source_line" href="#L125">125</a>
+<a id="L126" class="source_line" href="#L126">126</a>
+<a id="L127" class="source_line" href="#L127">127</a>
+<a id="L128" class="source_line" href="#L128">128</a>
+<a id="L129" class="source_line" href="#L129">129</a>
+<a id="L130" class="source_line" href="#L130">130</a>
+<a id="L131" class="source_line" href="#L131">131</a>
+<a id="L132" class="source_line" href="#L132">132</a>
+<a id="L133" class="source_line" href="#L133">133</a>
+<a id="L134" class="source_line" href="#L134">134</a>
+<a id="L135" class="source_line" href="#L135">135</a>
+<a id="L136" class="source_line" href="#L136">136</a>
+<a id="L137" class="source_line" href="#L137">137</a>
+<a id="L138" class="source_line" href="#L138">138</a>
+<a id="L139" class="source_line" href="#L139">139</a>
+<a id="L140" class="source_line" href="#L140">140</a>
+<a id="L141" class="source_line" href="#L141">141</a>
+<a id="L142" class="source_line" href="#L142">142</a>
+<a id="L143" class="source_line" href="#L143">143</a>
+<a id="L144" class="source_line" href="#L144">144</a>
+<a id="L145" class="source_line" href="#L145">145</a>
+<a id="L146" class="source_line" href="#L146">146</a>
+<a id="L147" class="source_line" href="#L147">147</a>
+<a id="L148" class="source_line" href="#L148">148</a>
+<a id="L149" class="source_line" href="#L149">149</a>
+<a id="L150" class="source_line" href="#L150">150</a>
+<a id="L151" class="source_line" href="#L151">151</a>
+<a id="L152" class="source_line" href="#L152">152</a>
+<a id="L153" class="source_line" href="#L153">153</a>
+<a id="L154" class="source_line" href="#L154">154</a>
+<a id="L155" class="source_line" href="#L155">155</a>
+<a id="L156" class="source_line" href="#L156">156</a>
+<a id="L157" class="source_line" href="#L157">157</a>
+<a id="L158" class="source_line" href="#L158">158</a>
+<a id="L159" class="source_line" href="#L159">159</a>
+<a id="L160" class="source_line" href="#L160">160</a>
+<a id="L161" class="source_line" href="#L161">161</a>
+<a id="L162" class="source_line" href="#L162">162</a>
+<a id="L163" class="source_line" href="#L163">163</a>
+<a id="L164" class="source_line" href="#L164">164</a>
+<a id="L165" class="source_line" href="#L165">165</a>
+<a id="L166" class="source_line" href="#L166">166</a>
+<a id="L167" class="source_line" href="#L167">167</a>
+<a id="L168" class="source_line" href="#L168">168</a>
+<a id="L169" class="source_line" href="#L169">169</a>
+<a id="L170" class="source_line" href="#L170">170</a>
+<a id="L171" class="source_line" href="#L171">171</a>
+<a id="L172" class="source_line" href="#L172">172</a>
+<a id="L173" class="source_line" href="#L173">173</a>
+<a id="L174" class="source_line" href="#L174">174</a>
+<a id="L175" class="source_line" href="#L175">175</a>
+<a id="L176" class="source_line" href="#L176">176</a>
+<a id="L177" class="source_line" href="#L177">177</a>
+<a id="L178" class="source_line" href="#L178">178</a>
+<a id="L179" class="source_line" href="#L179">179</a>
+<a id="L180" class="source_line" href="#L180">180</a>
+<a id="L181" class="source_line" href="#L181">181</a>
+<a id="L182" class="source_line" href="#L182">182</a>
+<a id="L183" class="source_line" href="#L183">183</a>
+<a id="L184" class="source_line" href="#L184">184</a>
+<a id="L185" class="source_line" href="#L185">185</a>
+<a id="L186" class="source_line" href="#L186">186</a>
+<a id="L187" class="source_line" href="#L187">187</a>
+<a id="L188" class="source_line" href="#L188">188</a>
+<a id="L189" class="source_line" href="#L189">189</a>
+<a id="L190" class="source_line" href="#L190">190</a>
+<a id="L191" class="source_line" href="#L191">191</a>
+<a id="L192" class="source_line" href="#L192">192</a>
+<a id="L193" class="source_line" href="#L193">193</a>
+<a id="L194" class="source_line" href="#L194">194</a>
+<a id="L195" class="source_line" href="#L195">195</a>
+<a id="L196" class="source_line" href="#L196">196</a>
+<a id="L197" class="source_line" href="#L197">197</a>
+<a id="L198" class="source_line" href="#L198">198</a>
+<a id="L199" class="source_line" href="#L199">199</a>
+<a id="L200" class="source_line" href="#L200">200</a>
+<a id="L201" class="source_line" href="#L201">201</a>
+<a id="L202" class="source_line" href="#L202">202</a>
+<a id="L203" class="source_line" href="#L203">203</a>
+<a id="L204" class="source_line" href="#L204">204</a>
+<a id="L205" class="source_line" href="#L205">205</a>
+<a id="L206" class="source_line" href="#L206">206</a>
+<a id="L207" class="source_line" href="#L207">207</a>
+<a id="L208" class="source_line" href="#L208">208</a>
+<a id="L209" class="source_line" href="#L209">209</a>
+<a id="L210" class="source_line" href="#L210">210</a>
+<a id="L211" class="source_line" href="#L211">211</a>
+<a id="L212" class="source_line" href="#L212">212</a>
+<a id="L213" class="source_line" href="#L213">213</a>
+<a id="L214" class="source_line" href="#L214">214</a>
+</code><code class="source_code"><span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*    Copyright 2015-2018 OCamlPro                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  All rights reserved. This file is distributed under the terms of the  *)</span><span class="EOL">
+</span><span class="COMMENT">(*  GNU Lesser General Public License version 2.1, with the special       *)</span><span class="EOL">
+</span><span class="COMMENT">(*  exception on linking described in the file LICENSE.                   *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-E"><span class="MODULE">module</span> <span class="UIDENT">E</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="TYPE">type</span> <span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="PLUSEQ">+=</span><span class="EOL">
+</span>    <span id="module-E.extension-COLOR"><span class="BAR">|</span> <span class="UIDENT">COLOR</span> <span class="OF">of</span> <a href="opamStd.ml.html#module-Config.type-when_"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">when_</span></a> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-CONFIRMLEVEL"><span class="BAR">|</span> <span class="UIDENT">CONFIRMLEVEL</span> <span class="OF">of</span> <a href="opamStd.ml.html#module-Config.type-answer"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">answer</span></a> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-DEBUG"><span class="BAR">|</span> <span class="UIDENT">DEBUG</span> <span class="OF">of</span> <span class="LIDENT">int</span> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-DEBUGSECTIONS"><span class="BAR">|</span> <span class="UIDENT">DEBUGSECTIONS</span> <span class="OF">of</span> <a href="opamStd.ml.html#module-Config.type-sections"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">sections</span></a> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-ERRLOGLEN"><span class="BAR">|</span> <span class="UIDENT">ERRLOGLEN</span> <span class="OF">of</span> <span class="LIDENT">int</span> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-KEEPLOGS"><span class="BAR">|</span> <span class="UIDENT">KEEPLOGS</span> <span class="OF">of</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-LOGS"><span class="BAR">|</span> <span class="UIDENT">LOGS</span> <span class="OF">of</span> <span class="LIDENT">string</span> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-MERGEOUT"><span class="BAR">|</span> <span class="UIDENT">MERGEOUT</span> <span class="OF">of</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-NO"><span class="BAR">|</span> <span class="UIDENT">NO</span> <span class="OF">of</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-PRECISETRACKING"><span class="BAR">|</span> <span class="UIDENT">PRECISETRACKING</span> <span class="OF">of</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-SAFE"><span class="BAR">|</span> <span class="UIDENT">SAFE</span> <span class="OF">of</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-STATUSLINE"><span class="BAR">|</span> <span class="UIDENT">STATUSLINE</span> <span class="OF">of</span> <a href="opamStd.ml.html#module-Config.type-when_"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">when_</span></a> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-UTF8"><span class="BAR">|</span> <span class="UIDENT">UTF8</span> <span class="OF">of</span> <a href="opamStd.ml.html#module-Config.type-when_ext"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">when_ext</span></a> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-UTF8MSGS"><span class="BAR">|</span> <span class="UIDENT">UTF8MSGS</span> <span class="OF">of</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-VERBOSE"><span class="BAR">|</span> <span class="UIDENT">VERBOSE</span> <span class="OF">of</span> <a href="opamStd.ml.html#module-Config.type-level"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">level</span></a> <span class="LIDENT">option</span></span><span class="EOL">
+</span>    <span id="module-E.extension-YES"><span class="BAR">|</span> <span class="UIDENT">YES</span> <span class="OF">of</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="OPEN">open</span> <a href="opamStd.ml.html#module-Config.module-E"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="UIDENT">E</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-color"><span class="LIDENT">color</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">COLOR</span> <span id="local_c_1"><span class="LIDENT">c</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_c_1"><span class="LIDENT">c</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-confirmlevel"><span class="LIDENT">confirmlevel</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">CONFIRMLEVEL</span> <span id="local_c_2"><span class="LIDENT">c</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_c_2"><span class="LIDENT">c</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-debug"><span class="LIDENT">debug</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">DEBUG</span> <span id="local_i_3"><span class="LIDENT">i</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_i_3"><span class="LIDENT">i</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-debugsections"><span class="LIDENT">debugsections</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">DEBUGSECTIONS</span> <span id="local_s_4"><span class="LIDENT">s</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_s_4"><span class="LIDENT">s</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-errloglen"><span class="LIDENT">errloglen</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">ERRLOGLEN</span> <span id="local_i_5"><span class="LIDENT">i</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_i_5"><span class="LIDENT">i</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-keeplogs"><span class="LIDENT">keeplogs</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">KEEPLOGS</span> <span id="local_b_6"><span class="LIDENT">b</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_b_6"><span class="LIDENT">b</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-logs"><span class="LIDENT">logs</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">LOGS</span> <span id="local_s_7"><span class="LIDENT">s</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_s_7"><span class="LIDENT">s</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-mergeout"><span class="LIDENT">mergeout</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">MERGEOUT</span> <span id="local_b_8"><span class="LIDENT">b</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_b_8"><span class="LIDENT">b</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-no"><span class="LIDENT">no</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">NO</span> <span id="local_b_9"><span class="LIDENT">b</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_b_9"><span class="LIDENT">b</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-precisetracking"><span class="LIDENT">precisetracking</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">PRECISETRACKING</span> <span id="local_b_10"><span class="LIDENT">b</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_b_10"><span class="LIDENT">b</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-safe"><span class="LIDENT">safe</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">SAFE</span> <span id="local_b_11"><span class="LIDENT">b</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_b_11"><span class="LIDENT">b</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-statusline"><span class="LIDENT">statusline</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">STATUSLINE</span> <span id="local_c_12"><span class="LIDENT">c</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_c_12"><span class="LIDENT">c</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-utf8"><span class="LIDENT">utf8</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">UTF8</span> <span id="local_c_13"><span class="LIDENT">c</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_c_13"><span class="LIDENT">c</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-utf8msgs"><span class="LIDENT">utf8msgs</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">UTF8MSGS</span> <span id="local_b_14"><span class="LIDENT">b</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_b_14"><span class="LIDENT">b</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-verbose"><span class="LIDENT">verbose</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">VERBOSE</span> <span id="local_l_15"><span class="LIDENT">l</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_l_15"><span class="LIDENT">l</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-E.val-yes"><span class="LIDENT">yes</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Config.module-E.val-value"><span class="LIDENT">value</span></a> <span class="LPAREN">(</span><span class="FUNCTION">function</span> <span class="UIDENT">YES</span> <span id="local_b_16"><span class="LIDENT">b</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_b_16"><span class="LIDENT">b</span></a> <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span id="def_62"><span class="LIDENT">debug_level</span><span class="COLON">:</span> <span class="LIDENT">int</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_68"><span class="LIDENT">debug_sections</span><span class="COLON">:</span> <a href="opamStd.ml.html#module-Config.type-sections"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">sections</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_65"><span class="LIDENT">verbose_level</span><span class="COLON">:</span> <a href="opamStd.ml.html#module-Config.type-level"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">level</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_66"><span class="LIDENT">color</span><span class="COLON">:</span> <a href="opamStd.ml.html#module-Config.type-when_"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">when_</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_56"><span class="LIDENT">utf8</span><span class="COLON">:</span> <a href="opamStd.ml.html#module-Config.type-when_ext"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">when_ext</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_67"><span class="LIDENT">disp_status_line</span><span class="COLON">:</span> <a href="opamStd.ml.html#module-Config.type-when_"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">when_</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_57"><span class="LIDENT">confirm_level</span><span class="COLON">:</span> <span class="LBRACKET">[</span> <a href="opamStd.ml.html#module-Config.type-answer"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">answer</span></a> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="LIDENT">undefined</span> <span class="RBRACKET">]</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_52"><span class="LIDENT">yes</span><span class="COLON">:</span> <span class="LIDENT">bool</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_53"><span class="LIDENT">safe_mode</span><span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_60"><span class="LIDENT">log_dir</span><span class="COLON">:</span> <span class="LIDENT">string</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_61"><span class="LIDENT">keep_log_dir</span><span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_58"><span class="LIDENT">errlog_length</span><span class="COLON">:</span> <span class="LIDENT">int</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_54"><span class="LIDENT">merged_output</span><span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_64"><span class="LIDENT">precise_tracking</span><span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="COMMENT">(* Updated in OpamGlobalState.load_config and OpamArg.opam_init *)</span><span class="EOL">
+</span>  <span id="def_55"><span class="LIDENT">cygbin</span><span class="COLON">:</span> <span class="LIDENT">string</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_63"><span class="LIDENT">git_location</span><span class="COLON">:</span> <span class="LIDENT">string</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_59"><span class="LIDENT">set</span><span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span><span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-options_fun"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">options_fun</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="OPTLABEL">?debug_level:</span><span class="LIDENT">int</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?debug_sections:</span><a href="opamStd.ml.html#module-Config.type-sections"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">sections</span></a> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?verbose_level:</span><a href="opamStd.ml.html#module-Config.type-level"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">level</span></a> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?color:</span><a href="opamStd.ml.html#module-Config.type-when_"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">when_</span></a> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?utf8:</span><a href="opamStd.ml.html#module-Config.type-when_ext"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">when_ext</span></a> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?disp_status_line:</span><a href="opamStd.ml.html#module-Config.type-when_"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">when_</span></a> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?confirm_level:</span><a href="opamStd.ml.html#module-Config.type-answer"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">answer</span></a> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?yes:</span><span class="LIDENT">bool</span> <span class="LIDENT">option</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?safe_mode:</span><span class="LIDENT">bool</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?log_dir:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?keep_log_dir:</span><span class="LIDENT">bool</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?errlog_length:</span><span class="LIDENT">int</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?merged_output:</span><span class="LIDENT">bool</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?precise_tracking:</span><span class="LIDENT">bool</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?cygbin:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="OPTLABEL">?git_location:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-default"><span class="LIDENT">default</span></span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span class="LIDENT">debug_level</span> <span class="EQUAL">=</span> <span class="INT">0</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">debug_sections</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/map.ml.html#module-Make.val-empty"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">String</span><span class="DOT">.</span><span class="UIDENT">Map</span><span class="DOT">.</span><span class="LIDENT">empty</span></a><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">verbose_level</span> <span class="EQUAL">=</span> <span class="INT">0</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">color</span> <span class="EQUAL">=</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Auto</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">utf8</span> <span class="EQUAL">=</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Auto</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">disp_status_line</span> <span class="EQUAL">=</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Auto</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">confirm_level</span> <span class="EQUAL">=</span> <span class="BACKQUOTE">`</span><span class="LIDENT">undefined</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">yes</span> <span class="EQUAL">=</span> <span class="UIDENT">None</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">safe_mode</span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">log_dir</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="LET">let</span> <span id="local_user_17"><span class="LIDENT">user</span></span> <span class="EQUAL">=</span> <span class="TRY">try</span> <span class="UIDENT">Unix</span><span class="DOT">.</span><span class="LIDENT">getlogin</span><span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="WITH">with</span> <span class="UIDENT">Unix</span><span class="DOT">.</span><span class="UIDENT">Unix_error</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="STRING">&quot;xxx&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>     <span class="LET">let</span> <span id="local_base_18"><span class="LIDENT">base</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/printf.ml.html#val-sprintf"><span class="UIDENT">Printf</span><span class="DOT">.</span><span class="LIDENT">sprintf</span></a> <span class="STRING">&quot;opam-%s-%d&quot;</span> <a href="#local_user_17"><span class="LIDENT">user</span></a> <span class="LPAREN">(</span><a href="opamStubs.ml.html#val-getpid"><span class="UIDENT">OpamStubs</span><span class="DOT">.</span><span class="LIDENT">getpid</span></a><span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>     <a href="../../../ocaml-base-compiler/src/stdlib/filename.ml.html"><span class="UIDENT">Filename</span></a><span class="DOT">.</span><span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/filename.ml.html#val-concat"><span class="LIDENT">concat</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/filename.ml.html#val-get_temp_dir_name"><span class="LIDENT">get_temp_dir_name</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <a href="#local_base_18"><span class="LIDENT">base</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">keep_log_dir</span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">errlog_length</span> <span class="EQUAL">=</span> <span class="INT">12</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">merged_output</span> <span class="EQUAL">=</span> <span class="TRUE">true</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">precise_tracking</span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">cygbin</span> <span class="EQUAL">=</span> <span class="UIDENT">None</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">git_location</span> <span class="EQUAL">=</span> <span class="UIDENT">None</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">set</span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="SEMI">;</span><span class="EOL">
+</span><span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-setk"><span class="LIDENT">setk</span></span> <span id="local_k_19"><span class="LIDENT">k</span></span> <span id="local_t_20"><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_debug_level_21"><span class="LIDENT">debug_level</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_debug_sections_22"><span class="LIDENT">debug_sections</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_verbose_level_23"><span class="LIDENT">verbose_level</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_color_24"><span class="LIDENT">color</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_utf8_25"><span class="LIDENT">utf8</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_disp_status_line_26"><span class="LIDENT">disp_status_line</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_confirm_level_27"><span class="LIDENT">confirm_level</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_yes_28"><span class="LIDENT">yes</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_safe_mode_29"><span class="LIDENT">safe_mode</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_log_dir_30"><span class="LIDENT">log_dir</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_keep_log_dir_31"><span class="LIDENT">keep_log_dir</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_errlog_length_32"><span class="LIDENT">errlog_length</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_merged_output_33"><span class="LIDENT">merged_output</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_precise_tracking_34"><span class="LIDENT">precise_tracking</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_cygbin_35"><span class="LIDENT">cygbin</span></span><span class="EOL">
+</span>    <span class="QUESTION">?</span><span id="local_git_location_36"><span class="LIDENT">git_location</span></span><span class="EOL">
+</span>  <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_+_37"><span class="LPAREN">(</span><span class="PLUS">+</span><span class="RPAREN">)</span></span> <span id="local_x_38"><span class="LIDENT">x</span></span> <span id="local_opt_39"><span class="LIDENT">opt</span></span> <span class="EQUAL">=</span> <span class="MATCH">match</span> <a href="#local_opt_39"><span class="LIDENT">opt</span></a> <span class="WITH">with</span> <span class="UIDENT">Some</span> <span id="local_x_40"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_x_40"><span class="LIDENT">x</span></a> <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_x_38"><span class="LIDENT">x</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <a href="#local_k_19"><span class="LIDENT">k</span></a> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span class="LIDENT">debug_level</span> <span class="EQUAL">=</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">debug_level</span> <a href="#local_+_37"><span class="PLUS">+</span></a> <a href="#local_debug_level_21"><span class="LIDENT">debug_level</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">debug_sections</span> <span class="EQUAL">=</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">debug_sections</span> <a href="#local_+_37"><span class="PLUS">+</span></a> <a href="#local_debug_sections_22"><span class="LIDENT">debug_sections</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">verbose_level</span> <span class="EQUAL">=</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">verbose_level</span> <a href="#local_+_37"><span class="PLUS">+</span></a> <a href="#local_verbose_level_23"><span class="LIDENT">verbose_level</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">color</span> <span class="EQUAL">=</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">color</span> <a href="#local_+_37"><span class="PLUS">+</span></a> <a href="#local_color_24"><span class="LIDENT">color</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">utf8</span> <span class="EQUAL">=</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">utf8</span> <a href="#local_+_37"><span class="PLUS">+</span></a> <a href="#local_utf8_25"><span class="LIDENT">utf8</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">disp_status_line</span> <span class="EQUAL">=</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">disp_status_line</span> <a href="#local_+_37"><span class="PLUS">+</span></a> <a href="#local_disp_status_line_26"><span class="LIDENT">disp_status_line</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">confirm_level</span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="MATCH">match</span> <a href="#local_confirm_level_27"><span class="LIDENT">confirm_level</span></a> <span class="WITH">with</span><span class="EOL">
+</span>       <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="BACKQUOTE">`</span><span class="LIDENT">all_yes</span><span class="BAR">|</span><span class="BACKQUOTE">`</span><span class="LIDENT">all_no</span><span class="BAR">|</span><span class="BACKQUOTE">`</span><span class="LIDENT">ask</span><span class="BAR">|</span><span class="BACKQUOTE">`</span><span class="LIDENT">unsafe_yes</span> <span class="AS">as</span> <span id="local_c_41"><span class="LIDENT">c</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_c_41"><span class="LIDENT">c</span></a><span class="EOL">
+</span>       <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span>  <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">confirm_level</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">yes</span> <span class="EQUAL">=</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">yes</span> <a href="#local_+_37"><span class="PLUS">+</span></a> <a href="#local_yes_28"><span class="LIDENT">yes</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">safe_mode</span> <span class="EQUAL">=</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">safe_mode</span> <a href="#local_+_37"><span class="PLUS">+</span></a> <a href="#local_safe_mode_29"><span class="LIDENT">safe_mode</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">log_dir</span> <span class="EQUAL">=</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">log_dir</span> <a href="#local_+_37"><span class="PLUS">+</span></a> <a href="#local_log_dir_30"><span class="LIDENT">log_dir</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">keep_log_dir</span> <span class="EQUAL">=</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">keep_log_dir</span> <a href="#local_+_37"><span class="PLUS">+</span></a> <a href="#local_keep_log_dir_31"><span class="LIDENT">keep_log_dir</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">errlog_length</span> <span class="EQUAL">=</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">errlog_length</span> <a href="#local_+_37"><span class="PLUS">+</span></a> <a href="#local_errlog_length_32"><span class="LIDENT">errlog_length</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">merged_output</span> <span class="EQUAL">=</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">merged_output</span> <a href="#local_+_37"><span class="PLUS">+</span></a> <a href="#local_merged_output_33"><span class="LIDENT">merged_output</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">precise_tracking</span> <span class="EQUAL">=</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">precise_tracking</span> <a href="#local_+_37"><span class="PLUS">+</span></a> <a href="#local_precise_tracking_34"><span class="LIDENT">precise_tracking</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">cygbin</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="MATCH">match</span> <a href="#local_cygbin_35"><span class="LIDENT">cygbin</span></a> <span class="WITH">with</span> <span class="UIDENT">Some</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_cygbin_35"><span class="LIDENT">cygbin</span></a> <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">cygbin</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">git_location</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="MATCH">match</span> <a href="#local_git_location_36"><span class="LIDENT">git_location</span></a> <span class="WITH">with</span> <span class="UIDENT">Some</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_git_location_36"><span class="LIDENT">git_location</span></a> <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">git_location</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">set</span> <span class="EQUAL">=</span> <span class="TRUE">true</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-set"><span class="LIDENT">set</span></span> <span id="local_t_42"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span> <span class="LIDENT">setk</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_x_43"><span class="LIDENT">x</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_x_43"><span class="LIDENT">x</span></a><span class="RPAREN">)</span> <a href="#local_t_42"><span class="LIDENT">t</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* Global configuration reference *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-r"><span class="LIDENT">r</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-ref"><span class="LIDENT">ref</span></a> <span class="LIDENT">default</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-update"><span class="LIDENT">update</span></span> <span class="OPTLABEL">?noop:</span><span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">setk</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_cfg_44"><span class="LIDENT">cfg</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">r</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(:=)"><span class="COLONEQUAL">:=</span></a> <a href="#local_cfg_44"><span class="LIDENT">cfg</span></a><span class="RPAREN">)</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><span class="LIDENT">r</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-initk"><span class="LIDENT">initk</span></span> <span id="local_k_45"><span class="LIDENT">k</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <a href="opamStd.ml.html"><span class="UIDENT">OpamStd</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_utf8_46"><span class="LIDENT">utf8</span></span> <span class="EQUAL">=</span> <a href="opamStd.ml.html#module-Option.module-Op"><span class="UIDENT">Option</span><span class="DOT">.</span><span class="UIDENT">Op</span></a><span class="DOT">.</span><span class="LPAREN">(</span><span class="EOL">
+</span>      <span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">utf8</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="opamStd.ml.html#module-Option.module-Op.val-(++)"><span class="INFIXOP2">++</span></a><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">utf8msgs</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <a href="opamStd.ml.html#module-Option.module-Op.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUNCTION">function</span><span class="EOL">
+</span>        <span class="BAR">|</span> <span class="TRUE">true</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Some</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Extended</span><span class="EOL">
+</span>        <span class="BAR">|</span> <span class="FALSE">false</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_yes_47"><span class="LIDENT">yes</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">yes</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="COMMA">,</span> <span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">no</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="TRUE">true</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="UIDENT">Some</span> <span class="TRUE">true</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="UIDENT">Some</span> <span class="TRUE">true</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="UIDENT">Some</span> <span class="FALSE">false</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LPAREN">(</span><span class="LIDENT">setk</span> <span class="LPAREN">(</span><span class="LIDENT">setk</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_c_48"><span class="LIDENT">c</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">r</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(:=)"><span class="COLONEQUAL">:=</span></a> <a href="#local_c_48"><span class="LIDENT">c</span></a><span class="SEMI">;</span> <a href="#local_k_45"><span class="LIDENT">k</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><span class="LIDENT">r</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="OPTLABEL">?debug_level:</span><span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">debug</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="OPTLABEL">?debug_sections:</span><span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">debugsections</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="OPTLABEL">?verbose_level:</span><span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">verbose</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="OPTLABEL">?color:</span><span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">color</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="QUESTION">?</span><a href="#local_utf8_46"><span class="LIDENT">utf8</span></a><span class="EOL">
+</span>    <span class="OPTLABEL">?disp_status_line:</span><span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">statusline</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="OPTLABEL">?confirm_level:</span><span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">confirmlevel</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="QUESTION">?</span><a href="#local_yes_47"><span class="LIDENT">yes</span></a><span class="EOL">
+</span>    <span class="OPTLABEL">?safe_mode:</span><span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">safe</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="OPTLABEL">?log_dir:</span><span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">logs</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="OPTLABEL">?keep_log_dir:</span><span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">keeplogs</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="OPTLABEL">?errlog_length:</span><span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">errloglen</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="OPTLABEL">?merged_output:</span><span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">mergeout</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="OPTLABEL">?precise_tracking:</span><span class="LPAREN">(</span><span class="UIDENT">E</span><span class="DOT">.</span><span class="LIDENT">precisetracking</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="OPTLABEL">?cygbin:</span><span class="UIDENT">None</span><span class="EOL">
+</span>    <span class="OPTLABEL">?git_location:</span><span class="UIDENT">None</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-init"><span class="LIDENT">init</span></span> <span class="OPTLABEL">?noop:</span><span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <span class="LIDENT">initk</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-answer"><span class="LIDENT">answer</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><span class="LIDENT">r</span><span class="DOT">.</span><span class="LIDENT">confirm_level</span><span class="COMMA">,</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><span class="LIDENT">r</span><span class="DOT">.</span><span class="LIDENT">yes</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="HASH">#</span><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">answer</span> <span class="AS">as</span> <span id="local_c_49"><span class="LIDENT">c</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_c_49"><span class="LIDENT">c</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="UIDENT">Some</span> <span class="TRUE">true</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="LIDENT">all_yes</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="UIDENT">Some</span> <span class="FALSE">false</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="LIDENT">all_no</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="LIDENT">ask</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-answer_is"><span class="LIDENT">answer_is</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_answer_50"><span class="LIDENT">answer</span></span> <span class="EQUAL">=</span> <span class="LAZY">lazy</span> <span class="LPAREN">(</span><span class="LIDENT">answer</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="FUN">fun</span> <span id="local_a_51"><span class="LIDENT">a</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/lazy.ml.html#val-force"><span class="UIDENT">Lazy</span><span class="DOT">.</span><span class="LIDENT">force</span></a> <a href="#local_answer_50"><span class="LIDENT">answer</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(=)"><span class="EQUAL">=</span></a> <a href="#local_a_51"><span class="LIDENT">a</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-answer_is_yes"><span class="LIDENT">answer_is_yes</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <span class="LIDENT">answer</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="HASH">#</span><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Config</span><span class="DOT">.</span><span class="LIDENT">yes_answer</span> <span class="MINUSGREATER">-&gt;</span> <span class="TRUE">true</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="FALSE">false</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-developer"><span class="LIDENT">developer</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-not"><span class="LIDENT">not</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/string.ml.html#val-equal"><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">equal</span></a> <a href="opamCoreConfigDeveloper.ml.html#val-value"><span class="UIDENT">OpamCoreConfigDeveloper</span><span class="DOT">.</span><span class="LIDENT">value</span></a> <span class="STRING">&quot;&quot;</span><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

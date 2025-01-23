@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: ctypes_ptr.ml (ctypes.src.ctypes)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ctypes</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ctypes &#x00BB; ctypes_ptr.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>ctypes_ptr.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">ctypes</a><ul><li>Library <code>ctypes</code><ul><li><a href="../../ctypes/ComplexL/index.html">ComplexL</a></li><li><a href="../../ctypes/Cstubs_internals/index.html">Cstubs_internals</a></li><li><a href="../../ctypes/Ctypes/index.html">Ctypes</a></li><li><a href="../../ctypes/Ctypes_bigarray/index.html">Ctypes_bigarray</a></li><li><a href="../../ctypes/Ctypes_bigarray_stubs/index.html">Ctypes_bigarray_stubs</a></li><li><a href="../../ctypes/Ctypes_coerce/index.html">Ctypes_coerce</a></li><li><a href="../../ctypes/Ctypes_memory/index.html">Ctypes_memory</a></li><li><a href="../../ctypes/Ctypes_memory_stubs/index.html">Ctypes_memory_stubs</a></li><li><a href="../../ctypes/Ctypes_primitive_types/index.html">Ctypes_primitive_types</a></li><li><a href="../../ctypes/Ctypes_primitives/index.html">Ctypes_primitives</a></li><li><a href="../../ctypes/Ctypes_ptr/index.html">Ctypes_ptr</a></li><li><a href="../../ctypes/Ctypes_roots_stubs/index.html">Ctypes_roots_stubs</a></li><li><a href="../../ctypes/Ctypes_static/index.html">Ctypes_static</a></li><li><a href="../../ctypes/Ctypes_std_view_stubs/index.html">Ctypes_std_view_stubs</a></li><li><a href="../../ctypes/Ctypes_std_views/index.html">Ctypes_std_views</a></li><li><a href="../../ctypes/Ctypes_structs/index.html">Ctypes_structs</a></li><li><a href="../../ctypes/Ctypes_structs_computed/index.html">Ctypes_structs_computed</a></li><li><a href="../../ctypes/Ctypes_type_printing/index.html">Ctypes_type_printing</a></li><li><a href="../../ctypes/Ctypes_types/index.html">Ctypes_types</a></li><li><a href="../../ctypes/Ctypes_value_printing/index.html">Ctypes_value_printing</a></li><li><a href="../../ctypes/Ctypes_value_printing_stubs/index.html">Ctypes_value_printing_stubs</a></li><li><a href="../../ctypes/LDouble/index.html">LDouble</a></li><li><a href="../../ctypes/PosixTypes/index.html">PosixTypes</a></li></ul></li><li>Library <code>ctypes.stubs</code><ul><li><a href="../../ctypes.stubs/Cstubs/index.html">Cstubs</a></li><li><a href="../../ctypes.stubs/Cstubs_analysis/index.html">Cstubs_analysis</a></li><li><a href="../../ctypes.stubs/Cstubs_c_language/index.html">Cstubs_c_language</a></li><li><a href="../../ctypes.stubs/Cstubs_emit_c/index.html">Cstubs_emit_c</a></li><li><a href="../../ctypes.stubs/Cstubs_errors/index.html">Cstubs_errors</a></li><li><a href="../../ctypes.stubs/Cstubs_generate_c/index.html">Cstubs_generate_c</a></li><li><a href="../../ctypes.stubs/Cstubs_generate_ml/index.html">Cstubs_generate_ml</a></li><li><a href="../../ctypes.stubs/Cstubs_inverted/index.html">Cstubs_inverted</a></li><li><a href="../../ctypes.stubs/Cstubs_public_name/index.html">Cstubs_public_name</a></li><li><a href="../../ctypes.stubs/Cstubs_structs/index.html">Cstubs_structs</a></li><li><a href="../../ctypes.stubs/Ctypes_path/index.html">Ctypes_path</a></li></ul></li><li>Library <code>ctypes.top</code><ul><li><a href="../../ctypes.top/Ctypes_top/index.html">Ctypes_top</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ctypes<ul><li><a href="complexL.ml.html">complexL.ml</a></li><li><a href="cstubs_internals.ml.html">cstubs_internals.ml</a></li><li><a href="ctypes.ml.html">ctypes.ml</a></li><li><a href="ctypes_bigarray.ml.html">ctypes_bigarray.ml</a></li><li><a href="ctypes_bigarray_stubs.ml.html">ctypes_bigarray_stubs.ml</a></li><li><a href="ctypes_coerce.ml.html">ctypes_coerce.ml</a></li><li><a href="ctypes_memory.ml.html">ctypes_memory.ml</a></li><li><a href="ctypes_memory_stubs.ml.html">ctypes_memory_stubs.ml</a></li><li><a href="ctypes_primitive_types.ml.html">ctypes_primitive_types.ml</a></li><li><a href="ctypes_primitives.ml.html">ctypes_primitives.ml</a></li><li><a href="#" class="current_unit">ctypes_ptr.ml</a></li><li><a href="ctypes_roots_stubs.ml.html">ctypes_roots_stubs.ml</a></li><li><a href="ctypes_static.ml.html">ctypes_static.ml</a></li><li><a href="ctypes_std_view_stubs.ml.html">ctypes_std_view_stubs.ml</a></li><li><a href="ctypes_std_views.ml.html">ctypes_std_views.ml</a></li><li><a href="ctypes_structs.ml.html">ctypes_structs.ml</a></li><li><a href="ctypes_structs_computed.ml.html">ctypes_structs_computed.ml</a></li><li><a href="ctypes_type_printing.ml.html">ctypes_type_printing.ml</a></li><li><a href="ctypes_value_printing.ml.html">ctypes_value_printing.ml</a></li><li><a href="ctypes_value_printing_stubs.ml.html">ctypes_value_printing_stubs.ml</a></li><li><a href="lDouble.ml.html">lDouble.ml</a></li><li><a href="posixTypes.ml.html">posixTypes.ml</a></li></ul></li><li>ctypes.stubs<ul><li><a href="../ctypes.stubs/cstubs.ml.html">cstubs.ml</a></li><li><a href="../ctypes.stubs/cstubs_analysis.ml.html">cstubs_analysis.ml</a></li><li><a href="../ctypes.stubs/cstubs_c_language.ml.html">cstubs_c_language.ml</a></li><li><a href="../ctypes.stubs/cstubs_emit_c.ml.html">cstubs_emit_c.ml</a></li><li><a href="../ctypes.stubs/cstubs_errors.ml.html">cstubs_errors.ml</a></li><li><a href="../ctypes.stubs/cstubs_generate_c.ml.html">cstubs_generate_c.ml</a></li><li><a href="../ctypes.stubs/cstubs_generate_ml.ml.html">cstubs_generate_ml.ml</a></li><li><a href="../ctypes.stubs/cstubs_inverted.ml.html">cstubs_inverted.ml</a></li><li><a href="../ctypes.stubs/cstubs_public_name.ml.html">cstubs_public_name.ml</a></li><li><a href="../ctypes.stubs/cstubs_structs.ml.html">cstubs_structs.ml</a></li><li><a href="../ctypes.stubs/ctypes_path.ml.html">ctypes_path.ml</a></li></ul></li><li>ctypes.top<ul><li><a href="../ctypes.top/ctypes_top.ml.html">ctypes_top.ml</a></li><li><a href="../ctypes.top/install_ctypes_printers.ml.html">install_ctypes_printers.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+</code><code class="source_code"><span><span class="COMMENT">(*
+ * Copyright (c) 2013 Jeremy Yallop.
+ *
+ * This file is distributed under the terms of the MIT License.
+ * See the file LICENSE for details.
+ *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* Boxed pointers to C memory locations . *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LBRACKETATATAT">[@@@</span><span class="LIDENT">warning</span> <span class="STRING">&quot;-9&quot;</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Raw"><span class="MODULE">module</span> <span class="UIDENT">Raw</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <a href="../../../ocaml-base-compiler/src/stdlib/nativeint.ml.html"><span class="UIDENT">Nativeint</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Raw.val-of_nativeint"><span class="LIDENT">of_nativeint</span></span> <span id="local_x_1"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_x_1"><span class="LIDENT">x</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Raw.val-to_nativeint"><span class="LIDENT">to_nativeint</span></span> <span id="local_x_2"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_x_2"><span class="LIDENT">x</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Raw.val-null"><span class="LIDENT">null</span></span> <span class="EQUAL">=</span> <span class="LIDENT">zero</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-voidp"><span class="TYPE">type</span> <span class="LIDENT">voidp</span> <span class="EQUAL">=</span> <span class="UIDENT">Raw</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Fat"><span class="MODULE">module</span> <span class="UIDENT">Fat</span> <span class="COLON">:</span><span class="EOL">
+</span><span class="SIG">sig</span><span class="EOL">
+</span>  <span class="DOCSTRING">(** A fat pointer, which holds a reference to the reference type, the C memory
+      location, and an OCaml object. *)</span><span class="EOL">
+</span>  <span id="module-Fat.type-t"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span><span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="DOCSTRING">(** [make ?managed ~reftyp raw] builds a fat pointer from the reference
+      type [reftyp], the C memory location [raw], and (optionally) an OCaml
+      value, [managed].  The [managed] argument may be used to manage the
+      lifetime of the C object; a typical use it to attach a finaliser to
+      [managed] which releases the memory associated with the C object whose
+      address is stored in [raw_ptr]. *)</span><span class="EOL">
+</span>  <span id="module-Fat.val-make"><span class="VAL">val</span> <span class="LIDENT">make</span> <span class="COLON">:</span> <span class="LIDENT">managed</span><span class="COLON">:</span><span class="QUOTE">'</span><span class="LIDENT">m</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">reftyp</span><span class="COLON">:</span><span class="QUOTE">'</span><span class="LIDENT">typ</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">voidp</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">m</span><span class="COMMA">,</span><span class="QUOTE">'</span><span class="LIDENT">typ</span><span class="RPAREN">)</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Fat.val-is_null"><span class="VAL">val</span> <span class="LIDENT">is_null</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span><span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bool</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Fat.val-reftype"><span class="VAL">val</span> <span class="LIDENT">reftype</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span><span class="QUOTE">'</span><span class="LIDENT">typ</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">typ</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Fat.val-managed"><span class="VAL">val</span> <span class="LIDENT">managed</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">m</span><span class="COMMA">,</span><span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">m</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Fat.val-set_managed"><span class="VAL">val</span> <span class="LIDENT">set_managed</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">m</span><span class="COMMA">,</span><span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">m</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Fat.val-coerce"><span class="VAL">val</span> <span class="LIDENT">coerce</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">m</span><span class="COMMA">,</span><span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">typ</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">m</span><span class="COMMA">,</span><span class="QUOTE">'</span><span class="LIDENT">typ</span><span class="RPAREN">)</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="DOCSTRING">(** Return the raw pointer address.  The function is unsafe in the sense
+      that it dissociates the address from the value which manages the memory,
+      which may trigger associated finalisers, invalidating the address. *)</span><span class="EOL">
+</span>  <span id="module-Fat.val-unsafe_raw_addr"><span class="VAL">val</span> <span class="LIDENT">unsafe_raw_addr</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span><span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">voidp</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Fat.val-add_bytes"><span class="VAL">val</span> <span class="LIDENT">add_bytes</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">m</span><span class="COMMA">,</span><span class="QUOTE">'</span><span class="LIDENT">typ</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">int</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">m</span><span class="COMMA">,</span><span class="QUOTE">'</span><span class="LIDENT">typ</span><span class="RPAREN">)</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Fat.val-compare"><span class="VAL">val</span> <span class="LIDENT">compare</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span><span class="QUOTE">'</span><span class="LIDENT">typ</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span><span class="QUOTE">'</span><span class="LIDENT">typ</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">int</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Fat.val-diff_bytes"><span class="VAL">val</span> <span class="LIDENT">diff_bytes</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span><span class="QUOTE">'</span><span class="LIDENT">typ</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span><span class="QUOTE">'</span><span class="LIDENT">typ</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">int</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span><span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Fat.type-t"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">m</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">typ</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LBRACE">{</span> <span id="def_22"><span class="LIDENT">reftyp</span>  <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">typ</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_21"><span class="LIDENT">raw</span>     <span class="COLON">:</span> <span class="LIDENT">voidp</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_20"><span class="MUTABLE">mutable</span> <span class="LIDENT">managed</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">m</span><span class="SEMI">;</span></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Fat.val-make"><span class="LIDENT">make</span></span> <span class="TILDE">~</span><span id="local_managed_3"><span class="LIDENT">managed</span></span> <span class="TILDE">~</span><span id="local_reftyp_4"><span class="LIDENT">reftyp</span></span> <span id="local_raw_5"><span class="LIDENT">raw</span></span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <a href="#local_reftyp_4"><span class="LIDENT">reftyp</span></a><span class="SEMI">;</span> <a href="#local_raw_5"><span class="LIDENT">raw</span></a><span class="SEMI">;</span> <a href="#local_managed_3"><span class="LIDENT">managed</span></a> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Fat.val-is_null"><span class="LIDENT">is_null</span></span> <span class="LBRACE">{</span> <span id="local_raw_6"><span class="LIDENT">raw</span></span> <span class="RBRACE">}</span> <span class="EQUAL">=</span> <span class="UIDENT">Raw</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="LIDENT">compare</span> <span class="LIDENT">zero</span><span class="RPAREN">)</span> <a href="#local_raw_6"><span class="LIDENT">raw</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(=)"><span class="EQUAL">=</span></a> <span class="INT">0</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Fat.val-reftype"><span class="LIDENT">reftype</span></span> <span class="LBRACE">{</span> <span id="local_reftyp_7"><span class="LIDENT">reftyp</span></span> <span class="RBRACE">}</span> <span class="EQUAL">=</span> <a href="#local_reftyp_7"><span class="LIDENT">reftyp</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Fat.val-managed"><span class="LIDENT">managed</span></span> <span class="LBRACE">{</span> <span id="local_managed_8"><span class="LIDENT">managed</span></span> <span class="RBRACE">}</span> <span class="EQUAL">=</span> <a href="#local_managed_8"><span class="LIDENT">managed</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Fat.val-set_managed"><span class="LIDENT">set_managed</span></span> <span id="local_p_9"><span class="LIDENT">p</span></span> <span id="local_m_10"><span class="LIDENT">m</span></span> <span class="EQUAL">=</span> <a href="#local_p_9"><span class="LIDENT">p</span></a><span class="DOT">.</span><span class="LIDENT">managed</span> <span class="LESSMINUS">&lt;-</span> <a href="#local_m_10"><span class="LIDENT">m</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Fat.val-coerce"><span class="LIDENT">coerce</span></span> <span id="local_p_11"><span class="LIDENT">p</span></span> <span id="local_reftyp_12"><span class="LIDENT">reftyp</span></span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <a href="#local_p_11"><span class="LIDENT">p</span></a> <span class="WITH">with</span> <a href="#local_reftyp_12"><span class="LIDENT">reftyp</span></a> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Fat.val-unsafe_raw_addr"><span class="LIDENT">unsafe_raw_addr</span></span> <span class="LBRACE">{</span> <span id="local_raw_13"><span class="LIDENT">raw</span></span> <span class="RBRACE">}</span> <span class="EQUAL">=</span> <a href="#local_raw_13"><span class="LIDENT">raw</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Fat.val-add_bytes"><span class="LIDENT">add_bytes</span></span> <span id="local_p_14"><span class="LIDENT">p</span></span> <span id="local_bytes_15"><span class="LIDENT">bytes</span></span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <a href="#local_p_14"><span class="LIDENT">p</span></a> <span class="WITH">with</span> <span class="LIDENT">raw</span> <span class="EQUAL">=</span> <span class="UIDENT">Raw</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="LIDENT">add</span> <a href="#local_p_14"><span class="LIDENT">p</span></a><span class="DOT">.</span><span class="LIDENT">raw</span> <span class="LPAREN">(</span><span class="LIDENT">of_int</span> <a href="#local_bytes_15"><span class="LIDENT">bytes</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Fat.val-compare"><span class="LIDENT">compare</span></span> <span id="local_l_16"><span class="LIDENT">l</span></span> <span id="local_r_17"><span class="LIDENT">r</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Raw</span><span class="DOT">.</span><span class="LIDENT">compare</span> <a href="#local_l_16"><span class="LIDENT">l</span></a><span class="DOT">.</span><span class="LIDENT">raw</span> <a href="#local_r_17"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">raw</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Fat.val-diff_bytes"><span class="LIDENT">diff_bytes</span></span> <span id="local_l_18"><span class="LIDENT">l</span></span> <span id="local_r_19"><span class="LIDENT">r</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Raw</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="LIDENT">to_int</span> <span class="LPAREN">(</span><span class="LIDENT">sub</span> <a href="#local_r_19"><span class="LIDENT">r</span></a><span class="DOT">.</span><span class="LIDENT">raw</span> <a href="#local_l_18"><span class="LIDENT">l</span></a><span class="DOT">.</span><span class="LIDENT">raw</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

@@ -1,0 +1,290 @@
+(lang dune 3.16)
+(name odoc-driver)
+(version dev)
+(sections (lib .) (libexec .) (bin ../../bin) (doc ../../doc/odoc-driver))
+(files
+ (lib
+  (META
+   cmd_outputs.ml
+   common_args.ml
+   compile.ml
+   compile.mli
+   db.ml
+   dune-package
+   global_config.ml
+   global_config.mli
+   landing_pages.ml
+   landing_pages.mli
+   library_names.ml
+   library_names.mli
+   monorepo_style.ml
+   monorepo_style.mli
+   ocamlfind.ml
+   ocamlfind.mli
+   ocamlobjinfo.ml
+   ocamlobjinfo.mli
+   odoc.ml
+   odoc.mli
+   odoc_driver_lib.a
+   odoc_driver_lib.cma
+   odoc_driver_lib.cmi
+   odoc_driver_lib.cmt
+   odoc_driver_lib.cmx
+   odoc_driver_lib.cmxa
+   odoc_driver_lib.ml
+   odoc_driver_lib__Cmd_outputs.cmi
+   odoc_driver_lib__Cmd_outputs.cmt
+   odoc_driver_lib__Cmd_outputs.cmx
+   odoc_driver_lib__Common_args.cmi
+   odoc_driver_lib__Common_args.cmt
+   odoc_driver_lib__Common_args.cmx
+   odoc_driver_lib__Compile.cmi
+   odoc_driver_lib__Compile.cmt
+   odoc_driver_lib__Compile.cmti
+   odoc_driver_lib__Compile.cmx
+   odoc_driver_lib__Db.cmi
+   odoc_driver_lib__Db.cmt
+   odoc_driver_lib__Db.cmx
+   odoc_driver_lib__Global_config.cmi
+   odoc_driver_lib__Global_config.cmt
+   odoc_driver_lib__Global_config.cmti
+   odoc_driver_lib__Global_config.cmx
+   odoc_driver_lib__Landing_pages.cmi
+   odoc_driver_lib__Landing_pages.cmt
+   odoc_driver_lib__Landing_pages.cmti
+   odoc_driver_lib__Landing_pages.cmx
+   odoc_driver_lib__Library_names.cmi
+   odoc_driver_lib__Library_names.cmt
+   odoc_driver_lib__Library_names.cmti
+   odoc_driver_lib__Library_names.cmx
+   odoc_driver_lib__Monorepo_style.cmi
+   odoc_driver_lib__Monorepo_style.cmt
+   odoc_driver_lib__Monorepo_style.cmti
+   odoc_driver_lib__Monorepo_style.cmx
+   odoc_driver_lib__Ocamlfind.cmi
+   odoc_driver_lib__Ocamlfind.cmt
+   odoc_driver_lib__Ocamlfind.cmti
+   odoc_driver_lib__Ocamlfind.cmx
+   odoc_driver_lib__Ocamlobjinfo.cmi
+   odoc_driver_lib__Ocamlobjinfo.cmt
+   odoc_driver_lib__Ocamlobjinfo.cmti
+   odoc_driver_lib__Ocamlobjinfo.cmx
+   odoc_driver_lib__Odoc.cmi
+   odoc_driver_lib__Odoc.cmt
+   odoc_driver_lib__Odoc.cmti
+   odoc_driver_lib__Odoc.cmx
+   odoc_driver_lib__Odoc_unit.cmi
+   odoc_driver_lib__Odoc_unit.cmt
+   odoc_driver_lib__Odoc_unit.cmti
+   odoc_driver_lib__Odoc_unit.cmx
+   odoc_driver_lib__Odoc_units_of.cmi
+   odoc_driver_lib__Odoc_units_of.cmt
+   odoc_driver_lib__Odoc_units_of.cmti
+   odoc_driver_lib__Odoc_units_of.cmx
+   odoc_driver_lib__Opam.cmi
+   odoc_driver_lib__Opam.cmt
+   odoc_driver_lib__Opam.cmti
+   odoc_driver_lib__Opam.cmx
+   odoc_driver_lib__Packages.cmi
+   odoc_driver_lib__Packages.cmt
+   odoc_driver_lib__Packages.cmti
+   odoc_driver_lib__Packages.cmx
+   odoc_driver_lib__Run.cmi
+   odoc_driver_lib__Run.cmt
+   odoc_driver_lib__Run.cmx
+   odoc_driver_lib__Sherlodoc.cmi
+   odoc_driver_lib__Sherlodoc.cmt
+   odoc_driver_lib__Sherlodoc.cmx
+   odoc_driver_lib__Stats.cmi
+   odoc_driver_lib__Stats.cmt
+   odoc_driver_lib__Stats.cmx
+   odoc_driver_lib__Util.cmi
+   odoc_driver_lib__Util.cmt
+   odoc_driver_lib__Util.cmx
+   odoc_driver_lib__Voodoo.cmi
+   odoc_driver_lib__Voodoo.cmt
+   odoc_driver_lib__Voodoo.cmti
+   odoc_driver_lib__Voodoo.cmx
+   odoc_driver_lib__Worker_pool.cmi
+   odoc_driver_lib__Worker_pool.cmt
+   odoc_driver_lib__Worker_pool.cmti
+   odoc_driver_lib__Worker_pool.cmx
+   odoc_unit.ml
+   odoc_unit.mli
+   odoc_units_of.ml
+   odoc_units_of.mli
+   opam
+   opam.ml
+   opam.mli
+   packages.ml
+   packages.mli
+   run.ml
+   sherlodoc.ml
+   stats.ml
+   util.ml
+   voodoo.ml
+   voodoo.mli
+   worker_pool.ml
+   worker_pool.mli))
+ (libexec (odoc_driver_lib.cmxs))
+ (bin (odoc_driver odoc_driver_monorepo odoc_driver_voodoo))
+ (doc (CHANGES.md LICENSE README.md odoc-config.sexp odoc-pages/index.mld)))
+(library
+ (name odoc-driver)
+ (kind normal)
+ (archives (byte odoc_driver_lib.cma) (native odoc_driver_lib.cmxa))
+ (plugins (byte odoc_driver_lib.cma) (native odoc_driver_lib.cmxs))
+ (native_archives odoc_driver_lib.a)
+ (requires
+  cmdliner
+  bos
+  mtime
+  optint
+  progress.engine
+  terminal.ansi
+  terminal
+  progress
+  fpath
+  yojson
+  findlib
+  ocamlgraph
+  opam-core
+  opam-file-format
+  opam-format
+  logs
+  logs.fmt
+  eio_main
+  sexplib
+  odoc.odoc_utils
+  ppx_sexp_conv.runtime-lib
+  sexplib0)
+ (main_module_name Odoc_driver_lib)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_driver_lib)
+     (visibility public)
+     (kind alias)
+     (source (path Odoc_driver_lib) (impl (path odoc_driver_lib.ml-gen))))
+    (name Odoc_driver_lib)
+    (modules
+     (module
+      (obj_name odoc_driver_lib__Cmd_outputs)
+      (visibility public)
+      (source (path Cmd_outputs) (impl (path cmd_outputs.ml))))
+     (module
+      (obj_name odoc_driver_lib__Common_args)
+      (visibility public)
+      (source (path Common_args) (impl (path common_args.ml))))
+     (module
+      (obj_name odoc_driver_lib__Compile)
+      (visibility public)
+      (source
+       (path Compile)
+       (intf (path compile.mli))
+       (impl (path compile.ml))))
+     (module
+      (obj_name odoc_driver_lib__Db)
+      (visibility public)
+      (source (path Db) (impl (path db.ml))))
+     (module
+      (obj_name odoc_driver_lib__Global_config)
+      (visibility public)
+      (source
+       (path Global_config)
+       (intf (path global_config.mli))
+       (impl (path global_config.ml))))
+     (module
+      (obj_name odoc_driver_lib__Landing_pages)
+      (visibility public)
+      (source
+       (path Landing_pages)
+       (intf (path landing_pages.mli))
+       (impl (path landing_pages.ml))))
+     (module
+      (obj_name odoc_driver_lib__Library_names)
+      (visibility public)
+      (source
+       (path Library_names)
+       (intf (path library_names.mli))
+       (impl (path library_names.ml))))
+     (module
+      (obj_name odoc_driver_lib__Monorepo_style)
+      (visibility public)
+      (source
+       (path Monorepo_style)
+       (intf (path monorepo_style.mli))
+       (impl (path monorepo_style.ml))))
+     (module
+      (obj_name odoc_driver_lib__Ocamlfind)
+      (visibility public)
+      (source
+       (path Ocamlfind)
+       (intf (path ocamlfind.mli))
+       (impl (path ocamlfind.ml))))
+     (module
+      (obj_name odoc_driver_lib__Ocamlobjinfo)
+      (visibility public)
+      (source
+       (path Ocamlobjinfo)
+       (intf (path ocamlobjinfo.mli))
+       (impl (path ocamlobjinfo.ml))))
+     (module
+      (obj_name odoc_driver_lib__Odoc)
+      (visibility public)
+      (source (path Odoc) (intf (path odoc.mli)) (impl (path odoc.ml))))
+     (module
+      (obj_name odoc_driver_lib__Odoc_unit)
+      (visibility public)
+      (source
+       (path Odoc_unit)
+       (intf (path odoc_unit.mli))
+       (impl (path odoc_unit.ml))))
+     (module
+      (obj_name odoc_driver_lib__Odoc_units_of)
+      (visibility public)
+      (source
+       (path Odoc_units_of)
+       (intf (path odoc_units_of.mli))
+       (impl (path odoc_units_of.ml))))
+     (module
+      (obj_name odoc_driver_lib__Opam)
+      (visibility public)
+      (source (path Opam) (intf (path opam.mli)) (impl (path opam.ml))))
+     (module
+      (obj_name odoc_driver_lib__Packages)
+      (visibility public)
+      (source
+       (path Packages)
+       (intf (path packages.mli))
+       (impl (path packages.ml))))
+     (module
+      (obj_name odoc_driver_lib__Run)
+      (visibility public)
+      (source (path Run) (impl (path run.ml))))
+     (module
+      (obj_name odoc_driver_lib__Sherlodoc)
+      (visibility public)
+      (source (path Sherlodoc) (impl (path sherlodoc.ml))))
+     (module
+      (obj_name odoc_driver_lib__Stats)
+      (visibility public)
+      (source (path Stats) (impl (path stats.ml))))
+     (module
+      (obj_name odoc_driver_lib__Util)
+      (visibility public)
+      (source (path Util) (impl (path util.ml))))
+     (module
+      (obj_name odoc_driver_lib__Voodoo)
+      (visibility public)
+      (source (path Voodoo) (intf (path voodoo.mli)) (impl (path voodoo.ml))))
+     (module
+      (obj_name odoc_driver_lib__Worker_pool)
+      (visibility public)
+      (source
+       (path Worker_pool)
+       (intf (path worker_pool.mli))
+       (impl (path worker_pool.ml))))))
+   (wrapped true))))

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: progress.ml (progress.src.progress)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">progress</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; progress &#x00BB; progress.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>progress.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">progress</a><ul><li>Library <code>progress</code><ul><li><a href="../../progress/Progress/index.html">Progress</a></li></ul></li><li>Library <code>progress.engine</code><ul><li><a href="../../progress.engine/Progress_engine/index.html">Progress_engine</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>progress<ul><li><a href="#" class="current_unit">progress.ml</a></li><li><a href="progress__.ml.html">progress__.ml</a></li><li><a href="terminal_width.ml.html">terminal_width.ml</a></li></ul></li><li>progress.engine<ul><li><a href="../progress.engine/config.ml.html">config.ml</a></li><li><a href="../progress.engine/duration.ml.html">duration.ml</a></li><li><a href="../progress.engine/flow_meter.ml.html">flow_meter.ml</a></li><li><a href="../progress.engine/import.ml.html">import.ml</a></li><li><a href="../progress.engine/integer.ml.html">integer.ml</a></li><li><a href="../progress.engine/line.ml.html">line.ml</a></li><li><a href="../progress.engine/line_buffer.ml.html">line_buffer.ml</a></li><li><a href="../progress.engine/line_intf.ml.html">line_intf.ml</a></li><li><a href="../progress.engine/line_primitives.ml.html">line_primitives.ml</a></li><li><a href="../progress.engine/line_primitives_intf.ml.html">line_primitives_intf.ml</a></li><li><a href="../progress.engine/multi.ml.html">multi.ml</a></li><li><a href="../progress.engine/multi_intf.ml.html">multi_intf.ml</a></li><li><a href="../progress.engine/platform.ml.html">platform.ml</a></li><li><a href="../progress.engine/printer.ml.html">printer.ml</a></li><li><a href="../progress.engine/progress_engine.ml.html">progress_engine.ml</a></li><li><a href="../progress.engine/progress_engine__.ml.html">progress_engine__.ml</a></li><li><a href="../progress.engine/progress_engine_intf.ml.html">progress_engine_intf.ml</a></li><li><a href="../progress.engine/renderer.ml.html">renderer.ml</a></li><li><a href="../progress.engine/renderer_intf.ml.html">renderer_intf.ml</a></li><li><a href="../progress.engine/stdlib_ext.ml.html">stdlib_ext.ml</a></li><li><a href="../progress.engine/units.ml.html">units.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+</code><code class="source_code"><span><span class="COMMENT">(*————————————————————————————————————————————————————————————————————————————
+   Copyright (c) 2020–2021 Craig Ferguson &lt;me@craigfe.io&gt;
+   Distributed under the MIT license. See terms at the end of this file.
+  ————————————————————————————————————————————————————————————————————————————*)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Platform"><span class="MODULE">module</span> <span class="UIDENT">Platform</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Platform.module-Clock"><span class="MODULE">module</span> <span class="UIDENT">Clock</span> <span class="EQUAL">=</span> <span class="UIDENT">Mtime_clock</span></span><span class="EOL">
+</span>  <span id="module-Platform.module-Terminal_width"><span class="MODULE">module</span> <span class="UIDENT">Terminal_width</span> <span class="EQUAL">=</span> <a href="terminal_width.ml.html"><span class="UIDENT">Terminal_width</span></a></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="INCLUDE">include</span> <a href="../progress.engine/progress_engine.ml.html#module-Make"><span class="UIDENT">Progress_engine</span><span class="DOT">.</span><span class="UIDENT">Make</span></a> <span class="LPAREN">(</span><span class="UIDENT">Platform</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Config"><span class="MODULE">module</span> <span class="UIDENT">Config</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="UIDENT">Config</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Config.val-stderr_if_tty"><span class="LIDENT">stderr_if_tty</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="IF">if</span> <span class="UIDENT">Unix</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="LIDENT">isatty</span> <span class="LIDENT">stderr</span><span class="RPAREN">)</span> <span class="THEN">then</span> <span class="UIDENT">Default</span><span class="DOT">.</span><span class="LIDENT">ppf</span><span class="EOL">
+</span>    <span class="ELSE">else</span> <a href="../../../ocaml-base-compiler/src/stdlib/format.ml.html#val-make_formatter"><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">make_formatter</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Config.val-v"><span class="LIDENT">v</span></span> <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_ppf_1"><span class="LIDENT">ppf</span></span> <span class="EQUAL">=</span> <span class="LIDENT">stderr_if_tty</span><span class="RPAREN">)</span> <span class="QUESTION">?</span><span id="local_hide_cursor_2"><span class="LIDENT">hide_cursor</span></span> <span class="QUESTION">?</span><span id="local_persistent_3"><span class="LIDENT">persistent</span></span> <span class="QUESTION">?</span><span id="local_max_width_4"><span class="LIDENT">max_width</span></span> <span class="QUESTION">?</span><span id="local_min_interval_5"><span class="LIDENT">min_interval</span></span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="COLON">:</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LIDENT">v</span> <span class="TILDE">~</span><a href="#local_ppf_1"><span class="LIDENT">ppf</span></a> <span class="QUESTION">?</span><a href="#local_hide_cursor_2"><span class="LIDENT">hide_cursor</span></a> <span class="QUESTION">?</span><a href="#local_persistent_3"><span class="LIDENT">persistent</span></a> <span class="QUESTION">?</span><a href="#local_max_width_4"><span class="LIDENT">max_width</span></a> <span class="QUESTION">?</span><a href="#local_min_interval_5"><span class="LIDENT">min_interval</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(*————————————————————————————————————————————————————————————————————————————
+   Copyright (c) 2020–2021 Craig Ferguson &lt;me@craigfe.io&gt;
+
+   Permission to use, copy, modify, and/or distribute this software for any
+   purpose with or without fee is hereby granted, provided that the above
+   copyright notice and this permission notice appear in all copies.
+
+   THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
+  ————————————————————————————————————————————————————————————————————————————*)</span><span class="EOL">
+</span></span></code></pre></body></html>

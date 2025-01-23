@@ -1,0 +1,123 @@
+(lang dune 3.16)
+(name odoc-parser)
+(version dev)
+(sections (lib .) (libexec .) (doc ../../doc/odoc-parser))
+(files
+ (lib
+  (META
+   ast.ml
+   compat.ml
+   compat.mli
+   dune-package
+   lexer.ml
+   lexer.mli
+   loc.ml
+   loc.mli
+   odoc_parser.a
+   odoc_parser.cma
+   odoc_parser.cmi
+   odoc_parser.cmt
+   odoc_parser.cmti
+   odoc_parser.cmx
+   odoc_parser.cmxa
+   odoc_parser.ml
+   odoc_parser.mli
+   odoc_parser__.cmi
+   odoc_parser__.cmt
+   odoc_parser__.cmx
+   odoc_parser__.ml
+   odoc_parser__Ast.cmi
+   odoc_parser__Ast.cmt
+   odoc_parser__Ast.cmx
+   odoc_parser__Compat.cmi
+   odoc_parser__Compat.cmt
+   odoc_parser__Compat.cmti
+   odoc_parser__Compat.cmx
+   odoc_parser__Lexer.cmi
+   odoc_parser__Lexer.cmt
+   odoc_parser__Lexer.cmti
+   odoc_parser__Lexer.cmx
+   odoc_parser__Loc.cmi
+   odoc_parser__Loc.cmt
+   odoc_parser__Loc.cmti
+   odoc_parser__Loc.cmx
+   odoc_parser__Parse_error.cmi
+   odoc_parser__Parse_error.cmt
+   odoc_parser__Parse_error.cmx
+   odoc_parser__Syntax.cmi
+   odoc_parser__Syntax.cmt
+   odoc_parser__Syntax.cmti
+   odoc_parser__Syntax.cmx
+   odoc_parser__Token.cmi
+   odoc_parser__Token.cmt
+   odoc_parser__Token.cmx
+   odoc_parser__Warning.cmi
+   odoc_parser__Warning.cmt
+   odoc_parser__Warning.cmx
+   opam
+   parse_error.ml
+   syntax.ml
+   syntax.mli
+   token.ml
+   warning.ml))
+ (libexec (odoc_parser.cmxs))
+ (doc (CHANGES.md LICENSE README.md)))
+(library
+ (name odoc-parser)
+ (kind normal)
+ (archives (byte odoc_parser.cma) (native odoc_parser.cmxa))
+ (plugins (byte odoc_parser.cma) (native odoc_parser.cmxs))
+ (native_archives odoc_parser.a)
+ (requires astring result camlp-streams)
+ (main_module_name Odoc_parser)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_parser__)
+     (visibility public)
+     (kind alias)
+     (source (path Odoc_parser__) (impl (path odoc_parser__.ml-gen))))
+    (name Odoc_parser)
+    (modules
+     (module
+      (obj_name odoc_parser__Ast)
+      (visibility public)
+      (source (path Ast) (impl (path ast.ml))))
+     (module
+      (obj_name odoc_parser__Compat)
+      (visibility public)
+      (source (path Compat) (intf (path compat.mli)) (impl (path compat.ml))))
+     (module
+      (obj_name odoc_parser__Lexer)
+      (visibility public)
+      (source (path Lexer) (intf (path lexer.mli)) (impl (path lexer.ml))))
+     (module
+      (obj_name odoc_parser__Loc)
+      (visibility public)
+      (source (path Loc) (intf (path loc.mli)) (impl (path loc.ml))))
+     (module
+      (obj_name odoc_parser)
+      (visibility public)
+      (source
+       (path Odoc_parser)
+       (intf (path odoc_parser.mli))
+       (impl (path odoc_parser.ml))))
+     (module
+      (obj_name odoc_parser__Parse_error)
+      (visibility public)
+      (source (path Parse_error) (impl (path parse_error.ml))))
+     (module
+      (obj_name odoc_parser__Syntax)
+      (visibility public)
+      (source (path Syntax) (intf (path syntax.mli)) (impl (path syntax.ml))))
+     (module
+      (obj_name odoc_parser__Token)
+      (visibility public)
+      (source (path Token) (impl (path token.ml))))
+     (module
+      (obj_name odoc_parser__Warning)
+      (visibility public)
+      (source (path Warning) (impl (path warning.ml))))))
+   (wrapped true))))

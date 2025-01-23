@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: std.ml (sexplib.src.sexplib.num)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">sexplib</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; sexplib.num &#x00BB; std.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>std.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">sexplib</a><ul><li>Library <code>sexplib</code><ul><li><a href="../../sexplib/Sexplib/index.html">Sexplib</a></li></ul></li><li>Library <code>sexplib.num</code><ul><li><a href="../../sexplib.num/Sexplib_num/index.html">Sexplib_num</a></li></ul></li><li>Library <code>sexplib.unix</code><ul><li><a href="../../sexplib.unix/Sexplib_unix/index.html">Sexplib_unix</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>sexplib<ul><li><a href="../sexplib/conv.ml.html">conv.ml</a></li><li><a href="../sexplib/conv_error.ml.html">conv_error.ml</a></li><li><a href="../sexplib/exn_magic.ml.html">exn_magic.ml</a></li><li><a href="../sexplib/lexer.ml.html">lexer.ml</a></li><li><a href="../sexplib/parser.ml.html">parser.ml</a></li><li><a href="../sexplib/parser_with_layout.ml.html">parser_with_layout.ml</a></li><li><a href="../sexplib/path.ml.html">path.ml</a></li><li><a href="../sexplib/pre_sexp.ml.html">pre_sexp.ml</a></li><li><a href="../sexplib/sexp.ml.html">sexp.ml</a></li><li><a href="../sexplib/sexp_grammar.ml.html">sexp_grammar.ml</a></li><li><a href="../sexplib/sexp_grammar_intf.ml.html">sexp_grammar_intf.ml</a></li><li><a href="../sexplib/sexp_intf.ml.html">sexp_intf.ml</a></li><li><a href="../sexplib/sexp_with_layout.ml.html">sexp_with_layout.ml</a></li><li><a href="../sexplib/sexplib.ml.html">sexplib.ml</a></li><li><a href="../sexplib/src_pos.ml.html">src_pos.ml</a></li><li><a href="../sexplib/std.ml.html">std.ml</a></li><li><a href="../sexplib/type.ml.html">type.ml</a></li><li><a href="../sexplib/type_with_layout.ml.html">type_with_layout.ml</a></li></ul></li><li>sexplib.num<ul><li><a href="sexplib_num.ml.html">sexplib_num.ml</a></li><li><a href="sexplib_num_conv.ml.html">sexplib_num_conv.ml</a></li><li><a href="#" class="current_unit">std.ml</a></li></ul></li><li>sexplib.unix<ul><li><a href="../sexplib.unix/sexplib_unix.ml.html">sexplib_unix.ml</a></li><li><a href="../sexplib.unix/sexplib_unix_conv.ml.html">sexplib_unix_conv.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+</code><code class="source_code"><span><span id="module-Big_int"><span class="MODULE">module</span> <span class="UIDENT">Big_int</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="UIDENT">Big_int</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Big_int.val-sexp_of_big_int"><span class="LIDENT">sexp_of_big_int</span></span> <span class="EQUAL">=</span> <a href="sexplib_num_conv.ml.html#val-sexp_of_big_int"><span class="UIDENT">Sexplib_num_conv</span><span class="DOT">.</span><span class="LIDENT">sexp_of_big_int</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Big_int.val-big_int_of_sexp"><span class="LIDENT">big_int_of_sexp</span></span> <span class="EQUAL">=</span> <a href="sexplib_num_conv.ml.html#val-big_int_of_sexp"><span class="UIDENT">Sexplib_num_conv</span><span class="DOT">.</span><span class="LIDENT">big_int_of_sexp</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Nat"><span class="MODULE">module</span> <span class="UIDENT">Nat</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="UIDENT">Nat</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Nat.val-sexp_of_nat"><span class="LIDENT">sexp_of_nat</span></span> <span class="EQUAL">=</span> <a href="sexplib_num_conv.ml.html#val-sexp_of_nat"><span class="UIDENT">Sexplib_num_conv</span><span class="DOT">.</span><span class="LIDENT">sexp_of_nat</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Nat.val-nat_of_sexp"><span class="LIDENT">nat_of_sexp</span></span> <span class="EQUAL">=</span> <a href="sexplib_num_conv.ml.html#val-nat_of_sexp"><span class="UIDENT">Sexplib_num_conv</span><span class="DOT">.</span><span class="LIDENT">nat_of_sexp</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Ratio"><span class="MODULE">module</span> <span class="UIDENT">Ratio</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="UIDENT">Ratio</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Ratio.val-sexp_of_ratio"><span class="LIDENT">sexp_of_ratio</span></span> <span class="EQUAL">=</span> <a href="sexplib_num_conv.ml.html#val-sexp_of_ratio"><span class="UIDENT">Sexplib_num_conv</span><span class="DOT">.</span><span class="LIDENT">sexp_of_ratio</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Ratio.val-ratio_of_sexp"><span class="LIDENT">ratio_of_sexp</span></span> <span class="EQUAL">=</span> <a href="sexplib_num_conv.ml.html#val-ratio_of_sexp"><span class="UIDENT">Sexplib_num_conv</span><span class="DOT">.</span><span class="LIDENT">ratio_of_sexp</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Num"><span class="MODULE">module</span> <span class="UIDENT">Num</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="UIDENT">Num</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Num.val-sexp_of_num"><span class="LIDENT">sexp_of_num</span></span> <span class="EQUAL">=</span> <a href="sexplib_num_conv.ml.html#val-sexp_of_num"><span class="UIDENT">Sexplib_num_conv</span><span class="DOT">.</span><span class="LIDENT">sexp_of_num</span></a><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Num.val-num_of_sexp"><span class="LIDENT">num_of_sexp</span></span> <span class="EQUAL">=</span> <a href="sexplib_num_conv.ml.html#val-num_of_sexp"><span class="UIDENT">Sexplib_num_conv</span><span class="DOT">.</span><span class="LIDENT">num_of_sexp</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

@@ -1,0 +1,15 @@
+lib: [
+  "_build/install/default/lib/odoc-md/META"
+  "_build/install/default/lib/odoc-md/dune-package"
+  "_build/install/default/lib/odoc-md/opam"
+]
+bin: [
+  "_build/install/default/bin/odoc-md"
+]
+doc: [
+  "_build/install/default/doc/odoc-md/CHANGES.md"
+  "_build/install/default/doc/odoc-md/LICENSE"
+  "_build/install/default/doc/odoc-md/README.md"
+  "_build/install/default/doc/odoc-md/odoc-config.sexp"
+  "_build/install/default/doc/odoc-md/odoc-pages/index.mld" {"odoc-pages/index.mld"}
+]

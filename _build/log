@@ -1,0 +1,17 @@
+# dune exec -- odoc_driver odoc odoc-parser odoc-md odoc-driver sherlodoc odig --index-mld doc/main_index.mld
+# OCAMLPARAM: unset
+# Shared cache: disabled
+# Shared cache location: /Users/jon/.cache/dune/db
+# Workspace root: /Users/jon/devel/odoc
+# Auto-detected concurrency: 8
+# Dune context:
+#  { name = "default"
+#  ; kind = "default"
+#  ; profile = Dev
+#  ; merlin = true
+#  ; fdo_target_exe = None
+#  ; build_dir = In_build_dir "default"
+#  ; instrument_with = []
+#  }
+$ /Users/jon/.opam/5.2.0/bin/ocamlc.opt -config > /var/folders/hq/p12kfdbj6jqf1pbzvpcmgqhh0000gn/T/dune_7b11da_output
+$ /Users/jon/.opam/5.2.0/bin/js_of_ocaml --version > /var/folders/hq/p12kfdbj6jqf1pbzvpcmgqhh0000gn/T/dune_64f576_output

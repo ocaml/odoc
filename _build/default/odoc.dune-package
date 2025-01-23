@@ -1,0 +1,2008 @@
+(lang dune 3.16)
+(name odoc)
+(version dev)
+(sections
+ (lib .)
+ (libexec .)
+ (bin ../../bin)
+ (share ../../share/odoc)
+ (doc ../../doc/odoc))
+(files
+ (lib
+  (META
+   __private__/odoc_model_semantics_test/.public_cmi/odoc_model_semantics_test.cmi
+   __private__/odoc_model_semantics_test/.public_cmi/odoc_model_semantics_test.cmt
+   __private__/odoc_model_semantics_test/.public_cmi/odoc_model_semantics_test__Test.cmi
+   __private__/odoc_model_semantics_test/.public_cmi/odoc_model_semantics_test__Test.cmt
+   __private__/odoc_model_semantics_test/odoc_model_semantics_test.a
+   __private__/odoc_model_semantics_test/odoc_model_semantics_test.cma
+   __private__/odoc_model_semantics_test/odoc_model_semantics_test.cmx
+   __private__/odoc_model_semantics_test/odoc_model_semantics_test.cmxa
+   __private__/odoc_model_semantics_test/odoc_model_semantics_test.ml
+   __private__/odoc_model_semantics_test/odoc_model_semantics_test__Test.cmx
+   __private__/odoc_model_semantics_test/test.ml
+   __private__/type_desc_to_yojson/.public_cmi/type_desc_to_yojson.cmi
+   __private__/type_desc_to_yojson/.public_cmi/type_desc_to_yojson.cmt
+   __private__/type_desc_to_yojson/type_desc_to_yojson.a
+   __private__/type_desc_to_yojson/type_desc_to_yojson.cma
+   __private__/type_desc_to_yojson/type_desc_to_yojson.cmx
+   __private__/type_desc_to_yojson/type_desc_to_yojson.cmxa
+   __private__/type_desc_to_yojson/type_desc_to_yojson.ml
+   document/ML.ml
+   document/ML.mli
+   document/codefmt.ml
+   document/codefmt.mli
+   document/comment.ml
+   document/compat.ml
+   document/doctree.ml
+   document/generator.ml
+   document/generator.mli
+   document/generator_signatures.ml
+   document/odoc_document.a
+   document/odoc_document.cma
+   document/odoc_document.cmi
+   document/odoc_document.cmt
+   document/odoc_document.cmx
+   document/odoc_document.cmxa
+   document/odoc_document.ml
+   document/odoc_document__Codefmt.cmi
+   document/odoc_document__Codefmt.cmt
+   document/odoc_document__Codefmt.cmti
+   document/odoc_document__Codefmt.cmx
+   document/odoc_document__Comment.cmi
+   document/odoc_document__Comment.cmt
+   document/odoc_document__Comment.cmx
+   document/odoc_document__Compat.cmi
+   document/odoc_document__Compat.cmt
+   document/odoc_document__Compat.cmx
+   document/odoc_document__Doctree.cmi
+   document/odoc_document__Doctree.cmt
+   document/odoc_document__Doctree.cmx
+   document/odoc_document__Generator.cmi
+   document/odoc_document__Generator.cmt
+   document/odoc_document__Generator.cmti
+   document/odoc_document__Generator.cmx
+   document/odoc_document__Generator_signatures.cmi
+   document/odoc_document__Generator_signatures.cmt
+   document/odoc_document__Generator_signatures.cmx
+   document/odoc_document__ML.cmi
+   document/odoc_document__ML.cmt
+   document/odoc_document__ML.cmti
+   document/odoc_document__ML.cmx
+   document/odoc_document__Reason.cmi
+   document/odoc_document__Reason.cmt
+   document/odoc_document__Reason.cmti
+   document/odoc_document__Reason.cmx
+   document/odoc_document__Renderer.cmi
+   document/odoc_document__Renderer.cmt
+   document/odoc_document__Renderer.cmx
+   document/odoc_document__Sidebar.cmi
+   document/odoc_document__Sidebar.cmt
+   document/odoc_document__Sidebar.cmti
+   document/odoc_document__Sidebar.cmx
+   document/odoc_document__Targets.cmi
+   document/odoc_document__Targets.cmt
+   document/odoc_document__Targets.cmti
+   document/odoc_document__Targets.cmx
+   document/odoc_document__Types.cmi
+   document/odoc_document__Types.cmt
+   document/odoc_document__Types.cmx
+   document/odoc_document__Url.cmi
+   document/odoc_document__Url.cmt
+   document/odoc_document__Url.cmti
+   document/odoc_document__Url.cmx
+   document/odoc_document__Utils.cmi
+   document/odoc_document__Utils.cmt
+   document/odoc_document__Utils.cmti
+   document/odoc_document__Utils.cmx
+   document/reason.ml
+   document/reason.mli
+   document/renderer.ml
+   document/sidebar.ml
+   document/sidebar.mli
+   document/targets.ml
+   document/targets.mli
+   document/types.ml
+   document/url.ml
+   document/url.mli
+   document/utils.ml
+   document/utils.mli
+   dune-package
+   examples/expansion.mli
+   examples/markup.mli
+   examples/odoc_examples.a
+   examples/odoc_examples.cma
+   examples/odoc_examples.cmi
+   examples/odoc_examples.cmt
+   examples/odoc_examples.cmx
+   examples/odoc_examples.cmxa
+   examples/odoc_examples.ml
+   examples/odoc_examples__.cmi
+   examples/odoc_examples__.cmt
+   examples/odoc_examples__.cmx
+   examples/odoc_examples__.ml
+   examples/odoc_examples__Expansion.cmi
+   examples/odoc_examples__Expansion.cmti
+   examples/odoc_examples__Markup.cmi
+   examples/odoc_examples__Markup.cmti
+   examples/odoc_examples__Resolution.cmi
+   examples/odoc_examples__Resolution.cmti
+   examples/odoc_examples__Unexposed.cmi
+   examples/odoc_examples__Unexposed.cmti
+   examples/odoc_examples__Wrapping.cmi
+   examples/odoc_examples__Wrapping.cmti
+   examples/resolution.mli
+   examples/unexposed.mli
+   examples/wrapping.mli
+   html/config.ml
+   html/config.mli
+   html/generator.ml
+   html/generator.mli
+   html/html_fragment_json.ml
+   html/html_fragment_json.mli
+   html/html_page.ml
+   html/html_page.mli
+   html/html_source.ml
+   html/html_source.mli
+   html/link.ml
+   html/link.mli
+   html/odoc_html.a
+   html/odoc_html.cma
+   html/odoc_html.cmi
+   html/odoc_html.cmt
+   html/odoc_html.cmx
+   html/odoc_html.cmxa
+   html/odoc_html.ml
+   html/odoc_html__.cmi
+   html/odoc_html__.cmt
+   html/odoc_html__.cmx
+   html/odoc_html__.ml
+   html/odoc_html__Config.cmi
+   html/odoc_html__Config.cmt
+   html/odoc_html__Config.cmti
+   html/odoc_html__Config.cmx
+   html/odoc_html__Generator.cmi
+   html/odoc_html__Generator.cmt
+   html/odoc_html__Generator.cmti
+   html/odoc_html__Generator.cmx
+   html/odoc_html__Html_fragment_json.cmi
+   html/odoc_html__Html_fragment_json.cmt
+   html/odoc_html__Html_fragment_json.cmti
+   html/odoc_html__Html_fragment_json.cmx
+   html/odoc_html__Html_page.cmi
+   html/odoc_html__Html_page.cmt
+   html/odoc_html__Html_page.cmti
+   html/odoc_html__Html_page.cmx
+   html/odoc_html__Html_source.cmi
+   html/odoc_html__Html_source.cmt
+   html/odoc_html__Html_source.cmti
+   html/odoc_html__Html_source.cmx
+   html/odoc_html__Link.cmi
+   html/odoc_html__Link.cmt
+   html/odoc_html__Link.cmti
+   html/odoc_html__Link.cmx
+   html/odoc_html__Sidebar.cmi
+   html/odoc_html__Sidebar.cmt
+   html/odoc_html__Sidebar.cmti
+   html/odoc_html__Sidebar.cmx
+   html/odoc_html__Types.cmi
+   html/odoc_html__Types.cmt
+   html/odoc_html__Types.cmx
+   html/sidebar.ml
+   html/sidebar.mli
+   html/types.ml
+   html_support_files/odoc_html_support_files.a
+   html_support_files/odoc_html_support_files.cma
+   html_support_files/odoc_html_support_files.cmi
+   html_support_files/odoc_html_support_files.cmt
+   html_support_files/odoc_html_support_files.cmx
+   html_support_files/odoc_html_support_files.cmxa
+   html_support_files/odoc_html_support_files.ml
+   index/entry.ml
+   index/entry.mli
+   index/in_progress.ml
+   index/in_progress.mli
+   index/odoc_index.a
+   index/odoc_index.cma
+   index/odoc_index.cmi
+   index/odoc_index.cmt
+   index/odoc_index.cmx
+   index/odoc_index.cmxa
+   index/odoc_index.ml
+   index/odoc_index__.cmi
+   index/odoc_index__.cmt
+   index/odoc_index__.cmx
+   index/odoc_index__.ml
+   index/odoc_index__Entry.cmi
+   index/odoc_index__Entry.cmt
+   index/odoc_index__Entry.cmti
+   index/odoc_index__Entry.cmx
+   index/odoc_index__In_progress.cmi
+   index/odoc_index__In_progress.cmt
+   index/odoc_index__In_progress.cmti
+   index/odoc_index__In_progress.cmx
+   index/odoc_index__Skeleton.cmi
+   index/odoc_index__Skeleton.cmt
+   index/odoc_index__Skeleton.cmti
+   index/odoc_index__Skeleton.cmx
+   index/odoc_index__Skeleton_of.cmi
+   index/odoc_index__Skeleton_of.cmt
+   index/odoc_index__Skeleton_of.cmti
+   index/odoc_index__Skeleton_of.cmx
+   index/skeleton.ml
+   index/skeleton.mli
+   index/skeleton_of.ml
+   index/skeleton_of.mli
+   json_index/json_display.ml
+   json_index/json_display.mli
+   json_index/json_search.ml
+   json_index/json_search.mli
+   json_index/odoc_json_index.a
+   json_index/odoc_json_index.cma
+   json_index/odoc_json_index.cmi
+   json_index/odoc_json_index.cmt
+   json_index/odoc_json_index.cmx
+   json_index/odoc_json_index.cmxa
+   json_index/odoc_json_index.ml
+   json_index/odoc_json_index__Json_display.cmi
+   json_index/odoc_json_index__Json_display.cmt
+   json_index/odoc_json_index__Json_display.cmti
+   json_index/odoc_json_index__Json_display.cmx
+   json_index/odoc_json_index__Json_search.cmi
+   json_index/odoc_json_index__Json_search.cmt
+   json_index/odoc_json_index__Json_search.cmti
+   json_index/odoc_json_index__Json_search.cmx
+   latex/generator.ml
+   latex/generator.mli
+   latex/odoc_latex.a
+   latex/odoc_latex.cma
+   latex/odoc_latex.cmi
+   latex/odoc_latex.cmt
+   latex/odoc_latex.cmx
+   latex/odoc_latex.cmxa
+   latex/odoc_latex.ml
+   latex/odoc_latex__Generator.cmi
+   latex/odoc_latex__Generator.cmt
+   latex/odoc_latex__Generator.cmti
+   latex/odoc_latex__Generator.cmx
+   latex/odoc_latex__Raw.cmi
+   latex/odoc_latex__Raw.cmt
+   latex/odoc_latex__Raw.cmti
+   latex/odoc_latex__Raw.cmx
+   latex/odoc_latex__Types.cmi
+   latex/odoc_latex__Types.cmt
+   latex/odoc_latex__Types.cmx
+   latex/raw.ml
+   latex/raw.mli
+   latex/types.ml
+   loader/cmi.ml
+   loader/cmi.mli
+   loader/cmt.ml
+   loader/cmt.mli
+   loader/cmti.ml
+   loader/cmti.mli
+   loader/doc_attr.ml
+   loader/doc_attr.mli
+   loader/ident_env.ml
+   loader/ident_env.mli
+   loader/implementation.ml
+   loader/implementation.mli
+   loader/odoc_loader.a
+   loader/odoc_loader.cma
+   loader/odoc_loader.cmi
+   loader/odoc_loader.cmt
+   loader/odoc_loader.cmti
+   loader/odoc_loader.cmx
+   loader/odoc_loader.cmxa
+   loader/odoc_loader.ml
+   loader/odoc_loader.mli
+   loader/odoc_loader__.cmi
+   loader/odoc_loader__.cmt
+   loader/odoc_loader__.cmx
+   loader/odoc_loader__.ml
+   loader/odoc_loader__Cmi.cmi
+   loader/odoc_loader__Cmi.cmt
+   loader/odoc_loader__Cmi.cmti
+   loader/odoc_loader__Cmi.cmx
+   loader/odoc_loader__Cmt.cmi
+   loader/odoc_loader__Cmt.cmt
+   loader/odoc_loader__Cmt.cmti
+   loader/odoc_loader__Cmt.cmx
+   loader/odoc_loader__Cmti.cmi
+   loader/odoc_loader__Cmti.cmt
+   loader/odoc_loader__Cmti.cmti
+   loader/odoc_loader__Cmti.cmx
+   loader/odoc_loader__Doc_attr.cmi
+   loader/odoc_loader__Doc_attr.cmt
+   loader/odoc_loader__Doc_attr.cmti
+   loader/odoc_loader__Doc_attr.cmx
+   loader/odoc_loader__Ident_env.cmi
+   loader/odoc_loader__Ident_env.cmt
+   loader/odoc_loader__Ident_env.cmti
+   loader/odoc_loader__Ident_env.cmx
+   loader/odoc_loader__Implementation.cmi
+   loader/odoc_loader__Implementation.cmt
+   loader/odoc_loader__Implementation.cmti
+   loader/odoc_loader__Implementation.cmx
+   loader/odoc_loader__Typedtree_traverse.cmi
+   loader/odoc_loader__Typedtree_traverse.cmt
+   loader/odoc_loader__Typedtree_traverse.cmx
+   loader/typedtree_traverse.ml
+   manpage/generator.ml
+   manpage/generator.mli
+   manpage/link.ml
+   manpage/odoc_manpage.a
+   manpage/odoc_manpage.cma
+   manpage/odoc_manpage.cmi
+   manpage/odoc_manpage.cmt
+   manpage/odoc_manpage.cmx
+   manpage/odoc_manpage.cmxa
+   manpage/odoc_manpage.ml
+   manpage/odoc_manpage__Generator.cmi
+   manpage/odoc_manpage__Generator.cmt
+   manpage/odoc_manpage__Generator.cmti
+   manpage/odoc_manpage__Generator.cmx
+   manpage/odoc_manpage__Link.cmi
+   manpage/odoc_manpage__Link.cmt
+   manpage/odoc_manpage__Link.cmx
+   model/comment.ml
+   model/compat.ml
+   model/error.ml
+   model/error.mli
+   model/frontmatter.ml
+   model/frontmatter.mli
+   model/lang.ml
+   model/location_.ml
+   model/location_.mli
+   model/names.ml
+   model/names.mli
+   model/odoc_model.a
+   model/odoc_model.cma
+   model/odoc_model.cmi
+   model/odoc_model.cmt
+   model/odoc_model.cmx
+   model/odoc_model.cmxa
+   model/odoc_model.ml
+   model/odoc_model__.cmi
+   model/odoc_model__.cmt
+   model/odoc_model__.cmx
+   model/odoc_model__.ml
+   model/odoc_model__Comment.cmi
+   model/odoc_model__Comment.cmt
+   model/odoc_model__Comment.cmx
+   model/odoc_model__Compat.cmi
+   model/odoc_model__Compat.cmt
+   model/odoc_model__Compat.cmx
+   model/odoc_model__Error.cmi
+   model/odoc_model__Error.cmt
+   model/odoc_model__Error.cmti
+   model/odoc_model__Error.cmx
+   model/odoc_model__Frontmatter.cmi
+   model/odoc_model__Frontmatter.cmt
+   model/odoc_model__Frontmatter.cmti
+   model/odoc_model__Frontmatter.cmx
+   model/odoc_model__Lang.cmi
+   model/odoc_model__Lang.cmt
+   model/odoc_model__Lang.cmx
+   model/odoc_model__Location_.cmi
+   model/odoc_model__Location_.cmt
+   model/odoc_model__Location_.cmti
+   model/odoc_model__Location_.cmx
+   model/odoc_model__Names.cmi
+   model/odoc_model__Names.cmt
+   model/odoc_model__Names.cmti
+   model/odoc_model__Names.cmx
+   model/odoc_model__Paths.cmi
+   model/odoc_model__Paths.cmt
+   model/odoc_model__Paths.cmti
+   model/odoc_model__Paths.cmx
+   model/odoc_model__Paths_types.cmi
+   model/odoc_model__Paths_types.cmt
+   model/odoc_model__Paths_types.cmx
+   model/odoc_model__Reference.cmi
+   model/odoc_model__Reference.cmt
+   model/odoc_model__Reference.cmti
+   model/odoc_model__Reference.cmx
+   model/odoc_model__Root.cmi
+   model/odoc_model__Root.cmt
+   model/odoc_model__Root.cmti
+   model/odoc_model__Root.cmx
+   model/odoc_model__Semantics.cmi
+   model/odoc_model__Semantics.cmt
+   model/odoc_model__Semantics.cmti
+   model/odoc_model__Semantics.cmx
+   model/paths.ml
+   model/paths.mli
+   model/paths_types.ml
+   model/reference.ml
+   model/reference.mli
+   model/root.ml
+   model/root.mli
+   model/semantics.ml
+   model/semantics.mli
+   model_desc/comment_desc.ml
+   model_desc/comment_desc.mli
+   model_desc/lang_desc.ml
+   model_desc/odoc_model_desc.a
+   model_desc/odoc_model_desc.cma
+   model_desc/odoc_model_desc.cmi
+   model_desc/odoc_model_desc.cmt
+   model_desc/odoc_model_desc.cmx
+   model_desc/odoc_model_desc.cmxa
+   model_desc/odoc_model_desc.ml
+   model_desc/odoc_model_desc__Comment_desc.cmi
+   model_desc/odoc_model_desc__Comment_desc.cmt
+   model_desc/odoc_model_desc__Comment_desc.cmti
+   model_desc/odoc_model_desc__Comment_desc.cmx
+   model_desc/odoc_model_desc__Lang_desc.cmi
+   model_desc/odoc_model_desc__Lang_desc.cmt
+   model_desc/odoc_model_desc__Lang_desc.cmx
+   model_desc/odoc_model_desc__Paths_desc.cmi
+   model_desc/odoc_model_desc__Paths_desc.cmt
+   model_desc/odoc_model_desc__Paths_desc.cmti
+   model_desc/odoc_model_desc__Paths_desc.cmx
+   model_desc/odoc_model_desc__Type_desc.cmi
+   model_desc/odoc_model_desc__Type_desc.cmt
+   model_desc/odoc_model_desc__Type_desc.cmx
+   model_desc/paths_desc.ml
+   model_desc/paths_desc.mli
+   model_desc/type_desc.ml
+   ocamlary/ocamlary.cmi
+   ocamlary/ocamlary.cmti
+   ocamlary/ocamlary.mli
+   occurrences/odoc_occurrences.a
+   occurrences/odoc_occurrences.cma
+   occurrences/odoc_occurrences.cmi
+   occurrences/odoc_occurrences.cmt
+   occurrences/odoc_occurrences.cmti
+   occurrences/odoc_occurrences.cmx
+   occurrences/odoc_occurrences.cmxa
+   occurrences/odoc_occurrences.ml
+   occurrences/odoc_occurrences.mli
+   occurrences/odoc_occurrences__.cmi
+   occurrences/odoc_occurrences__.cmt
+   occurrences/odoc_occurrences__.cmx
+   occurrences/odoc_occurrences__.ml
+   occurrences/odoc_occurrences__Table.cmi
+   occurrences/odoc_occurrences__Table.cmt
+   occurrences/odoc_occurrences__Table.cmti
+   occurrences/odoc_occurrences__Table.cmx
+   occurrences/table.ml
+   occurrences/table.mli
+   odoc/asset.ml
+   odoc/asset.mli
+   odoc/classify.ml
+   odoc/compile.ml
+   odoc/compile.mli
+   odoc/depends.ml
+   odoc/depends.mli
+   odoc/fs.ml
+   odoc/fs.mli
+   odoc/html_fragment.ml
+   odoc/html_fragment.mli
+   odoc/html_page.ml
+   odoc/html_page.mli
+   odoc/indexing.ml
+   odoc/indexing.mli
+   odoc/latex.ml
+   odoc/man_page.ml
+   odoc/occurrences.ml
+   odoc/odoc_file.ml
+   odoc/odoc_file.mli
+   odoc/odoc_link.ml
+   odoc/odoc_odoc.a
+   odoc/odoc_odoc.cma
+   odoc/odoc_odoc.cmi
+   odoc/odoc_odoc.cmt
+   odoc/odoc_odoc.cmx
+   odoc/odoc_odoc.cmxa
+   odoc/odoc_odoc.ml
+   odoc/odoc_odoc__Asset.cmi
+   odoc/odoc_odoc__Asset.cmt
+   odoc/odoc_odoc__Asset.cmti
+   odoc/odoc_odoc__Asset.cmx
+   odoc/odoc_odoc__Classify.cmi
+   odoc/odoc_odoc__Classify.cmt
+   odoc/odoc_odoc__Classify.cmx
+   odoc/odoc_odoc__Compile.cmi
+   odoc/odoc_odoc__Compile.cmt
+   odoc/odoc_odoc__Compile.cmti
+   odoc/odoc_odoc__Compile.cmx
+   odoc/odoc_odoc__Depends.cmi
+   odoc/odoc_odoc__Depends.cmt
+   odoc/odoc_odoc__Depends.cmti
+   odoc/odoc_odoc__Depends.cmx
+   odoc/odoc_odoc__Fs.cmi
+   odoc/odoc_odoc__Fs.cmt
+   odoc/odoc_odoc__Fs.cmti
+   odoc/odoc_odoc__Fs.cmx
+   odoc/odoc_odoc__Html_fragment.cmi
+   odoc/odoc_odoc__Html_fragment.cmt
+   odoc/odoc_odoc__Html_fragment.cmti
+   odoc/odoc_odoc__Html_fragment.cmx
+   odoc/odoc_odoc__Html_page.cmi
+   odoc/odoc_odoc__Html_page.cmt
+   odoc/odoc_odoc__Html_page.cmti
+   odoc/odoc_odoc__Html_page.cmx
+   odoc/odoc_odoc__Indexing.cmi
+   odoc/odoc_odoc__Indexing.cmt
+   odoc/odoc_odoc__Indexing.cmti
+   odoc/odoc_odoc__Indexing.cmx
+   odoc/odoc_odoc__Latex.cmi
+   odoc/odoc_odoc__Latex.cmt
+   odoc/odoc_odoc__Latex.cmx
+   odoc/odoc_odoc__Man_page.cmi
+   odoc/odoc_odoc__Man_page.cmt
+   odoc/odoc_odoc__Man_page.cmx
+   odoc/odoc_odoc__Occurrences.cmi
+   odoc/odoc_odoc__Occurrences.cmt
+   odoc/odoc_odoc__Occurrences.cmx
+   odoc/odoc_odoc__Odoc_file.cmi
+   odoc/odoc_odoc__Odoc_file.cmt
+   odoc/odoc_odoc__Odoc_file.cmti
+   odoc/odoc_odoc__Odoc_file.cmx
+   odoc/odoc_odoc__Odoc_link.cmi
+   odoc/odoc_odoc__Odoc_link.cmt
+   odoc/odoc_odoc__Odoc_link.cmx
+   odoc/odoc_odoc__Or_error.cmi
+   odoc/odoc_odoc__Or_error.cmt
+   odoc/odoc_odoc__Or_error.cmti
+   odoc/odoc_odoc__Or_error.cmx
+   odoc/odoc_odoc__Rendering.cmi
+   odoc/odoc_odoc__Rendering.cmt
+   odoc/odoc_odoc__Rendering.cmti
+   odoc/odoc_odoc__Rendering.cmx
+   odoc/odoc_odoc__Resolver.cmi
+   odoc/odoc_odoc__Resolver.cmt
+   odoc/odoc_odoc__Resolver.cmti
+   odoc/odoc_odoc__Resolver.cmx
+   odoc/odoc_odoc__Sidebar.cmi
+   odoc/odoc_odoc__Sidebar.cmt
+   odoc/odoc_odoc__Sidebar.cmx
+   odoc/odoc_odoc__Source.cmi
+   odoc/odoc_odoc__Source.cmt
+   odoc/odoc_odoc__Source.cmx
+   odoc/odoc_odoc__Support_files.cmi
+   odoc/odoc_odoc__Support_files.cmt
+   odoc/odoc_odoc__Support_files.cmti
+   odoc/odoc_odoc__Support_files.cmx
+   odoc/odoc_odoc__Url.cmi
+   odoc/odoc_odoc__Url.cmt
+   odoc/odoc_odoc__Url.cmx
+   odoc/or_error.ml
+   odoc/or_error.mli
+   odoc/rendering.ml
+   odoc/rendering.mli
+   odoc/resolver.ml
+   odoc/resolver.mli
+   odoc/sidebar.ml
+   odoc/source.ml
+   odoc/support_files.ml
+   odoc/support_files.mli
+   odoc/url.ml
+   odoc_utils/json.ml
+   odoc_utils/odoc_list.ml
+   odoc_utils/odoc_utils.a
+   odoc_utils/odoc_utils.cma
+   odoc_utils/odoc_utils.cmi
+   odoc_utils/odoc_utils.cmt
+   odoc_utils/odoc_utils.cmx
+   odoc_utils/odoc_utils.cmxa
+   odoc_utils/odoc_utils.ml
+   odoc_utils/odoc_utils__.cmi
+   odoc_utils/odoc_utils__.cmt
+   odoc_utils/odoc_utils__.cmx
+   odoc_utils/odoc_utils__.ml
+   odoc_utils/odoc_utils__Json.cmi
+   odoc_utils/odoc_utils__Json.cmt
+   odoc_utils/odoc_utils__Json.cmx
+   odoc_utils/odoc_utils__Odoc_list.cmi
+   odoc_utils/odoc_utils__Odoc_list.cmt
+   odoc_utils/odoc_utils__Odoc_list.cmx
+   odoc_utils/odoc_utils__Tree.cmi
+   odoc_utils/odoc_utils__Tree.cmt
+   odoc_utils/odoc_utils__Tree.cmti
+   odoc_utils/odoc_utils__Tree.cmx
+   odoc_utils/tree.ml
+   odoc_utils/tree.mli
+   opam
+   search/html.ml
+   search/html.mli
+   search/odoc_search.a
+   search/odoc_search.cma
+   search/odoc_search.cmi
+   search/odoc_search.cmt
+   search/odoc_search.cmx
+   search/odoc_search.cmxa
+   search/odoc_search.ml
+   search/odoc_search__Html.cmi
+   search/odoc_search__Html.cmt
+   search/odoc_search__Html.cmti
+   search/odoc_search__Html.cmx
+   search/odoc_search__Text.cmi
+   search/odoc_search__Text.cmt
+   search/odoc_search__Text.cmti
+   search/odoc_search__Text.cmx
+   search/text.ml
+   search/text.mli
+   search_html_frontend/odoc_html_frontend.a
+   search_html_frontend/odoc_html_frontend.cma
+   search_html_frontend/odoc_html_frontend.cmi
+   search_html_frontend/odoc_html_frontend.cmt
+   search_html_frontend/odoc_html_frontend.cmti
+   search_html_frontend/odoc_html_frontend.cmx
+   search_html_frontend/odoc_html_frontend.cmxa
+   search_html_frontend/odoc_html_frontend.ml
+   search_html_frontend/odoc_html_frontend.mli
+   syntax_highlighter/syntax_highlighter.a
+   syntax_highlighter/syntax_highlighter.cma
+   syntax_highlighter/syntax_highlighter.cmi
+   syntax_highlighter/syntax_highlighter.cmt
+   syntax_highlighter/syntax_highlighter.cmti
+   syntax_highlighter/syntax_highlighter.cmx
+   syntax_highlighter/syntax_highlighter.cmxa
+   syntax_highlighter/syntax_highlighter.ml
+   syntax_highlighter/syntax_highlighter.mli
+   xref2/cfrag.ml
+   xref2/compile.ml
+   xref2/compile.mli
+   xref2/component.ml
+   xref2/component.mli
+   xref2/cpath.ml
+   xref2/env.ml
+   xref2/env.mli
+   xref2/errors.ml
+   xref2/expand_tools.ml
+   xref2/find.ml
+   xref2/find.mli
+   xref2/ident.ml
+   xref2/lang_of.ml
+   xref2/lang_of.mli
+   xref2/link.ml
+   xref2/link.mli
+   xref2/lookup_failures.ml
+   xref2/lookup_failures.mli
+   xref2/odoc_xref2.a
+   xref2/odoc_xref2.cma
+   xref2/odoc_xref2.cmi
+   xref2/odoc_xref2.cmt
+   xref2/odoc_xref2.cmx
+   xref2/odoc_xref2.cmxa
+   xref2/odoc_xref2.ml
+   xref2/odoc_xref2__Cfrag.cmi
+   xref2/odoc_xref2__Cfrag.cmt
+   xref2/odoc_xref2__Cfrag.cmx
+   xref2/odoc_xref2__Compile.cmi
+   xref2/odoc_xref2__Compile.cmt
+   xref2/odoc_xref2__Compile.cmti
+   xref2/odoc_xref2__Compile.cmx
+   xref2/odoc_xref2__Component.cmi
+   xref2/odoc_xref2__Component.cmt
+   xref2/odoc_xref2__Component.cmti
+   xref2/odoc_xref2__Component.cmx
+   xref2/odoc_xref2__Cpath.cmi
+   xref2/odoc_xref2__Cpath.cmt
+   xref2/odoc_xref2__Cpath.cmx
+   xref2/odoc_xref2__Env.cmi
+   xref2/odoc_xref2__Env.cmt
+   xref2/odoc_xref2__Env.cmti
+   xref2/odoc_xref2__Env.cmx
+   xref2/odoc_xref2__Errors.cmi
+   xref2/odoc_xref2__Errors.cmt
+   xref2/odoc_xref2__Errors.cmx
+   xref2/odoc_xref2__Expand_tools.cmi
+   xref2/odoc_xref2__Expand_tools.cmt
+   xref2/odoc_xref2__Expand_tools.cmx
+   xref2/odoc_xref2__Find.cmi
+   xref2/odoc_xref2__Find.cmt
+   xref2/odoc_xref2__Find.cmti
+   xref2/odoc_xref2__Find.cmx
+   xref2/odoc_xref2__Ident.cmi
+   xref2/odoc_xref2__Ident.cmt
+   xref2/odoc_xref2__Ident.cmx
+   xref2/odoc_xref2__Lang_of.cmi
+   xref2/odoc_xref2__Lang_of.cmt
+   xref2/odoc_xref2__Lang_of.cmti
+   xref2/odoc_xref2__Lang_of.cmx
+   xref2/odoc_xref2__Link.cmi
+   xref2/odoc_xref2__Link.cmt
+   xref2/odoc_xref2__Link.cmti
+   xref2/odoc_xref2__Link.cmx
+   xref2/odoc_xref2__Lookup_failures.cmi
+   xref2/odoc_xref2__Lookup_failures.cmt
+   xref2/odoc_xref2__Lookup_failures.cmti
+   xref2/odoc_xref2__Lookup_failures.cmx
+   xref2/odoc_xref2__Ref_tools.cmi
+   xref2/odoc_xref2__Ref_tools.cmt
+   xref2/odoc_xref2__Ref_tools.cmti
+   xref2/odoc_xref2__Ref_tools.cmx
+   xref2/odoc_xref2__Shape_tools.cmi
+   xref2/odoc_xref2__Shape_tools.cmt
+   xref2/odoc_xref2__Shape_tools.cmti
+   xref2/odoc_xref2__Shape_tools.cmx
+   xref2/odoc_xref2__Strengthen.cmi
+   xref2/odoc_xref2__Strengthen.cmt
+   xref2/odoc_xref2__Strengthen.cmx
+   xref2/odoc_xref2__Subst.cmi
+   xref2/odoc_xref2__Subst.cmt
+   xref2/odoc_xref2__Subst.cmti
+   xref2/odoc_xref2__Subst.cmx
+   xref2/odoc_xref2__Tools.cmi
+   xref2/odoc_xref2__Tools.cmt
+   xref2/odoc_xref2__Tools.cmti
+   xref2/odoc_xref2__Tools.cmx
+   xref2/ref_tools.ml
+   xref2/ref_tools.mli
+   xref2/shape_tools.ml
+   xref2/shape_tools.mli
+   xref2/strengthen.ml
+   xref2/subst.ml
+   xref2/subst.mli
+   xref2/tools.ml
+   xref2/tools.mli
+   xref_test/common.ml
+   xref_test/odoc_xref_test.cma
+   xref_test/odoc_xref_test.cmi
+   xref_test/odoc_xref_test.cmt
+   xref_test/odoc_xref_test.ml
+   xref_test/odoc_xref_test__Common.cmi
+   xref_test/odoc_xref_test__Common.cmt))
+ (libexec
+  (__private__/odoc_model_semantics_test/odoc_model_semantics_test.cmxs
+   __private__/type_desc_to_yojson/type_desc_to_yojson.cmxs
+   document/odoc_document.cmxs
+   examples/odoc_examples.cmxs
+   html/odoc_html.cmxs
+   html_support_files/odoc_html_support_files.cmxs
+   index/odoc_index.cmxs
+   json_index/odoc_json_index.cmxs
+   latex/odoc_latex.cmxs
+   loader/odoc_loader.cmxs
+   manpage/odoc_manpage.cmxs
+   model/odoc_model.cmxs
+   model_desc/odoc_model_desc.cmxs
+   occurrences/odoc_occurrences.cmxs
+   odoc/odoc_odoc.cmxs
+   odoc_utils/odoc_utils.cmxs
+   search/odoc_search.cmxs
+   search_html_frontend/odoc_html_frontend.cmxs
+   syntax_highlighter/syntax_highlighter.cmxs
+   xref2/odoc_xref2.cmxs))
+ (bin (odoc))
+ (share
+  (odoc-theme/default/fonts/KaTeX_AMS-Regular.woff2
+   odoc-theme/default/fonts/KaTeX_Caligraphic-Bold.woff2
+   odoc-theme/default/fonts/KaTeX_Caligraphic-Regular.woff2
+   odoc-theme/default/fonts/KaTeX_Fraktur-Bold.woff2
+   odoc-theme/default/fonts/KaTeX_Fraktur-Regular.woff2
+   odoc-theme/default/fonts/KaTeX_Main-Bold.woff2
+   odoc-theme/default/fonts/KaTeX_Main-BoldItalic.woff2
+   odoc-theme/default/fonts/KaTeX_Main-Italic.woff2
+   odoc-theme/default/fonts/KaTeX_Main-Regular.woff2
+   odoc-theme/default/fonts/KaTeX_Math-BoldItalic.woff2
+   odoc-theme/default/fonts/KaTeX_Math-Italic.woff2
+   odoc-theme/default/fonts/KaTeX_SansSerif-Bold.woff2
+   odoc-theme/default/fonts/KaTeX_SansSerif-Italic.woff2
+   odoc-theme/default/fonts/KaTeX_SansSerif-Regular.woff2
+   odoc-theme/default/fonts/KaTeX_Script-Regular.woff2
+   odoc-theme/default/fonts/KaTeX_Size1-Regular.woff2
+   odoc-theme/default/fonts/KaTeX_Size2-Regular.woff2
+   odoc-theme/default/fonts/KaTeX_Size3-Regular.woff2
+   odoc-theme/default/fonts/KaTeX_Size4-Regular.woff2
+   odoc-theme/default/fonts/KaTeX_Typewriter-Regular.woff2
+   odoc-theme/default/fonts/fira-mono-v14-latin-500.woff2
+   odoc-theme/default/fonts/fira-mono-v14-latin-regular.woff2
+   odoc-theme/default/fonts/fira-sans-v17-latin-500.woff2
+   odoc-theme/default/fonts/fira-sans-v17-latin-500italic.woff2
+   odoc-theme/default/fonts/fira-sans-v17-latin-700.woff2
+   odoc-theme/default/fonts/fira-sans-v17-latin-700italic.woff2
+   odoc-theme/default/fonts/fira-sans-v17-latin-italic.woff2
+   odoc-theme/default/fonts/fira-sans-v17-latin-regular.woff2
+   odoc-theme/default/fonts/noticia-text-v15-latin-700.woff2
+   odoc-theme/default/fonts/noticia-text-v15-latin-italic.woff2
+   odoc-theme/default/fonts/noticia-text-v15-latin-regular.woff2
+   odoc-theme/default/odoc.css))
+ (doc
+  (CHANGES.md
+   LICENSE
+   README.md
+   odoc-config.sexp
+   odoc-pages/cheatsheet.mld
+   odoc-pages/deprecated/index.mld
+   odoc-pages/deprecated/parent_child_spec.mld
+   odoc-pages/driver.mld
+   odoc-pages/dune.mld
+   odoc-pages/features.mld
+   odoc-pages/index.mld
+   odoc-pages/interface.mld
+   odoc-pages/json.mld
+   odoc-pages/ocamldoc_differences.mld
+   odoc-pages/odoc_for_authors.mld
+   odoc-pages/odoc_logo_placeholder.jpg)))
+(library
+ (name odoc.document)
+ (kind normal)
+ (archives
+  (byte document/odoc_document.cma)
+  (native document/odoc_document.cmxa))
+ (plugins
+  (byte document/odoc_document.cma)
+  (native document/odoc_document.cmxs))
+ (native_archives document/odoc_document.a)
+ (requires
+  odoc.model
+  fpath
+  astring
+  odoc.syntax_highlighter
+  odoc.odoc_utils
+  odoc.index)
+ (main_module_name Odoc_document)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_document)
+     (visibility public)
+     (kind alias)
+     (source (path Odoc_document) (impl (path document/odoc_document.ml-gen))))
+    (name Odoc_document)
+    (modules
+     (module
+      (obj_name odoc_document__Codefmt)
+      (visibility public)
+      (source
+       (path Codefmt)
+       (intf (path document/codefmt.mli))
+       (impl (path document/codefmt.ml))))
+     (module
+      (obj_name odoc_document__Comment)
+      (visibility public)
+      (source (path Comment) (impl (path document/comment.ml))))
+     (module
+      (obj_name odoc_document__Compat)
+      (visibility public)
+      (source (path Compat) (impl (path document/compat.ml))))
+     (module
+      (obj_name odoc_document__Doctree)
+      (visibility public)
+      (source (path Doctree) (impl (path document/doctree.ml))))
+     (module
+      (obj_name odoc_document__Generator)
+      (visibility public)
+      (source
+       (path Generator)
+       (intf (path document/generator.mli))
+       (impl (path document/generator.ml))))
+     (module
+      (obj_name odoc_document__Generator_signatures)
+      (visibility public)
+      (source
+       (path Generator_signatures)
+       (impl (path document/generator_signatures.ml))))
+     (module
+      (obj_name odoc_document__ML)
+      (visibility public)
+      (source
+       (path ML)
+       (intf (path document/ML.mli))
+       (impl (path document/ML.ml))))
+     (module
+      (obj_name odoc_document__Reason)
+      (visibility public)
+      (source
+       (path Reason)
+       (intf (path document/reason.mli))
+       (impl (path document/reason.ml))))
+     (module
+      (obj_name odoc_document__Renderer)
+      (visibility public)
+      (source (path Renderer) (impl (path document/renderer.ml))))
+     (module
+      (obj_name odoc_document__Sidebar)
+      (visibility public)
+      (source
+       (path Sidebar)
+       (intf (path document/sidebar.mli))
+       (impl (path document/sidebar.ml))))
+     (module
+      (obj_name odoc_document__Targets)
+      (visibility public)
+      (source
+       (path Targets)
+       (intf (path document/targets.mli))
+       (impl (path document/targets.ml))))
+     (module
+      (obj_name odoc_document__Types)
+      (visibility public)
+      (source (path Types) (impl (path document/types.ml))))
+     (module
+      (obj_name odoc_document__Url)
+      (visibility public)
+      (source
+       (path Url)
+       (intf (path document/url.mli))
+       (impl (path document/url.ml))))
+     (module
+      (obj_name odoc_document__Utils)
+      (visibility public)
+      (source
+       (path Utils)
+       (intf (path document/utils.mli))
+       (impl (path document/utils.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.examples)
+ (kind normal)
+ (archives
+  (byte examples/odoc_examples.cma)
+  (native examples/odoc_examples.cmxa))
+ (plugins
+  (byte examples/odoc_examples.cma)
+  (native examples/odoc_examples.cmxs))
+ (native_archives examples/odoc_examples.a)
+ (main_module_name Odoc_examples)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_examples__)
+     (visibility public)
+     (kind alias)
+     (source
+      (path Odoc_examples__)
+      (impl (path examples/odoc_examples__.ml-gen))))
+    (name Odoc_examples)
+    (modules
+     (module
+      (obj_name odoc_examples__Expansion)
+      (visibility public)
+      (source (path Expansion) (intf (path examples/expansion.mli))))
+     (module
+      (obj_name odoc_examples__Markup)
+      (visibility public)
+      (source (path Markup) (intf (path examples/markup.mli))))
+     (module
+      (obj_name odoc_examples)
+      (visibility public)
+      (source (path Odoc_examples) (impl (path examples/odoc_examples.ml))))
+     (module
+      (obj_name odoc_examples__Resolution)
+      (visibility public)
+      (source (path Resolution) (intf (path examples/resolution.mli))))
+     (module
+      (obj_name odoc_examples__Unexposed)
+      (visibility public)
+      (source (path Unexposed) (intf (path examples/unexposed.mli))))
+     (module
+      (obj_name odoc_examples__Wrapping)
+      (visibility public)
+      (source (path Wrapping) (intf (path examples/wrapping.mli))))))
+   (wrapped true))))
+(library
+ (name odoc.html)
+ (kind normal)
+ (archives (byte html/odoc_html.cma) (native html/odoc_html.cmxa))
+ (plugins (byte html/odoc_html.cma) (native html/odoc_html.cmxs))
+ (native_archives html/odoc_html.a)
+ (requires odoc.model odoc.document tyxml)
+ (main_module_name Odoc_html)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_html__)
+     (visibility public)
+     (kind alias)
+     (source (path Odoc_html__) (impl (path html/odoc_html__.ml-gen))))
+    (name Odoc_html)
+    (modules
+     (module
+      (obj_name odoc_html__Config)
+      (visibility public)
+      (source
+       (path Config)
+       (intf (path html/config.mli))
+       (impl (path html/config.ml))))
+     (module
+      (obj_name odoc_html__Generator)
+      (visibility public)
+      (source
+       (path Generator)
+       (intf (path html/generator.mli))
+       (impl (path html/generator.ml))))
+     (module
+      (obj_name odoc_html__Html_fragment_json)
+      (visibility public)
+      (source
+       (path Html_fragment_json)
+       (intf (path html/html_fragment_json.mli))
+       (impl (path html/html_fragment_json.ml))))
+     (module
+      (obj_name odoc_html__Html_page)
+      (visibility public)
+      (source
+       (path Html_page)
+       (intf (path html/html_page.mli))
+       (impl (path html/html_page.ml))))
+     (module
+      (obj_name odoc_html__Html_source)
+      (visibility public)
+      (source
+       (path Html_source)
+       (intf (path html/html_source.mli))
+       (impl (path html/html_source.ml))))
+     (module
+      (obj_name odoc_html__Link)
+      (visibility public)
+      (source
+       (path Link)
+       (intf (path html/link.mli))
+       (impl (path html/link.ml))))
+     (module
+      (obj_name odoc_html)
+      (visibility public)
+      (source (path Odoc_html) (impl (path html/odoc_html.ml))))
+     (module
+      (obj_name odoc_html__Sidebar)
+      (visibility public)
+      (source
+       (path Sidebar)
+       (intf (path html/sidebar.mli))
+       (impl (path html/sidebar.ml))))
+     (module
+      (obj_name odoc_html__Types)
+      (visibility public)
+      (source (path Types) (impl (path html/types.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.html_support_files)
+ (kind normal)
+ (archives
+  (byte html_support_files/odoc_html_support_files.cma)
+  (native html_support_files/odoc_html_support_files.cmxa))
+ (plugins
+  (byte html_support_files/odoc_html_support_files.cma)
+  (native html_support_files/odoc_html_support_files.cmxs))
+ (native_archives html_support_files/odoc_html_support_files.a)
+ (modes byte native)
+ (modules
+  (singleton
+   (obj_name odoc_html_support_files)
+   (visibility public)
+   (source
+    (path Odoc_html_support_files)
+    (impl (path html_support_files/odoc_html_support_files.ml))))))
+(library
+ (name odoc.index)
+ (kind normal)
+ (archives (byte index/odoc_index.cma) (native index/odoc_index.cmxa))
+ (plugins (byte index/odoc_index.cma) (native index/odoc_index.cmxs))
+ (native_archives index/odoc_index.a)
+ (requires odoc.model odoc.search_html_frontend tyxml odoc.odoc_utils)
+ (main_module_name Odoc_index)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_index__)
+     (visibility public)
+     (kind alias)
+     (source (path Odoc_index__) (impl (path index/odoc_index__.ml-gen))))
+    (name Odoc_index)
+    (modules
+     (module
+      (obj_name odoc_index__Entry)
+      (visibility public)
+      (source
+       (path Entry)
+       (intf (path index/entry.mli))
+       (impl (path index/entry.ml))))
+     (module
+      (obj_name odoc_index__In_progress)
+      (visibility public)
+      (source
+       (path In_progress)
+       (intf (path index/in_progress.mli))
+       (impl (path index/in_progress.ml))))
+     (module
+      (obj_name odoc_index)
+      (visibility public)
+      (source (path Odoc_index) (impl (path index/odoc_index.ml))))
+     (module
+      (obj_name odoc_index__Skeleton)
+      (visibility public)
+      (source
+       (path Skeleton)
+       (intf (path index/skeleton.mli))
+       (impl (path index/skeleton.ml))))
+     (module
+      (obj_name odoc_index__Skeleton_of)
+      (visibility public)
+      (source
+       (path Skeleton_of)
+       (intf (path index/skeleton_of.mli))
+       (impl (path index/skeleton_of.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.json_index)
+ (kind normal)
+ (archives
+  (byte json_index/odoc_json_index.cma)
+  (native json_index/odoc_json_index.cmxa))
+ (plugins
+  (byte json_index/odoc_json_index.cma)
+  (native json_index/odoc_json_index.cmxs))
+ (native_archives json_index/odoc_json_index.a)
+ (requires tyxml odoc.model odoc.search odoc.occurrences)
+ (main_module_name Odoc_json_index)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_json_index)
+     (visibility public)
+     (kind alias)
+     (source
+      (path Odoc_json_index)
+      (impl (path json_index/odoc_json_index.ml-gen))))
+    (name Odoc_json_index)
+    (modules
+     (module
+      (obj_name odoc_json_index__Json_display)
+      (visibility public)
+      (source
+       (path Json_display)
+       (intf (path json_index/json_display.mli))
+       (impl (path json_index/json_display.ml))))
+     (module
+      (obj_name odoc_json_index__Json_search)
+      (visibility public)
+      (source
+       (path Json_search)
+       (intf (path json_index/json_search.mli))
+       (impl (path json_index/json_search.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.latex)
+ (kind normal)
+ (archives (byte latex/odoc_latex.cma) (native latex/odoc_latex.cmxa))
+ (plugins (byte latex/odoc_latex.cma) (native latex/odoc_latex.cmxs))
+ (native_archives latex/odoc_latex.a)
+ (requires odoc.model odoc.document fmt fpath odoc.odoc_utils)
+ (main_module_name Odoc_latex)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_latex)
+     (visibility public)
+     (kind alias)
+     (source (path Odoc_latex) (impl (path latex/odoc_latex.ml-gen))))
+    (name Odoc_latex)
+    (modules
+     (module
+      (obj_name odoc_latex__Generator)
+      (visibility public)
+      (source
+       (path Generator)
+       (intf (path latex/generator.mli))
+       (impl (path latex/generator.ml))))
+     (module
+      (obj_name odoc_latex__Raw)
+      (visibility public)
+      (source
+       (path Raw)
+       (intf (path latex/raw.mli))
+       (impl (path latex/raw.ml))))
+     (module
+      (obj_name odoc_latex__Types)
+      (visibility public)
+      (source (path Types) (impl (path latex/types.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.loader)
+ (kind normal)
+ (archives (byte loader/odoc_loader.cma) (native loader/odoc_loader.cmxa))
+ (plugins (byte loader/odoc_loader.cma) (native loader/odoc_loader.cmxs))
+ (native_archives loader/odoc_loader.a)
+ (requires
+  odoc.model
+  odoc-parser
+  odoc.syntax_highlighter
+  odoc.document
+  odoc.odoc_utils
+  compiler-libs.optcomp)
+ (main_module_name Odoc_loader)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_loader__)
+     (visibility public)
+     (kind alias)
+     (source (path Odoc_loader__) (impl (path loader/odoc_loader__.ml-gen))))
+    (name Odoc_loader)
+    (modules
+     (module
+      (obj_name odoc_loader__Cmi)
+      (visibility public)
+      (source
+       (path Cmi)
+       (intf (path loader/cmi.mli))
+       (impl (path loader/cmi.ml))))
+     (module
+      (obj_name odoc_loader__Cmt)
+      (visibility public)
+      (source
+       (path Cmt)
+       (intf (path loader/cmt.mli))
+       (impl (path loader/cmt.ml))))
+     (module
+      (obj_name odoc_loader__Cmti)
+      (visibility public)
+      (source
+       (path Cmti)
+       (intf (path loader/cmti.mli))
+       (impl (path loader/cmti.ml))))
+     (module
+      (obj_name odoc_loader__Doc_attr)
+      (visibility public)
+      (source
+       (path Doc_attr)
+       (intf (path loader/doc_attr.mli))
+       (impl (path loader/doc_attr.ml))))
+     (module
+      (obj_name odoc_loader__Ident_env)
+      (visibility public)
+      (source
+       (path Ident_env)
+       (intf (path loader/ident_env.mli))
+       (impl (path loader/ident_env.ml))))
+     (module
+      (obj_name odoc_loader__Implementation)
+      (visibility public)
+      (source
+       (path Implementation)
+       (intf (path loader/implementation.mli))
+       (impl (path loader/implementation.ml))))
+     (module
+      (obj_name odoc_loader)
+      (visibility public)
+      (source
+       (path Odoc_loader)
+       (intf (path loader/odoc_loader.mli))
+       (impl (path loader/odoc_loader.ml))))
+     (module
+      (obj_name odoc_loader__Typedtree_traverse)
+      (visibility public)
+      (source
+       (path Typedtree_traverse)
+       (impl (path loader/typedtree_traverse.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.manpage)
+ (kind normal)
+ (archives (byte manpage/odoc_manpage.cma) (native manpage/odoc_manpage.cmxa))
+ (plugins (byte manpage/odoc_manpage.cma) (native manpage/odoc_manpage.cmxs))
+ (native_archives manpage/odoc_manpage.a)
+ (requires odoc.model odoc.document)
+ (main_module_name Odoc_manpage)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_manpage)
+     (visibility public)
+     (kind alias)
+     (source (path Odoc_manpage) (impl (path manpage/odoc_manpage.ml-gen))))
+    (name Odoc_manpage)
+    (modules
+     (module
+      (obj_name odoc_manpage__Generator)
+      (visibility public)
+      (source
+       (path Generator)
+       (intf (path manpage/generator.mli))
+       (impl (path manpage/generator.ml))))
+     (module
+      (obj_name odoc_manpage__Link)
+      (visibility public)
+      (source (path Link) (impl (path manpage/link.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.model)
+ (kind normal)
+ (archives (byte model/odoc_model.cma) (native model/odoc_model.cmxa))
+ (plugins (byte model/odoc_model.cma) (native model/odoc_model.cmxs))
+ (native_archives model/odoc_model.a)
+ (requires result compiler-libs.common odoc-parser odoc.odoc_utils)
+ (main_module_name Odoc_model)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_model__)
+     (visibility public)
+     (kind alias)
+     (source (path Odoc_model__) (impl (path model/odoc_model__.ml-gen))))
+    (name Odoc_model)
+    (modules
+     (module
+      (obj_name odoc_model__Comment)
+      (visibility public)
+      (source (path Comment) (impl (path model/comment.ml))))
+     (module
+      (obj_name odoc_model__Compat)
+      (visibility public)
+      (source (path Compat) (impl (path model/compat.ml))))
+     (module
+      (obj_name odoc_model__Error)
+      (visibility public)
+      (source
+       (path Error)
+       (intf (path model/error.mli))
+       (impl (path model/error.ml))))
+     (module
+      (obj_name odoc_model__Frontmatter)
+      (visibility public)
+      (source
+       (path Frontmatter)
+       (intf (path model/frontmatter.mli))
+       (impl (path model/frontmatter.ml))))
+     (module
+      (obj_name odoc_model__Lang)
+      (visibility public)
+      (source (path Lang) (impl (path model/lang.ml))))
+     (module
+      (obj_name odoc_model__Location_)
+      (visibility public)
+      (source
+       (path Location_)
+       (intf (path model/location_.mli))
+       (impl (path model/location_.ml))))
+     (module
+      (obj_name odoc_model__Names)
+      (visibility public)
+      (source
+       (path Names)
+       (intf (path model/names.mli))
+       (impl (path model/names.ml))))
+     (module
+      (obj_name odoc_model)
+      (visibility public)
+      (source (path Odoc_model) (impl (path model/odoc_model.ml))))
+     (module
+      (obj_name odoc_model__Paths)
+      (visibility public)
+      (source
+       (path Paths)
+       (intf (path model/paths.mli))
+       (impl (path model/paths.ml))))
+     (module
+      (obj_name odoc_model__Paths_types)
+      (visibility public)
+      (source (path Paths_types) (impl (path model/paths_types.ml))))
+     (module
+      (obj_name odoc_model__Reference)
+      (visibility public)
+      (source
+       (path Reference)
+       (intf (path model/reference.mli))
+       (impl (path model/reference.ml))))
+     (module
+      (obj_name odoc_model__Root)
+      (visibility public)
+      (source
+       (path Root)
+       (intf (path model/root.mli))
+       (impl (path model/root.ml))))
+     (module
+      (obj_name odoc_model__Semantics)
+      (visibility public)
+      (source
+       (path Semantics)
+       (intf (path model/semantics.mli))
+       (impl (path model/semantics.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.model_desc)
+ (kind normal)
+ (archives
+  (byte model_desc/odoc_model_desc.cma)
+  (native model_desc/odoc_model_desc.cmxa))
+ (plugins
+  (byte model_desc/odoc_model_desc.cma)
+  (native model_desc/odoc_model_desc.cmxs))
+ (native_archives model_desc/odoc_model_desc.a)
+ (requires odoc.model)
+ (main_module_name Odoc_model_desc)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_model_desc)
+     (visibility public)
+     (kind alias)
+     (source
+      (path Odoc_model_desc)
+      (impl (path model_desc/odoc_model_desc.ml-gen))))
+    (name Odoc_model_desc)
+    (modules
+     (module
+      (obj_name odoc_model_desc__Comment_desc)
+      (visibility public)
+      (source
+       (path Comment_desc)
+       (intf (path model_desc/comment_desc.mli))
+       (impl (path model_desc/comment_desc.ml))))
+     (module
+      (obj_name odoc_model_desc__Lang_desc)
+      (visibility public)
+      (source (path Lang_desc) (impl (path model_desc/lang_desc.ml))))
+     (module
+      (obj_name odoc_model_desc__Paths_desc)
+      (visibility public)
+      (source
+       (path Paths_desc)
+       (intf (path model_desc/paths_desc.mli))
+       (impl (path model_desc/paths_desc.ml))))
+     (module
+      (obj_name odoc_model_desc__Type_desc)
+      (visibility public)
+      (source (path Type_desc) (impl (path model_desc/type_desc.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.ocamlary)
+ (kind normal)
+ (virtual)
+ (main_module_name Ocamlary)
+ (modes byte native)
+ (modules
+  (singleton
+   (obj_name ocamlary)
+   (visibility public)
+   (kind virtual)
+   (source (path Ocamlary) (intf (path ocamlary/ocamlary.mli))))))
+(library
+ (name odoc.occurrences)
+ (kind normal)
+ (archives
+  (byte occurrences/odoc_occurrences.cma)
+  (native occurrences/odoc_occurrences.cmxa))
+ (plugins
+  (byte occurrences/odoc_occurrences.cma)
+  (native occurrences/odoc_occurrences.cmxs))
+ (native_archives occurrences/odoc_occurrences.a)
+ (requires odoc.model)
+ (main_module_name Odoc_occurrences)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_occurrences__)
+     (visibility public)
+     (kind alias)
+     (source
+      (path Odoc_occurrences__)
+      (impl (path occurrences/odoc_occurrences__.ml-gen))))
+    (name Odoc_occurrences)
+    (modules
+     (module
+      (obj_name odoc_occurrences)
+      (visibility public)
+      (source
+       (path Odoc_occurrences)
+       (intf (path occurrences/odoc_occurrences.mli))
+       (impl (path occurrences/odoc_occurrences.ml))))
+     (module
+      (obj_name odoc_occurrences__Table)
+      (visibility public)
+      (source
+       (path Table)
+       (intf (path occurrences/table.mli))
+       (impl (path occurrences/table.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.odoc)
+ (kind normal)
+ (archives (byte odoc/odoc_odoc.cma) (native odoc/odoc_odoc.cmxa))
+ (plugins (byte odoc/odoc_odoc.cma) (native odoc/odoc_odoc.cmxs))
+ (native_archives odoc/odoc_odoc.a)
+ (requires
+  compiler-libs.common
+  fpath
+  odoc.html
+  odoc.html_support_files
+  odoc.latex
+  odoc.loader
+  odoc.manpage
+  odoc.model
+  odoc.json_index
+  odoc.xref2
+  odoc.occurrences
+  tyxml
+  unix)
+ (main_module_name Odoc_odoc)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_odoc)
+     (visibility public)
+     (kind alias)
+     (source (path Odoc_odoc) (impl (path odoc/odoc_odoc.ml-gen))))
+    (name Odoc_odoc)
+    (modules
+     (module
+      (obj_name odoc_odoc__Asset)
+      (visibility public)
+      (source
+       (path Asset)
+       (intf (path odoc/asset.mli))
+       (impl (path odoc/asset.ml))))
+     (module
+      (obj_name odoc_odoc__Classify)
+      (visibility public)
+      (source (path Classify) (impl (path odoc/classify.ml))))
+     (module
+      (obj_name odoc_odoc__Compile)
+      (visibility public)
+      (source
+       (path Compile)
+       (intf (path odoc/compile.mli))
+       (impl (path odoc/compile.ml))))
+     (module
+      (obj_name odoc_odoc__Depends)
+      (visibility public)
+      (source
+       (path Depends)
+       (intf (path odoc/depends.mli))
+       (impl (path odoc/depends.ml))))
+     (module
+      (obj_name odoc_odoc__Fs)
+      (visibility public)
+      (source (path Fs) (intf (path odoc/fs.mli)) (impl (path odoc/fs.ml))))
+     (module
+      (obj_name odoc_odoc__Html_fragment)
+      (visibility public)
+      (source
+       (path Html_fragment)
+       (intf (path odoc/html_fragment.mli))
+       (impl (path odoc/html_fragment.ml))))
+     (module
+      (obj_name odoc_odoc__Html_page)
+      (visibility public)
+      (source
+       (path Html_page)
+       (intf (path odoc/html_page.mli))
+       (impl (path odoc/html_page.ml))))
+     (module
+      (obj_name odoc_odoc__Indexing)
+      (visibility public)
+      (source
+       (path Indexing)
+       (intf (path odoc/indexing.mli))
+       (impl (path odoc/indexing.ml))))
+     (module
+      (obj_name odoc_odoc__Latex)
+      (visibility public)
+      (source (path Latex) (impl (path odoc/latex.ml))))
+     (module
+      (obj_name odoc_odoc__Man_page)
+      (visibility public)
+      (source (path Man_page) (impl (path odoc/man_page.ml))))
+     (module
+      (obj_name odoc_odoc__Occurrences)
+      (visibility public)
+      (source (path Occurrences) (impl (path odoc/occurrences.ml))))
+     (module
+      (obj_name odoc_odoc__Odoc_file)
+      (visibility public)
+      (source
+       (path Odoc_file)
+       (intf (path odoc/odoc_file.mli))
+       (impl (path odoc/odoc_file.ml))))
+     (module
+      (obj_name odoc_odoc__Odoc_link)
+      (visibility public)
+      (source (path Odoc_link) (impl (path odoc/odoc_link.ml))))
+     (module
+      (obj_name odoc_odoc__Or_error)
+      (visibility public)
+      (source
+       (path Or_error)
+       (intf (path odoc/or_error.mli))
+       (impl (path odoc/or_error.ml))))
+     (module
+      (obj_name odoc_odoc__Rendering)
+      (visibility public)
+      (source
+       (path Rendering)
+       (intf (path odoc/rendering.mli))
+       (impl (path odoc/rendering.ml))))
+     (module
+      (obj_name odoc_odoc__Resolver)
+      (visibility public)
+      (source
+       (path Resolver)
+       (intf (path odoc/resolver.mli))
+       (impl (path odoc/resolver.ml))))
+     (module
+      (obj_name odoc_odoc__Sidebar)
+      (visibility public)
+      (source (path Sidebar) (impl (path odoc/sidebar.ml))))
+     (module
+      (obj_name odoc_odoc__Source)
+      (visibility public)
+      (source (path Source) (impl (path odoc/source.ml))))
+     (module
+      (obj_name odoc_odoc__Support_files)
+      (visibility public)
+      (source
+       (path Support_files)
+       (intf (path odoc/support_files.mli))
+       (impl (path odoc/support_files.ml))))
+     (module
+      (obj_name odoc_odoc__Url)
+      (visibility public)
+      (source (path Url) (impl (path odoc/url.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.odoc_utils)
+ (kind normal)
+ (archives
+  (byte odoc_utils/odoc_utils.cma)
+  (native odoc_utils/odoc_utils.cmxa))
+ (plugins
+  (byte odoc_utils/odoc_utils.cma)
+  (native odoc_utils/odoc_utils.cmxs))
+ (native_archives odoc_utils/odoc_utils.a)
+ (requires result astring)
+ (main_module_name Odoc_utils)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_utils__)
+     (visibility public)
+     (kind alias)
+     (source (path Odoc_utils__) (impl (path odoc_utils/odoc_utils__.ml-gen))))
+    (name Odoc_utils)
+    (modules
+     (module
+      (obj_name odoc_utils__Json)
+      (visibility public)
+      (source (path Json) (impl (path odoc_utils/json.ml))))
+     (module
+      (obj_name odoc_utils__Odoc_list)
+      (visibility public)
+      (source (path Odoc_list) (impl (path odoc_utils/odoc_list.ml))))
+     (module
+      (obj_name odoc_utils)
+      (visibility public)
+      (source (path Odoc_utils) (impl (path odoc_utils/odoc_utils.ml))))
+     (module
+      (obj_name odoc_utils__Tree)
+      (visibility public)
+      (source
+       (path Tree)
+       (intf (path odoc_utils/tree.mli))
+       (impl (path odoc_utils/tree.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.search)
+ (kind normal)
+ (archives (byte search/odoc_search.cma) (native search/odoc_search.cmxa))
+ (plugins (byte search/odoc_search.cma) (native search/odoc_search.cmxs))
+ (native_archives search/odoc_search.a)
+ (requires
+  odoc.html
+  odoc.model
+  odoc.search_html_frontend
+  tyxml
+  odoc.odoc_utils)
+ (main_module_name Odoc_search)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_search)
+     (visibility public)
+     (kind alias)
+     (source (path Odoc_search) (impl (path search/odoc_search.ml-gen))))
+    (name Odoc_search)
+    (modules
+     (module
+      (obj_name odoc_search__Html)
+      (visibility public)
+      (source
+       (path Html)
+       (intf (path search/html.mli))
+       (impl (path search/html.ml))))
+     (module
+      (obj_name odoc_search__Text)
+      (visibility public)
+      (source
+       (path Text)
+       (intf (path search/text.mli))
+       (impl (path search/text.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.search_html_frontend)
+ (kind normal)
+ (archives
+  (byte search_html_frontend/odoc_html_frontend.cma)
+  (native search_html_frontend/odoc_html_frontend.cmxa))
+ (plugins
+  (byte search_html_frontend/odoc_html_frontend.cma)
+  (native search_html_frontend/odoc_html_frontend.cmxs))
+ (native_archives search_html_frontend/odoc_html_frontend.a)
+ (requires tyxml odoc.odoc_utils)
+ (main_module_name Odoc_html_frontend)
+ (modes byte native)
+ (modules
+  (singleton
+   (obj_name odoc_html_frontend)
+   (visibility public)
+   (source
+    (path Odoc_html_frontend)
+    (intf (path search_html_frontend/odoc_html_frontend.mli))
+    (impl (path search_html_frontend/odoc_html_frontend.ml))))))
+(library
+ (name odoc.syntax_highlighter)
+ (kind normal)
+ (archives
+  (byte syntax_highlighter/syntax_highlighter.cma)
+  (native syntax_highlighter/syntax_highlighter.cmxa))
+ (plugins
+  (byte syntax_highlighter/syntax_highlighter.cma)
+  (native syntax_highlighter/syntax_highlighter.cmxs))
+ (native_archives syntax_highlighter/syntax_highlighter.a)
+ (requires compiler-libs.common)
+ (main_module_name Syntax_highlighter)
+ (modes byte native)
+ (modules
+  (singleton
+   (obj_name syntax_highlighter)
+   (visibility public)
+   (source
+    (path Syntax_highlighter)
+    (intf (path syntax_highlighter/syntax_highlighter.mli))
+    (impl (path syntax_highlighter/syntax_highlighter.ml))))))
+(library
+ (name odoc.xref2)
+ (kind normal)
+ (archives (byte xref2/odoc_xref2.cma) (native xref2/odoc_xref2.cmxa))
+ (plugins (byte xref2/odoc_xref2.cma) (native xref2/odoc_xref2.cmxs))
+ (native_archives xref2/odoc_xref2.a)
+ (requires odoc.model odoc.odoc_utils)
+ (main_module_name Odoc_xref2)
+ (modes byte native)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_xref2)
+     (visibility public)
+     (kind alias)
+     (source (path Odoc_xref2) (impl (path xref2/odoc_xref2.ml-gen))))
+    (name Odoc_xref2)
+    (modules
+     (module
+      (obj_name odoc_xref2__Cfrag)
+      (visibility public)
+      (source (path Cfrag) (impl (path xref2/cfrag.ml))))
+     (module
+      (obj_name odoc_xref2__Compile)
+      (visibility public)
+      (source
+       (path Compile)
+       (intf (path xref2/compile.mli))
+       (impl (path xref2/compile.ml))))
+     (module
+      (obj_name odoc_xref2__Component)
+      (visibility public)
+      (source
+       (path Component)
+       (intf (path xref2/component.mli))
+       (impl (path xref2/component.ml))))
+     (module
+      (obj_name odoc_xref2__Cpath)
+      (visibility public)
+      (source (path Cpath) (impl (path xref2/cpath.ml))))
+     (module
+      (obj_name odoc_xref2__Env)
+      (visibility public)
+      (source
+       (path Env)
+       (intf (path xref2/env.mli))
+       (impl (path xref2/env.ml))))
+     (module
+      (obj_name odoc_xref2__Errors)
+      (visibility public)
+      (source (path Errors) (impl (path xref2/errors.ml))))
+     (module
+      (obj_name odoc_xref2__Expand_tools)
+      (visibility public)
+      (source (path Expand_tools) (impl (path xref2/expand_tools.ml))))
+     (module
+      (obj_name odoc_xref2__Find)
+      (visibility public)
+      (source
+       (path Find)
+       (intf (path xref2/find.mli))
+       (impl (path xref2/find.ml))))
+     (module
+      (obj_name odoc_xref2__Ident)
+      (visibility public)
+      (source (path Ident) (impl (path xref2/ident.ml))))
+     (module
+      (obj_name odoc_xref2__Lang_of)
+      (visibility public)
+      (source
+       (path Lang_of)
+       (intf (path xref2/lang_of.mli))
+       (impl (path xref2/lang_of.ml))))
+     (module
+      (obj_name odoc_xref2__Link)
+      (visibility public)
+      (source
+       (path Link)
+       (intf (path xref2/link.mli))
+       (impl (path xref2/link.ml))))
+     (module
+      (obj_name odoc_xref2__Lookup_failures)
+      (visibility public)
+      (source
+       (path Lookup_failures)
+       (intf (path xref2/lookup_failures.mli))
+       (impl (path xref2/lookup_failures.ml))))
+     (module
+      (obj_name odoc_xref2__Ref_tools)
+      (visibility public)
+      (source
+       (path Ref_tools)
+       (intf (path xref2/ref_tools.mli))
+       (impl (path xref2/ref_tools.ml))))
+     (module
+      (obj_name odoc_xref2__Shape_tools)
+      (visibility public)
+      (source
+       (path Shape_tools)
+       (intf (path xref2/shape_tools.mli))
+       (impl (path xref2/shape_tools.ml))))
+     (module
+      (obj_name odoc_xref2__Strengthen)
+      (visibility public)
+      (source (path Strengthen) (impl (path xref2/strengthen.ml))))
+     (module
+      (obj_name odoc_xref2__Subst)
+      (visibility public)
+      (source
+       (path Subst)
+       (intf (path xref2/subst.mli))
+       (impl (path xref2/subst.ml))))
+     (module
+      (obj_name odoc_xref2__Tools)
+      (visibility public)
+      (source
+       (path Tools)
+       (intf (path xref2/tools.mli))
+       (impl (path xref2/tools.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.xref_test)
+ (kind normal)
+ (archives (byte xref_test/odoc_xref_test.cma))
+ (plugins (byte xref_test/odoc_xref_test.cma))
+ (requires
+  tyxml
+  compiler-libs.toplevel
+  compiler-libs.common
+  odoc.xref2
+  odoc.odoc
+  odoc.model)
+ (main_module_name Odoc_xref_test)
+ (modes byte)
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_xref_test)
+     (visibility public)
+     (kind alias)
+     (source
+      (path Odoc_xref_test)
+      (impl (path xref_test/odoc_xref_test.ml-gen))))
+    (name Odoc_xref_test)
+    (modules
+     (module
+      (obj_name odoc_xref_test__Common)
+      (visibility public)
+      (source (path Common) (impl (path xref_test/common.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.__private__.odoc_model_semantics_test)
+ (kind normal)
+ (archives
+  (byte __private__/odoc_model_semantics_test/odoc_model_semantics_test.cma)
+  (native
+   __private__/odoc_model_semantics_test/odoc_model_semantics_test.cmxa))
+ (plugins
+  (byte __private__/odoc_model_semantics_test/odoc_model_semantics_test.cma)
+  (native
+   __private__/odoc_model_semantics_test/odoc_model_semantics_test.cmxs))
+ (native_archives
+  __private__/odoc_model_semantics_test/odoc_model_semantics_test.a)
+ (requires
+  sexplib0
+  odoc.model
+  odoc.__private__.type_desc_to_yojson
+  ppx_inline_test.config
+  ppx_inline_test.runtime-lib
+  ppx_here.runtime-lib
+  ppx_expect.collector
+  ppx_expect.config)
+ (main_module_name Odoc_model_semantics_test)
+ (modes byte native)
+ (obj_dir
+  (public_cmi_ocaml_dir .public_cmi)
+  (public_cmi_melange_dir melange/.public_cmi_melange))
+ (modules
+  (wrapped
+   (group
+    (alias
+     (obj_name odoc_model_semantics_test)
+     (visibility public)
+     (kind alias)
+     (source
+      (path Odoc_model_semantics_test)
+      (impl
+       (path
+        __private__/odoc_model_semantics_test/odoc_model_semantics_test.ml-gen))))
+    (name Odoc_model_semantics_test)
+    (modules
+     (module
+      (obj_name odoc_model_semantics_test__Test)
+      (visibility public)
+      (source
+       (path Test)
+       (impl (path __private__/odoc_model_semantics_test/test.ml))))))
+   (wrapped true))))
+(library
+ (name odoc.__private__.type_desc_to_yojson)
+ (kind normal)
+ (archives
+  (byte __private__/type_desc_to_yojson/type_desc_to_yojson.cma)
+  (native __private__/type_desc_to_yojson/type_desc_to_yojson.cmxa))
+ (plugins
+  (byte __private__/type_desc_to_yojson/type_desc_to_yojson.cma)
+  (native __private__/type_desc_to_yojson/type_desc_to_yojson.cmxs))
+ (native_archives __private__/type_desc_to_yojson/type_desc_to_yojson.a)
+ (requires odoc.model_desc yojson)
+ (main_module_name Type_desc_to_yojson)
+ (modes byte native)
+ (obj_dir
+  (public_cmi_ocaml_dir .public_cmi)
+  (public_cmi_melange_dir melange/.public_cmi_melange))
+ (modules
+  (singleton
+   (obj_name type_desc_to_yojson)
+   (visibility public)
+   (source
+    (path Type_desc_to_yojson)
+    (impl (path __private__/type_desc_to_yojson/type_desc_to_yojson.ml))))))

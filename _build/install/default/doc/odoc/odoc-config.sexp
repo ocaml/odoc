@@ -1,0 +1,1 @@
+../../../../default/doc/odoc-config.sexp

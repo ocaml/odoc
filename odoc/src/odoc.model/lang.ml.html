@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: lang.ml (odoc.src.odoc.model)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">The odoc documentation generator</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; odoc.model &#x00BB; lang.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>lang.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">The odoc documentation generator</a><ul><li><a href="../../odoc_for_authors.html"><code>odoc</code> for Authors</a></li><li><a href="../../cheatsheet.html">Cheatsheet</a></li><li><a href="../../dune.html">Dune and odoc</a></li><li><a href="../../features.html">Language Features</a></li><li><a href="../../ocamldoc_differences.html">Markup Differences From OCamldoc</a></li><li><a href="../../interface.html"><code>odoc</code> Interface Guarantees</a></li><li><a href="../../driver.html">How to Drive <code>odoc</code></a></li><li><a href="../../json.html">JSON output</a></li><li><a href="../../deprecated/index.html">Deprecated features</a></li><li>Library <code>odoc.document</code><ul><li><a href="../../odoc.document/Odoc_document/index.html">Odoc_document</a></li></ul></li><li>Library <code>odoc.examples</code><ul><li><a href="../../odoc.examples/Odoc_examples/index.html">Odoc_examples</a></li></ul></li><li>Library <code>odoc.html</code><ul><li><a href="../../odoc.html/Odoc_html/index.html">Odoc_html</a></li></ul></li><li>Library <code>odoc.html_support_files</code><ul><li><a href="../../odoc.html_support_files/Odoc_html_support_files/index.html">Odoc_html_support_files</a></li></ul></li><li>Library <code>odoc.index</code><ul><li><a href="../../odoc.index/Odoc_index/index.html">Odoc_index</a></li></ul></li><li>Library <code>odoc.json_index</code><ul><li><a href="../../odoc.json_index/Odoc_json_index/index.html">Odoc_json_index</a></li></ul></li><li>Library <code>odoc.latex</code><ul><li><a href="../../odoc.latex/Odoc_latex/index.html">Odoc_latex</a></li></ul></li><li>Library <code>odoc.loader</code><ul><li><a href="../../odoc.loader/Odoc_loader/index.html">Odoc_loader</a></li></ul></li><li>Library <code>odoc.manpage</code><ul><li><a href="../../odoc.manpage/Odoc_manpage/index.html">Odoc_manpage</a></li></ul></li><li>Library <code>odoc.model</code><ul><li><a href="../../odoc.model/Odoc_model/index.html">Odoc_model</a></li></ul></li><li>Library <code>odoc.model_desc</code><ul><li><a href="../../odoc.model_desc/Odoc_model_desc/index.html">Odoc_model_desc</a></li></ul></li><li>Library <code>odoc.ocamlary</code><ul><li><a href="../../odoc.ocamlary/Ocamlary/index.html">Ocamlary</a></li></ul></li><li>Library <code>odoc.occurrences</code><ul><li><a href="../../odoc.occurrences/Odoc_occurrences/index.html">Odoc_occurrences</a></li></ul></li><li>Library <code>odoc.odoc</code><ul><li><a href="../../odoc.odoc/Odoc_odoc/index.html">Odoc_odoc</a></li></ul></li><li>Library <code>odoc.odoc_utils</code><ul><li><a href="../../odoc.odoc_utils/Odoc_utils/index.html">Odoc_utils</a></li></ul></li><li>Library <code>odoc.search</code><ul><li><a href="../../odoc.search/Odoc_search/index.html">Odoc_search</a></li></ul></li><li>Library <code>odoc.search_html_frontend</code><ul><li><a href="../../odoc.search_html_frontend/Odoc_html_frontend/index.html">Odoc_html_frontend</a></li></ul></li><li>Library <code>odoc.syntax_highlighter</code><ul><li><a href="../../odoc.syntax_highlighter/Syntax_highlighter/index.html">Syntax_highlighter</a></li></ul></li><li>Library <code>odoc.xref2</code><ul><li><a href="../../odoc.xref2/Odoc_xref2/index.html">Odoc_xref2</a></li></ul></li><li>Library <code>odoc.xref_test</code><ul><li><a href="../../odoc.xref_test/Odoc_xref_test/index.html">Odoc_xref_test</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>odoc.document<ul><li><a href="../odoc.document/ML.ml.html">ML.ml</a></li><li><a href="../odoc.document/codefmt.ml.html">codefmt.ml</a></li><li><a href="../odoc.document/comment.ml.html">comment.ml</a></li><li><a href="../odoc.document/compat.ml.html">compat.ml</a></li><li><a href="../odoc.document/doctree.ml.html">doctree.ml</a></li><li><a href="../odoc.document/generator.ml.html">generator.ml</a></li><li><a href="../odoc.document/generator_signatures.ml.html">generator_signatures.ml</a></li><li><a href="../odoc.document/odoc_document.ml.html">odoc_document.ml</a></li><li><a href="../odoc.document/reason.ml.html">reason.ml</a></li><li><a href="../odoc.document/renderer.ml.html">renderer.ml</a></li><li><a href="../odoc.document/sidebar.ml.html">sidebar.ml</a></li><li><a href="../odoc.document/targets.ml.html">targets.ml</a></li><li><a href="../odoc.document/types.ml.html">types.ml</a></li><li><a href="../odoc.document/url.ml.html">url.ml</a></li><li><a href="../odoc.document/utils.ml.html">utils.ml</a></li></ul></li><li>odoc.examples<ul><li><a href="../odoc.examples/odoc_examples.ml.html">odoc_examples.ml</a></li><li><a href="../odoc.examples/odoc_examples__.ml.html">odoc_examples__.ml</a></li></ul></li><li>odoc.html<ul><li><a href="../odoc.html/config.ml.html">config.ml</a></li><li><a href="../odoc.html/generator.ml.html">generator.ml</a></li><li><a href="../odoc.html/html_fragment_json.ml.html">html_fragment_json.ml</a></li><li><a href="../odoc.html/html_page.ml.html">html_page.ml</a></li><li><a href="../odoc.html/html_source.ml.html">html_source.ml</a></li><li><a href="../odoc.html/link.ml.html">link.ml</a></li><li><a href="../odoc.html/odoc_html.ml.html">odoc_html.ml</a></li><li><a href="../odoc.html/odoc_html__.ml.html">odoc_html__.ml</a></li><li><a href="../odoc.html/sidebar.ml.html">sidebar.ml</a></li><li><a href="../odoc.html/types.ml.html">types.ml</a></li></ul></li><li>odoc.html_support_files<ul><li><a href="../odoc.html_support_files/odoc_html_support_files.ml.html">odoc_html_support_files.ml</a></li></ul></li><li>odoc.index<ul><li><a href="../odoc.index/entry.ml.html">entry.ml</a></li><li><a href="../odoc.index/in_progress.ml.html">in_progress.ml</a></li><li><a href="../odoc.index/odoc_index.ml.html">odoc_index.ml</a></li><li><a href="../odoc.index/odoc_index__.ml.html">odoc_index__.ml</a></li><li><a href="../odoc.index/skeleton.ml.html">skeleton.ml</a></li><li><a href="../odoc.index/skeleton_of.ml.html">skeleton_of.ml</a></li></ul></li><li>odoc.json_index<ul><li><a href="../odoc.json_index/json_display.ml.html">json_display.ml</a></li><li><a href="../odoc.json_index/json_search.ml.html">json_search.ml</a></li><li><a href="../odoc.json_index/odoc_json_index.ml.html">odoc_json_index.ml</a></li></ul></li><li>odoc.latex<ul><li><a href="../odoc.latex/generator.ml.html">generator.ml</a></li><li><a href="../odoc.latex/odoc_latex.ml.html">odoc_latex.ml</a></li><li><a href="../odoc.latex/raw.ml.html">raw.ml</a></li><li><a href="../odoc.latex/types.ml.html">types.ml</a></li></ul></li><li>odoc.loader<ul><li><a href="../odoc.loader/cmi.ml.html">cmi.ml</a></li><li><a href="../odoc.loader/cmt.ml.html">cmt.ml</a></li><li><a href="../odoc.loader/cmti.ml.html">cmti.ml</a></li><li><a href="../odoc.loader/doc_attr.ml.html">doc_attr.ml</a></li><li><a href="../odoc.loader/ident_env.ml.html">ident_env.ml</a></li><li><a href="../odoc.loader/implementation.ml.html">implementation.ml</a></li><li><a href="../odoc.loader/odoc_loader.ml.html">odoc_loader.ml</a></li><li><a href="../odoc.loader/odoc_loader__.ml.html">odoc_loader__.ml</a></li><li><a href="../odoc.loader/typedtree_traverse.ml.html">typedtree_traverse.ml</a></li></ul></li><li>odoc.manpage<ul><li><a href="../odoc.manpage/generator.ml.html">generator.ml</a></li><li><a href="../odoc.manpage/link.ml.html">link.ml</a></li><li><a href="../odoc.manpage/odoc_manpage.ml.html">odoc_manpage.ml</a></li></ul></li><li>odoc.model<ul><li><a href="comment.ml.html">comment.ml</a></li><li><a href="compat.ml.html">compat.ml</a></li><li><a href="error.ml.html">error.ml</a></li><li><a href="frontmatter.ml.html">frontmatter.ml</a></li><li><a href="#" class="current_unit">lang.ml</a></li><li><a href="location_.ml.html">location_.ml</a></li><li><a href="names.ml.html">names.ml</a></li><li><a href="odoc_model.ml.html">odoc_model.ml</a></li><li><a href="odoc_model__.ml.html">odoc_model__.ml</a></li><li><a href="paths.ml.html">paths.ml</a></li><li><a href="paths_types.ml.html">paths_types.ml</a></li><li><a href="reference.ml.html">reference.ml</a></li><li><a href="root.ml.html">root.ml</a></li><li><a href="semantics.ml.html">semantics.ml</a></li></ul></li><li>odoc.model_desc<ul><li><a href="../odoc.model_desc/comment_desc.ml.html">comment_desc.ml</a></li><li><a href="../odoc.model_desc/lang_desc.ml.html">lang_desc.ml</a></li><li><a href="../odoc.model_desc/odoc_model_desc.ml.html">odoc_model_desc.ml</a></li><li><a href="../odoc.model_desc/paths_desc.ml.html">paths_desc.ml</a></li><li><a href="../odoc.model_desc/type_desc.ml.html">type_desc.ml</a></li></ul></li><li>odoc.occurrences<ul><li><a href="../odoc.occurrences/odoc_occurrences.ml.html">odoc_occurrences.ml</a></li><li><a href="../odoc.occurrences/odoc_occurrences__.ml.html">odoc_occurrences__.ml</a></li><li><a href="../odoc.occurrences/table.ml.html">table.ml</a></li></ul></li><li>odoc.odoc<ul><li><a href="../odoc.odoc/asset.ml.html">asset.ml</a></li><li><a href="../odoc.odoc/classify.ml.html">classify.ml</a></li><li><a href="../odoc.odoc/compile.ml.html">compile.ml</a></li><li><a href="../odoc.odoc/depends.ml.html">depends.ml</a></li><li><a href="../odoc.odoc/fs.ml.html">fs.ml</a></li><li><a href="../odoc.odoc/html_fragment.ml.html">html_fragment.ml</a></li><li><a href="../odoc.odoc/html_page.ml.html">html_page.ml</a></li><li><a href="../odoc.odoc/indexing.ml.html">indexing.ml</a></li><li><a href="../odoc.odoc/latex.ml.html">latex.ml</a></li><li><a href="../odoc.odoc/man_page.ml.html">man_page.ml</a></li><li><a href="../odoc.odoc/occurrences.ml.html">occurrences.ml</a></li><li><a href="../odoc.odoc/odoc_file.ml.html">odoc_file.ml</a></li><li><a href="../odoc.odoc/odoc_link.ml.html">odoc_link.ml</a></li><li><a href="../odoc.odoc/odoc_odoc.ml.html">odoc_odoc.ml</a></li><li><a href="../odoc.odoc/or_error.ml.html">or_error.ml</a></li><li><a href="../odoc.odoc/rendering.ml.html">rendering.ml</a></li><li><a href="../odoc.odoc/resolver.ml.html">resolver.ml</a></li><li><a href="../odoc.odoc/sidebar.ml.html">sidebar.ml</a></li><li><a href="../odoc.odoc/source.ml.html">source.ml</a></li><li><a href="../odoc.odoc/support_files.ml.html">support_files.ml</a></li><li><a href="../odoc.odoc/url.ml.html">url.ml</a></li></ul></li><li>odoc.odoc_utils<ul><li><a href="../odoc.odoc_utils/json.ml.html">json.ml</a></li><li><a href="../odoc.odoc_utils/odoc_list.ml.html">odoc_list.ml</a></li><li><a href="../odoc.odoc_utils/odoc_utils.ml.html">odoc_utils.ml</a></li><li><a href="../odoc.odoc_utils/odoc_utils__.ml.html">odoc_utils__.ml</a></li><li><a href="../odoc.odoc_utils/tree.ml.html">tree.ml</a></li></ul></li><li>odoc.search<ul><li><a href="../odoc.search/html.ml.html">html.ml</a></li><li><a href="../odoc.search/odoc_search.ml.html">odoc_search.ml</a></li><li><a href="../odoc.search/text.ml.html">text.ml</a></li></ul></li><li>odoc.search_html_frontend<ul><li><a href="../odoc.search_html_frontend/odoc_html_frontend.ml.html">odoc_html_frontend.ml</a></li></ul></li><li>odoc.syntax_highlighter<ul><li><a href="../odoc.syntax_highlighter/syntax_highlighter.ml.html">syntax_highlighter.ml</a></li></ul></li><li>odoc.xref2<ul><li><a href="../odoc.xref2/cfrag.ml.html">cfrag.ml</a></li><li><a href="../odoc.xref2/compile.ml.html">compile.ml</a></li><li><a href="../odoc.xref2/component.ml.html">component.ml</a></li><li><a href="../odoc.xref2/cpath.ml.html">cpath.ml</a></li><li><a href="../odoc.xref2/env.ml.html">env.ml</a></li><li><a href="../odoc.xref2/errors.ml.html">errors.ml</a></li><li><a href="../odoc.xref2/expand_tools.ml.html">expand_tools.ml</a></li><li><a href="../odoc.xref2/find.ml.html">find.ml</a></li><li><a href="../odoc.xref2/ident.ml.html">ident.ml</a></li><li><a href="../odoc.xref2/lang_of.ml.html">lang_of.ml</a></li><li><a href="../odoc.xref2/link.ml.html">link.ml</a></li><li><a href="../odoc.xref2/lookup_failures.ml.html">lookup_failures.ml</a></li><li><a href="../odoc.xref2/odoc_xref2.ml.html">odoc_xref2.ml</a></li><li><a href="../odoc.xref2/ref_tools.ml.html">ref_tools.ml</a></li><li><a href="../odoc.xref2/shape_tools.ml.html">shape_tools.ml</a></li><li><a href="../odoc.xref2/strengthen.ml.html">strengthen.ml</a></li><li><a href="../odoc.xref2/subst.ml.html">subst.ml</a></li><li><a href="../odoc.xref2/tools.ml.html">tools.ml</a></li></ul></li><li>odoc.xref_test<ul><li><a href="../odoc.xref_test/common.ml.html">common.ml</a></li><li><a href="../odoc.xref_test/odoc_xref_test.ml.html">odoc_xref_test.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+<a id="L121" class="source_line" href="#L121">121</a>
+<a id="L122" class="source_line" href="#L122">122</a>
+<a id="L123" class="source_line" href="#L123">123</a>
+<a id="L124" class="source_line" href="#L124">124</a>
+<a id="L125" class="source_line" href="#L125">125</a>
+<a id="L126" class="source_line" href="#L126">126</a>
+<a id="L127" class="source_line" href="#L127">127</a>
+<a id="L128" class="source_line" href="#L128">128</a>
+<a id="L129" class="source_line" href="#L129">129</a>
+<a id="L130" class="source_line" href="#L130">130</a>
+<a id="L131" class="source_line" href="#L131">131</a>
+<a id="L132" class="source_line" href="#L132">132</a>
+<a id="L133" class="source_line" href="#L133">133</a>
+<a id="L134" class="source_line" href="#L134">134</a>
+<a id="L135" class="source_line" href="#L135">135</a>
+<a id="L136" class="source_line" href="#L136">136</a>
+<a id="L137" class="source_line" href="#L137">137</a>
+<a id="L138" class="source_line" href="#L138">138</a>
+<a id="L139" class="source_line" href="#L139">139</a>
+<a id="L140" class="source_line" href="#L140">140</a>
+<a id="L141" class="source_line" href="#L141">141</a>
+<a id="L142" class="source_line" href="#L142">142</a>
+<a id="L143" class="source_line" href="#L143">143</a>
+<a id="L144" class="source_line" href="#L144">144</a>
+<a id="L145" class="source_line" href="#L145">145</a>
+<a id="L146" class="source_line" href="#L146">146</a>
+<a id="L147" class="source_line" href="#L147">147</a>
+<a id="L148" class="source_line" href="#L148">148</a>
+<a id="L149" class="source_line" href="#L149">149</a>
+<a id="L150" class="source_line" href="#L150">150</a>
+<a id="L151" class="source_line" href="#L151">151</a>
+<a id="L152" class="source_line" href="#L152">152</a>
+<a id="L153" class="source_line" href="#L153">153</a>
+<a id="L154" class="source_line" href="#L154">154</a>
+<a id="L155" class="source_line" href="#L155">155</a>
+<a id="L156" class="source_line" href="#L156">156</a>
+<a id="L157" class="source_line" href="#L157">157</a>
+<a id="L158" class="source_line" href="#L158">158</a>
+<a id="L159" class="source_line" href="#L159">159</a>
+<a id="L160" class="source_line" href="#L160">160</a>
+<a id="L161" class="source_line" href="#L161">161</a>
+<a id="L162" class="source_line" href="#L162">162</a>
+<a id="L163" class="source_line" href="#L163">163</a>
+<a id="L164" class="source_line" href="#L164">164</a>
+<a id="L165" class="source_line" href="#L165">165</a>
+<a id="L166" class="source_line" href="#L166">166</a>
+<a id="L167" class="source_line" href="#L167">167</a>
+<a id="L168" class="source_line" href="#L168">168</a>
+<a id="L169" class="source_line" href="#L169">169</a>
+<a id="L170" class="source_line" href="#L170">170</a>
+<a id="L171" class="source_line" href="#L171">171</a>
+<a id="L172" class="source_line" href="#L172">172</a>
+<a id="L173" class="source_line" href="#L173">173</a>
+<a id="L174" class="source_line" href="#L174">174</a>
+<a id="L175" class="source_line" href="#L175">175</a>
+<a id="L176" class="source_line" href="#L176">176</a>
+<a id="L177" class="source_line" href="#L177">177</a>
+<a id="L178" class="source_line" href="#L178">178</a>
+<a id="L179" class="source_line" href="#L179">179</a>
+<a id="L180" class="source_line" href="#L180">180</a>
+<a id="L181" class="source_line" href="#L181">181</a>
+<a id="L182" class="source_line" href="#L182">182</a>
+<a id="L183" class="source_line" href="#L183">183</a>
+<a id="L184" class="source_line" href="#L184">184</a>
+<a id="L185" class="source_line" href="#L185">185</a>
+<a id="L186" class="source_line" href="#L186">186</a>
+<a id="L187" class="source_line" href="#L187">187</a>
+<a id="L188" class="source_line" href="#L188">188</a>
+<a id="L189" class="source_line" href="#L189">189</a>
+<a id="L190" class="source_line" href="#L190">190</a>
+<a id="L191" class="source_line" href="#L191">191</a>
+<a id="L192" class="source_line" href="#L192">192</a>
+<a id="L193" class="source_line" href="#L193">193</a>
+<a id="L194" class="source_line" href="#L194">194</a>
+<a id="L195" class="source_line" href="#L195">195</a>
+<a id="L196" class="source_line" href="#L196">196</a>
+<a id="L197" class="source_line" href="#L197">197</a>
+<a id="L198" class="source_line" href="#L198">198</a>
+<a id="L199" class="source_line" href="#L199">199</a>
+<a id="L200" class="source_line" href="#L200">200</a>
+<a id="L201" class="source_line" href="#L201">201</a>
+<a id="L202" class="source_line" href="#L202">202</a>
+<a id="L203" class="source_line" href="#L203">203</a>
+<a id="L204" class="source_line" href="#L204">204</a>
+<a id="L205" class="source_line" href="#L205">205</a>
+<a id="L206" class="source_line" href="#L206">206</a>
+<a id="L207" class="source_line" href="#L207">207</a>
+<a id="L208" class="source_line" href="#L208">208</a>
+<a id="L209" class="source_line" href="#L209">209</a>
+<a id="L210" class="source_line" href="#L210">210</a>
+<a id="L211" class="source_line" href="#L211">211</a>
+<a id="L212" class="source_line" href="#L212">212</a>
+<a id="L213" class="source_line" href="#L213">213</a>
+<a id="L214" class="source_line" href="#L214">214</a>
+<a id="L215" class="source_line" href="#L215">215</a>
+<a id="L216" class="source_line" href="#L216">216</a>
+<a id="L217" class="source_line" href="#L217">217</a>
+<a id="L218" class="source_line" href="#L218">218</a>
+<a id="L219" class="source_line" href="#L219">219</a>
+<a id="L220" class="source_line" href="#L220">220</a>
+<a id="L221" class="source_line" href="#L221">221</a>
+<a id="L222" class="source_line" href="#L222">222</a>
+<a id="L223" class="source_line" href="#L223">223</a>
+<a id="L224" class="source_line" href="#L224">224</a>
+<a id="L225" class="source_line" href="#L225">225</a>
+<a id="L226" class="source_line" href="#L226">226</a>
+<a id="L227" class="source_line" href="#L227">227</a>
+<a id="L228" class="source_line" href="#L228">228</a>
+<a id="L229" class="source_line" href="#L229">229</a>
+<a id="L230" class="source_line" href="#L230">230</a>
+<a id="L231" class="source_line" href="#L231">231</a>
+<a id="L232" class="source_line" href="#L232">232</a>
+<a id="L233" class="source_line" href="#L233">233</a>
+<a id="L234" class="source_line" href="#L234">234</a>
+<a id="L235" class="source_line" href="#L235">235</a>
+<a id="L236" class="source_line" href="#L236">236</a>
+<a id="L237" class="source_line" href="#L237">237</a>
+<a id="L238" class="source_line" href="#L238">238</a>
+<a id="L239" class="source_line" href="#L239">239</a>
+<a id="L240" class="source_line" href="#L240">240</a>
+<a id="L241" class="source_line" href="#L241">241</a>
+<a id="L242" class="source_line" href="#L242">242</a>
+<a id="L243" class="source_line" href="#L243">243</a>
+<a id="L244" class="source_line" href="#L244">244</a>
+<a id="L245" class="source_line" href="#L245">245</a>
+<a id="L246" class="source_line" href="#L246">246</a>
+<a id="L247" class="source_line" href="#L247">247</a>
+<a id="L248" class="source_line" href="#L248">248</a>
+<a id="L249" class="source_line" href="#L249">249</a>
+<a id="L250" class="source_line" href="#L250">250</a>
+<a id="L251" class="source_line" href="#L251">251</a>
+<a id="L252" class="source_line" href="#L252">252</a>
+<a id="L253" class="source_line" href="#L253">253</a>
+<a id="L254" class="source_line" href="#L254">254</a>
+<a id="L255" class="source_line" href="#L255">255</a>
+<a id="L256" class="source_line" href="#L256">256</a>
+<a id="L257" class="source_line" href="#L257">257</a>
+<a id="L258" class="source_line" href="#L258">258</a>
+<a id="L259" class="source_line" href="#L259">259</a>
+<a id="L260" class="source_line" href="#L260">260</a>
+<a id="L261" class="source_line" href="#L261">261</a>
+<a id="L262" class="source_line" href="#L262">262</a>
+<a id="L263" class="source_line" href="#L263">263</a>
+<a id="L264" class="source_line" href="#L264">264</a>
+<a id="L265" class="source_line" href="#L265">265</a>
+<a id="L266" class="source_line" href="#L266">266</a>
+<a id="L267" class="source_line" href="#L267">267</a>
+<a id="L268" class="source_line" href="#L268">268</a>
+<a id="L269" class="source_line" href="#L269">269</a>
+<a id="L270" class="source_line" href="#L270">270</a>
+<a id="L271" class="source_line" href="#L271">271</a>
+<a id="L272" class="source_line" href="#L272">272</a>
+<a id="L273" class="source_line" href="#L273">273</a>
+<a id="L274" class="source_line" href="#L274">274</a>
+<a id="L275" class="source_line" href="#L275">275</a>
+<a id="L276" class="source_line" href="#L276">276</a>
+<a id="L277" class="source_line" href="#L277">277</a>
+<a id="L278" class="source_line" href="#L278">278</a>
+<a id="L279" class="source_line" href="#L279">279</a>
+<a id="L280" class="source_line" href="#L280">280</a>
+<a id="L281" class="source_line" href="#L281">281</a>
+<a id="L282" class="source_line" href="#L282">282</a>
+<a id="L283" class="source_line" href="#L283">283</a>
+<a id="L284" class="source_line" href="#L284">284</a>
+<a id="L285" class="source_line" href="#L285">285</a>
+<a id="L286" class="source_line" href="#L286">286</a>
+<a id="L287" class="source_line" href="#L287">287</a>
+<a id="L288" class="source_line" href="#L288">288</a>
+<a id="L289" class="source_line" href="#L289">289</a>
+<a id="L290" class="source_line" href="#L290">290</a>
+<a id="L291" class="source_line" href="#L291">291</a>
+<a id="L292" class="source_line" href="#L292">292</a>
+<a id="L293" class="source_line" href="#L293">293</a>
+<a id="L294" class="source_line" href="#L294">294</a>
+<a id="L295" class="source_line" href="#L295">295</a>
+<a id="L296" class="source_line" href="#L296">296</a>
+<a id="L297" class="source_line" href="#L297">297</a>
+<a id="L298" class="source_line" href="#L298">298</a>
+<a id="L299" class="source_line" href="#L299">299</a>
+<a id="L300" class="source_line" href="#L300">300</a>
+<a id="L301" class="source_line" href="#L301">301</a>
+<a id="L302" class="source_line" href="#L302">302</a>
+<a id="L303" class="source_line" href="#L303">303</a>
+<a id="L304" class="source_line" href="#L304">304</a>
+<a id="L305" class="source_line" href="#L305">305</a>
+<a id="L306" class="source_line" href="#L306">306</a>
+<a id="L307" class="source_line" href="#L307">307</a>
+<a id="L308" class="source_line" href="#L308">308</a>
+<a id="L309" class="source_line" href="#L309">309</a>
+<a id="L310" class="source_line" href="#L310">310</a>
+<a id="L311" class="source_line" href="#L311">311</a>
+<a id="L312" class="source_line" href="#L312">312</a>
+<a id="L313" class="source_line" href="#L313">313</a>
+<a id="L314" class="source_line" href="#L314">314</a>
+<a id="L315" class="source_line" href="#L315">315</a>
+<a id="L316" class="source_line" href="#L316">316</a>
+<a id="L317" class="source_line" href="#L317">317</a>
+<a id="L318" class="source_line" href="#L318">318</a>
+<a id="L319" class="source_line" href="#L319">319</a>
+<a id="L320" class="source_line" href="#L320">320</a>
+<a id="L321" class="source_line" href="#L321">321</a>
+<a id="L322" class="source_line" href="#L322">322</a>
+<a id="L323" class="source_line" href="#L323">323</a>
+<a id="L324" class="source_line" href="#L324">324</a>
+<a id="L325" class="source_line" href="#L325">325</a>
+<a id="L326" class="source_line" href="#L326">326</a>
+<a id="L327" class="source_line" href="#L327">327</a>
+<a id="L328" class="source_line" href="#L328">328</a>
+<a id="L329" class="source_line" href="#L329">329</a>
+<a id="L330" class="source_line" href="#L330">330</a>
+<a id="L331" class="source_line" href="#L331">331</a>
+<a id="L332" class="source_line" href="#L332">332</a>
+<a id="L333" class="source_line" href="#L333">333</a>
+<a id="L334" class="source_line" href="#L334">334</a>
+<a id="L335" class="source_line" href="#L335">335</a>
+<a id="L336" class="source_line" href="#L336">336</a>
+<a id="L337" class="source_line" href="#L337">337</a>
+<a id="L338" class="source_line" href="#L338">338</a>
+<a id="L339" class="source_line" href="#L339">339</a>
+<a id="L340" class="source_line" href="#L340">340</a>
+<a id="L341" class="source_line" href="#L341">341</a>
+<a id="L342" class="source_line" href="#L342">342</a>
+<a id="L343" class="source_line" href="#L343">343</a>
+<a id="L344" class="source_line" href="#L344">344</a>
+<a id="L345" class="source_line" href="#L345">345</a>
+<a id="L346" class="source_line" href="#L346">346</a>
+<a id="L347" class="source_line" href="#L347">347</a>
+<a id="L348" class="source_line" href="#L348">348</a>
+<a id="L349" class="source_line" href="#L349">349</a>
+<a id="L350" class="source_line" href="#L350">350</a>
+<a id="L351" class="source_line" href="#L351">351</a>
+<a id="L352" class="source_line" href="#L352">352</a>
+<a id="L353" class="source_line" href="#L353">353</a>
+<a id="L354" class="source_line" href="#L354">354</a>
+<a id="L355" class="source_line" href="#L355">355</a>
+<a id="L356" class="source_line" href="#L356">356</a>
+<a id="L357" class="source_line" href="#L357">357</a>
+<a id="L358" class="source_line" href="#L358">358</a>
+<a id="L359" class="source_line" href="#L359">359</a>
+<a id="L360" class="source_line" href="#L360">360</a>
+<a id="L361" class="source_line" href="#L361">361</a>
+<a id="L362" class="source_line" href="#L362">362</a>
+<a id="L363" class="source_line" href="#L363">363</a>
+<a id="L364" class="source_line" href="#L364">364</a>
+<a id="L365" class="source_line" href="#L365">365</a>
+<a id="L366" class="source_line" href="#L366">366</a>
+<a id="L367" class="source_line" href="#L367">367</a>
+<a id="L368" class="source_line" href="#L368">368</a>
+<a id="L369" class="source_line" href="#L369">369</a>
+<a id="L370" class="source_line" href="#L370">370</a>
+<a id="L371" class="source_line" href="#L371">371</a>
+<a id="L372" class="source_line" href="#L372">372</a>
+<a id="L373" class="source_line" href="#L373">373</a>
+<a id="L374" class="source_line" href="#L374">374</a>
+<a id="L375" class="source_line" href="#L375">375</a>
+<a id="L376" class="source_line" href="#L376">376</a>
+<a id="L377" class="source_line" href="#L377">377</a>
+<a id="L378" class="source_line" href="#L378">378</a>
+<a id="L379" class="source_line" href="#L379">379</a>
+<a id="L380" class="source_line" href="#L380">380</a>
+<a id="L381" class="source_line" href="#L381">381</a>
+<a id="L382" class="source_line" href="#L382">382</a>
+<a id="L383" class="source_line" href="#L383">383</a>
+<a id="L384" class="source_line" href="#L384">384</a>
+<a id="L385" class="source_line" href="#L385">385</a>
+<a id="L386" class="source_line" href="#L386">386</a>
+<a id="L387" class="source_line" href="#L387">387</a>
+<a id="L388" class="source_line" href="#L388">388</a>
+<a id="L389" class="source_line" href="#L389">389</a>
+<a id="L390" class="source_line" href="#L390">390</a>
+<a id="L391" class="source_line" href="#L391">391</a>
+<a id="L392" class="source_line" href="#L392">392</a>
+<a id="L393" class="source_line" href="#L393">393</a>
+<a id="L394" class="source_line" href="#L394">394</a>
+<a id="L395" class="source_line" href="#L395">395</a>
+<a id="L396" class="source_line" href="#L396">396</a>
+<a id="L397" class="source_line" href="#L397">397</a>
+<a id="L398" class="source_line" href="#L398">398</a>
+<a id="L399" class="source_line" href="#L399">399</a>
+<a id="L400" class="source_line" href="#L400">400</a>
+<a id="L401" class="source_line" href="#L401">401</a>
+<a id="L402" class="source_line" href="#L402">402</a>
+<a id="L403" class="source_line" href="#L403">403</a>
+<a id="L404" class="source_line" href="#L404">404</a>
+<a id="L405" class="source_line" href="#L405">405</a>
+<a id="L406" class="source_line" href="#L406">406</a>
+<a id="L407" class="source_line" href="#L407">407</a>
+<a id="L408" class="source_line" href="#L408">408</a>
+<a id="L409" class="source_line" href="#L409">409</a>
+<a id="L410" class="source_line" href="#L410">410</a>
+<a id="L411" class="source_line" href="#L411">411</a>
+<a id="L412" class="source_line" href="#L412">412</a>
+<a id="L413" class="source_line" href="#L413">413</a>
+<a id="L414" class="source_line" href="#L414">414</a>
+<a id="L415" class="source_line" href="#L415">415</a>
+<a id="L416" class="source_line" href="#L416">416</a>
+<a id="L417" class="source_line" href="#L417">417</a>
+<a id="L418" class="source_line" href="#L418">418</a>
+<a id="L419" class="source_line" href="#L419">419</a>
+<a id="L420" class="source_line" href="#L420">420</a>
+<a id="L421" class="source_line" href="#L421">421</a>
+<a id="L422" class="source_line" href="#L422">422</a>
+<a id="L423" class="source_line" href="#L423">423</a>
+<a id="L424" class="source_line" href="#L424">424</a>
+<a id="L425" class="source_line" href="#L425">425</a>
+<a id="L426" class="source_line" href="#L426">426</a>
+<a id="L427" class="source_line" href="#L427">427</a>
+<a id="L428" class="source_line" href="#L428">428</a>
+<a id="L429" class="source_line" href="#L429">429</a>
+<a id="L430" class="source_line" href="#L430">430</a>
+<a id="L431" class="source_line" href="#L431">431</a>
+<a id="L432" class="source_line" href="#L432">432</a>
+<a id="L433" class="source_line" href="#L433">433</a>
+<a id="L434" class="source_line" href="#L434">434</a>
+<a id="L435" class="source_line" href="#L435">435</a>
+<a id="L436" class="source_line" href="#L436">436</a>
+<a id="L437" class="source_line" href="#L437">437</a>
+<a id="L438" class="source_line" href="#L438">438</a>
+<a id="L439" class="source_line" href="#L439">439</a>
+<a id="L440" class="source_line" href="#L440">440</a>
+<a id="L441" class="source_line" href="#L441">441</a>
+<a id="L442" class="source_line" href="#L442">442</a>
+<a id="L443" class="source_line" href="#L443">443</a>
+<a id="L444" class="source_line" href="#L444">444</a>
+<a id="L445" class="source_line" href="#L445">445</a>
+<a id="L446" class="source_line" href="#L446">446</a>
+<a id="L447" class="source_line" href="#L447">447</a>
+<a id="L448" class="source_line" href="#L448">448</a>
+<a id="L449" class="source_line" href="#L449">449</a>
+<a id="L450" class="source_line" href="#L450">450</a>
+<a id="L451" class="source_line" href="#L451">451</a>
+<a id="L452" class="source_line" href="#L452">452</a>
+<a id="L453" class="source_line" href="#L453">453</a>
+<a id="L454" class="source_line" href="#L454">454</a>
+<a id="L455" class="source_line" href="#L455">455</a>
+<a id="L456" class="source_line" href="#L456">456</a>
+<a id="L457" class="source_line" href="#L457">457</a>
+<a id="L458" class="source_line" href="#L458">458</a>
+<a id="L459" class="source_line" href="#L459">459</a>
+<a id="L460" class="source_line" href="#L460">460</a>
+<a id="L461" class="source_line" href="#L461">461</a>
+<a id="L462" class="source_line" href="#L462">462</a>
+<a id="L463" class="source_line" href="#L463">463</a>
+<a id="L464" class="source_line" href="#L464">464</a>
+<a id="L465" class="source_line" href="#L465">465</a>
+<a id="L466" class="source_line" href="#L466">466</a>
+<a id="L467" class="source_line" href="#L467">467</a>
+<a id="L468" class="source_line" href="#L468">468</a>
+<a id="L469" class="source_line" href="#L469">469</a>
+<a id="L470" class="source_line" href="#L470">470</a>
+<a id="L471" class="source_line" href="#L471">471</a>
+<a id="L472" class="source_line" href="#L472">472</a>
+<a id="L473" class="source_line" href="#L473">473</a>
+<a id="L474" class="source_line" href="#L474">474</a>
+<a id="L475" class="source_line" href="#L475">475</a>
+<a id="L476" class="source_line" href="#L476">476</a>
+<a id="L477" class="source_line" href="#L477">477</a>
+<a id="L478" class="source_line" href="#L478">478</a>
+<a id="L479" class="source_line" href="#L479">479</a>
+<a id="L480" class="source_line" href="#L480">480</a>
+<a id="L481" class="source_line" href="#L481">481</a>
+<a id="L482" class="source_line" href="#L482">482</a>
+<a id="L483" class="source_line" href="#L483">483</a>
+<a id="L484" class="source_line" href="#L484">484</a>
+<a id="L485" class="source_line" href="#L485">485</a>
+<a id="L486" class="source_line" href="#L486">486</a>
+<a id="L487" class="source_line" href="#L487">487</a>
+<a id="L488" class="source_line" href="#L488">488</a>
+<a id="L489" class="source_line" href="#L489">489</a>
+<a id="L490" class="source_line" href="#L490">490</a>
+<a id="L491" class="source_line" href="#L491">491</a>
+<a id="L492" class="source_line" href="#L492">492</a>
+<a id="L493" class="source_line" href="#L493">493</a>
+<a id="L494" class="source_line" href="#L494">494</a>
+<a id="L495" class="source_line" href="#L495">495</a>
+<a id="L496" class="source_line" href="#L496">496</a>
+<a id="L497" class="source_line" href="#L497">497</a>
+<a id="L498" class="source_line" href="#L498">498</a>
+<a id="L499" class="source_line" href="#L499">499</a>
+<a id="L500" class="source_line" href="#L500">500</a>
+<a id="L501" class="source_line" href="#L501">501</a>
+<a id="L502" class="source_line" href="#L502">502</a>
+<a id="L503" class="source_line" href="#L503">503</a>
+<a id="L504" class="source_line" href="#L504">504</a>
+<a id="L505" class="source_line" href="#L505">505</a>
+<a id="L506" class="source_line" href="#L506">506</a>
+<a id="L507" class="source_line" href="#L507">507</a>
+<a id="L508" class="source_line" href="#L508">508</a>
+<a id="L509" class="source_line" href="#L509">509</a>
+<a id="L510" class="source_line" href="#L510">510</a>
+<a id="L511" class="source_line" href="#L511">511</a>
+<a id="L512" class="source_line" href="#L512">512</a>
+<a id="L513" class="source_line" href="#L513">513</a>
+<a id="L514" class="source_line" href="#L514">514</a>
+<a id="L515" class="source_line" href="#L515">515</a>
+<a id="L516" class="source_line" href="#L516">516</a>
+<a id="L517" class="source_line" href="#L517">517</a>
+<a id="L518" class="source_line" href="#L518">518</a>
+<a id="L519" class="source_line" href="#L519">519</a>
+<a id="L520" class="source_line" href="#L520">520</a>
+<a id="L521" class="source_line" href="#L521">521</a>
+<a id="L522" class="source_line" href="#L522">522</a>
+<a id="L523" class="source_line" href="#L523">523</a>
+<a id="L524" class="source_line" href="#L524">524</a>
+<a id="L525" class="source_line" href="#L525">525</a>
+<a id="L526" class="source_line" href="#L526">526</a>
+<a id="L527" class="source_line" href="#L527">527</a>
+<a id="L528" class="source_line" href="#L528">528</a>
+<a id="L529" class="source_line" href="#L529">529</a>
+<a id="L530" class="source_line" href="#L530">530</a>
+<a id="L531" class="source_line" href="#L531">531</a>
+<a id="L532" class="source_line" href="#L532">532</a>
+<a id="L533" class="source_line" href="#L533">533</a>
+<a id="L534" class="source_line" href="#L534">534</a>
+<a id="L535" class="source_line" href="#L535">535</a>
+<a id="L536" class="source_line" href="#L536">536</a>
+<a id="L537" class="source_line" href="#L537">537</a>
+<a id="L538" class="source_line" href="#L538">538</a>
+<a id="L539" class="source_line" href="#L539">539</a>
+<a id="L540" class="source_line" href="#L540">540</a>
+<a id="L541" class="source_line" href="#L541">541</a>
+<a id="L542" class="source_line" href="#L542">542</a>
+<a id="L543" class="source_line" href="#L543">543</a>
+<a id="L544" class="source_line" href="#L544">544</a>
+<a id="L545" class="source_line" href="#L545">545</a>
+<a id="L546" class="source_line" href="#L546">546</a>
+<a id="L547" class="source_line" href="#L547">547</a>
+<a id="L548" class="source_line" href="#L548">548</a>
+<a id="L549" class="source_line" href="#L549">549</a>
+<a id="L550" class="source_line" href="#L550">550</a>
+<a id="L551" class="source_line" href="#L551">551</a>
+<a id="L552" class="source_line" href="#L552">552</a>
+<a id="L553" class="source_line" href="#L553">553</a>
+<a id="L554" class="source_line" href="#L554">554</a>
+<a id="L555" class="source_line" href="#L555">555</a>
+<a id="L556" class="source_line" href="#L556">556</a>
+<a id="L557" class="source_line" href="#L557">557</a>
+<a id="L558" class="source_line" href="#L558">558</a>
+<a id="L559" class="source_line" href="#L559">559</a>
+<a id="L560" class="source_line" href="#L560">560</a>
+<a id="L561" class="source_line" href="#L561">561</a>
+<a id="L562" class="source_line" href="#L562">562</a>
+<a id="L563" class="source_line" href="#L563">563</a>
+<a id="L564" class="source_line" href="#L564">564</a>
+<a id="L565" class="source_line" href="#L565">565</a>
+<a id="L566" class="source_line" href="#L566">566</a>
+<a id="L567" class="source_line" href="#L567">567</a>
+<a id="L568" class="source_line" href="#L568">568</a>
+<a id="L569" class="source_line" href="#L569">569</a>
+<a id="L570" class="source_line" href="#L570">570</a>
+<a id="L571" class="source_line" href="#L571">571</a>
+<a id="L572" class="source_line" href="#L572">572</a>
+<a id="L573" class="source_line" href="#L573">573</a>
+<a id="L574" class="source_line" href="#L574">574</a>
+<a id="L575" class="source_line" href="#L575">575</a>
+<a id="L576" class="source_line" href="#L576">576</a>
+</code><code class="source_code"><span><span class="COMMENT">(*
+ * Copyright (c) 2014 Leo White &lt;lpw25@cl.cam.ac.uk&gt;
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="OPEN">open</span> <a href="paths.ml.html"><span class="UIDENT">Paths</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Modules} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Module"><span class="MODULE">module</span> <span class="REC">rec</span> <span class="UIDENT">Module</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Module.type-decl"><span class="TYPE">type</span> <span class="LIDENT">decl</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Module.type-decl.constructor-Alias"><span class="BAR">|</span> <span class="UIDENT">Alias</span> <span class="OF">of</span> <span class="LPAREN">(</span><a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">simple_expansion</span> <span class="LIDENT">option</span><span class="RPAREN">)</span></span><span class="EOL">
+</span>    <span id="module-Module.type-decl.constructor-ModuleType"><span class="BAR">|</span> <span class="UIDENT">ModuleType</span> <span class="OF">of</span> <span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">expr</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Module.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_40"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Module.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_32"><span class="LIDENT">source_loc</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-SourceLocation.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourceLocation</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>        <span class="DOCSTRING">(** Identifier.SourceLocation might not be set when the module is artificially constructed from a functor argument. *)</span><span class="EOL">
+</span>    <span id="def_74"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_43"><span class="LIDENT">type_</span> <span class="COLON">:</span> <span class="LIDENT">decl</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_83"><span class="LIDENT">canonical</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_105"><span class="LIDENT">hidden</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Module.module-Equation"><span class="MODULE">module</span> <span class="UIDENT">Equation</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-Module.module-Equation.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LIDENT">decl</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Module</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-FunctorParameter"><span class="AND">and</span> <span class="UIDENT">FunctorParameter</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-FunctorParameter.type-parameter"><span class="TYPE">type</span> <span class="LIDENT">parameter</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_160"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-FunctorParameter.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">FunctorParameter</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_179"><span class="LIDENT">expr</span> <span class="COLON">:</span> <span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">expr</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-FunctorParameter.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span id="module-FunctorParameter.type-t.constructor-Unit"><span class="UIDENT">Unit</span></span> <span id="module-FunctorParameter.type-t.constructor-Named"><span class="BAR">|</span> <span class="UIDENT">Named</span> <span class="OF">of</span> <span class="LIDENT">parameter</span></span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">FunctorParameter</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Modules Types} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-ModuleType"><span class="AND">and</span> <span class="UIDENT">ModuleType</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-ModuleType.type-substitution"><span class="TYPE">type</span> <span class="LIDENT">substitution</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-ModuleType.type-substitution.constructor-ModuleEq"><span class="BAR">|</span> <span class="UIDENT">ModuleEq</span> <span class="OF">of</span> <a href="paths.ml.html#module-Fragment.module-Module.type-t"><span class="UIDENT">Fragment</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <span class="UIDENT">Module</span><span class="DOT">.</span><span class="UIDENT">Equation</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-ModuleType.type-substitution.constructor-ModuleTypeEq"><span class="BAR">|</span> <span class="UIDENT">ModuleTypeEq</span> <span class="OF">of</span> <a href="paths.ml.html#module-Fragment.module-ModuleType.type-t"><span class="UIDENT">Fragment</span><span class="DOT">.</span><span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">expr</span></span><span class="EOL">
+</span>    <span id="module-ModuleType.type-substitution.constructor-TypeEq"><span class="BAR">|</span> <span class="UIDENT">TypeEq</span> <span class="OF">of</span> <a href="paths.ml.html#module-Fragment.module-Type.type-t"><span class="UIDENT">Fragment</span><span class="DOT">.</span><span class="UIDENT">Type</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <span class="UIDENT">TypeDecl</span><span class="DOT">.</span><span class="UIDENT">Equation</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-ModuleType.type-substitution.constructor-ModuleSubst"><span class="BAR">|</span> <span class="UIDENT">ModuleSubst</span> <span class="OF">of</span> <a href="paths.ml.html#module-Fragment.module-Module.type-t"><span class="UIDENT">Fragment</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span>    <span id="module-ModuleType.type-substitution.constructor-ModuleTypeSubst"><span class="BAR">|</span> <span class="UIDENT">ModuleTypeSubst</span> <span class="OF">of</span> <a href="paths.ml.html#module-Fragment.module-ModuleType.type-t"><span class="UIDENT">Fragment</span><span class="DOT">.</span><span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">expr</span></span><span class="EOL">
+</span>    <span id="module-ModuleType.type-substitution.constructor-TypeSubst"><span class="BAR">|</span> <span class="UIDENT">TypeSubst</span> <span class="OF">of</span> <a href="paths.ml.html#module-Fragment.module-Type.type-t"><span class="UIDENT">Fragment</span><span class="DOT">.</span><span class="UIDENT">Type</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <span class="UIDENT">TypeDecl</span><span class="DOT">.</span><span class="UIDENT">Equation</span><span class="DOT">.</span><span class="LIDENT">t</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-ModuleType.type-type_of_desc"><span class="TYPE">type</span> <span class="LIDENT">type_of_desc</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-ModuleType.type-type_of_desc.constructor-ModPath"><span class="BAR">|</span> <span class="UIDENT">ModPath</span> <span class="OF">of</span> <a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span>    <span id="module-ModuleType.type-type_of_desc.constructor-StructInclude"><span class="BAR">|</span> <span class="UIDENT">StructInclude</span> <span class="OF">of</span> <a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-ModuleType.type-simple_expansion"><span class="TYPE">type</span> <span class="LIDENT">simple_expansion</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-ModuleType.type-simple_expansion.constructor-Signature"><span class="BAR">|</span> <span class="UIDENT">Signature</span> <span class="OF">of</span> <span class="UIDENT">Signature</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-ModuleType.type-simple_expansion.constructor-Functor"><span class="BAR">|</span> <span class="UIDENT">Functor</span> <span class="OF">of</span> <span class="UIDENT">FunctorParameter</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="LIDENT">simple_expansion</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-ModuleType.type-typeof_t"><span class="TYPE">type</span> <span class="LIDENT">typeof_t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_45"><span class="LIDENT">t_desc</span> <span class="COLON">:</span> <span class="LIDENT">type_of_desc</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_100"><span class="LIDENT">t_original_path</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_165"><span class="LIDENT">t_expansion</span> <span class="COLON">:</span> <span class="LIDENT">simple_expansion</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-ModuleType.module-U"><span class="MODULE">module</span> <span class="UIDENT">U</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span class="COMMENT">(* Unexpanded (aside from Signature, obviously) *)</span><span class="EOL">
+</span><span class="EOL">
+</span>    <span id="module-ModuleType.module-U.type-expr"><span class="TYPE">type</span> <span class="LIDENT">expr</span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span id="module-ModuleType.module-U.type-expr.constructor-Path"><span class="BAR">|</span> <span class="UIDENT">Path</span> <span class="OF">of</span> <a href="paths.ml.html#module-Path.module-ModuleType.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span>      <span id="module-ModuleType.module-U.type-expr.constructor-Signature"><span class="BAR">|</span> <span class="UIDENT">Signature</span> <span class="OF">of</span> <span class="UIDENT">Signature</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>      <span id="module-ModuleType.module-U.type-expr.constructor-With"><span class="BAR">|</span> <span class="UIDENT">With</span> <span class="OF">of</span> <span class="LIDENT">substitution</span> <span class="LIDENT">list</span> <span class="STAR">*</span> <span class="LIDENT">expr</span></span><span class="EOL">
+</span>      <span id="module-ModuleType.module-U.type-expr.constructor-TypeOf"><span class="BAR">|</span> <span class="UIDENT">TypeOf</span> <span class="OF">of</span> <span class="LIDENT">type_of_desc</span> <span class="STAR">*</span> <a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-ModuleType.type-path_t"><span class="TYPE">type</span> <span class="LIDENT">path_t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_130"><span class="LIDENT">p_expansion</span> <span class="COLON">:</span> <span class="LIDENT">simple_expansion</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_183"><span class="LIDENT">p_path</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Path.module-ModuleType.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-ModuleType.type-with_t"><span class="TYPE">type</span> <span class="LIDENT">with_t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_153"><span class="LIDENT">w_substitutions</span> <span class="COLON">:</span> <span class="LIDENT">substitution</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_120"><span class="LIDENT">w_expansion</span> <span class="COLON">:</span> <span class="LIDENT">simple_expansion</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_54"><span class="LIDENT">w_expr</span> <span class="COLON">:</span> <span class="UIDENT">U</span><span class="DOT">.</span><span class="LIDENT">expr</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-ModuleType.type-expr"><span class="TYPE">type</span> <span class="LIDENT">expr</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-ModuleType.type-expr.constructor-Path"><span class="BAR">|</span> <span class="UIDENT">Path</span> <span class="OF">of</span> <span class="LIDENT">path_t</span></span><span class="EOL">
+</span>    <span id="module-ModuleType.type-expr.constructor-Signature"><span class="BAR">|</span> <span class="UIDENT">Signature</span> <span class="OF">of</span> <span class="UIDENT">Signature</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-ModuleType.type-expr.constructor-Functor"><span class="BAR">|</span> <span class="UIDENT">Functor</span> <span class="OF">of</span> <span class="UIDENT">FunctorParameter</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="LIDENT">expr</span></span><span class="EOL">
+</span>    <span id="module-ModuleType.type-expr.constructor-With"><span class="BAR">|</span> <span class="UIDENT">With</span> <span class="OF">of</span> <span class="LIDENT">with_t</span></span><span class="EOL">
+</span>    <span id="module-ModuleType.type-expr.constructor-TypeOf"><span class="BAR">|</span> <span class="UIDENT">TypeOf</span> <span class="OF">of</span> <span class="LIDENT">typeof_t</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-ModuleType.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_139"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-ModuleType.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_60"><span class="LIDENT">source_loc</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-SourceLocation.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourceLocation</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>        <span class="DOCSTRING">(** Can be [None] for module types created by a type substitution. *)</span><span class="EOL">
+</span>    <span id="def_64"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_186"><span class="LIDENT">canonical</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Path.module-ModuleType.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_89"><span class="LIDENT">expr</span> <span class="COLON">:</span> <span class="LIDENT">expr</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">ModuleType</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-ModuleSubstitution"><span class="AND">and</span> <span class="UIDENT">ModuleSubstitution</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-ModuleSubstitution.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_119"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Module.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_47"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_167"><span class="LIDENT">manifest</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">ModuleSubstitution</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-ModuleTypeSubstitution"><span class="AND">and</span> <span class="UIDENT">ModuleTypeSubstitution</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-ModuleTypeSubstitution.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_176"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-ModuleType.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_164"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_62"><span class="LIDENT">manifest</span> <span class="COLON">:</span> <span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">expr</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">ModuleTypeSubstitution</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Signatures} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Signature"><span class="AND">and</span> <span class="UIDENT">Signature</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Signature.type-recursive"><span class="TYPE">type</span> <span class="LIDENT">recursive</span> <span class="EQUAL">=</span> <span id="module-Signature.type-recursive.constructor-Ordinary"><span class="UIDENT">Ordinary</span></span> <span id="module-Signature.type-recursive.constructor-And"><span class="BAR">|</span> <span class="UIDENT">And</span></span> <span id="module-Signature.type-recursive.constructor-Nonrec"><span class="BAR">|</span> <span class="UIDENT">Nonrec</span></span> <span id="module-Signature.type-recursive.constructor-Rec"><span class="BAR">|</span> <span class="UIDENT">Rec</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Signature.type-item"><span class="TYPE">type</span> <span class="LIDENT">item</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-Module"><span class="BAR">|</span> <span class="UIDENT">Module</span> <span class="OF">of</span> <span class="LIDENT">recursive</span> <span class="STAR">*</span> <span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-ModuleType"><span class="BAR">|</span> <span class="UIDENT">ModuleType</span> <span class="OF">of</span> <span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-ModuleSubstitution"><span class="BAR">|</span> <span class="UIDENT">ModuleSubstitution</span> <span class="OF">of</span> <span class="UIDENT">ModuleSubstitution</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-ModuleTypeSubstitution"><span class="BAR">|</span> <span class="UIDENT">ModuleTypeSubstitution</span> <span class="OF">of</span> <span class="UIDENT">ModuleTypeSubstitution</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-Open"><span class="BAR">|</span> <span class="UIDENT">Open</span> <span class="OF">of</span> <span class="UIDENT">Open</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-Type"><span class="BAR">|</span> <span class="UIDENT">Type</span> <span class="OF">of</span> <span class="LIDENT">recursive</span> <span class="STAR">*</span> <span class="UIDENT">TypeDecl</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-TypeSubstitution"><span class="BAR">|</span> <span class="UIDENT">TypeSubstitution</span> <span class="OF">of</span> <span class="UIDENT">TypeDecl</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-TypExt"><span class="BAR">|</span> <span class="UIDENT">TypExt</span> <span class="OF">of</span> <span class="UIDENT">Extension</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-Exception"><span class="BAR">|</span> <span class="UIDENT">Exception</span> <span class="OF">of</span> <span class="UIDENT">Exception</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-Value"><span class="BAR">|</span> <span class="UIDENT">Value</span> <span class="OF">of</span> <span class="UIDENT">Value</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-Class"><span class="BAR">|</span> <span class="UIDENT">Class</span> <span class="OF">of</span> <span class="LIDENT">recursive</span> <span class="STAR">*</span> <span class="UIDENT">Class</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-ClassType"><span class="BAR">|</span> <span class="UIDENT">ClassType</span> <span class="OF">of</span> <span class="LIDENT">recursive</span> <span class="STAR">*</span> <span class="UIDENT">ClassType</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-Include"><span class="BAR">|</span> <span class="UIDENT">Include</span> <span class="OF">of</span> <span class="UIDENT">Include</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-item.constructor-Comment"><span class="BAR">|</span> <span class="UIDENT">Comment</span> <span class="OF">of</span> <a href="comment.ml.html#type-docs_or_stop"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs_or_stop</span></a></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Signature.type-removed_item"><span class="TYPE">type</span> <span class="LIDENT">removed_item</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Signature.type-removed_item.constructor-RModule"><span class="BAR">|</span> <span class="UIDENT">RModule</span> <span class="OF">of</span> <a href="names.ml.html#module-Name.type-t"><span class="UIDENT">Names</span><span class="DOT">.</span><span class="UIDENT">ModuleName</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span>    <span id="module-Signature.type-removed_item.constructor-RType"><span class="BAR">|</span> <span class="UIDENT">RType</span> <span class="OF">of</span> <a href="names.ml.html#module-Name.type-t"><span class="UIDENT">Names</span><span class="DOT">.</span><span class="UIDENT">TypeName</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="UIDENT">TypeDecl</span><span class="DOT">.</span><span class="UIDENT">Equation</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Signature.type-removed_item.constructor-RModuleType"><span class="BAR">|</span> <span class="UIDENT">RModuleType</span> <span class="OF">of</span> <a href="names.ml.html#module-Name.type-t"><span class="UIDENT">Names</span><span class="DOT">.</span><span class="UIDENT">ModuleTypeName</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">expr</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Signature.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_67"><span class="LIDENT">items</span> <span class="COLON">:</span> <span class="LIDENT">item</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_118"><span class="LIDENT">compiled</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_162"><span class="LIDENT">removed</span> <span class="COLON">:</span> <span class="LIDENT">removed_item</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_28"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span>  <span class="DOCSTRING">(** The top comment. *)</span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Signature</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Open"><span class="AND">and</span> <span class="UIDENT">Open</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Open.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_161"><span class="LIDENT">expansion</span> <span class="COLON">:</span> <span class="UIDENT">Signature</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span> <span id="def_21"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Open</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Includes} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Include"><span class="AND">and</span> <span class="UIDENT">Include</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Include.type-shadowed"><span class="TYPE">type</span> <span class="LIDENT">shadowed</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_108"><span class="LIDENT">s_modules</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="LIDENT">string</span> <span class="STAR">*</span> <a href="names.ml.html#module-Name.type-t"><span class="UIDENT">Names</span><span class="DOT">.</span><span class="UIDENT">ModuleName</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_127"><span class="LIDENT">s_module_types</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="LIDENT">string</span> <span class="STAR">*</span> <a href="names.ml.html#module-Name.type-t"><span class="UIDENT">Names</span><span class="DOT">.</span><span class="UIDENT">ModuleTypeName</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_168"><span class="LIDENT">s_values</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="LIDENT">string</span> <span class="STAR">*</span> <a href="names.ml.html#module-Name.type-t"><span class="UIDENT">Names</span><span class="DOT">.</span><span class="UIDENT">ValueName</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_123"><span class="LIDENT">s_types</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="LIDENT">string</span> <span class="STAR">*</span> <a href="names.ml.html#module-Name.type-t"><span class="UIDENT">Names</span><span class="DOT">.</span><span class="UIDENT">TypeName</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_169"><span class="LIDENT">s_classes</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="LIDENT">string</span> <span class="STAR">*</span> <a href="names.ml.html#module-Name.type-t"><span class="UIDENT">Names</span><span class="DOT">.</span><span class="UIDENT">TypeName</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_39"><span class="LIDENT">s_class_types</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="LIDENT">string</span> <span class="STAR">*</span> <a href="names.ml.html#module-Name.type-t"><span class="UIDENT">Names</span><span class="DOT">.</span><span class="UIDENT">TypeName</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Include.type-expansion"><span class="TYPE">type</span> <span class="LIDENT">expansion</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_22"><span class="LIDENT">shadowed</span> <span class="COLON">:</span> <span class="LIDENT">shadowed</span><span class="SEMI">;</span></span> <span id="def_42"><span class="LIDENT">content</span> <span class="COLON">:</span> <span class="UIDENT">Signature</span><span class="DOT">.</span><span class="LIDENT">t</span></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="COMMENT">(* Explicitly unexpanded decl *)</span><span class="EOL">
+</span>  <span id="module-Include.type-decl"><span class="TYPE">type</span> <span class="LIDENT">decl</span> <span class="EQUAL">=</span> <span id="module-Include.type-decl.constructor-Alias"><span class="UIDENT">Alias</span> <span class="OF">of</span> <a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span> <span id="module-Include.type-decl.constructor-ModuleType"><span class="BAR">|</span> <span class="UIDENT">ModuleType</span> <span class="OF">of</span> <span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="UIDENT">U</span><span class="DOT">.</span><span class="LIDENT">expr</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Include.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_53"><span class="LIDENT">loc</span> <span class="COLON">:</span> <a href="../../../odoc-parser/src/odoc-parser/loc.ml.html#type-span"><span class="UIDENT">Location_</span><span class="DOT">.</span><span class="LIDENT">span</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_107"><span class="LIDENT">parent</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Signature.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Signature</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_46"><span class="LIDENT">strengthened</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_145"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_159"><span class="LIDENT">status</span> <span class="COLON">:</span> <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Inline</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Closed</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Open</span> <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Default</span> <span class="RBRACKET">]</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_84"><span class="LIDENT">decl</span> <span class="COLON">:</span> <span class="LIDENT">decl</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_73"><span class="LIDENT">expansion</span> <span class="COLON">:</span> <span class="LIDENT">expansion</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Include</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Type Declarations} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-TypeDecl"><span class="AND">and</span> <span class="UIDENT">TypeDecl</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-TypeDecl.module-Field"><span class="MODULE">module</span> <span class="UIDENT">Field</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-TypeDecl.module-Field.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>      <span id="def_76"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Field.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Field</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_181"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_90"><span class="LIDENT">mutable_</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_133"><span class="LIDENT">type_</span> <span class="COLON">:</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span class="RBRACE">}</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-TypeDecl.module-Constructor"><span class="MODULE">module</span> <span class="UIDENT">Constructor</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-TypeDecl.module-Constructor.type-argument"><span class="TYPE">type</span> <span class="LIDENT">argument</span> <span class="EQUAL">=</span> <span id="module-TypeDecl.module-Constructor.type-argument.constructor-Tuple"><span class="UIDENT">Tuple</span> <span class="OF">of</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span></span> <span id="module-TypeDecl.module-Constructor.type-argument.constructor-Record"><span class="BAR">|</span> <span class="UIDENT">Record</span> <span class="OF">of</span> <span class="UIDENT">Field</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>    <span id="module-TypeDecl.module-Constructor.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>      <span id="def_171"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Constructor.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Constructor</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_109"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_36"><span class="LIDENT">args</span> <span class="COLON">:</span> <span class="LIDENT">argument</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_147"><span class="LIDENT">res</span> <span class="COLON">:</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span class="RBRACE">}</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-TypeDecl.module-Representation"><span class="MODULE">module</span> <span class="UIDENT">Representation</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-TypeDecl.module-Representation.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span id="module-TypeDecl.module-Representation.type-t.constructor-Variant"><span class="BAR">|</span> <span class="UIDENT">Variant</span> <span class="OF">of</span> <span class="UIDENT">Constructor</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>      <span id="module-TypeDecl.module-Representation.type-t.constructor-Record"><span class="BAR">|</span> <span class="UIDENT">Record</span> <span class="OF">of</span> <span class="UIDENT">Field</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>      <span id="module-TypeDecl.module-Representation.type-t.constructor-Extensible"><span class="BAR">|</span> <span class="UIDENT">Extensible</span></span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-TypeDecl.type-variance"><span class="TYPE">type</span> <span class="LIDENT">variance</span> <span class="EQUAL">=</span> <span id="module-TypeDecl.type-variance.constructor-Pos"><span class="UIDENT">Pos</span></span> <span id="module-TypeDecl.type-variance.constructor-Neg"><span class="BAR">|</span> <span class="UIDENT">Neg</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-TypeDecl.type-param_desc"><span class="TYPE">type</span> <span class="LIDENT">param_desc</span> <span class="EQUAL">=</span> <span id="module-TypeDecl.type-param_desc.constructor-Any"><span class="UIDENT">Any</span></span> <span id="module-TypeDecl.type-param_desc.constructor-Var"><span class="BAR">|</span> <span class="UIDENT">Var</span> <span class="OF">of</span> <span class="LIDENT">string</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-TypeDecl.type-param"><span class="TYPE">type</span> <span class="LIDENT">param</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_132"><span class="LIDENT">desc</span> <span class="COLON">:</span> <span class="LIDENT">param_desc</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_178"><span class="LIDENT">variance</span> <span class="COLON">:</span> <span class="LIDENT">variance</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_68"><span class="LIDENT">injectivity</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-TypeDecl.module-Equation"><span class="MODULE">module</span> <span class="UIDENT">Equation</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-TypeDecl.module-Equation.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>      <span id="def_106"><span class="LIDENT">params</span> <span class="COLON">:</span> <span class="LIDENT">param</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_79"><span class="LIDENT">private_</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_18"><span class="LIDENT">manifest</span> <span class="COLON">:</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_151"><span class="LIDENT">constraints</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="RPAREN">)</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span class="RBRACE">}</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-TypeDecl.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_138"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Type.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Type</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_111"><span class="LIDENT">source_loc</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-SourceLocation.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourceLocation</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_175"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_25"><span class="LIDENT">canonical</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Path.module-Type.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Type</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_78"><span class="LIDENT">equation</span> <span class="COLON">:</span> <span class="UIDENT">Equation</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_48"><span class="LIDENT">representation</span> <span class="COLON">:</span> <span class="UIDENT">Representation</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">TypeDecl</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Type extensions} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Extension"><span class="AND">and</span> <span class="UIDENT">Extension</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Extension.module-Constructor"><span class="MODULE">module</span> <span class="UIDENT">Constructor</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-Extension.module-Constructor.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>      <span id="def_177"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Extension.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Extension</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_156"><span class="LIDENT">source_loc</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-SourceLocation.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourceLocation</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_49"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_128"><span class="LIDENT">args</span> <span class="COLON">:</span> <span class="UIDENT">TypeDecl</span><span class="DOT">.</span><span class="UIDENT">Constructor</span><span class="DOT">.</span><span class="LIDENT">argument</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_52"><span class="LIDENT">res</span> <span class="COLON">:</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span class="RBRACE">}</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Extension.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_72"><span class="LIDENT">parent</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Signature.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Signature</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_29"><span class="LIDENT">type_path</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Path.module-Type.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Type</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_91"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_125"><span class="LIDENT">type_params</span> <span class="COLON">:</span> <span class="UIDENT">TypeDecl</span><span class="DOT">.</span><span class="LIDENT">param</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_174"><span class="LIDENT">private_</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_172"><span class="LIDENT">constructors</span> <span class="COLON">:</span> <span class="UIDENT">Constructor</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Extension</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Exception} *)</span><span class="EOL">
+</span><span id="module-Exception"><span class="AND">and</span> <span class="UIDENT">Exception</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Exception.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_96"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Exception.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Exception</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_27"><span class="LIDENT">source_loc</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-SourceLocation.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourceLocation</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_82"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_170"><span class="LIDENT">args</span> <span class="COLON">:</span> <span class="UIDENT">TypeDecl</span><span class="DOT">.</span><span class="UIDENT">Constructor</span><span class="DOT">.</span><span class="LIDENT">argument</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_144"><span class="LIDENT">res</span> <span class="COLON">:</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Exception</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Values} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Value"><span class="AND">and</span> <span class="UIDENT">Value</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Value.type-value"><span class="TYPE">type</span> <span class="LIDENT">value</span> <span class="EQUAL">=</span> <span id="module-Value.type-value.constructor-Abstract"><span class="UIDENT">Abstract</span></span> <span id="module-Value.type-value.constructor-External"><span class="BAR">|</span> <span class="UIDENT">External</span> <span class="OF">of</span> <span class="LIDENT">string</span> <span class="LIDENT">list</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Value.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_116"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Value.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Value</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_59"><span class="LIDENT">source_loc</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-SourceLocation.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourceLocation</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_33"><span class="LIDENT">value</span> <span class="COLON">:</span> <span class="LIDENT">value</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_158"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_88"><span class="LIDENT">type_</span> <span class="COLON">:</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Value</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Classes} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Class"><span class="AND">and</span> <span class="UIDENT">Class</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Class.type-decl"><span class="TYPE">type</span> <span class="LIDENT">decl</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Class.type-decl.constructor-ClassType"><span class="BAR">|</span> <span class="UIDENT">ClassType</span> <span class="OF">of</span> <span class="UIDENT">ClassType</span><span class="DOT">.</span><span class="LIDENT">expr</span></span><span class="EOL">
+</span>    <span id="module-Class.type-decl.constructor-Arrow"><span class="BAR">|</span> <span class="UIDENT">Arrow</span> <span class="OF">of</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">label</span> <span class="LIDENT">option</span> <span class="STAR">*</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="LIDENT">decl</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Class.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_26"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Class.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Class</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_66"><span class="LIDENT">source_loc</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-SourceLocation.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourceLocation</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_70"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_56"><span class="LIDENT">virtual_</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_103"><span class="LIDENT">params</span> <span class="COLON">:</span> <span class="UIDENT">TypeDecl</span><span class="DOT">.</span><span class="LIDENT">param</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_137"><span class="LIDENT">type_</span> <span class="COLON">:</span> <span class="LIDENT">decl</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_51"><span class="LIDENT">expansion</span> <span class="COLON">:</span> <span class="UIDENT">ClassSignature</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Class</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Class Types} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-ClassType"><span class="AND">and</span> <span class="UIDENT">ClassType</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-ClassType.type-expr"><span class="TYPE">type</span> <span class="LIDENT">expr</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-ClassType.type-expr.constructor-Constr"><span class="BAR">|</span> <span class="UIDENT">Constr</span> <span class="OF">of</span> <a href="paths.ml.html#module-Path.module-ClassType.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">ClassType</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>    <span id="module-ClassType.type-expr.constructor-Signature"><span class="BAR">|</span> <span class="UIDENT">Signature</span> <span class="OF">of</span> <span class="UIDENT">ClassSignature</span><span class="DOT">.</span><span class="LIDENT">t</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-ClassType.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_122"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-ClassType.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">ClassType</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_65"><span class="LIDENT">source_loc</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-SourceLocation.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourceLocation</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_94"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_124"><span class="LIDENT">virtual_</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_92"><span class="LIDENT">params</span> <span class="COLON">:</span> <span class="UIDENT">TypeDecl</span><span class="DOT">.</span><span class="LIDENT">param</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_104"><span class="LIDENT">expr</span> <span class="COLON">:</span> <span class="LIDENT">expr</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_55"><span class="LIDENT">expansion</span> <span class="COLON">:</span> <span class="UIDENT">ClassSignature</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">ClassType</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Class Signatures} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-ClassSignature"><span class="AND">and</span> <span class="UIDENT">ClassSignature</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-ClassSignature.module-Constraint"><span class="MODULE">module</span> <span class="UIDENT">Constraint</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-ClassSignature.module-Constraint.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_140"><span class="LIDENT">left</span> <span class="COLON">:</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span> <span id="def_185"><span class="LIDENT">right</span> <span class="COLON">:</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span> <span id="def_99"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-ClassSignature.module-Inherit"><span class="MODULE">module</span> <span class="UIDENT">Inherit</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-ClassSignature.module-Inherit.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_121"><span class="LIDENT">expr</span> <span class="COLON">:</span> <span class="UIDENT">ClassType</span><span class="DOT">.</span><span class="LIDENT">expr</span><span class="SEMI">;</span></span> <span id="def_146"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-ClassSignature.type-item"><span class="TYPE">type</span> <span class="LIDENT">item</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-ClassSignature.type-item.constructor-Method"><span class="BAR">|</span> <span class="UIDENT">Method</span> <span class="OF">of</span> <span class="UIDENT">Method</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-ClassSignature.type-item.constructor-InstanceVariable"><span class="BAR">|</span> <span class="UIDENT">InstanceVariable</span> <span class="OF">of</span> <span class="UIDENT">InstanceVariable</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-ClassSignature.type-item.constructor-Constraint"><span class="BAR">|</span> <span class="UIDENT">Constraint</span> <span class="OF">of</span> <span class="UIDENT">Constraint</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-ClassSignature.type-item.constructor-Inherit"><span class="BAR">|</span> <span class="UIDENT">Inherit</span> <span class="OF">of</span> <span class="UIDENT">Inherit</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-ClassSignature.type-item.constructor-Comment"><span class="BAR">|</span> <span class="UIDENT">Comment</span> <span class="OF">of</span> <a href="comment.ml.html#type-docs_or_stop"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs_or_stop</span></a></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-ClassSignature.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_149"><span class="LIDENT">self</span> <span class="COLON">:</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span> <span id="def_71"><span class="LIDENT">items</span> <span class="COLON">:</span> <span class="LIDENT">item</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span> <span id="def_150"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">ClassSignature</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Methods} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Method"><span class="AND">and</span> <span class="UIDENT">Method</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Method.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_173"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Method.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Method</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_129"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_166"><span class="LIDENT">private_</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_180"><span class="LIDENT">virtual_</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_141"><span class="LIDENT">type_</span> <span class="COLON">:</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Method</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Instance variables} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-InstanceVariable"><span class="AND">and</span> <span class="UIDENT">InstanceVariable</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-InstanceVariable.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_75"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-InstanceVariable.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">InstanceVariable</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_155"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_134"><span class="LIDENT">mutable_</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_182"><span class="LIDENT">virtual_</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_41"><span class="LIDENT">type_</span> <span class="COLON">:</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">InstanceVariable</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Type expressions} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-TypeExpr"><span class="AND">and</span> <span class="UIDENT">TypeExpr</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-TypeExpr.module-Polymorphic_variant"><span class="MODULE">module</span> <span class="UIDENT">Polymorphic_variant</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-TypeExpr.module-Polymorphic_variant.type-kind"><span class="TYPE">type</span> <span class="LIDENT">kind</span> <span class="EQUAL">=</span> <span id="module-TypeExpr.module-Polymorphic_variant.type-kind.constructor-Fixed"><span class="UIDENT">Fixed</span></span> <span id="module-TypeExpr.module-Polymorphic_variant.type-kind.constructor-Closed"><span class="BAR">|</span> <span class="UIDENT">Closed</span> <span class="OF">of</span> <span class="LIDENT">string</span> <span class="LIDENT">list</span></span> <span id="module-TypeExpr.module-Polymorphic_variant.type-kind.constructor-Open"><span class="BAR">|</span> <span class="UIDENT">Open</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>    <span id="module-TypeExpr.module-Polymorphic_variant.module-Constructor"><span class="MODULE">module</span> <span class="UIDENT">Constructor</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>      <span id="module-TypeExpr.module-Polymorphic_variant.module-Constructor.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>        <span id="def_95"><span class="LIDENT">name</span> <span class="COLON">:</span> <span class="LIDENT">string</span><span class="SEMI">;</span></span><span class="EOL">
+</span>        <span id="def_31"><span class="LIDENT">constant</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>        <span id="def_135"><span class="LIDENT">arguments</span> <span class="COLON">:</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>        <span id="def_63"><span class="LIDENT">doc</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span class="RBRACE">}</span></span><span class="EOL">
+</span>    <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>    <span id="module-TypeExpr.module-Polymorphic_variant.type-element"><span class="TYPE">type</span> <span class="LIDENT">element</span> <span class="EQUAL">=</span> <span id="module-TypeExpr.module-Polymorphic_variant.type-element.constructor-Type"><span class="UIDENT">Type</span> <span class="OF">of</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span></span> <span id="module-TypeExpr.module-Polymorphic_variant.type-element.constructor-Constructor"><span class="BAR">|</span> <span class="UIDENT">Constructor</span> <span class="OF">of</span> <span class="UIDENT">Constructor</span><span class="DOT">.</span><span class="LIDENT">t</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>    <span id="module-TypeExpr.module-Polymorphic_variant.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_24"><span class="LIDENT">kind</span> <span class="COLON">:</span> <span class="LIDENT">kind</span><span class="SEMI">;</span></span> <span id="def_110"><span class="LIDENT">elements</span> <span class="COLON">:</span> <span class="LIDENT">element</span> <span class="LIDENT">list</span></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-TypeExpr.module-Object"><span class="MODULE">module</span> <span class="UIDENT">Object</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-TypeExpr.module-Object.type-method_"><span class="TYPE">type</span> <span class="LIDENT">method_</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_57"><span class="LIDENT">name</span> <span class="COLON">:</span> <span class="LIDENT">string</span><span class="SEMI">;</span></span> <span id="def_136"><span class="LIDENT">type_</span> <span class="COLON">:</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>    <span id="module-TypeExpr.module-Object.type-field"><span class="TYPE">type</span> <span class="LIDENT">field</span> <span class="EQUAL">=</span> <span id="module-TypeExpr.module-Object.type-field.constructor-Method"><span class="UIDENT">Method</span> <span class="OF">of</span> <span class="LIDENT">method_</span></span> <span id="module-TypeExpr.module-Object.type-field.constructor-Inherit"><span class="BAR">|</span> <span class="UIDENT">Inherit</span> <span class="OF">of</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>    <span id="module-TypeExpr.module-Object.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_113"><span class="LIDENT">fields</span> <span class="COLON">:</span> <span class="LIDENT">field</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span> <span id="def_61"><span class="LIDENT">open_</span> <span class="COLON">:</span> <span class="LIDENT">bool</span></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-TypeExpr.module-Package"><span class="MODULE">module</span> <span class="UIDENT">Package</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-TypeExpr.module-Package.type-substitution"><span class="TYPE">type</span> <span class="LIDENT">substitution</span> <span class="EQUAL">=</span> <a href="paths.ml.html#module-Fragment.module-Type.type-t"><span class="UIDENT">Fragment</span><span class="DOT">.</span><span class="UIDENT">Type</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>    <span id="module-TypeExpr.module-Package.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_20"><span class="LIDENT">path</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Path.module-ModuleType.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span> <span id="def_93"><span class="LIDENT">substitutions</span> <span class="COLON">:</span> <span class="LIDENT">substitution</span> <span class="LIDENT">list</span></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-TypeExpr.type-label"><span class="TYPE">type</span> <span class="LIDENT">label</span> <span class="EQUAL">=</span> <span id="module-TypeExpr.type-label.constructor-Label"><span class="UIDENT">Label</span> <span class="OF">of</span> <span class="LIDENT">string</span></span> <span id="module-TypeExpr.type-label.constructor-RawOptional"><span class="BAR">|</span> <span class="UIDENT">RawOptional</span> <span class="OF">of</span> <span class="LIDENT">string</span></span> <span id="module-TypeExpr.type-label.constructor-Optional"><span class="BAR">|</span> <span class="UIDENT">Optional</span> <span class="OF">of</span> <span class="LIDENT">string</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-TypeExpr.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-TypeExpr.type-t.constructor-Var"><span class="BAR">|</span> <span class="UIDENT">Var</span> <span class="OF">of</span> <span class="LIDENT">string</span></span><span class="EOL">
+</span>    <span id="module-TypeExpr.type-t.constructor-Any"><span class="BAR">|</span> <span class="UIDENT">Any</span></span><span class="EOL">
+</span>    <span id="module-TypeExpr.type-t.constructor-Alias"><span class="BAR">|</span> <span class="UIDENT">Alias</span> <span class="OF">of</span> <span class="LIDENT">t</span> <span class="STAR">*</span> <span class="LIDENT">string</span></span><span class="EOL">
+</span>    <span id="module-TypeExpr.type-t.constructor-Arrow"><span class="BAR">|</span> <span class="UIDENT">Arrow</span> <span class="OF">of</span> <span class="LIDENT">label</span> <span class="LIDENT">option</span> <span class="STAR">*</span> <span class="LIDENT">t</span> <span class="STAR">*</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-TypeExpr.type-t.constructor-Tuple"><span class="BAR">|</span> <span class="UIDENT">Tuple</span> <span class="OF">of</span> <span class="LIDENT">t</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>    <span id="module-TypeExpr.type-t.constructor-Constr"><span class="BAR">|</span> <span class="UIDENT">Constr</span> <span class="OF">of</span> <a href="paths.ml.html#module-Path.module-Type.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Type</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <span class="LIDENT">t</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>    <span id="module-TypeExpr.type-t.constructor-Polymorphic_variant"><span class="BAR">|</span> <span class="UIDENT">Polymorphic_variant</span> <span class="OF">of</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="UIDENT">Polymorphic_variant</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-TypeExpr.type-t.constructor-Object"><span class="BAR">|</span> <span class="UIDENT">Object</span> <span class="OF">of</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="UIDENT">Object</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-TypeExpr.type-t.constructor-Class"><span class="BAR">|</span> <span class="UIDENT">Class</span> <span class="OF">of</span> <a href="paths.ml.html#module-Path.module-ClassType.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">ClassType</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <span class="LIDENT">t</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>    <span id="module-TypeExpr.type-t.constructor-Poly"><span class="BAR">|</span> <span class="UIDENT">Poly</span> <span class="OF">of</span> <span class="LIDENT">string</span> <span class="LIDENT">list</span> <span class="STAR">*</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-TypeExpr.type-t.constructor-Package"><span class="BAR">|</span> <span class="UIDENT">Package</span> <span class="OF">of</span> <span class="UIDENT">TypeExpr</span><span class="DOT">.</span><span class="UIDENT">Package</span><span class="DOT">.</span><span class="LIDENT">t</span></span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">TypeExpr</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {3 Compilation units} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Compilation_unit"><span class="MODULE">module</span> <span class="REC">rec</span> <span class="UIDENT">Compilation_unit</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Compilation_unit.module-Import"><span class="MODULE">module</span> <span class="UIDENT">Import</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-Compilation_unit.module-Import.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span id="module-Compilation_unit.module-Import.type-t.constructor-Unresolved"><span class="BAR">|</span> <span class="UIDENT">Unresolved</span> <span class="OF">of</span> <span class="LIDENT">string</span> <span class="STAR">*</span> <a href="../../../ocaml-base-compiler/src/stdlib/digest.ml.html#module-MD5.type-t"><span class="UIDENT">Digest</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span></span><span class="EOL">
+</span>      <span id="module-Compilation_unit.module-Import.type-t.constructor-Resolved"><span class="BAR">|</span> <span class="UIDENT">Resolved</span> <span class="OF">of</span> <a href="root.ml.html#type-t"><span class="UIDENT">Root</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="STAR">*</span> <a href="names.ml.html#module-Name.type-t"><span class="UIDENT">Names</span><span class="DOT">.</span><span class="UIDENT">ModuleName</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Compilation_unit.module-Source"><span class="MODULE">module</span> <span class="UIDENT">Source</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-Compilation_unit.module-Source.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_115"><span class="LIDENT">file</span> <span class="COLON">:</span> <span class="LIDENT">string</span><span class="SEMI">;</span></span> <span id="def_142"><span class="LIDENT">build_dir</span> <span class="COLON">:</span> <span class="LIDENT">string</span><span class="SEMI">;</span></span> <span id="def_19"><span class="LIDENT">digest</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/digest.ml.html#module-MD5.type-t"><span class="UIDENT">Digest</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Compilation_unit.module-Packed"><span class="MODULE">module</span> <span class="UIDENT">Packed</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-Compilation_unit.module-Packed.type-item"><span class="TYPE">type</span> <span class="LIDENT">item</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_112"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Module.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span> <span id="def_184"><span class="LIDENT">path</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>    <span id="module-Compilation_unit.module-Packed.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LIDENT">item</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Compilation_unit.type-content"><span class="TYPE">type</span> <span class="LIDENT">content</span> <span class="EQUAL">=</span> <span id="module-Compilation_unit.type-content.constructor-Module"><span class="UIDENT">Module</span> <span class="OF">of</span> <span class="UIDENT">Signature</span><span class="DOT">.</span><span class="LIDENT">t</span></span> <span id="module-Compilation_unit.type-content.constructor-Pack"><span class="BAR">|</span> <span class="UIDENT">Pack</span> <span class="OF">of</span> <span class="UIDENT">Packed</span><span class="DOT">.</span><span class="LIDENT">t</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Compilation_unit.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_117"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-RootModule.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">RootModule</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_80"><span class="LIDENT">root</span> <span class="COLON">:</span> <a href="root.ml.html#type-t"><span class="UIDENT">Root</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_81"><span class="LIDENT">digest</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/digest.ml.html#module-MD5.type-t"><span class="UIDENT">Digest</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_143"><span class="LIDENT">imports</span> <span class="COLON">:</span> <span class="UIDENT">Import</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_98"><span class="LIDENT">source</span> <span class="COLON">:</span> <span class="UIDENT">Source</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_30"><span class="LIDENT">interface</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_97"><span class="LIDENT">hidden</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_86"><span class="LIDENT">content</span> <span class="COLON">:</span> <span class="LIDENT">content</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_87"><span class="LIDENT">expansion</span> <span class="COLON">:</span> <span class="UIDENT">Signature</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_154"><span class="LIDENT">linked</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span>  <span class="DOCSTRING">(** Whether this unit has been linked. *)</span><span class="EOL">
+</span>    <span id="def_152"><span class="LIDENT">source_loc</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-SourceLocation.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourceLocation</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_23"><span class="LIDENT">canonical</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Compilation_unit</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Source_info"><span class="MODULE">module</span> <span class="REC">rec</span> <span class="UIDENT">Source_info</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Source_info.type-jump_to_impl"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">jump_to_impl</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Source_info.type-jump_to_impl.constructor-Unresolved"><span class="BAR">|</span> <span class="UIDENT">Unresolved</span> <span class="OF">of</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span>    <span id="module-Source_info.type-jump_to_impl.constructor-Resolved"><span class="BAR">|</span> <span class="UIDENT">Resolved</span> <span class="OF">of</span> <a href="paths.ml.html#module-Identifier.module-SourceLocation.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourceLocation</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Source_info.type-jump_to"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">jump_to</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_77"><span class="LIDENT">documentation</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_34"><span class="LIDENT">implementation</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">jump_to_impl</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Source_info.type-annotation"><span class="TYPE">type</span> <span class="LIDENT">annotation</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Source_info.type-annotation.constructor-Definition"><span class="BAR">|</span> <span class="UIDENT">Definition</span> <span class="OF">of</span> <a href="paths.ml.html#module-Identifier.module-SourceLocation.type-t"><span class="UIDENT">Paths</span><span class="DOT">.</span><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourceLocation</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span>    <span id="module-Source_info.type-annotation.constructor-Value"><span class="BAR">|</span> <span class="UIDENT">Value</span> <span class="OF">of</span> <a href="paths.ml.html#module-Path.module-Value.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Value</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">jump_to</span></span><span class="EOL">
+</span>    <span id="module-Source_info.type-annotation.constructor-Module"><span class="BAR">|</span> <span class="UIDENT">Module</span> <span class="OF">of</span> <a href="paths.ml.html#module-Path.module-Module.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Module</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">jump_to</span></span><span class="EOL">
+</span>    <span id="module-Source_info.type-annotation.constructor-ModuleType"><span class="BAR">|</span> <span class="UIDENT">ModuleType</span> <span class="OF">of</span> <a href="paths.ml.html#module-Path.module-ModuleType.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">jump_to</span></span><span class="EOL">
+</span>    <span id="module-Source_info.type-annotation.constructor-Type"><span class="BAR">|</span> <span class="UIDENT">Type</span> <span class="OF">of</span> <a href="paths.ml.html#module-Path.module-Type.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="UIDENT">Type</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">jump_to</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Source_info.type-with_pos"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">with_pos</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="STAR">*</span> <span class="LPAREN">(</span><span class="LIDENT">int</span> <span class="STAR">*</span> <span class="LIDENT">int</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Source_info.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LIDENT">annotation</span> <span class="LIDENT">with_pos</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Source_info</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Implementation"><span class="MODULE">module</span> <span class="REC">rec</span> <span class="UIDENT">Implementation</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Implementation.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_102"><span class="LIDENT">id</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-SourcePage.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourcePage</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_148"><span class="LIDENT">digest</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/digest.ml.html#module-MD5.type-t"><span class="UIDENT">Digest</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_50"><span class="LIDENT">root</span> <span class="COLON">:</span> <a href="root.ml.html#type-t"><span class="UIDENT">Root</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_38"><span class="LIDENT">linked</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span>  <span class="DOCSTRING">(** Whether this unit has been linked. *)</span><span class="EOL">
+</span>    <span id="def_157"><span class="LIDENT">imports</span> <span class="COLON">:</span> <span class="UIDENT">Compilation_unit</span><span class="DOT">.</span><span class="UIDENT">Import</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_58"><span class="LIDENT">source_info</span> <span class="COLON">:</span> <span class="UIDENT">Source_info</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_114"><span class="LIDENT">shape_info</span> <span class="COLON">:</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><a href="compat.ml.html#type-shape"><span class="UIDENT">Compat</span><span class="DOT">.</span><span class="LIDENT">shape</span></a> <span class="STAR">*</span> <a href="compat.ml.html#type-shape_uid_map"><a href="paths.ml.html#module-Identifier.module-SourceLocation.type-t"><span class="UIDENT">Paths</span><span class="DOT">.</span><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">SourceLocation</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="UIDENT">Compat</span><span class="DOT">.</span><span class="LIDENT">shape_uid_map</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Implementation</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Page"><span class="MODULE">module</span> <span class="REC">rec</span> <span class="UIDENT">Page</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Page.type-child"><span class="TYPE">type</span> <span class="LIDENT">child</span> <span class="EQUAL">=</span> <span id="module-Page.type-child.constructor-Page_child"><span class="UIDENT">Page_child</span> <span class="OF">of</span> <span class="LIDENT">string</span></span> <span id="module-Page.type-child.constructor-Module_child"><span class="BAR">|</span> <span class="UIDENT">Module_child</span> <span class="OF">of</span> <span class="LIDENT">string</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Page.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_85"><span class="LIDENT">name</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-Page.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">Page</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_44"><span class="LIDENT">root</span> <span class="COLON">:</span> <a href="root.ml.html#type-t"><span class="UIDENT">Root</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_35"><span class="LIDENT">content</span> <span class="COLON">:</span> <a href="comment.ml.html#type-docs"><span class="UIDENT">Comment</span><span class="DOT">.</span><span class="LIDENT">docs</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_163"><span class="LIDENT">children</span> <span class="COLON">:</span> <span class="LIDENT">child</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_69"><span class="LIDENT">frontmatter</span> <span class="COLON">:</span> <a href="frontmatter.ml.html#type-t"><span class="UIDENT">Frontmatter</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_126"><span class="LIDENT">digest</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/digest.ml.html#module-MD5.type-t"><span class="UIDENT">Digest</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_131"><span class="LIDENT">linked</span> <span class="COLON">:</span> <span class="LIDENT">bool</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Page</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Asset"><span class="MODULE">module</span> <span class="REC">rec</span> <span class="UIDENT">Asset</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Asset.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_37"><span class="LIDENT">name</span> <span class="COLON">:</span> <a href="paths.ml.html#module-Identifier.module-AssetFile.type-t"><span class="UIDENT">Identifier</span><span class="DOT">.</span><span class="UIDENT">AssetFile</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span> <span id="def_101"><span class="LIDENT">root</span> <span class="COLON">:</span> <a href="root.ml.html#type-t"><span class="UIDENT">Root</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Asset</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-umty_of_mty"><span class="LIDENT">umty_of_mty</span></span> <span class="COLON">:</span> <span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="LIDENT">expr</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="UIDENT">U</span><span class="DOT">.</span><span class="LIDENT">expr</span> <span class="LIDENT">option</span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Signature</span> <span id="local_sg_1"><span class="LIDENT">sg</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="UIDENT">Signature</span> <a href="#local_sg_1"><span class="LIDENT">sg</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Path</span> <span class="LBRACE">{</span> <span id="local_p_path_2"><span class="LIDENT">p_path</span></span><span class="SEMI">;</span> <span class="UNDERSCORE">_</span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="UIDENT">Path</span> <a href="#local_p_path_2"><span class="LIDENT">p_path</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Functor</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">TypeOf</span> <span class="LBRACE">{</span> <span id="local_t_desc_3"><span class="LIDENT">t_desc</span></span><span class="SEMI">;</span> <span id="local_t_original_path_4"><span class="LIDENT">t_original_path</span></span><span class="SEMI">;</span> <span class="UNDERSCORE">_</span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="UIDENT">TypeOf</span> <span class="LPAREN">(</span><a href="#local_t_desc_3"><span class="LIDENT">t_desc</span></a><span class="COMMA">,</span> <a href="#local_t_original_path_4"><span class="LIDENT">t_original_path</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">With</span> <span class="LBRACE">{</span> <span id="local_w_substitutions_5"><span class="LIDENT">w_substitutions</span></span><span class="SEMI">;</span> <span id="local_w_expr_6"><span class="LIDENT">w_expr</span></span><span class="SEMI">;</span> <span class="UNDERSCORE">_</span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="UIDENT">With</span> <span class="LPAREN">(</span><a href="#local_w_substitutions_5"><span class="LIDENT">w_substitutions</span></a><span class="COMMA">,</span> <a href="#local_w_expr_6"><span class="LIDENT">w_expr</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** Query the top-comment of a signature. This is [s.doc] most of the time with
+    an exception for signature starting with an inline includes. *)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-extract_signature_doc"><span class="LIDENT">extract_signature_doc</span></span> <span class="LPAREN">(</span><span id="local_s_7"><span class="LIDENT">s</span></span> <span class="COLON">:</span> <span class="UIDENT">Signature</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="local_uexpr_considered_hidden_8"><span class="LIDENT">uexpr_considered_hidden</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">ModuleType</span><span class="DOT">.</span><span class="UIDENT">U</span><span class="DOT">.</span><span class="UIDENT">Path</span> <span id="local_p_9"><span class="LIDENT">p</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="paths.ml.html#module-Path.val-is_hidden"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">is_hidden</span></a> <span class="LPAREN">(</span><a href="#local_p_9"><span class="LIDENT">p</span></a> <span class="COLONGREATER">:&gt;</span> <a href="paths.ml.html#module-Path.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Signature</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="TRUE">true</span> <span class="COMMENT">(* Hidden in some sense, we certainly want its top comment *)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">With</span> <span class="LPAREN">(</span><span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span id="local_e_10"><span class="LIDENT">e</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_uexpr_considered_hidden_8"><span class="LIDENT">uexpr_considered_hidden</span></a> <a href="#local_e_10"><span class="LIDENT">e</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">TypeOf</span> <span class="LPAREN">(</span><span class="UIDENT">ModPath</span> <span id="local_p_11"><span class="LIDENT">p</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="BAR">|</span> <span class="UIDENT">TypeOf</span> <span class="LPAREN">(</span><span class="UIDENT">StructInclude</span> <span id="local_p_12"><span class="LIDENT">p</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <a href="paths.ml.html#module-Path.val-is_hidden"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">is_hidden</span></a> <span class="LPAREN">(</span><a href="#local_p_12"><span class="LIDENT">p</span></a> <span class="COLONGREATER">:&gt;</span> <a href="paths.ml.html#module-Path.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_should_take_top_13"><span class="LIDENT">should_take_top</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="COMMENT">(* A signature that starts with an include may inherits the
+       top-comment from the expansion. *)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="LBRACE">{</span> <span class="UIDENT">Include</span><span class="DOT">.</span><span class="LIDENT">status</span> <span class="EQUAL">=</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Inline</span><span class="SEMI">;</span> <span class="UNDERSCORE">_</span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span> <span class="TRUE">true</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="LBRACE">{</span> <span class="LIDENT">decl</span> <span class="EQUAL">=</span> <span class="UIDENT">Alias</span> <span id="local_p_14"><span class="LIDENT">p</span></span><span class="SEMI">;</span> <span class="UNDERSCORE">_</span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span> <a href="paths.ml.html#module-Path.val-is_hidden"><span class="UIDENT">Paths</span><span class="DOT">.</span><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">is_hidden</span></a> <span class="LPAREN">(</span><a href="#local_p_14"><span class="LIDENT">p</span></a> <span class="COLONGREATER">:&gt;</span> <a href="paths.ml.html#module-Path.type-t"><span class="UIDENT">Path</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="LBRACE">{</span> <span class="LIDENT">decl</span> <span class="EQUAL">=</span> <span class="UIDENT">ModuleType</span> <span id="local_expr_15"><span class="LIDENT">expr</span></span><span class="SEMI">;</span> <span class="UNDERSCORE">_</span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_uexpr_considered_hidden_8"><span class="LIDENT">uexpr_considered_hidden</span></a> <a href="#local_expr_15"><span class="LIDENT">expr</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <span class="LPAREN">(</span><a href="#local_s_7"><span class="LIDENT">s</span></a><span class="DOT">.</span><span class="LIDENT">doc</span><span class="COMMA">,</span> <a href="#local_s_7"><span class="LIDENT">s</span></a><span class="DOT">.</span><span class="LIDENT">items</span><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="LBRACE">{</span> <span class="LIDENT">elements</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="SEMI">;</span> <span class="UNDERSCORE">_</span> <span class="RBRACE">}</span><span class="COMMA">,</span> <span class="UIDENT">Include</span> <span id="local_inc_16"><span class="LIDENT">inc</span></span> <span class="COLONCOLON">::</span> <span class="UNDERSCORE">_</span> <span class="WHEN">when</span> <a href="#local_should_take_top_13"><span class="LIDENT">should_take_top</span></a> <a href="#local_inc_16"><span class="LIDENT">inc</span></a> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <a href="#local_inc_16"><span class="LIDENT">inc</span></a><span class="DOT">.</span><span class="LIDENT">expansion</span><span class="DOT">.</span><span class="LIDENT">content</span><span class="DOT">.</span><span class="LIDENT">doc</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_doc_17"><span class="LIDENT">doc</span></span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_doc_17"><span class="LIDENT">doc</span></a><span class="EOL">
+</span></span></code></pre></body></html>

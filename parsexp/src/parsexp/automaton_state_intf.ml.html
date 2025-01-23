@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: automaton_state_intf.ml (parsexp.src.parsexp)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">parsexp</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; parsexp &#x00BB; automaton_state_intf.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>automaton_state_intf.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">parsexp</a><ul><li>Library <code>parsexp</code><ul><li><a href="../../parsexp/Parsexp/index.html">Parsexp</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>parsexp<ul><li><a href="automaton.ml.html">automaton.ml</a></li><li><a href="automaton_action.ml.html">automaton_action.ml</a></li><li><a href="automaton_intf.ml.html">automaton_intf.ml</a></li><li><a href="automaton_stack.ml.html">automaton_stack.ml</a></li><li><a href="automaton_stack_intf.ml.html">automaton_stack_intf.ml</a></li><li><a href="automaton_state.ml.html">automaton_state.ml</a></li><li><a href="#" class="current_unit">automaton_state_intf.ml</a></li><li><a href="automaton_tables.ml.html">automaton_tables.ml</a></li><li><a href="conv.ml.html">conv.ml</a></li><li><a href="conv_error.ml.html">conv_error.ml</a></li><li><a href="conv_intf.ml.html">conv_intf.ml</a></li><li><a href="cst.ml.html">cst.ml</a></li><li><a href="import.ml.html">import.ml</a></li><li><a href="of_sexp_error.ml.html">of_sexp_error.ml</a></li><li><a href="old_parser_cont_state.ml.html">old_parser_cont_state.ml</a></li><li><a href="parse_error.ml.html">parse_error.ml</a></li><li><a href="parse_error_intf.ml.html">parse_error_intf.ml</a></li><li><a href="parser.ml.html">parser.ml</a></li><li><a href="parser_intf.ml.html">parser_intf.ml</a></li><li><a href="parsexp.ml.html">parsexp.ml</a></li><li><a href="parsexp__.ml.html">parsexp__.ml</a></li><li><a href="parsexp_intf.ml.html">parsexp_intf.ml</a></li><li><a href="positions.ml.html">positions.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+</code><code class="source_code"><span><span class="OPEN">open</span><span class="BANG">!</span> <a href="import.ml.html"><span class="UIDENT">Import</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Context"><span class="MODULE">module</span> <span class="UIDENT">Context</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Context.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Context.type-t.constructor-Sexp_comment"><span class="BAR">|</span> <span class="UIDENT">Sexp_comment</span></span><span class="EOL">
+</span>    <span id="module-Context.type-t.constructor-Sexp"><span class="BAR">|</span> <span class="UIDENT">Sexp</span></span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-For_cst"><span class="MODULE">module</span> <span class="UIDENT">For_cst</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-For_cst.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LBRACE">{</span> <span id="def_10"><span class="LIDENT">token_buffer</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/buffer.ml.html#type-t"><span class="UIDENT">Buffer</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="DOCSTRING">(** Starting positions of the current token **)</span><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_2"><span class="MUTABLE">mutable</span> <span class="LIDENT">token_start_pos</span> <span class="COLON">:</span> <a href="positions.ml.html#type-pos"><span class="UIDENT">Positions</span><span class="DOT">.</span><span class="LIDENT">pos</span></a></span><span class="EOL">
+</span>    <span class="RBRACE">}</span><span class="EOL">
+</span>  <span class="LBRACKETATAT">[@@</span><span class="LIDENT">deriving</span> <span class="LIDENT">sexp_of</span><span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Kind"><span class="MODULE">module</span> <span class="UIDENT">Kind</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Kind.type-t"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Kind.type-t.constructor-Positions"><span class="BAR">|</span> <span class="UIDENT">Positions</span> <span class="COLON">:</span> <span class="LPAREN">(</span><a href="positions.ml.html#module-Builder.type-t"><span class="UIDENT">Positions</span><span class="DOT">.</span><span class="UIDENT">Builder</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="COMMA">,</span> <span class="LIDENT">unit</span><span class="RPAREN">)</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Kind.type-t.constructor-Sexp"><span class="BAR">|</span> <span class="UIDENT">Sexp</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="LIDENT">unit</span><span class="COMMA">,</span> <a href="automaton_stack.ml.html#type-t"><span class="UIDENT">Automaton_stack</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Kind.type-t.constructor-Sexp_with_positions"><span class="BAR">|</span> <span class="UIDENT">Sexp_with_positions</span> <span class="COLON">:</span> <span class="LPAREN">(</span><a href="positions.ml.html#module-Builder.type-t"><span class="UIDENT">Positions</span><span class="DOT">.</span><span class="UIDENT">Builder</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="COMMA">,</span> <a href="automaton_stack.ml.html#type-t"><span class="UIDENT">Automaton_stack</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>    <span id="module-Kind.type-t.constructor-Cst"><span class="BAR">|</span> <span class="UIDENT">Cst</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="UIDENT">For_cst</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="COMMA">,</span> <a href="automaton_stack.ml.html#module-For_cst.type-t"><span class="UIDENT">Automaton_stack</span><span class="DOT">.</span><span class="UIDENT">For_cst</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="LIDENT">t</span></span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-State"><span class="MODULE">module</span> <span class="REC">rec</span> <span class="UIDENT">State</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-State.type-t"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LBRACE">{</span> <span id="def_11"><span class="MUTABLE">mutable</span> <span class="LIDENT">automaton_state</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_9"><span class="LIDENT">kind</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="UIDENT">Kind</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_8"><span class="MUTABLE">mutable</span> <span class="LIDENT">depth</span> <span class="COLON">:</span> <span class="LIDENT">int</span> <span class="DOCSTRING">(** Number of opened #| when parsing a block comment *)</span><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_15"><span class="MUTABLE">mutable</span> <span class="LIDENT">block_comment_depth</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="EOL">
+</span>    <span class="DOCSTRING">(** Stack of ignoring depths; the current depth is pushed
+        each time a #; comment is entered. *)</span><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_14"><span class="MUTABLE">mutable</span> <span class="LIDENT">ignoring_stack</span> <span class="COLON">:</span> <span class="LIDENT">int</span> <span class="LIDENT">list</span><span class="EOL">
+</span>    <span class="DOCSTRING">(** When parsing an escape sequence of the form &quot;\\NNN&quot; or &quot;\\XX&quot;, this accumulates
+        the computed number *)</span><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_13"><span class="MUTABLE">mutable</span> <span class="LIDENT">escaped_value</span> <span class="COLON">:</span> <span class="LIDENT">int</span> <span class="DOCSTRING">(** Buffer for accumulating atoms *)</span><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_12"><span class="LIDENT">atom_buffer</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/buffer.ml.html#type-t"><span class="UIDENT">Buffer</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_7"><span class="LIDENT">user_state</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">u</span><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_6"><span class="LIDENT">mode</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="UIDENT">Mode</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_4"><span class="MUTABLE">mutable</span> <span class="LIDENT">full_sexps</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_1"><span class="MUTABLE">mutable</span> <span class="LIDENT">offset</span> <span class="COLON">:</span> <span class="LIDENT">int</span> <span class="DOCSTRING">(** global offset **)</span><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_3"><span class="MUTABLE">mutable</span> <span class="LIDENT">line_number</span> <span class="COLON">:</span> <span class="LIDENT">int</span><span class="EOL">
+</span>    <span class="SEMI">;</span></span> <span id="def_5"><span class="MUTABLE">mutable</span> <span class="LIDENT">bol_offset</span> <span class="COLON">:</span> <span class="LIDENT">int</span></span> <span class="DOCSTRING">(** offset of beginning of line **)</span><span class="EOL">
+</span>    <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">State</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Mode"><span class="AND">and</span> <span class="UIDENT">Mode</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-Mode.type-t"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Mode.type-t.constructor-Single"><span class="BAR">|</span> <span class="UIDENT">Single</span></span><span class="EOL">
+</span>    <span id="module-Mode.type-t.constructor-Many"><span class="BAR">|</span> <span class="UIDENT">Many</span></span><span class="EOL">
+</span>    <span id="module-Mode.type-t.constructor-Eager"><span class="BAR">|</span> <span class="UIDENT">Eager</span> <span class="OF">of</span><span class="EOL">
+</span>        <span class="LBRACE">{</span> <span id="def_17"><span class="LIDENT">got_sexp</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="UIDENT">State</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">s</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="EOL">
+</span>        <span class="SEMI">;</span></span> <span id="def_16"><span class="MUTABLE">mutable</span> <span class="LIDENT">no_sexp_is_error</span> <span class="COLON">:</span> <span class="LIDENT">bool</span></span><span class="EOL">
+</span>        <span class="RBRACE">}</span></span></span><span class="EOL">
+</span><span class="END">end</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Mode</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-Automaton_state"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">Automaton_state</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.module-Context"><span class="MODULE">module</span> <span class="UIDENT">Context</span> <span class="EQUAL">=</span> <span class="UIDENT">Context</span></span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.module-For_cst"><span class="MODULE">module</span> <span class="UIDENT">For_cst</span> <span class="EQUAL">=</span> <span class="UIDENT">For_cst</span></span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.module-Kind"><span class="MODULE">module</span> <span class="UIDENT">Kind</span> <span class="EQUAL">=</span> <span class="UIDENT">Kind</span></span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.module-Mode"><span class="MODULE">module</span> <span class="UIDENT">Mode</span> <span class="EQUAL">=</span> <span class="UIDENT">Mode</span></span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.module-State"><span class="MODULE">module</span> <span class="UIDENT">State</span> <span class="EQUAL">=</span> <span class="UIDENT">State</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.type-t"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="UIDENT">State</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.val-create"><span class="VAL">val</span> <span class="LIDENT">create</span><span class="EOL">
+</span>    <span class="COLON">:</span>  <span class="OPTLABEL">?initial_pos:</span><a href="positions.ml.html#type-pos"><span class="UIDENT">Positions</span><span class="DOT">.</span><span class="LIDENT">pos</span></a><span class="EOL">
+</span>    <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="UIDENT">Mode</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="EOL">
+</span>    <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="UIDENT">Kind</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="EOL">
+</span>    <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.val-reset"><span class="VAL">val</span> <span class="LIDENT">reset</span> <span class="COLON">:</span> <span class="OPTLABEL">?pos:</span><a href="positions.ml.html#type-pos"><span class="UIDENT">Positions</span><span class="DOT">.</span><span class="LIDENT">pos</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="UNDERSCORE">_</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span></span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.val-positions"><span class="VAL">val</span> <span class="LIDENT">positions</span> <span class="COLON">:</span> <span class="LPAREN">(</span><a href="positions.ml.html#module-Builder.type-t"><span class="UIDENT">Positions</span><span class="DOT">.</span><span class="UIDENT">Builder</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <a href="positions.ml.html#type-t"><span class="UIDENT">Positions</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.val-mode"><span class="VAL">val</span> <span class="LIDENT">mode</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="UIDENT">Mode</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="DOCSTRING">(** Number of characters fed to the parser *)</span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.val-offset"><span class="VAL">val</span> <span class="LIDENT">offset</span> <span class="COLON">:</span> <span class="UNDERSCORE">_</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">int</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="DOCSTRING">(** Position in the text *)</span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.val-line"><span class="VAL">val</span> <span class="LIDENT">line</span> <span class="COLON">:</span> <span class="UNDERSCORE">_</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">int</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.val-column"><span class="VAL">val</span> <span class="LIDENT">column</span> <span class="COLON">:</span> <span class="UNDERSCORE">_</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">int</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="DOCSTRING">(** Whether there are some unclosed parentheses *)</span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.val-has_unclosed_paren"><span class="VAL">val</span> <span class="LIDENT">has_unclosed_paren</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bool</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.val-set_error_state"><span class="VAL">val</span> <span class="LIDENT">set_error_state</span> <span class="COLON">:</span> <span class="UNDERSCORE">_</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="DOCSTRING">(**/**)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="COMMENT">(*_ Only for converting errors to the old parser errors *)</span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.val-atom_buffer"><span class="VAL">val</span> <span class="LIDENT">atom_buffer</span> <span class="COLON">:</span> <span class="UNDERSCORE">_</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/buffer.ml.html#type-t"><span class="UIDENT">Buffer</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="COMMENT">(*_ For coverate tests *)</span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.val-automaton_state"><span class="VAL">val</span> <span class="LIDENT">automaton_state</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">s</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">int</span></span><span class="EOL">
+</span>  <span id="module-type-Automaton_state.val-context"><span class="VAL">val</span> <span class="LIDENT">context</span> <span class="COLON">:</span> <span class="UNDERSCORE">_</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Context</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

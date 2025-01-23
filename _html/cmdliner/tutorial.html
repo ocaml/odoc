@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>tutorial (cmdliner.tutorial)</title><meta charset="utf-8"/><link rel="stylesheet" href="../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../';
+let search_urls = ['sherlodoc_db.js','../sherlodoc.js'];
+</script><script src="../odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../index.html">🏠</a> &#x00BB; <a href="index.html">Cmdliner  <span class="version">v1.3.0</span></a> &#x00BB; Tutorial</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Type '/' to search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><h1 id="tutorial"><a href="#tutorial" class="anchor"></a>Tutorial</h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-local-toc"><ul><li><a href="#started">Getting started</a></li><li><a href="#subcommands">Sub commands</a></li></ul></nav><nav class="odoc-toc odoc-global-toc"><ul><li><a href="index.html">Cmdliner  <span class="version">v1.3.0</span></a><ul><li><a href="cli.html">Command line interface</a></li><li><a href="examples.html">Examples</a></li><li><a href="tool_man.html">Tool man pages</a></li><li><a href="#" class="current_unit">Tutorial</a></li><li>Library <code>cmdliner</code><ul><li><a href="cmdliner/Cmdliner/index.html">Cmdliner</a></li></ul></li></ul></li></ul></nav></div><div class="odoc-content"><h2 id="started"><a href="#started" class="anchor"></a>Getting started</h2><p>With <code>Cmdliner</code> your tool's <code>main</code> function evaluates a command.</p><p>A command is a value of type <a href="cmdliner/Cmdliner/Cmd/index.html#type-t"><code>Cmdliner.Cmd.t</code></a> which gathers a command name and a term of type <a href="cmdliner/Cmdliner/Term/index.html#type-t"><code>Cmdliner.Term.t</code></a>. A term is an expression to be evaluated. The type parameter of the term (and the command) indicates the type of the result of the evaluation.</p><p>One way to create terms is by lifting regular OCaml values with <a href="cmdliner/Cmdliner/Term/index.html#val-const"><code>Cmdliner.Term.const</code></a>. Terms can be applied to terms evaluating to functional values with <a href="cmdliner/Cmdliner/Term/index.html#val-($)"><code>Cmdliner.Term.($)</code></a>.</p><p>For example, in a <code>revolt.ml</code> file, for the function:</p><pre class="language-ocaml"><code>let revolt () = print_endline &quot;Revolt!&quot;</code></pre><p>the term :</p><pre class="language-ocaml"><code>open Cmdliner
+
+let revolt_t = Term.(const revolt $ const ())</code></pre><p>is a term that evaluates to the result (and effect) of the <code>revolt</code> function. This term can be attached to a command:</p><pre class="language-ocaml"><code>let cmd = Cmd.v (Cmd.info &quot;revolt&quot;) revolt_t</code></pre><p>and evaluated with <a href="cmdliner/Cmdliner/Cmd/index.html#val-eval"><code>Cmdliner.Cmd.eval</code></a>:</p><pre class="language-ocaml"><code>let () = exit (Cmd.eval cmd)</code></pre><p>This defines a command line tool named <code>&quot;revolt&quot;</code> (this name will be used in error reporting and documentation generation), without command line arguments, that just prints <code>&quot;Revolt!&quot;</code> on <code>stdout</code>.</p><pre class="language-ocaml"><code>&gt; ocamlfind ocamlopt -linkpkg -package cmdliner -o revolt revolt.ml
+&gt; ./revolt
+Revolt!</code></pre><p>The combinators in the <a href="cmdliner/Cmdliner/Arg/index.html"><code>Cmdliner.Arg</code></a> module allow to extract command line arguments as terms. These terms can then be applied to lifted OCaml functions to be evaluated.</p><p>Terms corresponding to command line argument data that are part of a term evaluation implicitly define a command line syntax. We show this on an concrete example.</p><p>In a <code>chorus.ml</code> file, consider the <code>chorus</code> function that prints repeatedly a given message :</p><pre class="language-ocaml"><code>let chorus count msg = for i = 1 to count do print_endline msg done</code></pre><p>we want to make it available from the command line with the synopsis:</p><pre class="language-ocaml"><code>chorus [-c COUNT | --count=COUNT] [MSG]</code></pre><p>where <code>COUNT</code> defaults to <code>10</code> and <code>MSG</code> defaults to <code>&quot;Revolt!&quot;</code>. We first define a term corresponding to the <code>--count</code> option:</p><pre class="language-ocaml"><code>let count =
+  let doc = &quot;Repeat the message $(docv) times.&quot; in
+  Arg.(value &amp; opt int 10 &amp; info [&quot;c&quot;; &quot;count&quot;] ~docv:&quot;COUNT&quot; ~doc)</code></pre><p>This says that <code>count</code> is a term that evaluates to the value of an optional argument of type <code>int</code> that defaults to <code>10</code> if unspecified and whose option name is either <code>-c</code> or <code>--count</code>. The arguments <code>doc</code> and <code>docv</code> are used to generate the option's man page information.</p><p>The term for the positional argument <code>MSG</code> is:</p><pre class="language-ocaml"><code>let msg =
+  let env =
+    let doc = &quot;Overrides the default message to print.&quot; in
+    Cmd.Env.info &quot;CHORUS_MSG&quot; ~doc
+  in
+  let doc = &quot;The message to print.&quot; in
+  Arg.(value &amp; pos 0 string &quot;Revolt!&quot; &amp; info [] ~env ~docv:&quot;MSG&quot; ~doc)</code></pre><p>which says that <code>msg</code> is a term whose value is the positional argument at index <code>0</code> of type <code>string</code> and defaults to <code>&quot;Revolt!&quot;</code> or the value of the environment variable <code>CHORUS_MSG</code> if the argument is unspecified on the command line. Here again <code>doc</code> and <code>docv</code> are used for the man page information.</p><p>The term for executing <code>chorus</code> with these command line arguments is :</p><pre class="language-ocaml"><code>let chorus_t = Term.(const chorus $ count $ msg)</code></pre><p>We are now ready to define the <code>main</code> function of our tool:</p><pre class="language-ocaml"><code>let cmd =
+  let doc = &quot;print a customizable message repeatedly&quot; in
+  let man = [
+    `S Manpage.s_bugs;
+    `P &quot;Email bug reports to &lt;bugs@example.org&gt;.&quot; ]
+  in
+  let info = Cmd.info &quot;chorus&quot; ~version:&quot;%‌%VERSION%%&quot; ~doc ~man in
+  Cmd.v info chorus_t
+
+let main () = exit (Cmd.eval cmd)
+let () = main ()</code></pre><p>The <code>info</code> value created with <a href="cmdliner/Cmdliner/Cmd/index.html#val-info"><code>Cmdliner.Cmd.info</code></a> gives more information about the term we execute and is used to generate the tool's man page. Since we provided a <code>~version</code> string, the tool will automatically respond to the <code>--version</code> option by printing this string.</p><p>A tool using <a href="cmdliner/Cmdliner/Cmd/index.html#val-eval"><code>Cmdliner.Cmd.eval</code></a> always responds to the <code>--help</code> option by showing the tool's man page generated using the information you provided with <a href="cmdliner/Cmdliner/Cmd/index.html#val-info"><code>Cmdliner.Cmd.info</code></a> and <a href="cmdliner/Cmdliner/Arg/index.html#val-info"><code>Cmdliner.Arg.info</code></a>. Here is the output generated by our example:</p><pre>&gt; ocamlfind ocamlopt -linkpkg -package cmdliner -o chorus chorus.ml
+&gt; ./chorus --help
+NAME
+       chorus - Print a customizable message repeatedly
+
+SYNOPSIS
+       chorus [--count=COUNT] [OPTION]… [MSG]
+
+ARGUMENTS
+       MSG (absent=Revolt! or CHORUS_MSG env)
+           The message to print.
+
+OPTIONS
+       -c COUNT, --count=COUNT (absent=10)
+           Repeat the message COUNT times.
+
+COMMON OPTIONS
+       --help[=FMT] (default=auto)
+           Show this help in format FMT. The value FMT must be one of auto,
+           pager, groff or plain. With auto, the format is pager or plain
+           whenever the TERM env var is dumb or undefined.
+
+       --version
+           Show version information.
+
+EXIT STATUS
+       chorus exits with the following status:
+
+       0   on success.
+
+       123 on indiscriminate errors reported on standard error.
+
+       124 on command line parsing errors.
+
+       125 on unexpected internal errors (bugs).
+
+ENVIRONMENT
+       These environment variables affect the execution of chorus:
+
+       CHORUS_MSG
+           Overrides the default message to print.
+
+BUGS
+       Email bug reports to &lt;bugs@example.org&gt;.</pre><p>If a pager is available, this output is written to a pager. This help is also available in plain text or in the <a href="http://www.gnu.org/software/groff/groff.html">groff</a> man page format by invoking the program with the option <code>--help=plain</code> or <code>--help=groff</code>.</p><p>For examples of more complex command line definitions look and run the <a href="examples.html" title="examples">examples</a>.</p><h2 id="subcommands"><a href="#subcommands" class="anchor"></a>Sub commands</h2><p><code>Cmdliner</code> also provides support for programs like <code>git</code> that have sub commands each with their own command line syntax and manual:</p><pre class="language-ocaml"><code>tool [COMMAND]… [OPTION]… ARG…</code></pre><p>These sub commands are defined by grouping them under a parent command via the <a href="cmdliner/Cmdliner/Cmd/index.html#val-group"><code>Cmdliner.Cmd.group</code></a> function.</p></div></body></html>

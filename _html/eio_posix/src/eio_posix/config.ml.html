@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: config.ml (eio_posix.src.eio_posix)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">eio_posix</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; eio_posix &#x00BB; config.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>config.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">eio_posix</a><ul><li>Library <code>eio_posix</code><ul><li><a href="../../eio_posix/Eio_posix/index.html">Eio_posix</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>eio_posix<ul><li><a href="#" class="current_unit">config.ml</a></li><li><a href="domain_mgr.ml.html">domain_mgr.ml</a></li><li><a href="eio_posix.ml.html">eio_posix.ml</a></li><li><a href="eio_posix__.ml.html">eio_posix__.ml</a></li><li><a href="err.ml.html">err.ml</a></li><li><a href="flow.ml.html">flow.ml</a></li><li><a href="fs.ml.html">fs.ml</a></li><li><a href="low_level.ml.html">low_level.ml</a></li><li><a href="net.ml.html">net.ml</a></li><li><a href="path.ml.html">path.ml</a></li><li><a href="process.ml.html">process.ml</a></li><li><a href="sched.ml.html">sched.ml</a></li><li><a href="time.ml.html">time.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+</code><code class="source_code"><span><span class="LET">let</span> <span id="val-o_dsync"><span class="LIDENT">o_dsync</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Some</span> <span class="INT">0x400000</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_rdonly"><span class="LIDENT">o_rdonly</span></span> <span class="EQUAL">=</span> <span class="INT">0x0</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_rdwr"><span class="LIDENT">o_rdwr</span></span> <span class="EQUAL">=</span> <span class="INT">0x2</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_wronly"><span class="LIDENT">o_wronly</span></span> <span class="EQUAL">=</span> <span class="INT">0x1</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_append"><span class="LIDENT">o_append</span></span> <span class="EQUAL">=</span> <span class="INT">0x8</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_cloexec"><span class="LIDENT">o_cloexec</span></span> <span class="EQUAL">=</span> <span class="INT">0x1000000</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_creat"><span class="LIDENT">o_creat</span></span> <span class="EQUAL">=</span> <span class="INT">0x200</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_directory"><span class="LIDENT">o_directory</span></span> <span class="EQUAL">=</span> <span class="INT">0x100000</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_excl"><span class="LIDENT">o_excl</span></span> <span class="EQUAL">=</span> <span class="INT">0x800</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_noctty"><span class="LIDENT">o_noctty</span></span> <span class="EQUAL">=</span> <span class="INT">0x20000</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_nofollow"><span class="LIDENT">o_nofollow</span></span> <span class="EQUAL">=</span> <span class="INT">0x100</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_nonblock"><span class="LIDENT">o_nonblock</span></span> <span class="EQUAL">=</span> <span class="INT">0x4</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_sync"><span class="LIDENT">o_sync</span></span> <span class="EQUAL">=</span> <span class="INT">0x80</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_trunc"><span class="LIDENT">o_trunc</span></span> <span class="EQUAL">=</span> <span class="INT">0x400</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-at_fdcwd"><span class="LIDENT">at_fdcwd</span></span> <span class="EQUAL">=</span> <span class="INT">0x7ffffffffffffffe</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-at_symlink_nofollow"><span class="LIDENT">at_symlink_nofollow</span></span> <span class="EQUAL">=</span> <span class="INT">0x20</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-iov_max"><span class="LIDENT">iov_max</span></span> <span class="EQUAL">=</span> <span class="INT">0x400</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_resolve_beneath"><span class="LIDENT">o_resolve_beneath</span></span> <span class="EQUAL">=</span> <span class="UIDENT">None</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-o_path"><span class="LIDENT">o_path</span></span> <span class="EQUAL">=</span> <span class="UIDENT">None</span><span class="EOL">
+</span></span></code></pre></body></html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: lf_queue.ml (eio.src.eio.utils)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">eio</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; eio.utils &#x00BB; lf_queue.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>lf_queue.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">eio</a><ul><li>Library <code>eio</code><ul><li><a href="../../eio/Eio/index.html">Eio</a></li></ul></li><li>Library <code>eio.core</code></li><li>Library <code>eio.mock</code><ul><li><a href="../../eio.mock/Eio_mock/index.html">Eio_mock</a></li></ul></li><li>Library <code>eio.runtime_events</code><ul><li><a href="../../eio.runtime_events/Eio_runtime_events/index.html">Eio_runtime_events</a></li></ul></li><li>Library <code>eio.unix</code><ul><li><a href="../../eio.unix/Eio_unix/index.html">Eio_unix</a></li></ul></li><li>Library <code>eio.utils</code><ul><li><a href="../../eio.utils/Eio_utils/index.html">Eio_utils</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>eio<ul><li><a href="../eio/buf_read.ml.html">buf_read.ml</a></li><li><a href="../eio/buf_write.ml.html">buf_write.ml</a></li><li><a href="../eio/condition.ml.html">condition.ml</a></li><li><a href="../eio/domain_manager.ml.html">domain_manager.ml</a></li><li><a href="../eio/eio.ml.html">eio.ml</a></li><li><a href="../eio/eio__.ml.html">eio__.ml</a></li><li><a href="../eio/eio_mutex.ml.html">eio_mutex.ml</a></li><li><a href="../eio/executor_pool.ml.html">executor_pool.ml</a></li><li><a href="../eio/file.ml.html">file.ml</a></li><li><a href="../eio/flow.ml.html">flow.ml</a></li><li><a href="../eio/fs.ml.html">fs.ml</a></li><li><a href="../eio/hook.ml.html">hook.ml</a></li><li><a href="../eio/lazy.ml.html">lazy.ml</a></li><li><a href="../eio/net.ml.html">net.ml</a></li><li><a href="../eio/path.ml.html">path.ml</a></li><li><a href="../eio/pool.ml.html">pool.ml</a></li><li><a href="../eio/process.ml.html">process.ml</a></li><li><a href="../eio/resource.ml.html">resource.ml</a></li><li><a href="../eio/sem_state.ml.html">sem_state.ml</a></li><li><a href="../eio/semaphore.ml.html">semaphore.ml</a></li><li><a href="../eio/std.ml.html">std.ml</a></li><li><a href="../eio/stream.ml.html">stream.ml</a></li><li><a href="../eio/sync.ml.html">sync.ml</a></li><li><a href="../eio/time.ml.html">time.ml</a></li><li><a href="../eio/waiters.ml.html">waiters.ml</a></li></ul></li><li>eio.core<ul><li><a href="../eio.core/broadcast.ml.html">broadcast.ml</a></li><li><a href="../eio.core/cancel.ml.html">cancel.ml</a></li><li><a href="../eio.core/cells.ml.html">cells.ml</a></li><li><a href="../eio.core/debug.ml.html">debug.ml</a></li><li><a href="../eio.core/dla.ml.html">dla.ml</a></li><li><a href="../eio.core/eio__core.ml.html">eio__core.ml</a></li><li><a href="../eio.core/eio__core__.ml.html">eio__core__.ml</a></li><li><a href="../eio.core/exn.ml.html">exn.ml</a></li><li><a href="../eio.core/fiber.ml.html">fiber.ml</a></li><li><a href="../eio.core/promise.ml.html">promise.ml</a></li><li><a href="../eio.core/single_waiter.ml.html">single_waiter.ml</a></li><li><a href="../eio.core/suspend.ml.html">suspend.ml</a></li><li><a href="../eio.core/switch.ml.html">switch.ml</a></li><li><a href="../eio.core/trace.ml.html">trace.ml</a></li></ul></li><li>eio.mock<ul><li><a href="../eio.mock/action.ml.html">action.ml</a></li><li><a href="../eio.mock/backend.ml.html">backend.ml</a></li><li><a href="../eio.mock/clock.ml.html">clock.ml</a></li><li><a href="../eio.mock/domain_manager.ml.html">domain_manager.ml</a></li><li><a href="../eio.mock/eio_mock.ml.html">eio_mock.ml</a></li><li><a href="../eio.mock/eio_mock__.ml.html">eio_mock__.ml</a></li><li><a href="../eio.mock/flow.ml.html">flow.ml</a></li><li><a href="../eio.mock/handler.ml.html">handler.ml</a></li><li><a href="../eio.mock/net.ml.html">net.ml</a></li></ul></li><li>eio.runtime_events<ul><li><a href="../eio.runtime_events/eio_runtime_events.ml.html">eio_runtime_events.ml</a></li></ul></li><li>eio.unix<ul><li><a href="../eio.unix/cap.ml.html">cap.ml</a></li><li><a href="../eio.unix/eio_unix.ml.html">eio_unix.ml</a></li><li><a href="../eio.unix/eio_unix__.ml.html">eio_unix__.ml</a></li><li><a href="../eio.unix/fd.ml.html">fd.ml</a></li><li><a href="../eio.unix/fork_action.ml.html">fork_action.ml</a></li><li><a href="../eio.unix/inherit_fds.ml.html">inherit_fds.ml</a></li><li><a href="../eio.unix/net.ml.html">net.ml</a></li><li><a href="../eio.unix/pi.ml.html">pi.ml</a></li><li><a href="../eio.unix/private.ml.html">private.ml</a></li><li><a href="../eio.unix/process.ml.html">process.ml</a></li><li><a href="../eio.unix/rcfd.ml.html">rcfd.ml</a></li><li><a href="../eio.unix/resource.ml.html">resource.ml</a></li><li><a href="../eio.unix/thread_pool.ml.html">thread_pool.ml</a></li><li><a href="../eio.unix/types.ml.html">types.ml</a></li></ul></li><li>eio.utils<ul><li><a href="eio_utils.ml.html">eio_utils.ml</a></li><li><a href="eio_utils__.ml.html">eio_utils__.ml</a></li><li><a href="#" class="current_unit">lf_queue.ml</a></li><li><a href="suspended.ml.html">suspended.ml</a></li><li><a href="zzz.ml.html">zzz.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+</code><code class="source_code"><span><span class="COMMENT">(* A lock-free multi-producer, single-consumer, thread-safe queue without support for cancellation.
+   This makes a good data structure for a scheduler's run queue.
+
+   Based on Vesa Karvonen's examaple at:
+   https://github.com/ocaml-multicore/picos/blob/07d6c2d391e076b490098c0379d01208b3a9cc96/test/lib/foundation/mpsc_queue.ml
+*)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="exception-Closed"><span class="EXCEPTION">exception</span> <span class="UIDENT">Closed</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* A list where the end indicates whether the queue is closed. *)</span><span class="EOL">
+</span><span id="type-clist"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">clist</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span id="type-clist.constructor-::"><span class="BAR">|</span> <span class="LPAREN">(</span><span class="COLONCOLON">::</span><span class="RPAREN">)</span> <span class="OF">of</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="STAR">*</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">clist</span></span><span class="EOL">
+</span>  <span id="type-clist.constructor-Open"><span class="BAR">|</span> <span class="UIDENT">Open</span></span><span class="EOL">
+</span>  <span id="type-clist.constructor-Closed"><span class="BAR">|</span> <span class="UIDENT">Closed</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* [rev_append l1 l2] is like [rev l1 @ l2] *)</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-rev_append"><span class="LIDENT">rev_append</span></span> <span id="local_l1_1"><span class="LIDENT">l1</span></span> <span id="local_l2_2"><span class="LIDENT">l2</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_l1_1"><span class="LIDENT">l1</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_a_3"><span class="LIDENT">a</span></span> <span class="COLONCOLON">::</span> <span id="local_l_4"><span class="LIDENT">l</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">rev_append</span> <a href="#local_l_4"><span class="LIDENT">l</span></a> <span class="LPAREN">(</span><a href="#local_a_3"><span class="LIDENT">a</span></a> <span class="COLONCOLON">::</span> <a href="#local_l2_2"><span class="LIDENT">l2</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Open</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_l2_2"><span class="LIDENT">l2</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Closed</span> <span class="MINUSGREATER">-&gt;</span> <span class="ASSERT">assert</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span class="EOL">
+</span><span class="LET">let</span><span class="LBRACKETAT">[@</span><span class="LIDENT">tail_mod_cons</span><span class="RBRACKET">]</span> <span class="REC">rec</span> <span id="val-(@)"><span class="LPAREN">(</span> <span class="INFIXOP1">@</span> <span class="RPAREN">)</span></span> <span id="local_l1_5"><span class="LIDENT">l1</span></span> <span id="local_l2_6"><span class="LIDENT">l2</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_l1_5"><span class="LIDENT">l1</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_h1_7"><span class="LIDENT">h1</span></span> <span class="COLONCOLON">::</span> <span id="local_tl_8"><span class="LIDENT">tl</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_h1_7"><span class="LIDENT">h1</span></a> <span class="COLONCOLON">::</span> <span class="LPAREN">(</span><a href="#local_tl_8"><span class="LIDENT">tl</span></a> <span class="INFIXOP1">@</span> <a href="#local_l2_6"><span class="LIDENT">l2</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Open</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_l2_6"><span class="LIDENT">l2</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Closed</span> <span class="MINUSGREATER">-&gt;</span> <span class="ASSERT">assert</span> <span class="FALSE">false</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* The queue contains [head @ rev tail].
+   If [tail] is non-empty then it ends in [Open]. *)</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span id="def_24"><span class="MUTABLE">mutable</span> <span class="LIDENT">head</span> <span class="COLON">:</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">clist</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_23"><span class="LIDENT">tail</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#type-t"><span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">clist</span> <span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span><span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-push"><span class="LIDENT">push</span></span> <span id="local_t_9"><span class="LIDENT">t</span></span> <span id="local_x_10"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-get"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">get</span></a> <a href="#local_t_9"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">tail</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Closed</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="UIDENT">Closed</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_before_11"><span class="LIDENT">before</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_after_12"><span class="LIDENT">after</span></span> <span class="EQUAL">=</span> <a href="#local_x_10"><span class="LIDENT">x</span></a> <span class="COLONCOLON">::</span> <a href="#local_before_11"><span class="LIDENT">before</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-not"><span class="LIDENT">not</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-compare_and_set"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">compare_and_set</span></a> <a href="#local_t_9"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">tail</span> <a href="#local_before_11"><span class="LIDENT">before</span></a> <a href="#local_after_12"><span class="LIDENT">after</span></a><span class="RPAREN">)</span> <span class="THEN">then</span><span class="EOL">
+</span>      <span class="LIDENT">push</span> <a href="#local_t_9"><span class="LIDENT">t</span></a> <a href="#local_x_10"><span class="LIDENT">x</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-push_head"><span class="LIDENT">push_head</span></span> <span id="local_t_13"><span class="LIDENT">t</span></span> <span id="local_x_14"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_t_13"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">head</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Closed</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="UIDENT">Closed</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_before_15"><span class="LIDENT">before</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_t_13"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">head</span> <span class="LESSMINUS">&lt;-</span> <a href="#local_x_14"><span class="LIDENT">x</span></a> <span class="COLONCOLON">::</span> <a href="#local_before_15"><span class="LIDENT">before</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-pop"><span class="LIDENT">pop</span></span> <span id="local_t_16"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_t_16"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">head</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_x_17"><span class="LIDENT">x</span></span> <span class="COLONCOLON">::</span> <span id="local_xs_18"><span class="LIDENT">xs</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_t_16"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">head</span> <span class="LESSMINUS">&lt;-</span> <a href="#local_xs_18"><span class="LIDENT">xs</span></a><span class="SEMI">;</span> <span class="UIDENT">Some</span> <a href="#local_x_17"><span class="LIDENT">x</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Closed</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="UIDENT">Closed</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Open</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="COMMENT">(* We know the tail is open because we just saw the head was open
+       and we don't run concurrently with [close]. *)</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-exchange"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">exchange</span></a> <a href="#local_t_16"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">tail</span> <span class="UIDENT">Open</span> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Closed</span> <span class="MINUSGREATER">-&gt;</span> <span class="ASSERT">assert</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Open</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span>              <span class="COMMENT">(* Optimise the common case *)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span id="local_tail_19"><span class="LIDENT">tail</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <a href="#local_t_16"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">head</span> <span class="LESSMINUS">&lt;-</span> <span class="LIDENT">rev_append</span> <a href="#local_tail_19"><span class="LIDENT">tail</span></a> <span class="UIDENT">Open</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LIDENT">pop</span> <a href="#local_t_16"><span class="LIDENT">t</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-close"><span class="LIDENT">close</span></span> <span id="local_t_20"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-exchange"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">exchange</span></a> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">tail</span> <span class="UIDENT">Closed</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Closed</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-invalid_arg"><span class="LIDENT">invalid_arg</span></a> <span class="STRING">&quot;Lf_queue already closed!&quot;</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_xs_21"><span class="LIDENT">xs</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">head</span> <span class="LESSMINUS">&lt;-</span> <a href="#local_t_20"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">head</span> <span class="INFIXOP1">@</span> <span class="LIDENT">rev_append</span> <a href="#local_xs_21"><span class="LIDENT">xs</span></a> <span class="UIDENT">Closed</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-is_empty"><span class="LIDENT">is_empty</span></span> <span id="local_t_22"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_t_22"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">head</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="COLONCOLON">::</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="FALSE">false</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Closed</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="UIDENT">Closed</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Open</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-get"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">get</span></a> <a href="#local_t_22"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">tail</span> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="COLONCOLON">::</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="TRUE">true</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-create"><span class="LIDENT">create</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span class="LIDENT">head</span> <span class="EQUAL">=</span> <span class="UIDENT">Open</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">tail</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-make"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="UIDENT">Open</span><span class="SEMI">;</span><span class="EOL">
+</span><span class="RBRACE">}</span><span class="EOL">
+</span></span></code></pre></body></html>

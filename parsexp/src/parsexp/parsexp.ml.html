@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: parsexp.ml (parsexp.src.parsexp)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">parsexp</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; parsexp &#x00BB; parsexp.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>parsexp.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">parsexp</a><ul><li>Library <code>parsexp</code><ul><li><a href="../../parsexp/Parsexp/index.html">Parsexp</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>parsexp<ul><li><a href="automaton.ml.html">automaton.ml</a></li><li><a href="automaton_action.ml.html">automaton_action.ml</a></li><li><a href="automaton_intf.ml.html">automaton_intf.ml</a></li><li><a href="automaton_stack.ml.html">automaton_stack.ml</a></li><li><a href="automaton_stack_intf.ml.html">automaton_stack_intf.ml</a></li><li><a href="automaton_state.ml.html">automaton_state.ml</a></li><li><a href="automaton_state_intf.ml.html">automaton_state_intf.ml</a></li><li><a href="automaton_tables.ml.html">automaton_tables.ml</a></li><li><a href="conv.ml.html">conv.ml</a></li><li><a href="conv_error.ml.html">conv_error.ml</a></li><li><a href="conv_intf.ml.html">conv_intf.ml</a></li><li><a href="cst.ml.html">cst.ml</a></li><li><a href="import.ml.html">import.ml</a></li><li><a href="of_sexp_error.ml.html">of_sexp_error.ml</a></li><li><a href="old_parser_cont_state.ml.html">old_parser_cont_state.ml</a></li><li><a href="parse_error.ml.html">parse_error.ml</a></li><li><a href="parse_error_intf.ml.html">parse_error_intf.ml</a></li><li><a href="parser.ml.html">parser.ml</a></li><li><a href="parser_intf.ml.html">parser_intf.ml</a></li><li><a href="#" class="current_unit">parsexp.ml</a></li><li><a href="parsexp__.ml.html">parsexp__.ml</a></li><li><a href="parsexp_intf.ml.html">parsexp_intf.ml</a></li><li><a href="positions.ml.html">positions.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+</code><code class="source_code"><span><span class="OPEN">open</span><span class="BANG">!</span> <a href="import.ml.html"><span class="UIDENT">Import</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-Conv"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">Conv</span> <span class="EQUAL">=</span> <a href="conv_intf.ml.html#module-type-S"><span class="UIDENT">Conv</span><span class="DOT">.</span><span class="UIDENT">S</span></a></span><span class="EOL">
+</span><span id="module-type-Parser"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">Parser</span> <span class="EQUAL">=</span> <a href="parser_intf.ml.html#module-type-S"><span class="UIDENT">Parser</span><span class="DOT">.</span><span class="UIDENT">S</span></a></span><span class="EOL">
+</span><span id="module-type-Eager_parser"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">Eager_parser</span> <span class="EQUAL">=</span> <a href="parser_intf.ml.html#module-type-S_eager"><span class="UIDENT">Parser</span><span class="DOT">.</span><span class="UIDENT">S_eager</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Conv_error"><span class="MODULE">module</span> <span class="UIDENT">Conv_error</span> <span class="EQUAL">=</span> <a href="conv_error.ml.html"><span class="UIDENT">Conv_error</span></a></span><span class="EOL">
+</span><span id="module-Of_sexp_error"><span class="MODULE">module</span> <span class="UIDENT">Of_sexp_error</span> <span class="EQUAL">=</span> <a href="of_sexp_error.ml.html"><span class="UIDENT">Of_sexp_error</span></a></span><span class="EOL">
+</span><span id="module-Old_parser_cont_state"><span class="MODULE">module</span> <span class="UIDENT">Old_parser_cont_state</span> <span class="EQUAL">=</span> <a href="old_parser_cont_state.ml.html"><span class="UIDENT">Old_parser_cont_state</span></a></span><span class="EOL">
+</span><span id="module-Parse_error"><span class="MODULE">module</span> <span class="UIDENT">Parse_error</span> <span class="EQUAL">=</span> <a href="parse_error.ml.html"><span class="UIDENT">Parse_error</span></a></span><span class="EOL">
+</span><span id="module-Positions"><span class="MODULE">module</span> <span class="UIDENT">Positions</span> <span class="EQUAL">=</span> <a href="positions.ml.html"><span class="UIDENT">Positions</span></a></span><span class="EOL">
+</span><span id="module-Cst"><span class="MODULE">module</span> <span class="UIDENT">Cst</span> <span class="EQUAL">=</span> <a href="cst.ml.html"><span class="UIDENT">Cst</span></a></span><span class="EOL">
+</span><span id="module-A"><span class="MODULE">module</span> <span class="UIDENT">A</span> <span class="EQUAL">=</span> <a href="automaton.ml.html"><span class="UIDENT">Automaton</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="exception-Parse_error"><span class="EXCEPTION">exception</span> <span class="UIDENT">Parse_error</span> <span class="EQUAL">=</span> <span class="UIDENT">Parse_error</span><span class="DOT">.</span><span class="UIDENT">Parse_error</span></span><span class="EOL">
+</span><span id="exception-Of_sexp_error"><span class="EXCEPTION">exception</span> <span class="UIDENT">Of_sexp_error</span> <span class="EQUAL">=</span> <span class="UIDENT">Of_sexp_error</span><span class="DOT">.</span><span class="UIDENT">Of_sexp_error</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-const"><span class="LIDENT">const</span></span> <span id="local_c_1"><span class="LIDENT">c</span></span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <a href="#local_c_1"><span class="LIDENT">c</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Single"><span class="MODULE">module</span> <span class="UIDENT">Single</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="VAL">val</span> <a href="parser.ml.html#val-make"><span class="UIDENT">Parser</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="UIDENT">Sexp</span> <span class="UIDENT">Single</span> <span class="LPAREN">(</span><span class="LIDENT">const</span> <a href="automaton_stack.ml.html#val-get_single"><span class="UIDENT">Automaton_stack</span><span class="DOT">.</span><span class="LIDENT">get_single</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span id="module-Many"><span class="MODULE">module</span> <span class="UIDENT">Many</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="VAL">val</span> <a href="parser.ml.html#val-make"><span class="UIDENT">Parser</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="UIDENT">Sexp</span> <span class="UIDENT">Many</span> <span class="LPAREN">(</span><span class="LIDENT">const</span> <a href="automaton_stack.ml.html#val-get_many"><span class="UIDENT">Automaton_stack</span><span class="DOT">.</span><span class="LIDENT">get_many</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span id="module-Eager"><span class="MODULE">module</span> <span class="UIDENT">Eager</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="VAL">val</span> <a href="parser.ml.html#val-make_eager"><span class="UIDENT">Parser</span><span class="DOT">.</span><span class="LIDENT">make_eager</span></a> <span class="UIDENT">Sexp</span> <span class="LPAREN">(</span><span class="LIDENT">const</span> <a href="automaton_stack.ml.html#val-get_single"><span class="UIDENT">Automaton_stack</span><span class="DOT">.</span><span class="LIDENT">get_single</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-and_get_positions"><span class="LIDENT">and_get_positions</span></span> <span id="local_get_sexp_2"><span class="LIDENT">get_sexp</span></span> <span id="local_state_3"><span class="LIDENT">state</span></span> <span id="local_stack_4"><span class="LIDENT">stack</span></span> <span class="EQUAL">=</span> <a href="#local_get_sexp_2"><span class="LIDENT">get_sexp</span></a> <a href="#local_stack_4"><span class="LIDENT">stack</span></a><span class="COMMA">,</span> <span class="UIDENT">A</span><span class="DOT">.</span><span class="LIDENT">positions</span> <a href="#local_state_3"><span class="LIDENT">state</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-and_positions"><span class="LIDENT">and_positions</span></span> <span id="local_mode_5"><span class="LIDENT">mode</span></span> <span id="local_get_sexp_6"><span class="LIDENT">get_sexp</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="parser.ml.html#val-make"><span class="UIDENT">Parser</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="UIDENT">Sexp_with_positions</span> <a href="#local_mode_5"><span class="LIDENT">mode</span></a> <span class="LPAREN">(</span><span class="LIDENT">and_get_positions</span> <a href="#local_get_sexp_6"><span class="LIDENT">get_sexp</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Single_and_positions"><span class="MODULE">module</span> <span class="UIDENT">Single_and_positions</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="VAL">val</span> <span class="LIDENT">and_positions</span> <span class="UIDENT">Single</span> <a href="automaton_stack.ml.html#val-get_single"><span class="UIDENT">Automaton_stack</span><span class="DOT">.</span><span class="LIDENT">get_single</span></a><span class="RPAREN">)</span></span><span class="EOL">
+</span><span id="module-Many_and_positions"><span class="MODULE">module</span> <span class="UIDENT">Many_and_positions</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="VAL">val</span> <span class="LIDENT">and_positions</span> <span class="UIDENT">Many</span> <a href="automaton_stack.ml.html#val-get_many"><span class="UIDENT">Automaton_stack</span><span class="DOT">.</span><span class="LIDENT">get_many</span></a><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Eager_and_positions"><span class="MODULE">module</span> <span class="UIDENT">Eager_and_positions</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LPAREN">(</span><span class="VAL">val</span> <a href="parser.ml.html#val-make_eager"><span class="UIDENT">Parser</span><span class="DOT">.</span><span class="LIDENT">make_eager</span></a><span class="EOL">
+</span>         <span class="UIDENT">Sexp_with_positions</span><span class="EOL">
+</span>         <span class="LPAREN">(</span><a href="automaton_stack.ml.html#val-get_single"><span class="UIDENT">Automaton_stack</span><span class="DOT">.</span><span class="LIDENT">get_single</span></a> <span class="INFIXOP0">|&gt;</span> <span class="LIDENT">and_get_positions</span><span class="RPAREN">)</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-just_get_positions"><span class="LIDENT">just_get_positions</span></span> <span id="local_state_7"><span class="LIDENT">state</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="UIDENT">A</span><span class="DOT">.</span><span class="LIDENT">positions</span> <a href="#local_state_7"><span class="LIDENT">state</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-just_positions"><span class="LIDENT">just_positions</span></span> <span id="local_mode_8"><span class="LIDENT">mode</span></span> <span class="EQUAL">=</span> <a href="parser.ml.html#val-make"><span class="UIDENT">Parser</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="UIDENT">Positions</span> <a href="#local_mode_8"><span class="LIDENT">mode</span></a> <span class="LIDENT">just_get_positions</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Single_just_positions"><span class="MODULE">module</span> <span class="UIDENT">Single_just_positions</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="VAL">val</span> <span class="LIDENT">just_positions</span> <span class="UIDENT">Single</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span id="module-Many_just_positions"><span class="MODULE">module</span> <span class="UIDENT">Many_just_positions</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="VAL">val</span> <span class="LIDENT">just_positions</span> <span class="UIDENT">Many</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span id="module-Eager_just_positions"><span class="MODULE">module</span> <span class="UIDENT">Eager_just_positions</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="VAL">val</span> <a href="parser.ml.html#val-make_eager"><span class="UIDENT">Parser</span><span class="DOT">.</span><span class="LIDENT">make_eager</span></a> <span class="UIDENT">Positions</span> <span class="LIDENT">just_get_positions</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-cst"><span class="LIDENT">cst</span></span> <span id="local_mode_9"><span class="LIDENT">mode</span></span> <span id="local_f_10"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span> <a href="parser.ml.html#val-make"><span class="UIDENT">Parser</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="UIDENT">Cst</span> <a href="#local_mode_9"><span class="LIDENT">mode</span></a> <span class="LPAREN">(</span><span class="LIDENT">const</span> <a href="#local_f_10"><span class="LIDENT">f</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Many_cst"><span class="MODULE">module</span> <span class="UIDENT">Many_cst</span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="VAL">val</span> <span class="LIDENT">cst</span> <span class="UIDENT">Many</span> <a href="automaton_stack.ml.html#module-For_cst.val-get_many"><span class="UIDENT">Automaton_stack</span><span class="DOT">.</span><span class="UIDENT">For_cst</span><span class="DOT">.</span><span class="LIDENT">get_many</span></a><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Eager_cst"><span class="MODULE">module</span> <span class="UIDENT">Eager_cst</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LPAREN">(</span><span class="VAL">val</span> <a href="parser.ml.html#val-make_eager"><span class="UIDENT">Parser</span><span class="DOT">.</span><span class="LIDENT">make_eager</span></a> <span class="UIDENT">Cst</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="UNDERSCORE">_</span> <span id="local_stack_11"><span class="LIDENT">stack</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>     <span class="MATCH">match</span> <a href="automaton_stack.ml.html#module-For_cst.val-get_many"><span class="UIDENT">Automaton_stack</span><span class="DOT">.</span><span class="UIDENT">For_cst</span><span class="DOT">.</span><span class="LIDENT">get_many</span></a> <a href="#local_stack_11"><span class="LIDENT">stack</span></a> <span class="WITH">with</span><span class="EOL">
+</span>     <span class="BAR">|</span> <span class="LBRACKET">[</span> <span id="local_sexp_12"><span class="LIDENT">sexp</span></span> <span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_sexp_12"><span class="LIDENT">sexp</span></a><span class="EOL">
+</span>     <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="ASSERT">assert</span> <span class="FALSE">false</span><span class="RPAREN">)</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-id"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">id</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span><span id="type-sexp_list"><span class="TYPE">type</span> <span class="LIDENT">sexp_list</span> <span class="EQUAL">=</span> <a href="../../../sexplib0/src/sexplib0/sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">list</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Conv_single"><span class="MODULE">module</span> <span class="UIDENT">Conv_single</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="conv.ml.html#module-Make"><span class="UIDENT">Conv</span><span class="DOT">.</span><span class="UIDENT">Make</span></a><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="STRUCT">struct</span><span class="EOL">
+</span>      <span id="def_25"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">res</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span>      <span id="def_32"><span class="TYPE">type</span> <span class="LIDENT">parsed_sexp</span> <span class="EQUAL">=</span> <a href="../../../sexplib0/src/sexplib0/sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span>      <span id="def_30"><span class="TYPE">type</span> <span class="LIDENT">chunk_to_conv</span> <span class="EQUAL">=</span> <a href="../../../sexplib0/src/sexplib0/sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_apply_f_13"><span class="LIDENT">apply_f</span></span> <span id="local_x_14"><span class="LIDENT">x</span></span> <span class="TILDE">~</span><span id="local_f_15"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span> <a href="#local_f_15"><span class="LIDENT">f</span></a> <a href="#local_x_14"><span class="LIDENT">x</span></a><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_find_16"><span class="LIDENT">find</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Positions</span><span class="DOT">.</span><span class="LIDENT">find_sub_sexp_phys</span><span class="EOL">
+</span>    <span class="END">end</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="UIDENT">Single</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="UIDENT">Single_just_positions</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Conv_many"><span class="MODULE">module</span> <span class="UIDENT">Conv_many</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="conv.ml.html#module-Make"><span class="UIDENT">Conv</span><span class="DOT">.</span><span class="UIDENT">Make</span></a><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="STRUCT">struct</span><span class="EOL">
+</span>      <span id="def_33"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">res</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>      <span id="def_28"><span class="TYPE">type</span> <span class="LIDENT">parsed_sexp</span> <span class="EQUAL">=</span> <a href="../../../sexplib0/src/sexplib0/sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">list</span></span><span class="EOL">
+</span>      <span id="def_26"><span class="TYPE">type</span> <span class="LIDENT">chunk_to_conv</span> <span class="EQUAL">=</span> <a href="../../../sexplib0/src/sexplib0/sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_apply_f_17"><span class="LIDENT">apply_f</span></span> <span id="local_x_18"><span class="LIDENT">x</span></span> <span class="TILDE">~</span><span id="local_f_19"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-rev"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">rev</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-rev_map"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">rev_map</span></a> <a href="#local_x_18"><span class="LIDENT">x</span></a> <span class="TILDE">~</span><a href="#local_f_19"><span class="LIDENT">f</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_find_20"><span class="LIDENT">find</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Positions</span><span class="DOT">.</span><span class="LIDENT">find_sub_sexp_in_list_phys</span><span class="EOL">
+</span>    <span class="END">end</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="UIDENT">Many</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="UIDENT">Many_just_positions</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Conv_many_at_once"><span class="MODULE">module</span> <span class="UIDENT">Conv_many_at_once</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="conv.ml.html#module-Make"><span class="UIDENT">Conv</span><span class="DOT">.</span><span class="UIDENT">Make</span></a><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="STRUCT">struct</span><span class="EOL">
+</span>      <span id="def_27"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">res</span> <span class="EQUAL">=</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span>      <span id="def_31"><span class="TYPE">type</span> <span class="LIDENT">parsed_sexp</span> <span class="EQUAL">=</span> <a href="../../../sexplib0/src/sexplib0/sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">list</span></span><span class="EOL">
+</span>      <span id="def_29"><span class="TYPE">type</span> <span class="LIDENT">chunk_to_conv</span> <span class="EQUAL">=</span> <a href="../../../sexplib0/src/sexplib0/sexp.ml.html#type-t"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="LIDENT">list</span></span><span class="EOL">
+</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_apply_f_21"><span class="LIDENT">apply_f</span></span> <span id="local_x_22"><span class="LIDENT">x</span></span> <span class="TILDE">~</span><span id="local_f_23"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span> <a href="#local_f_23"><span class="LIDENT">f</span></a> <a href="#local_x_22"><span class="LIDENT">x</span></a><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_find_24"><span class="LIDENT">find</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Positions</span><span class="DOT">.</span><span class="LIDENT">find_sub_sexp_in_list_phys</span><span class="EOL">
+</span>    <span class="END">end</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="UIDENT">Many</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="UIDENT">Many_just_positions</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Private"><span class="MODULE">module</span> <span class="UIDENT">Private</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Private.module-Automaton"><span class="MODULE">module</span> <span class="UIDENT">Automaton</span> <span class="EQUAL">=</span> <a href="automaton.ml.html"><span class="UIDENT">Automaton</span></a></span><span class="EOL">
+</span>  <span id="module-Private.module-Automaton_stack"><span class="MODULE">module</span> <span class="UIDENT">Automaton_stack</span> <span class="EQUAL">=</span> <a href="automaton_stack.ml.html"><span class="UIDENT">Automaton_stack</span></a></span><span class="EOL">
+</span>  <span id="module-Private.module-Automaton_state"><span class="MODULE">module</span> <span class="UIDENT">Automaton_state</span> <span class="EQUAL">=</span> <a href="automaton_state.ml.html"><span class="UIDENT">Automaton_state</span></a></span><span class="EOL">
+</span>  <span id="module-Private.module-Positions"><span class="MODULE">module</span> <span class="UIDENT">Positions</span> <span class="EQUAL">=</span> <span class="UIDENT">Positions</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

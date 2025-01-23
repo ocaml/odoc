@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: mix.ml (thread-table.src.thread-table)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">thread-table</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; thread-table &#x00BB; mix.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>mix.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">thread-table</a><ul><li>Library <code>thread-table</code><ul><li><a href="../../thread-table/Thread_table/index.html">Thread_table</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>thread-table<ul><li><a href="#" class="current_unit">mix.ml</a></li><li><a href="thread_table.ml.html">thread_table.ml</a></li><li><a href="thread_table__.ml.html">thread_table__.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+</code><code class="source_code"><span><span class="COMMENT">(* Mixing function proposed by Jon Maiga:
+
+     https://jonkagstrom.com/mx3/mx3_rev2.html
+
+   Note that the mixing function was originally designed for 64-bit unsigned
+   integers. *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span><span class="LBRACKETAT">[@</span><span class="LIDENT">inline</span><span class="RBRACKET">]</span> <span id="val-int"><span class="LIDENT">int</span></span> <span id="local_x_1"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_x_2"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_x_1"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(lxor)"><span class="INFIXOP3">lxor</span></a> <span class="LPAREN">(</span><a href="#local_x_1"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(lsr)"><span class="INFIXOP4">lsr</span></a> <span class="INT">32</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_x_3"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_x_2"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(*)"><span class="STAR">*</span></a> <span class="INT">0xe9846af9b1a615d</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_x_4"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_x_3"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(lxor)"><span class="INFIXOP3">lxor</span></a> <span class="LPAREN">(</span><a href="#local_x_3"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(lsr)"><span class="INFIXOP4">lsr</span></a> <span class="INT">32</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_x_5"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="#local_x_4"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(*)"><span class="STAR">*</span></a> <span class="INT">0xe9846af9b1a615d</span> <span class="IN">in</span><span class="EOL">
+</span>  <a href="#local_x_5"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(lxor)"><span class="INFIXOP3">lxor</span></a> <span class="LPAREN">(</span><a href="#local_x_5"><span class="LIDENT">x</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(lsr)"><span class="INFIXOP4">lsr</span></a> <span class="INT">28</span><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

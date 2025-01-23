@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: optint.ml (optint.src.optint)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">optint</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; optint &#x00BB; optint.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>optint.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">optint</a><ul><li>Library <code>optint</code><ul><li><a href="../../optint/Optint/index.html">Optint</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>optint<ul><li><a href="int63_emul.ml.html">int63_emul.ml</a></li><li><a href="int63_native.ml.html">int63_native.ml</a></li><li><a href="integer_interface.ml.html">integer_interface.ml</a></li><li><a href="#" class="current_unit">optint.ml</a></li><li><a href="optint__.ml.html">optint__.ml</a></li><li><a href="optint_emul.ml.html">optint_emul.ml</a></li><li><a href="optint_native.ml.html">optint_native.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+</code><code class="source_code"><span><span class="DOCSTRING">(** Extraction of [Stdlib.Sys.Immediate64] for pre-4.10 compatibility.
+    [Immediate64] was originally authored by Jeremie Dimino &lt;jeremie@dimino.org&gt;,
+    and is licensed along with the OCaml compiler system under LGPLv2. See the
+    {{:https://github.com/ocaml/ocaml/blob/trunk/LICENSE} compiler license} for
+    details.
+
+    For soundness of the [@@immediate64] annotation, we ensure to use the boxed
+    representation only when not on 64-bit platforms, but we need to use The
+    Force to convince the type system of this fact. *)</span><span class="EOL">
+</span><span id="module-Immediate64"><span class="MODULE">module</span> <span class="UIDENT">Immediate64</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Immediate64.module-type-Non_immediate"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">Non_immediate</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-Immediate64.module-type-Non_immediate.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Immediate64.module-type-Immediate"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">Immediate</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span id="module-Immediate64.module-type-Immediate.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="LBRACKETATAT">[@@</span><span class="LIDENT">immediate</span><span class="RBRACKET">]</span></span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Immediate64.module-Make"><span class="MODULE">module</span> <span class="UIDENT">Make</span> <span class="LPAREN">(</span><span class="UIDENT">Immediate</span> <span class="COLON">:</span> <span class="UIDENT">Immediate</span><span class="RPAREN">)</span> <span class="LPAREN">(</span><span class="UIDENT">Non_immediate</span> <span class="COLON">:</span> <span class="UIDENT">Non_immediate</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>    <span id="module-Immediate64.module-Make.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="LBRACKETATAT">[@@</span><span class="LIDENT">immediate64</span><span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span>    <span id="module-Immediate64.module-Make.type-repr"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">repr</span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span id="module-Int63.type-repr.constructor-Immediate"><span id="module-Optint.type-repr.constructor-Immediate"><span id="module-Immediate64.module-Make.type-repr.constructor-Immediate"><span id="type-repr.constructor-Immediate"><span class="BAR">|</span> <span class="UIDENT">Immediate</span> <span class="COLON">:</span> <span class="UIDENT">Immediate</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">repr</span></span></span></span></span><span class="EOL">
+</span>      <span id="module-Int63.type-repr.constructor-Non_immediate"><span id="module-Optint.type-repr.constructor-Non_immediate"><span id="module-Immediate64.module-Make.type-repr.constructor-Non_immediate"><span id="type-repr.constructor-Non_immediate"><span class="BAR">|</span> <span class="UIDENT">Non_immediate</span> <span class="COLON">:</span> <span class="UIDENT">Non_immediate</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">repr</span></span></span></span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>    <span id="module-Immediate64.module-Make.val-magic"><span class="EXTERNAL">external</span> <span class="LIDENT">magic</span> <span class="COLON">:</span> <span class="UNDERSCORE">_</span> <span class="LIDENT">repr</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span> <span class="LIDENT">repr</span> <span class="EQUAL">=</span> <span class="STRING">&quot;%identity&quot;</span></span><span class="EOL">
+</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="module-Immediate64.module-Make.val-repr"><span class="LIDENT">repr</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/sys.ml.html#val-word_size"><span class="UIDENT">Sys</span><span class="DOT">.</span><span class="LIDENT">word_size</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(=)"><span class="EQUAL">=</span></a> <span class="INT">64</span> <span class="THEN">then</span> <span class="LIDENT">magic</span> <span class="UIDENT">Immediate</span> <span class="ELSE">else</span> <span class="LIDENT">magic</span> <span class="UIDENT">Non_immediate</span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Conditional"><span class="MODULE">module</span> <span class="UIDENT">Conditional</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Conditional.type-t"><span class="TYPE">type</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">t</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">u</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">v</span><span class="RPAREN">)</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Conditional.type-t.constructor-True"><span class="BAR">|</span> <span class="UIDENT">True</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">t</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">t</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="LIDENT">t</span></span> <span class="DOCSTRING">(** therefore ['t] = ['u] *)</span><span class="EOL">
+</span>    <span id="module-Conditional.type-t.constructor-False"><span class="BAR">|</span> <span class="UIDENT">False</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">t</span><span class="COMMA">,</span> <span class="UNDERSCORE">_</span><span class="COMMA">,</span> <span class="QUOTE">'</span><span class="LIDENT">t</span><span class="RPAREN">)</span> <span class="LIDENT">t</span></span></span> <span class="DOCSTRING">(** therefore ['t] = ['v] *)</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Optint"><span class="MODULE">module</span> <span class="UIDENT">Optint</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="UIDENT">Immediate64</span><span class="DOT">.</span><span class="UIDENT">Make</span> <span class="LPAREN">(</span><a href="optint_native.ml.html"><span class="UIDENT">Optint_native</span></a><span class="RPAREN">)</span> <span class="LPAREN">(</span><a href="optint_emul.ml.html"><span class="UIDENT">Optint_emul</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Optint.module-type-S"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">S</span> <span class="EQUAL">=</span> <a href="integer_interface.ml.html#module-type-S"><span class="UIDENT">Integer_interface</span><span class="DOT">.</span><span class="UIDENT">S</span></a> <span class="WITH">with</span> <span id="def_1"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="COLONEQUAL">:=</span> <span class="LIDENT">t</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Optint.val-impl"><span class="LIDENT">impl</span></span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="MODULE">module</span> <span class="UIDENT">S</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <span class="LIDENT">repr</span> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Immediate</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="MODULE">module</span> <a href="optint_native.ml.html"><span class="UIDENT">Optint_native</span></a> <span class="COLON">:</span> <span class="UIDENT">S</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Non_immediate</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="MODULE">module</span> <a href="optint_emul.ml.html"><span class="UIDENT">Optint_emul</span></a> <span class="COLON">:</span> <span class="UIDENT">S</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="LPAREN">(</span><span class="VAL">val</span> <span class="LIDENT">impl</span> <span class="COLON">:</span> <span class="UIDENT">S</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Optint.val-is_immediate"><span class="LIDENT">is_immediate</span></span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="LIDENT">t</span><span class="COMMA">,</span> <span class="LIDENT">int</span><span class="COMMA">,</span> <span class="LIDENT">int32</span><span class="RPAREN">)</span> <span class="UIDENT">Conditional</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <span class="LIDENT">repr</span> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Immediate</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">True</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Non_immediate</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">False</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Int63"><span class="MODULE">module</span> <span class="UIDENT">Int63</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="UIDENT">Immediate64</span><span class="DOT">.</span><span class="UIDENT">Make</span> <span class="LPAREN">(</span><a href="int63_native.ml.html"><span class="UIDENT">Int63_native</span></a><span class="RPAREN">)</span> <span class="LPAREN">(</span><a href="int63_emul.ml.html"><span class="UIDENT">Int63_emul</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Int63.module-type-S"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">S</span> <span class="EQUAL">=</span> <a href="integer_interface.ml.html#module-type-S"><span class="UIDENT">Integer_interface</span><span class="DOT">.</span><span class="UIDENT">S</span></a> <span class="WITH">with</span> <span id="def_2"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="COLONEQUAL">:=</span> <span class="LIDENT">t</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Int63.val-impl"><span class="LIDENT">impl</span></span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="MODULE">module</span> <span class="UIDENT">S</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <span class="LIDENT">repr</span> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Immediate</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="MODULE">module</span> <a href="int63_native.ml.html"><span class="UIDENT">Int63_native</span></a> <span class="COLON">:</span> <span class="UIDENT">S</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Non_immediate</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="MODULE">module</span> <a href="int63_emul.ml.html"><span class="UIDENT">Int63_emul</span></a> <span class="COLON">:</span> <span class="UIDENT">S</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="LPAREN">(</span><span class="VAL">val</span> <span class="LIDENT">impl</span> <span class="COLON">:</span> <span class="UIDENT">S</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Int63.module-Boxed"><span class="MODULE">module</span> <span class="UIDENT">Boxed</span> <span class="EQUAL">=</span> <a href="int63_emul.ml.html"><span class="UIDENT">Int63_emul</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Int63.val-is_immediate"><span class="LIDENT">is_immediate</span></span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="LIDENT">t</span><span class="COMMA">,</span> <span class="LIDENT">int</span><span class="COMMA">,</span> <span class="UIDENT">Boxed</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="RPAREN">)</span> <span class="UIDENT">Conditional</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <span class="LIDENT">repr</span> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Immediate</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">True</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Non_immediate</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">False</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="INCLUDE">include</span> <span class="UIDENT">Optint</span><span class="EOL">
+</span></span></code></pre></body></html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Errors (odoc.odoc.xref2.Odoc_xref2.Errors)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../../../../';
+let search_urls = ['../../../sherlodoc_db.js','../../../../sherlodoc.js'];
+</script><script src="../../../../odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../../../index.html">🏠</a> &#x00BB; <a href="../../../index.html">The odoc documentation generator</a> &#x00BB; Library <code>odoc.xref2</code> &#x00BB; <a href="../index.html">Odoc_xref2</a> &#x00BB; Errors</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Type '/' to search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><h1>Module <code><span>Odoc_xref2.Errors</span></code><a href="../../../src/odoc.xref2/errors.ml.html" class="source_link">Source</a></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../../index.html">The odoc documentation generator</a><ul><li><a href="../../../odoc_for_authors.html"><code>odoc</code> for Authors</a></li><li><a href="../../../cheatsheet.html">Cheatsheet</a></li><li><a href="../../../dune.html">Dune and odoc</a></li><li><a href="../../../features.html">Language Features</a></li><li><a href="../../../ocamldoc_differences.html">Markup Differences From OCamldoc</a></li><li><a href="../../../interface.html"><code>odoc</code> Interface Guarantees</a></li><li><a href="../../../driver.html">How to Drive <code>odoc</code></a></li><li><a href="../../../json.html">JSON output</a></li><li><a href="../../../deprecated/index.html">Deprecated features</a></li><li>Library <code>odoc.document</code><ul><li><a href="../../../odoc.document/Odoc_document/index.html">Odoc_document</a></li></ul></li><li>Library <code>odoc.examples</code><ul><li><a href="../../../odoc.examples/Odoc_examples/index.html">Odoc_examples</a></li></ul></li><li>Library <code>odoc.html</code><ul><li><a href="../../../odoc.html/Odoc_html/index.html">Odoc_html</a></li></ul></li><li>Library <code>odoc.html_support_files</code><ul><li><a href="../../../odoc.html_support_files/Odoc_html_support_files/index.html">Odoc_html_support_files</a></li></ul></li><li>Library <code>odoc.index</code><ul><li><a href="../../../odoc.index/Odoc_index/index.html">Odoc_index</a></li></ul></li><li>Library <code>odoc.json_index</code><ul><li><a href="../../../odoc.json_index/Odoc_json_index/index.html">Odoc_json_index</a></li></ul></li><li>Library <code>odoc.latex</code><ul><li><a href="../../../odoc.latex/Odoc_latex/index.html">Odoc_latex</a></li></ul></li><li>Library <code>odoc.loader</code><ul><li><a href="../../../odoc.loader/Odoc_loader/index.html">Odoc_loader</a></li></ul></li><li>Library <code>odoc.manpage</code><ul><li><a href="../../../odoc.manpage/Odoc_manpage/index.html">Odoc_manpage</a></li></ul></li><li>Library <code>odoc.model</code><ul><li><a href="../../../odoc.model/Odoc_model/index.html">Odoc_model</a></li></ul></li><li>Library <code>odoc.model_desc</code><ul><li><a href="../../../odoc.model_desc/Odoc_model_desc/index.html">Odoc_model_desc</a></li></ul></li><li>Library <code>odoc.ocamlary</code><ul><li><a href="../../../odoc.ocamlary/Ocamlary/index.html">Ocamlary</a></li></ul></li><li>Library <code>odoc.occurrences</code><ul><li><a href="../../../odoc.occurrences/Odoc_occurrences/index.html">Odoc_occurrences</a></li></ul></li><li>Library <code>odoc.odoc</code><ul><li><a href="../../../odoc.odoc/Odoc_odoc/index.html">Odoc_odoc</a></li></ul></li><li>Library <code>odoc.odoc_utils</code><ul><li><a href="../../../odoc.odoc_utils/Odoc_utils/index.html">Odoc_utils</a></li></ul></li><li>Library <code>odoc.search</code><ul><li><a href="../../../odoc.search/Odoc_search/index.html">Odoc_search</a></li></ul></li><li>Library <code>odoc.search_html_frontend</code><ul><li><a href="../../../odoc.search_html_frontend/Odoc_html_frontend/index.html">Odoc_html_frontend</a></li></ul></li><li>Library <code>odoc.syntax_highlighter</code><ul><li><a href="../../../odoc.syntax_highlighter/Syntax_highlighter/index.html">Syntax_highlighter</a></li></ul></li><li>Library <code>odoc.xref2</code><ul><li><a href="../index.html">Odoc_xref2</a><ul><li><a href="../Cfrag/index.html">Cfrag</a></li><li><a href="../Compile/index.html">Compile</a></li><li><a href="../Component/index.html">Component</a></li><li><a href="../Cpath/index.html">Cpath</a></li><li><a href="../Env/index.html">Env</a></li><li><a href="#" class="current_unit">Errors</a><ul><li><a href="Tools_error/index.html">Tools_error</a></li></ul></li><li><a href="../Expand_tools/index.html">Expand_tools</a></li><li><a href="../Find/index.html">Find</a></li><li><a href="../Ident/index.html">Ident</a></li><li><a href="../Lang_of/index.html">Lang_of</a></li><li><a href="../Link/index.html">Link</a></li><li><a href="../Lookup_failures/index.html">Lookup_failures</a></li><li><a href="../Ref_tools/index.html">Ref_tools</a></li><li><a href="../Shape_tools/index.html">Shape_tools</a></li><li><a href="../Strengthen/index.html">Strengthen</a></li><li><a href="../Subst/index.html">Subst</a></li><li><a href="../Tools/index.html">Tools</a></li></ul></li></ul></li><li>Library <code>odoc.xref_test</code><ul><li><a href="../../../odoc.xref_test/Odoc_xref_test/index.html">Odoc_xref_test</a></li></ul></li><li><a href="../../../src/index.html">Sources</a></li></ul></li></ul></nav></div><div class="odoc-content"><div class="odoc-spec"><div class="spec module anchored" id="module-Tools_error"><a href="#module-Tools_error" class="anchor"></a><a href="../../../src/odoc.xref2/errors.ml.html#module-Tools_error" class="source_link">Source</a><code><span><span class="keyword">module</span> <a href="Tools_error/index.html">Tools_error</a></span><span> : <span class="keyword">sig</span> ... <span class="keyword">end</span></span></code></div></div><div class="odoc-spec"><div class="spec type anchored" id="type-kind"><a href="#type-kind" class="anchor"></a><a href="../../../src/odoc.xref2/errors.ml.html#type-kind" class="source_link">Source</a><code><span><span class="keyword">type</span> kind</span><span> = </span><span>[ </span></code><ol><li id="type-kind.OpaqueModule" class="def variant constructor anchored"><a href="#type-kind.OpaqueModule" class="anchor"></a><code><span>| </span><span>`OpaqueModule</span></code></li><li id="type-kind.Root" class="def variant constructor anchored"><a href="#type-kind.Root" class="anchor"></a><code><span>| </span><span>`Root <span class="keyword">of</span> string</span></code></li></ol><code><span> ]</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-kind_of_module_cpath"><a href="#val-kind_of_module_cpath" class="anchor"></a><a href="../../../src/odoc.xref2/errors.ml.html#val-kind_of_module_cpath" class="source_link">Source</a><code><span><span class="keyword">val</span> kind_of_module_cpath : 
+  <span><span>[&gt; <span>`Apply of <span class="type-var">'a</span> * <span class="type-var">'a</span></span>
+  <span><span>| `Dot</span> of <span class="type-var">'a</span> * <span class="type-var">'b</span></span>
+  <span><span>| `Root</span> of <a href="../../../odoc.model/Odoc_model/Names/ModuleName/index.html#type-t">Odoc_model.Names.ModuleName.t</a></span>
+  <span><span>| `Substituted</span> of <span class="type-var">'a</span></span> ]</span> <span class="keyword">as</span> 'a <span class="arrow">&#45;&gt;</span></span>
+  <span><span>[&gt; <span>`Root of string</span> ]</span> option</span></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-kind_of_module_type_cpath"><a href="#val-kind_of_module_type_cpath" class="anchor"></a><a href="../../../src/odoc.xref2/errors.ml.html#val-kind_of_module_type_cpath" class="source_link">Source</a><code><span><span class="keyword">val</span> kind_of_module_type_cpath : 
+  <span><span>[&gt; <span>`DotMT of
+       <span>[&gt; <span>`Apply of <span class="type-var">'b</span> * <span class="type-var">'b</span></span>
+       <span><span>| `Dot</span> of <span class="type-var">'b</span> * <span class="type-var">'c</span></span>
+       <span><span>| `Root</span> of <a href="../../../odoc.model/Odoc_model/Names/ModuleName/index.html#type-t">Odoc_model.Names.ModuleName.t</a></span>
+       <span><span>| `Substituted</span> of <span class="type-var">'b</span></span> ]</span> <span class="keyword">as</span> 'b
+       * <span class="type-var">'d</span></span>
+  <span><span>| `Substituted</span> of <span class="type-var">'a</span></span> ]</span> <span class="keyword">as</span> 'a <span class="arrow">&#45;&gt;</span></span>
+  <span><span>[&gt; <span>`Root of string</span> ]</span> option</span></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-kind_of_type_of_desc"><a href="#val-kind_of_type_of_desc" class="anchor"></a><a href="../../../src/odoc.xref2/errors.ml.html#val-kind_of_type_of_desc" class="source_link">Source</a><code><span><span class="keyword">val</span> kind_of_type_of_desc : <span><a href="../Component/ModuleType/index.html#type-type_of_desc">Component.ModuleType.type_of_desc</a> <span class="arrow">&#45;&gt;</span></span> <span><a href="#type-kind">kind</a> option</span></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-kind_of_error"><a href="#val-kind_of_error" class="anchor"></a><a href="../../../src/odoc.xref2/errors.ml.html#val-kind_of_error" class="source_link">Source</a><code><span><span class="keyword">val</span> kind_of_error : 
+  <span><span class="label">what</span>:
+    <span>[&gt; <span>`Include of <a href="../Component/Include/index.html#type-decl">Component.Include.decl</a></span>
+    <span><span>| `Module</span> of
+      <span><span>[&gt; <span>`Root of <span class="type-var">'a</span> * <a href="../../../odoc.model/Odoc_model/Names/ModuleName/index.html#type-t">Odoc_model.Names.ModuleName.t</a></span> ]</span>
+        <a href="../../../odoc.model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span></span> ]</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span><span>[&lt; `ApplyNotFunctor
+  <span>| `Class_replaced</span>
+  <span>| `Find_failure</span>
+  <span>| `Fragment_root</span>
+  <span><span>| `Local</span> of <a href="../Env/index.html#type-t">Env.t</a> * <span>[&lt; <a href="../Ident/index.html#type-module_">Ident.module_</a> ]</span></span>
+  <span><span>| `LocalMT</span> of <a href="../Env/index.html#type-t">Env.t</a> * <span>[&lt; <a href="../Ident/index.html#type-module_type">Ident.module_type</a> ]</span></span>
+  <span><span>| `LocalType</span> of <a href="../Env/index.html#type-t">Env.t</a> * <span>[&lt; <a href="../Ident/index.html#type-type_">Ident.type_</a> ]</span></span>
+  <span><span>| `LocalValue</span> of <a href="../Env/index.html#type-t">Env.t</a> * <span>[&lt; <a href="../Ident/index.html#type-value">Ident.value</a> ]</span></span>
+  <span><span>| `Lookup_failure</span> of
+    <span><span>[&lt; <a href="../../../odoc.model/Odoc_model/Paths/Identifier/Path/Module/index.html#type-t_pv">Odoc_model.Paths.Identifier.Path.Module.t_pv</a> ]</span>
+      <a href="../../../odoc.model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span></span>
+  <span><span>| `Lookup_failureMT</span> of
+    <span><span>[&lt; <a href="../../../odoc.model/Odoc_model/Paths/Identifier/ModuleType/index.html#type-t_pv">Odoc_model.Paths.Identifier.ModuleType.t_pv</a> ]</span>
+      <a href="../../../odoc.model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span></span>
+  <span><span>| `Lookup_failureT</span> of
+    <span><span>[&lt; <a href="../../../odoc.model/Odoc_model/Paths/Identifier/Path/Type/index.html#type-t_pv">Odoc_model.Paths.Identifier.Path.Type.t_pv</a> ]</span>
+      <a href="../../../odoc.model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span></span>
+  <span><span>| `Lookup_failureV</span> of
+    <span><span>[&lt; <a href="../../../odoc.model/Odoc_model/Paths/Identifier/Value/index.html#type-t_pv">Odoc_model.Paths.Identifier.Value.t_pv</a> ]</span> <a href="../../../odoc.model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span></span>
+  <span><span>| `Lookup_failure_root</span> of <a href="../../../odoc.model/Odoc_model/Names/ModuleName/index.html#type-t">Odoc_model.Names.ModuleName.t</a></span>
+  <span>| `OpaqueClass</span>
+  <span>| `OpaqueModule</span>
+  <span><span>| `Parent</span> of <span>[&lt; <a href="Tools_error/index.html#type-parent_lookup_error">Tools_error.parent_lookup_error</a> ]</span></span>
+  <span><span>| `Parent_expr</span> of
+    <span>[&lt; `ApplyNotFunctor
+    <span>| `OpaqueModule</span>
+    <span><span>| `Parent</span> of <a href="Tools_error/index.html#type-parent_lookup_error">Tools_error.parent_lookup_error</a></span>
+    <span>| `UnresolvedForwardPath</span>
+    <span><span>| `UnresolvedPath</span> of
+      <span>[ <span>`Module of <a href="../Cpath/index.html#type-module_">Cpath.module_</a> * <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a></span>
+      <span><span>| `ModuleType</span> of
+        <a href="../Cpath/index.html#type-module_type">Cpath.module_type</a> * <a href="Tools_error/index.html#type-simple_module_type_lookup_error">Tools_error.simple_module_type_lookup_error</a></span> ]</span></span> ]</span></span>
+  <span><span>| `Parent_module</span> of <span>[&lt; <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a> ]</span></span>
+  <span><span>| `Parent_module_type</span> of <span>[&lt; <a href="Tools_error/index.html#type-simple_module_type_lookup_error">Tools_error.simple_module_type_lookup_error</a> ]</span></span>
+  <span><span>| `Parent_sig</span> of
+    <span>[&lt; `OpaqueModule
+    <span>| `UnresolvedForwardPath</span>
+    <span><span>| `UnresolvedOriginalPath</span> of
+      <a href="../Cpath/index.html#type-module_">Cpath.module_</a> * <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a></span>
+    <span><span>| `UnresolvedPath</span> of
+      <span>[ <span>`Module of <a href="../Cpath/index.html#type-module_">Cpath.module_</a> * <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a></span>
+      <span><span>| `ModuleType</span> of
+        <a href="../Cpath/index.html#type-module_type">Cpath.module_type</a> * <a href="Tools_error/index.html#type-simple_module_type_lookup_error">Tools_error.simple_module_type_lookup_error</a></span> ]</span></span> ]</span></span>
+  <span><span>| `Parent_type</span> of <span>[&lt; <a href="Tools_error/index.html#type-simple_type_lookup_error">Tools_error.simple_type_lookup_error</a> ]</span></span>
+  <span><span>| `Reference</span> of
+    <span>[&lt; <span>`Find_by_name of
+         <span>[&lt; `Any
+         <span>| `Any_path</span>
+         <span>| `Asset_path</span>
+         <span>| `C</span>
+         <span>| `CT</span>
+         <span>| `Cons</span>
+         <span>| `Field</span>
+         <span>| `Label</span>
+         <span>| `Module_path</span>
+         <span>| `Page</span>
+         <span>| `Page_path</span>
+         <span>| `S</span>
+         <span>| `T</span> ]</span>
+         * string</span>
+    <span><span>| `Lookup_by_name</span> of
+      <span>[&lt; `Any
+      <span>| `Any_path</span>
+      <span>| `Asset_path</span>
+      <span>| `C</span>
+      <span>| `CT</span>
+      <span>| `Cons</span>
+      <span>| `Field</span>
+      <span>| `Label</span>
+      <span>| `Module_path</span>
+      <span>| `Page</span>
+      <span>| `Page_path</span>
+      <span>| `S</span>
+      <span>| `T</span> ]</span>
+      * string</span>
+    <span><span>| `Parent</span> of <a href="Tools_error/index.html#type-parent_lookup_error">Tools_error.parent_lookup_error</a></span>
+    <span><span>| `Path_error</span> of
+      <span>[&lt; `Is_directory
+      <span>| `Not_found</span>
+      <span><span>| `Wrong_kind</span> of <span><a href="Tools_error/index.html#type-path_kind">Tools_error.path_kind</a> list</span> * <a href="Tools_error/index.html#type-path_kind">Tools_error.path_kind</a></span> Wrong_kind ]</span>
+      * <a href="../../../odoc.model/Odoc_model/Paths/Reference/index.html#type-tag_hierarchy">Odoc_model.Paths.Reference.tag_hierarchy</a>
+      * <span>string list</span></span>
+    <span><span>| `Wrong_kind</span> of
+      <span><a href="Tools_error/index.html#type-reference_kind">Tools_error.reference_kind</a> list</span> * <a href="Tools_error/index.html#type-reference_kind">Tools_error.reference_kind</a></span> ]</span></span>
+  <span>| `UnresolvedForwardPath</span>
+  <span><span>| `UnresolvedOriginalPath</span> of
+    <span>[&lt; <a href="../Cpath/index.html#type-module_">Cpath.module_</a> ]</span> * <span>[&lt; <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a> ]</span></span>
+  <span><span>| `UnresolvedPath</span> of
+    <span>[&lt; <span>`Module of
+         <span>[&lt; <a href="../Cpath/index.html#type-module_">Cpath.module_</a> ]</span> * <span>[&lt; <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a> ]</span></span>
+    <span><span>| `ModuleType</span> of
+      <span>[&lt; <a href="../Cpath/index.html#type-module_type">Cpath.module_type</a> ]</span> * <span>[&lt; <a href="Tools_error/index.html#type-simple_module_type_lookup_error">Tools_error.simple_module_type_lookup_error</a> ]</span></span> ]</span></span> ]</span>
+    option</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><a href="#type-kind">kind</a> option</span></span></code></div></div><div class="odoc-spec"><div class="spec type anchored" id="type-what"><a href="#type-what" class="anchor"></a><a href="../../../src/odoc.xref2/errors.ml.html#type-what" class="source_link">Source</a><code><span><span class="keyword">type</span> what</span><span> = </span><span>[ </span></code><ol><li id="type-what.Functor_parameter" class="def variant constructor anchored"><a href="#type-what.Functor_parameter" class="anchor"></a><code><span>| </span><span>`Functor_parameter <span class="keyword">of</span> <a href="../../../odoc.model/Odoc_model/Paths/Identifier/FunctorParameter/index.html#type-t">Odoc_model.Paths.Identifier.FunctorParameter.t</a></span></code></li><li id="type-what.Value" class="def variant constructor anchored"><a href="#type-what.Value" class="anchor"></a><code><span>| </span><span>`Value <span class="keyword">of</span> <a href="../../../odoc.model/Odoc_model/Paths/Identifier/Value/index.html#type-t">Odoc_model.Paths.Identifier.Value.t</a></span></code></li><li id="type-what.Value_path" class="def variant constructor anchored"><a href="#type-what.Value_path" class="anchor"></a><code><span>| </span><span>`Value_path <span class="keyword">of</span> <a href="../Cpath/index.html#type-value">Cpath.value</a></span></code></li><li id="type-what.Class" class="def variant constructor anchored"><a href="#type-what.Class" class="anchor"></a><code><span>| </span><span>`Class <span class="keyword">of</span> <a href="../../../odoc.model/Odoc_model/Paths/Identifier/Class/index.html#type-t">Odoc_model.Paths.Identifier.Class.t</a></span></code></li><li id="type-what.Class_type" class="def variant constructor anchored"><a href="#type-what.Class_type" class="anchor"></a><code><span>| </span><span>`Class_type <span class="keyword">of</span> <a href="../../../odoc.model/Odoc_model/Paths/Identifier/ClassType/index.html#type-t">Odoc_model.Paths.Identifier.ClassType.t</a></span></code></li><li id="type-what.Module" class="def variant constructor anchored"><a href="#type-what.Module" class="anchor"></a><code><span>| </span><span>`Module <span class="keyword">of</span> <a href="../../../odoc.model/Odoc_model/Paths/Identifier/Module/index.html#type-t">Odoc_model.Paths.Identifier.Module.t</a></span></code></li><li id="type-what.Module_type" class="def variant constructor anchored"><a href="#type-what.Module_type" class="anchor"></a><code><span>| </span><span>`Module_type <span class="keyword">of</span> <a href="../../../odoc.model/Odoc_model/Paths/Identifier/Signature/index.html#type-t">Odoc_model.Paths.Identifier.Signature.t</a></span></code></li><li id="type-what.Module_path" class="def variant constructor anchored"><a href="#type-what.Module_path" class="anchor"></a><code><span>| </span><span>`Module_path <span class="keyword">of</span> <a href="../Cpath/index.html#type-module_">Cpath.module_</a></span></code></li><li id="type-what.Module_type_path" class="def variant constructor anchored"><a href="#type-what.Module_type_path" class="anchor"></a><code><span>| </span><span>`Module_type_path <span class="keyword">of</span> <a href="../Cpath/index.html#type-module_type">Cpath.module_type</a></span></code></li><li id="type-what.Module_type_U" class="def variant constructor anchored"><a href="#type-what.Module_type_U" class="anchor"></a><code><span>| </span><span>`Module_type_U <span class="keyword">of</span> <a href="../Component/ModuleType/U/index.html#type-expr">Component.ModuleType.U.expr</a></span></code></li><li id="type-what.Include" class="def variant constructor anchored"><a href="#type-what.Include" class="anchor"></a><code><span>| </span><span>`Include <span class="keyword">of</span> <a href="../Component/Include/index.html#type-decl">Component.Include.decl</a></span></code></li><li id="type-what.Package" class="def variant constructor anchored"><a href="#type-what.Package" class="anchor"></a><code><span>| </span><span>`Package <span class="keyword">of</span> <a href="../Cpath/index.html#type-module_type">Cpath.module_type</a></span></code></li><li id="type-what.Type" class="def variant constructor anchored"><a href="#type-what.Type" class="anchor"></a><code><span>| </span><span>`Type <span class="keyword">of</span> <a href="../Cfrag/index.html#type-type_">Cfrag.type_</a></span></code></li><li id="type-what.Type_path" class="def variant constructor anchored"><a href="#type-what.Type_path" class="anchor"></a><code><span>| </span><span>`Type_path <span class="keyword">of</span> <a href="../Cpath/index.html#type-type_">Cpath.type_</a></span></code></li><li id="type-what.Class_type_path" class="def variant constructor anchored"><a href="#type-what.Class_type_path" class="anchor"></a><code><span>| </span><span>`Class_type_path <span class="keyword">of</span> <a href="../Cpath/index.html#type-class_type">Cpath.class_type</a></span></code></li><li id="type-what.With_module" class="def variant constructor anchored"><a href="#type-what.With_module" class="anchor"></a><code><span>| </span><span>`With_module <span class="keyword">of</span> <a href="../Cfrag/index.html#type-module_">Cfrag.module_</a></span></code></li><li id="type-what.With_module_type" class="def variant constructor anchored"><a href="#type-what.With_module_type" class="anchor"></a><code><span>| </span><span>`With_module_type <span class="keyword">of</span> <a href="../Cfrag/index.html#type-module_type">Cfrag.module_type</a></span></code></li><li id="type-what.With_type" class="def variant constructor anchored"><a href="#type-what.With_type" class="anchor"></a><code><span>| </span><span>`With_type <span class="keyword">of</span> <a href="../Cfrag/index.html#type-type_">Cfrag.type_</a></span></code></li><li id="type-what.Module_type_expr" class="def variant constructor anchored"><a href="#type-what.Module_type_expr" class="anchor"></a><code><span>| </span><span>`Module_type_expr <span class="keyword">of</span> <a href="../Component/ModuleType/index.html#type-expr">Component.ModuleType.expr</a></span></code></li><li id="type-what.Module_type_u_expr" class="def variant constructor anchored"><a href="#type-what.Module_type_u_expr" class="anchor"></a><code><span>| </span><span>`Module_type_u_expr <span class="keyword">of</span> <a href="../Component/ModuleType/U/index.html#type-expr">Component.ModuleType.U.expr</a></span></code></li><li id="type-what.Child_module" class="def variant constructor anchored"><a href="#type-what.Child_module" class="anchor"></a><code><span>| </span><span>`Child_module <span class="keyword">of</span> string</span></code></li><li id="type-what.Child_page" class="def variant constructor anchored"><a href="#type-what.Child_page" class="anchor"></a><code><span>| </span><span>`Child_page <span class="keyword">of</span> string</span></code></li><li id="type-what.Reference" class="def variant constructor anchored"><a href="#type-what.Reference" class="anchor"></a><code><span>| </span><span>`Reference <span class="keyword">of</span> <a href="../../../odoc.model/Odoc_model/Paths/Reference/index.html#type-t">Odoc_model.Paths.Reference.t</a></span></code></li></ol><code><span> ]</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-report"><a href="#val-report" class="anchor"></a><a href="../../../src/odoc.xref2/errors.ml.html#val-report" class="source_link">Source</a><code><span><span class="keyword">val</span> report : 
+  <span><span class="label">what</span>:<a href="#type-what">what</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?tools_error</span>:
+    <span>[&lt; `ApplyNotFunctor
+    <span>| `Class_replaced</span>
+    <span>| `Find_failure</span>
+    <span>| `Fragment_root</span>
+    <span><span>| `Local</span> of <a href="../Env/index.html#type-t">Env.t</a> * <span>[&lt; <a href="../Ident/index.html#type-module_">Ident.module_</a> ]</span> &amp; <a href="../Env/index.html#type-t">Env.t</a> * <span>[&lt; <a href="../Ident/index.html#type-module_">Ident.module_</a> ]</span></span>
+    <span><span>| `LocalMT</span> of
+      <a href="../Env/index.html#type-t">Env.t</a> * <span>[&lt; <a href="../Ident/index.html#type-module_type">Ident.module_type</a> ]</span> &amp; <a href="../Env/index.html#type-t">Env.t</a> * <span>[&lt; <a href="../Ident/index.html#type-module_type">Ident.module_type</a> ]</span></span>
+    <span><span>| `LocalType</span> of <a href="../Env/index.html#type-t">Env.t</a> * <span>[&lt; <a href="../Ident/index.html#type-type_">Ident.type_</a> ]</span> &amp; <a href="../Env/index.html#type-t">Env.t</a> * <span>[&lt; <a href="../Ident/index.html#type-type_">Ident.type_</a> ]</span></span>
+    <span><span>| `LocalValue</span> of <a href="../Env/index.html#type-t">Env.t</a> * <span>[&lt; <a href="../Ident/index.html#type-value">Ident.value</a> ]</span> &amp; <a href="../Env/index.html#type-t">Env.t</a> * <span>[&lt; <a href="../Ident/index.html#type-value">Ident.value</a> ]</span></span>
+    <span><span>| `Lookup_failure</span> of
+      <span><span>[&lt; <a href="../../../odoc.model/Odoc_model/Paths/Identifier/Path/Module/index.html#type-t_pv">Odoc_model.Paths.Identifier.Path.Module.t_pv</a> ]</span>
+        <a href="../../../odoc.model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span> &amp; <span><span>[&lt; <a href="../../../odoc.model/Odoc_model/Paths/Identifier/Path/Module/index.html#type-t_pv">Odoc_model.Paths.Identifier.Path.Module.t_pv</a> ]</span>
+                                           <a href="../../../odoc.model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span></span>
+    <span><span>| `Lookup_failureMT</span> of
+      <span><span>[&lt; <a href="../../../odoc.model/Odoc_model/Paths/Identifier/ModuleType/index.html#type-t_pv">Odoc_model.Paths.Identifier.ModuleType.t_pv</a> ]</span>
+        <a href="../../../odoc.model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span> &amp; <span><span>[&lt; <a href="../../../odoc.model/Odoc_model/Paths/Identifier/ModuleType/index.html#type-t_pv">Odoc_model.Paths.Identifier.ModuleType.t_pv</a> ]</span>
+                                           <a href="../../../odoc.model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span></span>
+    <span><span>| `Lookup_failureT</span> of
+      <span><span>[&lt; <a href="../../../odoc.model/Odoc_model/Paths/Identifier/Path/Type/index.html#type-t_pv">Odoc_model.Paths.Identifier.Path.Type.t_pv</a> ]</span>
+        <a href="../../../odoc.model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span> &amp; <span><span>[&lt; <a href="../../../odoc.model/Odoc_model/Paths/Identifier/Path/Type/index.html#type-t_pv">Odoc_model.Paths.Identifier.Path.Type.t_pv</a> ]</span>
+                                           <a href="../../../odoc.model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span></span>
+    <span><span>| `Lookup_failureV</span> of
+      <span><span>[&lt; <a href="../../../odoc.model/Odoc_model/Paths/Identifier/Value/index.html#type-t_pv">Odoc_model.Paths.Identifier.Value.t_pv</a> ]</span>
+        <a href="../../../odoc.model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span> &amp; <span><span>[&lt; <a href="../../../odoc.model/Odoc_model/Paths/Identifier/Value/index.html#type-t_pv">Odoc_model.Paths.Identifier.Value.t_pv</a> ]</span>
+                                           <a href="../../../odoc.model/Odoc_model/Paths/Identifier/index.html#type-id">Odoc_model.Paths.Identifier.id</a></span></span>
+    <span><span>| `Lookup_failure_root</span> of <a href="../../../odoc.model/Odoc_model/Names/ModuleName/index.html#type-t">Odoc_model.Names.ModuleName.t</a></span>
+    <span>| `OpaqueClass</span>
+    <span>| `OpaqueModule</span>
+    <span><span>| `Parent</span> of
+      <span>[&lt; <a href="Tools_error/index.html#type-parent_lookup_error">Tools_error.parent_lookup_error</a> ]</span> &amp; <span>[&lt; <a href="Tools_error/index.html#type-parent_lookup_error">Tools_error.parent_lookup_error</a> ]</span></span>
+    <span><span>| `Parent_expr</span> of
+      <span>[&lt; `ApplyNotFunctor
+      <span>| `OpaqueModule</span>
+      <span><span>| `Parent</span> of <a href="Tools_error/index.html#type-parent_lookup_error">Tools_error.parent_lookup_error</a></span>
+      <span>| `UnresolvedForwardPath</span>
+      <span><span>| `UnresolvedPath</span> of
+        <span>[ <span>`Module of <a href="../Cpath/index.html#type-module_">Cpath.module_</a> * <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a></span>
+        <span><span>| `ModuleType</span> of
+          <a href="../Cpath/index.html#type-module_type">Cpath.module_type</a> * <a href="Tools_error/index.html#type-simple_module_type_lookup_error">Tools_error.simple_module_type_lookup_error</a></span> ]</span></span> ]</span> &amp; 
+      <span>[&lt; `ApplyNotFunctor
+      <span>| `OpaqueModule</span>
+      <span><span>| `Parent</span> of <a href="Tools_error/index.html#type-parent_lookup_error">Tools_error.parent_lookup_error</a></span>
+      <span>| `UnresolvedForwardPath</span>
+      <span><span>| `UnresolvedPath</span> of
+        <span>[ <span>`Module of <a href="../Cpath/index.html#type-module_">Cpath.module_</a> * <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a></span>
+        <span><span>| `ModuleType</span> of
+          <a href="../Cpath/index.html#type-module_type">Cpath.module_type</a> * <a href="Tools_error/index.html#type-simple_module_type_lookup_error">Tools_error.simple_module_type_lookup_error</a></span> ]</span></span> ]</span></span>
+    <span><span>| `Parent_module</span> of
+      <span>[&lt; <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a> ]</span> &amp; <span>[&lt; <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a> ]</span></span>
+    <span><span>| `Parent_module_type</span> of
+      <span>[&lt; <a href="Tools_error/index.html#type-simple_module_type_lookup_error">Tools_error.simple_module_type_lookup_error</a> ]</span> &amp; <span>[&lt; <a href="Tools_error/index.html#type-simple_module_type_lookup_error">Tools_error.simple_module_type_lookup_error</a> ]</span></span>
+    <span><span>| `Parent_sig</span> of
+      <span>[&lt; `OpaqueModule
+      <span>| `UnresolvedForwardPath</span>
+      <span><span>| `UnresolvedOriginalPath</span> of
+        <a href="../Cpath/index.html#type-module_">Cpath.module_</a> * <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a></span>
+      <span><span>| `UnresolvedPath</span> of
+        <span>[ <span>`Module of <a href="../Cpath/index.html#type-module_">Cpath.module_</a> * <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a></span>
+        <span><span>| `ModuleType</span> of
+          <a href="../Cpath/index.html#type-module_type">Cpath.module_type</a> * <a href="Tools_error/index.html#type-simple_module_type_lookup_error">Tools_error.simple_module_type_lookup_error</a></span> ]</span></span> ]</span> &amp; 
+      <span>[&lt; `OpaqueModule
+      <span>| `UnresolvedForwardPath</span>
+      <span><span>| `UnresolvedOriginalPath</span> of
+        <a href="../Cpath/index.html#type-module_">Cpath.module_</a> * <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a></span>
+      <span><span>| `UnresolvedPath</span> of
+        <span>[ <span>`Module of <a href="../Cpath/index.html#type-module_">Cpath.module_</a> * <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a></span>
+        <span><span>| `ModuleType</span> of
+          <a href="../Cpath/index.html#type-module_type">Cpath.module_type</a> * <a href="Tools_error/index.html#type-simple_module_type_lookup_error">Tools_error.simple_module_type_lookup_error</a></span> ]</span></span> ]</span></span>
+    <span><span>| `Parent_type</span> of
+      <span>[&lt; <a href="Tools_error/index.html#type-simple_type_lookup_error">Tools_error.simple_type_lookup_error</a> ]</span> &amp; <span>[&lt; <a href="Tools_error/index.html#type-simple_type_lookup_error">Tools_error.simple_type_lookup_error</a> ]</span></span>
+    <span><span>| `Reference</span> of
+      <span>[&lt; <span>`Find_by_name of
+           <span>[&lt; `Any
+           <span>| `Any_path</span>
+           <span>| `Asset_path</span>
+           <span>| `C</span>
+           <span>| `CT</span>
+           <span>| `Cons</span>
+           <span>| `Field</span>
+           <span>| `Label</span>
+           <span>| `Module_path</span>
+           <span>| `Page</span>
+           <span>| `Page_path</span>
+           <span>| `S</span>
+           <span>| `T</span> ]</span>
+           * string</span>
+      <span><span>| `Lookup_by_name</span> of
+        <span>[&lt; `Any
+        <span>| `Any_path</span>
+        <span>| `Asset_path</span>
+        <span>| `C</span>
+        <span>| `CT</span>
+        <span>| `Cons</span>
+        <span>| `Field</span>
+        <span>| `Label</span>
+        <span>| `Module_path</span>
+        <span>| `Page</span>
+        <span>| `Page_path</span>
+        <span>| `S</span>
+        <span>| `T</span> ]</span>
+        * string</span>
+      <span><span>| `Parent</span> of <a href="Tools_error/index.html#type-parent_lookup_error">Tools_error.parent_lookup_error</a></span>
+      <span><span>| `Path_error</span> of
+        <span>[&lt; `Is_directory
+        <span>| `Not_found</span>
+        <span><span>| `Wrong_kind</span> of <span><a href="Tools_error/index.html#type-path_kind">Tools_error.path_kind</a> list</span> * <a href="Tools_error/index.html#type-path_kind">Tools_error.path_kind</a></span> Wrong_kind ]</span>
+        * <a href="../../../odoc.model/Odoc_model/Paths/Reference/index.html#type-tag_hierarchy">Odoc_model.Paths.Reference.tag_hierarchy</a>
+        * <span>string list</span></span>
+      <span><span>| `Wrong_kind</span> of
+        <span><a href="Tools_error/index.html#type-reference_kind">Tools_error.reference_kind</a> list</span> * <a href="Tools_error/index.html#type-reference_kind">Tools_error.reference_kind</a></span> ]</span> &amp; 
+      <span>[&lt; <span>`Find_by_name of
+           <span>[&lt; `Any
+           <span>| `Any_path</span>
+           <span>| `Asset_path</span>
+           <span>| `C</span>
+           <span>| `CT</span>
+           <span>| `Cons</span>
+           <span>| `Field</span>
+           <span>| `Label</span>
+           <span>| `Module_path</span>
+           <span>| `Page</span>
+           <span>| `Page_path</span>
+           <span>| `S</span>
+           <span>| `T</span> ]</span>
+           * string</span>
+      <span><span>| `Lookup_by_name</span> of
+        <span>[&lt; `Any
+        <span>| `Any_path</span>
+        <span>| `Asset_path</span>
+        <span>| `C</span>
+        <span>| `CT</span>
+        <span>| `Cons</span>
+        <span>| `Field</span>
+        <span>| `Label</span>
+        <span>| `Module_path</span>
+        <span>| `Page</span>
+        <span>| `Page_path</span>
+        <span>| `S</span>
+        <span>| `T</span> ]</span>
+        * string</span>
+      <span><span>| `Parent</span> of <a href="Tools_error/index.html#type-parent_lookup_error">Tools_error.parent_lookup_error</a></span>
+      <span><span>| `Path_error</span> of
+        <span>[&lt; `Is_directory
+        <span>| `Not_found</span>
+        <span><span>| `Wrong_kind</span> of <span><a href="Tools_error/index.html#type-path_kind">Tools_error.path_kind</a> list</span> * <a href="Tools_error/index.html#type-path_kind">Tools_error.path_kind</a></span> Wrong_kind ]</span>
+        * <a href="../../../odoc.model/Odoc_model/Paths/Reference/index.html#type-tag_hierarchy">Odoc_model.Paths.Reference.tag_hierarchy</a>
+        * <span>string list</span></span>
+      <span><span>| `Wrong_kind</span> of
+        <span><a href="Tools_error/index.html#type-reference_kind">Tools_error.reference_kind</a> list</span> * <a href="Tools_error/index.html#type-reference_kind">Tools_error.reference_kind</a></span> ]</span></span>
+    <span>| `UnresolvedForwardPath</span>
+    <span><span>| `UnresolvedOriginalPath</span> of
+      <span>[&lt; <a href="../Cpath/index.html#type-module_">Cpath.module_</a> ]</span> * <span>[&lt; <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a> ]</span> &amp; 
+      <span>[&lt; <a href="../Cpath/index.html#type-module_">Cpath.module_</a> ]</span>
+      * <span>[&lt; <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a> ]</span></span>
+    <span><span>| `UnresolvedPath</span> of
+      <span>[&lt; <span>`Module of
+           <span>[&lt; <a href="../Cpath/index.html#type-module_">Cpath.module_</a> ]</span> * <span>[&lt; <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a> ]</span></span>
+      <span><span>| `ModuleType</span> of
+        <span>[&lt; <a href="../Cpath/index.html#type-module_type">Cpath.module_type</a> ]</span>
+        * <span>[&lt; <a href="Tools_error/index.html#type-simple_module_type_lookup_error">Tools_error.simple_module_type_lookup_error</a> ]</span></span> ]</span> &amp; <span>[&lt; <span>`Module of
+                                                                    <span>[&lt; 
+                                                                    <a href="../Cpath/index.html#type-module_">Cpath.module_</a> ]</span>
+                                                                    * 
+                                                                    <span>[&lt; 
+                                                                    <a href="Tools_error/index.html#type-simple_module_lookup_error">Tools_error.simple_module_lookup_error</a> ]</span></span>
+                                                               <span><span>| `ModuleType</span> of
+                                                                 <span>[&lt; <a href="../Cpath/index.html#type-module_type">Cpath.module_type</a> ]</span>
+                                                                 * <span>[&lt; 
+                                                                   <a href="Tools_error/index.html#type-simple_module_type_lookup_error">Tools_error.simple_module_type_lookup_error</a> ]</span></span> ]</span></span> ]</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span>[&lt; `Compile <span>| `Expand</span> <span>| `Lookup</span> <span>| `Resolve</span> <span>| `Resolve_module_type</span> ]</span> <span class="arrow">&#45;&gt;</span></span>
+  unit</span></code></div></div></div></body></html>

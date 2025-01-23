@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: cmd_outputs.ml (odoc-driver.src.odoc-driver)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">The odoc reference driver</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; odoc-driver &#x00BB; cmd_outputs.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>cmd_outputs.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">The odoc reference driver</a><ul><li>Library <code>odoc-driver</code><ul><li><a href="../../odoc-driver/Odoc_driver_lib/index.html">Odoc_driver_lib</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>odoc-driver<ul><li><a href="#" class="current_unit">cmd_outputs.ml</a></li><li><a href="common_args.ml.html">common_args.ml</a></li><li><a href="compile.ml.html">compile.ml</a></li><li><a href="db.ml.html">db.ml</a></li><li><a href="global_config.ml.html">global_config.ml</a></li><li><a href="landing_pages.ml.html">landing_pages.ml</a></li><li><a href="library_names.ml.html">library_names.ml</a></li><li><a href="monorepo_style.ml.html">monorepo_style.ml</a></li><li><a href="ocamlfind.ml.html">ocamlfind.ml</a></li><li><a href="ocamlobjinfo.ml.html">ocamlobjinfo.ml</a></li><li><a href="odoc.ml.html">odoc.ml</a></li><li><a href="odoc_driver_lib.ml.html">odoc_driver_lib.ml</a></li><li><a href="odoc_unit.ml.html">odoc_unit.ml</a></li><li><a href="odoc_units_of.ml.html">odoc_units_of.ml</a></li><li><a href="opam.ml.html">opam.ml</a></li><li><a href="packages.ml.html">packages.ml</a></li><li><a href="run.ml.html">run.ml</a></li><li><a href="sherlodoc.ml.html">sherlodoc.ml</a></li><li><a href="stats.ml.html">stats.ml</a></li><li><a href="util.ml.html">util.ml</a></li><li><a href="voodoo.ml.html">voodoo.ml</a></li><li><a href="worker_pool.ml.html">worker_pool.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+</code><code class="source_code"><span><span id="type-log_dest"><span class="TYPE">type</span> <span class="LIDENT">log_dest</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACKET">[</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Compile</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Compile_src</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Link</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Count_occurrences</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Generate</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Index</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Sherlodoc</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Classify</span> <span class="RBRACKET">]</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-log_line"><span class="TYPE">type</span> <span class="LIDENT">log_line</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_18"><span class="LIDENT">log_dest</span> <span class="COLON">:</span> <span class="LIDENT">log_dest</span><span class="SEMI">;</span></span> <span id="def_19"><span class="LIDENT">prefix</span> <span class="COLON">:</span> <span class="LIDENT">string</span><span class="SEMI">;</span></span> <span id="def_20"><span class="LIDENT">run</span> <span class="COLON">:</span> <a href="run.ml.html#type-t"><span class="UIDENT">Run</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-outputs"><span class="LIDENT">outputs</span></span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#type-ref"><span class="LIDENT">log_line</span> <span class="LIDENT">list</span> <span class="LIDENT">ref</span></a> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-ref"><span class="LIDENT">ref</span></a> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-maybe_log"><span class="LIDENT">maybe_log</span></span> <span id="local_log_dest_1"><span class="LIDENT">log_dest</span></span> <span id="local_run_2"><span class="LIDENT">run</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_log_dest_1"><span class="LIDENT">log_dest</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span id="local_log_dest_3"><span class="LIDENT">log_dest</span></span><span class="COMMA">,</span> <span id="local_prefix_4"><span class="LIDENT">prefix</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LIDENT">outputs</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(:=)"><span class="COLONEQUAL">:=</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><span class="LIDENT">outputs</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(@)"><span class="INFIXOP1">@</span></a> <span class="LBRACKET">[</span> <span class="LBRACE">{</span> <a href="#local_log_dest_3"><span class="LIDENT">log_dest</span></a><span class="SEMI">;</span> <a href="#local_run_2"><span class="LIDENT">run</span></a><span class="SEMI">;</span> <a href="#local_prefix_4"><span class="LIDENT">prefix</span></a> <span class="RBRACE">}</span> <span class="RBRACKET">]</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-submit"><span class="LIDENT">submit</span></span> <span id="local_log_dest_5"><span class="LIDENT">log_dest</span></span> <span id="local_desc_6"><span class="LIDENT">desc</span></span> <span id="local_cmd_7"><span class="LIDENT">cmd</span></span> <span id="local_output_file_8"><span class="LIDENT">output_file</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="worker_pool.ml.html#val-submit"><span class="UIDENT">Worker_pool</span><span class="DOT">.</span><span class="LIDENT">submit</span></a> <a href="#local_desc_6"><span class="LIDENT">desc</span></a> <a href="#local_cmd_7"><span class="LIDENT">cmd</span></a> <a href="#local_output_file_8"><span class="LIDENT">output_file</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Ok</span> <span id="local_x_9"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LIDENT">maybe_log</span> <a href="#local_log_dest_5"><span class="LIDENT">log_dest</span></a> <a href="#local_x_9"><span class="LIDENT">x</span></a><span class="SEMI">;</span><span class="EOL">
+</span>      <a href="../../../ocaml-base-compiler/src/stdlib/string.ml.html#val-split_on_char"><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">split_on_char</span></a> <span class="CHAR">'\n'</span> <a href="#local_x_9"><span class="LIDENT">x</span></a><span class="DOT">.</span><span class="LIDENT">output</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Error</span> <span id="local_exn_10"><span class="LIDENT">exn</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <a href="#local_exn_10"><span class="LIDENT">exn</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-submit_ignore_failures"><span class="LIDENT">submit_ignore_failures</span></span> <span id="local_log_dest_11"><span class="LIDENT">log_dest</span></span> <span id="local_desc_12"><span class="LIDENT">desc</span></span> <span id="local_cmd_13"><span class="LIDENT">cmd</span></span> <span id="local_output_file_14"><span class="LIDENT">output_file</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="worker_pool.ml.html#val-submit"><span class="UIDENT">Worker_pool</span><span class="DOT">.</span><span class="LIDENT">submit</span></a> <a href="#local_desc_12"><span class="LIDENT">desc</span></a> <a href="#local_cmd_13"><span class="LIDENT">cmd</span></a> <a href="#local_output_file_14"><span class="LIDENT">output_file</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Ok</span> <span id="local_x_15"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LIDENT">maybe_log</span> <a href="#local_log_dest_11"><span class="LIDENT">log_dest</span></a> <a href="#local_x_15"><span class="LIDENT">x</span></a><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Error</span> <span id="local_exn_16"><span class="LIDENT">exn</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="UIDENT">Logs</span><span class="DOT">.</span><span class="LIDENT">err</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_m_17"><span class="LIDENT">m</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_m_17"><span class="LIDENT">m</span></a> <span class="STRING">&quot;Error: %s&quot;</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/printexc.ml.html#val-to_string"><span class="UIDENT">Printexc</span><span class="DOT">.</span><span class="LIDENT">to_string</span></a> <a href="#local_exn_16"><span class="LIDENT">exn</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

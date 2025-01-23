@@ -1,0 +1,29 @@
+version = "dev"
+description = ""
+requires =
+"bos
+ cmdliner
+ eio_main
+ findlib
+ fpath
+ logs
+ logs.fmt
+ mtime
+ ocamlgraph
+ odoc.odoc_utils
+ opam-core
+ opam-file-format
+ opam-format
+ optint
+ ppx_sexp_conv.runtime-lib
+ progress
+ progress.engine
+ sexplib
+ sexplib0
+ terminal
+ terminal.ansi
+ yojson"
+archive(byte) = "odoc_driver_lib.cma"
+archive(native) = "odoc_driver_lib.cmxa"
+plugin(byte) = "odoc_driver_lib.cma"
+plugin(native) = "odoc_driver_lib.cmxs"

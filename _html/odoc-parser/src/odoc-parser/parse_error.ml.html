@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: parse_error.ml (odoc-parser.src.odoc-parser)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">odoc-parser</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; odoc-parser &#x00BB; parse_error.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>parse_error.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">odoc-parser</a><ul><li>Library <code>odoc-parser</code><ul><li><a href="../../odoc-parser/Odoc_parser/index.html">Odoc_parser</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>odoc-parser<ul><li><a href="ast.ml.html">ast.ml</a></li><li><a href="compat.ml.html">compat.ml</a></li><li><a href="lexer.ml.html">lexer.ml</a></li><li><a href="loc.ml.html">loc.ml</a></li><li><a href="odoc_parser.ml.html">odoc_parser.ml</a></li><li><a href="odoc_parser__.ml.html">odoc_parser__.ml</a></li><li><a href="#" class="current_unit">parse_error.ml</a></li><li><a href="syntax.ml.html">syntax.ml</a></li><li><a href="token.ml.html">token.ml</a></li><li><a href="warning.ml.html">warning.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+</code><code class="source_code"><span><span class="LET">let</span> <span id="val-capitalize_ascii"><span class="LIDENT">capitalize_ascii</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Astring</span><span class="DOT">.</span><span class="UIDENT">String</span><span class="DOT">.</span><span class="UIDENT">Ascii</span><span class="DOT">.</span><span class="LIDENT">capitalize</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-bad_markup"><span class="LIDENT">bad_markup</span></span> <span class="COLON">:</span> <span class="OPTLABEL">?suggestion:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span> <span class="FUN">fun</span> <span class="QUESTION">?</span><span id="local_suggestion_1"><span class="LIDENT">suggestion</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="QUESTION">?</span><a href="#local_suggestion_1"><span class="LIDENT">suggestion</span></a> <span class="STRING">&quot;'%s': bad markup.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-leading_zero_in_heading_level"><span class="LIDENT">leading_zero_in_heading_level</span></span> <span class="COLON">:</span> <span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="STRING">&quot;'%s': leading zero in heading level.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-should_not_be_empty"><span class="LIDENT">should_not_be_empty</span></span> <span class="COLON">:</span> <span class="LIDENT">what</span><span class="COLON">:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span> <span class="FUN">fun</span> <span class="TILDE">~</span><span id="local_what_2"><span class="LIDENT">what</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="STRING">&quot;%s should not be empty.&quot;</span> <span class="LPAREN">(</span><span class="LIDENT">capitalize_ascii</span> <a href="#local_what_2"><span class="LIDENT">what</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-markup_should_not_be_used"><span class="LIDENT">markup_should_not_be_used</span></span> <span class="COLON">:</span> <span class="LIDENT">what</span><span class="COLON">:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span> <span class="FUN">fun</span> <span class="TILDE">~</span><span id="local_what_3"><span class="LIDENT">what</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="STRING">&quot;%s should not be used because it has no effect.&quot;</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="LIDENT">capitalize_ascii</span> <a href="#local_what_3"><span class="LIDENT">what</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-should_begin_on_its_own_line"><span class="LIDENT">should_begin_on_its_own_line</span></span> <span class="COLON">:</span> <span class="LIDENT">what</span><span class="COLON">:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span> <span class="FUN">fun</span> <span class="TILDE">~</span><span id="local_what_4"><span class="LIDENT">what</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="STRING">&quot;%s should begin on its own line.&quot;</span> <span class="LPAREN">(</span><span class="LIDENT">capitalize_ascii</span> <a href="#local_what_4"><span class="LIDENT">what</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-should_be_followed_by_whitespace"><span class="LIDENT">should_be_followed_by_whitespace</span></span> <span class="COLON">:</span> <span class="LIDENT">what</span><span class="COLON">:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span> <span class="FUN">fun</span> <span class="TILDE">~</span><span id="local_what_5"><span class="LIDENT">what</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="STRING">&quot;%s should be followed by space, a tab, or a new line.&quot;</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="LIDENT">capitalize_ascii</span> <a href="#local_what_5"><span class="LIDENT">what</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-not_allowed"><span class="LIDENT">not_allowed</span></span> <span class="COLON">:</span><span class="EOL">
+</span>    <span class="OPTLABEL">?suggestion:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">what</span><span class="COLON">:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">in_what</span><span class="COLON">:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="EOL">
+</span>    <span class="EQUAL">=</span><span class="EOL">
+</span> <span class="FUN">fun</span> <span class="QUESTION">?</span><span id="local_suggestion_6"><span class="LIDENT">suggestion</span></span> <span class="TILDE">~</span><span id="local_what_7"><span class="LIDENT">what</span></span> <span class="TILDE">~</span><span id="local_in_what_8"><span class="LIDENT">in_what</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="QUESTION">?</span><a href="#local_suggestion_6"><span class="LIDENT">suggestion</span></a> <span class="STRING">&quot;%s is not allowed in %s.&quot;</span> <span class="LPAREN">(</span><span class="LIDENT">capitalize_ascii</span> <a href="#local_what_7"><span class="LIDENT">what</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <a href="#local_in_what_8"><span class="LIDENT">in_what</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-unclosed_bracket"><span class="LIDENT">unclosed_bracket</span></span> <span class="COLON">:</span><span class="EOL">
+</span>    <span class="OPTLABEL">?suggestion:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">bracket</span><span class="COLON">:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span> <span class="FUN">fun</span> <span class="QUESTION">?</span><span id="local_suggestion_9"><span class="LIDENT">suggestion</span></span> <span class="TILDE">~</span><span id="local_bracket_10"><span class="LIDENT">bracket</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="QUESTION">?</span><a href="#local_suggestion_9"><span class="LIDENT">suggestion</span></a> <span class="STRING">&quot;Open bracket '%s' is never closed.&quot;</span> <a href="#local_bracket_10"><span class="LIDENT">bracket</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-no_leading_whitespace_in_verbatim"><span class="LIDENT">no_leading_whitespace_in_verbatim</span></span> <span class="COLON">:</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="STRING">&quot;'{v' should be followed by whitespace.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-no_trailing_whitespace_in_verbatim"><span class="LIDENT">no_trailing_whitespace_in_verbatim</span></span> <span class="COLON">:</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="STRING">&quot;'v}' should be preceded by whitespace.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-stray_at"><span class="LIDENT">stray_at</span></span> <span class="COLON">:</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span> <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="STRING">&quot;Stray '@'.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-stray_cr"><span class="LIDENT">stray_cr</span></span> <span class="COLON">:</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="STRING">&quot;Stray '\\r' (carriage return character).&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-truncated_before"><span class="LIDENT">truncated_before</span></span> <span class="COLON">:</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="STRING">&quot;'@before' expects version number on the same line.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-truncated_param"><span class="LIDENT">truncated_param</span></span> <span class="COLON">:</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="STRING">&quot;'@param' expects parameter name on the same line.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-truncated_raise"><span class="LIDENT">truncated_raise</span></span> <span class="COLON">:</span> <span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="STRING">&quot;'%s' expects exception constructor on the same line.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-truncated_see"><span class="LIDENT">truncated_see</span></span> <span class="COLON">:</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a><span class="EOL">
+</span>    <span class="STRING">&quot;'@see' should be followed by &lt;url&gt;, 'file', or \&quot;document title\&quot;.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-unknown_tag"><span class="LIDENT">unknown_tag</span></span> <span class="COLON">:</span> <span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="STRING">&quot;Unknown tag '%s'.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-unpaired_right_brace"><span class="LIDENT">unpaired_right_brace</span></span> <span class="COLON">:</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="LABEL">~suggestion:</span><span class="STRING">&quot;try '\\}'.&quot;</span> <span class="STRING">&quot;Unpaired '}' (end of markup).&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-unpaired_right_bracket"><span class="LIDENT">unpaired_right_bracket</span></span> <span class="COLON">:</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="LABEL">~suggestion:</span><span class="STRING">&quot;try '\\]'.&quot;</span> <span class="STRING">&quot;Unpaired ']' (end of code).&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-no_language_tag_in_meta"><span class="LIDENT">no_language_tag_in_meta</span></span> <span class="COLON">:</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="LABEL">~suggestion:</span><span class="STRING">&quot;try '{[ ... ]}' or '{@ocaml[ ... ]}'.&quot;</span><span class="EOL">
+</span>    <span class="STRING">&quot;'{@' should be followed by a language tag.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-language_tag_invalid_char"><span class="LIDENT">language_tag_invalid_char</span></span> <span id="local_lang_tag_11"><span class="LIDENT">lang_tag</span></span> <span class="COLON">:</span> <span class="LIDENT">char</span> <span class="MINUSGREATER">-&gt;</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_suggestion_12"><span class="LIDENT">suggestion</span></span> <span class="EQUAL">=</span> <span class="STRING">&quot;try '{@&quot;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(^)"><span class="INFIXOP1">^</span></a> <a href="#local_lang_tag_11"><span class="LIDENT">lang_tag</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(^)"><span class="INFIXOP1">^</span></a> <span class="STRING">&quot;[ ... ]}'.&quot;</span> <span class="IN">in</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="TILDE">~</span><a href="#local_suggestion_12"><span class="LIDENT">suggestion</span></a> <span class="STRING">&quot;Invalid character '%c' in language tag.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-truncated_code_block_meta"><span class="LIDENT">truncated_code_block_meta</span></span> <span class="COLON">:</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="LABEL">~suggestion:</span><span class="STRING">&quot;try '{@ocaml[ ... ]}'.&quot;</span> <span class="STRING">&quot;Missing end of code block.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-truncated_code_block"><span class="LIDENT">truncated_code_block</span></span> <span class="COLON">:</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="LABEL">~suggestion:</span><span class="STRING">&quot;add ']}'.&quot;</span> <span class="STRING">&quot;Missing end of code block.&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-end_not_allowed"><span class="LIDENT">end_not_allowed</span></span> <span class="COLON">:</span> <span class="LIDENT">in_what</span><span class="COLON">:</span><span class="LIDENT">string</span> <span class="MINUSGREATER">-&gt;</span> <a href="loc.ml.html#type-span"><span class="UIDENT">Loc</span><span class="DOT">.</span><span class="LIDENT">span</span></a> <span class="MINUSGREATER">-&gt;</span> <a href="warning.ml.html#type-t"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">t</span></a> <span class="EQUAL">=</span><span class="EOL">
+</span> <span class="FUN">fun</span> <span class="TILDE">~</span><span id="local_in_what_13"><span class="LIDENT">in_what</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <a href="warning.ml.html#val-make"><span class="UIDENT">Warning</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="LABEL">~suggestion:</span><span class="STRING">&quot;add '}'.&quot;</span> <span class="STRING">&quot;End of text is not allowed in %s.&quot;</span><span class="EOL">
+</span>    <a href="#local_in_what_13"><span class="LIDENT">in_what</span></a><span class="EOL">
+</span></span></code></pre></body></html>

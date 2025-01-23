@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>features (odoc.features)</title><meta charset="utf-8"/><link rel="stylesheet" href="../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../';
+let search_urls = ['sherlodoc_db.js','../sherlodoc.js'];
+</script><script src="../odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../index.html">🏠</a> &#x00BB; <a href="index.html">The odoc documentation generator</a> &#x00BB; Language Features</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Type '/' to search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><h1 id="language-features"><a href="#language-features" class="anchor"></a>Language Features</h1><p><code>odoc</code> works by taking module interfaces, processing them to make them more useful, and turning them into documentation. This processing is largely <a href="#hiding" title="hiding">hiding</a>, handling of <a href="#canonical" title="canonical">canonical references</a>, <a href="#expansion" title="expansion">expansion</a>, and <a href="#resolution" title="resolution">resolution</a>. This document explains the features of these processes in detail.</p></header><div class="odoc-tocs"><nav class="odoc-toc odoc-local-toc"><ul><li><a href="#hiding">Hiding</a></li><li><a href="#canonical">Canonical Items</a></li><li><a href="#expansion">Expansion</a><ul><li><a href="#expansion_aliases">Aliases</a><ul><li><a href="#module-type-aliases">Module Type Aliases</a></li></ul></li><li><a href="#functors">Functors</a></li><li><a href="#includes">Includes</a></li><li><a href="#shadowing">Shadowing</a></li><li><a href="#deep-equations">Deep Equations</a></li><li><a href="#substitution">Substitution</a></li><li><a href="#module_type_of"><code>module type of</code></a></li><li><a href="#complications-of-module-type-of">Complications of <code>module type of</code></a></li></ul></li><li><a href="#resolution">Resolution</a><ul><li><a href="#resolution_aliases">Aliases</a></li><li><a href="#canonical-paths">Canonical Paths</a></li><li><a href="#fragment-resolution">Fragment Resolution</a></li><li><a href="#hidden-elements">Hidden Elements</a></li><li><a href="#reference_resolution">Reference Resolution</a></li><li><a href="#module-type-challenges">Module Type Challenges</a></li></ul></li></ul></nav><nav class="odoc-toc odoc-global-toc"><ul><li><a href="index.html">The odoc documentation generator</a><ul><li><a href="odoc_for_authors.html"><code>odoc</code> for Authors</a></li><li><a href="cheatsheet.html">Cheatsheet</a></li><li><a href="dune.html">Dune and odoc</a></li><li><a href="#" class="current_unit">Language Features</a></li><li><a href="ocamldoc_differences.html">Markup Differences From OCamldoc</a></li><li><a href="interface.html"><code>odoc</code> Interface Guarantees</a></li><li><a href="driver.html">How to Drive <code>odoc</code></a></li><li><a href="json.html">JSON output</a></li><li><a href="deprecated/index.html">Deprecated features</a></li><li>Library <code>odoc.document</code><ul><li><a href="odoc.document/Odoc_document/index.html">Odoc_document</a></li></ul></li><li>Library <code>odoc.examples</code><ul><li><a href="odoc.examples/Odoc_examples/index.html">Odoc_examples</a></li></ul></li><li>Library <code>odoc.html</code><ul><li><a href="odoc.html/Odoc_html/index.html">Odoc_html</a></li></ul></li><li>Library <code>odoc.html_support_files</code><ul><li><a href="odoc.html_support_files/Odoc_html_support_files/index.html">Odoc_html_support_files</a></li></ul></li><li>Library <code>odoc.index</code><ul><li><a href="odoc.index/Odoc_index/index.html">Odoc_index</a></li></ul></li><li>Library <code>odoc.json_index</code><ul><li><a href="odoc.json_index/Odoc_json_index/index.html">Odoc_json_index</a></li></ul></li><li>Library <code>odoc.latex</code><ul><li><a href="odoc.latex/Odoc_latex/index.html">Odoc_latex</a></li></ul></li><li>Library <code>odoc.loader</code><ul><li><a href="odoc.loader/Odoc_loader/index.html">Odoc_loader</a></li></ul></li><li>Library <code>odoc.manpage</code><ul><li><a href="odoc.manpage/Odoc_manpage/index.html">Odoc_manpage</a></li></ul></li><li>Library <code>odoc.model</code><ul><li><a href="odoc.model/Odoc_model/index.html">Odoc_model</a></li></ul></li><li>Library <code>odoc.model_desc</code><ul><li><a href="odoc.model_desc/Odoc_model_desc/index.html">Odoc_model_desc</a></li></ul></li><li>Library <code>odoc.ocamlary</code><ul><li><a href="odoc.ocamlary/Ocamlary/index.html">Ocamlary</a></li></ul></li><li>Library <code>odoc.occurrences</code><ul><li><a href="odoc.occurrences/Odoc_occurrences/index.html">Odoc_occurrences</a></li></ul></li><li>Library <code>odoc.odoc</code><ul><li><a href="odoc.odoc/Odoc_odoc/index.html">Odoc_odoc</a></li></ul></li><li>Library <code>odoc.odoc_utils</code><ul><li><a href="odoc.odoc_utils/Odoc_utils/index.html">Odoc_utils</a></li></ul></li><li>Library <code>odoc.search</code><ul><li><a href="odoc.search/Odoc_search/index.html">Odoc_search</a></li></ul></li><li>Library <code>odoc.search_html_frontend</code><ul><li><a href="odoc.search_html_frontend/Odoc_html_frontend/index.html">Odoc_html_frontend</a></li></ul></li><li>Library <code>odoc.syntax_highlighter</code><ul><li><a href="odoc.syntax_highlighter/Syntax_highlighter/index.html">Syntax_highlighter</a></li></ul></li><li>Library <code>odoc.xref2</code><ul><li><a href="odoc.xref2/Odoc_xref2/index.html">Odoc_xref2</a></li></ul></li><li>Library <code>odoc.xref_test</code><ul><li><a href="odoc.xref_test/Odoc_xref_test/index.html">Odoc_xref_test</a></li></ul></li><li><a href="src/index.html">Sources</a></li></ul></li></ul></nav></div><div class="odoc-content"><h2 id="hiding"><a href="#hiding" class="anchor"></a>Hiding</h2><p>Some items are not intended to be used directly but are present as implementation detail, e.g., for testing, implementing Dune's namespacing, or other reasons.</p><p>There are two mechanisms for explicitly hiding elements from the final output. The first is to use <a href="https://ocaml.org/manual/ocamldoc.html#ss:ocamldoc-stop">documentation stop comments</a>, which can be used to hide any items from the output. The second mechanism is only used for modules and is a naming convention. If any module has a double underscore in its name, it’s considered to be hidden.</p><h2 id="canonical"><a href="#canonical" class="anchor"></a>Canonical Items</h2><p>Occasionally it’s useful to declare an item in one place and expose it in the public interface in another. In order to prevent unwanted occurrences of the actual definition site, <code>odoc</code> has a feature whereby the 'canonical' location of a module, module type, or type can be specified.</p><p>The biggest user of module aliases is Dune's <a href="https://dune.readthedocs.io/en/stable/reference/dune/library.html#library">wrapped libraries</a>. This feature allows Dune to produce a library whose interface is exposed entirely though a single top-level module. It does this by mangling the names of the real implementation modules and generating the single top-level module that simply contains aliases to the these implementation modules. With <code>odoc</code>'s canonical modules feature, all references to the implementation modules are rewritten to point at the top-level module aliases instead. Please see the section on Dune's <a href="dune.html#library_wrapping" title="library_wrapping">library wrapping</a> for more detail.</p><p>In a similar fashion, it's sometimes useful to have this feature on module types and types. For example, <code>odoc</code> itself uses this for its 'paths types'. Since they are all mutually recursive, they all have to be declared at the same time in the module <a href="https://github.com/ocaml/odoc/blob/91f6310967e64f3fa88445f3daf2fea2acc0bb49/src/model/paths_types.ml#L201-L219"><code>Paths_types</code></a>, but <code>odoc</code> exposes them in separate modules. By annotating the definition point with <code>@canonical</code> tags pointing to the <a href="https://github.com/ocaml/odoc/blob/master/src/model/paths.mli#L419">aliases</a>, we ensure that all their references point at the <a href="odoc.model/Odoc_model/Paths/Path/Resolved/Module/index.html" title="Odoc_model.Paths.Path.Resolved.Module">separate</a> <a href="odoc.model/Odoc_model/Paths/Path/Resolved/ModuleType/index.html" title="Odoc_model.Paths.Path.Resolved.ModuleType">modules</a> as intended.</p><h2 id="expansion"><a href="#expansion" class="anchor"></a>Expansion</h2><p>There are many instances of items in signatures where what's written is the best thing in terms of semantics, but it’s not necessarily useful in terms of documentation. For example:</p><pre class="language-ocaml"><code>module StringSet : Stdlib.Set.S with type t = string</code></pre><p><code>odoc</code> will <em>expand</em> these items, augmenting the declaration with the signature along with all the documentation comments that can be found, e.g., those from <code>Stdlib.Set.S</code> in the above example. While the compiler also does a very similar procedure and determines the signature of the module, <code>odoc</code> tries quite hard to preserve as much as possible from the original items’ context.</p><p>The declaration can be seen rendered <a href="odoc.examples/Odoc_examples/Expansion/Simple/index.html" title="Odoc_examples.Expansion.Simple">here</a>, and the full expansion can be found by clicking on the name of the module (<code>StringSet</code> in this case). The direct link is <a href="odoc.examples/Odoc_examples/Expansion/Simple/StringSet/index.html" title="Odoc_examples.Expansion.Simple.StringSet">here</a>.</p><p>These expansions have to be done carefully. A number of cases follow in which <code>odoc</code> has to treat specially.</p><h3 id="expansion_aliases"><a href="#expansion_aliases" class="anchor"></a>Aliases</h3><p>In general, <code>odoc</code> doesn’t expand module aliases unless they are an alias to a hidden module. If this is the case, the right-hand side of the declaration is dropped and replaced with <code>sig ... end</code>, and the expansion is created.</p><p>For example, given the following source,</p><pre class="language-ocaml"><code>module Hidden__module : sig
+  type t
+  val f : t -&gt; t
+end
+
+module Alias = Hidden__module</code></pre><p>The <code>Hidden__module</code> module won’t be present in the output, and the <code>Alias</code> module will be rendered as if it were a simple signature. This can be seen in the example rendering <a href="odoc.examples/Odoc_examples/Expansion/Aliases/index.html" title="Odoc_examples.Expansion.Aliases">here</a>.</p><p>As well as expanding aliases to hidden modules, modules are also expanded if the module alias is &quot;self canonical.&quot; That is, if module <code>A</code> is an alias to module <code>B</code>, that declares <code>A</code> to be the canonical path to the module (i.e., it has the tag <code>@canonical A</code> in an associated comment).</p><h4 id="module-type-aliases"><a href="#module-type-aliases" class="anchor"></a>Module Type Aliases</h4><p>Module types don’t have aliases in the same way that modules do, but it is possible and common to declare an effective alias to another by simply creating a new module type that’s equal to a previous one. For example:</p><pre class="language-ocaml"><code>module type A = sig
+  type t
+end
+
+module type B = A</code></pre><p>For these simple <code>module type</code> declarations, where the right-hand side is just a path, <code>odoc</code> treats them as module aliases and doesn’t produce an expansion. This example is rendered <a href="odoc.examples/Odoc_examples/Expansion/ModuleTypeAliases/index.html" title="Odoc_examples.Expansion.ModuleTypeAliases">here</a>.</p><p>When strengthening, OCaml turns modules into aliases of the original module, but nothing is done to module types. In contrast, <code>odoc</code> replaces module types with 'aliases' of the originals, too. These are not expanded, hence this is important for reducing the size of the output.</p><p>The following examples use <code>module type of struct include ... end</code> to obtain the strengthened signature of <code>A</code> (see the <a href="#module_type_of" title="module_type_of"><code>Module Type Of</code></a> section for more details on this).</p><pre class="language-ocaml"><code>module A : sig
+  module type A = sig type t end
+  module X : A
+end
+module B : module type of struct include A end</code></pre><p>OCaml evaluates the following signature for <code>B</code>:</p><pre class="language-ocaml"><code>module B : sig module type A = sig type t end module X = A.X end</code></pre><p>whereas <code>odoc</code> internally evaluates this as:</p><pre class="language-ocaml"><code>module B : sig module type A = A.A end module X = A.X end</code></pre><p>This example is rendered <a href="odoc.examples/Odoc_examples/Expansion/ModuleTypeAliases2/B/index.html" title="Odoc_examples.Expansion.ModuleTypeAliases2.B">here</a></p><h3 id="functors"><a href="#functors" class="anchor"></a>Functors</h3><p>When <code>odoc</code> encounters a functor, it is also expanded. The parameters are expanded in the body of the functor expansion, above the signature representing the functor’s result.</p><p>For example, given the following,</p><pre class="language-ocaml"><code>module type Argument = sig
+
+  (** This type [a] is declared in the Argument module type *)
+  type a
+
+end
+
+module type Result = sig
+
+  (** This type [r] is declared in the Result module type *)
+  type r
+
+end
+
+module Functor : functor (X : Argument) (Y : Argument) -&gt; Result</code></pre><p>an expansion will be created for <code>Functor</code>, containing expansions for <code>X</code> and <code>Y</code> within it and followed by the <code>Result</code>’s signature. The above functor can be seen rendered <a href="odoc.examples/Odoc_examples/Expansion/Functors/Functor/index.html" title="Odoc_examples.Expansion.Functors.Functor">here</a>.</p><h3 id="includes"><a href="#includes" class="anchor"></a>Includes</h3><p>If part of your module signature comes from an include of another module or module type, <code>odoc</code> keeps track of this and can render the included items in a clearly delimited and collapsible way. For example, given the following:</p><pre class="language-ocaml"><code>module type ToBeIncluded = sig
+    type t
+
+    val f : t -&gt; t
+    (** The description of [f] *)
+end
+
+module A : sig
+    include ToBeIncluded
+
+    val g : t -&gt; t
+end</code></pre><p>The <a href="odoc.examples/Odoc_examples/Expansion/Include/A/index.html" title="Odoc_examples.Expansion.Include.A">expansion of module <code>A</code></a> will contain a clearly demarcated section showing the included items.</p><p>If this behaviour is not desired, the include may be inlined with the tag <code>@inline</code> as follows:</p><pre class="language-ocaml"><code>module B : sig
+    include ToBeIncluded
+    (** @inline *)
+
+    val g : t -&gt; t
+end</code></pre><p>The <a href="odoc.examples/Odoc_examples/Expansion/Include/B/index.html" title="Odoc_examples.Expansion.Include.B">expansion of module <code>B</code></a> does not contain an indication that the elements <code>t</code> and <code>f</code> came from an <code>include</code> directive.</p><h3 id="shadowing"><a href="#shadowing" class="anchor"></a>Shadowing</h3><p>OCaml ordinarily does not allow two items of the same type with the same name. For example, the following is illegal:</p><pre class="language-ocaml"><code>type t = int
+type t = string</code></pre><p>However, if the item comes in via an include, then OCaml allows it. For example:</p><pre class="language-ocaml"><code>module type A = sig
+  type t = int
+  val f : t
+end
+
+module type B = sig
+  include A
+  type t = string
+  val g : t
+end</code></pre><p>Since <code>odoc</code> is required to do its own expansions, it must take account of this behaviour. The previous example is rendered <a href="odoc.examples/Odoc_examples/Expansion/Shadowing/index.html" title="Odoc_examples.Expansion.Shadowing">here</a>.</p><h3 id="deep-equations"><a href="#deep-equations" class="anchor"></a>Deep Equations</h3><p>The module type system allows for adding equations to abstract types (as seen above in the <code>StringSet</code> declaration). These equations may be 'deep' in the sense that they operate on a nested module rather than the outer one. For example:</p><pre class="language-ocaml"><code>module type SIG = sig
+  type t
+end
+
+module type MODTYPE = sig
+  module X : SIG
+  module Y : SIG
+end
+
+type foo
+
+module M : MODTYPE with type X.t = foo</code></pre><p>Here we've got a module type <code>SIG</code> that contains an abstract type <code>t</code> and a module type <code>MODTYPE</code> that contains two modules, <code>X</code> and <code>Y</code>, that have signature <code>SIG</code>. Lastly, we declare a module <code>M</code> that has signature <code>MODTYPE</code> with an additional type equality <code>X.t = foo</code>. When the compiler evaluates the signature of module <code>M</code> here, the definition of <code>X</code> within it is simply replaced with a signature:</p><pre class="language-ocaml"><code>module M : sig
+  module X : sig type t = foo end
+  module Y : SIG
+end</code></pre><p>We lose both the fact that it came from <code>MODTYPE</code> and also that within it, <code>X</code> originally had signature <code>SIG</code>. <code>odoc</code> tries to be more careful. Instead, it keeps both the <code>MODTYPE</code> on <code>M</code> with the type equality <code>X.t = foo</code> and the <code>SIG</code> on <code>X</code> with the type equality <code>t = foo</code>. The expansion of of module <code>M</code> in this example can be seen <a href="odoc.examples/Odoc_examples/Expansion/DeepEquality/M/index.html" title="Odoc_examples.Expansion.DeepEquality.M">here</a>.</p><p>Note that if <code>X</code> was a simple signature before the type equality was added, that does not get preserved. In the following example,</p><pre class="language-ocaml"><code>module type MODTYPE = sig
+    module X : sig type t end
+    module Y : sig type t end
+end
+
+type foo
+
+module M : MODTYPE with type X.t = foo</code></pre><p>The <a href="odoc.examples/Odoc_examples/Expansion/DeepEquality2/M/index.html" title="Odoc_examples.Expansion.DeepEquality2.M">expansion of M</a> does not contain any <code>with type</code> equations.</p><h3 id="substitution"><a href="#substitution" class="anchor"></a>Substitution</h3><p>Similar to the addition of equations in the previous section, OCaml allows for types and modules to be <em>destructively</em> substituted, so the type or module is entirely removed from the resulting signature.</p><p>As with the addition of equations above, these substitutions may be on deeply nested modules. Care must be taken to ensure that there are no references to the removed module or type left. For example:</p><pre class="language-ocaml"><code>module type S = sig
+  module M: sig type t end
+
+  type t = M.t
+end
+
+module type T = S with type M.t := int</code></pre><p>The expansion of <code>T</code> internally is different from what is rendered. Internally, it becomes:</p><pre class="language-ocaml"><code>module M: sig type t end with type t := int
+
+type t = M.t</code></pre><p>From this expansion, it is still clear how to resolve the right-hand side of <code>type t = M.t</code>. The next phase of <code>odoc</code>'s transformation turns the right-hand side of <code>M.t</code> into <code>int</code>.</p><p>In the output documentation, the declaration of <code>module M</code> is rendered simply as</p><pre class="language-ocaml"><code>module M : sig ... end</code></pre><p>with the type substitution dropped. This is because the simple signature's type substitition isn't useful for the reader. The link <code>t</code> would have no destination. This example is rendered <a href="odoc.examples/Odoc_examples/Expansion/TypeSubstitution/index.html" title="Odoc_examples.Expansion.TypeSubstitution">here</a>.</p><h3 id="module_type_of"><a href="#module_type_of" class="anchor"></a><code>module type of</code></h3><p>The OCaml construct <code>module type of</code> allows the type of a module to be recovered. As usual, when OCaml performs this operation, it only retains the simplified signature, stripped of comments, includes, and more complex <code>module type</code> expressions. As with the previous sections, <code>odoc</code> tries a little harder to keep track of these things and also of the fact that the signature came from a <code>module type of</code> expression.</p><p>For example, consider the following:</p><pre class="language-ocaml"><code>module A : sig
+
+  (** This comment for [type t] is written in module [A] *)
+  type t
+
+end
+
+module M : module type of A</code></pre><p>The <code>type t</code> in module <code>M</code> has the comment from the original module. There is also logic in <code>odoc</code> to manage the similar construct <code>module type of struct include ... end</code>, which is used where the types and modules are required to be strengthened. That is, the types in the signature are equal to those in the original module, and any modules in the new signature are aliases of those in the original. For example,</p><pre class="language-ocaml"><code>module M' : module type of struct include A end</code></pre><p>In <a href="odoc.examples/Odoc_examples/Expansion/ModuleTypeOf/M/index.html" title="Odoc_examples.Expansion.ModuleTypeOf.M">M’</a>, type <code>t</code> is equal to <code>A.t</code>, whereas in <a href="odoc.examples/Odoc_examples/Expansion/ModuleTypeOf/M/index.html" title="Odoc_examples.Expansion.ModuleTypeOf.M">M</a> there is no equation.</p><h3 id="complications-of-module-type-of"><a href="#complications-of-module-type-of" class="anchor"></a>Complications of <code>module type of</code></h3><p>Doing the expansion like this comes with some complications, particularly when the result is further modified. For example, consider this example:</p><pre class="language-ocaml"><code>module type S = sig
+  module X : sig
+    type t
+  end
+
+  module type Y = module type of X
+  module type Z = module type of struct include X end
+end</code></pre><p>When OCaml operates on this, it calculates the signature of <code>S</code> immediately, resulting in the module type:</p><pre class="language-ocaml"><code>module type S =
+  sig
+    module X : sig type t end
+    module type Y = sig type t end
+    module type Z = sig type t = X.t end
+  end</code></pre><p>On the other hand, <code>odoc</code> preserves the fact that <code>Y</code> and <code>Z</code> are calculated from <code>X</code>. If the module <code>X</code> is subsequently replaced using a destructive substitution on <code>S</code>, the results would be different. For example:</p><pre class="language-ocaml"><code>module X1 : sig
+  type t
+  type u
+end
+
+module type T = S with module X := X1</code></pre><p>The signature of <code>T</code>, as calculated by OCaml, will be</p><pre class="language-ocaml"><code>sig
+    module type Y = sig type t end
+    module type Z = sig type t = X1.t end
+end</code></pre><p>However, it's clear that if the <code>module type of</code> operations were evaluated <em>after</em> the substitution, both <code>Y</code> and <code>Z</code> would contain <code>type u</code>.</p><p>There is logic in <code>odoc</code> to handle this correctly, but since there is currently no syntax for representing transparent ascription, the consequence is that we lose the fact that <code>Y</code> and <code>Z</code> originally came from <code>module type of</code> expressions.</p><p>This example is rendered <a href="odoc.examples/Odoc_examples/Expansion/ModuleTypeOfComplications/index.html" title="Odoc_examples.Expansion.ModuleTypeOfComplications">here</a>. In the <a href="odoc.examples/Odoc_examples/Expansion/ModuleTypeOfComplications/module-type-T/index.html" title="Odoc_examples.Expansion.ModuleTypeOfComplications.T">expansion of T</a>, it can be seen that <code>Y</code> and <code>Z</code> are simple signatures only containing <code>type t</code>.</p><h2 id="resolution"><a href="#resolution" class="anchor"></a>Resolution</h2><p>There are several different but related constructs for referring to elements in <code>odoc</code>. The following example demonstrates each:</p><pre class="language-ocaml"><code>(** The module {!module-M} and type {!module-M.module-X.type-t} *)
+module M : A.B.C with type X.t = int</code></pre><p>Here, <code>M</code> is an <em>identifier</em> that uniquely identifies the module <code>M</code>. <code>A.B.C</code> is a <em>path</em> used to locate a particular identifier, <code>X.t</code> is a <em>fragment</em> that refers to an element within a module type, and <code>module-M</code> and <code>module-M.module-X.type-t</code> are <em>references</em> that are similar to paths in that they are used to locate particular identifiers; however, unlike paths, they are not checked by the compiler and are entirely resolved by <code>odoc</code>.</p><p>In most of the output formats, <code>odoc</code> supports paths. References and fragments will be turned into links that take the reader to the referred identifier. These links need to consider some of the expansions’ features, as outlined above. In order to decide where the links should point to and how to turn them into text, a process called 'Resolution' is required.</p><h3 id="resolution_aliases"><a href="#resolution_aliases" class="anchor"></a>Aliases</h3><p>Since aliases are not usually expanded, a path or reference to an item contained in an aliased module must link directly to the item inside the aliased module. For example:</p><pre class="language-ocaml"><code>module A : sig
+  type t
+end
+
+module B = A
+
+type t = B.t</code></pre><p>The right-hand side of <code>type t</code> should render as <code>B.t</code>, but it should link to the definition of <code>t</code> in <code>module A</code>. This example is demonstrated <a href="odoc.examples/Odoc_examples/Resolution/Alias/index.html" title="Odoc_examples.Resolution.Alias">here</a>.</p><p>Aliases of hidden modules <em>are</em> expanded, so the following example demonstrates this alteration:</p><pre class="language-ocaml"><code>(**/**)
+
+module A : sig
+  type t
+end
+
+(**/**)
+
+module B = A
+  
+type t = B.t</code></pre><p>Here we've hidden <code>A</code> via the <a href="https://ocaml.org/manual/ocamldoc.html#ss:ocamldoc-stop">documentation stop comment</a> mechanism. This example is demonstrated <a href="odoc.examples/Odoc_examples/Resolution/HiddenAlias/index.html" title="Odoc_examples.Resolution.HiddenAlias">here</a>.</p><h3 id="canonical-paths"><a href="#canonical-paths" class="anchor"></a>Canonical Paths</h3><p>When encountering a module, module type, or a type that has been marked with a <code>@canonical</code> tag, <code>odoc</code> first has to check that the specified canonical path actually resolves. If this is the case, in a similar way to the alias above, the path's target will be rewritten to point to the canonical path. However, in contrast to the alias behaviour, the path's <em>text</em> will also be rewritten, so it will be as if the canonical path had been written instead of whatever path was actually there.</p><p>For example:</p><pre class="language-ocaml"><code>module A : sig
+  (** @canonical Odoc_examples.Resolution.Canonical.B *)
+
+  type t
+end
+
+module B = A
+
+type t = A.t</code></pre><p>Note that in this example the <code>@canonical</code> tag has been given the path <code>Odoc_examples.Resolution.Canonical.B</code>. This <em>must</em> be the fully qualified path to the canonical item.</p><p>The right-hand side of <code>type t</code> will be rewritten such that it will be as if <code>B.t</code> had been written instead.</p><p>Note that canonical tags are only used when resolving <em>paths</em>, not fragments (which are relative anyway) nor references. Since they are written by the author, they’re assumed to point to the correct destination.</p><h3 id="fragment-resolution"><a href="#fragment-resolution" class="anchor"></a>Fragment Resolution</h3><p>Fragments are relative paths that appear in <code>module type</code> expressions when adding equations or substituting types or modules. For example:</p><pre class="language-ocaml"><code>module type A = sig
+  module B : sig
+    type t
+    val f : t -&gt; t
+  end
+end
+
+module C : A with type B.t = int
+module D : module type of C.B with type t := int</code></pre><p>In this expression, the fragment <code>B.t</code> should link to the definition of <code>type t</code> inside module <code>B</code> inside module <code>type A</code>. The fragment <code>t</code> in the definition of module <code>D</code> should link to the definition of <code>type t</code> inside module <code>B</code> inside module <code>C</code>. Note that it can't link to <code>type t</code> in <code>D</code> since that type has been destroyed!</p><p>This example is rendered <a href="odoc.examples/Odoc_examples/Resolution/Fragments/index.html" title="Odoc_examples.Resolution.Fragments">here</a>.</p><h3 id="hidden-elements"><a href="#hidden-elements" class="anchor"></a>Hidden Elements</h3><p>If there are paths that refer to hidden elements, these are removed from the interface unless there is an equal non-hidden type that can replace it. For example, in the following type definitions,</p><pre class="language-ocaml"><code>(**/**)
+
+type t = int
+type u
+
+(**/**)
+
+type v = T of t
+type w = U of u</code></pre><p><code>type v</code> will have a right-hand side of <code>T of int</code>, as the hidden <code>type t</code> is equal to <code>int</code>. Conversely, there is no non-hidden type equivalent to <code>u</code>, so the right-hand side of <code>type w</code> is omitted from the output.</p><h3 id="reference_resolution"><a href="#reference_resolution" class="anchor"></a>Reference Resolution</h3><p>References are handwritten in comments and not evaluated in any way by the compiler.</p><pre class="language-ocaml"><code>module type A = sig
+
+  type t
+  (** type [t] in module type [A] *)
+
+end
+
+module A : sig
+
+  type t
+  (** type [t] in module [A] *)
+
+  module B : sig type t end
+  module type B = sig type t end
+
+end
+
+(** We can refer unambiguously to {!module-type-A.t} in module type [A]
+    or {!module-A.t} in module [A], and also where there are name clashes
+    within the path: {!A.module-B.t} or {!A.module-type-B.t} *)</code></pre><p>This demonstrates that it’s possible to refer to elements even when there’s ambiguity, if just the names were used. If <code>odoc</code> detects any ambiguity, it will emit a warning.</p><h3 id="module-type-challenges"><a href="#module-type-challenges" class="anchor"></a>Module Type Challenges</h3><p>In some cases, resolution can be more challenging than others. Consider this example:</p><pre class="language-ocaml"><code>module type A = sig
+  module M : sig module type S end
+  module N : M.S
+end
+
+module B : sig module type S = sig type t end end
+
+module C : A with module M = B with type N.t = int
+
+type t = C.N.t</code></pre><p>In the expansion of module type <code>A</code>, module <code>N</code> has no expansion because module type <code>S</code> is abstract. Therefore, in the definition of module <code>C</code>, the fragment <code>N.t</code> cannot link to module <code>N</code> in module type <code>A</code>, but instead it must link to module type <code>S</code> in module <code>B</code>.</p><p>This example is rendered <a href="odoc.examples/Odoc_examples/Resolution/Complicated_1/index.html" title="Odoc_examples.Resolution.Complicated_1">here</a>.</p><p>Now for a very complicated example:</p><pre class="language-ocaml"><code>module type Type = sig module type T end
+
+module App : functor (T : Type) (F : Type -&gt; Type) (M : F(T).T) -&gt; F(T).T
+
+module Bar : sig module type T = sig type bar end end
+
+module Foo :
+  functor (T : Type) -&gt; sig module type T = sig module Foo : T.T end end
+
+module FooBarInt : sig module Foo : sig type bar = int end end
+
+type t = App(Bar)(Foo)(FooBarInt).Foo.bar</code></pre><p>This one is left as an exercise to the reader! It can be seen rendered by <code>odoc</code> <a href="odoc.examples/Odoc_examples/Resolution/Complicated_2/index.html" title="Odoc_examples.Resolution.Complicated_2">here</a>.</p></div></body></html>

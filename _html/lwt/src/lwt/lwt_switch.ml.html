@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: lwt_switch.ml (lwt.src.lwt)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">Lwt</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; lwt &#x00BB; lwt_switch.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>lwt_switch.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">Lwt</a><ul><li>Library <code>lwt</code><ul><li><a href="../../lwt/Lwt/index.html">Lwt</a></li><li><a href="../../lwt/Lwt_condition/index.html">Lwt_condition</a></li><li><a href="../../lwt/Lwt_list/index.html">Lwt_list</a></li><li><a href="../../lwt/Lwt_mutex/index.html">Lwt_mutex</a></li><li><a href="../../lwt/Lwt_mvar/index.html">Lwt_mvar</a></li><li><a href="../../lwt/Lwt_pool/index.html">Lwt_pool</a></li><li><a href="../../lwt/Lwt_pqueue/index.html">Lwt_pqueue</a></li><li><a href="../../lwt/Lwt_result/index.html">Lwt_result</a></li><li><a href="../../lwt/Lwt_seq/index.html">Lwt_seq</a></li><li><a href="../../lwt/Lwt_sequence/index.html">Lwt_sequence</a></li><li><a href="../../lwt/Lwt_stream/index.html">Lwt_stream</a></li><li><a href="../../lwt/Lwt_switch/index.html">Lwt_switch</a></li></ul></li><li>Library <code>lwt.unix</code><ul><li><a href="../../lwt.unix/Lwt_bytes/index.html">Lwt_bytes</a></li><li><a href="../../lwt.unix/Lwt_config/index.html">Lwt_config</a></li><li><a href="../../lwt.unix/Lwt_engine/index.html">Lwt_engine</a></li><li><a href="../../lwt.unix/Lwt_features/index.html">Lwt_features</a></li><li><a href="../../lwt.unix/Lwt_fmt/index.html">Lwt_fmt</a></li><li><a href="../../lwt.unix/Lwt_gc/index.html">Lwt_gc</a></li><li><a href="../../lwt.unix/Lwt_io/index.html">Lwt_io</a></li><li><a href="../../lwt.unix/Lwt_main/index.html">Lwt_main</a></li><li><a href="../../lwt.unix/Lwt_preemptive/index.html">Lwt_preemptive</a></li><li><a href="../../lwt.unix/Lwt_process/index.html">Lwt_process</a></li><li><a href="../../lwt.unix/Lwt_sys/index.html">Lwt_sys</a></li><li><a href="../../lwt.unix/Lwt_throttle/index.html">Lwt_throttle</a></li><li><a href="../../lwt.unix/Lwt_timeout/index.html">Lwt_timeout</a></li><li><a href="../../lwt.unix/Lwt_unix/index.html">Lwt_unix</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>lwt<ul><li><a href="lwt.ml.html">lwt.ml</a></li><li><a href="lwt_condition.ml.html">lwt_condition.ml</a></li><li><a href="lwt_list.ml.html">lwt_list.ml</a></li><li><a href="lwt_mutex.ml.html">lwt_mutex.ml</a></li><li><a href="lwt_mvar.ml.html">lwt_mvar.ml</a></li><li><a href="lwt_pool.ml.html">lwt_pool.ml</a></li><li><a href="lwt_pqueue.ml.html">lwt_pqueue.ml</a></li><li><a href="lwt_result.ml.html">lwt_result.ml</a></li><li><a href="lwt_seq.ml.html">lwt_seq.ml</a></li><li><a href="lwt_sequence.ml.html">lwt_sequence.ml</a></li><li><a href="lwt_stream.ml.html">lwt_stream.ml</a></li><li><a href="#" class="current_unit">lwt_switch.ml</a></li></ul></li><li>lwt.unix<ul><li><a href="../lwt.unix/lwt_bytes.ml.html">lwt_bytes.ml</a></li><li><a href="../lwt.unix/lwt_config.ml.html">lwt_config.ml</a></li><li><a href="../lwt.unix/lwt_engine.ml.html">lwt_engine.ml</a></li><li><a href="../lwt.unix/lwt_features.ml.html">lwt_features.ml</a></li><li><a href="../lwt.unix/lwt_fmt.ml.html">lwt_fmt.ml</a></li><li><a href="../lwt.unix/lwt_gc.ml.html">lwt_gc.ml</a></li><li><a href="../lwt.unix/lwt_io.ml.html">lwt_io.ml</a></li><li><a href="../lwt.unix/lwt_main.ml.html">lwt_main.ml</a></li><li><a href="../lwt.unix/lwt_preemptive.ml.html">lwt_preemptive.ml</a></li><li><a href="../lwt.unix/lwt_process.ml.html">lwt_process.ml</a></li><li><a href="../lwt.unix/lwt_sys.ml.html">lwt_sys.ml</a></li><li><a href="../lwt.unix/lwt_throttle.ml.html">lwt_throttle.ml</a></li><li><a href="../lwt.unix/lwt_timeout.ml.html">lwt_timeout.ml</a></li><li><a href="../lwt.unix/lwt_unix.ml.html">lwt_unix.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+</code><code class="source_code"><span><span class="COMMENT">(* This file is part of Lwt, released under the MIT license. See LICENSE.md for
+   details, or visit https://github.com/ocsigen/lwt/blob/master/LICENSE.md. *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="exception-Off"><span class="EXCEPTION">exception</span> <span class="UIDENT">Off</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-on_switch"><span class="TYPE">type</span> <span class="LIDENT">on_switch</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span id="def_13"><span class="MUTABLE">mutable</span> <span class="LIDENT">hooks</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Public_types.type-t"><span class="LIDENT">unit</span> <span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="RPAREN">)</span> <span class="LIDENT">list</span><span class="SEMI">;</span></span><span class="EOL">
+</span><span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-state"><span class="TYPE">type</span> <span class="LIDENT">state</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span id="type-state.constructor-St_on"><span class="BAR">|</span> <span class="UIDENT">St_on</span> <span class="OF">of</span> <span class="LIDENT">on_switch</span></span><span class="EOL">
+</span>  <span id="type-state.constructor-St_off"><span class="BAR">|</span> <span class="UIDENT">St_off</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span id="def_14"><span class="MUTABLE">mutable</span> <span class="LIDENT">state</span> <span class="COLON">:</span> <span class="LIDENT">state</span></span> <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-create"><span class="LIDENT">create</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">state</span> <span class="EQUAL">=</span> <span class="UIDENT">St_on</span> <span class="LBRACE">{</span> <span class="LIDENT">hooks</span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="RBRACE">}</span> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-is_on"><span class="LIDENT">is_on</span></span> <span id="local_switch_1"><span class="LIDENT">switch</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_switch_1"><span class="LIDENT">switch</span></a><span class="DOT">.</span><span class="LIDENT">state</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">St_on</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="TRUE">true</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">St_off</span> <span class="MINUSGREATER">-&gt;</span> <span class="FALSE">false</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-check"><span class="LIDENT">check</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span><span class="LBRACE">{</span> <span class="LIDENT">state</span> <span class="EQUAL">=</span> <span class="UIDENT">St_off</span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="UIDENT">Off</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="LBRACE">{</span><span class="LIDENT">state</span> <span class="EQUAL">=</span> <span class="UIDENT">St_on</span> <span class="UNDERSCORE">_</span><span class="RBRACE">}</span> <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-add_hook"><span class="LIDENT">add_hook</span></span> <span id="local_switch_2"><span class="LIDENT">switch</span></span> <span id="local_hook_3"><span class="LIDENT">hook</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_switch_2"><span class="LIDENT">switch</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="LBRACE">{</span> <span class="LIDENT">state</span> <span class="EQUAL">=</span> <span class="UIDENT">St_on</span> <span id="local_os_4"><span class="LIDENT">os</span></span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <a href="#local_os_4"><span class="LIDENT">os</span></a><span class="DOT">.</span><span class="LIDENT">hooks</span> <span class="LESSMINUS">&lt;-</span> <a href="#local_hook_3"><span class="LIDENT">hook</span></a> <span class="COLONCOLON">::</span> <a href="#local_os_4"><span class="LIDENT">os</span></a><span class="DOT">.</span><span class="LIDENT">hooks</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="LBRACE">{</span> <span class="LIDENT">state</span> <span class="EQUAL">=</span> <span class="UIDENT">St_off</span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="UIDENT">Off</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-add_hook_or_exec"><span class="LIDENT">add_hook_or_exec</span></span> <span id="local_switch_5"><span class="LIDENT">switch</span></span> <span id="local_hook_6"><span class="LIDENT">hook</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_switch_5"><span class="LIDENT">switch</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="LBRACE">{</span> <span class="LIDENT">state</span> <span class="EQUAL">=</span> <span class="UIDENT">St_on</span> <span id="local_os_7"><span class="LIDENT">os</span></span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <a href="#local_os_7"><span class="LIDENT">os</span></a><span class="DOT">.</span><span class="LIDENT">hooks</span> <span class="LESSMINUS">&lt;-</span> <a href="#local_hook_6"><span class="LIDENT">hook</span></a> <span class="COLONCOLON">::</span> <a href="#local_os_7"><span class="LIDENT">os</span></a><span class="DOT">.</span><span class="LIDENT">hooks</span><span class="SEMI">;</span><span class="EOL">
+</span>    <a href="lwt.ml.html#module-Trivial_promises.val-return_unit"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return_unit</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="LBRACE">{</span> <span class="LIDENT">state</span> <span class="EQUAL">=</span> <span class="UIDENT">St_off</span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <a href="#local_hook_6"><span class="LIDENT">hook</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <a href="lwt.ml.html#module-Trivial_promises.val-return_unit"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return_unit</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-turn_off"><span class="LIDENT">turn_off</span></span> <span id="local_switch_8"><span class="LIDENT">switch</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_switch_8"><span class="LIDENT">switch</span></a><span class="DOT">.</span><span class="LIDENT">state</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">St_on</span> <span class="LBRACE">{</span> <span class="LIDENT">hooks</span> <span class="EQUAL">=</span> <span id="local_hooks_9"><span class="LIDENT">hooks</span></span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <a href="#local_switch_8"><span class="LIDENT">switch</span></a><span class="DOT">.</span><span class="LIDENT">state</span> <span class="LESSMINUS">&lt;-</span> <span class="UIDENT">St_off</span><span class="SEMI">;</span><span class="EOL">
+</span>    <a href="lwt.ml.html#module-Concurrent_composition.val-join"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">join</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-map"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_hook_10"><span class="LIDENT">hook</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="lwt.ml.html#module-Miscellaneous.val-apply"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">apply</span></a> <a href="#local_hook_10"><span class="LIDENT">hook</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <a href="#local_hooks_9"><span class="LIDENT">hooks</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">St_off</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <a href="lwt.ml.html#module-Trivial_promises.val-return_unit"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">return_unit</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-with_switch"><span class="LIDENT">with_switch</span></span> <span id="local_fn_11"><span class="LIDENT">fn</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_switch_12"><span class="LIDENT">switch</span></span> <span class="EQUAL">=</span> <span class="LIDENT">create</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <a href="lwt.ml.html#module-Sequential_composition.val-finalize"><span class="UIDENT">Lwt</span><span class="DOT">.</span><span class="LIDENT">finalize</span></a><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_fn_11"><span class="LIDENT">fn</span></a> <a href="#local_switch_12"><span class="LIDENT">switch</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">turn_off</span> <a href="#local_switch_12"><span class="LIDENT">switch</span></a><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: progress_engine__.ml (progress.src.progress.engine)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">progress</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; progress.engine &#x00BB; progress_engine__.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>progress_engine__.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">progress</a><ul><li>Library <code>progress</code><ul><li><a href="../../progress/Progress/index.html">Progress</a></li></ul></li><li>Library <code>progress.engine</code><ul><li><a href="../../progress.engine/Progress_engine/index.html">Progress_engine</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>progress<ul><li><a href="../progress/progress.ml.html">progress.ml</a></li><li><a href="../progress/progress__.ml.html">progress__.ml</a></li><li><a href="../progress/terminal_width.ml.html">terminal_width.ml</a></li></ul></li><li>progress.engine<ul><li><a href="config.ml.html">config.ml</a></li><li><a href="duration.ml.html">duration.ml</a></li><li><a href="flow_meter.ml.html">flow_meter.ml</a></li><li><a href="import.ml.html">import.ml</a></li><li><a href="integer.ml.html">integer.ml</a></li><li><a href="line.ml.html">line.ml</a></li><li><a href="line_buffer.ml.html">line_buffer.ml</a></li><li><a href="line_intf.ml.html">line_intf.ml</a></li><li><a href="line_primitives.ml.html">line_primitives.ml</a></li><li><a href="line_primitives_intf.ml.html">line_primitives_intf.ml</a></li><li><a href="multi.ml.html">multi.ml</a></li><li><a href="multi_intf.ml.html">multi_intf.ml</a></li><li><a href="platform.ml.html">platform.ml</a></li><li><a href="printer.ml.html">printer.ml</a></li><li><a href="progress_engine.ml.html">progress_engine.ml</a></li><li><a href="#" class="current_unit">progress_engine__.ml</a></li><li><a href="progress_engine_intf.ml.html">progress_engine_intf.ml</a></li><li><a href="renderer.ml.html">renderer.ml</a></li><li><a href="renderer_intf.ml.html">renderer_intf.ml</a></li><li><a href="stdlib_ext.ml.html">stdlib_ext.ml</a></li><li><a href="units.ml.html">units.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+</code><code class="source_code"><span><span class="COMMENT">(* generated by dune *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Config *)</span><span class="EOL">
+</span><span id="module-Config"><span class="MODULE">module</span> <span class="UIDENT">Config</span> <span class="EQUAL">=</span> <a href="config.ml.html"><span class="UIDENT">Progress_engine__Config</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Duration *)</span><span class="EOL">
+</span><span id="module-Duration"><span class="MODULE">module</span> <span class="UIDENT">Duration</span> <span class="EQUAL">=</span> <a href="duration.ml.html"><span class="UIDENT">Progress_engine__Duration</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Flow_meter *)</span><span class="EOL">
+</span><span id="module-Flow_meter"><span class="MODULE">module</span> <span class="UIDENT">Flow_meter</span> <span class="EQUAL">=</span> <a href="flow_meter.ml.html"><span class="UIDENT">Progress_engine__Flow_meter</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Import *)</span><span class="EOL">
+</span><span id="module-Import"><span class="MODULE">module</span> <span class="UIDENT">Import</span> <span class="EQUAL">=</span> <a href="import.ml.html"><span class="UIDENT">Progress_engine__Import</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Integer *)</span><span class="EOL">
+</span><span id="module-Integer"><span class="MODULE">module</span> <span class="UIDENT">Integer</span> <span class="EQUAL">=</span> <a href="integer.ml.html"><span class="UIDENT">Progress_engine__Integer</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Line *)</span><span class="EOL">
+</span><span id="module-Line"><span class="MODULE">module</span> <span class="UIDENT">Line</span> <span class="EQUAL">=</span> <a href="line.ml.html"><span class="UIDENT">Progress_engine__Line</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Line_buffer *)</span><span class="EOL">
+</span><span id="module-Line_buffer"><span class="MODULE">module</span> <span class="UIDENT">Line_buffer</span> <span class="EQUAL">=</span> <a href="line_buffer.ml.html"><span class="UIDENT">Progress_engine__Line_buffer</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Line_intf *)</span><span class="EOL">
+</span><span id="module-Line_intf"><span class="MODULE">module</span> <span class="UIDENT">Line_intf</span> <span class="EQUAL">=</span> <a href="line_intf.ml.html"><span class="UIDENT">Progress_engine__Line_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Line_primitives *)</span><span class="EOL">
+</span><span id="module-Line_primitives"><span class="MODULE">module</span> <span class="UIDENT">Line_primitives</span> <span class="EQUAL">=</span> <a href="line_primitives.ml.html"><span class="UIDENT">Progress_engine__Line_primitives</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Line_primitives_intf *)</span><span class="EOL">
+</span><span id="module-Line_primitives_intf"><span class="MODULE">module</span> <span class="UIDENT">Line_primitives_intf</span> <span class="EQUAL">=</span> <a href="line_primitives_intf.ml.html"><span class="UIDENT">Progress_engine__Line_primitives_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Multi *)</span><span class="EOL">
+</span><span id="module-Multi"><span class="MODULE">module</span> <span class="UIDENT">Multi</span> <span class="EQUAL">=</span> <a href="multi.ml.html"><span class="UIDENT">Progress_engine__Multi</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Multi_intf *)</span><span class="EOL">
+</span><span id="module-Multi_intf"><span class="MODULE">module</span> <span class="UIDENT">Multi_intf</span> <span class="EQUAL">=</span> <a href="multi_intf.ml.html"><span class="UIDENT">Progress_engine__Multi_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Platform *)</span><span class="EOL">
+</span><span id="module-Platform"><span class="MODULE">module</span> <span class="UIDENT">Platform</span> <span class="EQUAL">=</span> <a href="platform.ml.html"><span class="UIDENT">Progress_engine__Platform</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Printer *)</span><span class="EOL">
+</span><span id="module-Printer"><span class="MODULE">module</span> <span class="UIDENT">Printer</span> <span class="EQUAL">=</span> <a href="printer.ml.html"><span class="UIDENT">Progress_engine__Printer</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Progress_engine_intf *)</span><span class="EOL">
+</span><span id="module-Progress_engine_intf"><span class="MODULE">module</span> <span class="UIDENT">Progress_engine_intf</span> <span class="EQUAL">=</span> <a href="progress_engine_intf.ml.html"><span class="UIDENT">Progress_engine__Progress_engine_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Renderer *)</span><span class="EOL">
+</span><span id="module-Renderer"><span class="MODULE">module</span> <span class="UIDENT">Renderer</span> <span class="EQUAL">=</span> <a href="renderer.ml.html"><span class="UIDENT">Progress_engine__Renderer</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Renderer_intf *)</span><span class="EOL">
+</span><span id="module-Renderer_intf"><span class="MODULE">module</span> <span class="UIDENT">Renderer_intf</span> <span class="EQUAL">=</span> <a href="renderer_intf.ml.html"><span class="UIDENT">Progress_engine__Renderer_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Stdlib_ext *)</span><span class="EOL">
+</span><span id="module-Stdlib_ext"><span class="MODULE">module</span> <span class="UIDENT">Stdlib_ext</span> <span class="EQUAL">=</span> <a href="stdlib_ext.ml.html"><span class="UIDENT">Progress_engine__Stdlib_ext</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Progress_engine.Units *)</span><span class="EOL">
+</span><span id="module-Units"><span class="MODULE">module</span> <span class="UIDENT">Units</span> <span class="EQUAL">=</span> <a href="units.ml.html"><span class="UIDENT">Progress_engine__Units</span></a></span><span class="EOL">
+</span></span></code></pre></body></html>

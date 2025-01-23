@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>index (dune-configurator.index)</title><meta charset="utf-8"/><link rel="stylesheet" href="../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../';
+let search_urls = ['sherlodoc_db.js','../sherlodoc.js'];
+</script><script src="../odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../index.html">🏠</a> &#x00BB; dune-configurator</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Type '/' to search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><h2 id="dune-configurator---helper-library-for-gathering-system-configuration"><a href="#dune-configurator---helper-library-for-gathering-system-configuration" class="anchor"></a><code>dune-configurator</code> - Helper library for gathering system configuration</h2><p><code>dune-configurator</code> is a small library that helps writing OCaml scripts that test features available on the system, in order to generate <code>config.h</code> files for instance.</p><p>Among other things, dune-configurator allows one to:</p><ul><li>test if a C program compiles</li><li>query <code>pkg-config</code></li><li>import <code>#define</code> from OCaml header files</li><li>generate a <code>config.h</code> file</li></ul></header><div class="odoc-tocs"><nav class="odoc-toc odoc-local-toc"><ul><li><a href="#api-documentation">API Documentation</a></li><li><a href="#example">Example</a></li></ul></nav><nav class="odoc-toc odoc-global-toc"><ul><li><a href="#" class="current_unit">dune-configurator</a><ul><li>Library <code>dune-configurator</code><ul><li><a href="dune-configurator/Configurator/index.html">Configurator</a></li></ul></li><li><a href="src/index.html">Sources</a></li></ul></li></ul></nav></div><div class="odoc-content"><h3 id="api-documentation"><a href="#api-documentation" class="anchor"></a>API Documentation</h3><p>The entry point for this library is <a href="dune-configurator/Configurator/V1/index.html"><code>Configurator.V1</code></a>.</p><h3 id="example"><a href="#example" class="anchor"></a>Example</h3><p>The following happens in a <code>dune</code> project that contains some C code that needs to link against <code>libpng</code>.</p><p>The following program (<code>discover/discover.ml</code>) uses <code>dune-configurator</code> to query <code>pkg-config</code> and create <code>cflags.sexp</code> and <code>libs.sexp</code>:</p><pre class="language-ocaml"><code>let () =
+  Configurator.V1.main ~name:&quot;libpng&quot;
+    (fun c -&gt;
+       let pkg_config =
+         match Configurator.V1.Pkg_config.get c with
+         | Some p -&gt; p
+         | None -&gt; failwith &quot;Cannot find pkg-config&quot;
+       in
+       let conf = Configurator.V1.Pkg_config.query ~package:&quot;libpng&quot; in
+       Configurator.V1.Flags.write_sexp &quot;cflags.sexp&quot; conf.cflags;
+       Configurator.V1.Flags.write_sexp &quot;libs.sexp&quot; conf.libs)</code></pre><p>It can be built using the following <code>discover/dune</code> file:</p><pre>(executable
+ (name discover)
+ (libraries dune-configurator))
+
+(rule
+ (targets cflags.sexp libs.sexp)
+ (action
+  (run ./discover.exe)))</pre><p>And used when building the C code in the following <code>dune</code> file:</p><pre>(library
+ (name png)
+ (foreign_stubs
+  (language c)
+  (names bindings)
+  (flags :standard (:include discover/cflags.sexp)))
+ (c_library_flags :standard (:include discover/libs.sexp)))</pre></div></body></html>

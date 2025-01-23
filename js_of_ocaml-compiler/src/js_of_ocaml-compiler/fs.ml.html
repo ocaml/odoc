@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: fs.ml (js_of_ocaml-compiler.src.js_of_ocaml-compiler)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">js_of_ocaml-compiler</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; js_of_ocaml-compiler &#x00BB; fs.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>fs.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">js_of_ocaml-compiler</a><ul><li>Library <code>js_of_ocaml-compiler</code><ul><li><a href="../../js_of_ocaml-compiler/Js_of_ocaml_compiler/index.html">Js_of_ocaml_compiler</a></li></ul></li><li>Library <code>js_of_ocaml-compiler.dynlink</code><ul><li><a href="../../js_of_ocaml-compiler.dynlink/Js_of_ocaml_compiler_dynlink/index.html">Js_of_ocaml_compiler_dynlink</a></li></ul></li><li>Library <code>js_of_ocaml-compiler.findlib-support</code><ul><li><a href="../../js_of_ocaml-compiler.findlib-support/Jsoo_findlib_support/index.html">Jsoo_findlib_support</a></li></ul></li><li>Library <code>js_of_ocaml-compiler.runtime</code><ul><li><a href="../../js_of_ocaml-compiler.runtime/Jsoo_runtime/index.html">Jsoo_runtime</a></li></ul></li><li>Library <code>js_of_ocaml-compiler.runtime-files</code><ul><li><a href="../../js_of_ocaml-compiler.runtime-files/Js_of_ocaml_compiler_runtime_files/index.html">Js_of_ocaml_compiler_runtime_files</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>js_of_ocaml-compiler<ul><li><a href="annot_lexer.ml.html">annot_lexer.ml</a></li><li><a href="annot_parser.ml.html">annot_parser.ml</a></li><li><a href="base64.ml.html">base64.ml</a></li><li><a href="build_info.ml.html">build_info.ml</a></li><li><a href="build_path_prefix_map.ml.html">build_path_prefix_map.ml</a></li><li><a href="builtins.ml.html">builtins.ml</a></li><li><a href="code.ml.html">code.ml</a></li><li><a href="compiler_version.ml.html">compiler_version.ml</a></li><li><a href="config.ml.html">config.ml</a></li><li><a href="constant.ml.html">constant.ml</a></li><li><a href="deadcode.ml.html">deadcode.ml</a></li><li><a href="debug.ml.html">debug.ml</a></li><li><a href="dgraph.ml.html">dgraph.ml</a></li><li><a href="driver.ml.html">driver.ml</a></li><li><a href="duplicate.ml.html">duplicate.ml</a></li><li><a href="effects.ml.html">effects.ml</a></li><li><a href="eval.ml.html">eval.ml</a></li><li><a href="findlib.ml.html">findlib.ml</a></li><li><a href="flow.ml.html">flow.ml</a></li><li><a href="flow_lexer.ml.html">flow_lexer.ml</a></li><li><a href="freevars.ml.html">freevars.ml</a></li><li><a href="#" class="current_unit">fs.ml</a></li><li><a href="generate.ml.html">generate.ml</a></li><li><a href="generate_closure.ml.html">generate_closure.ml</a></li><li><a href="global_deadcode.ml.html">global_deadcode.ml</a></li><li><a href="global_flow.ml.html">global_flow.ml</a></li><li><a href="inline.ml.html">inline.ml</a></li><li><a href="instr.ml.html">instr.ml</a></li><li><a href="javascript.ml.html">javascript.ml</a></li><li><a href="js_assign.ml.html">js_assign.ml</a></li><li><a href="js_of_ocaml_compiler.ml.html">js_of_ocaml_compiler.ml</a></li><li><a href="js_output.ml.html">js_output.ml</a></li><li><a href="js_parser.ml.html">js_parser.ml</a></li><li><a href="js_simpl.ml.html">js_simpl.ml</a></li><li><a href="js_token.ml.html">js_token.ml</a></li><li><a href="js_traverse.ml.html">js_traverse.ml</a></li><li><a href="lambda_lifting.ml.html">lambda_lifting.ml</a></li><li><a href="link_js.ml.html">link_js.ml</a></li><li><a href="linker.ml.html">linker.ml</a></li><li><a href="loc.ml.html">loc.ml</a></li><li><a href="macro.ml.html">macro.ml</a></li><li><a href="magic_number.ml.html">magic_number.ml</a></li><li><a href="mlvalue.ml.html">mlvalue.ml</a></li><li><a href="ocaml_compiler.ml.html">ocaml_compiler.ml</a></li><li><a href="ocaml_version.ml.html">ocaml_version.ml</a></li><li><a href="parse_bytecode.ml.html">parse_bytecode.ml</a></li><li><a href="parse_info.ml.html">parse_info.ml</a></li><li><a href="parse_js.ml.html">parse_js.ml</a></li><li><a href="partial_cps_analysis.ml.html">partial_cps_analysis.ml</a></li><li><a href="phisimpl.ml.html">phisimpl.ml</a></li><li><a href="pretty_print.ml.html">pretty_print.ml</a></li><li><a href="primitive.ml.html">primitive.ml</a></li><li><a href="pseudo_fs.ml.html">pseudo_fs.ml</a></li><li><a href="pure_fun.ml.html">pure_fun.ml</a></li><li><a href="reserved.ml.html">reserved.ml</a></li><li><a href="source_map.ml.html">source_map.ml</a></li><li><a href="source_map_io.ml.html">source_map_io.ml</a></li><li><a href="specialize.ml.html">specialize.ml</a></li><li><a href="specialize_js.ml.html">specialize_js.ml</a></li><li><a href="stdlib.ml.html">stdlib.ml</a></li><li><a href="strongly_connected_components.ml.html">strongly_connected_components.ml</a></li><li><a href="structure.ml.html">structure.ml</a></li><li><a href="subst.ml.html">subst.ml</a></li><li><a href="tailcall.ml.html">tailcall.ml</a></li><li><a href="target_env.ml.html">target_env.ml</a></li><li><a href="timer.ml.html">timer.ml</a></li><li><a href="unit_info.ml.html">unit_info.ml</a></li><li><a href="var_printer.ml.html">var_printer.ml</a></li><li><a href="vlq64.ml.html">vlq64.ml</a></li></ul></li><li>js_of_ocaml-compiler.dynlink<ul><li><a href="../js_of_ocaml-compiler.dynlink/js_of_ocaml_compiler_dynlink.ml.html">js_of_ocaml_compiler_dynlink.ml</a></li></ul></li><li>js_of_ocaml-compiler.findlib-support<ul><li><a href="../js_of_ocaml-compiler.findlib-support/jsoo_findlib_support.ml.html">jsoo_findlib_support.ml</a></li></ul></li><li>js_of_ocaml-compiler.runtime<ul><li><a href="../js_of_ocaml-compiler.runtime/jsoo_runtime.ml.html">jsoo_runtime.ml</a></li><li><a href="../js_of_ocaml-compiler.runtime/jsoo_runtime__.ml.html">jsoo_runtime__.ml</a></li><li><a href="../js_of_ocaml-compiler.runtime/runtime_version.ml.html">runtime_version.ml</a></li></ul></li><li>js_of_ocaml-compiler.runtime-files<ul><li><a href="../js_of_ocaml-compiler.runtime-files/files.ml.html">files.ml</a></li><li><a href="../js_of_ocaml-compiler.runtime-files/js_of_ocaml_compiler_runtime_files.ml.html">js_of_ocaml_compiler_runtime_files.ml</a></li><li><a href="../js_of_ocaml-compiler.runtime-files/js_of_ocaml_compiler_runtime_files__.ml.html">js_of_ocaml_compiler_runtime_files__.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+</code><code class="source_code"><span><span class="COMMENT">(* Js_of_ocaml compiler
+ * http://www.ocsigen.org/js_of_ocaml/
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, with linking exception;
+ * either version 2.1 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *)</span><span class="EOL">
+</span><span class="OPEN">open</span><span class="BANG">!</span> <a href="stdlib.ml.html"><span class="UIDENT">Stdlib</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-find_in_path_rec"><span class="LIDENT">find_in_path_rec</span></span> <span id="local_paths_1"><span class="LIDENT">paths</span></span> <span id="local_name_2"><span class="LIDENT">name</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_paths_1"><span class="LIDENT">paths</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_path_3"><span class="LIDENT">path</span></span> <span class="COLONCOLON">::</span> <span id="local_rem_4"><span class="LIDENT">rem</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_file_5"><span class="LIDENT">file</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/filename.ml.html#val-concat"><span class="UIDENT">Filename</span><span class="DOT">.</span><span class="LIDENT">concat</span></a> <a href="#local_path_3"><span class="LIDENT">path</span></a> <a href="#local_name_2"><span class="LIDENT">name</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/sys.ml.html#val-file_exists"><span class="UIDENT">Sys</span><span class="DOT">.</span><span class="LIDENT">file_exists</span></a> <a href="#local_file_5"><span class="LIDENT">file</span></a> <span class="THEN">then</span> <span class="UIDENT">Some</span> <a href="#local_file_5"><span class="LIDENT">file</span></a> <span class="ELSE">else</span> <span class="LIDENT">find_in_path_rec</span> <a href="#local_rem_4"><span class="LIDENT">rem</span></a> <a href="#local_name_2"><span class="LIDENT">name</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-find_in_path"><span class="LIDENT">find_in_path</span></span> <span id="local_paths_6"><span class="LIDENT">paths</span></span> <span id="local_name_7"><span class="LIDENT">name</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/sys.ml.html#val-file_exists"><span class="UIDENT">Sys</span><span class="DOT">.</span><span class="LIDENT">file_exists</span></a> <a href="#local_name_7"><span class="LIDENT">name</span></a><span class="EOL">
+</span>  <span class="THEN">then</span> <span class="UIDENT">Some</span> <a href="#local_name_7"><span class="LIDENT">name</span></a><span class="EOL">
+</span>  <span class="ELSE">else</span> <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/filename.ml.html#module-Sysdeps"><span class="UIDENT">Filename</span><span class="DOT">.</span><span class="LIDENT">is_implicit</span></a> <a href="#local_name_7"><span class="LIDENT">name</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&amp;&amp;)"><span class="AMPERAMPER">&amp;&amp;</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-not"><span class="LIDENT">not</span></a> <span class="LPAREN">(</span><a href="stdlib.ml.html#module-String.val-equal"><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">equal</span></a> <a href="#local_name_7"><span class="LIDENT">name</span></a> <span class="STRING">&quot;.&quot;</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="THEN">then</span> <span class="LIDENT">find_in_path_rec</span> <a href="#local_paths_6"><span class="LIDENT">paths</span></a> <a href="#local_name_7"><span class="LIDENT">name</span></a><span class="EOL">
+</span>  <span class="ELSE">else</span> <span class="UIDENT">None</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-concat"><span class="LIDENT">concat</span></span> <span id="local_dir_8"><span class="LIDENT">dir</span></span> <span id="local_filename_9"><span class="LIDENT">filename</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="stdlib.ml.html#module-String.val-drop_prefix"><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">drop_prefix</span></a> <span class="LABEL">~prefix:</span><span class="STRING">&quot;../&quot;</span> <a href="#local_filename_9"><span class="LIDENT">filename</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/filename.ml.html#val-concat"><span class="UIDENT">Filename</span><span class="DOT">.</span><span class="LIDENT">concat</span></a> <a href="#local_dir_8"><span class="LIDENT">dir</span></a> <a href="#local_filename_9"><span class="LIDENT">filename</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_filename_10"><span class="LIDENT">filename</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">concat</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/filename.ml.html#module-Sysdeps"><span class="UIDENT">Filename</span><span class="DOT">.</span><span class="LIDENT">dirname</span></a> <a href="#local_dir_8"><span class="LIDENT">dir</span></a><span class="RPAREN">)</span> <a href="#local_filename_10"><span class="LIDENT">filename</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-absolute_path"><span class="LIDENT">absolute_path</span></span> <span id="local_f_11"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span> <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/filename.ml.html#module-Sysdeps"><span class="UIDENT">Filename</span><span class="DOT">.</span><span class="LIDENT">is_relative</span></a> <a href="#local_f_11"><span class="LIDENT">f</span></a> <span class="THEN">then</span> <span class="LIDENT">concat</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/sys.ml.html#val-getcwd"><span class="UIDENT">Sys</span><span class="DOT">.</span><span class="LIDENT">getcwd</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <a href="#local_f_11"><span class="LIDENT">f</span></a> <span class="ELSE">else</span> <a href="#local_f_11"><span class="LIDENT">f</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-read_file"><span class="LIDENT">read_file</span></span> <span id="local_f_12"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="TRY">try</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_ic_13"><span class="LIDENT">ic</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-open_in_bin"><span class="LIDENT">open_in_bin</span></a> <a href="#local_f_12"><span class="LIDENT">f</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_n_14"><span class="LIDENT">n</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-in_channel_length"><span class="LIDENT">in_channel_length</span></a> <a href="#local_ic_13"><span class="LIDENT">ic</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_s_15"><span class="LIDENT">s</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/bytes.ml.html#val-create"><span class="UIDENT">Bytes</span><span class="DOT">.</span><span class="LIDENT">create</span></a> <a href="#local_n_14"><span class="LIDENT">n</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-really_input"><span class="LIDENT">really_input</span></a> <a href="#local_ic_13"><span class="LIDENT">ic</span></a> <a href="#local_s_15"><span class="LIDENT">s</span></a> <span class="INT">0</span> <a href="#local_n_14"><span class="LIDENT">n</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-close_in"><span class="LIDENT">close_in</span></a> <a href="#local_ic_13"><span class="LIDENT">ic</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/bytes.ml.html#val-unsafe_to_string"><span class="UIDENT">Bytes</span><span class="DOT">.</span><span class="LIDENT">unsafe_to_string</span></a> <a href="#local_s_15"><span class="LIDENT">s</span></a><span class="EOL">
+</span>  <span class="WITH">with</span> <span id="local_e_16"><span class="LIDENT">e</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-failwith"><span class="failwith">failwith</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/printf.ml.html#val-sprintf"><span class="UIDENT">Printf</span><span class="DOT">.</span><span class="LIDENT">sprintf</span></a> <span class="STRING">&quot;Cannot read content of %s.\n%s&quot;</span> <a href="#local_f_12"><span class="LIDENT">f</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/printexc.ml.html#val-to_string"><span class="UIDENT">Printexc</span><span class="DOT">.</span><span class="LIDENT">to_string</span></a> <a href="#local_e_16"><span class="LIDENT">e</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

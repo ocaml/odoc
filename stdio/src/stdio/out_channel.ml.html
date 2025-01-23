@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: out_channel.ml (stdio.src.stdio)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">Stdio: Standard IO Library for OCaml</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; stdio &#x00BB; out_channel.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>out_channel.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">Stdio: Standard IO Library for OCaml</a><ul><li>Library <code>stdio</code><ul><li><a href="../../stdio/Stdio/index.html">Stdio</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>stdio<ul><li><a href="in_channel.ml.html">in_channel.ml</a></li><li><a href="#" class="current_unit">out_channel.ml</a></li><li><a href="stdio.ml.html">stdio.ml</a></li><li><a href="stdio__.ml.html">stdio__.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+</code><code class="source_code"><span><span class="OPEN">open</span><span class="BANG">!</span> <a href="../../../base/src/base/base.ml.html"><span class="UIDENT">Base</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#type-out_channel"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">out_channel</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-equal"><span class="LIDENT">equal</span></span> <span class="LPAREN">(</span><span id="local_t1_1"><span class="LIDENT">t1</span></span> <span class="COLON">:</span> <span class="LIDENT">t</span><span class="RPAREN">)</span> <span id="local_t2_2"><span class="LIDENT">t2</span></span> <span class="EQUAL">=</span> <a href="../../../base/src/base/base.ml.html#module-Export.val-phys_equal"><span class="LIDENT">phys_equal</span></a> <a href="#local_t1_1"><span class="LIDENT">t1</span></a> <a href="#local_t2_2"><span class="LIDENT">t2</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-seek"><span class="LIDENT">seek</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#module-LargeFile.val-seek_out"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="UIDENT">LargeFile</span><span class="DOT">.</span><span class="LIDENT">seek_out</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-pos"><span class="LIDENT">pos</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#module-LargeFile.val-pos_out"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="UIDENT">LargeFile</span><span class="DOT">.</span><span class="LIDENT">pos_out</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-length"><span class="LIDENT">length</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#module-LargeFile.val-out_channel_length"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="UIDENT">LargeFile</span><span class="DOT">.</span><span class="LIDENT">out_channel_length</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-stdout"><span class="LIDENT">stdout</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-stdout"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">stdout</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-stderr"><span class="LIDENT">stderr</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-stderr"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">stderr</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-sexp_of_t"><span class="LIDENT">sexp_of_t</span></span> <span id="local_t_3"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="IF">if</span> <a href="../../../base/src/base/base.ml.html#module-Export.val-phys_equal"><span class="LIDENT">phys_equal</span></a> <a href="#local_t_3"><span class="LIDENT">t</span></a> <span class="LIDENT">stderr</span><span class="EOL">
+</span>  <span class="THEN">then</span> <span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="UIDENT">Atom</span> <span class="STRING">&quot;&lt;stderr&gt;&quot;</span><span class="EOL">
+</span>  <span class="ELSE">else</span> <span class="IF">if</span> <a href="../../../base/src/base/base.ml.html#module-Export.val-phys_equal"><span class="LIDENT">phys_equal</span></a> <a href="#local_t_3"><span class="LIDENT">t</span></a> <span class="LIDENT">stdout</span><span class="EOL">
+</span>  <span class="THEN">then</span> <span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="UIDENT">Atom</span> <span class="STRING">&quot;&lt;stdout&gt;&quot;</span><span class="EOL">
+</span>  <span class="ELSE">else</span> <span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="UIDENT">Atom</span> <span class="STRING">&quot;&lt;Out_channel.t&gt;&quot;</span><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-with_create_args"><span class="TYPE">type</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="LIDENT">with_create_args</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="OPTLABEL">?binary:</span><a href="../../../base/src/base/base.ml.html#module-Export.type-bool"><span class="LIDENT">bool</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="OPTLABEL">?append:</span><a href="../../../base/src/base/base.ml.html#module-Export.type-bool"><span class="LIDENT">bool</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="OPTLABEL">?fail_if_exists:</span><a href="../../../base/src/base/base.ml.html#module-Export.type-bool"><span class="LIDENT">bool</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="OPTLABEL">?perm:</span><a href="../../../base/src/base/base.ml.html#module-Export.type-int"><span class="LIDENT">int</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-create"><span class="LIDENT">create</span></span><span class="EOL">
+</span>      <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_binary_4"><span class="LIDENT">binary</span></span> <span class="EQUAL">=</span> <span class="TRUE">true</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_append_5"><span class="LIDENT">append</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_fail_if_exists_6"><span class="LIDENT">fail_if_exists</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_perm_7"><span class="LIDENT">perm</span></span> <span class="EQUAL">=</span> <span class="INT">0o666</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <span id="local_file_8"><span class="LIDENT">file</span></span><span class="EOL">
+</span>  <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_flags_9"><span class="LIDENT">flags</span></span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span> <span class="UIDENT">Open_wronly</span><span class="SEMI">;</span> <span class="UIDENT">Open_creat</span> <span class="RBRACKET">]</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_flags_10"><span class="LIDENT">flags</span></span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="IF">if</span> <a href="#local_binary_4"><span class="LIDENT">binary</span></a> <span class="THEN">then</span> <span class="UIDENT">Open_binary</span> <span class="ELSE">else</span> <span class="UIDENT">Open_text</span><span class="RPAREN">)</span> <span class="COLONCOLON">::</span> <a href="#local_flags_9"><span class="LIDENT">flags</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_flags_11"><span class="LIDENT">flags</span></span> <span class="EQUAL">=</span> <span class="LPAREN">(</span><span class="IF">if</span> <a href="#local_append_5"><span class="LIDENT">append</span></a> <span class="THEN">then</span> <span class="UIDENT">Open_append</span> <span class="ELSE">else</span> <span class="UIDENT">Open_trunc</span><span class="RPAREN">)</span> <span class="COLONCOLON">::</span> <a href="#local_flags_10"><span class="LIDENT">flags</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_flags_12"><span class="LIDENT">flags</span></span> <span class="EQUAL">=</span> <span class="IF">if</span> <a href="#local_fail_if_exists_6"><span class="LIDENT">fail_if_exists</span></a> <span class="THEN">then</span> <span class="UIDENT">Open_excl</span> <span class="COLONCOLON">::</span> <a href="#local_flags_11"><span class="LIDENT">flags</span></a> <span class="ELSE">else</span> <a href="#local_flags_11"><span class="LIDENT">flags</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-open_out_gen"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">open_out_gen</span></a> <a href="#local_flags_12"><span class="LIDENT">flags</span></a> <a href="#local_perm_7"><span class="LIDENT">perm</span></a> <a href="#local_file_8"><span class="LIDENT">file</span></a><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-set_binary_mode"><span class="LIDENT">set_binary_mode</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-set_binary_mode_out"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">set_binary_mode_out</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-flush"><span class="LIDENT">flush</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-flush"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">flush</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-close"><span class="LIDENT">close</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-close_out"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">close_out</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-close_no_err"><span class="LIDENT">close_no_err</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-close_out_noerr"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">close_out_noerr</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-output"><span class="LIDENT">output</span></span> <span id="local_t_13"><span class="LIDENT">t</span></span> <span class="TILDE">~</span><span id="local_buf_14"><span class="LIDENT">buf</span></span> <span class="TILDE">~</span><span id="local_pos_15"><span class="LIDENT">pos</span></span> <span class="TILDE">~</span><span id="local_len_16"><span class="LIDENT">len</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-output"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">output</span></a> <a href="#local_t_13"><span class="LIDENT">t</span></a> <a href="#local_buf_14"><span class="LIDENT">buf</span></a> <a href="#local_pos_15"><span class="LIDENT">pos</span></a> <a href="#local_len_16"><span class="LIDENT">len</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-output_substring"><span class="LIDENT">output_substring</span></span> <span id="local_t_17"><span class="LIDENT">t</span></span> <span class="TILDE">~</span><span id="local_buf_18"><span class="LIDENT">buf</span></span> <span class="TILDE">~</span><span id="local_pos_19"><span class="LIDENT">pos</span></span> <span class="TILDE">~</span><span id="local_len_20"><span class="LIDENT">len</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-output_substring"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">output_substring</span></a> <a href="#local_t_17"><span class="LIDENT">t</span></a> <a href="#local_buf_18"><span class="LIDENT">buf</span></a> <a href="#local_pos_19"><span class="LIDENT">pos</span></a> <a href="#local_len_20"><span class="LIDENT">len</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-output_string"><span class="LIDENT">output_string</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-output_string"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">output_string</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-output_bytes"><span class="LIDENT">output_bytes</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-output_bytes"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">output_bytes</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-output_char"><span class="LIDENT">output_char</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-output_char"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">output_char</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-output_byte"><span class="LIDENT">output_byte</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-output_byte"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">output_byte</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-output_binary_int"><span class="LIDENT">output_binary_int</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-output_binary_int"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">output_binary_int</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-output_buffer"><span class="LIDENT">output_buffer</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/buffer.ml.html#val-output_buffer"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="UIDENT">Buffer</span><span class="DOT">.</span><span class="LIDENT">output_buffer</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-output_value"><span class="LIDENT">output_value</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-output_value"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">output_value</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-newline"><span class="LIDENT">newline</span></span> <span id="local_t_21"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span> <span class="LIDENT">output_string</span> <a href="#local_t_21"><span class="LIDENT">t</span></a> <span class="STRING">&quot;\n&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-output_lines"><span class="LIDENT">output_lines</span></span> <span id="local_t_22"><span class="LIDENT">t</span></span> <span id="local_lines_23"><span class="LIDENT">lines</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="../../../base/src/base/list0.ml.html#val-iter"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">iter</span></a> <a href="#local_lines_23"><span class="LIDENT">lines</span></a> <span class="LABEL">~f:</span><span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_line_24"><span class="LIDENT">line</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="LIDENT">output_string</span> <a href="#local_t_22"><span class="LIDENT">t</span></a> <a href="#local_line_24"><span class="LIDENT">line</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">newline</span> <a href="#local_t_22"><span class="LIDENT">t</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-printf"><span class="LIDENT">printf</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/printf.ml.html#val-printf"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="UIDENT">Printf</span><span class="DOT">.</span><span class="LIDENT">printf</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-eprintf"><span class="LIDENT">eprintf</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/printf.ml.html#val-eprintf"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="UIDENT">Printf</span><span class="DOT">.</span><span class="LIDENT">eprintf</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-fprintf"><span class="LIDENT">fprintf</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/printf.ml.html#val-fprintf"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="UIDENT">Printf</span><span class="DOT">.</span><span class="LIDENT">fprintf</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-kfprintf"><span class="LIDENT">kfprintf</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/printf.ml.html#val-kfprintf"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="UIDENT">Printf</span><span class="DOT">.</span><span class="LIDENT">kfprintf</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-print_string"><span class="LIDENT">print_string</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-print_string"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">print_string</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-print_endline"><span class="LIDENT">print_endline</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-print_endline"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">print_endline</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-prerr_endline"><span class="LIDENT">prerr_endline</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-prerr_endline"><span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="LIDENT">prerr_endline</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-print_s"><span class="LIDENT">print_s</span></span> <span class="QUESTION">?</span><span id="local_mach_25"><span class="LIDENT">mach</span></span> <span id="local_sexp_26"><span class="LIDENT">sexp</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LIDENT">print_endline</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="MATCH">match</span> <a href="#local_mach_25"><span class="LIDENT">mach</span></a> <span class="WITH">with</span><span class="EOL">
+</span>     <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../sexplib0/src/sexplib0/sexp.ml.html#module-Printing.val-to_string_mach"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">to_string_mach</span></a> <a href="#local_sexp_26"><span class="LIDENT">sexp</span></a><span class="EOL">
+</span>     <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../sexplib0/src/sexplib0/sexp.ml.html#module-Printing.val-to_string_hum"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">to_string_hum</span></a> <a href="#local_sexp_26"><span class="LIDENT">sexp</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-eprint_s"><span class="LIDENT">eprint_s</span></span> <span class="QUESTION">?</span><span id="local_mach_27"><span class="LIDENT">mach</span></span> <span id="local_sexp_28"><span class="LIDENT">sexp</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LIDENT">prerr_endline</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="MATCH">match</span> <a href="#local_mach_27"><span class="LIDENT">mach</span></a> <span class="WITH">with</span><span class="EOL">
+</span>     <span class="BAR">|</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../sexplib0/src/sexplib0/sexp.ml.html#module-Printing.val-to_string_mach"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">to_string_mach</span></a> <a href="#local_sexp_28"><span class="LIDENT">sexp</span></a><span class="EOL">
+</span>     <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../sexplib0/src/sexplib0/sexp.ml.html#module-Printing.val-to_string_hum"><span class="UIDENT">Sexp</span><span class="DOT">.</span><span class="LIDENT">to_string_hum</span></a> <a href="#local_sexp_28"><span class="LIDENT">sexp</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-with_file"><span class="LIDENT">with_file</span></span> <span class="QUESTION">?</span><span id="local_binary_29"><span class="LIDENT">binary</span></span> <span class="QUESTION">?</span><span id="local_append_30"><span class="LIDENT">append</span></span> <span class="QUESTION">?</span><span id="local_fail_if_exists_31"><span class="LIDENT">fail_if_exists</span></span> <span class="QUESTION">?</span><span id="local_perm_32"><span class="LIDENT">perm</span></span> <span id="local_file_33"><span class="LIDENT">file</span></span> <span class="TILDE">~</span><span id="local_f_34"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="../../../base/src/base/exn.ml.html#val-protectx"><span class="UIDENT">Exn</span><span class="DOT">.</span><span class="LIDENT">protectx</span></a> <span class="LPAREN">(</span><span class="LIDENT">create</span> <span class="QUESTION">?</span><a href="#local_binary_29"><span class="LIDENT">binary</span></a> <span class="QUESTION">?</span><a href="#local_append_30"><span class="LIDENT">append</span></a> <span class="QUESTION">?</span><a href="#local_fail_if_exists_31"><span class="LIDENT">fail_if_exists</span></a> <span class="QUESTION">?</span><a href="#local_perm_32"><span class="LIDENT">perm</span></a> <a href="#local_file_33"><span class="LIDENT">file</span></a><span class="RPAREN">)</span> <span class="TILDE">~</span><a href="#local_f_34"><span class="LIDENT">f</span></a> <span class="LABEL">~finally:</span><span class="LIDENT">close</span><span class="EOL">
+</span><span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-write_lines"><span class="LIDENT">write_lines</span></span> <span id="local_file_35"><span class="LIDENT">file</span></span> <span id="local_lines_36"><span class="LIDENT">lines</span></span> <span class="EQUAL">=</span> <span class="LIDENT">with_file</span> <a href="#local_file_35"><span class="LIDENT">file</span></a> <span class="LABEL">~f:</span><span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_t_37"><span class="LIDENT">t</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">output_lines</span> <a href="#local_t_37"><span class="LIDENT">t</span></a> <a href="#local_lines_36"><span class="LIDENT">lines</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-write_all"><span class="LIDENT">write_all</span></span> <span id="local_file_38"><span class="LIDENT">file</span></span> <span class="TILDE">~</span><span id="local_data_39"><span class="LIDENT">data</span></span> <span class="EQUAL">=</span> <span class="LIDENT">with_file</span> <a href="#local_file_38"><span class="LIDENT">file</span></a> <span class="LABEL">~f:</span><span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_t_40"><span class="LIDENT">t</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">output_string</span> <a href="#local_t_40"><span class="LIDENT">t</span></a> <a href="#local_data_39"><span class="LIDENT">data</span></a><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

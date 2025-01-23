@@ -1,0 +1,5 @@
+(lang dune 3.16)
+(name odoc-bench)
+(version dev)
+(sections (lib .) (doc ../../doc/odoc-bench))
+(files (lib (META dune-package opam)) (doc (CHANGES.md LICENSE README.md)))

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: Thread_intf.ml (domain-local-await.src.domain-local-await)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">domain-local-await</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; domain-local-await &#x00BB; Thread_intf.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>Thread_intf.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">domain-local-await</a><ul><li>Library <code>domain-local-await</code><ul><li><a href="../../domain-local-await/Domain_local_await/index.html">Domain_local_await</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>domain-local-await<ul><li><a href="Domain_local_await.ml.html">Domain_local_await.ml</a></li><li><a href="#" class="current_unit">Thread_intf.ml</a></li><li><a href="domain_local_await__.ml.html">domain_local_await__.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+</code><code class="source_code"><span><span class="DOCSTRING">(** Signature for a minimal subset of the [Stdlib.Thread] module needed by
+    domain local await. *)</span><span class="EOL">
+</span><span id="module-type-Thread"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">Thread</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-Thread.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-type-Thread.val-self"><span class="VAL">val</span> <span class="LIDENT">self</span> <span class="COLON">:</span> <span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-Thread.val-id"><span class="VAL">val</span> <span class="LIDENT">id</span> <span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">int</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

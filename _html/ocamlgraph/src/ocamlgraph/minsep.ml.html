@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: minsep.ml (ocamlgraph.src.ocamlgraph)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ocamlgraph</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ocamlgraph &#x00BB; minsep.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>minsep.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">ocamlgraph</a><ul><li>Library <code>ocamlgraph</code><ul><li><a href="../../ocamlgraph/Graph/index.html">Graph</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ocamlgraph<ul><li><a href="blocks.ml.html">blocks.ml</a></li><li><a href="builder.ml.html">builder.ml</a></li><li><a href="chaoticIteration.ml.html">chaoticIteration.ml</a></li><li><a href="classic.ml.html">classic.ml</a></li><li><a href="clique.ml.html">clique.ml</a></li><li><a href="cliquetree.ml.html">cliquetree.ml</a></li><li><a href="coloring.ml.html">coloring.ml</a></li><li><a href="components.ml.html">components.ml</a></li><li><a href="contraction.ml.html">contraction.ml</a></li><li><a href="cycles.ml.html">cycles.ml</a></li><li><a href="dGraphModel.ml.html">dGraphModel.ml</a></li><li><a href="dGraphRandModel.ml.html">dGraphRandModel.ml</a></li><li><a href="dGraphSubTree.ml.html">dGraphSubTree.ml</a></li><li><a href="dGraphTreeLayout.ml.html">dGraphTreeLayout.ml</a></li><li><a href="dGraphTreeModel.ml.html">dGraphTreeModel.ml</a></li><li><a href="delaunay.ml.html">delaunay.ml</a></li><li><a href="dominator.ml.html">dominator.ml</a></li><li><a href="dot.ml.html">dot.ml</a></li><li><a href="dot_lexer.ml.html">dot_lexer.ml</a></li><li><a href="dot_parser.ml.html">dot_parser.ml</a></li><li><a href="eulerian.ml.html">eulerian.ml</a></li><li><a href="fixpoint.ml.html">fixpoint.ml</a></li><li><a href="flow.ml.html">flow.ml</a></li><li><a href="gmap.ml.html">gmap.ml</a></li><li><a href="gml.ml.html">gml.ml</a></li><li><a href="graph.ml.html">graph.ml</a></li><li><a href="graph__.ml.html">graph__.ml</a></li><li><a href="graphml.ml.html">graphml.ml</a></li><li><a href="graphviz.ml.html">graphviz.ml</a></li><li><a href="imperative.ml.html">imperative.ml</a></li><li><a href="kruskal.ml.html">kruskal.ml</a></li><li><a href="leaderlist.ml.html">leaderlist.ml</a></li><li><a href="mcs_m.ml.html">mcs_m.ml</a></li><li><a href="md.ml.html">md.ml</a></li><li><a href="merge.ml.html">merge.ml</a></li><li><a href="mincut.ml.html">mincut.ml</a></li><li><a href="#" class="current_unit">minsep.ml</a></li><li><a href="nonnegative.ml.html">nonnegative.ml</a></li><li><a href="oper.ml.html">oper.ml</a></li><li><a href="pack.ml.html">pack.ml</a></li><li><a href="path.ml.html">path.ml</a></li><li><a href="persistent.ml.html">persistent.ml</a></li><li><a href="prim.ml.html">prim.ml</a></li><li><a href="rand.ml.html">rand.ml</a></li><li><a href="strat.ml.html">strat.ml</a></li><li><a href="topological.ml.html">topological.ml</a></li><li><a href="traverse.ml.html">traverse.ml</a></li><li><a href="util.ml.html">util.ml</a></li><li><a href="weakTopological.ml.html">weakTopological.ml</a></li><li><a href="xDot.ml.html">xDot.ml</a></li><li><a href="xDotDraw.ml.html">xDotDraw.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+<a id="L121" class="source_line" href="#L121">121</a>
+<a id="L122" class="source_line" href="#L122">122</a>
+<a id="L123" class="source_line" href="#L123">123</a>
+<a id="L124" class="source_line" href="#L124">124</a>
+<a id="L125" class="source_line" href="#L125">125</a>
+<a id="L126" class="source_line" href="#L126">126</a>
+<a id="L127" class="source_line" href="#L127">127</a>
+<a id="L128" class="source_line" href="#L128">128</a>
+<a id="L129" class="source_line" href="#L129">129</a>
+<a id="L130" class="source_line" href="#L130">130</a>
+<a id="L131" class="source_line" href="#L131">131</a>
+<a id="L132" class="source_line" href="#L132">132</a>
+<a id="L133" class="source_line" href="#L133">133</a>
+<a id="L134" class="source_line" href="#L134">134</a>
+</code><code class="source_code"><span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  Ocamlgraph: a generic graph library for OCaml                         *)</span><span class="EOL">
+</span><span class="COMMENT">(*  Copyright (C) 2004-2010                                               *)</span><span class="EOL">
+</span><span class="COMMENT">(*  Sylvain Conchon, Jean-Christophe Filliatre and Julien Signoles        *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  This software is free software; you can redistribute it and/or        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  modify it under the terms of the GNU Library General Public           *)</span><span class="EOL">
+</span><span class="COMMENT">(*  License version 2.1, with the special exception on linking            *)</span><span class="EOL">
+</span><span class="COMMENT">(*  described in file LICENSE.                                            *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  This software is distributed in the hope that it will be useful,      *)</span><span class="EOL">
+</span><span class="COMMENT">(*  but WITHOUT ANY WARRANTY; without even the implied warranty of        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                  *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-G"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">G</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-G.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-type-G.module-V"><span class="MODULE">module</span> <span class="UIDENT">V</span> <span class="COLON">:</span> <span class="UIDENT">Sig</span><span class="DOT">.</span><span class="UIDENT">COMPARABLE</span></span><span class="EOL">
+</span>  <span id="module-type-G.val-succ"><span class="VAL">val</span> <span class="LIDENT">succ</span><span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>  <span id="module-type-G.val-iter_succ"><span class="VAL">val</span> <span class="LIDENT">iter_succ</span><span class="COLON">:</span> <span class="LPAREN">(</span><span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span></span><span class="EOL">
+</span>  <span id="module-type-G.val-fold_succ"><span class="VAL">val</span> <span class="LIDENT">fold_succ</span><span class="COLON">:</span> <span class="LPAREN">(</span><span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span>  <span id="module-type-G.val-iter_vertex"><span class="VAL">val</span> <span class="LIDENT">iter_vertex</span><span class="COLON">:</span> <span class="LPAREN">(</span><span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span></span><span class="EOL">
+</span>  <span id="module-type-G.val-fold_vertex"><span class="VAL">val</span> <span class="LIDENT">fold_vertex</span><span class="COLON">:</span> <span class="LPAREN">(</span><span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-type-MINSEP"><span class="MODULE">module</span> <span class="TYPE">type</span> <span class="UIDENT">MINSEP</span> <span class="EQUAL">=</span> <span class="SIG">sig</span><span class="EOL">
+</span>  <span id="module-type-MINSEP.module-G"><span class="MODULE">module</span> <span class="UIDENT">G</span> <span class="COLON">:</span> <span class="UIDENT">G</span></span><span class="EOL">
+</span>  <span id="module-type-MINSEP.module-Vertex_Set"><span class="MODULE">module</span> <span class="UIDENT">Vertex_Set</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/set.ml.html#module-type-S"><span class="UIDENT">Set</span><span class="DOT">.</span><span class="UIDENT">S</span></a> <span class="WITH">with</span> <span id="def_48"><span class="TYPE">type</span> <span class="LIDENT">elt</span> <span class="EQUAL">=</span> <span class="UIDENT">G</span><span class="DOT">.</span><span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span></span></span><span class="EOL">
+</span>  <span id="module-type-MINSEP.module-VSetset"><span class="MODULE">module</span> <span class="UIDENT">VSetset</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/set.ml.html#module-type-S"><span class="UIDENT">Set</span><span class="DOT">.</span><span class="UIDENT">S</span></a> <span class="WITH">with</span> <span id="def_49"><span class="TYPE">type</span> <span class="LIDENT">elt</span> <span class="EQUAL">=</span> <span class="UIDENT">Vertex_Set</span><span class="DOT">.</span><span class="LIDENT">t</span></span></span><span class="EOL">
+</span>  <span id="module-type-MINSEP.val-allminsep"><span class="VAL">val</span> <span class="LIDENT">allminsep</span> <span class="COLON">:</span> <span class="UIDENT">G</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Vertex_Set</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>  <span id="module-type-MINSEP.val-list_of_allminsep"><span class="VAL">val</span> <span class="LIDENT">list_of_allminsep</span> <span class="COLON">:</span> <span class="UIDENT">G</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">G</span><span class="DOT">.</span><span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>  <span id="module-type-MINSEP.val-set_of_allminsep"><span class="VAL">val</span> <span class="LIDENT">set_of_allminsep</span> <span class="COLON">:</span> <span class="UIDENT">G</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">VSetset</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Make"><span class="MODULE">module</span> <span class="UIDENT">Make</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="UIDENT">G</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>       <span class="INCLUDE">include</span> <span class="UIDENT">G</span><span class="EOL">
+</span>       <span id="module-Make.argument-1-G.val-cc"><span class="VAL">val</span> <span class="LIDENT">cc</span><span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">list</span> <span class="LIDENT">list</span></span><span class="EOL">
+</span>       <span class="DOCSTRING">(** compute the set of connected components of G(V \ l) *)</span><span class="EOL">
+</span>     <span class="END">end</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span><span class="STRUCT">struct</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Make.module-N"><span class="MODULE">module</span> <span class="UIDENT">N</span> <span class="EQUAL">=</span> <a href="oper.ml.html#module-Neighbourhood"><span class="UIDENT">Oper</span><span class="DOT">.</span><span class="UIDENT">Neighbourhood</span></a><span class="LPAREN">(</span><span class="UIDENT">G</span><span class="RPAREN">)</span></span><span class="EOL">
+</span>  <span id="module-Make.module-Vertex_Set"><span class="MODULE">module</span> <span class="UIDENT">Vertex_Set</span><span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/set.ml.html#module-type-S"><span class="UIDENT">Set</span><span class="DOT">.</span><span class="UIDENT">S</span></a> <span class="WITH">with</span> <span id="def_45"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="UIDENT">N</span><span class="DOT">.</span><span class="UIDENT">Vertex_Set</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span>                            <span class="AND">and</span> <span id="def_50"><span class="TYPE">type</span> <span class="LIDENT">elt</span> <span class="EQUAL">=</span> <span class="UIDENT">G</span><span class="DOT">.</span><span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span></span> <span class="EQUAL">=</span> <span class="UIDENT">N</span><span class="DOT">.</span><span class="UIDENT">Vertex_Set</span></span><span class="EOL">
+</span>  <span id="module-Make.module-VSetset"><span class="MODULE">module</span> <span class="UIDENT">VSetset</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/set.ml.html#module-Make"><span class="UIDENT">Set</span><span class="DOT">.</span><span class="UIDENT">Make</span></a><span class="LPAREN">(</span><span class="UIDENT">N</span><span class="DOT">.</span><span class="UIDENT">Vertex_Set</span><span class="RPAREN">)</span></span><span class="EOL">
+</span>  <span class="COMMENT">(* Use [N.Vertex_Set] instead of [Vertex_Set] in order to avoid an error with
+     ocamldoc 4.02. However this change requires to add extra type annotations
+     to module [Vertex_Set] above in order to prevent compilation error with
+     OCaml &lt;= 4.0 :-(. *)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Make.val-initialisation"><span class="LIDENT">initialisation</span></span> <span id="local_g_1"><span class="LIDENT">g</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_cc_2"><span class="LIDENT">cc</span></span> <span class="EQUAL">=</span> <span class="UIDENT">G</span><span class="DOT">.</span><span class="LIDENT">cc</span> <a href="#local_g_1"><span class="LIDENT">g</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_neighbourhood_3"><span class="LIDENT">neighbourhood</span></span> <span class="EQUAL">=</span> <span class="UIDENT">N</span><span class="DOT">.</span><span class="LIDENT">list_from_vertex</span> <a href="#local_g_1"><span class="LIDENT">g</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_neighbourhoods_4"><span class="LIDENT">neighbourhoods</span></span> <span class="EQUAL">=</span> <span class="UIDENT">N</span><span class="DOT">.</span><span class="LIDENT">set_from_vertices</span> <a href="#local_g_1"><span class="LIDENT">g</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="UIDENT">G</span><span class="DOT">.</span><span class="LIDENT">fold_vertex</span><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_v_5"><span class="LIDENT">v</span></span> <span id="local_s_6"><span class="LIDENT">s</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>         <a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-fold_left"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">fold_left</span></a><span class="EOL">
+</span>           <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_s_7"><span class="LIDENT">s</span></span> <span id="local_l_8"><span class="LIDENT">l</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_neighbourhoods_4"><span class="LIDENT">neighbourhoods</span></a> <a href="#local_l_8"><span class="LIDENT">l</span></a> <span class="COLONCOLON">::</span> <a href="#local_s_7"><span class="LIDENT">s</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>           <a href="#local_s_6"><span class="LIDENT">s</span></a> <span class="LPAREN">(</span><a href="#local_cc_2"><span class="LIDENT">cc</span></a> <span class="LPAREN">(</span><a href="#local_v_5"><span class="LIDENT">v</span></a> <span class="COLONCOLON">::</span> <a href="#local_neighbourhood_3"><span class="LIDENT">neighbourhood</span></a> <a href="#local_v_5"><span class="LIDENT">v</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <a href="#local_g_1"><span class="LIDENT">g</span></a> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Make.val-generation"><span class="LIDENT">generation</span></span> <span id="local_g_9"><span class="LIDENT">g</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_neighbourhood_10"><span class="LIDENT">neighbourhood</span></span> <span class="EQUAL">=</span> <span class="UIDENT">N</span><span class="DOT">.</span><span class="LIDENT">list_from_vertex</span> <a href="#local_g_9"><span class="LIDENT">g</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_neighbourhoods_11"><span class="LIDENT">neighbourhoods</span></span> <span class="EQUAL">=</span> <span class="UIDENT">N</span><span class="DOT">.</span><span class="LIDENT">set_from_vertices</span> <a href="#local_g_9"><span class="LIDENT">g</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_cc_12"><span class="LIDENT">cc</span></span> <span class="EQUAL">=</span> <span class="UIDENT">G</span><span class="DOT">.</span><span class="LIDENT">cc</span> <a href="#local_g_9"><span class="LIDENT">g</span></a> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span class="REC">rec</span> <span id="local_gen_aux_13"><span class="LIDENT">gen_aux</span></span> <span id="local_seen_14"><span class="LIDENT">seen</span></span> <span id="local_bigs_15"><span class="LIDENT">bigs</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>      <span class="BAR">|</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_bigs_15"><span class="LIDENT">bigs</span></a><span class="EOL">
+</span>      <span class="BAR">|</span> <span id="local_s_16"><span class="LIDENT">s</span></span> <span class="COLONCOLON">::</span> <span id="local_tl_17"><span class="LIDENT">tl</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="LET">let</span> <span id="local_l_18"><span class="LIDENT">l</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Vertex_Set</span><span class="DOT">.</span><span class="LIDENT">elements</span> <a href="#local_s_16"><span class="LIDENT">s</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <span class="LET">let</span> <span id="local_seen_19"><span class="LIDENT">seen</span></span> <span class="EQUAL">=</span> <span class="UIDENT">VSetset</span><span class="DOT">.</span><span class="LIDENT">add</span> <a href="#local_s_16"><span class="LIDENT">s</span></a> <a href="#local_seen_14"><span class="LIDENT">seen</span></a> <span class="IN">in</span><span class="EOL">
+</span>        <span class="LET">let</span> <span id="def_51"><span id="local_bigs_20"><span class="LIDENT">bigs</span></span><span class="COMMA">,</span> <span id="local_tl_21"><span class="LIDENT">tl</span></span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>          <span class="UIDENT">Vertex_Set</span><span class="DOT">.</span><span class="LIDENT">fold</span><span class="EOL">
+</span>            <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_v_22"><span class="LIDENT">v</span></span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>               <span class="LET">let</span> <span id="local_add_neighbourhoods_23"><span class="LIDENT">add_neighbourhoods</span></span> <span class="LPAREN">(</span><span id="local_bigs_24"><span class="LIDENT">bigs</span></span><span class="COMMA">,</span> <span id="local_tl_25"><span class="LIDENT">tl</span></span><span class="RPAREN">)</span> <span id="local_l_26"><span class="LIDENT">l</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>                 <span class="LET">let</span> <span id="local_s_27"><span class="LIDENT">s</span></span> <span class="EQUAL">=</span> <a href="#local_neighbourhoods_11"><span class="LIDENT">neighbourhoods</span></a> <a href="#local_l_26"><span class="LIDENT">l</span></a> <span class="IN">in</span><span class="EOL">
+</span>                 <a href="#local_s_27"><span class="LIDENT">s</span></a> <span class="COLONCOLON">::</span> <a href="#local_bigs_24"><span class="LIDENT">bigs</span></a><span class="COMMA">,</span> <span class="IF">if</span> <span class="UIDENT">VSetset</span><span class="DOT">.</span><span class="LIDENT">mem</span> <a href="#local_s_27"><span class="LIDENT">s</span></a> <a href="#local_seen_19"><span class="LIDENT">seen</span></a> <span class="THEN">then</span> <a href="#local_tl_25"><span class="LIDENT">tl</span></a> <span class="ELSE">else</span> <a href="#local_s_27"><span class="LIDENT">s</span></a> <span class="COLONCOLON">::</span> <a href="#local_tl_25"><span class="LIDENT">tl</span></a><span class="EOL">
+</span>               <span class="IN">in</span><span class="EOL">
+</span>               <a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-fold_left"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">fold_left</span></a><span class="EOL">
+</span>                 <a href="#local_add_neighbourhoods_23"><span class="LIDENT">add_neighbourhoods</span></a><span class="EOL">
+</span>                 <span class="LPAREN">(</span><a href="#local_bigs_15"><span class="LIDENT">bigs</span></a><span class="COMMA">,</span> <a href="#local_tl_17"><span class="LIDENT">tl</span></a><span class="RPAREN">)</span> <span class="LPAREN">(</span><a href="#local_cc_12"><span class="LIDENT">cc</span></a> <span class="LPAREN">(</span><a href="#local_l_18"><span class="LIDENT">l</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(@)"><span class="INFIXOP1">@</span></a> <a href="#local_neighbourhood_10"><span class="LIDENT">neighbourhood</span></a> <a href="#local_v_22"><span class="LIDENT">v</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>            <a href="#local_s_16"><span class="LIDENT">s</span></a> <span class="LPAREN">(</span><a href="#local_bigs_15"><span class="LIDENT">bigs</span></a><span class="COMMA">,</span> <a href="#local_tl_17"><span class="LIDENT">tl</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>        <span class="IN">in</span><span class="EOL">
+</span>        <a href="#local_gen_aux_13"><span class="LIDENT">gen_aux</span></a> <a href="#local_seen_19"><span class="LIDENT">seen</span></a> <a href="#local_bigs_20"><span class="LIDENT">bigs</span></a> <a href="#local_tl_21"><span class="LIDENT">tl</span></a><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <span class="FUN">fun</span> <span id="local_bigs_28"><span class="LIDENT">bigs</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_gen_aux_13"><span class="LIDENT">gen_aux</span></a> <span class="UIDENT">VSetset</span><span class="DOT">.</span><span class="LIDENT">empty</span> <a href="#local_bigs_28"><span class="LIDENT">bigs</span></a> <a href="#local_bigs_28"><span class="LIDENT">bigs</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Make.val-allminsep"><span class="LIDENT">allminsep</span></span> <span id="local_g_29"><span class="LIDENT">g</span></span> <span class="EQUAL">=</span> <span class="LIDENT">generation</span> <a href="#local_g_29"><span class="LIDENT">g</span></a> <span class="LPAREN">(</span><span class="LIDENT">initialisation</span> <a href="#local_g_29"><span class="LIDENT">g</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Make.val-set_of_allminsep"><span class="LIDENT">set_of_allminsep</span></span> <span id="local_g_30"><span class="LIDENT">g</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-fold_left"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">fold_left</span></a><span class="EOL">
+</span>      <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_bigs_31"><span class="LIDENT">bigs</span></span> <span id="local_s_32"><span class="LIDENT">s</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">VSetset</span><span class="DOT">.</span><span class="LIDENT">add</span> <a href="#local_s_32"><span class="LIDENT">s</span></a> <a href="#local_bigs_31"><span class="LIDENT">bigs</span></a><span class="RPAREN">)</span> <span class="UIDENT">VSetset</span><span class="DOT">.</span><span class="LIDENT">empty</span> <span class="LPAREN">(</span><span class="LIDENT">allminsep</span> <a href="#local_g_30"><span class="LIDENT">g</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Make.val-list_of_allminsep"><span class="LIDENT">list_of_allminsep</span></span> <span id="local_g_33"><span class="LIDENT">g</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-map"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">map</span></a> <span class="UIDENT">Vertex_Set</span><span class="DOT">.</span><span class="LIDENT">elements</span> <span class="LPAREN">(</span><span class="LIDENT">allminsep</span> <a href="#local_g_33"><span class="LIDENT">g</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-P"><span class="MODULE">module</span> <span class="UIDENT">P</span><span class="LPAREN">(</span><span class="UIDENT">G</span> <span class="COLON">:</span> <span class="SIG">sig</span> <span class="INCLUDE">include</span> <span class="UIDENT">G</span> <span id="module-P.argument-1-G.val-remove_vertex"><span class="VAL">val</span> <span class="LIDENT">remove_vertex</span> <span class="COLON">:</span> <span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">t</span></span> <span class="END">end</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-P.module-G"><span class="MODULE">module</span> <span class="UIDENT">G</span> <span class="EQUAL">=</span> <span class="UIDENT">G</span></span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="UIDENT">Make</span><span class="LPAREN">(</span><span class="STRUCT">struct</span><span class="EOL">
+</span>      <span class="INCLUDE">include</span> <span class="UIDENT">G</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_cc_34"><span class="LIDENT">cc</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>        <span class="LET">let</span> <span class="MODULE">module</span> <span class="UIDENT">CC</span> <span class="EQUAL">=</span> <a href="components.ml.html#module-Make"><span class="UIDENT">Components</span><span class="DOT">.</span><span class="UIDENT">Make</span></a><span class="LPAREN">(</span><span class="UIDENT">G</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>        <span class="FUN">fun</span> <span id="local_g_35"><span class="LIDENT">g</span></span> <span id="local_l_36"><span class="LIDENT">l</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>          <span class="LET">let</span> <span id="local_g_37"><span class="LIDENT">g</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-fold_left"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">fold_left</span></a> <span class="LIDENT">remove_vertex</span> <a href="#local_g_35"><span class="LIDENT">g</span></a> <a href="#local_l_36"><span class="LIDENT">l</span></a> <span class="IN">in</span><span class="EOL">
+</span>          <span class="UIDENT">CC</span><span class="DOT">.</span><span class="LIDENT">scc_list</span> <a href="#local_g_37"><span class="LIDENT">g</span></a><span class="EOL">
+</span>    <span class="END">end</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-I"><span class="MODULE">module</span> <span class="UIDENT">I</span><span class="LPAREN">(</span><span class="UIDENT">G</span> <span class="COLON">:</span> <span class="SIG">sig</span><span class="EOL">
+</span>    <span class="INCLUDE">include</span> <span class="UIDENT">G</span><span class="EOL">
+</span>    <span id="module-I.argument-1-G.module-Mark"><span class="MODULE">module</span> <span class="UIDENT">Mark</span> <span class="COLON">:</span> <span class="UIDENT">Sig</span><span class="DOT">.</span><span class="UIDENT">MARK</span> <span class="WITH">with</span> <span id="def_47"><span class="TYPE">type</span> <span class="LIDENT">graph</span> <span class="EQUAL">=</span> <span class="LIDENT">t</span></span> <span class="AND">and</span> <span id="def_46"><span class="TYPE">type</span> <span class="LIDENT">vertex</span> <span class="EQUAL">=</span> <span class="UIDENT">V</span><span class="DOT">.</span><span class="LIDENT">t</span></span></span><span class="EOL">
+</span>  <span class="END">end</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span><span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-I.module-G"><span class="MODULE">module</span> <span class="UIDENT">G</span> <span class="EQUAL">=</span> <span class="UIDENT">G</span></span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="UIDENT">Make</span><span class="LPAREN">(</span><span class="STRUCT">struct</span><span class="EOL">
+</span>      <span class="INCLUDE">include</span> <span class="UIDENT">G</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_cc_38"><span class="LIDENT">cc</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>        <span class="LET">let</span> <span class="MODULE">module</span> <span class="UIDENT">CC</span> <span class="EQUAL">=</span><span class="EOL">
+</span>          <a href="components.ml.html#module-Make"><span class="UIDENT">Components</span><span class="DOT">.</span><span class="UIDENT">Make</span></a><span class="EOL">
+</span>            <span class="LPAREN">(</span><span class="STRUCT">struct</span><span class="EOL">
+</span>              <span class="INCLUDE">include</span> <span class="UIDENT">G</span><span class="EOL">
+</span>              <span class="LET">let</span> <span id="local_iter_vertex_39"><span class="LIDENT">iter_vertex</span></span> <span id="local_f_40"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>                <span class="LIDENT">iter_vertex</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_v_41"><span class="LIDENT">v</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="IF">if</span> <span class="UIDENT">Mark</span><span class="DOT">.</span><span class="LIDENT">get</span> <a href="#local_v_41"><span class="LIDENT">v</span></a><a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(=)"><span class="EQUAL">=</span></a><span class="INT">0</span> <span class="THEN">then</span> <a href="#local_f_40"><span class="LIDENT">f</span></a> <a href="#local_v_41"><span class="LIDENT">v</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>            <span class="END">end</span><span class="RPAREN">)</span><span class="EOL">
+</span>        <span class="IN">in</span><span class="EOL">
+</span>        <span class="FUN">fun</span> <span id="local_g_42"><span class="LIDENT">g</span></span> <span id="local_l_43"><span class="LIDENT">l</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>          <span class="UIDENT">G</span><span class="DOT">.</span><span class="UIDENT">Mark</span><span class="DOT">.</span><span class="LIDENT">clear</span> <a href="#local_g_42"><span class="LIDENT">g</span></a><span class="SEMI">;</span><span class="EOL">
+</span>          <a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-iter"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">iter</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_v_44"><span class="LIDENT">v</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">G</span><span class="DOT">.</span><span class="UIDENT">Mark</span><span class="DOT">.</span><span class="LIDENT">set</span> <a href="#local_v_44"><span class="LIDENT">v</span></a> <span class="INT">1</span><span class="RPAREN">)</span> <a href="#local_l_43"><span class="LIDENT">l</span></a><span class="SEMI">;</span><span class="EOL">
+</span>          <span class="UIDENT">CC</span><span class="DOT">.</span><span class="LIDENT">scc_list</span> <a href="#local_g_42"><span class="LIDENT">g</span></a><span class="EOL">
+</span>    <span class="END">end</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

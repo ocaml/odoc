@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: util.ml (odoc-driver.src.odoc-driver)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">The odoc reference driver</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; odoc-driver &#x00BB; util.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>util.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">The odoc reference driver</a><ul><li>Library <code>odoc-driver</code><ul><li><a href="../../odoc-driver/Odoc_driver_lib/index.html">Odoc_driver_lib</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>odoc-driver<ul><li><a href="cmd_outputs.ml.html">cmd_outputs.ml</a></li><li><a href="common_args.ml.html">common_args.ml</a></li><li><a href="compile.ml.html">compile.ml</a></li><li><a href="db.ml.html">db.ml</a></li><li><a href="global_config.ml.html">global_config.ml</a></li><li><a href="landing_pages.ml.html">landing_pages.ml</a></li><li><a href="library_names.ml.html">library_names.ml</a></li><li><a href="monorepo_style.ml.html">monorepo_style.ml</a></li><li><a href="ocamlfind.ml.html">ocamlfind.ml</a></li><li><a href="ocamlobjinfo.ml.html">ocamlobjinfo.ml</a></li><li><a href="odoc.ml.html">odoc.ml</a></li><li><a href="odoc_driver_lib.ml.html">odoc_driver_lib.ml</a></li><li><a href="odoc_unit.ml.html">odoc_unit.ml</a></li><li><a href="odoc_units_of.ml.html">odoc_units_of.ml</a></li><li><a href="opam.ml.html">opam.ml</a></li><li><a href="packages.ml.html">packages.ml</a></li><li><a href="run.ml.html">run.ml</a></li><li><a href="sherlodoc.ml.html">sherlodoc.ml</a></li><li><a href="stats.ml.html">stats.ml</a></li><li><a href="#" class="current_unit">util.ml</a></li><li><a href="voodoo.ml.html">voodoo.ml</a></li><li><a href="worker_pool.ml.html">worker_pool.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+</code><code class="source_code"><span><span class="OPEN">open</span> <a href="../../../odoc/src/odoc.odoc_utils/odoc_utils.ml.html"><span class="UIDENT">Odoc_utils</span></a><span class="EOL">
+</span><span class="OPEN">open</span> <span class="UIDENT">Bos</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-StringSet"><span class="MODULE">module</span> <span class="UIDENT">StringSet</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/set.ml.html#module-Make"><span class="UIDENT">Set</span><span class="DOT">.</span><span class="UIDENT">Make</span></a> <span class="LPAREN">(</span><span class="UIDENT">String</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span id="module-StringMap"><span class="MODULE">module</span> <span class="UIDENT">StringMap</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/map.ml.html#module-Make"><span class="UIDENT">Map</span><span class="DOT">.</span><span class="UIDENT">Make</span></a> <span class="LPAREN">(</span><span class="UIDENT">String</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-lines_of_channel"><span class="LIDENT">lines_of_channel</span></span> <span id="local_ic_1"><span class="LIDENT">ic</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="local_inner_2"><span class="LIDENT">inner</span></span> <span id="local_acc_3"><span class="LIDENT">acc</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="TRY">try</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_l_4"><span class="LIDENT">l</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-input_line"><span class="LIDENT">input_line</span></a> <a href="#local_ic_1"><span class="LIDENT">ic</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <a href="#local_inner_2"><span class="LIDENT">inner</span></a> <span class="LPAREN">(</span><a href="#local_l_4"><span class="LIDENT">l</span></a> <span class="COLONCOLON">::</span> <a href="#local_acc_3"><span class="LIDENT">acc</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="WITH">with</span> <span class="UIDENT">End_of_file</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/list.ml.html#val-rev"><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">rev</span></a> <a href="#local_acc_3"><span class="LIDENT">acc</span></a><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <a href="#local_inner_2"><span class="LIDENT">inner</span></a> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-lines_of_process"><span class="LIDENT">lines_of_process</span></span> <span id="local_cmd_5"><span class="LIDENT">cmd</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <span class="UIDENT">OS</span><span class="DOT">.</span><span class="UIDENT">Cmd</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="LIDENT">run_out</span> <span class="LABEL">~err:</span><span class="LIDENT">err_null</span> <a href="#local_cmd_5"><span class="LIDENT">cmd</span></a> <span class="INFIXOP0">|&gt;</span> <span class="LIDENT">to_lines</span><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Ok</span> <span id="local_x_6"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_x_6"><span class="LIDENT">x</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Error</span> <span class="LPAREN">(</span><span class="BACKQUOTE">`</span><span class="UIDENT">Msg</span> <span id="local_e_7"><span class="LIDENT">e</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-failwith"><span class="failwith">failwith</span></a> <span class="LPAREN">(</span><span class="STRING">&quot;Error: &quot;</span> <span class="INFIXOP1">^</span> <a href="#local_e_7"><span class="LIDENT">e</span></a><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** Opens a file for writing and calls [f]. The destination directory is created
+    if needed. *)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-with_out_to"><span class="LIDENT">with_out_to</span></span> <span id="local_filename_8"><span class="LIDENT">filename</span></span> <span id="local_f_9"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="OPEN">open</span> <a href="../../../odoc/src/odoc.odoc_utils/odoc_utils.ml.html#module-ResultMonad"><span class="UIDENT">ResultMonad</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_filename_10"><span class="LIDENT">filename</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Fpath</span><span class="DOT">.</span><span class="LIDENT">normalize</span> <a href="#local_filename_8"><span class="LIDENT">filename</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">OS</span><span class="DOT">.</span><span class="UIDENT">Dir</span><span class="DOT">.</span><span class="LIDENT">create</span> <span class="LPAREN">(</span><span class="UIDENT">Fpath</span><span class="DOT">.</span><span class="LIDENT">parent</span> <a href="#local_filename_10"><span class="LIDENT">filename</span></a><span class="RPAREN">)</span> <a href="../../../odoc/src/odoc.odoc_utils/odoc_utils.ml.html#module-ResultMonad.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUN">fun</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>  <span class="UIDENT">OS</span><span class="DOT">.</span><span class="UIDENT">File</span><span class="DOT">.</span><span class="LIDENT">with_oc</span> <a href="#local_filename_10"><span class="LIDENT">filename</span></a><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_oc_11"><span class="LIDENT">oc</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <a href="#local_f_9"><span class="LIDENT">f</span></a> <a href="#local_oc_11"><span class="LIDENT">oc</span></a><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="UIDENT">Ok</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="INFIXOP0">|&gt;</span> <a href="../../../odoc/src/odoc.odoc_utils/odoc_utils.ml.html#module-Result.val-join"><span class="UIDENT">Result</span><span class="DOT">.</span><span class="LIDENT">join</span></a><span class="EOL">
+</span>  <a href="../../../odoc/src/odoc.odoc_utils/odoc_utils.ml.html#module-ResultMonad.val-(&gt;&gt;=)"><span class="INFIXOP0">&gt;&gt;=</span></a> <span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Ok</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-cp"><span class="LIDENT">cp</span></span> <span id="local_src_12"><span class="LIDENT">src</span></span> <span id="local_dst_13"><span class="LIDENT">dst</span></span> <span class="EQUAL">=</span> <span class="ASSERT">assert</span> <span class="LPAREN">(</span><span class="LIDENT">lines_of_process</span> <span class="UIDENT">Cmd</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="LIDENT">v</span> <span class="STRING">&quot;cp&quot;</span> <span class="PERCENT">%</span> <a href="#local_src_12"><span class="LIDENT">src</span></a> <span class="PERCENT">%</span> <a href="#local_dst_13"><span class="LIDENT">dst</span></a><span class="RPAREN">)</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(=)"><span class="EQUAL">=</span></a> <span class="LBRACKET">[</span><span class="RBRACKET">]</span><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

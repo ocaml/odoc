@@ -1,0 +1,1 @@
+../../../../../default/doc/examples/resolution.mli

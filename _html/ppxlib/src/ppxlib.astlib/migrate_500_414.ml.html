@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: migrate_500_414.ml (ppxlib.src.ppxlib.astlib)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html"><code>ppxlib</code>'s user manual</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ppxlib.astlib &#x00BB; migrate_500_414.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>migrate_500_414.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html"><code>ppxlib</code>'s user manual</a><ul><li><a href="../../ast-traversal.html">AST Traversals</a></li><li><a href="../../driver.html">How It Works</a></li><li><a href="../../examples.html">Examples</a></li><li><a href="../../generating-code.html">Generating AST Nodes</a></li><li><a href="../../good-practices.html">Good Practices</a></li><li><a href="../../matching-code.html">Destructing AST Nodes</a></li><li><a href="../../quick_intro.html">Introduction</a></li><li><a href="../../writing-ppxs.html">Writing a Transformation</a></li><li>Library <code>ppxlib</code><ul><li><a href="../../ppxlib/Ppxlib/index.html">Ppxlib</a></li></ul></li><li>Library <code>ppxlib.ast</code><ul><li><a href="../../ppxlib.ast/Ppxlib_ast/index.html">Ppxlib_ast</a></li></ul></li><li>Library <code>ppxlib.astlib</code><ul><li><a href="../../ppxlib.astlib/Astlib/index.html">Astlib</a></li></ul></li><li>Library <code>ppxlib.metaquot</code><ul><li><a href="../../ppxlib.metaquot/Ppxlib_metaquot/index.html">Ppxlib_metaquot</a></li></ul></li><li>Library <code>ppxlib.metaquot_lifters</code><ul><li><a href="../../ppxlib.metaquot_lifters/Ppxlib_metaquot_lifters/index.html">Ppxlib_metaquot_lifters</a></li></ul></li><li>Library <code>ppxlib.print_diff</code><ul><li><a href="../../ppxlib.print_diff/Ppxlib_print_diff/index.html">Ppxlib_print_diff</a></li></ul></li><li>Library <code>ppxlib.runner</code><ul><li><a href="../../ppxlib.runner/Ppxlib_runner/index.html">Ppxlib_runner</a></li></ul></li><li>Library <code>ppxlib.runner_as_ppx</code><ul><li><a href="../../ppxlib.runner_as_ppx/Ppxlib_runner_as_ppx/index.html">Ppxlib_runner_as_ppx</a></li></ul></li><li>Library <code>ppxlib.stdppx</code><ul><li><a href="../../ppxlib.stdppx/Stdppx/index.html">Stdppx</a></li></ul></li><li>Library <code>ppxlib.traverse</code><ul><li><a href="../../ppxlib.traverse/Ppxlib_traverse/index.html">Ppxlib_traverse</a></li></ul></li><li>Library <code>ppxlib.traverse_builtins</code><ul><li><a href="../../ppxlib.traverse_builtins/Ppxlib_traverse_builtins/index.html">Ppxlib_traverse_builtins</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ppxlib<ul><li><a href="../ppxlib/ast_builder.ml.html">ast_builder.ml</a></li><li><a href="../ppxlib/ast_builder_generated.ml.html">ast_builder_generated.ml</a></li><li><a href="../ppxlib/ast_builder_intf.ml.html">ast_builder_intf.ml</a></li><li><a href="../ppxlib/ast_pattern.ml.html">ast_pattern.ml</a></li><li><a href="../ppxlib/ast_pattern0.ml.html">ast_pattern0.ml</a></li><li><a href="../ppxlib/ast_pattern_generated.ml.html">ast_pattern_generated.ml</a></li><li><a href="../ppxlib/ast_traverse.ml.html">ast_traverse.ml</a></li><li><a href="../ppxlib/ast_traverse0.ml.html">ast_traverse0.ml</a></li><li><a href="../ppxlib/attribute.ml.html">attribute.ml</a></li><li><a href="../ppxlib/caller_id.ml.html">caller_id.ml</a></li><li><a href="../ppxlib/code_matcher.ml.html">code_matcher.ml</a></li><li><a href="../ppxlib/code_path.ml.html">code_path.ml</a></li><li><a href="../ppxlib/common.ml.html">common.ml</a></li><li><a href="../ppxlib/context_free.ml.html">context_free.ml</a></li><li><a href="../ppxlib/deriving.ml.html">deriving.ml</a></li><li><a href="../ppxlib/driver.ml.html">driver.ml</a></li><li><a href="../ppxlib/expansion_context.ml.html">expansion_context.ml</a></li><li><a href="../ppxlib/expansion_helpers.ml.html">expansion_helpers.ml</a></li><li><a href="../ppxlib/extension.ml.html">extension.ml</a></li><li><a href="../ppxlib/ignore_unused_warning.ml.html">ignore_unused_warning.ml</a></li><li><a href="../ppxlib/import.ml.html">import.ml</a></li><li><a href="../ppxlib/keyword.ml.html">keyword.ml</a></li><li><a href="../ppxlib/loc.ml.html">loc.ml</a></li><li><a href="../ppxlib/location.ml.html">location.ml</a></li><li><a href="../ppxlib/location_check.ml.html">location_check.ml</a></li><li><a href="../ppxlib/longident.ml.html">longident.ml</a></li><li><a href="../ppxlib/merlin_helpers.ml.html">merlin_helpers.ml</a></li><li><a href="../ppxlib/name.ml.html">name.ml</a></li><li><a href="../ppxlib/options.ml.html">options.ml</a></li><li><a href="../ppxlib/ppxlib.ml.html">ppxlib.ml</a></li><li><a href="../ppxlib/ppxlib__.ml.html">ppxlib__.ml</a></li><li><a href="../ppxlib/quoter.ml.html">quoter.ml</a></li><li><a href="../ppxlib/reconcile.ml.html">reconcile.ml</a></li><li><a href="../ppxlib/skip_hash_bang.ml.html">skip_hash_bang.ml</a></li><li><a href="../ppxlib/spellcheck.ml.html">spellcheck.ml</a></li><li><a href="../ppxlib/utils.ml.html">utils.ml</a></li></ul></li><li>ppxlib.ast<ul><li><a href="../ppxlib.ast/ast.ml.html">ast.ml</a></li><li><a href="../ppxlib.ast/ast_helper_lite.ml.html">ast_helper_lite.ml</a></li><li><a href="../ppxlib.ast/import.ml.html">import.ml</a></li><li><a href="../ppxlib.ast/location_error.ml.html">location_error.ml</a></li><li><a href="../ppxlib.ast/ppxlib_ast.ml.html">ppxlib_ast.ml</a></li><li><a href="../ppxlib.ast/ppxlib_ast__.ml.html">ppxlib_ast__.ml</a></li><li><a href="../ppxlib.ast/stdlib0.ml.html">stdlib0.ml</a></li><li><a href="../ppxlib.ast/versions.ml.html">versions.ml</a></li><li><a href="../ppxlib.ast/warn.ml.html">warn.ml</a></li></ul></li><li>ppxlib.astlib<ul><li><a href="ast_402.ml.html">ast_402.ml</a></li><li><a href="ast_403.ml.html">ast_403.ml</a></li><li><a href="ast_404.ml.html">ast_404.ml</a></li><li><a href="ast_405.ml.html">ast_405.ml</a></li><li><a href="ast_406.ml.html">ast_406.ml</a></li><li><a href="ast_407.ml.html">ast_407.ml</a></li><li><a href="ast_408.ml.html">ast_408.ml</a></li><li><a href="ast_409.ml.html">ast_409.ml</a></li><li><a href="ast_410.ml.html">ast_410.ml</a></li><li><a href="ast_411.ml.html">ast_411.ml</a></li><li><a href="ast_412.ml.html">ast_412.ml</a></li><li><a href="ast_413.ml.html">ast_413.ml</a></li><li><a href="ast_414.ml.html">ast_414.ml</a></li><li><a href="ast_500.ml.html">ast_500.ml</a></li><li><a href="ast_501.ml.html">ast_501.ml</a></li><li><a href="ast_502.ml.html">ast_502.ml</a></li><li><a href="ast_503.ml.html">ast_503.ml</a></li><li><a href="ast_metadata.ml.html">ast_metadata.ml</a></li><li><a href="astlib.ml.html">astlib.ml</a></li><li><a href="astlib__.ml.html">astlib__.ml</a></li><li><a href="config.ml.html">config.ml</a></li><li><a href="keyword.ml.html">keyword.ml</a></li><li><a href="location.ml.html">location.ml</a></li><li><a href="longident.ml.html">longident.ml</a></li><li><a href="migrate_402_403.ml.html">migrate_402_403.ml</a></li><li><a href="migrate_403_402.ml.html">migrate_403_402.ml</a></li><li><a href="migrate_403_404.ml.html">migrate_403_404.ml</a></li><li><a href="migrate_404_403.ml.html">migrate_404_403.ml</a></li><li><a href="migrate_404_405.ml.html">migrate_404_405.ml</a></li><li><a href="migrate_405_404.ml.html">migrate_405_404.ml</a></li><li><a href="migrate_405_406.ml.html">migrate_405_406.ml</a></li><li><a href="migrate_406_405.ml.html">migrate_406_405.ml</a></li><li><a href="migrate_406_407.ml.html">migrate_406_407.ml</a></li><li><a href="migrate_407_406.ml.html">migrate_407_406.ml</a></li><li><a href="migrate_407_408.ml.html">migrate_407_408.ml</a></li><li><a href="migrate_408_407.ml.html">migrate_408_407.ml</a></li><li><a href="migrate_408_409.ml.html">migrate_408_409.ml</a></li><li><a href="migrate_409_408.ml.html">migrate_409_408.ml</a></li><li><a href="migrate_409_410.ml.html">migrate_409_410.ml</a></li><li><a href="migrate_410_409.ml.html">migrate_410_409.ml</a></li><li><a href="migrate_410_411.ml.html">migrate_410_411.ml</a></li><li><a href="migrate_411_410.ml.html">migrate_411_410.ml</a></li><li><a href="migrate_411_412.ml.html">migrate_411_412.ml</a></li><li><a href="migrate_412_411.ml.html">migrate_412_411.ml</a></li><li><a href="migrate_412_413.ml.html">migrate_412_413.ml</a></li><li><a href="migrate_413_412.ml.html">migrate_413_412.ml</a></li><li><a href="migrate_413_414.ml.html">migrate_413_414.ml</a></li><li><a href="migrate_414_413.ml.html">migrate_414_413.ml</a></li><li><a href="migrate_414_500.ml.html">migrate_414_500.ml</a></li><li><a href="#" class="current_unit">migrate_500_414.ml</a></li><li><a href="migrate_500_501.ml.html">migrate_500_501.ml</a></li><li><a href="migrate_501_500.ml.html">migrate_501_500.ml</a></li><li><a href="migrate_501_502.ml.html">migrate_501_502.ml</a></li><li><a href="migrate_502_501.ml.html">migrate_502_501.ml</a></li><li><a href="migrate_502_503.ml.html">migrate_502_503.ml</a></li><li><a href="migrate_503_502.ml.html">migrate_503_502.ml</a></li><li><a href="parse.ml.html">parse.ml</a></li><li><a href="pprintast.ml.html">pprintast.ml</a></li><li><a href="stdlib0.ml.html">stdlib0.ml</a></li></ul></li><li>ppxlib.metaquot<ul><li><a href="../ppxlib.metaquot/ppxlib_metaquot.ml.html">ppxlib_metaquot.ml</a></li></ul></li><li>ppxlib.metaquot_lifters<ul><li><a href="../ppxlib.metaquot_lifters/ppxlib_metaquot_lifters.ml.html">ppxlib_metaquot_lifters.ml</a></li></ul></li><li>ppxlib.print_diff<ul><li><a href="../ppxlib.print_diff/ppxlib_print_diff.ml.html">ppxlib_print_diff.ml</a></li></ul></li><li>ppxlib.runner<ul><li><a href="../ppxlib.runner/ppx_driver_runner.ml.html">ppx_driver_runner.ml</a></li><li><a href="../ppxlib.runner/ppxlib_runner.ml.html">ppxlib_runner.ml</a></li></ul></li><li>ppxlib.runner_as_ppx<ul><li><a href="../ppxlib.runner_as_ppx/ppx_driver_runner_as_ppx.ml.html">ppx_driver_runner_as_ppx.ml</a></li><li><a href="../ppxlib.runner_as_ppx/ppxlib_runner_as_ppx.ml.html">ppxlib_runner_as_ppx.ml</a></li></ul></li><li>ppxlib.stdppx<ul><li><a href="../ppxlib.stdppx/stdppx.ml.html">stdppx.ml</a></li></ul></li><li>ppxlib.traverse<ul><li><a href="../ppxlib.traverse/ppxlib_traverse.ml.html">ppxlib_traverse.ml</a></li></ul></li><li>ppxlib.traverse_builtins<ul><li><a href="../ppxlib.traverse_builtins/ppxlib_traverse_builtins.ml.html">ppxlib_traverse_builtins.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+</code><code class="source_code"><span><span class="MODULE">module</span> <span class="UIDENT">From</span> <span class="EQUAL">=</span> <span class="UIDENT">Ast_500</span><span class="EOL">
+</span><span class="MODULE">module</span> <span class="UIDENT">To</span> <span id="module-From"><span class="EQUAL">=</span> <span class="UIDENT">Ast_414</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(*$<a href="ast_500.ml.html"> open A</a></span></span>s<span id="module-To">tlib_cinaps_<a href="ast_414.ml.html">helpers</a></span> $*)<span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(*$ foreach_type (fun _ s -&gt;
+      Printf.printf
+        &quot;let copy_%s\n\
+        \  : Ast_500.Parsetree.%s -&gt; Ast_414.Parsetree.%s\n\
+        \  = fun x -&gt; x\n\n&quot;
+        s s s
+  )
+*)</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_structure</span><span class="EOL">
+</span>  <span class="COLON">:</span> <span class="UIDENT">Ast_500</span><span class="DOT">.</span><span class="UIDENT">Parse<span id="val-copy_structure">tree</span></span><span class="DOT">.</span><span class="LIDENT">structure</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">A<a href="ast_414.ml.html#module-Parsetree.type-structure">st_414</a></span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">structure</span><span class="EOL">
+</span>  <span class="EQUAL">=</span> <a href="ast_414.ml.html#module-Parsetree.type-structure"><span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_signat</span></a>ure<span class="EOL">
+</span>  <span class="COLON">:</span> <span class="UIDENT">A<span id="local_x_1">s</span>t_50<a href="#local_x_1">0</a></span><span class="DOT">.</span><span class="UIDENT">Parse<span id="val-copy_signature">tree</span></span><span class="DOT">.</span><span class="LIDENT">signature</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">A<a href="ast_414.ml.html#module-Parsetree.type-signature">st_414</a></span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">signature</span><span class="EOL">
+</span>  <span class="EQUAL">=</span> <a href="ast_414.ml.html#module-Parsetree.type-signature"><span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_toplev</span></a>el_phrase<span id="local_x_2"><span class="EOL">
+</span></span>  <span class="COLON">:</span> <span class="UIDENT"><a href="#local_x_2">A</a>st_500</span><span id="val-copy_toplevel_phrase"><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">toplevel_</span></span>phras<a href="ast_414.ml.html#module-Parsetree.type-toplevel_phrase">e <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">toplevel_p</span></a>hras<a href="ast_414.ml.html#module-Parsetree.type-toplevel_phrase">e<span class="EOL">
+</span>  <span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_core_t</span></a>ype<span class="EOL">
+</span>  <span class="COLON">:</span> <span class="UIDENT">A<span id="local_x_3">s</span>t_50<a href="#local_x_3">0</a></span><span class="DOT">.</span><span class="UIDENT">Parse<span id="val-copy_core_type">tree</span></span><span class="DOT">.</span><span class="LIDENT">core_type</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">A<a href="ast_414.ml.html#module-Parsetree.type-core_type">st_414</a></span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">core_type</span><span class="EOL">
+</span>  <span class="EQUAL">=</span> <a href="ast_414.ml.html#module-Parsetree.type-core_type"><span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_expres</span></a>sion<span class="EOL">
+</span>  <span class="COLON">:</span> <span class="UIDENT"><span id="local_x_4">A</span>st_5<a href="#local_x_4">0</a>0</span><span class="DOT">.</span><span class="UIDENT">Pars<span id="val-copy_expression">etree</span></span><span class="DOT">.</span><span class="LIDENT">expression</span> <span class="MINUSGREATER">-&gt;</span> <a href="ast_414.ml.html#module-Parsetree.type-expression"><span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">expression</span></a><span class="EOL">
+</span>  <span class="EQUAL">=</span><a href="ast_414.ml.html#module-Parsetree.type-expression"> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_patter</span></a>n<span class="EOL">
+</span>  <span class="COLON">:</span> <span class="UIDENT">Ast<span id="local_x_5">_</span>500</span><span class="DOT">.</span><span class="UIDENT"><a href="#local_x_5">P</a>arsetr<span id="val-copy_pattern">ee</span></span><span class="DOT">.</span><span class="LIDENT">pattern</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Ast<a href="ast_414.ml.html#module-Parsetree.type-pattern">_414</a></span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">pattern</span><span class="EOL">
+</span>  <span class="EQUAL">=</span> <span class="FUN">fu<a href="ast_414.ml.html#module-Parsetree.type-pattern">n</a></span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_case</span><span class="EOL">
+</span>  <span class="COLON">:</span> <span class="UIDENT">Ast_50<span id="local_x_6">0</span></span><span class="DOT">.</span><span class="UIDENT">Par<a href="#local_x_6">s</a>etree</span><span class="DOT">.</span><span id="val-copy_case"><span class="LIDENT">case</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">A</span></span>st_41<a href="ast_414.ml.html#module-Parsetree.type-case">4<span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">case</span><span class="EOL">
+</span>  <span class="EQUAL">=</span> <span class="FUN">f</span></a>un <span class="LIDENT">x</span><a href="ast_414.ml.html#module-Parsetree.type-case"> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_type_d</span></a>eclaratio<span id="local_x_7">n</span><span class="EOL">
+</span>  <span class="COLON">:</span><a href="#local_x_7"> </a><span class="UIDENT">Ast_50<span id="val-copy_type_declaration">0</span></span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">type_declarati<a href="ast_414.ml.html#module-Parsetree.type-type_declaration">on</a></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">type_declarati<a href="ast_414.ml.html#module-Parsetree.type-type_declaration">on</a></span><span class="EOL">
+</span>  <span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_type_extension</span><span class="EOL">
+</span><span id="local_x_8"> </span> <span class="COLON">:</span> <span class="UIDENT">A<a href="#local_x_8">s</a>t_500</span><span class="DOT">.</span><span id="val-copy_type_extension"><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">type_exte</span></span>nsion<a href="ast_414.ml.html#module-Parsetree.type-type_extension"> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">type_exten</span></a>sion<a href="ast_414.ml.html#module-Parsetree.type-type_extension"><span class="EOL">
+</span>  <span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_extens</span></a>ion_const<span id="local_x_9">r</span>ucto<a href="#local_x_9">r</a><span class="EOL">
+</span>  <span class="COLON">:</span> <span class="UIDENT">A<span id="val-copy_extension_constructor">st_500</span></span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">extension_cons<a href="ast_414.ml.html#module-Parsetree.type-extension_constructor">tructor</a></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">extension_cons<a href="ast_414.ml.html#module-Parsetree.type-extension_constructor">tructor</a></span><span class="EOL">
+</span>  <span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_class_expr</span><span class="EOL">
+</span>  <span class="COLON">:</span> <span class="UIDENT"><span id="local_x_10">A</span>st_5<a href="#local_x_10">0</a>0</span><span class="DOT">.</span><span class="UIDENT">Pars<span id="val-copy_class_expr">etree</span></span><span class="DOT">.</span><span class="LIDENT">class_expr</span> <span class="MINUSGREATER">-&gt;</span> <a href="ast_414.ml.html#module-Parsetree.type-class_expr"><span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">class_expr</span></a><span class="EOL">
+</span>  <span class="EQUAL">=</span><a href="ast_414.ml.html#module-Parsetree.type-class_expr"> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_class_</span></a>field<span class="EOL">
+</span>  <span class="COLON">:</span><span id="local_x_11"> </span><span class="UIDENT">Ast_<a href="#local_x_11">5</a>00</span><span class="DOT">.</span><span class="UIDENT">Par<span id="val-copy_class_field">setree</span></span><span class="DOT">.</span><span class="LIDENT">class_field</span> <span class="MINUSGREATER">-&gt;</span><a href="ast_414.ml.html#module-Parsetree.type-class_field"> <span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">class_fiel</span></a>d<span class="EOL">
+</span>  <a href="ast_414.ml.html#module-Parsetree.type-class_field"><span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_class_</span></a>type<span class="EOL">
+</span>  <span class="COLON">:</span> <span class="UIDENT"><span id="local_x_12">A</span>st_5<a href="#local_x_12">0</a>0</span><span class="DOT">.</span><span class="UIDENT">Pars<span id="val-copy_class_type">etree</span></span><span class="DOT">.</span><span class="LIDENT">class_type</span> <span class="MINUSGREATER">-&gt;</span> <a href="ast_414.ml.html#module-Parsetree.type-class_type"><span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">class_type</span></a><span class="EOL">
+</span>  <span class="EQUAL">=</span><a href="ast_414.ml.html#module-Parsetree.type-class_type"> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_class_</span></a>signature<span id="local_x_13"><span class="EOL">
+</span></span>  <span class="COLON">:</span> <span class="UIDENT"><a href="#local_x_13">A</a>st_500</span><span id="val-copy_class_signature"><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">class_sig</span></span>natur<a href="ast_414.ml.html#module-Parsetree.type-class_signature">e <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">class_sign</span></a>atur<a href="ast_414.ml.html#module-Parsetree.type-class_signature">e<span class="EOL">
+</span>  <span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_class_</span></a>type_fiel<span id="local_x_14">d</span><span class="EOL">
+</span>  <span class="COLON">:</span><a href="#local_x_14"> </a><span class="UIDENT">Ast_50<span id="val-copy_class_type_field">0</span></span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">class_type_fie<a href="ast_414.ml.html#module-Parsetree.type-class_type_field">ld</a></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">class_type_fie<a href="ast_414.ml.html#module-Parsetree.type-class_type_field">ld</a></span><span class="EOL">
+</span>  <span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_module_expr</span><span class="EOL">
+</span>  <span class="COLON">:</span><span id="local_x_15"> </span><span class="UIDENT">Ast_<a href="#local_x_15">5</a>00</span><span class="DOT">.</span><span class="UIDENT">Par<span id="val-copy_module_expr">setree</span></span><span class="DOT">.</span><span class="LIDENT">module_expr</span> <span class="MINUSGREATER">-&gt;</span><a href="ast_414.ml.html#module-Parsetree.type-module_expr"> <span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">module_exp</span></a>r<span class="EOL">
+</span>  <a href="ast_414.ml.html#module-Parsetree.type-module_expr"><span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_module</span></a>_type<span class="EOL">
+</span>  <span class="COLON">:</span><span id="local_x_16"> </span><span class="UIDENT">Ast_<a href="#local_x_16">5</a>00</span><span class="DOT">.</span><span class="UIDENT">Par<span id="val-copy_module_type">setree</span></span><span class="DOT">.</span><span class="LIDENT">module_type</span> <span class="MINUSGREATER">-&gt;</span><a href="ast_414.ml.html#module-Parsetree.type-module_type"> <span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">module_typ</span></a>e<span class="EOL">
+</span>  <a href="ast_414.ml.html#module-Parsetree.type-module_type"><span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_signat</span></a>ure_item<span class="EOL">
+</span><span id="local_x_17"> </span> <span class="COLON">:</span> <span class="UIDENT">A<a href="#local_x_17">s</a>t_500</span><span class="DOT">.</span><span id="val-copy_signature_item"><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">signature</span></span>_item<a href="ast_414.ml.html#module-Parsetree.type-signature_item"> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">signature_</span></a>item<a href="ast_414.ml.html#module-Parsetree.type-signature_item"><span class="EOL">
+</span>  <span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LIDENT">copy_struct</span></a>ure_item<span class="EOL">
+</span><span id="local_x_18"> </span> <span class="COLON">:</span> <span class="UIDENT">A<a href="#local_x_18">s</a>t_500</span><span class="DOT">.</span><span id="val-copy_structure_item"><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">structure</span></span>_item<a href="ast_414.ml.html#module-Parsetree.type-structure_item"> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Ast_414</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">structure_</span></a>item<a href="ast_414.ml.html#module-Parsetree.type-structure_item"><span class="EOL">
+</span>  <span class="EQUAL">=</span> <span class="FUN">fun</span> <span class="LIDENT">x</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">x</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(*$*)</span><span class="EOL">
+</span></a></span></code></pre></body></html>

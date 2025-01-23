@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>web_page_howto (brr.web_page_howto)</title><meta charset="utf-8"/><link rel="stylesheet" href="../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../';
+let search_urls = ['sherlodoc_db.js','../sherlodoc.js'];
+</script><script src="../odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../index.html">🏠</a> &#x00BB; <a href="index.html">Brr  <span class="version">v0.0.7</span></a> &#x00BB; Web page howto</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Type '/' to search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><h1 id="web-page-howto"><a href="#web-page-howto" class="anchor"></a>Web page howto</h1><p>A few tips to compile and integrate your programs in web pages.</p></header><div class="odoc-tocs"><nav class="odoc-toc odoc-local-toc"><ul><li><a href="#quick">Quick!</a><ul><li><a href="#ocaml_console">And the fancy OCaml console?</a></li></ul></li><li><a href="#dune_quick">Quick with Dune!</a><ul><li><a href="#dune_ocaml_console">And the fancy OCaml console?</a></li></ul></li><li><a href="#running">How do I run my program?</a></li><li><a href="#page_size">Web page size</a><ul><li><a href="#fmt">Avoid mentions of <code>Format</code></a></li></ul></li></ul></nav><nav class="odoc-toc odoc-global-toc"><ul><li><a href="index.html">Brr  <span class="version">v0.0.7</span></a><ul><li><a href="ffi_cookbook.html">Brr FFI cookbook</a></li><li><a href="ffi_manual.html">Brr FFI manual</a></li><li><a href="ocaml_console.html">OCaml console</a></li><li><a href="#" class="current_unit">Web page howto</a></li><li>Library <code>brr</code><ul><li><a href="brr/Brr/index.html">Brr</a></li><li><a href="brr/Brr_canvas/index.html">Brr_canvas</a></li><li><a href="brr/Brr_io/index.html">Brr_io</a></li><li><a href="brr/Brr_webaudio/index.html">Brr_webaudio</a></li><li><a href="brr/Brr_webcrypto/index.html">Brr_webcrypto</a></li><li><a href="brr/Brr_webgpu/index.html">Brr_webgpu</a></li><li><a href="brr/Brr_webmidi/index.html">Brr_webmidi</a></li><li><a href="brr/Brr_webworkers/index.html">Brr_webworkers</a></li><li><a href="brr/Fut/index.html">Fut</a></li><li><a href="brr/Jstr/index.html">Jstr</a></li><li><a href="brr/Jv/index.html">Jv</a></li></ul></li><li>Library <code>brr.ocaml_poke</code><ul><li><a href="brr.ocaml_poke/Brr_ocaml_poke/index.html">Brr_ocaml_poke</a></li></ul></li><li>Library <code>brr.ocaml_poke_ui</code><ul><li><a href="brr.ocaml_poke_ui/Brr_ocaml_poke_ui/index.html">Brr_ocaml_poke_ui</a></li></ul></li><li>Library <code>brr.poke</code><ul><li><a href="brr.poke/Brr_poke/index.html">Brr_poke</a></li></ul></li><li>Library <code>brr.poked</code><ul><li><a href="brr.poked/Brr_poked/index.html">Brr_poked</a></li></ul></li></ul></li></ul></nav></div><div class="odoc-content"><h2 id="quick"><a href="#quick" class="anchor"></a>Quick!</h2><p>Okay! Make a minimal web page.</p><pre>cat - &gt; min.html &lt;&lt;EOF
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;utf-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1.0&quot;&gt;
+  &lt;script type=&quot;text/javascript&quot; defer=&quot;defer&quot; src=&quot;min.js&quot;&gt;&lt;/script&gt;
+  &lt;title&gt;Brr minimal example&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;noscript&gt;Sorry, you need to enable JavaScript to see this page.&lt;/noscript&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+EOF</pre><p>Make a minimal program.</p><pre>cat - &gt; min.ml &lt;&lt;EOF
+open Brr
+let () =
+  El.set_children (Document.body G.document) El.[txt' &quot;Hello World!&quot;]
+EOF</pre><p>Compile your program to bytecode and then to JavaScript</p><pre>ocamlfind ocamlc -g -linkpkg -package brr min.ml
+js_of_ocaml a.out -o min.js</pre><p>Load the web page in your browser:</p><pre>xdg-open min.html    # Linux and XDG compliant systems
+open min.html        # macOS
+start min.html       # Windows</pre><h3 id="ocaml_console"><a href="#ocaml_console" class="anchor"></a>And the fancy OCaml console?</h3><p>Poke your program by side effect by linking against the <code>brr.poked</code> library. Make sure everything gets in by using <code>-linkall</code>, the <code>-g</code> flag is also required.</p><pre class="language-ocaml"><code>ocamlfind ocamlc -g -linkall -linkpkg -package brr,brr.poked min.ml</code></pre><p>Compile with <code>js_of_ocaml</code>. This time it needs to see the cmis and you need to add its toplevel and dynlink JavaScript support:</p><pre>js_of_ocaml $(ocamlfind query -r -i-format brr.poked) -I . \
+            --toplevel a.out -o min.js</pre><p>Make sure you have the OCaml console extension <a href="ocaml_console.html#ext_install" title="ext_install">installed</a> in your browser, open <code>min.html</code> and click on the OCaml tab of the developer tools.</p><h2 id="dune_quick"><a href="#dune_quick" class="anchor"></a>Quick with Dune!</h2><p>Assuming you created the two minimal sources <code>min.ml</code>, <code>min.html</code> from the <a href="#quick" title="quick">previous section</a>. Create this <code>dune</code> file:</p><pre>cat - &gt; dune &lt;&lt;EOF
+(executables
+  (names min)
+  (libraries brr)
+  (modes js))
+
+(rule
+  (targets min.js)
+  (deps min.bc.js)
+  (action (run cp %{deps} %{targets})))
+
+(alias
+  (name app)
+  (deps min.js min.html))
+EOF</pre><p>Now build and open the web page in your browser:</p><pre>dune build @app
+xdg-open _build/default/min.html # Linux and XDG compliant systems
+open _build/default/min.html     # macOS
+start _build/default/min.html    # Windows</pre><h3 id="dune_ocaml_console"><a href="#dune_ocaml_console" class="anchor"></a>And the fancy OCaml console?</h3><p>Poke your program by side effect by linking against the <code>brr.poked</code> library. Make sure to <code>-linkall</code> the modules into the bytecode and tweak a bit the <code>js_of_ocaml</code> invocation.</p><p>But first since you want to access your main program's modules disable the <code>dune</code> renaming business:</p><pre>echo '(wrapped_executables false)' &gt;&gt; dune-project</pre><p>This <code>dune</code> file should now do:</p><pre>cat - &gt; dune &lt;&lt;EOF
+(executables
+  (names min)
+  (libraries brr brr.poked)
+  (link_flags (:standard -linkall))
+  (modes byte))
+
+(rule
+ (targets min.js)
+ (action
+    (run %{bin:js_of_ocaml}
+         -I %{lib:brr:.} -I .min.eobjs/byte ; to see the program's cmis
+         --toplevel %{dep:min.bc} -o %{targets})))
+
+(alias
+  (name app)
+  (deps min.js min.html))
+EOF</pre><p>Now build and open the web page in your browser:</p><pre>dune build @app
+xdg-open _build/default/min.html # Linux and XDG compliant systems
+open _build/default/min.html     # macOS
+start _build/default/min.html    # Windows</pre><p>Make sure you have the OCaml console extension <a href="ocaml_console.html#ext_install" title="ext_install">installed</a> in your browser, and click on the OCaml tab of the developer tools.</p><h2 id="running"><a href="#running" class="anchor"></a>How do I run my program?</h2><p>Most programs need to have the page HTML parsed to operate meaningfully. There are various ways of detecting this state but the simplest is to keep the execution of your program to a classical toplevel <code>main</code> invocation and integrate your script in the web page with the <code>defer</code> attribute:</p><pre>&lt;script type=&quot;text/javascript&quot; defer src=&quot;myscript.js&quot;&gt;&lt;/script&gt;</pre><p>This ensures it is fetched in parallel but only executed when the document has been parsed (<a href="https://html.spec.whatwg.org/multipage/scripting.html#attr-script-defer">visual explanation</a>). Your main program can simply be:</p><pre class="language-ocaml"><code>let main () = Console.(log [str &quot;DOM content loaded.&quot;])
+let () = main ()</code></pre><p>However at this point ressources like stylesheets, images, fonts, etc. may not have loaded. This means that the page layout is not accurate and you cannot compute magnitudes that depend on them. Also if you draw on a canvas with custom fonts these may not be loaded yet and be substituted by generic ones.</p><p>In these cases wait for the <a href="brr/Brr/Ev/index.html#val-load"><code>Brr.Ev.load</code></a> event on the window to make sure all ressources are loaded. Here is a snippet that does this:</p><pre class="language-ocaml"><code>open Fut.Syntax
+
+let main () =
+  Console.(log [str &quot;DOM content loaded.&quot;]);
+  let* _ev = Ev.next Ev.load (Window.as_target G.window) in
+  Console.(log [str &quot;Resources loaded.&quot;]);
+  Fut.return ()
+
+let () = ignore (main ())</code></pre><p>Note that your <code>main</code> is always non-blocking (or the browser kills you) and returns before the page loads. The callbacks you setup and the futures you trigger do however outlive that invocation.</p><p>Also, if your program, maybe indirectly, uses <code>Stdlib.at_exit</code> – which is not made for the browser – these functions will execute at the <em>beginning</em> of the life of your web page as they are automatically executed after all toplevel OCaml executions are done.</p><h2 id="page_size"><a href="#page_size" class="anchor"></a>Web page size</h2><p>Watch your program size. Keep the tubes unclogged. Trim convenience dependencies and try not to integrate libraries providing functionality that already exists in the browser – like JSON parsing.</p><p><code>js_of_ocaml</code> performs excellent dead code elimination. All these modules of <a href="brr/Brr/index.html"><code>Brr</code></a> you are not using won't impact your page size. However it's only as good as it can be; global mutable state may be impossible to dead code away.</p><h3 id="fmt"><a href="#fmt" class="anchor"></a>Avoid mentions of <code>Format</code></h3><p>Unless you really want to use it, avoid any mention of <code>Format</code>. <code>js_of_ocaml</code> can't help you on that one – likely due to the presence of global mutable state in <code>Format</code>. With <code>js_of_ocaml</code> 3.6.0 and OCaml 4.09.0 this program:</p><pre class="language-ocaml"><code>open Brr
+let () = Console.(log [str &quot;Hey!&quot;])</code></pre><p>compiles, without special options, to 14ko. Adding this dead code:</p><pre class="language-ocaml"><code>open Brr
+let pp_float = Format.pp_print_float
+let () = Console.(log [str &quot;Hey!&quot;])</code></pre><p>makes it 35ko, which is 2.5 larger.</p></div></body></html>

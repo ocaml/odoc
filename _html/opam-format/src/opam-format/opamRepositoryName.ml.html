@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: opamRepositoryName.ml (opam-format.src.opam-format)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">opam-format</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; opam-format &#x00BB; opamRepositoryName.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>opamRepositoryName.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">opam-format</a><ul><li>Library <code>opam-format</code><ul><li><a href="../../opam-format/OpamFile/index.html">OpamFile</a></li><li><a href="../../opam-format/OpamFilter/index.html">OpamFilter</a></li><li><a href="../../opam-format/OpamFormat/index.html">OpamFormat</a></li><li><a href="../../opam-format/OpamFormatConfig/index.html">OpamFormatConfig</a></li><li><a href="../../opam-format/OpamFormula/index.html">OpamFormula</a></li><li><a href="../../opam-format/OpamInterpLexer/index.html">OpamInterpLexer</a></li><li><a href="../../opam-format/OpamLineLexer/index.html">OpamLineLexer</a></li><li><a href="../../opam-format/OpamPackage/index.html">OpamPackage</a></li><li><a href="../../opam-format/OpamPath/index.html">OpamPath</a></li><li><a href="../../opam-format/OpamPp/index.html">OpamPp</a></li><li><a href="../../opam-format/OpamRepositoryName/index.html">OpamRepositoryName</a></li><li><a href="../../opam-format/OpamSwitch/index.html">OpamSwitch</a></li><li><a href="../../opam-format/OpamSysPkg/index.html">OpamSysPkg</a></li><li><a href="../../opam-format/OpamTypes/index.html">OpamTypes</a></li><li><a href="../../opam-format/OpamTypesBase/index.html">OpamTypesBase</a></li><li><a href="../../opam-format/OpamVariable/index.html">OpamVariable</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>opam-format<ul><li><a href="opamFile.ml.html">opamFile.ml</a></li><li><a href="opamFilter.ml.html">opamFilter.ml</a></li><li><a href="opamFormat.ml.html">opamFormat.ml</a></li><li><a href="opamFormatConfig.ml.html">opamFormatConfig.ml</a></li><li><a href="opamFormula.ml.html">opamFormula.ml</a></li><li><a href="opamInterpLexer.ml.html">opamInterpLexer.ml</a></li><li><a href="opamLineLexer.ml.html">opamLineLexer.ml</a></li><li><a href="opamPackage.ml.html">opamPackage.ml</a></li><li><a href="opamPath.ml.html">opamPath.ml</a></li><li><a href="opamPp.ml.html">opamPp.ml</a></li><li><a href="#" class="current_unit">opamRepositoryName.ml</a></li><li><a href="opamSwitch.ml.html">opamSwitch.ml</a></li><li><a href="opamSysPkg.ml.html">opamSysPkg.ml</a></li><li><a href="opamTypesBase.ml.html">opamTypesBase.ml</a></li><li><a href="opamVariable.ml.html">opamVariable.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+</code><code class="source_code"><span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*    Copyright 2012-2016 OCamlPro                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*    Copyright 2012 INRIA                                                *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  All rights reserved. This file is distributed under the terms of the  *)</span><span class="EOL">
+</span><span class="COMMENT">(*  GNU Lesser General Public License version 2.1, with the special       *)</span><span class="EOL">
+</span><span class="COMMENT">(*  exception on linking described in the file LICENSE.                   *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="INCLUDE">include</span> <a href="../../../opam-core/src/opam-core/opamStd.ml.html#module-AbstractString"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">AbstractString</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-default"><span class="LIDENT">default</span></span> <span class="EQUAL">=</span> <span class="LIDENT">of_string</span> <span class="STRING">&quot;default&quot;</span><span class="EOL">
+</span></span></code></pre></body></html>

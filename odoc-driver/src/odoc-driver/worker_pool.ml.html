@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: worker_pool.ml (odoc-driver.src.odoc-driver)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">The odoc reference driver</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; odoc-driver &#x00BB; worker_pool.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>worker_pool.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">The odoc reference driver</a><ul><li>Library <code>odoc-driver</code><ul><li><a href="../../odoc-driver/Odoc_driver_lib/index.html">Odoc_driver_lib</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>odoc-driver<ul><li><a href="cmd_outputs.ml.html">cmd_outputs.ml</a></li><li><a href="common_args.ml.html">common_args.ml</a></li><li><a href="compile.ml.html">compile.ml</a></li><li><a href="db.ml.html">db.ml</a></li><li><a href="global_config.ml.html">global_config.ml</a></li><li><a href="landing_pages.ml.html">landing_pages.ml</a></li><li><a href="library_names.ml.html">library_names.ml</a></li><li><a href="monorepo_style.ml.html">monorepo_style.ml</a></li><li><a href="ocamlfind.ml.html">ocamlfind.ml</a></li><li><a href="ocamlobjinfo.ml.html">ocamlobjinfo.ml</a></li><li><a href="odoc.ml.html">odoc.ml</a></li><li><a href="odoc_driver_lib.ml.html">odoc_driver_lib.ml</a></li><li><a href="odoc_unit.ml.html">odoc_unit.ml</a></li><li><a href="odoc_units_of.ml.html">odoc_units_of.ml</a></li><li><a href="opam.ml.html">opam.ml</a></li><li><a href="packages.ml.html">packages.ml</a></li><li><a href="run.ml.html">run.ml</a></li><li><a href="sherlodoc.ml.html">sherlodoc.ml</a></li><li><a href="stats.ml.html">stats.ml</a></li><li><a href="util.ml.html">util.ml</a></li><li><a href="voodoo.ml.html">voodoo.ml</a></li><li><a href="#" class="current_unit">worker_pool.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+</code><code class="source_code"><span><span class="COMMENT">(* Worker pool *)</span><span class="EOL">
+</span><span class="OPEN">open</span> <a href="../../../eio/src/eio/eio.ml.html"><span class="UIDENT">Eio</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-request"><span class="TYPE">type</span> <span class="LIDENT">request</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span id="def_26"><span class="LIDENT">description</span> <span class="COLON">:</span> <span class="LIDENT">string</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_24"><span class="LIDENT">request</span> <span class="COLON">:</span> <span class="UIDENT">Bos</span><span class="DOT">.</span><span class="UIDENT">Cmd</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_23"><span class="LIDENT">output_file</span> <span class="COLON">:</span> <span class="UIDENT">Fpath</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span><span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-response"><span class="TYPE">type</span> <span class="LIDENT">response</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#type-result"><span class="LPAREN">(</span><a href="run.ml.html#type-t"><span class="UIDENT">Run</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="COMMA">,</span> <span class="LIDENT">exn</span><span class="RPAREN">)</span> <span class="LIDENT">result</span></a></span><span class="EOL">
+</span><span id="type-resolver"><span class="TYPE">type</span> <span class="LIDENT">resolver</span> <span class="EQUAL">=</span> <a href="../../../eio/src/eio.core/promise.ml.html#type-u"><span class="LIDENT">response</span> <span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Promise</span><span class="DOT">.</span><span class="LIDENT">u</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <a href="../../../eio/src/eio/stream.ml.html#type-t"><span class="LPAREN">(</span><span class="LIDENT">request</span> <span class="STAR">*</span> <span class="LIDENT">resolver</span><span class="RPAREN">)</span> <span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Stream</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-stream"><span class="LIDENT">stream</span></span> <span class="COLON">:</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <a href="../../../eio/src/eio/stream.ml.html#val-create"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Stream</span><span class="DOT">.</span><span class="LIDENT">create</span></a> <span class="INT">0</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-handle_job"><span class="LIDENT">handle_job</span></span> <span id="local_env_1"><span class="LIDENT">env</span></span> <span id="local_request_2"><span class="LIDENT">request</span></span> <span id="local_output_file_3"><span class="LIDENT">output_file</span></span> <span class="EQUAL">=</span> <a href="run.ml.html#val-run"><span class="UIDENT">Run</span><span class="DOT">.</span><span class="LIDENT">run</span></a> <a href="#local_env_1"><span class="LIDENT">env</span></a> <a href="#local_request_2"><span class="LIDENT">request</span></a> <a href="#local_output_file_3"><span class="LIDENT">output_file</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span id="exception-Worker_failure"><span class="EXCEPTION">exception</span> <span class="UIDENT">Worker_failure</span> <span class="OF">of</span> <a href="run.ml.html#type-t"><span class="UIDENT">Run</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-run_worker"><span class="LIDENT">run_worker</span></span> <span id="local_env_4"><span class="LIDENT">env</span></span> <span id="local_id_5"><span class="LIDENT">id</span></span> <span class="COLON">:</span> <span class="LIDENT">unit</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="def_25"><span class="LBRACE">{</span> <span id="local_request_7"><span class="LIDENT">request</span></span><span class="SEMI">;</span> <span id="local_output_file_8"><span class="LIDENT">output_file</span></span><span class="SEMI">;</span> <span id="local_description_6"><span class="LIDENT">description</span></span> <span class="RBRACE">}</span><span class="COMMA">,</span> <span id="local_reply_9"><span class="LIDENT">reply</span></span></span> <span class="EQUAL">=</span> <a href="../../../eio/src/eio/stream.ml.html#val-take"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Stream</span><span class="DOT">.</span><span class="LIDENT">take</span></a> <span class="LIDENT">stream</span> <span class="IN">in</span><span class="EOL">
+</span>  <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-incr"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">incr</span></a> <a href="stats.ml.html#val-stats"><span class="UIDENT">Stats</span><span class="DOT">.</span><span class="LIDENT">stats</span></a><span class="DOT">.</span><span class="LIDENT">processes</span><span class="SEMI">;</span><span class="EOL">
+</span>  <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-set"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">set</span></a> <a href="stats.ml.html#val-stats"><span class="UIDENT">Stats</span><span class="DOT">.</span><span class="LIDENT">stats</span></a><span class="DOT">.</span><span class="LIDENT">process_activity</span><span class="DOT">.</span><span class="LPAREN">(</span><a href="#local_id_5"><span class="LIDENT">id</span></a><span class="RPAREN">)</span> <a href="#local_description_6"><span class="LIDENT">description</span></a><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LPAREN">(</span><span class="TRY">try</span><span class="EOL">
+</span>     <span class="LET">let</span> <span id="local_result_10"><span class="LIDENT">result</span></span> <span class="EQUAL">=</span> <span class="LIDENT">handle_job</span> <a href="#local_env_4"><span class="LIDENT">env</span></a> <a href="#local_request_7"><span class="LIDENT">request</span></a> <a href="#local_output_file_8"><span class="LIDENT">output_file</span></a> <span class="IN">in</span><span class="EOL">
+</span>     <span class="MATCH">match</span> <a href="#local_result_10"><span class="LIDENT">result</span></a><span class="DOT">.</span><span class="LIDENT">status</span> <span class="WITH">with</span><span class="EOL">
+</span>     <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Exited</span> <span class="INT">0</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>         <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-decr"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">decr</span></a> <a href="stats.ml.html#val-stats"><span class="UIDENT">Stats</span><span class="DOT">.</span><span class="LIDENT">stats</span></a><span class="DOT">.</span><span class="LIDENT">processes</span><span class="SEMI">;</span><span class="EOL">
+</span>         <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-set"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">set</span></a> <a href="stats.ml.html#val-stats"><span class="UIDENT">Stats</span><span class="DOT">.</span><span class="LIDENT">stats</span></a><span class="DOT">.</span><span class="LIDENT">process_activity</span><span class="DOT">.</span><span class="LPAREN">(</span><a href="#local_id_5"><span class="LIDENT">id</span></a><span class="RPAREN">)</span> <span class="STRING">&quot;idle&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>         <a href="../../../eio/src/eio.core/promise.ml.html#val-resolve"><span class="UIDENT">Promise</span><span class="DOT">.</span><span class="LIDENT">resolve</span></a> <a href="#local_reply_9"><span class="LIDENT">reply</span></a> <span class="LPAREN">(</span><span class="UIDENT">Ok</span> <a href="#local_result_10"><span class="LIDENT">result</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>     <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../eio/src/eio.core/promise.ml.html#val-resolve_error"><span class="UIDENT">Promise</span><span class="DOT">.</span><span class="LIDENT">resolve_error</span></a> <a href="#local_reply_9"><span class="LIDENT">reply</span></a> <span class="LPAREN">(</span><span class="UIDENT">Worker_failure</span> <a href="#local_result_10"><span class="LIDENT">result</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>   <span class="WITH">with</span> <span id="local_e_11"><span class="LIDENT">e</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../eio/src/eio.core/promise.ml.html#val-resolve_error"><span class="UIDENT">Promise</span><span class="DOT">.</span><span class="LIDENT">resolve_error</span></a> <a href="#local_reply_9"><span class="LIDENT">reply</span></a> <a href="#local_e_11"><span class="LIDENT">e</span></a><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LIDENT">run_worker</span> <a href="#local_env_4"><span class="LIDENT">env</span></a> <a href="#local_id_5"><span class="LIDENT">id</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-submit"><span class="LIDENT">submit</span></span> <span id="local_description_12"><span class="LIDENT">description</span></span> <span id="local_request_13"><span class="LIDENT">request</span></span> <span id="local_output_file_14"><span class="LIDENT">output_file</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="def_22"><span id="local_reply_15"><span class="LIDENT">reply</span></span><span class="COMMA">,</span> <span id="local_resolve_reply_16"><span class="LIDENT">resolve_reply</span></span></span> <span class="EQUAL">=</span> <a href="../../../eio/src/eio.core/promise.ml.html#val-create"><span class="UIDENT">Promise</span><span class="DOT">.</span><span class="LIDENT">create</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <a href="../../../eio/src/eio/stream.ml.html#val-add"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Stream</span><span class="DOT">.</span><span class="LIDENT">add</span></a> <span class="LIDENT">stream</span> <span class="LPAREN">(</span><span class="LBRACE">{</span> <a href="#local_description_12"><span class="LIDENT">description</span></a><span class="SEMI">;</span> <a href="#local_request_13"><span class="LIDENT">request</span></a><span class="SEMI">;</span> <a href="#local_output_file_14"><span class="LIDENT">output_file</span></a> <span class="RBRACE">}</span><span class="COMMA">,</span> <a href="#local_resolve_reply_16"><span class="LIDENT">resolve_reply</span></a><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>  <a href="../../../eio/src/eio.core/promise.ml.html#val-await"><span class="UIDENT">Promise</span><span class="DOT">.</span><span class="LIDENT">await</span></a> <a href="#local_reply_15"><span class="LIDENT">reply</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-start_workers"><span class="LIDENT">start_workers</span></span> <span id="local_env_17"><span class="LIDENT">env</span></span> <span id="local_sw_18"><span class="LIDENT">sw</span></span> <span id="local_n_19"><span class="LIDENT">n</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_spawn_worker_20"><span class="LIDENT">spawn_worker</span></span> <span id="local_name_21"><span class="LIDENT">name</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="../../../eio/src/eio.core/fiber.ml.html#val-fork_daemon"><span class="UIDENT">Fiber</span><span class="DOT">.</span><span class="LIDENT">fork_daemon</span></a> <span class="TILDE">~</span><a href="#local_sw_18"><span class="LIDENT">sw</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="TRY">try</span><span class="EOL">
+</span>          <span class="LIDENT">run_worker</span> <a href="#local_env_17"><span class="LIDENT">env</span></a> <a href="#local_name_21"><span class="LIDENT">name</span></a><span class="SEMI">;</span><span class="EOL">
+</span>          <span class="BACKQUOTE">`</span><span class="UIDENT">Stop_daemon</span><span class="EOL">
+</span>        <span class="WITH">with</span> <span class="UIDENT">Stdlib</span><span class="DOT">.</span><span class="UIDENT">Exit</span> <span class="MINUSGREATER">-&gt;</span> <span class="BACKQUOTE">`</span><span class="UIDENT">Stop_daemon</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="IN">in</span><span class="EOL">
+</span>  <span class="FOR">for</span> <span class="LIDENT">i</span> <span class="EQUAL">=</span> <span class="INT">0</span> <span class="TO">to</span> <a href="#local_n_19"><span class="LIDENT">n</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(-)"><span class="MINUS">-</span></a> <span class="INT">1</span> <span class="DO">do</span><span class="EOL">
+</span>    <a href="#local_spawn_worker_20"><span class="LIDENT">spawn_worker</span></a> <span class="LIDENT">i</span><span class="EOL">
+</span>  <span class="DONE">done</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

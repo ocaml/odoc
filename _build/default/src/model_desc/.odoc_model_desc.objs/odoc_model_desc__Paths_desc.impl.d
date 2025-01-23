@@ -1,0 +1,1 @@
+src/model_desc/paths_desc.ml: AssetName ConstructorName DefName ExceptionName ExtensionName FieldName InstanceVariableName LabelName LocalName MethodName ModuleName ModuleTypeName Names Odoc_model PageName Paths Root TypeName Type_desc ValueName

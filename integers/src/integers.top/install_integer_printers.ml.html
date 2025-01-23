@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: install_integer_printers.ml (integers.src.integers.top)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">integers</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; integers.top &#x00BB; install_integer_printers.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>install_integer_printers.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">integers</a><ul><li>Library <code>integers</code><ul><li><a href="../../integers/Signed/index.html">Signed</a></li><li><a href="../../integers/Unsigned/index.html">Unsigned</a></li></ul></li><li>Library <code>integers.top</code><ul><li><a href="../../integers.top/Install_integer_printers/index.html">Install_integer_printers</a></li><li><a href="../../integers.top/Integer_printers/index.html">Integer_printers</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>integers<ul><li><a href="../integers/signed.ml.html">signed.ml</a></li><li><a href="../integers/unsigned.ml.html">unsigned.ml</a></li></ul></li><li>integers.top<ul><li><a href="#" class="current_unit">install_integer_printers.ml</a></li><li><a href="integer_printers.ml.html">integer_printers.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+</code><code class="source_code"><span><span class="COMMENT">(* Adapted from Anil Madhavapeddy's ocaml-uri package. *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="UNDERSCORE">_</span> <span class="EQUAL">=</span> <a href="integer_printers.ml.html#val-format_sint"><span class="UIDENT">Integer_printers</span><span class="DOT">.</span><span class="LIDENT">format_sint</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-printers"><span class="LIDENT">printers</span></span> <span class="EQUAL">=</span> <span class="LBRACKET">[</span> <span class="STRING">&quot;Integer_printers.format_sint&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Integer_printers.format_long&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Integer_printers.format_llong&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Integer_printers.format_uchar&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Integer_printers.format_uint8&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Integer_printers.format_uint16&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Integer_printers.format_uint32&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Integer_printers.format_uint64&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Integer_printers.format_ushort&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Integer_printers.format_uint&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Integer_printers.format_ulong&quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>                 <span class="STRING">&quot;Integer_printers.format_ullong&quot;</span><span class="SEMI">;</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-eval_string"><span class="LIDENT">eval_string</span></span><span class="EOL">
+</span>      <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_print_outcome_1"><span class="LIDENT">print_outcome</span></span> <span class="EQUAL">=</span> <span class="FALSE">false</span><span class="RPAREN">)</span> <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_err_formatter_2"><span class="LIDENT">err_formatter</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/format.ml.html#val-err_formatter"><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">err_formatter</span></a><span class="RPAREN">)</span> <span id="local_str_3"><span class="LIDENT">str</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_lexbuf_4"><span class="LIDENT">lexbuf</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/lexing.ml.html#val-from_string"><span class="UIDENT">Lexing</span><span class="DOT">.</span><span class="LIDENT">from_string</span></a> <a href="#local_str_3"><span class="LIDENT">str</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_phrase_5"><span class="LIDENT">phrase</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(!)"><span class="BANG">!</span></a><span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">parse_toplevel_phrase</span> <a href="#local_lexbuf_4"><span class="LIDENT">lexbuf</span></a> <span class="IN">in</span><span class="EOL">
+</span>  <span class="UIDENT">Toploop</span><span class="DOT">.</span><span class="LIDENT">execute_phrase</span> <a href="#local_print_outcome_1"><span class="LIDENT">print_outcome</span></a> <a href="#local_err_formatter_2"><span class="LIDENT">err_formatter</span></a> <a href="#local_phrase_5"><span class="LIDENT">phrase</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-install_printers"><span class="LIDENT">install_printers</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="LBRACKET">[</span><span class="RBRACKET">]</span> <span class="MINUSGREATER">-&gt;</span> <span class="TRUE">true</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_printer_6"><span class="LIDENT">printer</span></span> <span class="COLONCOLON">::</span> <span id="local_printers_7"><span class="LIDENT">printers</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_cmd_8"><span class="LIDENT">cmd</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/printf.ml.html#val-sprintf"><span class="UIDENT">Printf</span><span class="DOT">.</span><span class="LIDENT">sprintf</span></a> <span class="STRING">&quot;#install_printer %s;;&quot;</span> <a href="#local_printer_6"><span class="LIDENT">printer</span></a> <span class="IN">in</span><span class="EOL">
+</span>      <span class="LIDENT">eval_string</span> <a href="#local_cmd_8"><span class="LIDENT">cmd</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&amp;&amp;)"><span class="AMPERAMPER">&amp;&amp;</span></a> <span class="LIDENT">install_printers</span> <a href="#local_printers_7"><span class="LIDENT">printers</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-not"><span class="LIDENT">not</span></a> <span class="LPAREN">(</span><span class="LIDENT">install_printers</span> <span class="LIDENT">printers</span><span class="RPAREN">)</span> <span class="THEN">then</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/format.ml.html#val-eprintf"><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">eprintf</span></a> <span class="STRING">&quot;Problem installing integer-printers@.&quot;</span><span class="EOL">
+</span></span></code></pre></body></html>

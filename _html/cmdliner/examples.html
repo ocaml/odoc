@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>examples (cmdliner.examples)</title><meta charset="utf-8"/><link rel="stylesheet" href="../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script><script>let base_url = '../';
+let search_urls = ['sherlodoc_db.js','../sherlodoc.js'];
+</script><script src="../odoc_search.js" defer="defer"></script></head><body class="odoc"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../index.html">🏠</a> &#x00BB; <a href="index.html">Cmdliner  <span class="version">v1.3.0</span></a> &#x00BB; Examples</nav><div class="odoc-search"><div class="search-inner"><input class="search-bar" placeholder="🔎 Type '/' to search..."/><div class="search-snake"></div><div class="search-result"></div></div></div><header class="odoc-preamble"><h1 id="examples"><a href="#examples" class="anchor"></a>Examples</h1><p>The examples are self-contained, cut and paste them in a file to play with them.</p></header><div class="odoc-tocs"><nav class="odoc-toc odoc-local-toc"><ul><li><a href="#exrm">A <code>rm</code> command</a></li><li><a href="#excp">A <code>cp</code> command</a></li><li><a href="#extail">A <code>tail</code> command</a></li><li><a href="#exdarcs">A <code>darcs</code> command</a></li></ul></nav><nav class="odoc-toc odoc-global-toc"><ul><li><a href="index.html">Cmdliner  <span class="version">v1.3.0</span></a><ul><li><a href="cli.html">Command line interface</a></li><li><a href="#" class="current_unit">Examples</a></li><li><a href="tool_man.html">Tool man pages</a></li><li><a href="tutorial.html">Tutorial</a></li><li>Library <code>cmdliner</code><ul><li><a href="cmdliner/Cmdliner/index.html">Cmdliner</a></li></ul></li></ul></li></ul></nav></div><div class="odoc-content"><h2 id="exrm"><a href="#exrm" class="anchor"></a>A <code>rm</code> command</h2><p>We define the command line interface of an <code>rm</code> command with the synopsis:</p><pre>rm [OPTION]… FILE…</pre><p>The <code>-f</code>, <code>-i</code> and <code>-I</code> flags define the prompt behaviour of <code>rm</code>. It is represented in our program by the <code>prompt</code> type. If more than one of these flags is present on the command line the last one takes precedence.</p><p>To implement this behaviour we map the presence of these flags to values of the <code>prompt</code> type by using <a href="cmdliner/Cmdliner/Arg/index.html#val-vflag_all"><code>Cmdliner.Arg.vflag_all</code></a>.</p><p>This argument will contain all occurrences of the flag on the command line and we just take the <a href="cmdliner/Cmdliner/Arg/index.html#val-last"><code>Cmdliner.Arg.last</code></a> one to define our term value. If there is no occurrence the last value of the default list <code>[Always]</code> is taken. This means the default prompt behaviour is <code>Always</code>.</p><pre class="language-ocaml"><code>(* Implementation of the command, we just print the args. *)
+
+type prompt = Always | Once | Never
+let prompt_str = function
+| Always -&gt; &quot;always&quot; | Once -&gt; &quot;once&quot; | Never -&gt; &quot;never&quot;
+
+let rm prompt recurse files =
+  Printf.printf &quot;prompt = %s\nrecurse = %B\nfiles = %s\n&quot;
+    (prompt_str prompt) recurse (String.concat &quot;, &quot; files)
+
+(* Command line interface *)
+
+open Cmdliner
+
+let files = Arg.(non_empty &amp; pos_all file [] &amp; info [] ~docv:&quot;FILE&quot;)
+let prompt =
+  let always =
+    let doc = &quot;Prompt before every removal.&quot; in
+    Always, Arg.info [&quot;i&quot;] ~doc
+  in
+  let never =
+    let doc = &quot;Ignore nonexistent files and never prompt.&quot; in
+    Never, Arg.info [&quot;f&quot;; &quot;force&quot;] ~doc
+  in
+  let once =
+    let doc = &quot;Prompt once before removing more than three files, or when
+               removing recursively. Less intrusive than $(b,-i), while
+               still giving protection against most mistakes.&quot;
+    in
+    Once, Arg.info [&quot;I&quot;] ~doc
+  in
+  Arg.(last &amp; vflag_all [Always] [always; never; once])
+
+let recursive =
+  let doc = &quot;Remove directories and their contents recursively.&quot; in
+  Arg.(value &amp; flag &amp; info [&quot;r&quot;; &quot;R&quot;; &quot;recursive&quot;] ~doc)
+
+let cmd =
+  let doc = &quot;Remove files or directories&quot; in
+  let man = [
+    `S Manpage.s_description;
+    `P &quot;$(tname) removes each specified $(i,FILE). By default it does not
+        remove directories, to also remove them and their contents, use the
+        option $(b,--recursive) ($(b,-r) or $(b,-R)).&quot;;
+    `P &quot;To remove a file whose name starts with a $(b,-), for example
+        $(b,-foo), use one of these commands:&quot;;
+    `Pre &quot;$(mname) $(b,-- -foo)&quot;; `Noblank;
+    `Pre &quot;$(mname) $(b,./-foo)&quot;;
+    `P &quot;$(tname) removes symbolic links, not the files referenced by the
+        links.&quot;;
+    `S Manpage.s_bugs; `P &quot;Report bugs to &lt;bugs@example.org&gt;.&quot;;
+    `S Manpage.s_see_also; `P &quot;$(b,rmdir)(1), $(b,unlink)(2)&quot; ]
+  in
+  let info = Cmd.info &quot;rm&quot; ~version:&quot;v1.3.0&quot; ~doc ~man in
+  Cmd.v info Term.(const rm $ prompt $ recursive $ files)
+
+let main () = exit (Cmd.eval cmd)
+let () = main ()</code></pre><h2 id="excp"><a href="#excp" class="anchor"></a>A <code>cp</code> command</h2><p>We define the command line interface of a <code>cp</code> command with the synopsis:</p><pre>cp [OPTION]… SOURCE… DEST</pre><p>The <code>DEST</code> argument must be a directory if there is more than one <code>SOURCE</code>. This constraint is too complex to be expressed by the combinators of <a href="cmdliner/Cmdliner/Arg/index.html"><code>Cmdliner.Arg</code></a>.</p><p>Hence we just give <code>DEST</code> the <a href="cmdliner/Cmdliner/Arg/index.html#val-string"><code>Cmdliner.Arg.string</code></a> type and verify the constraint at the beginning of the implementation of <code>cp</code>. If the constraint is unsatisfied we return an <code>`Error</code> result. By using <a href="cmdliner/Cmdliner/Term/index.html#val-ret"><code>Cmdliner.Term.ret</code></a> on the lifted result <code>cp_t</code> of <code>cp</code>, <code>Cmdliner</code> handles the error reporting.</p><pre class="language-ocaml"><code>(* Implementation, we check the dest argument and print the args *)
+
+let cp verbose recurse force srcs dest =
+  let many = List.length srcs &gt; 1 in
+  if many &amp;&amp; (not (Sys.file_exists dest) || not (Sys.is_directory dest))
+  then `Error (false, dest ^ &quot;: not a directory&quot;) else
+  `Ok (Printf.printf
+         &quot;verbose = %B\nrecurse = %B\nforce = %B\nsrcs = %s\ndest = %s\n&quot;
+         verbose recurse force (String.concat &quot;, &quot; srcs) dest)
+
+(* Command line interface *)
+
+open Cmdliner
+
+let verbose =
+  let doc = &quot;Print file names as they are copied.&quot; in
+  Arg.(value &amp; flag &amp; info [&quot;v&quot;; &quot;verbose&quot;] ~doc)
+
+let recurse =
+  let doc = &quot;Copy directories recursively.&quot; in
+  Arg.(value &amp; flag &amp; info [&quot;r&quot;; &quot;R&quot;; &quot;recursive&quot;] ~doc)
+
+let force =
+  let doc = &quot;If a destination file cannot be opened, remove it and try again.&quot;in
+  Arg.(value &amp; flag &amp; info [&quot;f&quot;; &quot;force&quot;] ~doc)
+
+let srcs =
+  let doc = &quot;Source file(s) to copy.&quot; in
+  Arg.(non_empty &amp; pos_left ~rev:true 0 file [] &amp; info [] ~docv:&quot;SOURCE&quot; ~doc)
+
+let dest =
+  let doc = &quot;Destination of the copy. Must be a directory if there is more \
+             than one $(i,SOURCE).&quot; in
+  let docv = &quot;DEST&quot; in
+  Arg.(required &amp; pos ~rev:true 0 (some string) None &amp; info [] ~docv ~doc)
+
+let cmd =
+  let doc = &quot;Copy files&quot; in
+  let man_xrefs =
+    [ `Tool &quot;mv&quot;; `Tool &quot;scp&quot;; `Page (&quot;umask&quot;, 2); `Page (&quot;symlink&quot;, 7) ]
+  in
+  let man =
+    [ `S Manpage.s_bugs;
+      `P &quot;Email them to &lt;bugs@example.org&gt;.&quot;; ]
+  in
+  let info = Cmd.info &quot;cp&quot; ~version:&quot;v1.3.0&quot; ~doc ~man ~man_xrefs in
+  Cmd.v info Term.(ret (const cp $ verbose $ recurse $ force $ srcs $ dest))
+
+
+let main () = exit (Cmd.eval cmd)
+let () = main ()</code></pre><h2 id="extail"><a href="#extail" class="anchor"></a>A <code>tail</code> command</h2><p>We define the command line interface of a <code>tail</code> command with the synopsis:</p><pre>tail [OPTION]… [FILE]…</pre><p>The <code>--lines</code> option whose value specifies the number of last lines to print has a special syntax where a <code>+</code> prefix indicates to start printing from that line number. In the program this is represented by the <code>loc</code> type. We define a custom <code>loc_arg</code> <a href="cmdliner/Cmdliner/Arg/index.html#type-conv" title="Cmdliner.Arg.conv">argument converter</a> for this option.</p><p>The <code>--follow</code> option has an optional enumerated value. The argument converter <code>follow</code>, created with <a href="cmdliner/Cmdliner/Arg/index.html#val-enum"><code>Cmdliner.Arg.enum</code></a> parses the option value into the enumeration. By using <a href="cmdliner/Cmdliner/Arg/index.html#val-some"><code>Cmdliner.Arg.some</code></a> and the <code>~vopt</code> argument of <a href="cmdliner/Cmdliner/Arg/index.html#val-opt"><code>Cmdliner.Arg.opt</code></a>, the term corresponding to the option <code>--follow</code> evaluates to <code>None</code> if <code>--follow</code> is absent from the command line, to <code>Some Descriptor</code> if present but without a value and to <code>Some v</code> if present with a value <code>v</code> specified.</p><pre class="language-ocaml"><code>(* Implementation of the command, we just print the args. *)
+
+type loc = bool * int
+type verb = Verbose | Quiet
+type follow = Name | Descriptor
+
+let str = Printf.sprintf
+let opt_str sv = function None -&gt; &quot;None&quot; | Some v -&gt; str &quot;Some(%s)&quot; (sv v)
+let loc_str (rev, k) = if rev then str &quot;%d&quot; k else str &quot;+%d&quot; k
+let follow_str = function Name -&gt; &quot;name&quot; | Descriptor -&gt; &quot;descriptor&quot;
+let verb_str = function Verbose -&gt; &quot;verbose&quot; | Quiet -&gt; &quot;quiet&quot;
+
+let tail lines follow verb pid files =
+  Printf.printf
+    &quot;lines = %s\nfollow = %s\nverb = %s\npid = %s\nfiles = %s\n&quot;
+    (loc_str lines) (opt_str follow_str follow) (verb_str verb)
+    (opt_str string_of_int pid) (String.concat &quot;, &quot; files)
+
+(* Command line interface *)
+
+open Cmdliner
+
+let loc_arg =
+  let parse s =
+    try
+      if s &lt;&gt; &quot;&quot; &amp;&amp; s.[0] &lt;&gt; '+'
+      then Ok (true, int_of_string s)
+      else Ok (false, int_of_string (String.sub s 1 (String.length s - 1)))
+    with Failure _ -&gt; Error (`Msg &quot;unable to parse integer&quot;)
+  in
+  let print ppf p = Format.fprintf ppf &quot;%s&quot; (loc_str p) in
+  Arg.conv ~docv:&quot;N&quot; (parse, print)
+
+let lines =
+  let doc = &quot;Output the last $(docv) lines or use $(i,+)$(docv) to start \
+             output after the $(i,N)-1th line.&quot;
+  in
+  Arg.(value &amp; opt loc_arg (true, 10) &amp; info [&quot;n&quot;; &quot;lines&quot;] ~docv:&quot;N&quot; ~doc)
+
+let follow =
+  let doc = &quot;Output appended data as the file grows. $(docv) specifies how \
+             the file should be tracked, by its $(b,name) or by its \
+             $(b,descriptor).&quot;
+  in
+  let follow = Arg.enum [&quot;name&quot;, Name; &quot;descriptor&quot;, Descriptor] in
+  Arg.(value &amp; opt (some follow) ~vopt:(Some Descriptor) None &amp;
+       info [&quot;f&quot;; &quot;follow&quot;] ~docv:&quot;ID&quot; ~doc)
+
+let verb =
+  let quiet =
+    let doc = &quot;Never output headers giving file names.&quot; in
+    Quiet, Arg.info [&quot;q&quot;; &quot;quiet&quot;; &quot;silent&quot;] ~doc
+  in
+  let verbose =
+    let doc = &quot;Always output headers giving file names.&quot; in
+    Verbose, Arg.info [&quot;v&quot;; &quot;verbose&quot;] ~doc
+  in
+  Arg.(last &amp; vflag_all [Quiet] [quiet; verbose])
+
+let pid =
+  let doc = &quot;With -f, terminate after process $(docv) dies.&quot; in
+  Arg.(value &amp; opt (some int) None &amp; info [&quot;pid&quot;] ~docv:&quot;PID&quot; ~doc)
+
+let files = Arg.(value &amp; (pos_all non_dir_file []) &amp; info [] ~docv:&quot;FILE&quot;)
+
+let cmd =
+  let doc = &quot;Display the last part of a file&quot; in
+  let man = [
+    `S Manpage.s_description;
+    `P &quot;$(tname) prints the last lines of each $(i,FILE) to standard output. If
+        no file is specified reads standard input. The number of printed
+        lines can be  specified with the $(b,-n) option.&quot;;
+    `S Manpage.s_bugs;
+    `P &quot;Report them to &lt;bugs@example.org&gt;.&quot;;
+    `S Manpage.s_see_also;
+    `P &quot;$(b,cat)(1), $(b,head)(1)&quot; ]
+  in
+  let info = Cmd.info &quot;tail&quot; ~version:&quot;v1.3.0&quot; ~doc ~man in
+  Cmd.v info Term.(const tail $ lines $ follow $ verb $ pid $ files)
+
+
+let main () = exit (Cmd.eval cmd)
+let () = main ()</code></pre><h2 id="exdarcs"><a href="#exdarcs" class="anchor"></a>A <code>darcs</code> command</h2><p>We define the command line interface of a <code>darcs</code> command with the synopsis:</p><pre>darcs [COMMAND] …</pre><p>The <code>--debug</code>, <code>-q</code>, <code>-v</code> and <code>--prehook</code> options are available in each command. To avoid having to pass them individually to each command we gather them in a record of type <code>copts</code>. By lifting the record constructor <code>copts</code> into the term <code>copts_t</code> we now have a term that we can pass to the commands to stand for an argument of type <code>copts</code>. These options are documented in a section called <code>COMMON OPTIONS</code>, since we also want to put <code>--help</code> and <code>--version</code> in this section, the term information of commands makes a judicious use of the <code>sdocs</code> parameter of <a href="cmdliner/Cmdliner/Term/index.html#val-info"><code>Cmdliner.Term.info</code></a>.</p><p>The <code>help</code> command shows help about commands or other topics. The help shown for commands is generated by <code>Cmdliner</code> by making an appropriate use of <a href="cmdliner/Cmdliner/Term/index.html#val-ret"><code>Cmdliner.Term.ret</code></a> on the lifted <code>help</code> function.</p><p>If the program is invoked without a command we just want to show the help of the program as printed by <code>Cmdliner</code> with <code>--help</code>. This is done by the <code>default_cmd</code> term.</p><pre class="language-ocaml"><code>(* Implementations, just print the args. *)
+
+type verb = Normal | Quiet | Verbose
+type copts = { debug : bool; verb : verb; prehook : string option }
+
+let str = Printf.sprintf
+let opt_str sv = function None -&gt; &quot;None&quot; | Some v -&gt; str &quot;Some(%s)&quot; (sv v)
+let opt_str_str = opt_str (fun s -&gt; s)
+let verb_str = function
+  | Normal -&gt; &quot;normal&quot; | Quiet -&gt; &quot;quiet&quot; | Verbose -&gt; &quot;verbose&quot;
+
+let pr_copts oc copts = Printf.fprintf oc
+    &quot;debug = %B\nverbosity = %s\nprehook = %s\n&quot;
+    copts.debug (verb_str copts.verb) (opt_str_str copts.prehook)
+
+let initialize copts repodir = Printf.printf
+    &quot;%arepodir = %s\n&quot; pr_copts copts repodir
+
+let record copts name email all ask_deps files = Printf.printf
+    &quot;%aname = %s\nemail = %s\nall = %B\nask-deps = %B\nfiles = %s\n&quot;
+    pr_copts copts (opt_str_str name) (opt_str_str email) all ask_deps
+    (String.concat &quot;, &quot; files)
+
+let help copts man_format cmds topic = match topic with
+| None -&gt; `Help (`Pager, None) (* help about the program. *)
+| Some topic -&gt;
+    let topics = &quot;topics&quot; :: &quot;patterns&quot; :: &quot;environment&quot; :: cmds in
+    let conv, _ = Cmdliner.Arg.enum (List.rev_map (fun s -&gt; (s, s)) topics) in
+    match conv topic with
+    | `Error e -&gt; `Error (false, e)
+    | `Ok t when t = &quot;topics&quot; -&gt; List.iter print_endline topics; `Ok ()
+    | `Ok t when List.mem t cmds -&gt; `Help (man_format, Some t)
+    | `Ok t -&gt;
+        let page = (topic, 7, &quot;&quot;, &quot;&quot;, &quot;&quot;), [`S topic; `P &quot;Say something&quot;;] in
+        `Ok (Cmdliner.Manpage.print man_format Format.std_formatter page)
+
+open Cmdliner
+
+(* Help sections common to all commands *)
+
+let help_secs = [
+ `S Manpage.s_common_options;
+ `P &quot;These options are common to all commands.&quot;;
+ `S &quot;MORE HELP&quot;;
+ `P &quot;Use $(mname) $(i,COMMAND) --help for help on a single command.&quot;;`Noblank;
+ `P &quot;Use $(mname) $(b,help patterns) for help on patch matching.&quot;; `Noblank;
+ `P &quot;Use $(mname) $(b,help environment) for help on environment variables.&quot;;
+ `S Manpage.s_bugs; `P &quot;Check bug reports at http://bugs.example.org.&quot;;]
+
+(* Options common to all commands *)
+
+let copts debug verb prehook = { debug; verb; prehook }
+let copts_t =
+  let docs = Manpage.s_common_options in
+  let debug =
+    let doc = &quot;Give only debug output.&quot; in
+    Arg.(value &amp; flag &amp; info [&quot;debug&quot;] ~docs ~doc)
+  in
+  let verb =
+    let doc = &quot;Suppress informational output.&quot; in
+    let quiet = Quiet, Arg.info [&quot;q&quot;; &quot;quiet&quot;] ~docs ~doc in
+    let doc = &quot;Give verbose output.&quot; in
+    let verbose = Verbose, Arg.info [&quot;v&quot;; &quot;verbose&quot;] ~docs ~doc in
+    Arg.(last &amp; vflag_all [Normal] [quiet; verbose])
+  in
+  let prehook =
+    let doc = &quot;Specify command to run before this $(mname) command.&quot; in
+    Arg.(value &amp; opt (some string) None &amp; info [&quot;prehook&quot;] ~docs ~doc)
+  in
+  Term.(const copts $ debug $ verb $ prehook)
+
+(* Commands *)
+
+let sdocs = Manpage.s_common_options
+
+let initialize_cmd =
+  let repodir =
+    let doc = &quot;Run the program in repository directory $(docv).&quot; in
+    Arg.(value &amp; opt file Filename.current_dir_name &amp; info [&quot;repodir&quot;]
+           ~docv:&quot;DIR&quot; ~doc)
+  in
+  let doc = &quot;make the current directory a repository&quot; in
+  let man = [
+    `S Manpage.s_description;
+    `P &quot;Turns the current directory into a Darcs repository. Any
+       existing files and subdirectories become …&quot;;
+    `Blocks help_secs; ]
+  in
+  let info = Cmd.info &quot;initialize&quot; ~doc ~sdocs ~man in
+  Cmd.v info Term.(const initialize $ copts_t $ repodir)
+
+let record_cmd =
+  let pname =
+    let doc = &quot;Name of the patch.&quot; in
+    Arg.(value &amp; opt (some string) None &amp; info [&quot;m&quot;; &quot;patch-name&quot;] ~docv:&quot;NAME&quot;
+           ~doc)
+  in
+  let author =
+    let doc = &quot;Specifies the author's identity.&quot; in
+    Arg.(value &amp; opt (some string) None &amp; info [&quot;A&quot;; &quot;author&quot;] ~docv:&quot;EMAIL&quot;
+           ~doc)
+  in
+  let all =
+    let doc = &quot;Answer yes to all patches.&quot; in
+    Arg.(value &amp; flag &amp; info [&quot;a&quot;; &quot;all&quot;] ~doc)
+  in
+  let ask_deps =
+    let doc = &quot;Ask for extra dependencies.&quot; in
+    Arg.(value &amp; flag &amp; info [&quot;ask-deps&quot;] ~doc)
+  in
+  let files = Arg.(value &amp; (pos_all file) [] &amp; info [] ~docv:&quot;FILE or DIR&quot;) in
+  let doc = &quot;create a patch from unrecorded changes&quot; in
+  let man =
+    [`S Manpage.s_description;
+     `P &quot;Creates a patch from changes in the working tree. If you specify
+         a set of files …&quot;;
+     `Blocks help_secs; ]
+  in
+  let info = Cmd.info &quot;record&quot; ~doc ~sdocs ~man in
+  Cmd.v info
+    Term.(const record $ copts_t $ pname $ author $ all $ ask_deps $ files)
+
+let help_cmd =
+  let topic =
+    let doc = &quot;The topic to get help on. $(b,topics) lists the topics.&quot; in
+    Arg.(value &amp; pos 0 (some string) None &amp; info [] ~docv:&quot;TOPIC&quot; ~doc)
+  in
+  let doc = &quot;display help about darcs and darcs commands&quot; in
+  let man =
+    [`S Manpage.s_description;
+     `P &quot;Prints help about darcs commands and other subjects…&quot;;
+     `Blocks help_secs; ]
+  in
+  let info = Cmd.info &quot;help&quot; ~doc ~man in
+  Cmd.v info
+    Term.(ret (const help $ copts_t $ Arg.man_format $ Term.choice_names $
+               topic))
+
+let main_cmd =
+  let doc = &quot;a revision control system&quot; in
+  let man = help_secs in
+  let info = Cmd.info &quot;darcs&quot; ~version:&quot;v1.3.0&quot; ~doc ~sdocs ~man in
+  let default = Term.(ret (const (fun _ -&gt; `Help (`Pager, None)) $ copts_t)) in
+  Cmd.group info ~default [initialize_cmd; record_cmd; help_cmd]
+
+let () = exit (Cmd.eval main_cmd)</code></pre></div></body></html>

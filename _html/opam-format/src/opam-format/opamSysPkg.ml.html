@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: opamSysPkg.ml (opam-format.src.opam-format)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">opam-format</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; opam-format &#x00BB; opamSysPkg.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>opamSysPkg.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">opam-format</a><ul><li>Library <code>opam-format</code><ul><li><a href="../../opam-format/OpamFile/index.html">OpamFile</a></li><li><a href="../../opam-format/OpamFilter/index.html">OpamFilter</a></li><li><a href="../../opam-format/OpamFormat/index.html">OpamFormat</a></li><li><a href="../../opam-format/OpamFormatConfig/index.html">OpamFormatConfig</a></li><li><a href="../../opam-format/OpamFormula/index.html">OpamFormula</a></li><li><a href="../../opam-format/OpamInterpLexer/index.html">OpamInterpLexer</a></li><li><a href="../../opam-format/OpamLineLexer/index.html">OpamLineLexer</a></li><li><a href="../../opam-format/OpamPackage/index.html">OpamPackage</a></li><li><a href="../../opam-format/OpamPath/index.html">OpamPath</a></li><li><a href="../../opam-format/OpamPp/index.html">OpamPp</a></li><li><a href="../../opam-format/OpamRepositoryName/index.html">OpamRepositoryName</a></li><li><a href="../../opam-format/OpamSwitch/index.html">OpamSwitch</a></li><li><a href="../../opam-format/OpamSysPkg/index.html">OpamSysPkg</a></li><li><a href="../../opam-format/OpamTypes/index.html">OpamTypes</a></li><li><a href="../../opam-format/OpamTypesBase/index.html">OpamTypesBase</a></li><li><a href="../../opam-format/OpamVariable/index.html">OpamVariable</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>opam-format<ul><li><a href="opamFile.ml.html">opamFile.ml</a></li><li><a href="opamFilter.ml.html">opamFilter.ml</a></li><li><a href="opamFormat.ml.html">opamFormat.ml</a></li><li><a href="opamFormatConfig.ml.html">opamFormatConfig.ml</a></li><li><a href="opamFormula.ml.html">opamFormula.ml</a></li><li><a href="opamInterpLexer.ml.html">opamInterpLexer.ml</a></li><li><a href="opamLineLexer.ml.html">opamLineLexer.ml</a></li><li><a href="opamPackage.ml.html">opamPackage.ml</a></li><li><a href="opamPath.ml.html">opamPath.ml</a></li><li><a href="opamPp.ml.html">opamPp.ml</a></li><li><a href="opamRepositoryName.ml.html">opamRepositoryName.ml</a></li><li><a href="opamSwitch.ml.html">opamSwitch.ml</a></li><li><a href="#" class="current_unit">opamSysPkg.ml</a></li><li><a href="opamTypesBase.ml.html">opamTypesBase.ml</a></li><li><a href="opamVariable.ml.html">opamVariable.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+</code><code class="source_code"><span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*    Copyright 2019 OCamlPro                                             *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(*  All rights reserved. This file is distributed under the terms of the  *)</span><span class="EOL">
+</span><span class="COMMENT">(*  GNU Lesser General Public License version 2.1, with the special       *)</span><span class="EOL">
+</span><span class="COMMENT">(*  exception on linking described in the file LICENSE.                   *)</span><span class="EOL">
+</span><span class="COMMENT">(*                                                                        *)</span><span class="EOL">
+</span><span class="COMMENT">(**************************************************************************)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* basic ops *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LIDENT">string</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-of_string"><span class="LIDENT">of_string</span></span> <span id="local_s_1"><span class="LIDENT">s</span></span> <span class="EQUAL">=</span> <a href="#local_s_1"><span class="LIDENT">s</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-to_string"><span class="LIDENT">to_string</span></span> <span id="local_s_2"><span class="LIDENT">s</span></span> <span class="EQUAL">=</span> <a href="#local_s_2"><span class="LIDENT">s</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-compare"><span class="LIDENT">compare</span></span> <span class="EQUAL">=</span> <a href="../../../opam-core/src/opam-core/opamStd.ml.html#module-OpamString.val-compare_case"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">compare_case</span></a><span class="EOL">
+</span><span class="LET">let</span> <span id="val-equal"><span class="LIDENT">equal</span></span> <span id="local_s_3"><span class="LIDENT">s</span></span> <span id="local_r_4"><span class="LIDENT">r</span></span> <span class="EQUAL">=</span> <span class="LIDENT">compare</span> <a href="#local_s_3"><span class="LIDENT">s</span></a> <a href="#local_r_4"><span class="LIDENT">r</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(=)"><span class="EQUAL">=</span></a> <span class="INT">0</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-to_json"><span class="LIDENT">to_json</span></span> <span id="local_s_5"><span class="LIDENT">s</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="BACKQUOTE">`</span><span class="UIDENT">O</span> <span class="LBRACKET">[</span> <span class="LPAREN">(</span><span class="STRING">&quot;sys_package&quot;</span><span class="COMMA">,</span> <span class="BACKQUOTE">`</span><span class="UIDENT">String</span> <a href="#local_s_5"><span class="LIDENT">s</span></a><span class="RPAREN">)</span> <span class="RBRACKET">]</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-of_json"><span class="LIDENT">of_json</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">O</span> <span id="local_dict_6"><span class="LIDENT">dict</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="MATCH">match</span> <a href="../../../opam-core/src/opam-core/opamStd.ml.html#module-OpamList.val-assoc"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">List</span><span class="DOT">.</span><span class="LIDENT">assoc</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/string.ml.html#val-equal"><span class="UIDENT">String</span><span class="DOT">.</span><span class="LIDENT">equal</span></a> <span class="STRING">&quot;sys_package&quot;</span> <a href="#local_dict_6"><span class="LIDENT">dict</span></a> <span class="WITH">with</span><span class="EOL">
+</span>     <span class="BAR">|</span> <span class="BACKQUOTE">`</span><span class="UIDENT">String</span> <span id="local_s_7"><span class="LIDENT">s</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="LIDENT">of_string</span> <a href="#local_s_7"><span class="LIDENT">s</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>     <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="EOL">
+</span>     <span class="BAR">|</span> <span class="EXCEPTION">exception</span> <span class="UIDENT">Not_found</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">None</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-O"><span class="MODULE">module</span> <span class="UIDENT">O</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-O.type-tmp"><span class="TYPE">type</span> <span class="LIDENT">tmp</span> <span class="EQUAL">=</span> <span class="LIDENT">t</span></span><span class="EOL">
+</span>  <span id="module-O.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LIDENT">tmp</span></span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-O.val-compare"><span class="LIDENT">compare</span></span> <span class="EQUAL">=</span> <span class="LIDENT">compare</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-O.val-to_string"><span class="LIDENT">to_string</span></span> <span class="EQUAL">=</span> <span class="LIDENT">to_string</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-O.val-to_json"><span class="LIDENT">to_json</span></span> <span class="EQUAL">=</span> <span class="LIDENT">to_json</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-O.val-of_json"><span class="LIDENT">of_json</span></span> <span class="EQUAL">=</span> <span class="LIDENT">of_json</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Set"><span class="MODULE">module</span> <span class="UIDENT">Set</span> <span class="EQUAL">=</span> <a href="../../../opam-core/src/opam-core/opamStd.ml.html#module-Set.module-Make"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Set</span><span class="DOT">.</span><span class="UIDENT">Make</span></a><span class="LPAREN">(</span><span class="UIDENT">O</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Map"><span class="MODULE">module</span> <span class="UIDENT">Map</span> <span class="EQUAL">=</span> <a href="../../../opam-core/src/opam-core/opamStd.ml.html#module-Map.module-Make"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">Map</span><span class="DOT">.</span><span class="UIDENT">Make</span></a><span class="LPAREN">(</span><span class="UIDENT">O</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-raw_set"><span class="LIDENT">raw_set</span></span> <span id="local_set_8"><span class="LIDENT">set</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="../../../opam-core/src/opam-core/opamStd.ml.html#module-Set.module-Make.val-fold"><span class="UIDENT">OpamStd</span><span class="DOT">.</span><span class="UIDENT">String</span><span class="DOT">.</span><span class="UIDENT">Set</span><span class="DOT">.</span><span class="LIDENT">fold</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_spkg_9"><span class="LIDENT">spkg</span></span> <span id="local_set_10"><span class="LIDENT">set</span></span><span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Set</span><span class="DOT">.</span><span class="LIDENT">add</span> <span class="LPAREN">(</span><span class="LIDENT">of_string</span> <a href="#local_spkg_9"><span class="LIDENT">spkg</span></a><span class="RPAREN">)</span> <a href="#local_set_10"><span class="LIDENT">set</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>    <a href="#local_set_8"><span class="LIDENT">set</span></a> <span class="UIDENT">Set</span><span class="DOT">.</span><span class="LIDENT">empty</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-status"><span class="TYPE">type</span> <span class="LIDENT">status</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_12"><span class="LIDENT">s_available</span> <span class="COLON">:</span> <span class="UIDENT">Set</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span class="DOCSTRING">(** Package available but not installed *)</span><span class="EOL">
+</span><span class="EOL">
+</span>    <span id="def_13"><span class="LIDENT">s_not_found</span> <span class="COLON">:</span> <span class="UIDENT">Set</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span class="DOCSTRING">(** Package unavailable on this system *)</span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-status_empty"><span class="LIDENT">status_empty</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACE">{</span><span class="EOL">
+</span>    <span class="LIDENT">s_available</span>  <span class="EQUAL">=</span> <span class="UIDENT">Set</span><span class="DOT">.</span><span class="LIDENT">empty</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">s_not_found</span>  <span class="EQUAL">=</span> <span class="UIDENT">Set</span><span class="DOT">.</span><span class="LIDENT">empty</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-string_of_status"><span class="LIDENT">string_of_status</span></span> <span id="local_sp_11"><span class="LIDENT">sp</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="../../../ocaml-base-compiler/src/stdlib/printf.ml.html#val-sprintf"><span class="UIDENT">Printf</span><span class="DOT">.</span><span class="LIDENT">sprintf</span></a> <span class="STRING">&quot;available: %s; not_found: %s&quot;</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="UIDENT">Set</span><span class="DOT">.</span><span class="LIDENT">to_string</span> <a href="#local_sp_11"><span class="LIDENT">sp</span></a><span class="DOT">.</span><span class="LIDENT">s_available</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="UIDENT">Set</span><span class="DOT">.</span><span class="LIDENT">to_string</span> <a href="#local_sp_11"><span class="LIDENT">sp</span></a><span class="DOT">.</span><span class="LIDENT">s_not_found</span><span class="RPAREN">)</span><span class="EOL">
+</span></span></code></pre></body></html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: ocaml_optcomp.ml (ocaml-compiler-libs.src.ocaml-compiler-libs.optcomp)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ocaml-compiler-libs</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ocaml-compiler-libs.optcomp &#x00BB; ocaml_optcomp.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>ocaml_optcomp.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">ocaml-compiler-libs</a><ul><li>Library <code>ocaml-compiler-libs.bytecomp</code><ul><li><a href="../../ocaml-compiler-libs.bytecomp/Ocaml_bytecomp/index.html">Ocaml_bytecomp</a></li></ul></li><li>Library <code>ocaml-compiler-libs.common</code><ul><li><a href="../../ocaml-compiler-libs.common/Ocaml_common/index.html">Ocaml_common</a></li></ul></li><li>Library <code>ocaml-compiler-libs.optcomp</code><ul><li><a href="../../ocaml-compiler-libs.optcomp/Ocaml_optcomp/index.html">Ocaml_optcomp</a></li></ul></li><li>Library <code>ocaml-compiler-libs.shadow</code><ul><li><a href="../../ocaml-compiler-libs.shadow/Ocaml_shadow/index.html">Ocaml_shadow</a></li></ul></li><li>Library <code>ocaml-compiler-libs.toplevel</code><ul><li><a href="../../ocaml-compiler-libs.toplevel/Ocaml_toplevel/index.html">Ocaml_toplevel</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ocaml-compiler-libs.bytecomp<ul><li><a href="../ocaml-compiler-libs.bytecomp/ocaml_bytecomp.ml.html">ocaml_bytecomp.ml</a></li></ul></li><li>ocaml-compiler-libs.common<ul><li><a href="../ocaml-compiler-libs.common/ocaml_common.ml.html">ocaml_common.ml</a></li></ul></li><li>ocaml-compiler-libs.optcomp<ul><li><a href="#" class="current_unit">ocaml_optcomp.ml</a></li></ul></li><li>ocaml-compiler-libs.shadow<ul><li><a href="../ocaml-compiler-libs.shadow/ocaml_shadow.ml.html">ocaml_shadow.ml</a></li></ul></li><li>ocaml-compiler-libs.toplevel<ul><li><a href="../ocaml-compiler-libs.toplevel/ocaml_toplevel.ml.html">ocaml_toplevel.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+<a id="L121" class="source_line" href="#L121">121</a>
+<a id="L122" class="source_line" href="#L122">122</a>
+<a id="L123" class="source_line" href="#L123">123</a>
+<a id="L124" class="source_line" href="#L124">124</a>
+<a id="L125" class="source_line" href="#L125">125</a>
+<a id="L126" class="source_line" href="#L126">126</a>
+<a id="L127" class="source_line" href="#L127">127</a>
+<a id="L128" class="source_line" href="#L128">128</a>
+</code><code class="source_code"><span><span class="COMMENT">(* This file is automatically generated *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Afl_instrument"><span class="MODULE">module</span> <span class="UIDENT">Afl_instrument</span>                   <span class="EQUAL">=</span> <span class="UIDENT">Afl_instrument</span></span><span class="EOL">
+</span><span id="module-Alias_analysis"><span class="MODULE">module</span> <span class="UIDENT">Alias_analysis</span>                   <span class="EQUAL">=</span> <span class="UIDENT">Alias_analysis</span></span><span class="EOL">
+</span><span id="module-Allocated_const"><span class="MODULE">module</span> <span class="UIDENT">Allocated_const</span>                  <span class="EQUAL">=</span> <span class="UIDENT">Allocated_const</span></span><span class="EOL">
+</span><span id="module-Arch"><span class="MODULE">module</span> <span class="UIDENT">Arch</span>                             <span class="EQUAL">=</span> <span class="UIDENT">Arch</span></span><span class="EOL">
+</span><span id="module-Asmgen"><span class="MODULE">module</span> <span class="UIDENT">Asmgen</span>                           <span class="EQUAL">=</span> <span class="UIDENT">Asmgen</span></span><span class="EOL">
+</span><span id="module-Asmlibrarian"><span class="MODULE">module</span> <span class="UIDENT">Asmlibrarian</span>                     <span class="EQUAL">=</span> <span class="UIDENT">Asmlibrarian</span></span><span class="EOL">
+</span><span id="module-Asmlink"><span class="MODULE">module</span> <span class="UIDENT">Asmlink</span>                          <span class="EQUAL">=</span> <span class="UIDENT">Asmlink</span></span><span class="EOL">
+</span><span id="module-Asmpackager"><span class="MODULE">module</span> <span class="UIDENT">Asmpackager</span>                      <span class="EQUAL">=</span> <span class="UIDENT">Asmpackager</span></span><span class="EOL">
+</span><span id="module-Augment_specialised_args"><span class="MODULE">module</span> <span class="UIDENT">Augment_specialised_args</span>         <span class="EQUAL">=</span> <span class="UIDENT">Augment_specialised_args</span></span><span class="EOL">
+</span><span id="module-Backend_var"><span class="MODULE">module</span> <span class="UIDENT">Backend_var</span>                      <span class="EQUAL">=</span> <span class="UIDENT">Backend_var</span></span><span class="EOL">
+</span><span id="module-Branch_relaxation"><span class="MODULE">module</span> <span class="UIDENT">Branch_relaxation</span>                <span class="EQUAL">=</span> <span class="UIDENT">Branch_relaxation</span></span><span class="EOL">
+</span><span id="module-Build_export_info"><span class="MODULE">module</span> <span class="UIDENT">Build_export_info</span>                <span class="EQUAL">=</span> <span class="UIDENT">Build_export_info</span></span><span class="EOL">
+</span><span id="module-CSE"><span class="MODULE">module</span> <span class="UIDENT">CSE</span>                              <span class="EQUAL">=</span> <span class="UIDENT">CSE</span></span><span class="EOL">
+</span><span id="module-CSEgen"><span class="MODULE">module</span> <span class="UIDENT">CSEgen</span>                           <span class="EQUAL">=</span> <span class="UIDENT">CSEgen</span></span><span class="EOL">
+</span><span id="module-Clambda"><span class="MODULE">module</span> <span class="UIDENT">Clambda</span>                          <span class="EQUAL">=</span> <span class="UIDENT">Clambda</span></span><span class="EOL">
+</span><span id="module-Clambda_primitives"><span class="MODULE">module</span> <span class="UIDENT">Clambda_primitives</span>               <span class="EQUAL">=</span> <span class="UIDENT">Clambda_primitives</span></span><span class="EOL">
+</span><span id="module-Closure"><span class="MODULE">module</span> <span class="UIDENT">Closure</span>                          <span class="EQUAL">=</span> <span class="UIDENT">Closure</span></span><span class="EOL">
+</span><span id="module-Closure_conversion"><span class="MODULE">module</span> <span class="UIDENT">Closure_conversion</span>               <span class="EQUAL">=</span> <span class="UIDENT">Closure_conversion</span></span><span class="EOL">
+</span><span id="module-Closure_conversion_aux"><span class="MODULE">module</span> <span class="UIDENT">Closure_conversion_aux</span>           <span class="EQUAL">=</span> <span class="UIDENT">Closure_conversion_aux</span></span><span class="EOL">
+</span><span id="module-Closure_element"><span class="MODULE">module</span> <span class="UIDENT">Closure_element</span>                  <span class="EQUAL">=</span> <span class="UIDENT">Closure_element</span></span><span class="EOL">
+</span><span id="module-Closure_id"><span class="MODULE">module</span> <span class="UIDENT">Closure_id</span>                       <span class="EQUAL">=</span> <span class="UIDENT">Closure_id</span></span><span class="EOL">
+</span><span id="module-Closure_middle_end"><span class="MODULE">module</span> <span class="UIDENT">Closure_middle_end</span>               <span class="EQUAL">=</span> <span class="UIDENT">Closure_middle_end</span></span><span class="EOL">
+</span><span id="module-Closure_offsets"><span class="MODULE">module</span> <span class="UIDENT">Closure_offsets</span>                  <span class="EQUAL">=</span> <span class="UIDENT">Closure_offsets</span></span><span class="EOL">
+</span><span id="module-Closure_origin"><span class="MODULE">module</span> <span class="UIDENT">Closure_origin</span>                   <span class="EQUAL">=</span> <span class="UIDENT">Closure_origin</span></span><span class="EOL">
+</span><span id="module-Cmm"><span class="MODULE">module</span> <span class="UIDENT">Cmm</span>                              <span class="EQUAL">=</span> <span class="UIDENT">Cmm</span></span><span class="EOL">
+</span><span id="module-Cmm_helpers"><span class="MODULE">module</span> <span class="UIDENT">Cmm_helpers</span>                      <span class="EQUAL">=</span> <span class="UIDENT">Cmm_helpers</span></span><span class="EOL">
+</span><span id="module-Cmm_invariants"><span class="MODULE">module</span> <span class="UIDENT">Cmm_invariants</span>                   <span class="EQUAL">=</span> <span class="UIDENT">Cmm_invariants</span></span><span class="EOL">
+</span><span id="module-Cmmgen"><span class="MODULE">module</span> <span class="UIDENT">Cmmgen</span>                           <span class="EQUAL">=</span> <span class="UIDENT">Cmmgen</span></span><span class="EOL">
+</span><span id="module-Cmmgen_state"><span class="MODULE">module</span> <span class="UIDENT">Cmmgen_state</span>                     <span class="EQUAL">=</span> <span class="UIDENT">Cmmgen_state</span></span><span class="EOL">
+</span><span id="module-Coloring"><span class="MODULE">module</span> <span class="UIDENT">Coloring</span>                         <span class="EQUAL">=</span> <span class="UIDENT">Coloring</span></span><span class="EOL">
+</span><span id="module-Comballoc"><span class="MODULE">module</span> <span class="UIDENT">Comballoc</span>                        <span class="EQUAL">=</span> <span class="UIDENT">Comballoc</span></span><span class="EOL">
+</span><span id="module-Compilation_unit"><span class="MODULE">module</span> <span class="UIDENT">Compilation_unit</span>                 <span class="EQUAL">=</span> <span class="UIDENT">Compilation_unit</span></span><span class="EOL">
+</span><span id="module-Compilenv"><span class="MODULE">module</span> <span class="UIDENT">Compilenv</span>                        <span class="EQUAL">=</span> <span class="UIDENT">Compilenv</span></span><span class="EOL">
+</span><span id="module-Convert_primitives"><span class="MODULE">module</span> <span class="UIDENT">Convert_primitives</span>               <span class="EQUAL">=</span> <span class="UIDENT">Convert_primitives</span></span><span class="EOL">
+</span><span id="module-Dataflow"><span class="MODULE">module</span> <span class="UIDENT">Dataflow</span>                         <span class="EQUAL">=</span> <span class="UIDENT">Dataflow</span></span><span class="EOL">
+</span><span id="module-Deadcode"><span class="MODULE">module</span> <span class="UIDENT">Deadcode</span>                         <span class="EQUAL">=</span> <span class="UIDENT">Deadcode</span></span><span class="EOL">
+</span><span id="module-Effect_analysis"><span class="MODULE">module</span> <span class="UIDENT">Effect_analysis</span>                  <span class="EQUAL">=</span> <span class="UIDENT">Effect_analysis</span></span><span class="EOL">
+</span><span id="module-Emit"><span class="MODULE">module</span> <span class="UIDENT">Emit</span>                             <span class="EQUAL">=</span> <span class="UIDENT">Emit</span></span><span class="EOL">
+</span><span id="module-Emitaux"><span class="MODULE">module</span> <span class="UIDENT">Emitaux</span>                          <span class="EQUAL">=</span> <span class="UIDENT">Emitaux</span></span><span class="EOL">
+</span><span id="module-Export_id"><span class="MODULE">module</span> <span class="UIDENT">Export_id</span>                        <span class="EQUAL">=</span> <span class="UIDENT">Export_id</span></span><span class="EOL">
+</span><span id="module-Export_info"><span class="MODULE">module</span> <span class="UIDENT">Export_info</span>                      <span class="EQUAL">=</span> <span class="UIDENT">Export_info</span></span><span class="EOL">
+</span><span id="module-Export_info_for_pack"><span class="MODULE">module</span> <span class="UIDENT">Export_info_for_pack</span>             <span class="EQUAL">=</span> <span class="UIDENT">Export_info_for_pack</span></span><span class="EOL">
+</span><span id="module-Extract_projections"><span class="MODULE">module</span> <span class="UIDENT">Extract_projections</span>              <span class="EQUAL">=</span> <span class="UIDENT">Extract_projections</span></span><span class="EOL">
+</span><span id="module-Find_recursive_functions"><span class="MODULE">module</span> <span class="UIDENT">Find_recursive_functions</span>         <span class="EQUAL">=</span> <span class="UIDENT">Find_recursive_functions</span></span><span class="EOL">
+</span><span id="module-Flambda"><span class="MODULE">module</span> <span class="UIDENT">Flambda</span>                          <span class="EQUAL">=</span> <span class="UIDENT">Flambda</span></span><span class="EOL">
+</span><span id="module-Flambda_invariants"><span class="MODULE">module</span> <span class="UIDENT">Flambda_invariants</span>               <span class="EQUAL">=</span> <span class="UIDENT">Flambda_invariants</span></span><span class="EOL">
+</span><span id="module-Flambda_iterators"><span class="MODULE">module</span> <span class="UIDENT">Flambda_iterators</span>                <span class="EQUAL">=</span> <span class="UIDENT">Flambda_iterators</span></span><span class="EOL">
+</span><span id="module-Flambda_middle_end"><span class="MODULE">module</span> <span class="UIDENT">Flambda_middle_end</span>               <span class="EQUAL">=</span> <span class="UIDENT">Flambda_middle_end</span></span><span class="EOL">
+</span><span id="module-Flambda_to_clambda"><span class="MODULE">module</span> <span class="UIDENT">Flambda_to_clambda</span>               <span class="EQUAL">=</span> <span class="UIDENT">Flambda_to_clambda</span></span><span class="EOL">
+</span><span id="module-Flambda_utils"><span class="MODULE">module</span> <span class="UIDENT">Flambda_utils</span>                    <span class="EQUAL">=</span> <span class="UIDENT">Flambda_utils</span></span><span class="EOL">
+</span><span id="module-Freshening"><span class="MODULE">module</span> <span class="UIDENT">Freshening</span>                       <span class="EQUAL">=</span> <span class="UIDENT">Freshening</span></span><span class="EOL">
+</span><span id="module-Id_types"><span class="MODULE">module</span> <span class="UIDENT">Id_types</span>                         <span class="EQUAL">=</span> <span class="UIDENT">Id_types</span></span><span class="EOL">
+</span><span id="module-Import_approx"><span class="MODULE">module</span> <span class="UIDENT">Import_approx</span>                    <span class="EQUAL">=</span> <span class="UIDENT">Import_approx</span></span><span class="EOL">
+</span><span id="module-Inconstant_idents"><span class="MODULE">module</span> <span class="UIDENT">Inconstant_idents</span>                <span class="EQUAL">=</span> <span class="UIDENT">Inconstant_idents</span></span><span class="EOL">
+</span><span id="module-Initialize_symbol_to_let_symbol"><span class="MODULE">module</span> <span class="UIDENT">Initialize_symbol_to_let_symbol</span>  <span class="EQUAL">=</span> <span class="UIDENT">Initialize_symbol_to_let_symbol</span></span><span class="EOL">
+</span><span id="module-Inline_and_simplify"><span class="MODULE">module</span> <span class="UIDENT">Inline_and_simplify</span>              <span class="EQUAL">=</span> <span class="UIDENT">Inline_and_simplify</span></span><span class="EOL">
+</span><span id="module-Inline_and_simplify_aux"><span class="MODULE">module</span> <span class="UIDENT">Inline_and_simplify_aux</span>          <span class="EQUAL">=</span> <span class="UIDENT">Inline_and_simplify_aux</span></span><span class="EOL">
+</span><span id="module-Inlining_cost"><span class="MODULE">module</span> <span class="UIDENT">Inlining_cost</span>                    <span class="EQUAL">=</span> <span class="UIDENT">Inlining_cost</span></span><span class="EOL">
+</span><span id="module-Inlining_decision"><span class="MODULE">module</span> <span class="UIDENT">Inlining_decision</span>                <span class="EQUAL">=</span> <span class="UIDENT">Inlining_decision</span></span><span class="EOL">
+</span><span id="module-Inlining_stats"><span class="MODULE">module</span> <span class="UIDENT">Inlining_stats</span>                   <span class="EQUAL">=</span> <span class="UIDENT">Inlining_stats</span></span><span class="EOL">
+</span><span id="module-Inlining_stats_types"><span class="MODULE">module</span> <span class="UIDENT">Inlining_stats_types</span>             <span class="EQUAL">=</span> <span class="UIDENT">Inlining_stats_types</span></span><span class="EOL">
+</span><span id="module-Inlining_transforms"><span class="MODULE">module</span> <span class="UIDENT">Inlining_transforms</span>              <span class="EQUAL">=</span> <span class="UIDENT">Inlining_transforms</span></span><span class="EOL">
+</span><span id="module-Interf"><span class="MODULE">module</span> <span class="UIDENT">Interf</span>                           <span class="EQUAL">=</span> <span class="UIDENT">Interf</span></span><span class="EOL">
+</span><span id="module-Internal_variable_names"><span class="MODULE">module</span> <span class="UIDENT">Internal_variable_names</span>          <span class="EQUAL">=</span> <span class="UIDENT">Internal_variable_names</span></span><span class="EOL">
+</span><span id="module-Interval"><span class="MODULE">module</span> <span class="UIDENT">Interval</span>                         <span class="EQUAL">=</span> <span class="UIDENT">Interval</span></span><span class="EOL">
+</span><span id="module-Invariant_params"><span class="MODULE">module</span> <span class="UIDENT">Invariant_params</span>                 <span class="EQUAL">=</span> <span class="UIDENT">Invariant_params</span></span><span class="EOL">
+</span><span id="module-Lift_code"><span class="MODULE">module</span> <span class="UIDENT">Lift_code</span>                        <span class="EQUAL">=</span> <span class="UIDENT">Lift_code</span></span><span class="EOL">
+</span><span id="module-Lift_constants"><span class="MODULE">module</span> <span class="UIDENT">Lift_constants</span>                   <span class="EQUAL">=</span> <span class="UIDENT">Lift_constants</span></span><span class="EOL">
+</span><span id="module-Lift_let_to_initialize_symbol"><span class="MODULE">module</span> <span class="UIDENT">Lift_let_to_initialize_symbol</span>    <span class="EQUAL">=</span> <span class="UIDENT">Lift_let_to_initialize_symbol</span></span><span class="EOL">
+</span><span id="module-Linear"><span class="MODULE">module</span> <span class="UIDENT">Linear</span>                           <span class="EQUAL">=</span> <span class="UIDENT">Linear</span></span><span class="EOL">
+</span><span id="module-Linear_format"><span class="MODULE">module</span> <span class="UIDENT">Linear_format</span>                    <span class="EQUAL">=</span> <span class="UIDENT">Linear_format</span></span><span class="EOL">
+</span><span id="module-Linearize"><span class="MODULE">module</span> <span class="UIDENT">Linearize</span>                        <span class="EQUAL">=</span> <span class="UIDENT">Linearize</span></span><span class="EOL">
+</span><span id="module-Linkage_name"><span class="MODULE">module</span> <span class="UIDENT">Linkage_name</span>                     <span class="EQUAL">=</span> <span class="UIDENT">Linkage_name</span></span><span class="EOL">
+</span><span id="module-Linscan"><span class="MODULE">module</span> <span class="UIDENT">Linscan</span>                          <span class="EQUAL">=</span> <span class="UIDENT">Linscan</span></span><span class="EOL">
+</span><span id="module-Liveness"><span class="MODULE">module</span> <span class="UIDENT">Liveness</span>                         <span class="EQUAL">=</span> <span class="UIDENT">Liveness</span></span><span class="EOL">
+</span><span id="module-Mach"><span class="MODULE">module</span> <span class="UIDENT">Mach</span>                             <span class="EQUAL">=</span> <span class="UIDENT">Mach</span></span><span class="EOL">
+</span><span id="module-Mutable_variable"><span class="MODULE">module</span> <span class="UIDENT">Mutable_variable</span>                 <span class="EQUAL">=</span> <span class="UIDENT">Mutable_variable</span></span><span class="EOL">
+</span><span id="module-Optcompile"><span class="MODULE">module</span> <span class="UIDENT">Optcompile</span>                       <span class="EQUAL">=</span> <span class="UIDENT">Optcompile</span></span><span class="EOL">
+</span><span id="module-Opterrors"><span class="MODULE">module</span> <span class="UIDENT">Opterrors</span>                        <span class="EQUAL">=</span> <span class="UIDENT">Opterrors</span></span><span class="EOL">
+</span><span id="module-Optmaindriver"><span class="MODULE">module</span> <span class="UIDENT">Optmaindriver</span>                    <span class="EQUAL">=</span> <span class="UIDENT">Optmaindriver</span></span><span class="EOL">
+</span><span id="module-Parameter"><span class="MODULE">module</span> <span class="UIDENT">Parameter</span>                        <span class="EQUAL">=</span> <span class="UIDENT">Parameter</span></span><span class="EOL">
+</span><span id="module-Pass_wrapper"><span class="MODULE">module</span> <span class="UIDENT">Pass_wrapper</span>                     <span class="EQUAL">=</span> <span class="UIDENT">Pass_wrapper</span></span><span class="EOL">
+</span><span id="module-Polling"><span class="MODULE">module</span> <span class="UIDENT">Polling</span>                          <span class="EQUAL">=</span> <span class="UIDENT">Polling</span></span><span class="EOL">
+</span><span id="module-Printclambda"><span class="MODULE">module</span> <span class="UIDENT">Printclambda</span>                     <span class="EQUAL">=</span> <span class="UIDENT">Printclambda</span></span><span class="EOL">
+</span><span id="module-Printclambda_primitives"><span class="MODULE">module</span> <span class="UIDENT">Printclambda_primitives</span>          <span class="EQUAL">=</span> <span class="UIDENT">Printclambda_primitives</span></span><span class="EOL">
+</span><span id="module-Printcmm"><span class="MODULE">module</span> <span class="UIDENT">Printcmm</span>                         <span class="EQUAL">=</span> <span class="UIDENT">Printcmm</span></span><span class="EOL">
+</span><span id="module-Printlinear"><span class="MODULE">module</span> <span class="UIDENT">Printlinear</span>                      <span class="EQUAL">=</span> <span class="UIDENT">Printlinear</span></span><span class="EOL">
+</span><span id="module-Printmach"><span class="MODULE">module</span> <span class="UIDENT">Printmach</span>                        <span class="EQUAL">=</span> <span class="UIDENT">Printmach</span></span><span class="EOL">
+</span><span id="module-Proc"><span class="MODULE">module</span> <span class="UIDENT">Proc</span>                             <span class="EQUAL">=</span> <span class="UIDENT">Proc</span></span><span class="EOL">
+</span><span id="module-Projection"><span class="MODULE">module</span> <span class="UIDENT">Projection</span>                       <span class="EQUAL">=</span> <span class="UIDENT">Projection</span></span><span class="EOL">
+</span><span id="module-Ref_to_variables"><span class="MODULE">module</span> <span class="UIDENT">Ref_to_variables</span>                 <span class="EQUAL">=</span> <span class="UIDENT">Ref_to_variables</span></span><span class="EOL">
+</span><span id="module-Reg"><span class="MODULE">module</span> <span class="UIDENT">Reg</span>                              <span class="EQUAL">=</span> <span class="UIDENT">Reg</span></span><span class="EOL">
+</span><span id="module-Reload"><span class="MODULE">module</span> <span class="UIDENT">Reload</span>                           <span class="EQUAL">=</span> <span class="UIDENT">Reload</span></span><span class="EOL">
+</span><span id="module-Reloadgen"><span class="MODULE">module</span> <span class="UIDENT">Reloadgen</span>                        <span class="EQUAL">=</span> <span class="UIDENT">Reloadgen</span></span><span class="EOL">
+</span><span id="module-Remove_free_vars_equal_to_args"><span class="MODULE">module</span> <span class="UIDENT">Remove_free_vars_equal_to_args</span>   <span class="EQUAL">=</span> <span class="UIDENT">Remove_free_vars_equal_to_args</span></span><span class="EOL">
+</span><span id="module-Remove_unused_arguments"><span class="MODULE">module</span> <span class="UIDENT">Remove_unused_arguments</span>          <span class="EQUAL">=</span> <span class="UIDENT">Remove_unused_arguments</span></span><span class="EOL">
+</span><span id="module-Remove_unused_closure_vars"><span class="MODULE">module</span> <span class="UIDENT">Remove_unused_closure_vars</span>       <span class="EQUAL">=</span> <span class="UIDENT">Remove_unused_closure_vars</span></span><span class="EOL">
+</span><span id="module-Remove_unused_program_constructs"><span class="MODULE">module</span> <span class="UIDENT">Remove_unused_program_constructs</span> <span class="EQUAL">=</span> <span class="UIDENT">Remove_unused_program_constructs</span></span><span class="EOL">
+</span><span id="module-Schedgen"><span class="MODULE">module</span> <span class="UIDENT">Schedgen</span>                         <span class="EQUAL">=</span> <span class="UIDENT">Schedgen</span></span><span class="EOL">
+</span><span id="module-Scheduling"><span class="MODULE">module</span> <span class="UIDENT">Scheduling</span>                       <span class="EQUAL">=</span> <span class="UIDENT">Scheduling</span></span><span class="EOL">
+</span><span id="module-Selectgen"><span class="MODULE">module</span> <span class="UIDENT">Selectgen</span>                        <span class="EQUAL">=</span> <span class="UIDENT">Selectgen</span></span><span class="EOL">
+</span><span id="module-Selection"><span class="MODULE">module</span> <span class="UIDENT">Selection</span>                        <span class="EQUAL">=</span> <span class="UIDENT">Selection</span></span><span class="EOL">
+</span><span id="module-Semantics_of_primitives"><span class="MODULE">module</span> <span class="UIDENT">Semantics_of_primitives</span>          <span class="EQUAL">=</span> <span class="UIDENT">Semantics_of_primitives</span></span><span class="EOL">
+</span><span id="module-Set_of_closures_id"><span class="MODULE">module</span> <span class="UIDENT">Set_of_closures_id</span>               <span class="EQUAL">=</span> <span class="UIDENT">Set_of_closures_id</span></span><span class="EOL">
+</span><span id="module-Set_of_closures_origin"><span class="MODULE">module</span> <span class="UIDENT">Set_of_closures_origin</span>           <span class="EQUAL">=</span> <span class="UIDENT">Set_of_closures_origin</span></span><span class="EOL">
+</span><span id="module-Share_constants"><span class="MODULE">module</span> <span class="UIDENT">Share_constants</span>                  <span class="EQUAL">=</span> <span class="UIDENT">Share_constants</span></span><span class="EOL">
+</span><span id="module-Simple_value_approx"><span class="MODULE">module</span> <span class="UIDENT">Simple_value_approx</span>              <span class="EQUAL">=</span> <span class="UIDENT">Simple_value_approx</span></span><span class="EOL">
+</span><span id="module-Simplify_boxed_integer_ops"><span class="MODULE">module</span> <span class="UIDENT">Simplify_boxed_integer_ops</span>       <span class="EQUAL">=</span> <span class="UIDENT">Simplify_boxed_integer_ops</span></span><span class="EOL">
+</span><span id="module-Simplify_common"><span class="MODULE">module</span> <span class="UIDENT">Simplify_common</span>                  <span class="EQUAL">=</span> <span class="UIDENT">Simplify_common</span></span><span class="EOL">
+</span><span id="module-Simplify_primitives"><span class="MODULE">module</span> <span class="UIDENT">Simplify_primitives</span>              <span class="EQUAL">=</span> <span class="UIDENT">Simplify_primitives</span></span><span class="EOL">
+</span><span id="module-Spill"><span class="MODULE">module</span> <span class="UIDENT">Spill</span>                            <span class="EQUAL">=</span> <span class="UIDENT">Spill</span></span><span class="EOL">
+</span><span id="module-Split"><span class="MODULE">module</span> <span class="UIDENT">Split</span>                            <span class="EQUAL">=</span> <span class="UIDENT">Split</span></span><span class="EOL">
+</span><span id="module-Stackframe"><span class="MODULE">module</span> <span class="UIDENT">Stackframe</span>                       <span class="EQUAL">=</span> <span class="UIDENT">Stackframe</span></span><span class="EOL">
+</span><span id="module-Stackframegen"><span class="MODULE">module</span> <span class="UIDENT">Stackframegen</span>                    <span class="EQUAL">=</span> <span class="UIDENT">Stackframegen</span></span><span class="EOL">
+</span><span id="module-Static_exception"><span class="MODULE">module</span> <span class="UIDENT">Static_exception</span>                 <span class="EQUAL">=</span> <span class="UIDENT">Static_exception</span></span><span class="EOL">
+</span><span id="module-Strmatch"><span class="MODULE">module</span> <span class="UIDENT">Strmatch</span>                         <span class="EQUAL">=</span> <span class="UIDENT">Strmatch</span></span><span class="EOL">
+</span><span id="module-Symbol"><span class="MODULE">module</span> <span class="UIDENT">Symbol</span>                           <span class="EQUAL">=</span> <span class="UIDENT">Symbol</span></span><span class="EOL">
+</span><span id="module-Tag"><span class="MODULE">module</span> <span class="UIDENT">Tag</span>                              <span class="EQUAL">=</span> <span class="UIDENT">Tag</span></span><span class="EOL">
+</span><span id="module-Thread_sanitizer"><span class="MODULE">module</span> <span class="UIDENT">Thread_sanitizer</span>                 <span class="EQUAL">=</span> <span class="UIDENT">Thread_sanitizer</span></span><span class="EOL">
+</span><span id="module-Traverse_for_exported_symbols"><span class="MODULE">module</span> <span class="UIDENT">Traverse_for_exported_symbols</span>    <span class="EQUAL">=</span> <span class="UIDENT">Traverse_for_exported_symbols</span></span><span class="EOL">
+</span><span id="module-Un_anf"><span class="MODULE">module</span> <span class="UIDENT">Un_anf</span>                           <span class="EQUAL">=</span> <span class="UIDENT">Un_anf</span></span><span class="EOL">
+</span><span id="module-Unbox_closures"><span class="MODULE">module</span> <span class="UIDENT">Unbox_closures</span>                   <span class="EQUAL">=</span> <span class="UIDENT">Unbox_closures</span></span><span class="EOL">
+</span><span id="module-Unbox_free_vars_of_closures"><span class="MODULE">module</span> <span class="UIDENT">Unbox_free_vars_of_closures</span>      <span class="EQUAL">=</span> <span class="UIDENT">Unbox_free_vars_of_closures</span></span><span class="EOL">
+</span><span id="module-Unbox_specialised_args"><span class="MODULE">module</span> <span class="UIDENT">Unbox_specialised_args</span>           <span class="EQUAL">=</span> <span class="UIDENT">Unbox_specialised_args</span></span><span class="EOL">
+</span><span id="module-Var_within_closure"><span class="MODULE">module</span> <span class="UIDENT">Var_within_closure</span>               <span class="EQUAL">=</span> <span class="UIDENT">Var_within_closure</span></span><span class="EOL">
+</span><span id="module-Variable"><span class="MODULE">module</span> <span class="UIDENT">Variable</span>                         <span class="EQUAL">=</span> <span class="UIDENT">Variable</span></span><span class="EOL">
+</span></span></code></pre></body></html>

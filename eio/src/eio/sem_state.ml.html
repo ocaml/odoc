@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: sem_state.ml (eio.src.eio)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">eio</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; eio &#x00BB; sem_state.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>sem_state.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">eio</a><ul><li>Library <code>eio</code><ul><li><a href="../../eio/Eio/index.html">Eio</a></li></ul></li><li>Library <code>eio.core</code></li><li>Library <code>eio.mock</code><ul><li><a href="../../eio.mock/Eio_mock/index.html">Eio_mock</a></li></ul></li><li>Library <code>eio.runtime_events</code><ul><li><a href="../../eio.runtime_events/Eio_runtime_events/index.html">Eio_runtime_events</a></li></ul></li><li>Library <code>eio.unix</code><ul><li><a href="../../eio.unix/Eio_unix/index.html">Eio_unix</a></li></ul></li><li>Library <code>eio.utils</code><ul><li><a href="../../eio.utils/Eio_utils/index.html">Eio_utils</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>eio<ul><li><a href="buf_read.ml.html">buf_read.ml</a></li><li><a href="buf_write.ml.html">buf_write.ml</a></li><li><a href="condition.ml.html">condition.ml</a></li><li><a href="domain_manager.ml.html">domain_manager.ml</a></li><li><a href="eio.ml.html">eio.ml</a></li><li><a href="eio__.ml.html">eio__.ml</a></li><li><a href="eio_mutex.ml.html">eio_mutex.ml</a></li><li><a href="executor_pool.ml.html">executor_pool.ml</a></li><li><a href="file.ml.html">file.ml</a></li><li><a href="flow.ml.html">flow.ml</a></li><li><a href="fs.ml.html">fs.ml</a></li><li><a href="hook.ml.html">hook.ml</a></li><li><a href="lazy.ml.html">lazy.ml</a></li><li><a href="net.ml.html">net.ml</a></li><li><a href="path.ml.html">path.ml</a></li><li><a href="pool.ml.html">pool.ml</a></li><li><a href="process.ml.html">process.ml</a></li><li><a href="resource.ml.html">resource.ml</a></li><li><a href="#" class="current_unit">sem_state.ml</a></li><li><a href="semaphore.ml.html">semaphore.ml</a></li><li><a href="std.ml.html">std.ml</a></li><li><a href="stream.ml.html">stream.ml</a></li><li><a href="sync.ml.html">sync.ml</a></li><li><a href="time.ml.html">time.ml</a></li><li><a href="waiters.ml.html">waiters.ml</a></li></ul></li><li>eio.core<ul><li><a href="../eio.core/broadcast.ml.html">broadcast.ml</a></li><li><a href="../eio.core/cancel.ml.html">cancel.ml</a></li><li><a href="../eio.core/cells.ml.html">cells.ml</a></li><li><a href="../eio.core/debug.ml.html">debug.ml</a></li><li><a href="../eio.core/dla.ml.html">dla.ml</a></li><li><a href="../eio.core/eio__core.ml.html">eio__core.ml</a></li><li><a href="../eio.core/eio__core__.ml.html">eio__core__.ml</a></li><li><a href="../eio.core/exn.ml.html">exn.ml</a></li><li><a href="../eio.core/fiber.ml.html">fiber.ml</a></li><li><a href="../eio.core/promise.ml.html">promise.ml</a></li><li><a href="../eio.core/single_waiter.ml.html">single_waiter.ml</a></li><li><a href="../eio.core/suspend.ml.html">suspend.ml</a></li><li><a href="../eio.core/switch.ml.html">switch.ml</a></li><li><a href="../eio.core/trace.ml.html">trace.ml</a></li></ul></li><li>eio.mock<ul><li><a href="../eio.mock/action.ml.html">action.ml</a></li><li><a href="../eio.mock/backend.ml.html">backend.ml</a></li><li><a href="../eio.mock/clock.ml.html">clock.ml</a></li><li><a href="../eio.mock/domain_manager.ml.html">domain_manager.ml</a></li><li><a href="../eio.mock/eio_mock.ml.html">eio_mock.ml</a></li><li><a href="../eio.mock/eio_mock__.ml.html">eio_mock__.ml</a></li><li><a href="../eio.mock/flow.ml.html">flow.ml</a></li><li><a href="../eio.mock/handler.ml.html">handler.ml</a></li><li><a href="../eio.mock/net.ml.html">net.ml</a></li></ul></li><li>eio.runtime_events<ul><li><a href="../eio.runtime_events/eio_runtime_events.ml.html">eio_runtime_events.ml</a></li></ul></li><li>eio.unix<ul><li><a href="../eio.unix/cap.ml.html">cap.ml</a></li><li><a href="../eio.unix/eio_unix.ml.html">eio_unix.ml</a></li><li><a href="../eio.unix/eio_unix__.ml.html">eio_unix__.ml</a></li><li><a href="../eio.unix/fd.ml.html">fd.ml</a></li><li><a href="../eio.unix/fork_action.ml.html">fork_action.ml</a></li><li><a href="../eio.unix/inherit_fds.ml.html">inherit_fds.ml</a></li><li><a href="../eio.unix/net.ml.html">net.ml</a></li><li><a href="../eio.unix/pi.ml.html">pi.ml</a></li><li><a href="../eio.unix/private.ml.html">private.ml</a></li><li><a href="../eio.unix/process.ml.html">process.ml</a></li><li><a href="../eio.unix/rcfd.ml.html">rcfd.ml</a></li><li><a href="../eio.unix/resource.ml.html">resource.ml</a></li><li><a href="../eio.unix/thread_pool.ml.html">thread_pool.ml</a></li><li><a href="../eio.unix/types.ml.html">types.ml</a></li></ul></li><li>eio.utils<ul><li><a href="../eio.utils/eio_utils.ml.html">eio_utils.ml</a></li><li><a href="../eio.utils/eio_utils__.ml.html">eio_utils__.ml</a></li><li><a href="../eio.utils/lf_queue.ml.html">lf_queue.ml</a></li><li><a href="../eio.utils/suspended.ml.html">suspended.ml</a></li><li><a href="../eio.utils/zzz.ml.html">zzz.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+<a id="L121" class="source_line" href="#L121">121</a>
+<a id="L122" class="source_line" href="#L122">122</a>
+<a id="L123" class="source_line" href="#L123">123</a>
+<a id="L124" class="source_line" href="#L124">124</a>
+<a id="L125" class="source_line" href="#L125">125</a>
+<a id="L126" class="source_line" href="#L126">126</a>
+<a id="L127" class="source_line" href="#L127">127</a>
+<a id="L128" class="source_line" href="#L128">128</a>
+<a id="L129" class="source_line" href="#L129">129</a>
+<a id="L130" class="source_line" href="#L130">130</a>
+<a id="L131" class="source_line" href="#L131">131</a>
+<a id="L132" class="source_line" href="#L132">132</a>
+<a id="L133" class="source_line" href="#L133">133</a>
+<a id="L134" class="source_line" href="#L134">134</a>
+<a id="L135" class="source_line" href="#L135">135</a>
+<a id="L136" class="source_line" href="#L136">136</a>
+<a id="L137" class="source_line" href="#L137">137</a>
+<a id="L138" class="source_line" href="#L138">138</a>
+<a id="L139" class="source_line" href="#L139">139</a>
+<a id="L140" class="source_line" href="#L140">140</a>
+<a id="L141" class="source_line" href="#L141">141</a>
+<a id="L142" class="source_line" href="#L142">142</a>
+<a id="L143" class="source_line" href="#L143">143</a>
+<a id="L144" class="source_line" href="#L144">144</a>
+<a id="L145" class="source_line" href="#L145">145</a>
+<a id="L146" class="source_line" href="#L146">146</a>
+<a id="L147" class="source_line" href="#L147">147</a>
+<a id="L148" class="source_line" href="#L148">148</a>
+<a id="L149" class="source_line" href="#L149">149</a>
+<a id="L150" class="source_line" href="#L150">150</a>
+<a id="L151" class="source_line" href="#L151">151</a>
+<a id="L152" class="source_line" href="#L152">152</a>
+<a id="L153" class="source_line" href="#L153">153</a>
+<a id="L154" class="source_line" href="#L154">154</a>
+<a id="L155" class="source_line" href="#L155">155</a>
+<a id="L156" class="source_line" href="#L156">156</a>
+<a id="L157" class="source_line" href="#L157">157</a>
+<a id="L158" class="source_line" href="#L158">158</a>
+<a id="L159" class="source_line" href="#L159">159</a>
+<a id="L160" class="source_line" href="#L160">160</a>
+<a id="L161" class="source_line" href="#L161">161</a>
+<a id="L162" class="source_line" href="#L162">162</a>
+<a id="L163" class="source_line" href="#L163">163</a>
+<a id="L164" class="source_line" href="#L164">164</a>
+<a id="L165" class="source_line" href="#L165">165</a>
+<a id="L166" class="source_line" href="#L166">166</a>
+<a id="L167" class="source_line" href="#L167">167</a>
+<a id="L168" class="source_line" href="#L168">168</a>
+<a id="L169" class="source_line" href="#L169">169</a>
+<a id="L170" class="source_line" href="#L170">170</a>
+<a id="L171" class="source_line" href="#L171">171</a>
+<a id="L172" class="source_line" href="#L172">172</a>
+<a id="L173" class="source_line" href="#L173">173</a>
+<a id="L174" class="source_line" href="#L174">174</a>
+<a id="L175" class="source_line" href="#L175">175</a>
+<a id="L176" class="source_line" href="#L176">176</a>
+</code><code class="source_code"><span><span class="COMMENT">(* A lock-free semaphore, using Cells.
+
+   We have a number of resources (1 in the case of a mutex). Each time a user
+   wants a resource, the user decrements the counter. When finished with the
+   resource, the user increments the counter again.
+
+   If there are more users than resources then the counter will be negative. If
+   a user decrements the counter to a non-negative value then it gets ownership
+   of one of the free resources. If it decrements the counter to a negative
+   value then it must wait (by allocating a cell). When a user with a resource
+   increments the counter *from* a negative value, that user is responsible for
+   resuming one waiting cell (transferring ownership of the resource). This
+   ensures that every waiter will get woken exactly once.
+
+   Cancellation
+
+   We could consider cancelling a request to be simply replacing the callback
+   with a dummy one that immediately releases the resource. However, if callers
+   keep cancelling then the list of cancelled requests would keep growing.
+
+   Instead, we'd like cancellation simply to undo the effects of suspending, by
+   incrementing the counter and marking the cell as Finished (so that the
+   resumer will ignore it and move on to the next waiter, and the Finished
+   cell can be freed).
+
+   If the cancelling user increments from a negative value then it is responsible
+   for waking one user, which is fine as it is waking itself. However, it may find
+   itself incrementing from a non-negative one if it is racing with a resumer
+   (if the count is non-negative then once all current operations finish there
+   would be no suspended users, so the process of waking this user must have
+   already begun).
+
+   To handle this, a cancelling user first transitions the cell to In_transition,
+   then increments the counter, then transitions to the final Finished state,
+   in the usual case where it incremented from a negative value.
+
+   If a resumer runs at the same time then it may also increment the counter
+   from a non-negative value and try to wake this cell. It transitions the cell
+   from In_transition to Finished. The cancelling user will notice this when it
+   fails to CAS to Finished and can handle it.
+
+   If the cancelling user sees the Finished state after In_transition then it
+   knows that the resuming user has transferred to it the responsibility of
+   waking one user. If the cancelling user is also responsible for waking one
+   user then it performs an extra resume on behalf of the resuming user.
+
+   Finally, if the cancelling user is not responsible for waking anyone (even
+   itself) then it leaves the cell in In_transition (the CQS paper uses a
+   separate Refused state, but we don't actually need that). This can only
+   happen when a resume is happening at the same time. The resumer will
+   transition to Finished, creating an obligation to resume, but we've just
+   done that anyway. We know this In_transition state can't last long because
+   at the moment when the canceller incremented the counter all current
+   waiters, including itself, were in the process of being resumed. *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Cell"><span class="MODULE">module</span> <span class="UIDENT">Cell</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Cell.type-t"><span class="TYPE">type</span> <span class="UNDERSCORE">_</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Cell.type-t.constructor-In_transition"><span class="BAR">|</span> <span class="UIDENT">In_transition</span></span>                     <span class="COMMENT">(* The suspender will try to CAS this soon. *)</span><span class="EOL">
+</span>    <span id="module-Cell.type-t.constructor-Request"><span class="BAR">|</span> <span class="UIDENT">Request</span> <span class="OF">of</span> <span class="LPAREN">(</span><span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span><span class="RPAREN">)</span></span>         <span class="COMMENT">(* Waiting for a resource. *)</span><span class="EOL">
+</span>    <span id="module-Cell.type-t.constructor-Finished"><span class="BAR">|</span> <span class="UIDENT">Finished</span></span></span>                          <span class="COMMENT">(* Ownership of the resource has been transferred,
+                                           or the suspender cancelled. *)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Cell.val-init"><span class="LIDENT">init</span></span> <span class="EQUAL">=</span> <span class="UIDENT">In_transition</span><span class="EOL">
+</span>  <span class="COMMENT">(* We only resume when we know another thread is suspended or in the process of suspending. *)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Cell.val-segment_order"><span class="LIDENT">segment_order</span></span> <span class="EQUAL">=</span> <span class="INT">2</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Cell.val-dump"><span class="LIDENT">dump</span></span> <span id="local_f_1"><span class="LIDENT">f</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Request</span> <span class="UNDERSCORE">_</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Fmt</span><span class="DOT">.</span><span class="LIDENT">string</span> <a href="#local_f_1"><span class="LIDENT">f</span></a> <span class="STRING">&quot;Request&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Finished</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Fmt</span><span class="DOT">.</span><span class="LIDENT">string</span> <a href="#local_f_1"><span class="LIDENT">f</span></a> <span class="STRING">&quot;Finished&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">In_transition</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Fmt</span><span class="DOT">.</span><span class="LIDENT">string</span> <a href="#local_f_1"><span class="LIDENT">f</span></a> <span class="STRING">&quot;In_transition&quot;</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Cells"><span class="MODULE">module</span> <span class="UIDENT">Cells</span> <span class="EQUAL">=</span> <a href="../eio.core/cells.ml.html#module-Make"><span class="UIDENT">Cells</span><span class="DOT">.</span><span class="UIDENT">Make</span></a><span class="LPAREN">(</span><span class="UIDENT">Cell</span><span class="RPAREN">)</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-cell"><span class="TYPE">type</span> <span class="LIDENT">cell</span> <span class="EQUAL">=</span> <span class="LIDENT">unit</span> <span class="UIDENT">Cell</span><span class="DOT">.</span><span class="LIDENT">t</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span id="def_22"><span class="LIDENT">state</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#type-t"><span class="LIDENT">int</span> <span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span>         <span class="COMMENT">(* Free resources. Negative if there are waiters waiting. *)</span><span class="EOL">
+</span>  <span id="def_23"><span class="LIDENT">cells</span> <span class="COLON">:</span> <span class="LIDENT">unit</span> <span class="UIDENT">Cells</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span><span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-request"><span class="TYPE">type</span> <span class="LIDENT">request</span> <span class="EQUAL">=</span> <span class="LIDENT">t</span> <span class="STAR">*</span> <span class="LIDENT">unit</span> <span class="UIDENT">Cells</span><span class="DOT">.</span><span class="LIDENT">segment</span> <span class="STAR">*</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#type-t"><span class="LIDENT">unit</span> <span class="UIDENT">Cell</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* Wake one waiter (and give it the resource being released). *)</span><span class="EOL">
+</span><span class="LET">let</span> <span class="REC">rec</span> <span id="val-resume"><span class="LIDENT">resume</span></span> <span id="local_t_2"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_cell_3"><span class="LIDENT">cell</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Cells</span><span class="DOT">.</span><span class="LIDENT">next_resume</span> <a href="#local_t_2"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">cells</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-exchange"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">exchange</span></a> <a href="#local_cell_3"><span class="LIDENT">cell</span></a> <span class="UIDENT">Finished</span> <span class="COLON">:</span> <span class="LIDENT">cell</span><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Request</span> <span id="local_r_4"><span class="LIDENT">r</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="COMMENT">(* The common case: there was a waiter for the value.
+       We pass ownership of the resource to it. *)</span><span class="EOL">
+</span>    <a href="#local_r_4"><span class="LIDENT">r</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Finished</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="COMMENT">(* The waiter has finished cancelling. Ignore it and resume the next one. *)</span><span class="EOL">
+</span>    <span class="LIDENT">resume</span> <a href="#local_t_2"><span class="LIDENT">t</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">In_transition</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="COMMENT">(* The consumer is in the middle of doing something and will soon try to
+       CAS to a new state. It will see that we got there first and handle the
+       resume when it's done. *)</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* [true] on success, or [false] if we need to suspend.
+   You MUST call [suspend] iff this returns [false].
+   The reason for splitting this is because e.g. [Semaphore] needs to get
+   the continuation for the fiber between [acquire] and [suspend]. *)</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-acquire"><span class="LIDENT">acquire</span></span> <span id="local_t_5"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_s_6"><span class="LIDENT">s</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-fetch_and_add"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">fetch_and_add</span></a> <a href="#local_t_5"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">state</span> <span class="LPAREN">(</span><span class="MINUS">-</span><span class="INT">1</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="COMMENT">(* We got a resource if we decremented *to* a non-negative number,
+     which happens if we decremented *from* a positive one. *)</span><span class="EOL">
+</span>  <a href="#local_s_6"><span class="LIDENT">s</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&gt;)"><span class="GREATER">&gt;</span></a> <span class="INT">0</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-suspend"><span class="LIDENT">suspend</span></span> <span id="local_t_7"><span class="LIDENT">t</span></span> <span id="local_k_8"><span class="LIDENT">k</span></span> <span class="COLON">:</span> <span class="LIDENT">request</span> <span class="LIDENT">option</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="def_21"><span class="LPAREN">(</span><span id="local_segment_9"><span class="LIDENT">segment</span></span><span class="COMMA">,</span> <span id="local_cell_10"><span class="LIDENT">cell</span></span><span class="RPAREN">)</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Cells</span><span class="DOT">.</span><span class="LIDENT">next_suspend</span> <a href="#local_t_7"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">cells</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-compare_and_set"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">compare_and_set</span></a> <a href="#local_cell_10"><span class="LIDENT">cell</span></a> <span class="UIDENT">In_transition</span> <span class="LPAREN">(</span><span class="UIDENT">Request</span> <a href="#local_k_8"><span class="LIDENT">k</span></a><span class="RPAREN">)</span> <span class="THEN">then</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><a href="#local_t_7"><span class="LIDENT">t</span></a><span class="COMMA">,</span> <a href="#local_segment_9"><span class="LIDENT">segment</span></a><span class="COMMA">,</span> <a href="#local_cell_10"><span class="LIDENT">cell</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="ELSE">else</span> <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-get"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">get</span></a> <a href="#local_cell_10"><span class="LIDENT">cell</span></a> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Finished</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="COMMENT">(* We got resumed before we could add the waiter. *)</span><span class="EOL">
+</span>      <a href="#local_k_8"><span class="LIDENT">k</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="UIDENT">None</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Request</span> <span class="UNDERSCORE">_</span> <span class="BAR">|</span> <span class="UIDENT">In_transition</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="COMMENT">(* These are unreachable from the previously-observed non-In_transition state
+         without us taking some action first *)</span><span class="EOL">
+</span>      <span class="ASSERT">assert</span> <span class="FALSE">false</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-release"><span class="LIDENT">release</span></span> <span id="local_t_11"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="local_s_12"><span class="LIDENT">s</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-fetch_and_add"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">fetch_and_add</span></a> <a href="#local_t_11"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">state</span> <span class="LPAREN">(</span><span class="PLUS">+</span><span class="INT">1</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="IF">if</span> <a href="#local_s_12"><span class="LIDENT">s</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;)"><span class="LESS">&lt;</span></a> <span class="INT">0</span> <span class="THEN">then</span> <span class="LPAREN">(</span><span class="EOL">
+</span>    <span class="COMMENT">(* We incremented from a negative value.
+       We are therefore responsible for waking one waiter. *)</span><span class="EOL">
+</span>    <span class="LIDENT">resume</span> <a href="#local_t_11"><span class="LIDENT">t</span></a><span class="EOL">
+</span>  <span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-cancel"><span class="LIDENT">cancel</span></span> <span class="LPAREN">(</span><span id="local_t_13"><span class="LIDENT">t</span></span><span class="COMMA">,</span> <span id="local_segment_14"><span class="LIDENT">segment</span></span><span class="COMMA">,</span> <span id="local_cell_15"><span class="LIDENT">cell</span></span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-get"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">get</span></a> <a href="#local_cell_15"><span class="LIDENT">cell</span></a> <span class="COLON">:</span> <span class="LIDENT">cell</span><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Request</span> <span class="UNDERSCORE">_</span> <span class="AS">as</span> <span id="local_old_16"><span class="LIDENT">old</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-compare_and_set"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">compare_and_set</span></a> <a href="#local_cell_15"><span class="LIDENT">cell</span></a> <a href="#local_old_16"><span class="LIDENT">old</span></a> <span class="UIDENT">In_transition</span> <span class="THEN">then</span> <span class="LPAREN">(</span><span class="EOL">
+</span>      <span class="COMMENT">(* Undo the effect of [acquire] by incrementing the counter.
+         As always, if we increment from a negative value then we need to resume one waiter. *)</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_need_resume_17"><span class="LIDENT">need_resume</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-fetch_and_add"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">fetch_and_add</span></a> <a href="#local_t_13"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">state</span> <span class="LPAREN">(</span><span class="PLUS">+</span><span class="INT">1</span><span class="RPAREN">)</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;)"><span class="LESS">&lt;</span></a> <span class="INT">0</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="#local_need_resume_17"><span class="LIDENT">need_resume</span></a> <span class="THEN">then</span> <span class="LPAREN">(</span><span class="EOL">
+</span>        <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-compare_and_set"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">compare_and_set</span></a> <a href="#local_cell_15"><span class="LIDENT">cell</span></a> <span class="UIDENT">In_transition</span> <span class="UIDENT">Finished</span> <span class="THEN">then</span> <span class="LPAREN">(</span><span class="EOL">
+</span>          <span class="COMMENT">(* The normal case. We resumed ourself by cancelling.
+             This is the only case we need to tell the segment because in all
+             other cases the resumer has already reached this segment so
+             freeing it is pointless. *)</span><span class="EOL">
+</span>          <span class="UIDENT">Cells</span><span class="DOT">.</span><span class="LIDENT">cancel_cell</span> <a href="#local_segment_14"><span class="LIDENT">segment</span></a><span class="EOL">
+</span>        <span class="RPAREN">)</span> <span class="ELSE">else</span> <span class="LPAREN">(</span><span class="EOL">
+</span>          <span class="COMMENT">(* [release] got called at the same time and it also needed to resume one waiter.
+             So we call [resume] to handle the extra one, in addition to resuming ourself. *)</span><span class="EOL">
+</span>          <span class="LIDENT">resume</span> <a href="#local_t_13"><span class="LIDENT">t</span></a><span class="EOL">
+</span>        <span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="RPAREN">)</span> <span class="ELSE">else</span> <span class="LPAREN">(</span><span class="EOL">
+</span>        <span class="COMMENT">(* This can only happen if [release] ran at the same time and incremented the counter
+           before we did. Since we were suspended, and later we saw the counter
+           show that no one was, it must have decided to wake us. Either it has placed Finished
+           in the cell, or it's about to do so. Either way, we discharge the obligation to
+           wake someone by resuming ourself with a cancellation.
+           The resource returns to the free pool. We know the resumer has already finished with it
+           even if it hasn't updated the cell state yet. *)</span><span class="EOL">
+</span>      <span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="TRUE">true</span><span class="EOL">
+</span>    <span class="RPAREN">)</span> <span class="ELSE">else</span> <span class="FALSE">false</span>          <span class="COMMENT">(* We got resumed first *)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Finished</span> <span class="MINUSGREATER">-&gt;</span> <span class="FALSE">false</span>     <span class="COMMENT">(* We got resumed first *)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">In_transition</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-invalid_arg"><span class="LIDENT">invalid_arg</span></a> <span class="STRING">&quot;Already cancelling!&quot;</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-dump"><span class="LIDENT">dump</span></span> <span id="local_f_18"><span class="LIDENT">f</span></span> <span id="local_t_19"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Fmt</span><span class="DOT">.</span><span class="LIDENT">pf</span> <a href="#local_f_18"><span class="LIDENT">f</span></a> <span class="STRING">&quot;Semaphore (state=%d)@,%a&quot;</span><span class="EOL">
+</span>    <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-get"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">get</span></a> <a href="#local_t_19"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">state</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="UIDENT">Cells</span><span class="DOT">.</span><span class="LIDENT">dump</span> <a href="#local_t_19"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">cells</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-create"><span class="LIDENT">create</span></span> <span id="local_n_20"><span class="LIDENT">n</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="IF">if</span> <a href="#local_n_20"><span class="LIDENT">n</span></a> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(&lt;)"><span class="LESS">&lt;</span></a> <span class="INT">0</span> <span class="THEN">then</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="LPAREN">(</span><span class="UIDENT">Invalid_argument</span> <span class="STRING">&quot;n &lt; 0&quot;</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LBRACE">{</span><span class="EOL">
+</span>    <span class="LIDENT">cells</span> <span class="EQUAL">=</span> <span class="UIDENT">Cells</span><span class="DOT">.</span><span class="LIDENT">make</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>    <span class="LIDENT">state</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-make"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <a href="#local_n_20"><span class="LIDENT">n</span></a><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="RBRACE">}</span><span class="EOL">
+</span></span></code></pre></body></html>

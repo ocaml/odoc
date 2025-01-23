@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: js_of_ocaml_compiler_runtime_files.ml (js_of_ocaml-compiler.src.js_of_ocaml-compiler.runtime-files)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">js_of_ocaml-compiler</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; js_of_ocaml-compiler.runtime-files &#x00BB; js_of_ocaml_compiler_runtime_files.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>js_of_ocaml_compiler_runtime_files.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">js_of_ocaml-compiler</a><ul><li>Library <code>js_of_ocaml-compiler</code><ul><li><a href="../../js_of_ocaml-compiler/Js_of_ocaml_compiler/index.html">Js_of_ocaml_compiler</a></li></ul></li><li>Library <code>js_of_ocaml-compiler.dynlink</code><ul><li><a href="../../js_of_ocaml-compiler.dynlink/Js_of_ocaml_compiler_dynlink/index.html">Js_of_ocaml_compiler_dynlink</a></li></ul></li><li>Library <code>js_of_ocaml-compiler.findlib-support</code><ul><li><a href="../../js_of_ocaml-compiler.findlib-support/Jsoo_findlib_support/index.html">Jsoo_findlib_support</a></li></ul></li><li>Library <code>js_of_ocaml-compiler.runtime</code><ul><li><a href="../../js_of_ocaml-compiler.runtime/Jsoo_runtime/index.html">Jsoo_runtime</a></li></ul></li><li>Library <code>js_of_ocaml-compiler.runtime-files</code><ul><li><a href="../../js_of_ocaml-compiler.runtime-files/Js_of_ocaml_compiler_runtime_files/index.html">Js_of_ocaml_compiler_runtime_files</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>js_of_ocaml-compiler<ul><li><a href="../js_of_ocaml-compiler/annot_lexer.ml.html">annot_lexer.ml</a></li><li><a href="../js_of_ocaml-compiler/annot_parser.ml.html">annot_parser.ml</a></li><li><a href="../js_of_ocaml-compiler/base64.ml.html">base64.ml</a></li><li><a href="../js_of_ocaml-compiler/build_info.ml.html">build_info.ml</a></li><li><a href="../js_of_ocaml-compiler/build_path_prefix_map.ml.html">build_path_prefix_map.ml</a></li><li><a href="../js_of_ocaml-compiler/builtins.ml.html">builtins.ml</a></li><li><a href="../js_of_ocaml-compiler/code.ml.html">code.ml</a></li><li><a href="../js_of_ocaml-compiler/compiler_version.ml.html">compiler_version.ml</a></li><li><a href="../js_of_ocaml-compiler/config.ml.html">config.ml</a></li><li><a href="../js_of_ocaml-compiler/constant.ml.html">constant.ml</a></li><li><a href="../js_of_ocaml-compiler/deadcode.ml.html">deadcode.ml</a></li><li><a href="../js_of_ocaml-compiler/debug.ml.html">debug.ml</a></li><li><a href="../js_of_ocaml-compiler/dgraph.ml.html">dgraph.ml</a></li><li><a href="../js_of_ocaml-compiler/driver.ml.html">driver.ml</a></li><li><a href="../js_of_ocaml-compiler/duplicate.ml.html">duplicate.ml</a></li><li><a href="../js_of_ocaml-compiler/effects.ml.html">effects.ml</a></li><li><a href="../js_of_ocaml-compiler/eval.ml.html">eval.ml</a></li><li><a href="../js_of_ocaml-compiler/findlib.ml.html">findlib.ml</a></li><li><a href="../js_of_ocaml-compiler/flow.ml.html">flow.ml</a></li><li><a href="../js_of_ocaml-compiler/flow_lexer.ml.html">flow_lexer.ml</a></li><li><a href="../js_of_ocaml-compiler/freevars.ml.html">freevars.ml</a></li><li><a href="../js_of_ocaml-compiler/fs.ml.html">fs.ml</a></li><li><a href="../js_of_ocaml-compiler/generate.ml.html">generate.ml</a></li><li><a href="../js_of_ocaml-compiler/generate_closure.ml.html">generate_closure.ml</a></li><li><a href="../js_of_ocaml-compiler/global_deadcode.ml.html">global_deadcode.ml</a></li><li><a href="../js_of_ocaml-compiler/global_flow.ml.html">global_flow.ml</a></li><li><a href="../js_of_ocaml-compiler/inline.ml.html">inline.ml</a></li><li><a href="../js_of_ocaml-compiler/instr.ml.html">instr.ml</a></li><li><a href="../js_of_ocaml-compiler/javascript.ml.html">javascript.ml</a></li><li><a href="../js_of_ocaml-compiler/js_assign.ml.html">js_assign.ml</a></li><li><a href="../js_of_ocaml-compiler/js_of_ocaml_compiler.ml.html">js_of_ocaml_compiler.ml</a></li><li><a href="../js_of_ocaml-compiler/js_output.ml.html">js_output.ml</a></li><li><a href="../js_of_ocaml-compiler/js_parser.ml.html">js_parser.ml</a></li><li><a href="../js_of_ocaml-compiler/js_simpl.ml.html">js_simpl.ml</a></li><li><a href="../js_of_ocaml-compiler/js_token.ml.html">js_token.ml</a></li><li><a href="../js_of_ocaml-compiler/js_traverse.ml.html">js_traverse.ml</a></li><li><a href="../js_of_ocaml-compiler/lambda_lifting.ml.html">lambda_lifting.ml</a></li><li><a href="../js_of_ocaml-compiler/link_js.ml.html">link_js.ml</a></li><li><a href="../js_of_ocaml-compiler/linker.ml.html">linker.ml</a></li><li><a href="../js_of_ocaml-compiler/loc.ml.html">loc.ml</a></li><li><a href="../js_of_ocaml-compiler/macro.ml.html">macro.ml</a></li><li><a href="../js_of_ocaml-compiler/magic_number.ml.html">magic_number.ml</a></li><li><a href="../js_of_ocaml-compiler/mlvalue.ml.html">mlvalue.ml</a></li><li><a href="../js_of_ocaml-compiler/ocaml_compiler.ml.html">ocaml_compiler.ml</a></li><li><a href="../js_of_ocaml-compiler/ocaml_version.ml.html">ocaml_version.ml</a></li><li><a href="../js_of_ocaml-compiler/parse_bytecode.ml.html">parse_bytecode.ml</a></li><li><a href="../js_of_ocaml-compiler/parse_info.ml.html">parse_info.ml</a></li><li><a href="../js_of_ocaml-compiler/parse_js.ml.html">parse_js.ml</a></li><li><a href="../js_of_ocaml-compiler/partial_cps_analysis.ml.html">partial_cps_analysis.ml</a></li><li><a href="../js_of_ocaml-compiler/phisimpl.ml.html">phisimpl.ml</a></li><li><a href="../js_of_ocaml-compiler/pretty_print.ml.html">pretty_print.ml</a></li><li><a href="../js_of_ocaml-compiler/primitive.ml.html">primitive.ml</a></li><li><a href="../js_of_ocaml-compiler/pseudo_fs.ml.html">pseudo_fs.ml</a></li><li><a href="../js_of_ocaml-compiler/pure_fun.ml.html">pure_fun.ml</a></li><li><a href="../js_of_ocaml-compiler/reserved.ml.html">reserved.ml</a></li><li><a href="../js_of_ocaml-compiler/source_map.ml.html">source_map.ml</a></li><li><a href="../js_of_ocaml-compiler/source_map_io.ml.html">source_map_io.ml</a></li><li><a href="../js_of_ocaml-compiler/specialize.ml.html">specialize.ml</a></li><li><a href="../js_of_ocaml-compiler/specialize_js.ml.html">specialize_js.ml</a></li><li><a href="../js_of_ocaml-compiler/stdlib.ml.html">stdlib.ml</a></li><li><a href="../js_of_ocaml-compiler/strongly_connected_components.ml.html">strongly_connected_components.ml</a></li><li><a href="../js_of_ocaml-compiler/structure.ml.html">structure.ml</a></li><li><a href="../js_of_ocaml-compiler/subst.ml.html">subst.ml</a></li><li><a href="../js_of_ocaml-compiler/tailcall.ml.html">tailcall.ml</a></li><li><a href="../js_of_ocaml-compiler/target_env.ml.html">target_env.ml</a></li><li><a href="../js_of_ocaml-compiler/timer.ml.html">timer.ml</a></li><li><a href="../js_of_ocaml-compiler/unit_info.ml.html">unit_info.ml</a></li><li><a href="../js_of_ocaml-compiler/var_printer.ml.html">var_printer.ml</a></li><li><a href="../js_of_ocaml-compiler/vlq64.ml.html">vlq64.ml</a></li></ul></li><li>js_of_ocaml-compiler.dynlink<ul><li><a href="../js_of_ocaml-compiler.dynlink/js_of_ocaml_compiler_dynlink.ml.html">js_of_ocaml_compiler_dynlink.ml</a></li></ul></li><li>js_of_ocaml-compiler.findlib-support<ul><li><a href="../js_of_ocaml-compiler.findlib-support/jsoo_findlib_support.ml.html">jsoo_findlib_support.ml</a></li></ul></li><li>js_of_ocaml-compiler.runtime<ul><li><a href="../js_of_ocaml-compiler.runtime/jsoo_runtime.ml.html">jsoo_runtime.ml</a></li><li><a href="../js_of_ocaml-compiler.runtime/jsoo_runtime__.ml.html">jsoo_runtime__.ml</a></li><li><a href="../js_of_ocaml-compiler.runtime/runtime_version.ml.html">runtime_version.ml</a></li></ul></li><li>js_of_ocaml-compiler.runtime-files<ul><li><a href="files.ml.html">files.ml</a></li><li><a href="#" class="current_unit">js_of_ocaml_compiler_runtime_files.ml</a></li><li><a href="js_of_ocaml_compiler_runtime_files__.ml.html">js_of_ocaml_compiler_runtime_files__.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+</code><code class="source_code"><span><span class="COMMENT">(* Js_of_ocaml compiler
+ * http://www.ocsigen.org/js_of_ocaml/
+ * Copyright (C) 2020 Hugo Heuzard
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, with linking exception;
+ * either version 2.1 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-runtime"><span class="LIDENT">runtime</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="files.ml.html"><span class="UIDENT">Files</span></a><span class="DOT">.</span><span class="EOL">
+</span>    <span class="LBRACKET">[</span> <a href="files.ml.html#val-array"><span class="LIDENT">array</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-backtrace"><span class="LIDENT">backtrace</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-bigarray"><span class="LIDENT">bigarray</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-bigstring"><span class="LIDENT">bigstring</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-compare"><span class="LIDENT">compare</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-fail"><span class="LIDENT">fail</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-format"><span class="LIDENT">format</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-fs"><span class="LIDENT">fs</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-fs_fake"><span class="LIDENT">fs_fake</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-fs_node"><span class="LIDENT">fs_node</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-gc"><span class="LIDENT">gc</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-graphics"><span class="LIDENT">graphics</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-hash"><span class="LIDENT">hash</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-ieee_754"><span class="LIDENT">ieee_754</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-int64"><span class="LIDENT">int64</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-internalMod"><span class="LIDENT">internalMod</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-ints"><span class="LIDENT">ints</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-io"><span class="LIDENT">io</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-jslib"><span class="LIDENT">jslib</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-jslib_js_of_ocaml"><span class="LIDENT">jslib_js_of_ocaml</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-lexing"><span class="LIDENT">lexing</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-marshal"><span class="LIDENT">marshal</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-md5"><span class="LIDENT">md5</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-mlBytes"><span class="LIDENT">mlBytes</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-nat"><span class="LIDENT">nat</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-obj"><span class="LIDENT">obj</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-parsing"><span class="LIDENT">parsing</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-stdlib"><span class="LIDENT">stdlib</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-sys"><span class="LIDENT">sys</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-str"><span class="LIDENT">str</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-unix"><span class="LIDENT">unix</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-weak"><span class="LIDENT">weak</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-domain"><span class="LIDENT">domain</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-prng"><span class="LIDENT">prng</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-sync"><span class="LIDENT">sync</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-effect"><span class="LIDENT">effect</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-zstd"><span class="LIDENT">zstd</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-runtime_events"><span class="LIDENT">runtime_events</span></a><span class="EOL">
+</span>    <span class="SEMI">;</span> <a href="files.ml.html#val-blake2"><span class="LIDENT">blake2</span></a><span class="EOL">
+</span>    <span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="INCLUDE">include</span> <a href="files.ml.html"><span class="UIDENT">Files</span></a><span class="EOL">
+</span></span></code></pre></body></html>

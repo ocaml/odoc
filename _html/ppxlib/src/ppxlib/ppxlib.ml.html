@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: ppxlib.ml (ppxlib.src.ppxlib)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html"><code>ppxlib</code>'s user manual</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ppxlib &#x00BB; ppxlib.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>ppxlib.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html"><code>ppxlib</code>'s user manual</a><ul><li><a href="../../ast-traversal.html">AST Traversals</a></li><li><a href="../../driver.html">How It Works</a></li><li><a href="../../examples.html">Examples</a></li><li><a href="../../generating-code.html">Generating AST Nodes</a></li><li><a href="../../good-practices.html">Good Practices</a></li><li><a href="../../matching-code.html">Destructing AST Nodes</a></li><li><a href="../../quick_intro.html">Introduction</a></li><li><a href="../../writing-ppxs.html">Writing a Transformation</a></li><li>Library <code>ppxlib</code><ul><li><a href="../../ppxlib/Ppxlib/index.html">Ppxlib</a></li></ul></li><li>Library <code>ppxlib.ast</code><ul><li><a href="../../ppxlib.ast/Ppxlib_ast/index.html">Ppxlib_ast</a></li></ul></li><li>Library <code>ppxlib.astlib</code><ul><li><a href="../../ppxlib.astlib/Astlib/index.html">Astlib</a></li></ul></li><li>Library <code>ppxlib.metaquot</code><ul><li><a href="../../ppxlib.metaquot/Ppxlib_metaquot/index.html">Ppxlib_metaquot</a></li></ul></li><li>Library <code>ppxlib.metaquot_lifters</code><ul><li><a href="../../ppxlib.metaquot_lifters/Ppxlib_metaquot_lifters/index.html">Ppxlib_metaquot_lifters</a></li></ul></li><li>Library <code>ppxlib.print_diff</code><ul><li><a href="../../ppxlib.print_diff/Ppxlib_print_diff/index.html">Ppxlib_print_diff</a></li></ul></li><li>Library <code>ppxlib.runner</code><ul><li><a href="../../ppxlib.runner/Ppxlib_runner/index.html">Ppxlib_runner</a></li></ul></li><li>Library <code>ppxlib.runner_as_ppx</code><ul><li><a href="../../ppxlib.runner_as_ppx/Ppxlib_runner_as_ppx/index.html">Ppxlib_runner_as_ppx</a></li></ul></li><li>Library <code>ppxlib.stdppx</code><ul><li><a href="../../ppxlib.stdppx/Stdppx/index.html">Stdppx</a></li></ul></li><li>Library <code>ppxlib.traverse</code><ul><li><a href="../../ppxlib.traverse/Ppxlib_traverse/index.html">Ppxlib_traverse</a></li></ul></li><li>Library <code>ppxlib.traverse_builtins</code><ul><li><a href="../../ppxlib.traverse_builtins/Ppxlib_traverse_builtins/index.html">Ppxlib_traverse_builtins</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ppxlib<ul><li><a href="ast_builder.ml.html">ast_builder.ml</a></li><li><a href="ast_builder_generated.ml.html">ast_builder_generated.ml</a></li><li><a href="ast_builder_intf.ml.html">ast_builder_intf.ml</a></li><li><a href="ast_pattern.ml.html">ast_pattern.ml</a></li><li><a href="ast_pattern0.ml.html">ast_pattern0.ml</a></li><li><a href="ast_pattern_generated.ml.html">ast_pattern_generated.ml</a></li><li><a href="ast_traverse.ml.html">ast_traverse.ml</a></li><li><a href="ast_traverse0.ml.html">ast_traverse0.ml</a></li><li><a href="attribute.ml.html">attribute.ml</a></li><li><a href="caller_id.ml.html">caller_id.ml</a></li><li><a href="code_matcher.ml.html">code_matcher.ml</a></li><li><a href="code_path.ml.html">code_path.ml</a></li><li><a href="common.ml.html">common.ml</a></li><li><a href="context_free.ml.html">context_free.ml</a></li><li><a href="deriving.ml.html">deriving.ml</a></li><li><a href="driver.ml.html">driver.ml</a></li><li><a href="expansion_context.ml.html">expansion_context.ml</a></li><li><a href="expansion_helpers.ml.html">expansion_helpers.ml</a></li><li><a href="extension.ml.html">extension.ml</a></li><li><a href="ignore_unused_warning.ml.html">ignore_unused_warning.ml</a></li><li><a href="import.ml.html">import.ml</a></li><li><a href="keyword.ml.html">keyword.ml</a></li><li><a href="loc.ml.html">loc.ml</a></li><li><a href="location.ml.html">location.ml</a></li><li><a href="location_check.ml.html">location_check.ml</a></li><li><a href="longident.ml.html">longident.ml</a></li><li><a href="merlin_helpers.ml.html">merlin_helpers.ml</a></li><li><a href="name.ml.html">name.ml</a></li><li><a href="options.ml.html">options.ml</a></li><li><a href="#" class="current_unit">ppxlib.ml</a></li><li><a href="ppxlib__.ml.html">ppxlib__.ml</a></li><li><a href="quoter.ml.html">quoter.ml</a></li><li><a href="reconcile.ml.html">reconcile.ml</a></li><li><a href="skip_hash_bang.ml.html">skip_hash_bang.ml</a></li><li><a href="spellcheck.ml.html">spellcheck.ml</a></li><li><a href="utils.ml.html">utils.ml</a></li></ul></li><li>ppxlib.ast<ul><li><a href="../ppxlib.ast/ast.ml.html">ast.ml</a></li><li><a href="../ppxlib.ast/ast_helper_lite.ml.html">ast_helper_lite.ml</a></li><li><a href="../ppxlib.ast/import.ml.html">import.ml</a></li><li><a href="../ppxlib.ast/location_error.ml.html">location_error.ml</a></li><li><a href="../ppxlib.ast/ppxlib_ast.ml.html">ppxlib_ast.ml</a></li><li><a href="../ppxlib.ast/ppxlib_ast__.ml.html">ppxlib_ast__.ml</a></li><li><a href="../ppxlib.ast/stdlib0.ml.html">stdlib0.ml</a></li><li><a href="../ppxlib.ast/versions.ml.html">versions.ml</a></li><li><a href="../ppxlib.ast/warn.ml.html">warn.ml</a></li></ul></li><li>ppxlib.astlib<ul><li><a href="../ppxlib.astlib/ast_402.ml.html">ast_402.ml</a></li><li><a href="../ppxlib.astlib/ast_403.ml.html">ast_403.ml</a></li><li><a href="../ppxlib.astlib/ast_404.ml.html">ast_404.ml</a></li><li><a href="../ppxlib.astlib/ast_405.ml.html">ast_405.ml</a></li><li><a href="../ppxlib.astlib/ast_406.ml.html">ast_406.ml</a></li><li><a href="../ppxlib.astlib/ast_407.ml.html">ast_407.ml</a></li><li><a href="../ppxlib.astlib/ast_408.ml.html">ast_408.ml</a></li><li><a href="../ppxlib.astlib/ast_409.ml.html">ast_409.ml</a></li><li><a href="../ppxlib.astlib/ast_410.ml.html">ast_410.ml</a></li><li><a href="../ppxlib.astlib/ast_411.ml.html">ast_411.ml</a></li><li><a href="../ppxlib.astlib/ast_412.ml.html">ast_412.ml</a></li><li><a href="../ppxlib.astlib/ast_413.ml.html">ast_413.ml</a></li><li><a href="../ppxlib.astlib/ast_414.ml.html">ast_414.ml</a></li><li><a href="../ppxlib.astlib/ast_500.ml.html">ast_500.ml</a></li><li><a href="../ppxlib.astlib/ast_501.ml.html">ast_501.ml</a></li><li><a href="../ppxlib.astlib/ast_502.ml.html">ast_502.ml</a></li><li><a href="../ppxlib.astlib/ast_503.ml.html">ast_503.ml</a></li><li><a href="../ppxlib.astlib/ast_metadata.ml.html">ast_metadata.ml</a></li><li><a href="../ppxlib.astlib/astlib.ml.html">astlib.ml</a></li><li><a href="../ppxlib.astlib/astlib__.ml.html">astlib__.ml</a></li><li><a href="../ppxlib.astlib/config.ml.html">config.ml</a></li><li><a href="../ppxlib.astlib/keyword.ml.html">keyword.ml</a></li><li><a href="../ppxlib.astlib/location.ml.html">location.ml</a></li><li><a href="../ppxlib.astlib/longident.ml.html">longident.ml</a></li><li><a href="../ppxlib.astlib/migrate_402_403.ml.html">migrate_402_403.ml</a></li><li><a href="../ppxlib.astlib/migrate_403_402.ml.html">migrate_403_402.ml</a></li><li><a href="../ppxlib.astlib/migrate_403_404.ml.html">migrate_403_404.ml</a></li><li><a href="../ppxlib.astlib/migrate_404_403.ml.html">migrate_404_403.ml</a></li><li><a href="../ppxlib.astlib/migrate_404_405.ml.html">migrate_404_405.ml</a></li><li><a href="../ppxlib.astlib/migrate_405_404.ml.html">migrate_405_404.ml</a></li><li><a href="../ppxlib.astlib/migrate_405_406.ml.html">migrate_405_406.ml</a></li><li><a href="../ppxlib.astlib/migrate_406_405.ml.html">migrate_406_405.ml</a></li><li><a href="../ppxlib.astlib/migrate_406_407.ml.html">migrate_406_407.ml</a></li><li><a href="../ppxlib.astlib/migrate_407_406.ml.html">migrate_407_406.ml</a></li><li><a href="../ppxlib.astlib/migrate_407_408.ml.html">migrate_407_408.ml</a></li><li><a href="../ppxlib.astlib/migrate_408_407.ml.html">migrate_408_407.ml</a></li><li><a href="../ppxlib.astlib/migrate_408_409.ml.html">migrate_408_409.ml</a></li><li><a href="../ppxlib.astlib/migrate_409_408.ml.html">migrate_409_408.ml</a></li><li><a href="../ppxlib.astlib/migrate_409_410.ml.html">migrate_409_410.ml</a></li><li><a href="../ppxlib.astlib/migrate_410_409.ml.html">migrate_410_409.ml</a></li><li><a href="../ppxlib.astlib/migrate_410_411.ml.html">migrate_410_411.ml</a></li><li><a href="../ppxlib.astlib/migrate_411_410.ml.html">migrate_411_410.ml</a></li><li><a href="../ppxlib.astlib/migrate_411_412.ml.html">migrate_411_412.ml</a></li><li><a href="../ppxlib.astlib/migrate_412_411.ml.html">migrate_412_411.ml</a></li><li><a href="../ppxlib.astlib/migrate_412_413.ml.html">migrate_412_413.ml</a></li><li><a href="../ppxlib.astlib/migrate_413_412.ml.html">migrate_413_412.ml</a></li><li><a href="../ppxlib.astlib/migrate_413_414.ml.html">migrate_413_414.ml</a></li><li><a href="../ppxlib.astlib/migrate_414_413.ml.html">migrate_414_413.ml</a></li><li><a href="../ppxlib.astlib/migrate_414_500.ml.html">migrate_414_500.ml</a></li><li><a href="../ppxlib.astlib/migrate_500_414.ml.html">migrate_500_414.ml</a></li><li><a href="../ppxlib.astlib/migrate_500_501.ml.html">migrate_500_501.ml</a></li><li><a href="../ppxlib.astlib/migrate_501_500.ml.html">migrate_501_500.ml</a></li><li><a href="../ppxlib.astlib/migrate_501_502.ml.html">migrate_501_502.ml</a></li><li><a href="../ppxlib.astlib/migrate_502_501.ml.html">migrate_502_501.ml</a></li><li><a href="../ppxlib.astlib/migrate_502_503.ml.html">migrate_502_503.ml</a></li><li><a href="../ppxlib.astlib/migrate_503_502.ml.html">migrate_503_502.ml</a></li><li><a href="../ppxlib.astlib/parse.ml.html">parse.ml</a></li><li><a href="../ppxlib.astlib/pprintast.ml.html">pprintast.ml</a></li><li><a href="../ppxlib.astlib/stdlib0.ml.html">stdlib0.ml</a></li></ul></li><li>ppxlib.metaquot<ul><li><a href="../ppxlib.metaquot/ppxlib_metaquot.ml.html">ppxlib_metaquot.ml</a></li></ul></li><li>ppxlib.metaquot_lifters<ul><li><a href="../ppxlib.metaquot_lifters/ppxlib_metaquot_lifters.ml.html">ppxlib_metaquot_lifters.ml</a></li></ul></li><li>ppxlib.print_diff<ul><li><a href="../ppxlib.print_diff/ppxlib_print_diff.ml.html">ppxlib_print_diff.ml</a></li></ul></li><li>ppxlib.runner<ul><li><a href="../ppxlib.runner/ppx_driver_runner.ml.html">ppx_driver_runner.ml</a></li><li><a href="../ppxlib.runner/ppxlib_runner.ml.html">ppxlib_runner.ml</a></li></ul></li><li>ppxlib.runner_as_ppx<ul><li><a href="../ppxlib.runner_as_ppx/ppx_driver_runner_as_ppx.ml.html">ppx_driver_runner_as_ppx.ml</a></li><li><a href="../ppxlib.runner_as_ppx/ppxlib_runner_as_ppx.ml.html">ppxlib_runner_as_ppx.ml</a></li></ul></li><li>ppxlib.stdppx<ul><li><a href="../ppxlib.stdppx/stdppx.ml.html">stdppx.ml</a></li></ul></li><li>ppxlib.traverse<ul><li><a href="../ppxlib.traverse/ppxlib_traverse.ml.html">ppxlib_traverse.ml</a></li></ul></li><li>ppxlib.traverse_builtins<ul><li><a href="../ppxlib.traverse_builtins/ppxlib_traverse_builtins.ml.html">ppxlib_traverse_builtins.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+</code><code class="source_code"><span><span class="DOCSTRING">(** Standard library for ppx rewriters *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** [ppxlib] is meant to be opened globally in your PPX source files.
+
+    Opening it comes with two advantages. First, it will shadow the
+    [compiler-libs] modules. The [compiler-libs] modules are unstable and aren't
+    meant to be used, so shadowing them is a good protection mechanism. In case
+    you don't want to open [Ppxlib], you can open [Ocaml_shadow] to get the same
+    protection. Second, it will bring several modules in scope, that are useful
+    to have when writing a rewriter:
+
+    - The main [ppxlib] modules, such as modules to help manipulate the AST
+      ({!Ast_builder}, {!Ast_pattern}), and a few functions.
+    - Modules from other libraries, such as {!Ast_helper} or {!Pprintast},
+    - The whole AST types (by [including] the {!Ast} module).
+
+    {1 The core [ppxlib] entries} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {2 Manipulating the AST} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Ast_builder"><span class="MODULE">module</span> <span class="UIDENT">Ast_builder</span> <span class="EQUAL">=</span> <a href="ast_builder.ml.html"><span class="UIDENT">Ast_builder</span></a></span><span class="EOL">
+</span><span id="module-Ast_pattern"><span class="MODULE">module</span> <span class="UIDENT">Ast_pattern</span> <span class="EQUAL">=</span> <a href="ast_pattern.ml.html"><span class="UIDENT">Ast_pattern</span></a></span><span class="EOL">
+</span><span id="module-Ast_traverse"><span class="MODULE">module</span> <span class="UIDENT">Ast_traverse</span> <span class="EQUAL">=</span> <a href="ast_traverse.ml.html"><span class="UIDENT">Ast_traverse</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {2 Context-free rewriting} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Context_free"><span class="MODULE">module</span> <span class="UIDENT">Context_free</span> <span class="EQUAL">=</span> <a href="context_free.ml.html"><span class="UIDENT">Context_free</span></a></span><span class="EOL">
+</span><span id="module-Deriving"><span class="MODULE">module</span> <span class="UIDENT">Deriving</span> <span class="EQUAL">=</span> <a href="deriving.ml.html"><span class="UIDENT">Deriving</span></a></span><span class="EOL">
+</span><span id="module-Extension"><span class="MODULE">module</span> <span class="UIDENT">Extension</span> <span class="EQUAL">=</span> <a href="extension.ml.html"><span class="UIDENT">Extension</span></a></span><span class="EOL">
+</span><span id="module-Expansion_context"><span class="MODULE">module</span> <span class="UIDENT">Expansion_context</span> <span class="EQUAL">=</span> <a href="expansion_context.ml.html"><span class="UIDENT">Expansion_context</span></a></span><span class="EOL">
+</span><span id="module-Code_path"><span class="MODULE">module</span> <span class="UIDENT">Code_path</span> <span class="EQUAL">=</span> <a href="code_path.ml.html"><span class="UIDENT">Code_path</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {2 Other helpers} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Expansion_helpers"><span class="MODULE">module</span> <span class="UIDENT">Expansion_helpers</span> <span class="EQUAL">=</span> <a href="expansion_helpers.ml.html"><span class="UIDENT">Expansion_helpers</span></a></span><span class="EOL">
+</span><span id="module-Merlin_helpers"><span class="MODULE">module</span> <span class="UIDENT">Merlin_helpers</span> <span class="EQUAL">=</span> <a href="merlin_helpers.ml.html"><span class="UIDENT">Merlin_helpers</span></a></span><span class="EOL">
+</span><span id="module-Spellcheck"><span class="MODULE">module</span> <span class="UIDENT">Spellcheck</span> <span class="EQUAL">=</span> <a href="spellcheck.ml.html"><span class="UIDENT">Spellcheck</span></a></span><span class="EOL">
+</span><span id="module-Keyword"><span class="MODULE">module</span> <span class="UIDENT">Keyword</span> <span class="EQUAL">=</span> <a href="keyword.ml.html"><span class="UIDENT">Keyword</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {2 Driver-related modules} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Driver"><span class="MODULE">module</span> <span class="UIDENT">Driver</span> <span class="EQUAL">=</span> <a href="driver.ml.html"><span class="UIDENT">Driver</span></a></span><span class="EOL">
+</span><span id="module-Caller_id"><span class="MODULE">module</span> <span class="UIDENT">Caller_id</span> <span class="EQUAL">=</span> <a href="caller_id.ml.html"><span class="UIDENT">Caller_id</span></a></span><span class="EOL">
+</span><span id="module-Ast_io"><span class="MODULE">module</span> <span class="UIDENT">Ast_io</span> <span class="EQUAL">=</span> <a href="utils.ml.html#module-Ast_io.module-Read_bin"><span class="UIDENT">Utils</span><span class="DOT">.</span><span class="UIDENT">Ast_io</span><span class="DOT">.</span><span class="UIDENT">Read_bin</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {2 Checks} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Attribute"><span class="MODULE">module</span> <span class="UIDENT">Attribute</span> <span class="EQUAL">=</span> <a href="attribute.ml.html"><span class="UIDENT">Attribute</span></a></span><span class="EOL">
+</span><span id="module-Reserved_namespaces"><span class="MODULE">module</span> <span class="UIDENT">Reserved_namespaces</span> <span class="EQUAL">=</span> <a href="name.ml.html#module-Reserved_namespaces"><span class="UIDENT">Name</span><span class="DOT">.</span><span class="UIDENT">Reserved_namespaces</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {2 Common helper functions} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="INCLUDE">include</span> <a href="common.ml.html"><span class="UIDENT">Common</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {1 Modules from other libraries}
+
+    Expose some modules from {!Ppxlib_ast}. *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Ast"><span class="MODULE">module</span> <span class="UIDENT">Ast</span> <span class="EQUAL">=</span> <a href="../ppxlib.ast/ast.ml.html"><span class="UIDENT">Ppxlib_ast</span><span class="DOT">.</span><span class="UIDENT">Ast</span></a></span><span class="EOL">
+</span><span id="module-Ast_helper"><span class="MODULE">module</span> <span class="UIDENT">Ast_helper</span> <span class="EQUAL">=</span> <a href="../ppxlib.ast/ast_helper_lite.ml.html"><span class="UIDENT">Ppxlib_ast</span><span class="DOT">.</span><span class="UIDENT">Ast_helper</span></a></span><span class="EOL">
+</span><span id="module-Asttypes"><span class="MODULE">module</span> <span class="UIDENT">Asttypes</span> <span class="EQUAL">=</span> <a href="../ppxlib.astlib/ast_500.ml.html#module-Asttypes"><span class="UIDENT">Ppxlib_ast</span><span class="DOT">.</span><span class="UIDENT">Asttypes</span></a></span><span class="EOL">
+</span><span id="module-Parse"><span class="MODULE">module</span> <span class="UIDENT">Parse</span> <span class="EQUAL">=</span> <a href="../ppxlib.ast/import.ml.html#module-Parse"><span class="UIDENT">Ppxlib_ast</span><span class="DOT">.</span><span class="UIDENT">Parse</span></a></span><span class="EOL">
+</span><span id="module-Parsetree"><span class="MODULE">module</span> <span class="UIDENT">Parsetree</span> <span class="EQUAL">=</span> <a href="../ppxlib.astlib/ast_500.ml.html#module-Parsetree"><span class="UIDENT">Ppxlib_ast</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span></a></span><span class="EOL">
+</span><span id="module-Pprintast"><span class="MODULE">module</span> <span class="UIDENT">Pprintast</span> <span class="EQUAL">=</span> <a href="../ppxlib.astlib/pprintast.ml.html"><span class="UIDENT">Ppxlib_ast</span><span class="DOT">.</span><span class="UIDENT">Pprintast</span></a></span><span class="EOL">
+</span><span id="module-Selected_ast"><span class="MODULE">module</span> <span class="UIDENT">Selected_ast</span> <span class="EQUAL">=</span> <a href="../ppxlib.ast/import.ml.html#module-Selected_ast"><span class="UIDENT">Ppxlib_ast</span><span class="DOT">.</span><span class="UIDENT">Selected_ast</span></a></span><span class="EOL">
+</span><span id="module-Location"><span class="MODULE">module</span> <span class="UIDENT">Location</span> <span class="EQUAL">=</span> <a href="location.ml.html"><span class="UIDENT">Location</span></a></span><span class="EOL">
+</span><span id="module-Longident"><span class="MODULE">module</span> <span class="UIDENT">Longident</span> <span class="EQUAL">=</span> <a href="longident.ml.html"><span class="UIDENT">Longident</span></a></span><span class="EOL">
+</span><span id="module-Loc"><span class="MODULE">module</span> <span class="UIDENT">Loc</span> <span class="EQUAL">=</span> <a href="loc.ml.html"><span class="UIDENT">Loc</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** {1 The whole AST types} *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="INCLUDE">include</span> <span class="UIDENT">Ast</span><span class="EOL">
+</span><span class="DOCSTRING">(** Include all the Ast definitions since we need them in every single ppx
+
+    @closed *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** Make sure code using Ppxlib doesn't refer to compiler-libs without being
+    explicit about it:
+
+    @closed *)</span><span class="EOL">
+</span><span class="INCLUDE">include</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="LBRACKETATATAT">[@@@</span><span class="LIDENT">warning</span> <span class="STRING">&quot;-3&quot;</span><span class="RBRACKET">]</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="OPEN">open</span> <a href="../../../ocaml-compiler-libs/src/ocaml-compiler-libs.shadow/ocaml_shadow.ml.html"><span class="UIDENT">Ocaml_shadow</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <span class="LPAREN">(</span><span class="EOL">
+</span>    <a href="../../../ocaml-compiler-libs/src/ocaml-compiler-libs.shadow/ocaml_shadow.ml.html"><span class="UIDENT">Ocaml_shadow</span></a> <span class="COLON">:</span><span class="EOL">
+</span>      <span class="MODULE">module</span> <span class="TYPE">type</span> <span class="OF">of</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>        <span class="INCLUDE">include</span> <a href="../../../ocaml-compiler-libs/src/ocaml-compiler-libs.shadow/ocaml_shadow.ml.html"><span class="UIDENT">Ocaml_shadow</span></a><span class="EOL">
+</span>      <span class="END">end</span><span class="EOL">
+</span>      <span class="WITH">with</span> <span class="MODULE">module</span> <span class="UIDENT">Ast_helper</span> <span class="COLONEQUAL">:=</span> <span class="UIDENT">Ast_helper</span><span class="EOL">
+</span>      <span class="WITH">with</span> <span class="MODULE">module</span> <span class="UIDENT">Asttypes</span> <span class="COLONEQUAL">:=</span> <span class="UIDENT">Asttypes</span><span class="EOL">
+</span>      <span class="WITH">with</span> <span class="MODULE">module</span> <span class="UIDENT">Docstrings</span> <span class="COLONEQUAL">:=</span> <span class="UIDENT">Docstrings</span><span class="EOL">
+</span>      <span class="WITH">with</span> <span class="MODULE">module</span> <span class="UIDENT">Identifiable</span> <span class="COLONEQUAL">:=</span> <span class="UIDENT">Identifiable</span><span class="EOL">
+</span>      <span class="WITH">with</span> <span class="MODULE">module</span> <span class="UIDENT">Lexer</span> <span class="COLONEQUAL">:=</span> <span class="UIDENT">Lexer</span><span class="EOL">
+</span>      <span class="WITH">with</span> <span class="MODULE">module</span> <span class="UIDENT">Location</span> <span class="COLONEQUAL">:=</span> <span class="UIDENT">Location</span><span class="EOL">
+</span>      <span class="WITH">with</span> <span class="MODULE">module</span> <span class="UIDENT">Longident</span> <span class="COLONEQUAL">:=</span> <span class="UIDENT">Longident</span><span class="EOL">
+</span>      <span class="WITH">with</span> <span class="MODULE">module</span> <span class="UIDENT">Parse</span> <span class="COLONEQUAL">:=</span> <span class="UIDENT">Parse</span><span class="EOL">
+</span>      <span class="WITH">with</span> <span class="MODULE">module</span> <span class="UIDENT">Parsetree</span> <span class="COLONEQUAL">:=</span> <span class="UIDENT">Parsetree</span><span class="EOL">
+</span>      <span class="WITH">with</span> <span class="MODULE">module</span> <span class="UIDENT">Pprintast</span> <span class="COLONEQUAL">:=</span> <span class="UIDENT">Pprintast</span><span class="EOL">
+</span>      <span class="WITH">with</span> <span class="MODULE">module</span> <span class="UIDENT">Syntaxerr</span> <span class="COLONEQUAL">:=</span> <span class="UIDENT">Syntaxerr</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="END">end</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(**/**)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* For tests and Ppx_core compatibility layer *)</span><span class="EOL">
+</span><span id="module-Ppxlib_private"><span class="MODULE">module</span> <span class="UIDENT">Ppxlib_private</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Ppxlib_private.module-Common"><span class="MODULE">module</span> <span class="UIDENT">Common</span> <span class="EQUAL">=</span> <a href="common.ml.html"><span class="UIDENT">Common</span></a></span><span class="EOL">
+</span>  <span id="module-Ppxlib_private.module-Name"><span class="MODULE">module</span> <span class="UIDENT">Name</span> <span class="EQUAL">=</span> <a href="name.ml.html"><span class="UIDENT">Name</span></a></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>

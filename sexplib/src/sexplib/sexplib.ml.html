@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: sexplib.ml (sexplib.src.sexplib)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">sexplib</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; sexplib &#x00BB; sexplib.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>sexplib.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">sexplib</a><ul><li>Library <code>sexplib</code><ul><li><a href="../../sexplib/Sexplib/index.html">Sexplib</a></li></ul></li><li>Library <code>sexplib.num</code><ul><li><a href="../../sexplib.num/Sexplib_num/index.html">Sexplib_num</a></li></ul></li><li>Library <code>sexplib.unix</code><ul><li><a href="../../sexplib.unix/Sexplib_unix/index.html">Sexplib_unix</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>sexplib<ul><li><a href="conv.ml.html">conv.ml</a></li><li><a href="conv_error.ml.html">conv_error.ml</a></li><li><a href="exn_magic.ml.html">exn_magic.ml</a></li><li><a href="lexer.ml.html">lexer.ml</a></li><li><a href="parser.ml.html">parser.ml</a></li><li><a href="parser_with_layout.ml.html">parser_with_layout.ml</a></li><li><a href="path.ml.html">path.ml</a></li><li><a href="pre_sexp.ml.html">pre_sexp.ml</a></li><li><a href="sexp.ml.html">sexp.ml</a></li><li><a href="sexp_grammar.ml.html">sexp_grammar.ml</a></li><li><a href="sexp_grammar_intf.ml.html">sexp_grammar_intf.ml</a></li><li><a href="sexp_intf.ml.html">sexp_intf.ml</a></li><li><a href="sexp_with_layout.ml.html">sexp_with_layout.ml</a></li><li><a href="#" class="current_unit">sexplib.ml</a></li><li><a href="src_pos.ml.html">src_pos.ml</a></li><li><a href="std.ml.html">std.ml</a></li><li><a href="type.ml.html">type.ml</a></li><li><a href="type_with_layout.ml.html">type_with_layout.ml</a></li></ul></li><li>sexplib.num<ul><li><a href="../sexplib.num/sexplib_num.ml.html">sexplib_num.ml</a></li><li><a href="../sexplib.num/sexplib_num_conv.ml.html">sexplib_num_conv.ml</a></li><li><a href="../sexplib.num/std.ml.html">std.ml</a></li></ul></li><li>sexplib.unix<ul><li><a href="../sexplib.unix/sexplib_unix.ml.html">sexplib_unix.ml</a></li><li><a href="../sexplib.unix/sexplib_unix_conv.ml.html">sexplib_unix_conv.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+</code><code class="source_code"><span><span class="COMMENT">(* generated by dune *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Conv *)</span><span class="EOL">
+</span><span id="module-Conv"><span class="MODULE">module</span> <span class="UIDENT">Conv</span> <span class="EQUAL">=</span> <a href="conv.ml.html"><span class="UIDENT">Sexplib__Conv</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Conv_error *)</span><span class="EOL">
+</span><span id="module-Conv_error"><span class="MODULE">module</span> <span class="UIDENT">Conv_error</span> <span class="EQUAL">=</span> <a href="conv_error.ml.html"><span class="UIDENT">Sexplib__Conv_error</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Exn_magic *)</span><span class="EOL">
+</span><span id="module-Exn_magic"><span class="MODULE">module</span> <span class="UIDENT">Exn_magic</span> <span class="EQUAL">=</span> <a href="exn_magic.ml.html"><span class="UIDENT">Sexplib__Exn_magic</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Lexer *)</span><span class="EOL">
+</span><span id="module-Lexer"><span class="MODULE">module</span> <span class="UIDENT">Lexer</span> <span class="EQUAL">=</span> <a href="lexer.ml.html"><span class="UIDENT">Sexplib__Lexer</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Parser *)</span><span class="EOL">
+</span><span id="module-Parser"><span class="MODULE">module</span> <span class="UIDENT">Parser</span> <span class="EQUAL">=</span> <a href="parser.ml.html"><span class="UIDENT">Sexplib__Parser</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Parser_with_layout *)</span><span class="EOL">
+</span><span id="module-Parser_with_layout"><span class="MODULE">module</span> <span class="UIDENT">Parser_with_layout</span> <span class="EQUAL">=</span> <a href="parser_with_layout.ml.html"><span class="UIDENT">Sexplib__Parser_with_layout</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Path *)</span><span class="EOL">
+</span><span id="module-Path"><span class="MODULE">module</span> <span class="UIDENT">Path</span> <span class="EQUAL">=</span> <a href="path.ml.html"><span class="UIDENT">Sexplib__Path</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Pre_sexp *)</span><span class="EOL">
+</span><span id="module-Pre_sexp"><span class="MODULE">module</span> <span class="UIDENT">Pre_sexp</span> <span class="EQUAL">=</span> <a href="pre_sexp.ml.html"><span class="UIDENT">Sexplib__Pre_sexp</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Sexp *)</span><span class="EOL">
+</span><span id="module-Sexp"><span class="MODULE">module</span> <span class="UIDENT">Sexp</span> <span class="EQUAL">=</span> <a href="sexp.ml.html"><span class="UIDENT">Sexplib__Sexp</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Sexp_grammar *)</span><span class="EOL">
+</span><span id="module-Sexp_grammar"><span class="MODULE">module</span> <span class="UIDENT">Sexp_grammar</span> <span class="EQUAL">=</span> <a href="sexp_grammar.ml.html"><span class="UIDENT">Sexplib__Sexp_grammar</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Sexp_grammar_intf *)</span><span class="EOL">
+</span><span id="module-Sexp_grammar_intf"><span class="MODULE">module</span> <span class="UIDENT">Sexp_grammar_intf</span> <span class="EQUAL">=</span> <a href="sexp_grammar_intf.ml.html"><span class="UIDENT">Sexplib__Sexp_grammar_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Sexp_intf *)</span><span class="EOL">
+</span><span id="module-Sexp_intf"><span class="MODULE">module</span> <span class="UIDENT">Sexp_intf</span> <span class="EQUAL">=</span> <a href="sexp_intf.ml.html"><span class="UIDENT">Sexplib__Sexp_intf</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Sexp_with_layout *)</span><span class="EOL">
+</span><span id="module-Sexp_with_layout"><span class="MODULE">module</span> <span class="UIDENT">Sexp_with_layout</span> <span class="EQUAL">=</span> <a href="sexp_with_layout.ml.html"><span class="UIDENT">Sexplib__Sexp_with_layout</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Src_pos *)</span><span class="EOL">
+</span><span id="module-Src_pos"><span class="MODULE">module</span> <span class="UIDENT">Src_pos</span> <span class="EQUAL">=</span> <a href="src_pos.ml.html"><span class="UIDENT">Sexplib__Src_pos</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Std *)</span><span class="EOL">
+</span><span id="module-Std"><span class="MODULE">module</span> <span class="UIDENT">Std</span> <span class="EQUAL">=</span> <a href="std.ml.html"><span class="UIDENT">Sexplib__Std</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Type *)</span><span class="EOL">
+</span><span id="module-Type"><span class="MODULE">module</span> <span class="UIDENT">Type</span> <span class="EQUAL">=</span> <a href="type.ml.html"><span class="UIDENT">Sexplib__Type</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="DOCSTRING">(** @canonical Sexplib.Type_with_layout *)</span><span class="EOL">
+</span><span id="module-Type_with_layout"><span class="MODULE">module</span> <span class="UIDENT">Type_with_layout</span> <span class="EQUAL">=</span> <a href="type_with_layout.ml.html"><span class="UIDENT">Sexplib__Type_with_layout</span></a></span><span class="EOL">
+</span></span></code></pre></body></html>

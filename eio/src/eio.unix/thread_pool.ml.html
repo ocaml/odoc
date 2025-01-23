@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: thread_pool.ml (eio.src.eio.unix)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">eio</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; eio.unix &#x00BB; thread_pool.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>thread_pool.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">eio</a><ul><li>Library <code>eio</code><ul><li><a href="../../eio/Eio/index.html">Eio</a></li></ul></li><li>Library <code>eio.core</code></li><li>Library <code>eio.mock</code><ul><li><a href="../../eio.mock/Eio_mock/index.html">Eio_mock</a></li></ul></li><li>Library <code>eio.runtime_events</code><ul><li><a href="../../eio.runtime_events/Eio_runtime_events/index.html">Eio_runtime_events</a></li></ul></li><li>Library <code>eio.unix</code><ul><li><a href="../../eio.unix/Eio_unix/index.html">Eio_unix</a></li></ul></li><li>Library <code>eio.utils</code><ul><li><a href="../../eio.utils/Eio_utils/index.html">Eio_utils</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>eio<ul><li><a href="../eio/buf_read.ml.html">buf_read.ml</a></li><li><a href="../eio/buf_write.ml.html">buf_write.ml</a></li><li><a href="../eio/condition.ml.html">condition.ml</a></li><li><a href="../eio/domain_manager.ml.html">domain_manager.ml</a></li><li><a href="../eio/eio.ml.html">eio.ml</a></li><li><a href="../eio/eio__.ml.html">eio__.ml</a></li><li><a href="../eio/eio_mutex.ml.html">eio_mutex.ml</a></li><li><a href="../eio/executor_pool.ml.html">executor_pool.ml</a></li><li><a href="../eio/file.ml.html">file.ml</a></li><li><a href="../eio/flow.ml.html">flow.ml</a></li><li><a href="../eio/fs.ml.html">fs.ml</a></li><li><a href="../eio/hook.ml.html">hook.ml</a></li><li><a href="../eio/lazy.ml.html">lazy.ml</a></li><li><a href="../eio/net.ml.html">net.ml</a></li><li><a href="../eio/path.ml.html">path.ml</a></li><li><a href="../eio/pool.ml.html">pool.ml</a></li><li><a href="../eio/process.ml.html">process.ml</a></li><li><a href="../eio/resource.ml.html">resource.ml</a></li><li><a href="../eio/sem_state.ml.html">sem_state.ml</a></li><li><a href="../eio/semaphore.ml.html">semaphore.ml</a></li><li><a href="../eio/std.ml.html">std.ml</a></li><li><a href="../eio/stream.ml.html">stream.ml</a></li><li><a href="../eio/sync.ml.html">sync.ml</a></li><li><a href="../eio/time.ml.html">time.ml</a></li><li><a href="../eio/waiters.ml.html">waiters.ml</a></li></ul></li><li>eio.core<ul><li><a href="../eio.core/broadcast.ml.html">broadcast.ml</a></li><li><a href="../eio.core/cancel.ml.html">cancel.ml</a></li><li><a href="../eio.core/cells.ml.html">cells.ml</a></li><li><a href="../eio.core/debug.ml.html">debug.ml</a></li><li><a href="../eio.core/dla.ml.html">dla.ml</a></li><li><a href="../eio.core/eio__core.ml.html">eio__core.ml</a></li><li><a href="../eio.core/eio__core__.ml.html">eio__core__.ml</a></li><li><a href="../eio.core/exn.ml.html">exn.ml</a></li><li><a href="../eio.core/fiber.ml.html">fiber.ml</a></li><li><a href="../eio.core/promise.ml.html">promise.ml</a></li><li><a href="../eio.core/single_waiter.ml.html">single_waiter.ml</a></li><li><a href="../eio.core/suspend.ml.html">suspend.ml</a></li><li><a href="../eio.core/switch.ml.html">switch.ml</a></li><li><a href="../eio.core/trace.ml.html">trace.ml</a></li></ul></li><li>eio.mock<ul><li><a href="../eio.mock/action.ml.html">action.ml</a></li><li><a href="../eio.mock/backend.ml.html">backend.ml</a></li><li><a href="../eio.mock/clock.ml.html">clock.ml</a></li><li><a href="../eio.mock/domain_manager.ml.html">domain_manager.ml</a></li><li><a href="../eio.mock/eio_mock.ml.html">eio_mock.ml</a></li><li><a href="../eio.mock/eio_mock__.ml.html">eio_mock__.ml</a></li><li><a href="../eio.mock/flow.ml.html">flow.ml</a></li><li><a href="../eio.mock/handler.ml.html">handler.ml</a></li><li><a href="../eio.mock/net.ml.html">net.ml</a></li></ul></li><li>eio.runtime_events<ul><li><a href="../eio.runtime_events/eio_runtime_events.ml.html">eio_runtime_events.ml</a></li></ul></li><li>eio.unix<ul><li><a href="cap.ml.html">cap.ml</a></li><li><a href="eio_unix.ml.html">eio_unix.ml</a></li><li><a href="eio_unix__.ml.html">eio_unix__.ml</a></li><li><a href="fd.ml.html">fd.ml</a></li><li><a href="fork_action.ml.html">fork_action.ml</a></li><li><a href="inherit_fds.ml.html">inherit_fds.ml</a></li><li><a href="net.ml.html">net.ml</a></li><li><a href="pi.ml.html">pi.ml</a></li><li><a href="private.ml.html">private.ml</a></li><li><a href="process.ml.html">process.ml</a></li><li><a href="rcfd.ml.html">rcfd.ml</a></li><li><a href="resource.ml.html">resource.ml</a></li><li><a href="#" class="current_unit">thread_pool.ml</a></li><li><a href="types.ml.html">types.ml</a></li></ul></li><li>eio.utils<ul><li><a href="../eio.utils/eio_utils.ml.html">eio_utils.ml</a></li><li><a href="../eio.utils/eio_utils__.ml.html">eio_utils__.ml</a></li><li><a href="../eio.utils/lf_queue.ml.html">lf_queue.ml</a></li><li><a href="../eio.utils/suspended.ml.html">suspended.ml</a></li><li><a href="../eio.utils/zzz.ml.html">zzz.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+<a id="L53" class="source_line" href="#L53">53</a>
+<a id="L54" class="source_line" href="#L54">54</a>
+<a id="L55" class="source_line" href="#L55">55</a>
+<a id="L56" class="source_line" href="#L56">56</a>
+<a id="L57" class="source_line" href="#L57">57</a>
+<a id="L58" class="source_line" href="#L58">58</a>
+<a id="L59" class="source_line" href="#L59">59</a>
+<a id="L60" class="source_line" href="#L60">60</a>
+<a id="L61" class="source_line" href="#L61">61</a>
+<a id="L62" class="source_line" href="#L62">62</a>
+<a id="L63" class="source_line" href="#L63">63</a>
+<a id="L64" class="source_line" href="#L64">64</a>
+<a id="L65" class="source_line" href="#L65">65</a>
+<a id="L66" class="source_line" href="#L66">66</a>
+<a id="L67" class="source_line" href="#L67">67</a>
+<a id="L68" class="source_line" href="#L68">68</a>
+<a id="L69" class="source_line" href="#L69">69</a>
+<a id="L70" class="source_line" href="#L70">70</a>
+<a id="L71" class="source_line" href="#L71">71</a>
+<a id="L72" class="source_line" href="#L72">72</a>
+<a id="L73" class="source_line" href="#L73">73</a>
+<a id="L74" class="source_line" href="#L74">74</a>
+<a id="L75" class="source_line" href="#L75">75</a>
+<a id="L76" class="source_line" href="#L76">76</a>
+<a id="L77" class="source_line" href="#L77">77</a>
+<a id="L78" class="source_line" href="#L78">78</a>
+<a id="L79" class="source_line" href="#L79">79</a>
+<a id="L80" class="source_line" href="#L80">80</a>
+<a id="L81" class="source_line" href="#L81">81</a>
+<a id="L82" class="source_line" href="#L82">82</a>
+<a id="L83" class="source_line" href="#L83">83</a>
+<a id="L84" class="source_line" href="#L84">84</a>
+<a id="L85" class="source_line" href="#L85">85</a>
+<a id="L86" class="source_line" href="#L86">86</a>
+<a id="L87" class="source_line" href="#L87">87</a>
+<a id="L88" class="source_line" href="#L88">88</a>
+<a id="L89" class="source_line" href="#L89">89</a>
+<a id="L90" class="source_line" href="#L90">90</a>
+<a id="L91" class="source_line" href="#L91">91</a>
+<a id="L92" class="source_line" href="#L92">92</a>
+<a id="L93" class="source_line" href="#L93">93</a>
+<a id="L94" class="source_line" href="#L94">94</a>
+<a id="L95" class="source_line" href="#L95">95</a>
+<a id="L96" class="source_line" href="#L96">96</a>
+<a id="L97" class="source_line" href="#L97">97</a>
+<a id="L98" class="source_line" href="#L98">98</a>
+<a id="L99" class="source_line" href="#L99">99</a>
+<a id="L100" class="source_line" href="#L100">100</a>
+<a id="L101" class="source_line" href="#L101">101</a>
+<a id="L102" class="source_line" href="#L102">102</a>
+<a id="L103" class="source_line" href="#L103">103</a>
+<a id="L104" class="source_line" href="#L104">104</a>
+<a id="L105" class="source_line" href="#L105">105</a>
+<a id="L106" class="source_line" href="#L106">106</a>
+<a id="L107" class="source_line" href="#L107">107</a>
+<a id="L108" class="source_line" href="#L108">108</a>
+<a id="L109" class="source_line" href="#L109">109</a>
+<a id="L110" class="source_line" href="#L110">110</a>
+<a id="L111" class="source_line" href="#L111">111</a>
+<a id="L112" class="source_line" href="#L112">112</a>
+<a id="L113" class="source_line" href="#L113">113</a>
+<a id="L114" class="source_line" href="#L114">114</a>
+<a id="L115" class="source_line" href="#L115">115</a>
+<a id="L116" class="source_line" href="#L116">116</a>
+<a id="L117" class="source_line" href="#L117">117</a>
+<a id="L118" class="source_line" href="#L118">118</a>
+<a id="L119" class="source_line" href="#L119">119</a>
+<a id="L120" class="source_line" href="#L120">120</a>
+<a id="L121" class="source_line" href="#L121">121</a>
+<a id="L122" class="source_line" href="#L122">122</a>
+<a id="L123" class="source_line" href="#L123">123</a>
+<a id="L124" class="source_line" href="#L124">124</a>
+<a id="L125" class="source_line" href="#L125">125</a>
+<a id="L126" class="source_line" href="#L126">126</a>
+<a id="L127" class="source_line" href="#L127">127</a>
+<a id="L128" class="source_line" href="#L128">128</a>
+<a id="L129" class="source_line" href="#L129">129</a>
+<a id="L130" class="source_line" href="#L130">130</a>
+<a id="L131" class="source_line" href="#L131">131</a>
+<a id="L132" class="source_line" href="#L132">132</a>
+<a id="L133" class="source_line" href="#L133">133</a>
+<a id="L134" class="source_line" href="#L134">134</a>
+</code><code class="source_code"><span><span id="module-Zzz"><span class="MODULE">module</span> <span class="UIDENT">Zzz</span> <span class="EQUAL">=</span> <a href="../eio.utils/zzz.ml.html"><span class="UIDENT">Eio_utils</span><span class="DOT">.</span><span class="UIDENT">Zzz</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-job"><span class="TYPE">type</span> <span class="LIDENT">job</span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span id="type-job.constructor-New"><span class="BAR">|</span> <span class="UIDENT">New</span></span><span class="EOL">
+</span>  <span id="type-job.constructor-Exit"><span class="BAR">|</span> <span class="UIDENT">Exit</span></span><span class="EOL">
+</span>  <span id="type-job.constructor-Job"><span class="BAR">|</span> <span class="UIDENT">Job</span> <span class="COLON">:</span> <span class="LBRACE">{</span><span class="EOL">
+</span>      <span id="def_51"><span class="LIDENT">fn</span> <span class="COLON">:</span> <span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span><span class="SEMI">;</span></span><span class="EOL">
+</span>      <span id="def_55"><span class="LIDENT">enqueue</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#type-result"><span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <a href="../eio.core/exn.ml.html#type-with_bt"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Exn</span><span class="DOT">.</span><span class="LIDENT">with_bt</span></a><span class="RPAREN">)</span> <span class="LIDENT">result</span></a> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">unit</span><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">job</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="COMMENT">(* Mailbox with blocking semaphore *)</span><span class="EOL">
+</span><span id="module-Mailbox"><span class="MODULE">module</span> <span class="UIDENT">Mailbox</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Mailbox.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>    <span id="def_49"><span class="LIDENT">available</span> <span class="COLON">:</span> <a href="../../../ocaml-base-compiler/src/stdlib/semaphore.ml.html#module-Binary.type-t"><span class="UIDENT">Semaphore</span><span class="DOT">.</span><span class="UIDENT">Binary</span><span class="DOT">.</span><span class="LIDENT">t</span></a><span class="SEMI">;</span></span><span class="EOL">
+</span>    <span id="def_54"><span class="MUTABLE">mutable</span> <span class="LIDENT">cell</span> <span class="COLON">:</span> <span class="LIDENT">job</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Mailbox.val-create"><span class="LIDENT">create</span></span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span> <span class="LIDENT">available</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/semaphore.ml.html#module-Binary.val-make"><span class="UIDENT">Semaphore</span><span class="DOT">.</span><span class="UIDENT">Binary</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="FALSE">false</span><span class="SEMI">;</span> <span class="LIDENT">cell</span> <span class="EQUAL">=</span> <span class="UIDENT">New</span> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Mailbox.val-put"><span class="LIDENT">put</span></span> <span id="local_mbox_1"><span class="LIDENT">mbox</span></span> <span id="local_x_2"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="COMMENT">(* The Semaphore contains an atomic frontier,
+       therefore [cell] does not need to be an atomic *)</span><span class="EOL">
+</span>    <a href="#local_mbox_1"><span class="LIDENT">mbox</span></a><span class="DOT">.</span><span class="LIDENT">cell</span> <span class="LESSMINUS">&lt;-</span> <a href="#local_x_2"><span class="LIDENT">x</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/semaphore.ml.html#module-Binary.val-release"><span class="UIDENT">Semaphore</span><span class="DOT">.</span><span class="UIDENT">Binary</span><span class="DOT">.</span><span class="LIDENT">release</span></a> <a href="#local_mbox_1"><span class="LIDENT">mbox</span></a><span class="DOT">.</span><span class="LIDENT">available</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Mailbox.val-take"><span class="LIDENT">take</span></span> <span id="local_mbox_3"><span class="LIDENT">mbox</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/semaphore.ml.html#module-Binary.val-acquire"><span class="UIDENT">Semaphore</span><span class="DOT">.</span><span class="UIDENT">Binary</span><span class="DOT">.</span><span class="LIDENT">acquire</span></a> <a href="#local_mbox_3"><span class="LIDENT">mbox</span></a><span class="DOT">.</span><span class="LIDENT">available</span><span class="SEMI">;</span><span class="EOL">
+</span>    <a href="#local_mbox_3"><span class="LIDENT">mbox</span></a><span class="DOT">.</span><span class="LIDENT">cell</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Free_pool"><span class="MODULE">module</span> <span class="UIDENT">Free_pool</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span id="module-Free_pool.type-list"><span class="TYPE">type</span> <span class="LIDENT">list</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span id="module-Free_pool.type-list.constructor-Empty"><span class="BAR">|</span> <span class="UIDENT">Empty</span></span><span class="EOL">
+</span>    <span id="module-Free_pool.type-list.constructor-Closed"><span class="BAR">|</span> <span class="UIDENT">Closed</span></span><span class="EOL">
+</span>    <span id="module-Free_pool.type-list.constructor-Free"><span class="BAR">|</span> <span class="UIDENT">Free</span> <span class="OF">of</span> <span class="UIDENT">Mailbox</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="STAR">*</span> <span class="LIDENT">list</span></span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Free_pool.type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#type-t"><span class="LIDENT">list</span> <span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="module-Free_pool.val-close_list"><span class="LIDENT">close_list</span></span> <span class="EQUAL">=</span> <span class="FUNCTION">function</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Free</span> <span class="LPAREN">(</span><span id="local_x_4"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span id="local_xs_5"><span class="LIDENT">xs</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Mailbox</span><span class="DOT">.</span><span class="LIDENT">put</span> <a href="#local_x_4"><span class="LIDENT">x</span></a> <span class="UIDENT">Exit</span><span class="SEMI">;</span> <span class="LIDENT">close_list</span> <a href="#local_xs_5"><span class="LIDENT">xs</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Empty</span> <span class="BAR">|</span> <span class="UIDENT">Closed</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Free_pool.val-close"><span class="LIDENT">close</span></span> <span id="local_t_6"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_items_7"><span class="LIDENT">items</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-exchange"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">exchange</span></a> <a href="#local_t_6"><span class="LIDENT">t</span></a> <span class="UIDENT">Closed</span> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LIDENT">close_list</span> <a href="#local_items_7"><span class="LIDENT">items</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="module-Free_pool.val-drop"><span class="LIDENT">drop</span></span> <span id="local_t_8"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-get"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">get</span></a> <a href="#local_t_8"><span class="LIDENT">t</span></a> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Closed</span> <span class="BAR">|</span> <span class="UIDENT">Empty</span> <span class="MINUSGREATER">-&gt;</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Free</span> <span class="UNDERSCORE">_</span> <span class="AS">as</span> <span id="local_items_9"><span class="LIDENT">items</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-compare_and_set"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">compare_and_set</span></a> <a href="#local_t_8"><span class="LIDENT">t</span></a> <a href="#local_items_9"><span class="LIDENT">items</span></a> <span class="UIDENT">Empty</span> <span class="THEN">then</span> <span class="LIDENT">close_list</span> <a href="#local_items_9"><span class="LIDENT">items</span></a><span class="EOL">
+</span>      <span class="ELSE">else</span> <span class="LIDENT">drop</span> <a href="#local_t_8"><span class="LIDENT">t</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="module-Free_pool.val-put"><span class="LIDENT">put</span></span> <span id="local_t_10"><span class="LIDENT">t</span></span> <span id="local_mbox_11"><span class="LIDENT">mbox</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-get"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">get</span></a> <a href="#local_t_10"><span class="LIDENT">t</span></a> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Closed</span> <span class="MINUSGREATER">-&gt;</span> <span class="ASSERT">assert</span> <span class="FALSE">false</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="LPAREN">(</span><span class="UIDENT">Empty</span> <span class="BAR">|</span> <span class="UIDENT">Free</span> <span class="UNDERSCORE">_</span><span class="RPAREN">)</span> <span class="AS">as</span> <span id="local_current_12"><span class="LIDENT">current</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="LET">let</span> <span id="local_next_13"><span class="LIDENT">next</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Free</span> <span class="LPAREN">(</span><a href="#local_mbox_11"><span class="LIDENT">mbox</span></a><span class="COMMA">,</span> <a href="#local_current_12"><span class="LIDENT">current</span></a><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-not"><span class="LIDENT">not</span></a> <span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-compare_and_set"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">compare_and_set</span></a> <a href="#local_t_10"><span class="LIDENT">t</span></a> <a href="#local_current_12"><span class="LIDENT">current</span></a> <a href="#local_next_13"><span class="LIDENT">next</span></a><span class="RPAREN">)</span> <span class="THEN">then</span><span class="EOL">
+</span>        <span class="LIDENT">put</span> <a href="#local_t_10"><span class="LIDENT">t</span></a> <a href="#local_mbox_11"><span class="LIDENT">mbox</span></a> <span class="COMMENT">(* concurrent update, try again *)</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Free_pool.val-make_thread"><span class="LIDENT">make_thread</span></span> <span id="local_t_14"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_mbox_15"><span class="LIDENT">mbox</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Mailbox</span><span class="DOT">.</span><span class="LIDENT">create</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local__thread_16"><span class="LIDENT">_thread</span></span> <span class="COLON">:</span> <span class="UIDENT">Thread</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="UIDENT">Thread</span><span class="DOT">.</span><span class="LIDENT">create</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>        <span class="WHILE">while</span> <span class="TRUE">true</span> <span class="DO">do</span><span class="EOL">
+</span>          <span class="MATCH">match</span> <span class="UIDENT">Mailbox</span><span class="DOT">.</span><span class="LIDENT">take</span> <a href="#local_mbox_15"><span class="LIDENT">mbox</span></a> <span class="WITH">with</span><span class="EOL">
+</span>          <span class="BAR">|</span> <span class="UIDENT">New</span> <span class="MINUSGREATER">-&gt;</span> <span class="ASSERT">assert</span> <span class="FALSE">false</span><span class="EOL">
+</span>          <span class="BAR">|</span> <span class="UIDENT">Exit</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-raise"><span class="LIDENT">raise</span></a> <span class="UIDENT">Thread</span><span class="DOT">.</span><span class="UIDENT">Exit</span><span class="EOL">
+</span>          <span class="BAR">|</span> <span class="UIDENT">Job</span> <span class="LBRACE">{</span> <span id="local_fn_17"><span class="LIDENT">fn</span></span><span class="SEMI">;</span> <span id="local_enqueue_18"><span class="LIDENT">enqueue</span></span> <span class="RBRACE">}</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>            <span class="LET">let</span> <span id="local_result_19"><span class="LIDENT">result</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>              <span class="TRY">try</span> <span class="UIDENT">Ok</span> <span class="LPAREN">(</span><a href="#local_fn_17"><span class="LIDENT">fn</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>              <span class="WITH">with</span> <span id="local_exn_20"><span class="LIDENT">exn</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>                <span class="LET">let</span> <span id="local_bt_21"><span class="LIDENT">bt</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/printexc.ml.html#val-get_raw_backtrace"><span class="UIDENT">Printexc</span><span class="DOT">.</span><span class="LIDENT">get_raw_backtrace</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>                <span class="UIDENT">Error</span> <span class="LPAREN">(</span><a href="#local_exn_20"><span class="LIDENT">exn</span></a><span class="COMMA">,</span> <a href="#local_bt_21"><span class="LIDENT">bt</span></a><span class="RPAREN">)</span><span class="EOL">
+</span>            <span class="IN">in</span><span class="EOL">
+</span>            <span class="LIDENT">put</span> <a href="#local_t_14"><span class="LIDENT">t</span></a> <a href="#local_mbox_15"><span class="LIDENT">mbox</span></a><span class="SEMI">;</span>         <span class="COMMENT">(* Ensure thread is in free-pool before enqueuing. *)</span><span class="EOL">
+</span>            <a href="#local_enqueue_18"><span class="LIDENT">enqueue</span></a> <a href="#local_result_19"><span class="LIDENT">result</span></a><span class="EOL">
+</span>        <span class="DONE">done</span><span class="EOL">
+</span>      <span class="RPAREN">)</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <a href="#local_mbox_15"><span class="LIDENT">mbox</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span class="REC">rec</span> <span id="module-Free_pool.val-get_thread"><span class="LIDENT">get_thread</span></span> <span id="local_t_22"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-get"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">get</span></a> <a href="#local_t_22"><span class="LIDENT">t</span></a> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Closed</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-invalid_arg"><span class="LIDENT">invalid_arg</span></a> <span class="STRING">&quot;Thread pool closed!&quot;</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Empty</span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">make_thread</span> <a href="#local_t_22"><span class="LIDENT">t</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">Free</span> <span class="LPAREN">(</span><span id="local_mbox_24"><span class="LIDENT">mbox</span></span><span class="COMMA">,</span> <span id="local_next_25"><span class="LIDENT">next</span></span><span class="RPAREN">)</span> <span class="AS">as</span> <span id="local_current_23"><span class="LIDENT">current</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="IF">if</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-compare_and_set"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">compare_and_set</span></a> <a href="#local_t_22"><span class="LIDENT">t</span></a> <a href="#local_current_23"><span class="LIDENT">current</span></a> <a href="#local_next_25"><span class="LIDENT">next</span></a> <span class="THEN">then</span> <a href="#local_mbox_24"><span class="LIDENT">mbox</span></a><span class="EOL">
+</span>      <span class="ELSE">else</span> <span class="LIDENT">get_thread</span> <a href="#local_t_22"><span class="LIDENT">t</span></a> <span class="COMMENT">(* concurrent update, try again *)</span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="type-t"><span class="TYPE">type</span> <span class="LIDENT">t</span> <span class="EQUAL">=</span> <span class="LBRACE">{</span><span class="EOL">
+</span>  <span id="def_53"><span class="LIDENT">free</span> <span class="COLON">:</span> <span class="UIDENT">Free_pool</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_48"><span class="LIDENT">sleep_q</span> <span class="COLON">:</span> <span class="UIDENT">Zzz</span><span class="DOT">.</span><span class="LIDENT">t</span><span class="SEMI">;</span></span><span class="EOL">
+</span>  <span id="def_50"><span class="MUTABLE">mutable</span> <span class="LIDENT">timeout</span> <span class="COLON">:</span> <span class="UIDENT">Zzz</span><span class="DOT">.</span><span class="UIDENT">Key</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="LIDENT">option</span><span class="SEMI">;</span></span><span class="EOL">
+</span><span class="RBRACE">}</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="TYPE">type</span> <span class="UNDERSCORE">_</span> <span class="UIDENT">Effect</span><span class="DOT">.</span><span class="LIDENT">t</span> <span class="PLUSEQ">+=</span> <span id="extension-Run_in_systhread"><span class="UIDENT">Run_in_systhread</span> <span class="COLON">:</span> <span class="LPAREN">(</span><span class="LIDENT">unit</span> <span class="MINUSGREATER">-&gt;</span> <span class="QUOTE">'</span><span class="LIDENT">a</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/effect.ml.html#type-t"><span class="LPAREN">(</span><a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#type-result"><span class="LPAREN">(</span><span class="QUOTE">'</span><span class="LIDENT">a</span><span class="COMMA">,</span> <a href="../eio.core/exn.ml.html#type-with_bt"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Exn</span><span class="DOT">.</span><span class="LIDENT">with_bt</span></a><span class="RPAREN">)</span> <span class="LIDENT">result</span></a> <span class="STAR">*</span> <span class="LIDENT">t</span><span class="RPAREN">)</span> <span class="UIDENT">Effect</span><span class="DOT">.</span><span class="LIDENT">t</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-terminate"><span class="LIDENT">terminate</span></span> <span id="local_t_26"><span class="LIDENT">t</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="UIDENT">Free_pool</span><span class="DOT">.</span><span class="LIDENT">close</span> <a href="#local_t_26"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">free</span><span class="SEMI">;</span><span class="EOL">
+</span>  <a href="../../../ocaml-base-compiler/src/stdlib/option.ml.html#val-iter"><span class="UIDENT">Option</span><span class="DOT">.</span><span class="LIDENT">iter</span></a> <span class="LPAREN">(</span><span class="FUN">fun</span> <span id="local_key_27"><span class="LIDENT">key</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Zzz</span><span class="DOT">.</span><span class="LIDENT">remove</span> <a href="#local_t_26"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">sleep_q</span> <a href="#local_key_27"><span class="LIDENT">key</span></a><span class="SEMI">;</span> <a href="#local_t_26"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">timeout</span> <span class="LESSMINUS">&lt;-</span> <span class="UIDENT">None</span><span class="RPAREN">)</span> <a href="#local_t_26"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">timeout</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-create"><span class="LIDENT">create</span></span> <span class="TILDE">~</span><span id="local_sleep_q_28"><span class="LIDENT">sleep_q</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="LBRACE">{</span> <span class="LIDENT">free</span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/atomic.ml.html#val-make"><span class="UIDENT">Atomic</span><span class="DOT">.</span><span class="LIDENT">make</span></a> <span class="UIDENT">Free_pool</span><span class="DOT">.</span><span class="UIDENT">Empty</span><span class="SEMI">;</span> <a href="#local_sleep_q_28"><span class="LIDENT">sleep_q</span></a><span class="SEMI">;</span> <span class="LIDENT">timeout</span> <span class="EQUAL">=</span> <span class="UIDENT">None</span> <span class="RBRACE">}</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-run"><span class="LIDENT">run</span></span> <span id="local_t_29"><span class="LIDENT">t</span></span> <span id="local_fn_30"><span class="LIDENT">fn</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_fn_30"><span class="LIDENT">fn</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span id="local_x_31"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="LIDENT">terminate</span> <a href="#local_t_29"><span class="LIDENT">t</span></a><span class="SEMI">;</span> <a href="#local_x_31"><span class="LIDENT">x</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="EXCEPTION">exception</span> <span id="local_ex_32"><span class="LIDENT">ex</span></span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_bt_33"><span class="LIDENT">bt</span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/printexc.ml.html#val-get_raw_backtrace"><span class="UIDENT">Printexc</span><span class="DOT">.</span><span class="LIDENT">get_raw_backtrace</span></a> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>    <span class="LIDENT">terminate</span> <a href="#local_t_29"><span class="LIDENT">t</span></a><span class="SEMI">;</span><span class="EOL">
+</span>    <a href="../../../ocaml-base-compiler/src/stdlib/printexc.ml.html#val-raise_with_backtrace"><span class="UIDENT">Printexc</span><span class="DOT">.</span><span class="LIDENT">raise_with_backtrace</span></a> <a href="#local_ex_32"><span class="LIDENT">ex</span></a> <a href="#local_bt_33"><span class="LIDENT">bt</span></a><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-submit"><span class="LIDENT">submit</span></span> <span id="local_t_34"><span class="LIDENT">t</span></span> <span class="TILDE">~</span><span id="local_ctx_35"><span class="LIDENT">ctx</span></span> <span class="TILDE">~</span><span id="local_enqueue_36"><span class="LIDENT">enqueue</span></span> <span id="local_fn_37"><span class="LIDENT">fn</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="../eio.core/cancel.ml.html#module-Fiber_context.val-get_error"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Private</span><span class="DOT">.</span><span class="UIDENT">Fiber_context</span><span class="DOT">.</span><span class="LIDENT">get_error</span></a> <a href="#local_ctx_35"><span class="LIDENT">ctx</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Some</span> <span id="local_e_38"><span class="LIDENT">e</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_enqueue_36"><span class="LIDENT">enqueue</span></a> <span class="LPAREN">(</span><span class="UIDENT">Error</span> <span class="LPAREN">(</span><a href="#local_e_38"><span class="LIDENT">e</span></a><span class="COMMA">,</span> <a href="../eio.core/exn.ml.html#val-empty_backtrace"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Exn</span><span class="DOT">.</span><span class="LIDENT">empty_backtrace</span></a><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">None</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_mbox_39"><span class="LIDENT">mbox</span></span> <span class="EQUAL">=</span> <span class="UIDENT">Free_pool</span><span class="DOT">.</span><span class="LIDENT">get_thread</span> <a href="#local_t_34"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">free</span> <span class="IN">in</span><span class="EOL">
+</span>    <span class="UIDENT">Mailbox</span><span class="DOT">.</span><span class="LIDENT">put</span> <a href="#local_mbox_39"><span class="LIDENT">mbox</span></a> <span class="LPAREN">(</span><span class="UIDENT">Job</span> <span class="LBRACE">{</span> <a href="#local_fn_37"><span class="LIDENT">fn</span></a><span class="SEMI">;</span> <a href="#local_enqueue_36"><span class="LIDENT">enqueue</span></a> <span class="RBRACE">}</span><span class="RPAREN">)</span><span class="EOL">
+</span><span class="EOL">
+</span><span class="LET">let</span> <span id="val-run_in_systhread"><span class="LIDENT">run_in_systhread</span></span> <span class="QUESTION">?</span><span class="LPAREN">(</span><span id="local_label_40"><span class="LIDENT">label</span></span><span class="EQUAL">=</span><span class="STRING">&quot;systhread&quot;</span><span class="RPAREN">)</span> <span id="local_fn_41"><span class="LIDENT">fn</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>  <a href="../eio.core/trace.ml.html#val-suspend_fiber"><span class="UIDENT">Eio</span><span class="DOT">.</span><span class="UIDENT">Private</span><span class="DOT">.</span><span class="UIDENT">Trace</span><span class="DOT">.</span><span class="LIDENT">suspend_fiber</span></a> <a href="#local_label_40"><span class="LIDENT">label</span></a><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="def_52"><span id="local_r_42"><span class="LIDENT">r</span></span><span class="COMMA">,</span> <span id="local_t_43"><span class="LIDENT">t</span></span></span> <span class="EQUAL">=</span> <a href="../../../ocaml-base-compiler/src/stdlib/effect.ml.html#val-perform"><span class="UIDENT">Effect</span><span class="DOT">.</span><span class="LIDENT">perform</span></a> <span class="LPAREN">(</span><span class="UIDENT">Run_in_systhread</span> <a href="#local_fn_41"><span class="LIDENT">fn</span></a><span class="RPAREN">)</span> <span class="IN">in</span><span class="EOL">
+</span>  <span class="IF">if</span> <a href="#local_t_43"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">timeout</span> <a href="../../../ocaml-base-compiler/src/stdlib/stdlib.ml.html#val-(=)"><span class="EQUAL">=</span></a> <span class="UIDENT">None</span> <span class="THEN">then</span> <span class="LPAREN">(</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="local_time_44"><span class="LIDENT">time</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="UIDENT">Mtime</span><span class="DOT">.</span><span class="LIDENT">add_span</span> <span class="LPAREN">(</span><span class="UIDENT">Mtime_clock</span><span class="DOT">.</span><span class="LIDENT">now</span> <span class="LPAREN">(</span><span class="RPAREN">)</span><span class="RPAREN">)</span> <span class="UIDENT">Mtime</span><span class="DOT">.</span><span class="UIDENT">Span</span><span class="DOT">.</span><span class="LPAREN">(</span><span class="INT">20</span> <span class="STAR">*</span> <span class="LIDENT">ms</span><span class="RPAREN">)</span><span class="EOL">
+</span>      <span class="INFIXOP0">|&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/option.ml.html#val-value"><span class="UIDENT">Option</span><span class="DOT">.</span><span class="LIDENT">value</span></a> <span class="LABEL">~default:</span><span class="UIDENT">Mtime</span><span class="DOT">.</span><span class="LIDENT">max_stamp</span><span class="EOL">
+</span>    <span class="IN">in</span><span class="EOL">
+</span>    <a href="#local_t_43"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">timeout</span> <span class="LESSMINUS">&lt;-</span> <span class="UIDENT">Some</span> <span class="LPAREN">(</span><span class="UIDENT">Zzz</span><span class="DOT">.</span><span class="LIDENT">add</span> <a href="#local_t_43"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">sleep_q</span> <a href="#local_time_44"><span class="LIDENT">time</span></a> <span class="LPAREN">(</span><span class="UIDENT">Fn</span> <span class="LPAREN">(</span><span class="FUN">fun</span> <span class="LPAREN">(</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Free_pool</span><span class="DOT">.</span><span class="LIDENT">drop</span> <a href="#local_t_43"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">free</span><span class="SEMI">;</span> <a href="#local_t_43"><span class="LIDENT">t</span></a><span class="DOT">.</span><span class="LIDENT">timeout</span> <span class="LESSMINUS">&lt;-</span> <span class="UIDENT">None</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="RPAREN">)</span><span class="EOL">
+</span>  <span class="RPAREN">)</span><span class="SEMI">;</span><span class="EOL">
+</span>  <span class="MATCH">match</span> <a href="#local_r_42"><span class="LIDENT">r</span></a> <span class="WITH">with</span><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Ok</span> <span id="local_x_45"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span> <a href="#local_x_45"><span class="LIDENT">x</span></a><span class="EOL">
+</span>  <span class="BAR">|</span> <span class="UIDENT">Error</span> <span class="LPAREN">(</span><span id="local_ex_46"><span class="LIDENT">ex</span></span><span class="COMMA">,</span> <span id="local_bt_47"><span class="LIDENT">bt</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <a href="../../../ocaml-base-compiler/src/stdlib/printexc.ml.html#val-raise_with_backtrace"><span class="UIDENT">Printexc</span><span class="DOT">.</span><span class="LIDENT">raise_with_backtrace</span></a> <a href="#local_ex_46"><span class="LIDENT">ex</span></a> <a href="#local_bt_47"><span class="LIDENT">bt</span></a><span class="EOL">
+</span></span></code></pre></body></html>

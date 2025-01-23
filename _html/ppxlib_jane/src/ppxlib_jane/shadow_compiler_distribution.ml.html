@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Source: shadow_compiler_distribution.ml (ppxlib_jane.src.ppxlib_jane)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.css"/><meta name="generator" content="odoc %%VERSION%%"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head><body class="odoc-src"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">ppxlib_jane</a> &#x00BB; <a href="../index.html">Sources</a> &#x00BB; ppxlib_jane &#x00BB; shadow_compiler_distribution.ml</nav><header class="odoc-preamble"><h1>Source file <code><span>shadow_compiler_distribution.ml</span></code></h1></header><div class="odoc-tocs"><nav class="odoc-toc odoc-global-toc"><ul><li><a href="../../index.html">ppxlib_jane</a><ul><li>Library <code>ppxlib_jane</code><ul><li><a href="../../ppxlib_jane/Ppxlib_jane/index.html">Ppxlib_jane</a></li></ul></li><li><a href="../index.html">Sources</a><ul><li>ppxlib_jane<ul><li><a href="ast_builder.ml.html">ast_builder.ml</a></li><li><a href="ast_builder_intf.ml.html">ast_builder_intf.ml</a></li><li><a href="jane_asttypes.ml.html">jane_asttypes.ml</a></li><li><a href="jane_syntax.ml.html">jane_syntax.ml</a></li><li><a href="jane_syntax_parsing.ml.html">jane_syntax_parsing.ml</a></li><li><a href="language_extension.ml.html">language_extension.ml</a></li><li><a href="language_extension_kernel.ml.html">language_extension_kernel.ml</a></li><li><a href="ppxlib_jane.ml.html">ppxlib_jane.ml</a></li><li><a href="ppxlib_jane__.ml.html">ppxlib_jane__.ml</a></li><li><a href="#" class="current_unit">shadow_compiler_distribution.ml</a></li></ul></li></ul></li></ul></li></ul></nav></div><pre class="source_container"><code class="source_line_column"><a id="L1" class="source_line" href="#L1">1</a>
+<a id="L2" class="source_line" href="#L2">2</a>
+<a id="L3" class="source_line" href="#L3">3</a>
+<a id="L4" class="source_line" href="#L4">4</a>
+<a id="L5" class="source_line" href="#L5">5</a>
+<a id="L6" class="source_line" href="#L6">6</a>
+<a id="L7" class="source_line" href="#L7">7</a>
+<a id="L8" class="source_line" href="#L8">8</a>
+<a id="L9" class="source_line" href="#L9">9</a>
+<a id="L10" class="source_line" href="#L10">10</a>
+<a id="L11" class="source_line" href="#L11">11</a>
+<a id="L12" class="source_line" href="#L12">12</a>
+<a id="L13" class="source_line" href="#L13">13</a>
+<a id="L14" class="source_line" href="#L14">14</a>
+<a id="L15" class="source_line" href="#L15">15</a>
+<a id="L16" class="source_line" href="#L16">16</a>
+<a id="L17" class="source_line" href="#L17">17</a>
+<a id="L18" class="source_line" href="#L18">18</a>
+<a id="L19" class="source_line" href="#L19">19</a>
+<a id="L20" class="source_line" href="#L20">20</a>
+<a id="L21" class="source_line" href="#L21">21</a>
+<a id="L22" class="source_line" href="#L22">22</a>
+<a id="L23" class="source_line" href="#L23">23</a>
+<a id="L24" class="source_line" href="#L24">24</a>
+<a id="L25" class="source_line" href="#L25">25</a>
+<a id="L26" class="source_line" href="#L26">26</a>
+<a id="L27" class="source_line" href="#L27">27</a>
+<a id="L28" class="source_line" href="#L28">28</a>
+<a id="L29" class="source_line" href="#L29">29</a>
+<a id="L30" class="source_line" href="#L30">30</a>
+<a id="L31" class="source_line" href="#L31">31</a>
+<a id="L32" class="source_line" href="#L32">32</a>
+<a id="L33" class="source_line" href="#L33">33</a>
+<a id="L34" class="source_line" href="#L34">34</a>
+<a id="L35" class="source_line" href="#L35">35</a>
+<a id="L36" class="source_line" href="#L36">36</a>
+<a id="L37" class="source_line" href="#L37">37</a>
+<a id="L38" class="source_line" href="#L38">38</a>
+<a id="L39" class="source_line" href="#L39">39</a>
+<a id="L40" class="source_line" href="#L40">40</a>
+<a id="L41" class="source_line" href="#L41">41</a>
+<a id="L42" class="source_line" href="#L42">42</a>
+<a id="L43" class="source_line" href="#L43">43</a>
+<a id="L44" class="source_line" href="#L44">44</a>
+<a id="L45" class="source_line" href="#L45">45</a>
+<a id="L46" class="source_line" href="#L46">46</a>
+<a id="L47" class="source_line" href="#L47">47</a>
+<a id="L48" class="source_line" href="#L48">48</a>
+<a id="L49" class="source_line" href="#L49">49</a>
+<a id="L50" class="source_line" href="#L50">50</a>
+<a id="L51" class="source_line" href="#L51">51</a>
+<a id="L52" class="source_line" href="#L52">52</a>
+</code><code class="source_code"><span><span class="COMMENT">(* This should be opened at the start of every file in Jane_syntax.
+
+   These module definitions shadow the compiler's AST with ppxlib's AST. We use this
+   module to manage interface differences between the two AST versions. It allows us to
+   import Jane_syntax from our extended compiler with minimal changes. If we instead used
+   [open Ppxlib_ast], we'd have to update more callsites. *)</span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Parsetree"><span class="MODULE">module</span> <span class="UIDENT">Parsetree</span> <span class="EQUAL">=</span> <a href="../../../ppxlib/src/ppxlib.astlib/ast_500.ml.html#module-Parsetree"><span class="UIDENT">Ppxlib_ast</span><span class="DOT">.</span><span class="UIDENT">Parsetree</span></a></span><span class="EOL">
+</span><span id="module-Asttypes"><span class="MODULE">module</span> <span class="UIDENT">Asttypes</span> <span class="EQUAL">=</span> <a href="../../../ppxlib/src/ppxlib.astlib/ast_500.ml.html#module-Asttypes"><span class="UIDENT">Ppxlib_ast</span><span class="DOT">.</span><span class="UIDENT">Asttypes</span></a></span><span class="EOL">
+</span><span id="module-Pprintast"><span class="MODULE">module</span> <span class="UIDENT">Pprintast</span> <span class="EQUAL">=</span> <a href="../../../ppxlib/src/ppxlib.astlib/pprintast.ml.html"><span class="UIDENT">Ppxlib_ast</span><span class="DOT">.</span><span class="UIDENT">Pprintast</span></a></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Ast_helper"><span class="MODULE">module</span> <span class="UIDENT">Ast_helper</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="INCLUDE">include</span> <a href="../../../ppxlib/src/ppxlib.ast/ast_helper_lite.ml.html"><span class="UIDENT">Ppxlib_ast</span><span class="DOT">.</span><span class="UIDENT">Ast_helper</span></a><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Ast_helper.module-Te"><span class="MODULE">module</span> <span class="UIDENT">Te</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>    <span class="INCLUDE">include</span> <span class="UIDENT">Te</span><span class="EOL">
+</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="module-Ast_helper.module-Te.val-decl"><span class="LIDENT">decl</span></span> <span class="TILDE">~</span><span id="local_loc_1"><span class="LIDENT">loc</span></span> <span class="TILDE">~</span><span id="local_vars_2"><span class="LIDENT">vars</span></span> <span class="TILDE">~</span><span id="local_args_3"><span class="LIDENT">args</span></span> <span class="OPTLABEL">?info:</span><span class="UNDERSCORE">_</span> <span class="OPTLABEL">?docs:</span><span class="UNDERSCORE">_</span> <span class="QUESTION">?</span><span id="local_res_4"><span class="LIDENT">res</span></span> <span id="local_name_5"><span class="LIDENT">name</span></span> <span class="EQUAL">=</span> <span class="LIDENT">decl</span> <span class="TILDE">~</span><a href="#local_loc_1"><span class="LIDENT">loc</span></a> <span class="TILDE">~</span><a href="#local_vars_2"><span class="LIDENT">vars</span></a> <span class="TILDE">~</span><a href="#local_args_3"><span class="LIDENT">args</span></a> <span class="QUESTION">?</span><a href="#local_res_4"><span class="LIDENT">res</span></a> <a href="#local_name_5"><span class="LIDENT">name</span></a><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span>  <span id="module-Ast_helper.module-Type"><span class="MODULE">module</span> <span class="UIDENT">Type</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>    <span class="INCLUDE">include</span> <span class="UIDENT">Type</span><span class="EOL">
+</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="module-Ast_helper.module-Type.val-mk"><span class="LIDENT">mk</span></span> <span class="TILDE">~</span><span id="local_loc_6"><span class="LIDENT">loc</span></span> <span class="LABEL">~docs:</span><span class="UNDERSCORE">_</span> <span class="OPTLABEL">?text:</span><span class="UNDERSCORE">_</span> <span class="TILDE">~</span><span id="local_params_7"><span class="LIDENT">params</span></span> <span class="TILDE">~</span><span id="local_cstrs_8"><span class="LIDENT">cstrs</span></span> <span class="TILDE">~</span><span id="local_kind_9"><span class="LIDENT">kind</span></span> <span class="TILDE">~</span><span id="local_priv_10"><span class="LIDENT">priv</span></span> <span class="QUESTION">?</span><span id="local_manifest_11"><span class="LIDENT">manifest</span></span> <span id="local_name_12"><span class="LIDENT">name</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="LIDENT">mk</span> <span class="TILDE">~</span><a href="#local_loc_6"><span class="LIDENT">loc</span></a> <span class="TILDE">~</span><a href="#local_params_7"><span class="LIDENT">params</span></a> <span class="TILDE">~</span><a href="#local_cstrs_8"><span class="LIDENT">cstrs</span></a> <span class="TILDE">~</span><a href="#local_kind_9"><span class="LIDENT">kind</span></a> <span class="TILDE">~</span><a href="#local_priv_10"><span class="LIDENT">priv</span></a> <span class="QUESTION">?</span><a href="#local_manifest_11"><span class="LIDENT">manifest</span></a> <a href="#local_name_12"><span class="LIDENT">name</span></a><span class="EOL">
+</span>    <span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span>    <span class="LET">let</span> <span id="module-Ast_helper.module-Type.val-constructor"><span class="LIDENT">constructor</span></span> <span class="TILDE">~</span><span id="local_loc_13"><span class="LIDENT">loc</span></span> <span class="TILDE">~</span><span id="local_vars_14"><span class="LIDENT">vars</span></span> <span class="LABEL">~info:</span><span class="UNDERSCORE">_</span> <span class="TILDE">~</span><span id="local_args_15"><span class="LIDENT">args</span></span> <span class="QUESTION">?</span><span id="local_res_16"><span class="LIDENT">res</span></span> <span id="local_name_17"><span class="LIDENT">name</span></span> <span class="EQUAL">=</span><span class="EOL">
+</span>      <span class="LIDENT">constructor</span> <span class="TILDE">~</span><a href="#local_loc_13"><span class="LIDENT">loc</span></a> <span class="TILDE">~</span><a href="#local_vars_14"><span class="LIDENT">vars</span></a> <span class="TILDE">~</span><a href="#local_args_15"><span class="LIDENT">args</span></a> <span class="QUESTION">?</span><a href="#local_res_16"><span class="LIDENT">res</span></a> <a href="#local_name_17"><span class="LIDENT">name</span></a><span class="EOL">
+</span>    <span class="SEMISEMI">;;</span><span class="EOL">
+</span>  <span class="END">end</span></span><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span><span class="EOL">
+</span><span id="module-Printast"><span class="MODULE">module</span> <span class="UIDENT">Printast</span> <span class="EQUAL">=</span> <span class="STRUCT">struct</span><span class="EOL">
+</span>  <span class="COMMENT">(* copied and simplified from [Pprintast]. This printing is
+     just used in a rarely-exercised (never-exercised?) error message
+     so can be ad-hoc.
+  *)</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Printast.val-payload"><span class="LIDENT">payload</span></span> <span class="UNDERSCORE">_</span> <span id="local_fmt_18"><span class="LIDENT">fmt</span></span> <span class="LPAREN">(</span><span id="local_x_19"><span class="LIDENT">x</span></span> <span class="COLON">:</span> <span class="UIDENT">Parsetree</span><span class="DOT">.</span><span class="LIDENT">payload</span><span class="RPAREN">)</span> <span class="EQUAL">=</span><span class="EOL">
+</span>    <span class="MATCH">match</span> <a href="#local_x_19"><span class="LIDENT">x</span></a> <span class="WITH">with</span><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">PStr</span> <span id="local_x_20"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Pprintast</span><span class="DOT">.</span><span class="LIDENT">structure</span> <a href="#local_fmt_18"><span class="LIDENT">fmt</span></a> <a href="#local_x_20"><span class="LIDENT">x</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">PTyp</span> <span id="local_x_21"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Pprintast</span><span class="DOT">.</span><span class="LIDENT">core_type</span> <a href="#local_fmt_18"><span class="LIDENT">fmt</span></a> <a href="#local_x_21"><span class="LIDENT">x</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">PSig</span> <span id="local_x_22"><span class="LIDENT">x</span></span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Pprintast</span><span class="DOT">.</span><span class="LIDENT">signature</span> <a href="#local_fmt_18"><span class="LIDENT">fmt</span></a> <a href="#local_x_22"><span class="LIDENT">x</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">PPat</span> <span class="LPAREN">(</span><span id="local_x_23"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span class="UIDENT">None</span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span> <span class="UIDENT">Pprintast</span><span class="DOT">.</span><span class="LIDENT">pattern</span> <a href="#local_fmt_18"><span class="LIDENT">fmt</span></a> <a href="#local_x_23"><span class="LIDENT">x</span></a><span class="EOL">
+</span>    <span class="BAR">|</span> <span class="UIDENT">PPat</span> <span class="LPAREN">(</span><span id="local_x_24"><span class="LIDENT">x</span></span><span class="COMMA">,</span> <span class="UIDENT">Some</span> <span id="local_e_25"><span class="LIDENT">e</span></span><span class="RPAREN">)</span> <span class="MINUSGREATER">-&gt;</span><span class="EOL">
+</span>      <span class="UIDENT">Pprintast</span><span class="DOT">.</span><span class="LIDENT">pattern</span> <a href="#local_fmt_18"><span class="LIDENT">fmt</span></a> <a href="#local_x_24"><span class="LIDENT">x</span></a><span class="SEMI">;</span><span class="EOL">
+</span>      <a href="../../../ocaml-base-compiler/src/stdlib/format.ml.html#val-pp_print_string"><span class="UIDENT">Format</span><span class="DOT">.</span><span class="LIDENT">pp_print_string</span></a> <a href="#local_fmt_18"><span class="LIDENT">fmt</span></a> <span class="STRING">&quot; when &quot;</span><span class="SEMI">;</span><span class="EOL">
+</span>      <span class="UIDENT">Pprintast</span><span class="DOT">.</span><span class="LIDENT">expression</span> <a href="#local_fmt_18"><span class="LIDENT">fmt</span></a> <a href="#local_e_25"><span class="LIDENT">e</span></a><span class="EOL">
+</span>  <span class="SEMISEMI">;;</span><span class="EOL">
+</span><span class="EOL">
+</span>  <span class="LET">let</span> <span id="module-Printast.val-expression"><span class="LIDENT">expression</span></span> <span class="UNDERSCORE">_</span> <span id="local_fmt_26"><span class="LIDENT">fmt</span></span> <span id="local_x_27"><span class="LIDENT">x</span></span> <span class="EQUAL">=</span> <a href="../../../ppxlib/src/ppxlib.astlib/pprintast.ml.html#val-expression"><span class="UIDENT">Astlib</span><span class="DOT">.</span><span class="UIDENT">Pprintast</span><span class="DOT">.</span><span class="LIDENT">expression</span></a> <a href="#local_fmt_26"><span class="LIDENT">fmt</span></a> <a href="#local_x_27"><span class="LIDENT">x</span></a><span class="EOL">
+</span><span class="END">end</span></span><span class="EOL">
+</span></span></code></pre></body></html>
