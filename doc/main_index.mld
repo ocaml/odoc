@@ -1,0 +1,12 @@
+{0 The odoc suite}
+
+The odoc distribution contains a set of packages that can be used to build documentation sites
+for OCaml projects. The individual projects are as follows:
+
+- {{!/odoc/page-index}odoc} - the documentation tool itself
+- {{!/sherlodoc/page-index}Sherlodoc} - the recommended search tool
+- {{!/odoc-driver/page-index}odoc-driver} - a example driver for odoc
+- {{!/odoc-parser/page-index}odoc-parser} - a library to parse odoc markup
+- {{!/odoc-md/page-index}odoc-md} - a tool to help integrate markdown pages into the odoc world
+
+
