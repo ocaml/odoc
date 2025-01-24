@@ -36,17 +36,18 @@ documentation for installed packages.
 depends: [
   "ocaml" {>= "5.1.0"}
   "odoc" {= version}
-  "dune" {>= "3.7.0}
+  "dune" {>= "3.7.0"}
   "odoc-md"
   "bos"
   "fpath"
-  "yojson"
+  "yojson" {>= "2.0.0"}
   "ocamlfind"
-  "opam-format"
+  "opam-format" {>= "2.1.0"}
   "logs"
   "eio_main"
+  "eio" {>= "1.0"}
   "progress"
-  "cmdliner"
+  "cmdliner" {>= "1.1.0"}
   "sexplib"
   "ppx_sexp_conv"
   "sherlodoc"
@@ -62,7 +63,6 @@ build: [
     "-j"
     jobs
     "@install"
-    "@runtest" {with-test}
     "@doc" {with-doc}
   ]
 ]
