@@ -57,6 +57,7 @@
   Allows to specify the title of a page, the order of sub-pages and other
   behaviors in the sidebar.
 - Added `odoc-md` to process standalone Markdown pages (@jonludlam, #1234)
+- Added CSS selectors to style version and and nav links when they appear within page titles, as produced by odig (@katrinafyi, #1290)
 
 ### Changed
 
