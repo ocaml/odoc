@@ -97,7 +97,7 @@ let elt_size (x : elt) =
   | Code_fragment _ | Tag _ | Break _ | Ligaturable _ ->
       Small
   | List _ | Section _ | Verbatim _ | Raw _ | Code_block _ | Indented _
-  | Description _ ->
+  | Description _ | Image _ ->
       Large
   | Table _ | Layout_table _ -> Huge
 
@@ -167,6 +167,7 @@ let rec pp_elt ppf = function
   | Indented x -> Raw.indent pp ppf x
   | Ligaturable s -> Fmt.string ppf s
   | Tag (s, t) -> tag s ppf t
+  | Image target -> Raw.includegraphics Fpath.pp ppf target
 
 and pp ppf = function
   | [] -> ()
@@ -281,9 +282,24 @@ let rec block ~in_source (l : Block.t) =
   let one (t : Block.one) =
     match t.desc with
     | Inline i -> inline ~verbatim:false ~in_source:false i
-    | Audio (_, content) | Video (_, content) | Image (_, content) ->
-        txt ~verbatim:false ~in_source:false [ content ]
+    | Image (Internal (Resolved x), alt) ->
+      let dir, file = Link.get_dir_and_file x.page in
+      begin match Fpath.(get_ext @@ v file) with
+      | "" | ".jpeg" | ".png" | ".pdf" ->
+        let fpath = Fpath.v (String.concat Fpath.dir_sep (dir @ [file])) in
+        [ Image fpath ]
+      | _ ->
+        txt ~verbatim:false ~in_source:false [ alt ]
         @ if in_source then [] else [ Break Paragraph ]
+      end
+    | Image (Internal Unresolved, c) | Audio(Internal _, c) | Video (Internal _, c) ->
+        txt ~verbatim:false ~in_source:false [ c ]
+        @ if in_source then [] else [ Break Paragraph ]
+    | Audio (External l, content) | Video (External l, content)
+    | Image (External l, content) ->
+      let text = txt ~verbatim:false ~in_source:false [ content ] in
+      let break = if in_source then [] else [ Break Paragraph ] in
+      [ External_ref (l, Some text)] @ break
     | Paragraph i ->
         inline ~in_source:false ~verbatim:false i
         @ if in_source then [] else [ Break Paragraph ]

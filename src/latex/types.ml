@@ -26,6 +26,7 @@ type elt =
   | Layout_table of layout_table
   | Table of table
   | Ligaturable of string
+  | Image of Fpath.t
 
 and section = { level : int; label : string option; content : t }
 
