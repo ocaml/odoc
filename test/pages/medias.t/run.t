@@ -3,6 +3,7 @@ We need to odoc-compile the package mld file, listing its children
   $ odoc compile index.mld --parent-id pkg1/ --output-dir _odoc
 
   $ odoc compile-asset --parent-id pkg1/ --output-dir _odoc --name caml.gif
+  $ odoc compile-asset --parent-id pkg1/ --output-dir _odoc --name caml.png
   $ odoc compile-asset --parent-id pkg1/ --output-dir _odoc --name Cri_du_chameau.ogg
   $ odoc compile-asset --parent-id pkg1/ --output-dir _odoc --name flower.webm
 
@@ -28,8 +29,8 @@ Testing the working references:
   $ cat html/pkg1/index.html | grep img
         <a href="caml.gif" class="img-link">
          <img src="caml.gif" alt="caml.gif"/>
-        <a href="caml.gif" class="img-link">
-         <img src="caml.gif" alt="With alt text and {b emphasis}"/>
+        <a href="caml.png" class="img-link">
+         <img src="caml.png" alt="With alt text and {b emphasis}"/>
         <a href="https://picsum.photos/200/300" class="img-link">
          <img src="https://picsum.photos/200/300" alt="reference"/>
         <a href="https://picsum.photos/200/300" class="img-link">
@@ -71,6 +72,9 @@ Testing latex and manpages
   $ cat latex/pkg1/index.tex | grep gif
   caml.gif
   ./caqzdqzdml.gif
+
+  $ cat latex/pkg1/index.tex | grep png
+  \includegraphics{pkg1/caml.png}}%
 
   $ odoc man-generate -o man _odoc/pkg1/page-index.odocl
   $ cat man/pkg1/index.3o | grep gif
