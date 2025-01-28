@@ -126,6 +126,8 @@ let code_block pp ppf x =
   Fmt.cut ppf ();
   mend ppf name
 
+let includegraphics pp = create "includegraphics" pp
+
 let section pp = create "section" pp
 
 let subsection pp = create "subsection" pp
