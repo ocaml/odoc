@@ -66,7 +66,7 @@ val small_table : ('a, Types.alignment list option * 'a list list) tr
 
 val input : Fpath.t Fmt.t
 
-val includegraphics: 'a t
+val includegraphics : 'a t
 
 (** {1 Required OCaml-specific primitives}
     All the macro should be implemented as "ocaml"-suffixed macro in the latex
