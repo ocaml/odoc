@@ -278,28 +278,30 @@ let non_empty_code_fragment c =
   let s = source (inline ~verbatim:false ~in_source:true) c in
   match s with [] -> [] | _ :: _ as l -> [ Code_fragment l ]
 
+let alt_text ~in_source (target : Target.t) alt =
+  let text = txt ~verbatim:false ~in_source:false [ alt ] in
+  let break = if in_source then [] else [ Break Paragraph ] in
+  match target with
+  | Internal _ -> text @ break
+  | External l -> [ External_ref (l, Some text) ] @ break
+
+let image ~in_source (internal_url : Url.t) alt =
+  let dir, file = Link.get_dir_and_file internal_url.page in
+  match Fpath.(get_ext @@ v file) with
+  (* list imported from pdftex.def *)
+  | "" | ".pdf" | ".png" | ".jpg" | ".mps" | ".jpeg" | ".jbig2" | ".jb2"
+  | ".PDF" | ".PNG" | ".JPG" | ".JPEG" | ".JBIG2" | ".JB2" ->
+      let fpath = Fpath.v (String.concat Fpath.dir_sep (dir @ [ file ])) in
+      [ Image fpath ]
+  | _ -> alt_text ~in_source (Internal (Resolved internal_url)) alt
+
 let rec block ~in_source (l : Block.t) =
   let one (t : Block.one) =
     match t.desc with
     | Inline i -> inline ~verbatim:false ~in_source:false i
-    | Image (Internal (Resolved x), alt) ->
-      let dir, file = Link.get_dir_and_file x.page in
-      begin match Fpath.(get_ext @@ v file) with
-      | "" | ".jpeg" | ".png" | ".pdf" ->
-        let fpath = Fpath.v (String.concat Fpath.dir_sep (dir @ [file])) in
-        [ Image fpath ]
-      | _ ->
-        txt ~verbatim:false ~in_source:false [ alt ]
-        @ if in_source then [] else [ Break Paragraph ]
-      end
-    | Image (Internal Unresolved, c) | Audio(Internal _, c) | Video (Internal _, c) ->
-        txt ~verbatim:false ~in_source:false [ c ]
-        @ if in_source then [] else [ Break Paragraph ]
-    | Audio (External l, content) | Video (External l, content)
-    | Image (External l, content) ->
-      let text = txt ~verbatim:false ~in_source:false [ content ] in
-      let break = if in_source then [] else [ Break Paragraph ] in
-      [ External_ref (l, Some text)] @ break
+    | Image (Internal (Resolved x), alt) -> image ~in_source x alt
+    | Image (t, alt) | Audio (t, alt) | Video (t, alt) ->
+        alt_text ~in_source t alt
     | Paragraph i ->
         inline ~in_source:false ~verbatim:false i
         @ if in_source then [] else [ Break Paragraph ]
