@@ -25,7 +25,7 @@
 - Added support for images, videos, audio and other assets
   The syntax is `{image!/reference/to/asset}` or `{image:URL}` for images.
   The syntax for `{video...}` and `{audio...}` is the same.
-  (@panglesd, @EmileTrotignon, #1170, #1171, #1184, #1185)
+  (@panglesd, @EmileTrotignon, #1170, #1171, #1184, #1185, #1297)
 
 - Search using Sherlodoc (@panglesd, @EmileTrotignon, @Julow)
   A new search bar that supports full-text and type-based search.
