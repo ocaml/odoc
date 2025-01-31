@@ -7,21 +7,21 @@ let of_strings ~kind ~prefix_name ~name ~rhs ~typedecl_params ~doc =
     match typedecl_params with
     | None -> []
     | Some p ->
-      [ span
-          ~a:
-            [ a_class
-                [ (* the parameter of the typedecl are highlighted as if part of main entry name. *)
-                  "entry-name"
-                ]
-            ]
-          [ txt (p ^ " ") ]
-      ]
+        [ span
+            ~a:
+              [ a_class
+                  [ (* the parameter of the typedecl are highlighted as if part of main entry name. *)
+                    "entry-name"
+                  ]
+              ]
+            [ txt (p ^ " ") ]
+        ]
   and prefix_name =
     match prefix_name with
     | None -> []
     | Some "" -> []
     | Some prefix_name ->
-      [ span ~a:[ a_class [ "prefix-name" ] ] [ txt (prefix_name ^ ".") ] ]
+        [ span ~a:[ a_class [ "prefix-name" ] ] [ txt (prefix_name ^ ".") ] ]
   and name =
     match name with
     | Some name -> [ span ~a:[ a_class [ "entry-name" ] ] [ txt name ] ]

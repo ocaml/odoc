@@ -135,7 +135,7 @@ end = struct
     | None -> Error NoPackage
 end
 
-let () = (ignore Named_roots.find_by_name [@warning "-5"])
+let () = ignore Named_roots.find_by_name [@warning "-5"]
 
 module Accessible_paths : sig
   type t
@@ -276,8 +276,8 @@ let lookup_unit_with_digest ap target_name digest =
   | Some (m, _) -> Ok (Odoc_xref2.Env.Found m)
   | None -> Error `Not_found
 
-(** Lookup a compilation unit matching a name. If there is more than one
-    result, report on stderr and return the first one.
+(** Lookup a compilation unit matching a name. If there is more than one result,
+    report on stderr and return the first one.
 
     TODO: Correctly propagate warnings instead of printing. *)
 let lookup_unit_by_name ap target_name =
@@ -313,8 +313,8 @@ let lookup_unit_by_name ap target_name =
       Some m
   | None -> None
 
-(** Lookup an unit. First looks into [imports_map] then searches into the
-    paths. *)
+(** Lookup an unit. First looks into [imports_map] then searches into the paths.
+*)
 let lookup_unit_by_name ~important_digests ~imports_map ap target_name =
   let of_option f =
     match f with

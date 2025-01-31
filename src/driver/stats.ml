@@ -93,8 +93,18 @@ let render_stats env ~generate_json nprocs =
       ++ dline "HTML" total_generate
       ++ line (procs nprocs)
       ++ descriptions)
-    (fun comp compimpl compmld compassets link linkimpl linkmld indexes html
-         procs descr ->
+    (fun comp
+         compimpl
+         compmld
+         compassets
+         link
+         linkimpl
+         linkmld
+         indexes
+         html
+         procs
+         descr
+       ->
       let rec inner (a, b, c, j, d, e, f, i, g, h) =
         Eio.Time.sleep clock 0.1;
         let a' = Atomic.get stats.compiled_units in

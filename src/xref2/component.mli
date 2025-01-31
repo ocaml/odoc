@@ -10,12 +10,12 @@ module ValueMap : Map.S with type key = Ident.value
 
 module IdentMap : Map.S with type key = Ident.any
 
-(** Delayed is a bit like Lazy.t but may in the future offer the chance to peek inside
-    to be able to optimize the calculation *)
+(** Delayed is a bit like Lazy.t but may in the future offer the chance to peek
+    inside to be able to optimize the calculation *)
 module Delayed : sig
   val eager : bool ref
   (** If [eager] is true then no delaying is done. Most useful for testing and
-        documentation *)
+      documentation *)
 
   type 'a t = { mutable v : 'a option; mutable get : (unit -> 'a) option }
 
@@ -31,29 +31,30 @@ module Opt : sig
 end
 
 (** {2 Components}
-  
-    The modules/types here are very similar to those in {!module:Odoc_model.Lang},
-    in most cases the only difference being that we have {{!module:Ident}Idents} 
-    (which are local) rather than {{!module:Odoc_model.Paths.Identifier}Identifiers}
-    (which are global), {{!module:Cpath}Cpaths} instead of {{!module:Odoc_model.Paths.Path}Paths},
-    and {{!module:Cfrag}Cfrags} rather than {{!module:Odoc_model.Paths.Fragment}Fragments}.
-    All of these are to support the use of local idents.
-    
-    Note that we still use global {{!module:Odoc_model.Paths.Reference}References}
-    rather than local ones - this is because at the point these components are being
-    used all the references are unresolved, and hence do not contain any resolved
-    global identifiers. When resolving references, we construct paths in parallel,
+
+    The modules/types here are very similar to those in
+    {!module:Odoc_model.Lang}, in most cases the only difference being that we
+    have {{!module:Ident}Idents} (which are local) rather than
+    {{!module:Odoc_model.Paths.Identifier}Identifiers} (which are global),
+    {{!module:Cpath}Cpaths} instead of {{!module:Odoc_model.Paths.Path}Paths},
+    and {{!module:Cfrag}Cfrags} rather than
+    {{!module:Odoc_model.Paths.Fragment}Fragments}. All of these are to support
+    the use of local idents.
+
+    Note that we still use global
+    {{!module:Odoc_model.Paths.Reference}References} rather than local ones -
+    this is because at the point these components are being used all the
+    references are unresolved, and hence do not contain any resolved global
+    identifiers. When resolving references, we construct paths in parallel,
     which also helps avoid the need for local references.
 
-    These idents of items are kept outside of the types themselves in
-    order to help with laziness.
+    These idents of items are kept outside of the types themselves in order to
+    help with laziness.
 
     There are a few other minor differences:
-    
-    - Signatures keep track of removed items. These items are removed during
-      destructive substitution.
 
-*)
+    - Signatures keep track of removed items. These items are removed during
+      destructive substitution. *)
 
 module rec Module : sig
   type decl =

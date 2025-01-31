@@ -754,10 +754,10 @@ module Make (Syntax : SYNTAX) = struct
       intro @ variants @ ending
 
     let format_params :
-          'row.
-          ?delim:[ `parens | `brackets ] ->
-          Odoc_model.Lang.TypeDecl.param list ->
-          text =
+        'row.
+        ?delim:[ `parens | `brackets ] ->
+        Odoc_model.Lang.TypeDecl.param list ->
+        text =
      fun ?(delim = `parens) params ->
       let format_param { Odoc_model.Lang.TypeDecl.desc; variance; injectivity }
           =
@@ -795,11 +795,11 @@ module Make (Syntax : SYNTAX) = struct
                 ++ O.box_hv_no_indent (type_expr t2)))
 
     let format_manifest :
-          'inner_row 'outer_row.
-          ?is_substitution:bool ->
-          ?compact_variants:bool ->
-          Odoc_model.Lang.TypeDecl.Equation.t ->
-          text * bool =
+        'inner_row 'outer_row.
+        ?is_substitution:bool ->
+        ?compact_variants:bool ->
+        Odoc_model.Lang.TypeDecl.Equation.t ->
+        text * bool =
      fun ?(is_substitution = false) ?(compact_variants = true) equation ->
       let _ = compact_variants in
       (* TODO *)

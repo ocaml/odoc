@@ -56,9 +56,9 @@ module Decompress_browser = struct
       Fut.bind promise (function
         | Ok v -> read_step v
         | Error e ->
-          print_endline "error in string_of_stream" ;
-          print_error e ;
-          Fut.return ())
+            print_endline "error in string_of_stream" ;
+            print_error e ;
+            Fut.return ())
     in
     let+ () = read () in
     let r = Buffer.contents buffer in
@@ -106,33 +106,33 @@ let search message db =
     Jv.(apply (get global "postMessage"))
       [| Jv.of_list
            (fun Db.Entry.{ name; rhs; doc_html; kind; url; _ } ->
-             let typedecl_params =
-               match kind with
-               | Db.Entry.Kind.Type_decl args -> args
-               | _ -> None
-             in
-             let prefix_name, name =
-               match kind with
-               | Db.Entry.Kind.Doc -> None, None
-               | _ -> begin
-                 match List.rev (String.split_on_char '.' name) with
-                 | [] -> None, None
-                 | [ hd ] -> None, Some hd
-                 | hd :: tl -> Some (String.concat "." (List.rev tl)), Some hd
-               end
-             in
-             let kind = string_of_kind kind in
-             let html =
-               Tyxml.Html.string_of_list
-               @@ Odoc_html_frontend.of_strings
-                    ~kind
-                    ~prefix_name
-                    ~name
-                    ~typedecl_params
-                    ~rhs
-                    ~doc:doc_html
-             in
-             Jv.obj [| "html", Jv.of_string html; "url", Jv.of_string url |])
+              let typedecl_params =
+                match kind with
+                | Db.Entry.Kind.Type_decl args -> args
+                | _ -> None
+              in
+              let prefix_name, name =
+                match kind with
+                | Db.Entry.Kind.Doc -> None, None
+                | _ -> begin
+                    match List.rev (String.split_on_char '.' name) with
+                    | [] -> None, None
+                    | [ hd ] -> None, Some hd
+                    | hd :: tl -> Some (String.concat "." (List.rev tl)), Some hd
+                  end
+              in
+              let kind = string_of_kind kind in
+              let html =
+                Tyxml.Html.string_of_list
+                @@ Odoc_html_frontend.of_strings
+                     ~kind
+                     ~prefix_name
+                     ~name
+                     ~typedecl_params
+                     ~rhs
+                     ~doc:doc_html
+              in
+              Jv.obj [| "html", Jv.of_string html; "url", Jv.of_string url |])
            results
       |]
   in

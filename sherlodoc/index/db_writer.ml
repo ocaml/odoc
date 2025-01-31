@@ -46,19 +46,19 @@ let store db name elt ~count ~polarity =
   let st =
     match polarity with
     | Type_polarity.Sign.Pos -> begin
-      try Occurences.find count db.writer_pos_types with
-      | Not_found ->
-        let st = Suffix_tree.make db.buffer_types in
-        db.writer_pos_types <- Occurences.add count st db.writer_pos_types ;
-        st
-    end
+        try Occurences.find count db.writer_pos_types with
+        | Not_found ->
+            let st = Suffix_tree.make db.buffer_types in
+            db.writer_pos_types <- Occurences.add count st db.writer_pos_types ;
+            st
+      end
     | Type_polarity.Sign.Neg -> begin
-      try Occurences.find count db.writer_neg_types with
-      | Not_found ->
-        let st = Suffix_tree.make db.buffer_types in
-        db.writer_neg_types <- Occurences.add count st db.writer_neg_types ;
-        st
-    end
+        try Occurences.find count db.writer_neg_types with
+        | Not_found ->
+            let st = Suffix_tree.make db.buffer_types in
+            db.writer_neg_types <- Occurences.add count st db.writer_neg_types ;
+            st
+      end
   in
   Suffix_tree.add_suffixes st name elt
 

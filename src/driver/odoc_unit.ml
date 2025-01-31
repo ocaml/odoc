@@ -46,7 +46,8 @@ module Pkg_args = struct
        odocl_dir: %a@;\
        includes: %a@;\
        pages: [%a]@;\
-       libs: [%a]@]" Fpath.pp x.odoc_dir Fpath.pp x.odocl_dir
+       libs: [%a]@]"
+      Fpath.pp x.odoc_dir Fpath.pp x.odocl_dir
       Fmt.Dump.(list Fpath.pp)
       (Fpath.Set.to_list x.includes)
       sfp_pp

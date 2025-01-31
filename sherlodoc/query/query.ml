@@ -24,22 +24,22 @@ let find_types ~shard typ =
   Succ.inter_of_list
   @@ List.map
        (fun (name, count, polarity) ->
-         let st_occ =
-           match polarity with
-           | Db.Type_polarity.Sign.Pos -> shard.Db.db_pos_types
-           | Neg -> shard.Db.db_neg_types
-         in
-         Succ.of_automatas
-         @@ Db.Occurences.fold
-              (fun occurrences st acc ->
-                if occurrences < count
-                then acc
-                else begin
-                  let ts = Tree.find_star st name in
-                  List.rev_append ts acc
-                end)
-              st_occ
-              [])
+          let st_occ =
+            match polarity with
+            | Db.Type_polarity.Sign.Pos -> shard.Db.db_pos_types
+            | Neg -> shard.Db.db_neg_types
+          in
+          Succ.of_automatas
+          @@ Db.Occurences.fold
+               (fun occurrences st acc ->
+                  if occurrences < count
+                  then acc
+                  else begin
+                    let ts = Tree.find_star st name in
+                    List.rev_append ts acc
+                  end)
+               st_occ
+               [])
        polarities
 
 let find_names ~shard names =
@@ -48,9 +48,9 @@ let find_names ~shard names =
   let candidates =
     List.map
       (fun name ->
-        match Tree.find db_names name with
-        | Some trie -> Succ.of_automata trie
-        | None -> Succ.empty)
+         match Tree.find db_names name with
+         | Some trie -> Succ.of_automata trie
+         | None -> Succ.empty)
       names
   in
   Succ.inter_of_list candidates
@@ -58,9 +58,9 @@ let find_names ~shard names =
 let search ~shard { Query_parser.name; typ } =
   match name, typ with
   | _ :: _, `typ typ ->
-    let results_name = find_names ~shard name in
-    let results_typ = find_types ~shard typ in
-    Succ.inter results_name results_typ
+      let results_name = find_names ~shard name in
+      let results_typ = find_types ~shard typ in
+      Succ.inter results_name results_typ
   | _ :: _, _ -> find_names ~shard name
   | [], `typ typ -> find_types ~shard typ
   | [], (`no_typ | `parse_error) -> Succ.empty

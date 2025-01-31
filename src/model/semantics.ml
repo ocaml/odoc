@@ -12,8 +12,8 @@ type internal_tags_removed =
 (** {!Ast.block_element} without internal tags. *)
 
 type _ handle_internal_tags =
-  | Expect_status
-      : [ `Default | `Inline | `Open | `Closed ] handle_internal_tags
+  | Expect_status :
+      [ `Default | `Inline | `Open | `Closed ] handle_internal_tags
   | Expect_canonical : Reference.path option handle_internal_tags
   | Expect_none : unit handle_internal_tags
   | Expect_page_tags : Frontmatter.t handle_internal_tags
@@ -517,7 +517,8 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
   in
   loop ~start:true [] [] ast
 
-(** Append alerts at the end of the comment. Tags are favoured in case of alerts of the same name. *)
+(** Append alerts at the end of the comment. Tags are favoured in case of alerts
+    of the same name. *)
 let append_alerts_to_comment alerts
     (comment : Comment.block_element with_location list) =
   let alerts =

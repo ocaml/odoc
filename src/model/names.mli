@@ -1,10 +1,9 @@
 (** Typed names for paths, identifiers, references and fragments.
 
     This module contains a module per type of named object in our internal
-    representation of the langage, each containing an opaque type [t].
-    This allows us to ensure that, for example, we never mistake a module
-    name for a module type name.
-*)
+    representation of the langage, each containing an opaque type [t]. This
+    allows us to ensure that, for example, we never mistake a module name for a
+    module type name. *)
 
 val parenthesise : string -> string
 val contains_double_underscore : string -> bool
@@ -12,13 +11,12 @@ val contains_double_underscore : string -> bool
 
 val set_unique_ident : string -> unit
 
-(** Name is the signature for names that could possibly be hidden. Hidden
-    names occur when we generate items that don't have a path that will be
-    exposed in the generated HTML. This can occur for a few reasons:
-    
-    1. explicitly hidden by the user with stop comments
-    2. generalised opens
-    3. shadowed identifiers
+(** Name is the signature for names that could possibly be hidden. Hidden names
+    occur when we generate items that don't have a path that will be exposed in
+    the generated HTML. This can occur for a few reasons:
+
+    1. explicitly hidden by the user with stop comments 2. generalised opens 3.
+    shadowed identifiers
 
     In cases 1 and 2 the identifiers are available for use later in the
     signature (or more generally) whereas for case 3 they aren't, and it's

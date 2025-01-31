@@ -5,8 +5,7 @@ module Tools_error = struct
   (** Errors raised by Tools *)
 
   type handle_subs_error =
-    [ `UnresolvedPath of
-      [ `Module of Cpath.module_ ]
+    [ `UnresolvedPath of [ `Module of Cpath.module_ ]
       (* Failed to resolve a module path when applying a fragment item *) ]
 
   type reference_kind =
@@ -36,13 +35,11 @@ module Tools_error = struct
     | `UnresolvedOriginalPath of Cpath.module_ * simple_module_lookup_error ]
 
   and simple_module_lookup_error =
-    [ `Local of
-      Env.t * Ident.module_
+    [ `Local of Env.t * Ident.module_
       (* Internal error: Found local path during lookup *)
     | `Find_failure
     | (* Internal error: the module was not found in the parent signature *)
-      `Lookup_failure of
-      Identifier.Path.Module.t
+      `Lookup_failure of Identifier.Path.Module.t
       (* Could not find the module in the environment *)
     | `Lookup_failure_root of ModuleName.t (* Could not find the root module *)
     | `Parent of parent_lookup_error ]
@@ -59,19 +56,16 @@ module Tools_error = struct
     | `Parent of parent_lookup_error ]
 
   and simple_module_type_lookup_error =
-    [ `LocalMT of
-      Env.t * Ident.module_type
+    [ `LocalMT of Env.t * Ident.module_type
       (* Internal error: Found local path during lookup *)
     | `Find_failure
       (* Internal error: the module was not found in the parent signature *)
-    | `Lookup_failureMT of
-      Identifier.ModuleType.t
+    | `Lookup_failureMT of Identifier.ModuleType.t
       (* Could not find the module in the environment *)
     | `Parent of parent_lookup_error ]
 
   and simple_type_lookup_error =
-    [ `LocalType of
-      Env.t * Ident.type_
+    [ `LocalType of Env.t * Ident.type_
       (* Internal error: Found local path during lookup *)
     | `Class_replaced
       (* Class was replaced with a destructive substitution and we're not sure
@@ -79,34 +73,27 @@ module Tools_error = struct
     | `OpaqueClass (* Couldn't resolve class signature. *)
     | `Find_failure
       (* Internal error: the type was not found in the parent signature *)
-    | `Lookup_failureT of
-      Identifier.Path.Type.t
+    | `Lookup_failureT of Identifier.Path.Type.t
       (* Could not find the module in the environment *)
     | `Parent of parent_lookup_error ]
 
   and simple_value_lookup_error =
-    [ `LocalValue of
-      Env.t * Ident.value
+    [ `LocalValue of Env.t * Ident.value
       (* Internal error: Found local path during lookup *)
     | `Find_failure
       (* Internal error: the type was not found in the parent signature *)
-    | `Lookup_failureV of
-      Identifier.Path.Value.t
+    | `Lookup_failureV of Identifier.Path.Value.t
       (* Could not find the module in the environment *)
     | `Parent of parent_lookup_error ]
 
   and parent_lookup_error =
-    [ `Parent_sig of
-      expansion_of_module_error
+    [ `Parent_sig of expansion_of_module_error
       (* Error found while calculating the parent signature *)
-    | `Parent_module_type of
-      simple_module_type_lookup_error
+    | `Parent_module_type of simple_module_type_lookup_error
       (* Error found while looking up parent module type *)
-    | `Parent_expr of
-      simple_module_type_expr_of_module_error
+    | `Parent_expr of simple_module_type_expr_of_module_error
       (* Error found while evaluating parent module expression *)
-    | `Parent_module of
-      simple_module_lookup_error
+    | `Parent_module of simple_module_lookup_error
       (* Error found while looking up parent module *)
     | `Parent_type of simple_type_lookup_error
     | `Fragment_root (* Encountered unexpected fragment root *)
