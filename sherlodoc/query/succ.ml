@@ -28,8 +28,8 @@ let inter a b =
   | All, _ -> b
   | x, y when x == y -> a
   | x, y ->
-    let s = if a.size <= b.size then Inter (x, y) else Inter (y, x) in
-    { s; size = min a.size b.size }
+      let s = if a.size <= b.size then Inter (x, y) else Inter (y, x) in
+      { s; size = min a.size b.size }
 
 let union a b =
   match a.s, b.s with
@@ -38,8 +38,8 @@ let union a b =
   | Empty, _ -> b
   | x, y when x == y -> a
   | x, y ->
-    let s = if a.size >= b.size then Union (x, y) else Union (y, x) in
-    { s; size = a.size + b.size }
+      let s = if a.size >= b.size then Union (x, y) else Union (y, x) in
+      { s; size = a.size + b.size }
 
 let rec join_with fn = function
   | [] -> []
@@ -74,51 +74,51 @@ let rec succ ~strictness t =
   match t with
   | Empty -> Is_empty
   | All -> begin
-    match strictness with
-    | First -> Is_all
-    | Gt _ -> Is_all
-    | Ge _ -> Found_eq All
-  end
-  | Pq pqueue -> begin
-    let pqueue' =
       match strictness with
-      | First -> pqueue
-      | Ge elt -> Priority_queue.pop_lt elt pqueue
-      | Gt elt -> Priority_queue.pop_lte elt pqueue
-    in
-    match strictness, Priority_queue.minimum pqueue' with
-    | _, None -> Is_empty
-    | Ge elt, Some e when Db.Entry.equal e elt -> Found_eq (Pq pqueue')
-    | _, Some e -> Found_gt (e, Pq pqueue')
-  end
-  | Union (l, r) -> begin
-    match succ ~strictness l with
-    | Is_empty -> succ ~strictness r
-    | Is_all -> failwith "union all"
-    | Found_eq l -> Found_eq (Union (l, r))
-    | Found_gt (elt_l, l') -> begin
-      match succ ~strictness r with
-      | Is_empty -> Found_gt (elt_l, l')
-      | Is_all -> failwith "union all"
-      | Found_eq r' -> Found_eq (Union (l', r'))
-      | Found_gt (elt_r, r') when Db.Entry.compare elt_l elt_r <= 0 ->
-        Found_gt (elt_l, Union (l', r'))
-      | Found_gt (elt_r, r') -> Found_gt (elt_r, Union (l', r'))
+      | First -> Is_all
+      | Gt _ -> Is_all
+      | Ge _ -> Found_eq All
     end
-  end
+  | Pq pqueue -> begin
+      let pqueue' =
+        match strictness with
+        | First -> pqueue
+        | Ge elt -> Priority_queue.pop_lt elt pqueue
+        | Gt elt -> Priority_queue.pop_lte elt pqueue
+      in
+      match strictness, Priority_queue.minimum pqueue' with
+      | _, None -> Is_empty
+      | Ge elt, Some e when Db.Entry.equal e elt -> Found_eq (Pq pqueue')
+      | _, Some e -> Found_gt (e, Pq pqueue')
+    end
+  | Union (l, r) -> begin
+      match succ ~strictness l with
+      | Is_empty -> succ ~strictness r
+      | Is_all -> failwith "union all"
+      | Found_eq l -> Found_eq (Union (l, r))
+      | Found_gt (elt_l, l') -> begin
+          match succ ~strictness r with
+          | Is_empty -> Found_gt (elt_l, l')
+          | Is_all -> failwith "union all"
+          | Found_eq r' -> Found_eq (Union (l', r'))
+          | Found_gt (elt_r, r') when Db.Entry.compare elt_l elt_r <= 0 ->
+              Found_gt (elt_l, Union (l', r'))
+          | Found_gt (elt_r, r') -> Found_gt (elt_r, Union (l', r'))
+        end
+    end
   | Inter (l, r) -> begin
-    match succ ~strictness l with
-    | Is_empty -> Is_empty
-    | Is_all -> failwith "inter all"
-    | Found_eq l' -> begin
-      match succ ~strictness r with
+      match succ ~strictness l with
       | Is_empty -> Is_empty
       | Is_all -> failwith "inter all"
-      | Found_eq r' -> Found_eq (Inter (l', r'))
-      | Found_gt (elt, r') -> Found_gt (elt, Inter (l', r'))
+      | Found_eq l' -> begin
+          match succ ~strictness r with
+          | Is_empty -> Is_empty
+          | Is_all -> failwith "inter all"
+          | Found_eq r' -> Found_eq (Inter (l', r'))
+          | Found_gt (elt, r') -> Found_gt (elt, Inter (l', r'))
+        end
+      | Found_gt (elt, l') -> Found_gt (elt, Inter (l', r))
     end
-    | Found_gt (elt, l') -> Found_gt (elt, Inter (l', r))
-  end
 
 let rec succ_loop ?(count = 0) ~strictness t =
   match strictness, succ ~strictness t with
@@ -149,7 +149,7 @@ let to_seq { s = t; _ } =
     match result with
     | None -> None
     | Some (elt, _) ->
-      state := result ;
-      Some elt
+        state := result ;
+        Some elt
   in
   seq_of_dispenser loop

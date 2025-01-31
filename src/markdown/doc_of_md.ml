@@ -507,7 +507,10 @@ let thematic_break_to_nestable_block_element ~locator m (bs, warns) =
 
 let rec list_to_nestable_block_element ~locator defs l m (bs, warns) =
   let loc = meta_to_loc ~locator m in
-  let style = `Heavy (* Note this is a layout property of ocamldoc *) in
+  let style =
+    `Heavy
+    (* Note this is a layout property of ocamldoc *)
+  in
   let kind, warns =
     match Block.List'.type' l with
     | `Unordered _ -> (`Unordered, warns)
@@ -529,7 +532,10 @@ let rec list_to_nestable_block_element ~locator defs l m (bs, warns) =
 
 and table_to_nestable_block_element ~locator defs tbl m (bs, warns) =
   let loc = meta_to_loc ~locator m in
-  let style = `Light (* Note this is a layout property of ocamldoc *) in
+  let style =
+    `Light
+    (* Note this is a layout property of ocamldoc *)
+  in
   let col_count = Block.Table.col_count tbl in
   let add_cell typ (n_cell, acc, warns) (cell, _) =
     let content, warns =

@@ -40,15 +40,15 @@ let print_result ~print_cost ~print_docstring ~no_rhs (elt : Db.Entry.t) =
   Format.printf "%s%s %s%s%a%s@." cost kind typedecl_params name pp_rhs elt.rhs docstring
 
 let search
-  ~print_cost
-  ~static_sort
-  ~limit
-  ~db
-  ~no_rhs
-  ~pretty_query
-  ~time
-  ~print_docstring
-  query
+      ~print_cost
+      ~static_sort
+      ~limit
+      ~db
+      ~no_rhs
+      ~pretty_query
+      ~time
+      ~print_docstring
+      query
   =
   let query = Query.{ query; packages = []; limit } in
   if pretty_query then print_endline (Query.pretty query) ;
@@ -58,81 +58,81 @@ let search
   match r with
   | [] -> print_endline "[No results]"
   | _ :: _ as results ->
-    List.iter (print_result ~print_cost ~print_docstring ~no_rhs) results ;
-    flush stdout ;
-    if time then Format.printf "Search in %f@." (t1 -. t0)
+      List.iter (print_result ~print_cost ~print_docstring ~no_rhs) results ;
+      flush stdout ;
+      if time then Format.printf "Search in %f@." (t1 -. t0)
 
 let rec search_loop
-  ~print_cost
-  ~no_rhs
-  ~pretty_query
-  ~static_sort
-  ~limit
-  ~time
-  ~print_docstring
-  ~db
+          ~print_cost
+          ~no_rhs
+          ~pretty_query
+          ~static_sort
+          ~limit
+          ~time
+          ~print_docstring
+          ~db
   =
   Printf.printf "%ssearch>%s %!" "\027[0;36m" "\027[0;0m" ;
   match Stdlib.input_line stdin with
   | query ->
-    search
-      ~print_cost
-      ~static_sort
-      ~limit
-      ~db
-      ~no_rhs
-      ~pretty_query
-      ~time
-      ~print_docstring
-      query ;
-    search_loop
-      ~print_cost
-      ~no_rhs
-      ~pretty_query
-      ~static_sort
-      ~limit
-      ~time
-      ~print_docstring
-      ~db
+      search
+        ~print_cost
+        ~static_sort
+        ~limit
+        ~db
+        ~no_rhs
+        ~pretty_query
+        ~time
+        ~print_docstring
+        query ;
+      search_loop
+        ~print_cost
+        ~no_rhs
+        ~pretty_query
+        ~static_sort
+        ~limit
+        ~time
+        ~print_docstring
+        ~db
   | exception End_of_file -> Printf.printf "\n%!"
 
 let search
-  query
-  print_cost
-  no_rhs
-  static_sort
-  limit
-  pretty_query
-  time
-  print_docstring
-  db_format
-  db_filename
+      query
+      print_cost
+      no_rhs
+      static_sort
+      limit
+      pretty_query
+      time
+      print_docstring
+      db_format
+      db_filename
   =
   let module Storage = (val Db_store.storage_module db_format) in
   let db = Storage.load db_filename in
   match query with
   | None ->
-    print_endline header ;
-    search_loop
-      ~print_cost
-      ~no_rhs
-      ~pretty_query
-      ~static_sort
-      ~limit
-      ~time
-      ~print_docstring
-      ~db
+      print_endline header ;
+      search_loop
+        ~print_cost
+        ~no_rhs
+        ~pretty_query
+        ~static_sort
+        ~limit
+        ~time
+        ~print_docstring
+        ~db
   | Some query ->
-    search
-      ~print_cost
-      ~no_rhs
-      ~pretty_query
-      ~static_sort
-      ~limit
-      ~time
-      ~print_docstring
-      ~db
-      query
+      search
+        ~print_cost
+        ~no_rhs
+        ~pretty_query
+        ~static_sort
+        ~limit
+        ~time
+        ~print_docstring
+        ~db
+        query
 
 open Cmdliner
 

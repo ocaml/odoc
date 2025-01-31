@@ -26,7 +26,8 @@ module rec Module : sig
   type t = {
     id : Identifier.Module.t;
     source_loc : Identifier.SourceLocation.t option;
-        (** Identifier.SourceLocation might not be set when the module is artificially constructed from a functor argument. *)
+        (** Identifier.SourceLocation might not be set when the module is
+            artificially constructed from a functor argument. *)
     doc : Comment.docs;
     type_ : decl;
     canonical : Path.Module.t option;

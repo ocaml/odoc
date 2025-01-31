@@ -16,7 +16,7 @@ let of_query { Query_parser.name; typ } =
 let type_distance query_type entry =
   match query_type, Entry.Kind.get_type entry.Entry.kind with
   | Some query_paths, Some entry_type ->
-    Some (Type_distance.v ~query_paths ~entry:entry_type)
+      Some (Type_distance.v ~query_paths ~entry:entry_type)
   | Some _, None -> Some 1000
   | _ -> None
 

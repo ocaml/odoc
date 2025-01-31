@@ -35,9 +35,9 @@ let of_string str =
     match String.index_opt str ':' with
     | None -> if guess_type_search str then "", type_of_string str else str, `no_typ
     | Some loc ->
-      let str_name = String.sub str 0 loc in
-      let str_typ = String.sub str (loc + 1) (String.length str - loc - 1) in
-      str_name, type_of_string str_typ
+        let str_name = String.sub str 0 loc in
+        let str_typ = String.sub str (loc + 1) (String.length str - loc - 1) in
+        str_name, type_of_string str_typ
   in
   let name = naive_of_string query_name in
   { name; typ }

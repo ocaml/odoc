@@ -25,11 +25,11 @@ val from_mld :
   warnings_options:Odoc_model.Error.warnings_options ->
   Fs.File.t ->
   (unit, [> msg ]) result
-(** [from_mld ~xref_base_uri ~resolver ~output input] parses the content of the [input]
-    file as a documentation page ({e i.e.} the ocamldoc syntax), generates the
-    equivalent HTML representation and writes the result into the [output]
-    file. The produced file is an HTML fragment that can be embedded into other
-    documents.
+(** [from_mld ~xref_base_uri ~resolver ~output input] parses the content of the
+    [input] file as a documentation page ({e i.e.} the ocamldoc syntax),
+    generates the equivalent HTML representation and writes the result into the
+    [output] file. The produced file is an HTML fragment that can be embedded
+    into other documents.
 
-    Cross-reference resolution uses the provided [xref_base_uri] to locate docset
-    packages. *)
+    Cross-reference resolution uses the provided [xref_base_uri] to locate
+    docset packages. *)

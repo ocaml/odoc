@@ -1,10 +1,9 @@
 (** Raw latex primitives:
     - macro and environment definitions
-    - text escaping
-*)
+    - text escaping *)
 
 type pr = Format.formatter -> unit
-(** {1 Helper types } *)
+(** {1 Helper types} *)
 
 type 'a with_options = ?options:pr list -> 'a
 
@@ -12,7 +11,7 @@ type ('a, 'b) tr = 'a Fmt.t -> 'b Fmt.t
 
 type 'a t = ('a, 'a) tr
 
-(** {1 Helper functions } *)
+(** {1 Helper functions} *)
 module Escape : sig
   val text : code_hyphenation:bool -> string -> string
 
@@ -67,10 +66,9 @@ val small_table : ('a, Types.alignment list option * 'a list list) tr
 
 val input : Fpath.t Fmt.t
 
-(** {1 Required OCaml-specific primitives }
-    All the macro should be implemented as "ocaml"-suffixed macro
-    in the latex preamble
-  *)
+(** {1 Required OCaml-specific primitives}
+    All the macro should be implemented as "ocaml"-suffixed macro in the latex
+    preamble *)
 
 val inline_code : 'a t
 (** {2 Code block customization} *)
@@ -79,7 +77,7 @@ val code_fragment : 'a t
 
 val code_block : 'a t
 
-(** {2 Package-dependent primitives }*)
+(** {2 Package-dependent primitives}*)
 
 val indent : 'a t
 (** expected to be implemented with changepage/adjustwidth*)
@@ -87,12 +85,11 @@ val indent : 'a t
 val ocamltabular : column_desc:pr -> 'a t
 (** Any tabular implementation that works well with at most 10 rows *)
 
-(** {2 Tags } *)
+(** {2 Tags} *)
 
 val ocamltag : string -> 'a t
 (** tag (e.g keyword, type-var, ...) are rendered to
-{v \ocamltag{tagname}{content} v}
-*)
+    {v \ocamltag{tagname}{content} v} *)
 
 (** {2 Math mode} *)
 

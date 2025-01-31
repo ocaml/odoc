@@ -1,4 +1,5 @@
-(** Intermediate representation for pages hierarchies to be able to add pages before  *)
+(** Intermediate representation for pages hierarchies to be able to add pages
+    before *)
 
 module Id = Odoc_model.Paths.Identifier
 open Odoc_model

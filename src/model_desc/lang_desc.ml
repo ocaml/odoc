@@ -58,7 +58,8 @@ and functorparameter_t =
   let open Lang.FunctorParameter in
   Variant
     (function
-    | Unit -> C0 "Unit" | Named x -> C ("Named", x, functorparameter_parameter))
+    | Unit -> C0 "Unit"
+    | Named x -> C ("Named", x, functorparameter_parameter))
 
 (** {3 ModuleType} *)
 
@@ -420,7 +421,8 @@ and value_t =
   let value_value_t =
     Variant
       (function
-      | Abstract -> C0 "Abstract" | External x -> C ("External", x, List string))
+      | Abstract -> C0 "Abstract"
+      | External x -> C ("External", x, List string))
   in
   Record
     [

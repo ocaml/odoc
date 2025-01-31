@@ -1,8 +1,8 @@
 (** Examples of Path, Fragment and Reference Resolution *)
 
-(** This module contains examples of some of the features of Resolution
-as described in the page {!page-features}. See the explanations there for
-details on what each of these demonstrates. *)
+(** This module contains examples of some of the features of Resolution as
+    described in the page {!page-features}. See the explanations there for
+    details on what each of these demonstrates. *)
 
 [@@@warning "-67"]
 
@@ -28,7 +28,7 @@ end
 
 module HiddenAlias : sig
   (** Demonstrates a reference to an item in a module that's an alias of a
-  hidden module. *)
+      hidden module. *)
 
   (**/**)
 
@@ -108,8 +108,9 @@ module References : sig
     end
   end
 
-  (** We can refer unambiguously to {!module-type-A.t} in module type [A] or {!module-A.t} in module [A],
-and also where there are name clashes within the path: {!module-A.module-B.t} or {!module-A.module-type-B.t} *)
+  (** We can refer unambiguously to {!module-type-A.t} in module type [A] or
+      {!module-A.t} in module [A], and also where there are name clashes within
+      the path: {!module-A.module-B.t} or {!module-A.module-type-B.t} *)
 end
 
 module Complicated_1 : sig

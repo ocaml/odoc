@@ -40,8 +40,8 @@ val page :
   Location.t ->
   string ->
   Odoc_model.Comment.docs * Frontmatter.t
-(** The parent identifier is used to define labels in the given string (i.e.
-    for things like [{1:some_section Some title}]) and the location is used for
+(** The parent identifier is used to define labels in the given string (i.e. for
+    things like [{1:some_section Some title}]) and the location is used for
     error messages.
 
     This function is meant to be used to read arbitrary files containing text in
@@ -71,7 +71,8 @@ val extract_top_comment :
 val extract_top_comment_class :
   Lang.ClassSignature.item list ->
   Lang.ClassSignature.item list * (Comment.docs * Comment.docs)
-(** Extract the first comment of a class signature. Returns the remaining items. *)
+(** Extract the first comment of a class signature. Returns the remaining items.
+*)
 
 val read_location : Location.t -> Odoc_model.Location_.span
 

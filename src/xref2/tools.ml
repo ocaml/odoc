@@ -64,13 +64,13 @@ let c_ty_poss env p =
    unresolved path, returns an ordered list of all possible unresolved
    paths starting with the shortest and including the longest one. *)
 let canonical_helper :
-      'unresolved 'resolved.
-      Env.t ->
-      (Env.t -> 'unresolved -> ('resolved * 'result, _) result) ->
-      ('resolved -> Odoc_model.Paths.Path.Resolved.t) ->
-      (Env.t -> 'unresolved -> 'unresolved list) ->
-      'unresolved ->
-      ('resolved * 'result) option =
+    'unresolved 'resolved.
+    Env.t ->
+    (Env.t -> 'unresolved -> ('resolved * 'result, _) result) ->
+    ('resolved -> Odoc_model.Paths.Path.Resolved.t) ->
+    (Env.t -> 'unresolved -> 'unresolved list) ->
+    'unresolved ->
+    ('resolved * 'result) option =
  fun env resolve lang_of possibilities p2 ->
   let resolve p =
     match resolve env p with Ok rp -> Some rp | Error _ -> None
@@ -1585,8 +1585,8 @@ and handle_signature_with_subs :
     (fun sg_opt sub -> sg_opt >>= fun sg -> fragmap env sub sg)
     (Ok sg) subs
 
-and assert_not_functor :
-    type err. expansion -> (Component.Signature.t, err) Result.result = function
+and assert_not_functor : type err.
+    expansion -> (Component.Signature.t, err) Result.result = function
   | Signature sg -> Ok sg
   | _ -> assert false
 
@@ -1649,7 +1649,8 @@ and expansion_of_simple_expansion :
     | Functor (arg, e) -> Functor (arg, helper e)
   in
   function
-  | Signature sg -> Signature sg | Functor (arg, e) -> Functor (arg, helper e)
+  | Signature sg -> Signature sg
+  | Functor (arg, e) -> Functor (arg, helper e)
 
 and expansion_of_module_type_expr :
     Env.t ->
@@ -1711,7 +1712,9 @@ and expansion_of_module :
       let sg =
         (* Override the signature's documentation when the module also has
            a comment attached. *)
-        match m.doc.elements with [] -> sg | _ -> { sg with doc = m.doc }
+        match m.doc.elements with
+        | [] -> sg
+        | _ -> { sg with doc = m.doc }
       in
       Ok (Signature sg)
   | Functor _ as f -> Ok f

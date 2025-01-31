@@ -63,7 +63,7 @@ let is_module_name n = String.length n > 0 && Char.Ascii.is_upper n.[0]
     - [page-foo] child is a container or leaf page.
     - [srctree-foo] child is a source tree
 
-  Parses [...-"foo"] as [...-foo] for backward compatibility. *)
+    Parses [...-"foo"] as [...-foo] for backward compatibility. *)
 let parse_parent_child_reference s =
   let unquote s =
     let len = String.length s in
@@ -264,14 +264,14 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options
       | `Styled (s, es) ->
           Some
             (`Styled
-              ( s,
-                List.filter_map
-                  (function
-                    | { Location_.location; value } -> (
-                        match conv value with
-                        | Some value -> Some { Location_.location; value }
-                        | None -> None))
-                  es ))
+               ( s,
+                 List.filter_map
+                   (function
+                     | { Location_.location; value } -> (
+                         match conv value with
+                         | Some value -> Some { Location_.location; value }
+                         | None -> None))
+                   es ))
       | `Reference _ | `Link _ -> None
     in
     let frontmatter =

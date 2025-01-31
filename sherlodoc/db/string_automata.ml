@@ -101,9 +101,9 @@ let rec find_skip ~spaces t pattern yield =
       match node.children with
       | None -> ()
       | Some children ->
-        Array.iter
-          (fun child -> find_skip ~spaces { t with t = stepback child } pattern yield)
-          children
+          Array.iter
+            (fun child -> find_skip ~spaces { t with t = stepback child } pattern yield)
+            children
     end
   in
   if spaces = 0
@@ -129,10 +129,10 @@ let find_star t pattern yield =
   match String.split_on_char ' ' pattern with
   | [] -> ()
   | p :: ps -> begin
-    match find t p with
-    | None -> ()
-    | Some t -> go t ps
-  end
+      match find t p with
+      | None -> ()
+      | Some t -> go t ps
+    end
 
 let find_star t pattern =
   let found = ref [] in
