@@ -58,8 +58,8 @@ module Identifier : sig
 
     val functor_arg_pos : t -> int
     (** Gets the index in which the functor argument is, in the argument list.
-      Useful to turn identifiers into unique anchors, since multiple arguments
-      can have the same name. *)
+        Useful to turn identifiers into unique anchors, since multiple arguments
+        can have the same name. *)
   end
 
   module ModuleType :
@@ -309,10 +309,11 @@ module Identifier : sig
     val extension_decl :
       Signature.t * (ExtensionName.t * ExtensionName.t) ->
       [> `ExtensionDecl of Signature.t * ExtensionName.t * ExtensionName.t ] id
-    (** [extension_decl (sg, e1, eN)] defines an extension declaration where [sg] is the parent,
-        [e1] is the first constructor of the extension, and [eN] is the constructor the Id is created for.
-        [e1] will be used for the url, and [eN] will be the one displayed.
-        The first constructor of the extension will always be used to reference the extension point. *)
+    (** [extension_decl (sg, e1, eN)] defines an extension declaration where
+        [sg] is the parent, [e1] is the first constructor of the extension, and
+        [eN] is the constructor the Id is created for. [e1] will be used for the
+        url, and [eN] will be the one displayed. The first constructor of the
+        extension will always be used to reference the extension point. *)
 
     val exception_ :
       Signature.t * ExceptionName.t ->

@@ -2,18 +2,18 @@ let guess_db_format db_format db_filename =
   match db_format with
   | Some db_format -> db_format
   | None -> begin
-    let ext = Filename.extension db_filename in
-    let ext_len = String.length ext in
-    let ext = if ext_len = 0 then ext else String.sub ext 1 (ext_len - 1) in
-    try List.assoc ext Db_store.available_backends with
-    | Not_found ->
-      Format.fprintf
-        Format.err_formatter
-        "Unknown db format extension %S (expected: %s)@."
-        ext
-        (String.concat ", " @@ List.map fst Db_store.available_backends) ;
-      exit 1
-  end
+      let ext = Filename.extension db_filename in
+      let ext_len = String.length ext in
+      let ext = if ext_len = 0 then ext else String.sub ext 1 (ext_len - 1) in
+      try List.assoc ext Db_store.available_backends with
+      | Not_found ->
+          Format.fprintf
+            Format.err_formatter
+            "Unknown db format extension %S (expected: %s)@."
+            ext
+            (String.concat ", " @@ List.map fst Db_store.available_backends) ;
+          exit 1
+    end
 
 open Cmdliner
 

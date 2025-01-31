@@ -80,7 +80,8 @@ let pp_libty fmt l =
      lib_deps: %a;@,\
      modules: %a@,\
      id_override: %a@,\n\
-    \     }@]" l.lib_name Fpath.pp l.dir
+    \     }@]"
+    l.lib_name Fpath.pp l.dir
     (Fmt.Dump.option Fmt.string)
     l.archive_name
     (Fmt.list ~sep:Fmt.comma Fmt.string)

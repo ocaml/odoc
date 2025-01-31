@@ -34,7 +34,7 @@ module Directory : sig
   val append : t -> t -> t
 
   val reach_from : dir:t -> string -> t
-  (** @raises Invalid_argument if [parent/name] exists but is not a directory. *)
+  (** @raise Invalid_argument if [parent/name] exists but is not a directory. *)
 
   val contains : parentdir:t -> file -> bool
 
@@ -52,8 +52,8 @@ module Directory : sig
 
   val fold_files_rec : ?ext:string -> ('a -> file -> 'a) -> 'a -> t -> 'a
   (** [fold_files_rec_result ~ext f acc d] recursively folds [f] over the files
-      with extension matching [ext] (defaults to [""]) contained in [d]
-      and its sub directories. *)
+      with extension matching [ext] (defaults to [""]) contained in [d] and its
+      sub directories. *)
 
   val fold_files_rec_result :
     ?ext:string ->
@@ -62,8 +62,8 @@ module Directory : sig
     t ->
     ('a, [> msg ]) result
   (** [fold_files_rec_result ~ext f acc d] recursively folds [f] over the files
-      with extension matching [ext] (defaults to [""]) contained in [d]
-      and its sub directories. Stop as soon as [f] returns [Error _]. *)
+      with extension matching [ext] (defaults to [""]) contained in [d] and its
+      sub directories. Stop as soon as [f] returns [Error _]. *)
 
   module Table : Hashtbl.S with type key = t
 end

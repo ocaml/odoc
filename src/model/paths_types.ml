@@ -26,7 +26,7 @@ module Identifier = struct
   type source_page_pv = [ `SourcePage of container_page * string ]
   (** The second argument is the filename.
 
-     @canonical Odoc_model.Paths.Identifier.SourcePage.t_pv *)
+      @canonical Odoc_model.Paths.Identifier.SourcePage.t_pv *)
 
   type source_page = source_page_pv id
   (** @canonical Odoc_model.Paths.Identifier.SourcePage.t *)
@@ -34,7 +34,7 @@ module Identifier = struct
   type asset_file_pv = [ `AssetFile of page * AssetName.t ]
   (** The second argument is the filename.
 
-    @canonical Odoc_model.Paths.Identifier.AssetFile.t_pv *)
+      @canonical Odoc_model.Paths.Identifier.AssetFile.t_pv *)
 
   type asset_file = asset_file_pv id
   (** @canonical Odoc_model.Paths.Identifier.AssetFile.t *)

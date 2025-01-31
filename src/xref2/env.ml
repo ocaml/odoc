@@ -534,8 +534,7 @@ let lookup_root_module_fallback name t =
   match lookup_root_module (ModuleName.make_std name) t with
   | Some (Resolved (_, id, m)) ->
       Some
-        (`Module
-          ((id :> Identifier.Path.Module.t), Component.Delayed.put_val m))
+        (`Module ((id :> Identifier.Path.Module.t), Component.Delayed.put_val m))
   | Some Forward | None -> None
 
 let lookup_page_or_root_module_fallback name t =

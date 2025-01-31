@@ -17,7 +17,9 @@ let url { Entry.id; kind; doc = _ } =
 
        Values, types, ... are not sensitive to [stop_before], allowing us to
        shorten the match. *)
-    match kind with Doc -> false | _ -> true
+    match kind with
+    | Doc -> false
+    | _ -> true
   in
   let url = Odoc_document.Url.from_identifier ~stop_before id in
   let config =

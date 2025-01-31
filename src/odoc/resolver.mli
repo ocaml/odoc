@@ -43,8 +43,9 @@ val create :
 (** Prepare the environment for a given list of
     {{!Fs.Directory.t} include directories}, page roots and library roots.
 
-    @param important_digests indicate whether digests should be compared when
-    odoc_xref2 tries to lookup or fetch a unit. It defaults to [true]. *)
+    @param important_digests
+      indicate whether digests should be compared when odoc_xref2 tries to
+      lookup or fetch a unit. It defaults to [true]. *)
 
 val lookup_page : t -> string -> Lang.Page.t option
 

@@ -12,12 +12,12 @@ val process_meta_file : Fpath.t -> t
     file. *)
 
 val libname_of_archive : t -> string Fpath.map
-(** [libname_of_archive meta_dir libraries] computes a map from the fully-qualified
-    archive path to the name of the library. [meta_path] is the path of the 
-    directory where the META file is found, and [libraries] are the libraries
-    defined in that META file. *)
+(** [libname_of_archive meta_dir libraries] computes a map from the
+    fully-qualified archive path to the name of the library. [meta_path] is the
+    path of the directory where the META file is found, and [libraries] are the
+    libraries defined in that META file. *)
 
 val directories : t -> Fpath.set
-(** [directories meta_dir libraries] computes a set of directories
-    containing the libraries in [libraries] defined in the META file
-    found in [meta_path]. *)
+(** [directories meta_dir libraries] computes a set of directories containing
+    the libraries in [libraries] defined in the META file found in [meta_path].
+*)

@@ -595,8 +595,7 @@ module Fmt = struct
      and in [wrap2r] we pick [p2]. If [short_paths] is not set, we
      print a string representing the constructor, and one or both paths
      with brackets. *)
-  let wrap :
-      type a.
+  let wrap : type a.
       config ->
       string ->
       (config -> Format.formatter -> a -> unit) ->
@@ -607,8 +606,7 @@ module Fmt = struct
     if c.short_paths then Format.fprintf ppf "%a" (fn c) x
     else Format.fprintf ppf "%s(%a)" txt (fn c) x
 
-  let wrap2 :
-      type a b.
+  let wrap2 : type a b.
       config ->
       string ->
       (config -> Format.formatter -> a -> unit) ->
@@ -621,8 +619,7 @@ module Fmt = struct
     if c.short_paths then Format.fprintf ppf "%a" (fn1 c) x
     else Format.fprintf ppf "%s(%a,%a)" txt (fn1 c) x (fn2 c) y
 
-  let wrap2r :
-      type a b.
+  let wrap2r : type a b.
       config ->
       string ->
       (config -> Format.formatter -> a -> unit) ->
@@ -784,8 +781,7 @@ module Fmt = struct
     in
     Format.fprintf ppf "%a%a" inner sg.items removed_fmt sg.removed
 
-  and option :
-      type a.
+  and option : type a.
       config ->
       (config -> Format.formatter -> a -> unit) ->
       Format.formatter ->
@@ -1014,7 +1010,8 @@ module Fmt = struct
   and type_decl_constructor_arg c ppf =
     let open TypeDecl.Constructor in
     function
-    | Tuple ts -> type_tuple c ppf ts | Record fs -> type_decl_fields c ppf fs
+    | Tuple ts -> type_tuple c ppf ts
+    | Record fs -> type_decl_fields c ppf fs
 
   and type_decl_field c ppf t =
     let open TypeDecl.Field in
@@ -1740,15 +1737,13 @@ end
 
 module LocalIdents = struct
   open Odoc_model
-  (** The purpose of this module is to extract identifiers
-      that could be referenced in Paths - that is, modules,
-      module types, types, classes and class types. That way
-      we can assign them an Ident.t ahead of time and be
-      self-consistent. Because we don't need _all_ of the
-      identifiers we don't traverse the entire structure.
-      Additionally, we stop at (class_)signature boundaries
-      since identifiers within these won't be referenced 
-      except within them, so we only do that on demand. *)
+  (** The purpose of this module is to extract identifiers that could be
+      referenced in Paths - that is, modules, module types, types, classes and
+      class types. That way we can assign them an Ident.t ahead of time and be
+      self-consistent. Because we don't need _all_ of the identifiers we don't
+      traverse the entire structure. Additionally, we stop at (class_)signature
+      boundaries since identifiers within these won't be referenced except
+      within them, so we only do that on demand. *)
 
   type t = {
     modules : Paths.Identifier.Module.t list;

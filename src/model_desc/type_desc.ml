@@ -1,6 +1,6 @@
-(** Runtime representation of types. It is only useful for inspecting
-    values, not types, eg. it is possible to write a generic printer but
-    not to deserialize. *)
+(** Runtime representation of types. It is only useful for inspecting values,
+    not types, eg. it is possible to write a generic printer but not to
+    deserialize. *)
 type 'a t =
   | Record : 'a field list -> 'a t
   | Variant : ('a -> case) -> 'a t

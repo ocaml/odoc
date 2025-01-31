@@ -20,7 +20,7 @@ let kind_cost = function
   | Entry.Kind.Constructor _ | Entry.Kind.Exception _ | Entry.Kind.Extension_constructor _
   | Entry.Kind.Field _ | Entry.Kind.Module | Entry.Kind.Type_decl _
   | Entry.Kind.Type_extension | Entry.Kind.Val _ ->
-    0
+      0
   | _ -> 50
 
 let rhs_cost = function
@@ -31,7 +31,7 @@ let cost_doc = function
   | Entry.Kind.Constructor _ | Entry.Kind.Exception _ | Entry.Kind.Extension_constructor _
   | Entry.Kind.Field _ | Entry.Kind.Module | Entry.Kind.Module_type
   | Entry.Kind.Type_decl _ | Entry.Kind.Type_extension ->
-    0
+      0
   | _ -> 100
 
 let cost ~name ~kind ~doc_html ~rhs ~cat ~favourite ~favoured_prefixes =
@@ -61,10 +61,8 @@ let with_tokenizer str fn =
     then flush ()
     else (
       let chr = str.[i] in
-      if (chr >= 'a' && chr <= 'z')
-         || (chr >= '0' && chr <= '9')
-         || chr = '_'
-         || chr = '@'
+      if
+        (chr >= 'a' && chr <= 'z') || (chr >= '0' && chr <= '9') || chr = '_' || chr = '@'
       then Buffer.add_char buf chr
       else flush () ;
       go (i + 1))
@@ -82,19 +80,19 @@ let searchable_type_of_constructor args res =
   let open Odoc_model.Lang in
   match args with
   | TypeDecl.Constructor.Tuple args -> begin
-    match args with
-    | _ :: _ :: _ -> TypeExpr.(Arrow (None, Tuple args, res))
-    | [ arg ] -> TypeExpr.(Arrow (None, arg, res))
-    | _ -> res
-  end
+      match args with
+      | _ :: _ :: _ -> TypeExpr.(Arrow (None, Tuple args, res))
+      | [ arg ] -> TypeExpr.(Arrow (None, arg, res))
+      | _ -> res
+    end
   | TypeDecl.Constructor.Record fields ->
-    List.fold_left
-      (fun res field ->
-        let open TypeDecl.Field in
-        let field_name = Odoc_model.Paths.Identifier.name field.id in
-        TypeExpr.Arrow (Some (Label field_name), field.type_, res))
-      res
-      fields
+      List.fold_left
+        (fun res field ->
+           let open TypeDecl.Field in
+           let field_name = Odoc_model.Paths.Identifier.name field.id in
+           TypeExpr.Arrow (Some (Label field_name), field.type_, res))
+        res
+        fields
 
 let searchable_type_of_record parent_type type_ =
   Odoc_model.Lang.TypeExpr.Arrow (None, parent_type, type_)
@@ -103,24 +101,24 @@ let convert_kind ~db (Odoc_index.Entry.{ kind; _ } as entry) =
   match kind with
   | TypeDecl _ -> Entry.Kind.Type_decl (Odoc_search.Html.typedecl_params_of_entry entry)
   | Value { value = _; type_ } ->
-    let typ = Db_writer.type_of_odoc ~db type_ in
-    Entry.Kind.Val typ
+      let typ = Db_writer.type_of_odoc ~db type_ in
+      Entry.Kind.Val typ
   | Constructor { args; res } ->
-    let typ = searchable_type_of_constructor args res in
-    let typ = Db_writer.type_of_odoc ~db typ in
-    Entry.Kind.Constructor typ
+      let typ = searchable_type_of_constructor args res in
+      let typ = Db_writer.type_of_odoc ~db typ in
+      Entry.Kind.Constructor typ
   | ExtensionConstructor { args; res } ->
-    let typ = searchable_type_of_constructor args res in
-    let typ = Db_writer.type_of_odoc ~db typ in
-    Entry.Kind.Extension_constructor typ
+      let typ = searchable_type_of_constructor args res in
+      let typ = Db_writer.type_of_odoc ~db typ in
+      Entry.Kind.Extension_constructor typ
   | Exception { args; res } ->
-    let typ = searchable_type_of_constructor args res in
-    let typ = Db_writer.type_of_odoc ~db typ in
-    Entry.Kind.Exception typ
+      let typ = searchable_type_of_constructor args res in
+      let typ = Db_writer.type_of_odoc ~db typ in
+      Entry.Kind.Exception typ
   | Field { mutable_ = _; parent_type; type_ } ->
-    let typ = searchable_type_of_record parent_type type_ in
-    let typ = Db_writer.type_of_odoc ~db typ in
-    Entry.Kind.Field typ
+      let typ = searchable_type_of_record parent_type type_ in
+      let typ = Db_writer.type_of_odoc ~db typ in
+      Entry.Kind.Field typ
   | Doc -> Doc
   | Dir -> Doc
   | Page _ -> Doc
@@ -151,30 +149,30 @@ let rec categorize id =
   | ( `InstanceVariable _ | `Method _ | `Field _ | `Result _ | `Label _ | `Type _
     | `Exception _ | `Class _ | `ClassType _ | `Value _ | `Constructor _ | `Extension _
     | `ExtensionDecl _ | `Module _ ) as x ->
-    let parent = Identifier.label_parent { id with iv = x } in
-    categorize (parent :> Identifier.Any.t)
+      let parent = Identifier.label_parent { id with iv = x } in
+      categorize (parent :> Identifier.Any.t)
   | `AssetFile _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
   | `SourceLocationInternal _ ->
-    `ignore (* unclear what to do with those *)
+      `ignore (* unclear what to do with those *)
 
 let categorize Odoc_index.Entry.{ id; _ } =
   match id.iv with
   | `ModuleType (parent, _) ->
-    (* A module type itself is not *from* a module type, but it might be if one
+      (* A module type itself is not *from* a module type, but it might be if one
        of its parents is a module type. *)
-    categorize (parent :> Odoc_model.Paths.Identifier.Any.t)
+      categorize (parent :> Odoc_model.Paths.Identifier.Any.t)
   | _ -> categorize id
 
 let register_entry
-  ~db
-  ~index_name
-  ~type_search
-  ~index_docstring
-  ~favourite
-  ~favoured_prefixes
-  ~pkg
-  ~cat
-  (Odoc_index.Entry.{ id; doc; kind } as entry)
+      ~db
+      ~index_name
+      ~type_search
+      ~index_docstring
+      ~favourite
+      ~favoured_prefixes
+      ~pkg
+      ~cat
+      (Odoc_index.Entry.{ id; doc; kind } as entry)
   =
   let module Sherlodoc_entry = Entry in
   let open Odoc_search in
@@ -195,14 +193,14 @@ let register_entry
   if type_search then register_kind ~db elt
 
 let register_entry
-  ~db
-  ~index_name
-  ~type_search
-  ~index_docstring
-  ~favourite
-  ~favoured_prefixes
-  ~pkg
-  (Odoc_index.Entry.{ id; kind; _ } as entry)
+      ~db
+      ~index_name
+      ~type_search
+      ~index_docstring
+      ~favourite
+      ~favoured_prefixes
+      ~pkg
+      (Odoc_index.Entry.{ id; kind; _ } as entry)
   =
   let cat = categorize entry in
   let is_pure_documentation =

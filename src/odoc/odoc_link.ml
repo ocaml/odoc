@@ -37,10 +37,10 @@ let content_for_hidden_modules =
   [
     Comment
       (`Docs
-        {
-          elements = [ with_loc @@ `Paragraph (List.map with_loc sentence) ];
-          suppress_warnings = true;
-        });
+         {
+           elements = [ with_loc @@ `Paragraph (List.map with_loc sentence) ];
+           suppress_warnings = true;
+         });
   ]
 
 let link_unit ~resolver ~filename m =
@@ -71,8 +71,8 @@ let handle_warnings ~input_warnings ~warnings_options ww =
   Odoc_model.Error.handle_warnings ~warnings_options ww >>= fun res ->
   Ok (res, input_warnings @ warnings)
 
-(** Read the input file and write to the output file.
-    Also return the resulting tree. *)
+(** Read the input file and write to the output file. Also return the resulting
+    tree. *)
 let from_odoc ~resolver ~warnings_options input output =
   let filename = Fs.File.to_string input in
   Odoc_file.load input >>= fun unit ->

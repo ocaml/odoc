@@ -1,8 +1,7 @@
 (** Raw latex primitives:
     - macro definitions
     - env defitions
-    - text escaping
-*)
+    - text escaping *)
 
 type pr = Format.formatter -> unit
 

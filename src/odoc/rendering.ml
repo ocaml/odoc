@@ -23,13 +23,13 @@ let document_of_odocl ~syntax input =
   | Impl_content _ ->
       Error
         (`Msg
-          "Wrong kind of unit: Expected a page or module unit, got an \
-           implementation. Use the dedicated command for implementation.")
+           "Wrong kind of unit: Expected a page or module unit, got an \
+            implementation. Use the dedicated command for implementation.")
   | Asset_content _ ->
       Error
         (`Msg
-          "Wrong kind of unit: Expected a page or module unit, got an asset \
-           unit. Use the dedicated command for assets.")
+           "Wrong kind of unit: Expected a page or module unit, got an asset \
+            unit. Use the dedicated command for assets.")
 
 let document_of_input ~resolver ~warnings_options ~syntax input =
   let output = Fs.File.(set_ext ".odocl" input) in
@@ -39,13 +39,13 @@ let document_of_input ~resolver ~warnings_options ~syntax input =
   | `Impl _ ->
       Error
         (`Msg
-          "Wrong kind of unit: Expected a page or module unit, got an \
-           implementation. Use the dedicated command for implementation.")
+           "Wrong kind of unit: Expected a page or module unit, got an \
+            implementation. Use the dedicated command for implementation.")
   | `Asset _ ->
       Error
         (`Msg
-          "Wrong kind of unit: Expected a page or module unit, got an asset \
-           unit. Use the dedicated command for assets.")
+           "Wrong kind of unit: Expected a page or module unit, got an asset \
+            unit. Use the dedicated command for assets.")
 
 let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
     =

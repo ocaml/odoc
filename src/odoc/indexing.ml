@@ -113,7 +113,9 @@ let compile out_format ~output ~warnings_options ~occurrences ~roots
       List.sort (fun (i, _) (j, _) -> compare i j) groups |> List.map snd
     in
     (* Files given without [--root] are grouped together *)
-    match files with _ :: _ -> files :: root_groups | [] -> root_groups
+    match files with
+    | _ :: _ -> files :: root_groups
+    | [] -> root_groups
   in
   let hierarchies =
     (* For each group, we create a hierarchy. *)
