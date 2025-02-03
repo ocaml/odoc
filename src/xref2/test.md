@@ -618,7 +618,7 @@ we look up `A` from the environment:
   let sg = get_ok @@ Tools.expansion_of_module env (Component.Delayed.get m) in
   Tools.prefix_signature (`Module p, sg);;
 Line 4, characters 38-40:
-Error: This expression has type Tools.expansion
+Error: The value sg has type Tools.expansion
        but an expression was expected of type Component.Signature.t
 ```
 

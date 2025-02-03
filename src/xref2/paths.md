@@ -581,10 +581,14 @@ val sg : Odoc_model.Lang.Signature.t =
                                  ihash = 818126955;
                                  ikey =
                                   "r_Root.p"... (* string length 13; truncated *)},
-                                ...);
-                            ihash = ...; ikey = ...};
-                        ihash = ...; ikey = ...},
-                       ...);
+                                F);
+                            ihash = 748202139;
+                            ikey =
+                             "m_F.r_Ro"... (* string length 17; truncated *)};
+                        ihash = 709672416;
+                        ikey =
+                         "___resul"... (* string length 29; truncated *)},
+                       N);
                    ihash = ...; ikey = ...};
                  source_loc = ...; doc = ...; type_ = ...; canonical = ...;
                  hidden = ...});
