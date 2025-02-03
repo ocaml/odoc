@@ -1,3 +1,9 @@
+# Unreleased
+
+### Changed
+
+- Drop support for OCaml < 4.08 (@jonludlam, #1300)
+
 # 3.0.0~beta1
 
 ### Highlight
