@@ -6,7 +6,7 @@
 
 open Odoc_driver_lib
 
-let run path extra_pkgs extra_libs
+let real_run ~odoc_dir ~odocl_dir ~index_dir ~mld_dir path extra_pkgs extra_libs
     {
       Common_args.verbose;
       html_dir;
@@ -16,16 +16,12 @@ let run path extra_pkgs extra_libs
       odoc_md_bin;
       generate_json;
       _;
-    } =
+    } () =
   Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
   Option.iter
     (fun odoc_md_bin -> Odoc.odoc_md := Bos.Cmd.v odoc_md_bin)
     odoc_md_bin;
 
-  let odoc_dir = Fpath.v "_odoc" in
-  let odocl_dir = Fpath.v "_odocl" in
-  let mld_dir = Fpath.v "_mld" in
-  let index_dir = Fpath.v "_index" in
   let _ = Voodoo.find_universe_and_version "foo" in
   Eio_main.run @@ fun env ->
   Eio.Switch.run @@ fun sw ->
@@ -86,6 +82,10 @@ let run path extra_pkgs extra_libs
 
   if stats then Stats.bench_results html_dir
 
+let run dirs path extra_pkgs extra_libs common : unit =
+  let fn = real_run path extra_pkgs extra_libs common in
+  Common_args.with_dirs dirs fn
+
 open Cmdliner
 
 let path =
@@ -106,7 +106,10 @@ let extra_libs =
 let cmd =
   let doc = "Generate documentation from a dune monorepo" in
   let info = Cmd.info "odoc_driver_monorepo" ~doc in
+  let module A = Common_args in
   Cmd.v info
-    Term.(const run $ path $ extra_pkgs $ extra_libs $ Common_args.term)
+    Term.(
+      const run $ A.dirs_term $ path $ extra_pkgs $ extra_libs
+      $ Common_args.term)
 
 let _ = exit (Cmd.eval cmd)

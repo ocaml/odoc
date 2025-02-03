@@ -4,6 +4,11 @@ open Bos
 module StringSet = Set.Make (String)
 module StringMap = Map.Make (String)
 
+let with_dir dir pat f =
+  match dir with
+  | None -> OS.Dir.with_tmp pat f () |> Result.get_ok
+  | Some dir -> f dir ()
+
 let lines_of_channel ic =
   let rec inner acc =
     try
