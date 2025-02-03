@@ -15,12 +15,12 @@ doc: "https://ocaml.github.io/odoc/odoc_parser"
 flags: [ avoid-version ]
 depends: [
   "dune" {>= "3.7"}
-  "ocaml" {>= "4.02.0" & < "5.4"}
+  "ocaml" {>= "4.08.0" & < "5.4"}
   "astring"
   "result"
   "camlp-streams"
   "ppx_expect" {with-test}
-  ("ocaml" {< "4.04.1" & with-test} | "sexplib0" {with-test})
+  "sexplib0" {with-test}
 ]
 build: [
   ["dune" "subst"] {dev}
