@@ -1,11 +1,6 @@
 (* Odoc driver *)
 open Odoc_driver_lib
 
-let with_dir dir pat f =
-  match dir with
-  | None -> Bos.OS.Dir.with_tmp pat f () |> Result.get_ok
-  | Some dir -> f dir ()
-
 let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
     ~generate_grep ~index_grep ~remap ~index_mld packages
     {
@@ -17,7 +12,7 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
       odoc_md_bin;
       generate_json;
       _;
-    } =
+    } () =
   Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
   Option.iter
     (fun odoc_md_bin -> Odoc.odoc_md := Bos.Cmd.v odoc_md_bin)
@@ -135,37 +130,15 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
 
   if stats then Stats.bench_results html_dir
 
-let run odoc_dir odocl_dir index_dir mld_dir compile_grep link_grep
-    generate_grep index_grep remap packages index_mld common () =
-  with_dir odoc_dir "odoc-%s" @@ fun odoc_dir () ->
-  with_dir odocl_dir "odocl-%s" @@ fun odocl_dir () ->
-  with_dir index_dir "index-%s" @@ fun index_dir () ->
-  with_dir mld_dir "mld-%s" @@ fun mld_dir () ->
-  let () =
-    run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
-      ~generate_grep ~index_grep ~remap ~index_mld packages common
+let run dirs compile_grep link_grep generate_grep index_grep remap packages
+    index_mld common : unit =
+  let fn =
+    run_inner ~compile_grep ~link_grep ~generate_grep ~index_grep ~remap
+      ~index_mld packages common
   in
-  ()
+  Common_args.with_dirs dirs fn
 
 open Cmdliner
-
-let odoc_dir =
-  let doc = "Directory in which the intermediate odoc files go" in
-  Arg.(value & opt (some Common_args.fpath_arg) None & info [ "odoc-dir" ] ~doc)
-
-let odocl_dir =
-  let doc = "Directory in which the intermediate odocl files go" in
-  Arg.(
-    value & opt (some Common_args.fpath_arg) None & info [ "odocl-dir" ] ~doc)
-
-let index_dir =
-  let doc = "Directory in which the intermediate index files go" in
-  Arg.(
-    value & opt (some Common_args.fpath_arg) None & info [ "index-dir" ] ~doc)
-
-let mld_dir =
-  let doc = "Directory in which the auto-generated mld files go" in
-  Arg.(value & opt (some Common_args.fpath_arg) None & info [ "mld-dir" ] ~doc)
 
 let compile_grep =
   let doc = "Show compile commands containing the string" in
@@ -212,10 +185,10 @@ let index_mld =
     & info [ "index-mld" ] ~docv:"INDEX" ~doc)
 
 let cmd_term =
+  let module A = Common_args in
   Term.(
-    const run $ odoc_dir $ odocl_dir $ index_dir $ mld_dir $ compile_grep
-    $ link_grep $ generate_grep $ index_grep $ remap $ packages $ index_mld
-    $ Common_args.term $ const ())
+    const run $ A.dirs_term $ compile_grep $ link_grep $ generate_grep
+    $ index_grep $ remap $ packages $ index_mld $ Common_args.term)
 
 let cmd =
   let doc =

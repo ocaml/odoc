@@ -46,6 +46,22 @@ let generate_json =
   Arg.(
     value & flag & info [ "json-output" ] ~doc ~docs:Manpage.s_common_options)
 
+let odoc_dir =
+  let doc = "Directory in which the intermediate odoc files go" in
+  Arg.(value & opt (some fpath_arg) None & info [ "odoc-dir" ] ~doc)
+
+let odocl_dir =
+  let doc = "Directory in which the intermediate odocl files go" in
+  Arg.(value & opt (some fpath_arg) None & info [ "odocl-dir" ] ~doc)
+
+let index_dir =
+  let doc = "Directory in which the intermediate index files go" in
+  Arg.(value & opt (some fpath_arg) None & info [ "index-dir" ] ~doc)
+
+let mld_dir =
+  let doc = "Directory in which the auto-generated mld files go" in
+  Arg.(value & opt (some fpath_arg) None & info [ "mld-dir" ] ~doc)
+
 type t = {
   verbose : bool;
   html_dir : Fpath.t;
@@ -56,10 +72,35 @@ type t = {
   generate_json : bool;
 }
 
+type dirs = {
+  odoc_dir : Fpath.t option;
+  odocl_dir : Fpath.t option;
+  mld_dir : Fpath.t option;
+  index_dir : Fpath.t option;
+}
+
+let with_dirs dirs fn : unit =
+  let with_dir = Util.with_dir in
+  let { odoc_dir; odocl_dir; mld_dir; index_dir } = dirs in
+  with_dir odoc_dir "odoc-%s" @@ fun odoc_dir () ->
+  with_dir odocl_dir "odocl-%s" @@ fun odocl_dir () ->
+  with_dir index_dir "index-%s" @@ fun index_dir () ->
+  with_dir mld_dir "mld-%s" @@ fun mld_dir () ->
+  fn ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ()
+
+open Term
+
+let ( let+ ) t f = const f $ t
+let ( and+ ) a b = const (fun x y -> (x, y)) $ a $ b
+
+let dirs_term =
+  let+ odoc_dir = odoc_dir
+  and+ odocl_dir = odocl_dir
+  and+ mld_dir = mld_dir
+  and+ index_dir = index_dir in
+  { odoc_dir; odocl_dir; mld_dir; index_dir }
+
 let term =
-  let open Term in
-  let ( let+ ) t f = const f $ t in
-  let ( and+ ) a b = const (fun x y -> (x, y)) $ a $ b in
   let+ verbose = verbose
   and+ html_dir = html_dir
   and+ stats = stats
