@@ -102,11 +102,15 @@ let of_dune_build dir ~extra_pkgs ~extra_libs =
       let all_lib_deps =
         List.fold_left
           (fun acc (l : library) ->
+            let libs =
+              List.filter_map (fun uid -> Util.StringMap.find_opt uid uid_to_libname)
+              l.requires
+            in
+            let libs =
+              if l.name = "stdlib" then libs else "stdlib"::libs
+            in
             Util.StringMap.add l.name
-              ("stdlib"
-               :: List.filter_map
-                    (fun uid -> Util.StringMap.find_opt uid uid_to_libname)
-                    l.requires
+              (libs
               |> Util.StringSet.of_list)
               acc)
           Util.StringMap.empty (local_libs @ global_libs)
