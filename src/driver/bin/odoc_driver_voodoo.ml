@@ -7,6 +7,63 @@ open Odoc_driver_lib
 
 type action_mode = CompileOnly | LinkAndGen | All
 
+let generate_status ~html_dir pkg =
+  let redirections =
+    let redirections = Hashtbl.create 10 in
+    let create_redirection old_path new_path =
+      if Bos.OS.File.exists old_path |> Result.get_ok then ()
+      else
+        let pkg_dir = Fpath.( // ) html_dir (Odoc_unit.pkg_dir pkg) in
+        Hashtbl.add redirections
+          (Fpath.rem_prefix pkg_dir old_path |> Option.get)
+          (Fpath.rem_prefix pkg_dir new_path |> Option.get)
+    in
+    List.iter
+      (fun lib ->
+        let lib_dir = Odoc_unit.lib_dir pkg lib in
+        let lib_dir = Fpath.( // ) html_dir lib_dir in
+        let old_lib_dir = Fpath.(html_dir // Odoc_unit.pkg_dir pkg / "doc") in
+        Bos.OS.Dir.fold_contents
+          ~elements:(`Sat (fun x -> Ok (Fpath.has_ext "html" x)))
+          (fun path () ->
+            match Fpath.rem_prefix lib_dir path with
+            | None -> ()
+            | Some suffix ->
+                let old_path = Fpath.(old_lib_dir // suffix) in
+                create_redirection old_path path)
+          () lib_dir
+        |> function
+        | Ok e -> e
+        | Error _ -> ())
+      pkg.Packages.libraries;
+    redirections
+  in
+  let status =
+    let failed = `Bool false in
+    let files = `List [] in
+    let redirections =
+      Hashtbl.fold
+        (fun old_path new_path acc ->
+          `Assoc
+            [
+              ("old_path", `String (Fpath.to_string old_path));
+              ("new_path", `String (Fpath.to_string new_path));
+            ]
+          :: acc)
+        redirections []
+    in
+    let redirections = `List redirections in
+    `Assoc
+      [ ("files", files); ("failed", failed); ("redirections", redirections) ]
+  in
+  let status = Yojson.Safe.pretty_to_string status in
+  let status_path = Fpath.(html_dir // Odoc_unit.pkg_dir pkg / "status.json") in
+  match Bos.OS.File.write status_path status with
+  | Ok () -> ()
+  | Error (`Msg msg) ->
+      Logs.err (fun m ->
+          m "Error when generating status.json for %s: %s" pkg.name msg)
+
 let run package_name blessed actions odoc_dir odocl_dir
     { Common_args.verbose; html_dir; nb_workers; odoc_bin; odoc_md_bin; _ } =
   Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
@@ -42,8 +99,8 @@ let run package_name blessed actions odoc_dir odocl_dir
       let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
       { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir }
     in
-    Odoc_units_of.packages ~dirs ~indices_style:Odoc_units_of.Voodoo
-      ~extra_paths ~remap:false all
+    Odoc_units_of.packages ~dirs ~indices_style:Voodoo ~extra_paths ~remap:false
+      all
   in
   Compile.init_stats units;
   let compiled =
@@ -68,6 +125,7 @@ let run package_name blessed actions odoc_dir odocl_dir
           Compile.html_generate ~occurrence_file ~remaps:[] ~generate_json
             ~simplified_search_output:true html_dir linked
         in
+        List.iter (generate_status ~html_dir) all;
         let _ = Odoc.support_files html_dir in
         ()
   in
