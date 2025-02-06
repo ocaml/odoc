@@ -601,7 +601,7 @@ and read_structure :
       | Tstr_attribute attr -> Some (`Attribute attr)
       | _ -> None
     in
-    Doc_attr.extract_top_comment internal_tags ~classify parent str.str_items
+    Doc_attr.extract_top_comment internal_tags ~suppress_warnings:env.suppress_warnings ~classify parent str.str_items
   in
   let items =
     List.fold_left
