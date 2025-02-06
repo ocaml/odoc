@@ -17,7 +17,7 @@
 open Odoc_model
 module Paths = Odoc_model.Paths
 
-val empty : Odoc_model.Comment.docs
+val empty : bool -> Odoc_model.Comment.docs
 
 val is_stop_comment : Parsetree.attribute -> bool
 
@@ -61,6 +61,7 @@ val standalone_multiple :
 
 val extract_top_comment :
   'tags Semantics.handle_internal_tags ->
+  suppress_warnings:bool ->
   classify:('item -> [ `Attribute of Parsetree.attribute | `Open ] option) ->
   Paths.Identifier.Signature.t ->
   'item list ->

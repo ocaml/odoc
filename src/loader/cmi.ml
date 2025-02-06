@@ -31,7 +31,7 @@ type env = {
   suppress_warnings : bool;  (** suppress warnings *)
 }
 
-let empty_doc = { Odoc_model.Comment.elements = []; suppress_warnings = false }
+let empty_doc env = { Odoc_model.Comment.elements = []; suppress_warnings = env.suppress_warnings }
 
 module Compat = struct
 #if OCAML_VERSION >= (4, 14, 0)
@@ -547,7 +547,7 @@ and read_row env _px row =
       let elements =
         List.map
           (fun (name, f) ->
-            let doc = empty_doc in
+            let doc = empty_doc env in
             match Compat.row_field_repr f with
               | Rpresent None ->
                 Constructor {name; constant = true; arguments = []; doc}
@@ -748,7 +748,7 @@ let read_class_constraints env params =
   let open ClassSignature in
   read_type_constraints env params
   |> List.map (fun (left, right) ->
-         Constraint { Constraint.left; right; doc = empty_doc })
+         Constraint { Constraint.left; right; doc = empty_doc env })
 
 let read_type_declaration env parent id decl =
   let open TypeDecl in
@@ -806,7 +806,7 @@ let read_extension_constructor env parent id ext =
 let read_type_extension env parent id ext rest =
   let open Extension in
   let type_path = Env.Path.read_type env.ident_env ext.ext_type_path in
-  let doc = Doc_attr.empty in
+  let doc = Doc_attr.empty env.suppress_warnings in
   let type_params = mark_type_extension' ext rest in
   let first = read_extension_constructor env parent id ext in
   let rest =
@@ -840,7 +840,7 @@ let read_exception env parent id ext =
 let read_method env parent concrete (name, kind, typ) =
   let open Method in
   let id = Identifier.Mk.method_(parent, Odoc_model.Names.MethodName.make_std name) in
-  let doc = Doc_attr.empty in
+  let doc = Doc_attr.empty env.suppress_warnings in
   let private_ = (Compat.field_kind_repr kind) <> Compat.field_public in
   let virtual_ = not (Compat.concr_mem name concrete) in
   let type_ = read_type_expr env typ in
@@ -849,7 +849,7 @@ let read_method env parent concrete (name, kind, typ) =
 let read_instance_variable env parent (name, mutable_, virtual_, typ) =
   let open InstanceVariable in
   let id = Identifier.Mk.instance_variable(parent, Odoc_model.Names.InstanceVariableName.make_std name) in
-  let doc = Doc_attr.empty in
+  let doc = Doc_attr.empty env.suppress_warnings in
   let mutable_ = (mutable_ = Mutable) in
   let virtual_ = (virtual_ = Virtual) in
   let type_ = read_type_expr env typ in
@@ -894,7 +894,7 @@ let rec read_class_signature env parent params =
         List.map (read_method env parent (Compat.csig_concr csig)) methods
       in
       let items = constraints @ instance_variables @ methods in
-      Signature {self; items; doc = empty_doc}
+      Signature {self; items; doc = empty_doc env}
   | Cty_arrow _ -> assert false
 
 let rec read_virtual = function
@@ -1167,7 +1167,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     | Sig_class_type _ :: _
     | Sig_class _ :: _ -> assert false
 
-    | [] -> ({items = List.rev acc; compiled=false; removed = []; doc = empty_doc }, shadowed)
+    | [] -> ({items = List.rev acc; compiled=false; removed = []; doc = empty_doc env }, shadowed)
   in
     loop ([],{s_modules=[]; s_module_types=[]; s_values=[];s_types=[]; s_classes=[]; s_class_types=[]}) items
 
