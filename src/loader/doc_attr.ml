@@ -29,9 +29,9 @@ let read_location { Location.loc_start; loc_end; _ } =
     end_ = point_of_pos loc_end;
   }
 
-let empty_body = { Comment.elements = []; suppress_warnings = false }
+let empty_body suppress_warnings = { Comment.elements = []; suppress_warnings }
 
-let empty : Odoc_model.Comment.docs = empty_body
+let empty suppress_warnings : Odoc_model.Comment.docs = empty_body suppress_warnings
 
 let load_constant_string = function
   | {Parsetree.pexp_desc =
@@ -202,7 +202,7 @@ let split_docs docs =
   in
   inner [] docs
 
-let extract_top_comment internal_tags ~classify parent items =
+let extract_top_comment internal_tags ~suppress_warnings ~classify parent items =
   let classify x =
     match classify x with
     | Some (`Attribute attr) -> (
@@ -255,8 +255,8 @@ let extract_top_comment internal_tags ~classify parent items =
   in
   let d1, d2 = split_docs docs in
   ( items,
-    ( { Comment.elements = d1; suppress_warnings = false },
-      { Comment.elements = d2; suppress_warnings = false } ),
+    ( { Comment.elements = d1; suppress_warnings },
+      { Comment.elements = d2; suppress_warnings } ),
     tags )
 
 let extract_top_comment_class items =
