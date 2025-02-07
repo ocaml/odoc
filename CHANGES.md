@@ -10,6 +10,10 @@
 
 - Fix bug causing stack overflow in odoc_driver_monorepo (@jonludlam, #1304)
 
+### Fixed
+
+- Fix incomplete handling of `--suppress-warnings` (@jonludlam, #1304)
+
 # 3.0.0~beta1
 
 ### Highlight
