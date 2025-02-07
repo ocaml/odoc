@@ -6,6 +6,12 @@ val render :
 
 val filepath : config:Config.t -> Odoc_document.Url.Path.t -> Fpath.t
 
+val items :
+  config:Config.t ->
+  resolve:Link.resolve ->
+  Odoc_document.Types.Item.t list ->
+  Html_types.flow5_without_header_footer Tyxml.Html.elt list
+
 val doc :
   config:Config.t ->
   xref_base_uri:string ->
