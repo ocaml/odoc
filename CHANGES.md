@@ -18,6 +18,10 @@
 - Fix poor behaviour when running odoc_driver with unknown or missing packages
   (@jonludlam, #1311)
 
+### Fixed
+
+- Fix incomplete handling of `--suppress-warnings` (@jonludlam, #1304)
+
 # 3.0.0~beta1
 
 ### Highlight
