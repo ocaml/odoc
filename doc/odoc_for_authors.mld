@@ -470,6 +470,7 @@ This is useful if the module name is ambiguous, e.g., if there are two modules [
 You may need to add the library to the per-package config file.
 - [odoc3]: [ {!/package/path/to/page-foo} ] - this is a path to a page [foo] in the package [package].
 The package will need to be added to the per-package config file.
+- [odoc3]: [ {!//path/to/page-foo} ] - this is a path to a page [foo] in the {i current} package.
 
 The prefixes supported are:
 - [module]
