@@ -256,7 +256,7 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
               Env.add_module
                 (m.id :> Paths.Identifier.Path.Module.t)
                 ty
-                { elements = []; suppress_warnings = false }
+                { elements = []; warnings_tag = None }
                 env
             in
             let env =

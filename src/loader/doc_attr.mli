@@ -17,19 +17,19 @@
 open Odoc_model
 module Paths = Odoc_model.Paths
 
-val empty : bool -> Odoc_model.Comment.docs
+val empty : string option -> Odoc_model.Comment.docs
 
 val is_stop_comment : Parsetree.attribute -> bool
 
 val attached :
-  suppress_warnings:bool ->
+  warnings_tag:string option ->
   'tags Semantics.handle_internal_tags ->
   Paths.Identifier.LabelParent.t ->
   Parsetree.attributes ->
   Odoc_model.Comment.docs * 'tags
 
 val attached_no_tag :
-  suppress_warnings:bool ->
+  warnings_tag:string option ->
   Paths.Identifier.LabelParent.t ->
   Parsetree.attributes ->
   Odoc_model.Comment.docs
@@ -49,19 +49,19 @@ val page :
 
 val standalone :
   Paths.Identifier.LabelParent.t ->
-  suppress_warnings:bool ->
+  warnings_tag:string option ->
   Parsetree.attribute ->
   Odoc_model.Comment.docs_or_stop option
 
 val standalone_multiple :
   Paths.Identifier.LabelParent.t ->
-  suppress_warnings:bool ->
+  warnings_tag:string option ->
   Parsetree.attributes ->
   Odoc_model.Comment.docs_or_stop list
 
 val extract_top_comment :
   'tags Semantics.handle_internal_tags ->
-  suppress_warnings:bool ->
+  warnings_tag:string option ->
   classify:('item -> [ `Attribute of Parsetree.attribute | `Open ] option) ->
   Paths.Identifier.Signature.t ->
   'item list ->

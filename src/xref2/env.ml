@@ -169,8 +169,16 @@ type t = {
   ambiguous_labels : Component.Element.label amb_err Identifier.Maps.Label.t;
   resolver : resolver option;
   recorder : recorder option;
+  warnings_tags : string list;
   fragmentroot : (int * Component.Signature.t) option;
 }
+
+let should_suppress_warnings env opt =
+  match opt with
+  | None -> false
+  | Some x -> not (List.mem x env.warnings_tags) (* Suppress warnings unless the tag is in the list *)
+
+let set_warnings_tags env tags = { env with warnings_tags = tags }
 
 let is_linking env = env.linking
 
@@ -205,6 +213,7 @@ let empty =
     resolver = None;
     recorder = None;
     ambiguous_labels = Identifier.Maps.Label.empty;
+    warnings_tags = [];
     fragmentroot = None;
   }
 
@@ -373,7 +382,7 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
           {
             id;
             source_loc = None;
-            doc = { elements = []; suppress_warnings = false };
+            doc = { elements = []; warnings_tag = None };
             type_ = ModuleType (Signature s);
             canonical = unit.canonical;
             hidden = unit.hidden;
@@ -387,7 +396,7 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
           {
             id;
             source_loc = None;
-            doc = { elements = []; suppress_warnings = false };
+            doc = { elements = []; warnings_tag = None };
             type_ =
               ModuleType
                 (Signature
@@ -395,7 +404,7 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
                      items = [];
                      compiled = true;
                      removed = [];
-                     doc = { elements = []; suppress_warnings = false };
+                     doc = { elements = []; warnings_tag = None };
                    });
             canonical = unit.canonical;
             hidden = unit.hidden;
@@ -650,7 +659,7 @@ let mk_functor_parameter module_type =
   Component.Module.
     {
       source_loc = None;
-      doc = { elements = []; suppress_warnings = false };
+      doc = { elements = []; warnings_tag = None };
       type_;
       canonical = None;
       hidden = false;
@@ -668,7 +677,7 @@ let add_functor_parameter : Lang.FunctorParameter.t -> t -> t =
       in
       add_module id
         (Component.Delayed.put_val m)
-        { elements = []; suppress_warnings = false }
+        { elements = []; warnings_tag = None }
         t
 
 let add_functor_args' :

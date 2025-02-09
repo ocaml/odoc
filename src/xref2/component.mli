@@ -436,7 +436,7 @@ and CComment : sig
 
   type docs = {
     elements : block_element Odoc_model.Comment.with_location list;
-    suppress_warnings : bool;
+    warnings_tag : string option;
   }
 
   type docs_or_stop = [ `Docs of docs | `Stop ]

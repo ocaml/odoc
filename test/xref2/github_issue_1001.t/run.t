@@ -10,7 +10,7 @@ We should have an 'Optional' argument (as opposed to a 'RawOptional' one)
   {
     "id": { "`Value": [ { "`Root": [ "None", "Test" ] }, "f" ] },
     "source_loc": "None",
-    "doc": { "elements": [], "suppress_warnings": "false" },
+    "doc": { "elements": [], "warnings_tag": "None" },
     "type_": {
       "Arrow": [
         { "Some": { "Optional": "optional" } },
@@ -33,7 +33,7 @@ Harder case contains a "RawOptional":
   {
     "id": { "`Value": [ { "`Root": [ "None", "Test" ] }, "g" ] },
     "source_loc": "None",
-    "doc": { "elements": [], "suppress_warnings": "false" },
+    "doc": { "elements": [], "warnings_tag": "None" },
     "type_": {
       "Arrow": [
         { "Some": { "RawOptional": "optional" } },

@@ -29,7 +29,7 @@ resolve correctly. All of the 'Class' json objects should contain
     "source_loc": "None",
     "doc": {
       "elements": [],
-      "suppress_warnings": "false"
+      "warnings_tag": "None"
     },
     "type_": {
       "Class": [
@@ -69,7 +69,7 @@ resolve correctly. All of the 'Class' json objects should contain
     "source_loc": "None",
     "doc": {
       "elements": [],
-      "suppress_warnings": "false"
+      "warnings_tag": "None"
     },
     "type_": {
       "Class": [

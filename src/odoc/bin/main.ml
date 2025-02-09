@@ -142,15 +142,15 @@ let warnings_options =
     let env = Arg.env_var "ODOC_ENABLE_MISSING_ROOT_WARNING" ~doc in
     Arg.(value & flag & info ~docs ~doc ~env [ "enable-missing-root-warning" ])
   in
-  let suppress_warnings =
+  let warnings_tag =
     let doc =
-      "Suppress warnings. This is useful when you want to declare that \
+      "Warnings tag. This is useful when you want to declare that \
        warnings that would be generated resolving the references defined in \
        this unit should be ignored if they end up in expansions in other \
-       units."
+       units. When linking, only warnings with specified tags are reported."
     in
-    let env = Arg.env_var "ODOC_SUPPRESS_WARNINGS" ~doc in
-    Arg.(value & flag & info ~docs ~doc ~env [ "suppress-warnings" ])
+    let env = Arg.env_var "ODOC_WARNINGS_TAG" ~doc in
+    Arg.(value & opt (some string) None & info ~docs ~doc ~env [ "warnings-tag" ])
   in
   Term.(
     const
@@ -158,13 +158,13 @@ let warnings_options =
         warn_error
         print_warnings
         enable_missing_root_warning
-        suppress_warnings
+        warnings_tag
       ->
         Odoc_model.Error.enable_missing_root_warning :=
           enable_missing_root_warning;
-        { Odoc_model.Error.warn_error; print_warnings; suppress_warnings })
+        { Odoc_model.Error.warn_error; print_warnings; warnings_tag })
     $ warn_error $ print_warnings $ enable_missing_root_warning
-    $ suppress_warnings)
+    $ warnings_tag)
 
 let dst ?create () =
   let doc = "Output directory where the HTML tree is expected to be saved." in
@@ -714,8 +714,16 @@ end = struct
     let detected_package = find_root_of_input page_roots input in
     validate_current_package ?detected_package page_roots current_package
 
+  let warnings_tags =
+    let doc =
+      "Warnings tags. Only report warnings in references that have been compiled \
+      with these specific tags. Can be passed multiple times."
+    in
+    let env = Arg.env_var "ODOC_WARNINGS_TAGS" ~doc in
+    Arg.(value & opt_all string [] & info ~docs ~doc ~env [ "warnings-tags" ])
+
   let link directories page_roots lib_roots input_file output_file
-      current_package warnings_options open_modules custom_layout =
+      current_package warnings_options open_modules custom_layout warnings_tags =
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
     let check () =
@@ -743,7 +751,7 @@ end = struct
     let resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules ~roots
     in
-    match Odoc_link.from_odoc ~resolver ~warnings_options input output with
+    match Odoc_link.from_odoc ~resolver ~warnings_options ~warnings_tags input output with
     | Error _ as e -> e
     | Ok _ -> Ok ()
 
@@ -807,7 +815,7 @@ end = struct
     Term.(
       const handle_error
       $ (const link $ odoc_file_directories $ page_roots $ lib_roots $ input
-       $ dst $ current_package $ warnings_options $ open_modules $ custom_layout
+       $ dst $ current_package $ warnings_options $ open_modules $ custom_layout $ warnings_tags
         ))
 
   let info ~docs =
@@ -1025,7 +1033,7 @@ end = struct
         {
           Odoc_model.Error.warn_error = false;
           print_warnings = false;
-          suppress_warnings = false;
+          warnings_tag = None;
         }
       in
       Rendering.targets_odoc ~resolver ~warnings_options ~syntax:OCaml
@@ -1064,7 +1072,7 @@ end = struct
         {
           Odoc_model.Error.warn_error = false;
           print_warnings = false;
-          suppress_warnings = false;
+          warnings_tag = None;
         }
       in
       Rendering.targets_source_odoc ~warnings_options ~syntax:OCaml

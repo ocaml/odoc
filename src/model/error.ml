@@ -104,7 +104,7 @@ let print_errors = List.iter print_error
 type warnings_options = {
   warn_error : bool;
   print_warnings : bool;
-  suppress_warnings : bool;
+  warnings_tag : string option;
 }
 
 let print_warnings ~warnings_options warnings =

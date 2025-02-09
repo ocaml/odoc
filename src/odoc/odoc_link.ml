@@ -39,11 +39,11 @@ let content_for_hidden_modules =
       (`Docs
          {
            elements = [ with_loc @@ `Paragraph (List.map with_loc sentence) ];
-           suppress_warnings = true;
+           warnings_tag = None;
          });
   ]
 
-let link_unit ~resolver ~filename m =
+let link_unit ~resolver ~filename ~warnings_tags m =
   let open Odoc_model in
   let open Lang.Compilation_unit in
   let m =
@@ -56,13 +56,14 @@ let link_unit ~resolver ~filename m =
               items = content_for_hidden_modules;
               compiled = false;
               removed = [];
-              doc = { elements = []; suppress_warnings = false };
+              doc = { elements = []; warnings_tag = None};
             };
         expansion = None;
       }
     else m
   in
   let env = Resolver.build_link_env_for_unit resolver m in
+  let env = Odoc_xref2.Env.set_warnings_tags env warnings_tags in
   Odoc_xref2.Link.link ~filename env m
 
 (** [~input_warnings] are the warnings stored in the input file *)
@@ -73,7 +74,7 @@ let handle_warnings ~input_warnings ~warnings_options ww =
 
 (** Read the input file and write to the output file. Also return the resulting
     tree. *)
-let from_odoc ~resolver ~warnings_options input output =
+let from_odoc ~resolver ~warnings_options ~warnings_tags input output =
   let filename = Fs.File.to_string input in
   Odoc_file.load input >>= fun unit ->
   let input_warnings = unit.Odoc_file.warnings in
@@ -99,7 +100,7 @@ let from_odoc ~resolver ~warnings_options input output =
       Odoc_file.save_page output ~warnings page;
       Ok (`Page page)
   | Unit_content m ->
-      link_unit ~resolver ~filename m
+      link_unit ~resolver ~filename ~warnings_tags m
       |> handle_warnings ~input_warnings ~warnings_options
       >>= fun (m, warnings) ->
       Odoc_file.save_unit output ~warnings m;
