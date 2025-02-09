@@ -12,7 +12,7 @@ val compile :
 
 type linked
 
-val link : custom_layout:bool -> compiled list -> linked list
+val link : warnings_tags:string list -> custom_layout:bool -> compiled list -> linked list
 
 val html_generate :
   occurrence_file:Fpath.t ->

@@ -5,14 +5,14 @@
 - Drop support for OCaml < 4.08 (@jonludlam, #1300)
 - Added suport for overriding tmp directories in odoc_driver_monorepo
   (@jonludlam, #1304)
+- Remove `--suppress-warnings` argument in favour of `--warnings-tag`
+  which is more friendly for caching and voodoo (@jonludlam, #1304)
 
 ### Fixed
 
 - Fix bug causing stack overflow in odoc_driver_monorepo (@jonludlam, #1304)
-
-### Fixed
-
-- Fix incomplete handling of `--suppress-warnings` (@jonludlam, #1304)
+- Fix incomplete handling of `--suppress-warnings` (now `--warnings-tag`)
+  (@jonludlam, #1304)
 
 # 3.0.0~beta1
 

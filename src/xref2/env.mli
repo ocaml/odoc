@@ -199,4 +199,8 @@ val len : int ref
 
 val n : int ref
 
+val should_suppress_warnings : t -> string option -> bool
+
+val set_warnings_tags : t -> string list -> t
+
 val verify_lookups : t -> LookupTypeSet.t -> bool

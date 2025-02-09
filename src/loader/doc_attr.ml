@@ -29,9 +29,9 @@ let read_location { Location.loc_start; loc_end; _ } =
     end_ = point_of_pos loc_end;
   }
 
-let empty_body suppress_warnings = { Comment.elements = []; suppress_warnings }
+let empty_body warnings_tag = { Comment.elements = []; warnings_tag }
 
-let empty suppress_warnings : Odoc_model.Comment.docs = empty_body suppress_warnings
+let empty warnings_tag : Odoc_model.Comment.docs = empty_body warnings_tag
 
 let load_constant_string = function
   | {Parsetree.pexp_desc =
@@ -124,7 +124,7 @@ let mk_alert_payload ~loc name p =
   let span = read_location loc in
   Location_.at span elt
 
-let attached ~suppress_warnings internal_tags parent attrs =
+let attached ~warnings_tag internal_tags parent attrs =
   let rec loop acc_docs acc_alerts = function
     | attr :: rest -> (
         match parse_attribute attr with
@@ -142,10 +142,10 @@ let attached ~suppress_warnings internal_tags parent attrs =
   in
   let ast_docs, alerts = loop [] [] attrs in
   let elements, warnings = ast_to_comment ~internal_tags parent ast_docs alerts in
-  { Comment.elements; suppress_warnings }, warnings
+  { Comment.elements; warnings_tag }, warnings
 
-let attached_no_tag ~suppress_warnings parent attrs =
-  let x, () = attached ~suppress_warnings Semantics.Expect_none parent attrs in
+let attached_no_tag ~warnings_tag parent attrs =
+  let x, () = attached ~warnings_tag Semantics.Expect_none parent attrs in
   x
 
 let read_string ~tags_allowed internal_tags parent location str =
@@ -164,15 +164,15 @@ let page parent loc str =
   let elements, tags = read_string ~tags_allowed:false Odoc_model.Semantics.Expect_page_tags parent loc.Location.loc_start
       str
   in
-  { Comment.elements; suppress_warnings = false}, tags
+  { Comment.elements; warnings_tag = None }, tags
 
-let standalone parent ~suppress_warnings (attr : Parsetree.attribute) :
+let standalone parent ~warnings_tag (attr : Parsetree.attribute) :
     Odoc_model.Comment.docs_or_stop option =
   match parse_attribute attr with
   | Some (`Stop _loc) -> Some `Stop
   | Some (`Text (str, loc)) ->
       let elements, () = read_string_comment Semantics.Expect_none parent loc str in
-      Some (`Docs { elements; suppress_warnings })
+      Some (`Docs { elements; warnings_tag })
   | Some (`Doc _) -> None
   | Some (`Alert (name, _, attr_loc)) ->
       let w =
@@ -182,11 +182,11 @@ let standalone parent ~suppress_warnings (attr : Parsetree.attribute) :
       None
   | _ -> None
 
-let standalone_multiple parent ~suppress_warnings attrs =
+let standalone_multiple parent ~warnings_tag attrs =
   let coms =
     List.fold_left
       (fun acc attr ->
-        match standalone parent ~suppress_warnings attr  with
+        match standalone parent ~warnings_tag attr  with
          | None -> acc
          | Some com -> com :: acc)
       [] attrs
@@ -202,7 +202,7 @@ let split_docs docs =
   in
   inner [] docs
 
-let extract_top_comment internal_tags ~suppress_warnings ~classify parent items =
+let extract_top_comment internal_tags ~warnings_tag ~classify parent items =
   let classify x =
     match classify x with
     | Some (`Attribute attr) -> (
@@ -255,17 +255,17 @@ let extract_top_comment internal_tags ~suppress_warnings ~classify parent items 
   in
   let d1, d2 = split_docs docs in
   ( items,
-    ( { Comment.elements = d1; suppress_warnings },
-      { Comment.elements = d2; suppress_warnings } ),
+    ( { Comment.elements = d1; warnings_tag },
+      { Comment.elements = d2; warnings_tag } ),
     tags )
 
 let extract_top_comment_class items =
-  let mk elements suppress_warnings = { Comment.elements; suppress_warnings } in
+  let mk elements warnings_tag = { Comment.elements; warnings_tag } in
   match items with
   | Lang.ClassSignature.Comment (`Docs doc) :: tl ->
       let d1, d2 = split_docs doc.elements in
-      (tl, (mk d1 doc.suppress_warnings, mk d2 doc.suppress_warnings))
-  | _ -> (items, (mk [] false, mk [] false))
+      (tl, (mk d1 doc.warnings_tag, mk d2 doc.warnings_tag))
+  | _ -> (items, (mk [] None, mk [] None))
 
 let rec conv_canonical_module : Odoc_model.Reference.path -> Paths.Path.Module.t = function
   | `Dot (parent, name) -> `Dot (conv_canonical_module parent, Names.ModuleName.make_std name)

@@ -115,7 +115,7 @@ type block_element =
 
 type elements = block_element with_location list
 
-type docs = { elements : elements; suppress_warnings : bool }
+type docs = { elements : elements; warnings_tag : string option }
 
 type docs_or_stop = [ `Docs of docs | `Stop ]
 

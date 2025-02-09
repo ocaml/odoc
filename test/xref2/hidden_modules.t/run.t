@@ -103,7 +103,7 @@ There should be an expansion on `NotHidden`
                 "source_loc": "None",
                 "doc": {
                   "elements": [],
-                  "suppress_warnings": "false"
+                  "warnings_tag": "None"
                 },
                 "equation": {
                   "params": [],
@@ -119,7 +119,7 @@ There should be an expansion on `NotHidden`
         "compiled": "true",
         "doc": {
           "elements": [],
-          "suppress_warnings": "false"
+          "warnings_tag": "None"
         }
       }
     }
@@ -134,7 +134,7 @@ There should be an expansion on `NotHidden`
       ]
     },
     "source_loc": "None",
-    "doc": { "elements": [], "suppress_warnings": "false" },
+    "doc": { "elements": [], "warnings_tag": "None" },
     "type_": {
       "Constr": [
         {
