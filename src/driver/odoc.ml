@@ -36,8 +36,7 @@ let compile_deps f =
   | [ (_, digest) ], deps -> Ok { digest; deps }
   | _ -> Error (`Msg "odd")
 
-let compile ~output_dir ~input_file:file ~includes ~warnings_tag ~parent_id
-    =
+let compile ~output_dir ~input_file:file ~includes ~warnings_tag ~parent_id =
   let open Cmd in
   let includes =
     Fpath.Set.fold
@@ -54,7 +53,11 @@ let compile ~output_dir ~input_file:file ~includes ~warnings_tag ~parent_id
     %% includes % "--enable-missing-root-warning"
   in
   let cmd = cmd % "--parent-id" % Id.to_string parent_id in
-  let cmd = match warnings_tag with None -> cmd | Some tag -> cmd % "--warnings-tag" % tag in
+  let cmd =
+    match warnings_tag with
+    | None -> cmd
+    | Some tag -> cmd % "--warnings-tag" % tag
+  in
   let desc = Printf.sprintf "Compiling %s" (Fpath.to_string file) in
   ignore
   @@ Cmd_outputs.submit
@@ -161,8 +164,8 @@ let link ?(ignore_output = false) ~custom_layout ~input_file:file ?output_file
     if Fpath.to_string file = "stdlib.odoc" then cmd % "--open=\"\"" else cmd
   in
   let cmd =
-    List.fold_left (fun acc k -> acc % "--warnings-tags" % k) cmd
-      warnings_tags in
+    List.fold_left (fun acc k -> acc % "--warnings-tags" % k) cmd warnings_tags
+  in
   let desc = Printf.sprintf "Linking %s" (Fpath.to_string file) in
   let cmd = if custom_layout then cmd % "--custom-layout" else cmd in
   let log =

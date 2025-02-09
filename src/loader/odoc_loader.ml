@@ -256,18 +256,15 @@ let wrap_errors ~filename f =
       | Make_root_error m -> error_msg filename m)
 
 let read_cmti ~make_root ~parent ~filename ~warnings_tag =
-  wrap_errors ~filename
-    (read_cmti ~make_root ~parent ~filename ~warnings_tag)
+  wrap_errors ~filename (read_cmti ~make_root ~parent ~filename ~warnings_tag)
 
 let read_cmt ~make_root ~parent ~filename ~warnings_tag =
-  wrap_errors ~filename
-    (read_cmt ~make_root ~parent ~filename ~warnings_tag)
+  wrap_errors ~filename (read_cmt ~make_root ~parent ~filename ~warnings_tag)
 
 let read_impl ~make_root ~filename ~source_id =
   wrap_errors ~filename (read_impl ~make_root ~source_id ~filename)
 
 let read_cmi ~make_root ~parent ~filename ~warnings_tag =
-  wrap_errors ~filename
-    (read_cmi ~make_root ~parent ~filename ~warnings_tag)
+  wrap_errors ~filename (read_cmi ~make_root ~parent ~filename ~warnings_tag)
 
 let read_location = Doc_attr.read_location

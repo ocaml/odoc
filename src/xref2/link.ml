@@ -232,15 +232,18 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
             p)
 
 let rec comment_inline_element :
-    loc:_ -> Env.t -> string option -> Comment.inline_element -> Comment.inline_element =
+    loc:_ ->
+    Env.t ->
+    string option ->
+    Comment.inline_element ->
+    Comment.inline_element =
  fun ~loc:_ env warnings_tag x ->
   match x with
   | `Styled (s, ls) ->
       `Styled
         ( s,
-          List.map
-            (with_location (comment_inline_element env warnings_tag))
-            ls )
+          List.map (with_location (comment_inline_element env warnings_tag)) ls
+        )
   | `Reference (r, content) as orig -> (
       match
         maybe_suppress env warnings_tag (fun () ->
@@ -287,8 +290,7 @@ and comment_nestable_block_element env warnings_tag parent ~loc:_
         let map f x = List.rev_map f x |> List.rev in
         map
           (map (fun (cell, cell_type) ->
-               ( comment_nestable_block_element_list env warnings_tag
-                   parent cell,
+               ( comment_nestable_block_element_list env warnings_tag parent cell,
                  cell_type )))
           data
       in
@@ -335,8 +337,7 @@ and comment_nestable_block_element env warnings_tag parent ~loc:_
 and comment_nestable_block_element_list env warnings_tag parent
     (xs : Comment.nestable_block_element Comment.with_location list) =
   List.rev_map
-    (with_location
-       (comment_nestable_block_element env warnings_tag parent))
+    (with_location (comment_nestable_block_element env warnings_tag parent))
     xs
   |> List.rev
 
@@ -344,13 +345,11 @@ and comment_tag env warnings_tag parent ~loc:_ (x : Comment.tag) =
   match x with
   | `Deprecated content ->
       `Deprecated
-        (comment_nestable_block_element_list env warnings_tag parent
-           content)
+        (comment_nestable_block_element_list env warnings_tag parent content)
   | `Param (name, content) ->
       `Param
         ( name,
-          comment_nestable_block_element_list env warnings_tag parent
-            content )
+          comment_nestable_block_element_list env warnings_tag parent content )
   | `Raise ((`Reference (r, reference_content) as orig), content) -> (
       match
         maybe_suppress env warnings_tag (fun () ->
@@ -372,23 +371,19 @@ and comment_tag env warnings_tag parent ~loc:_ (x : Comment.tag) =
   | `Raise ((`Code_span _ as orig), content) ->
       `Raise
         ( orig,
-          comment_nestable_block_element_list env warnings_tag parent
-            content )
+          comment_nestable_block_element_list env warnings_tag parent content )
   | `Return content ->
       `Return
-        (comment_nestable_block_element_list env warnings_tag parent
-           content)
+        (comment_nestable_block_element_list env warnings_tag parent content)
   | `See (kind, target, content) ->
       `See
         ( kind,
           target,
-          comment_nestable_block_element_list env warnings_tag parent
-            content )
+          comment_nestable_block_element_list env warnings_tag parent content )
   | `Before (version, content) ->
       `Before
         ( version,
-          comment_nestable_block_element_list env warnings_tag parent
-            content )
+          comment_nestable_block_element_list env warnings_tag parent content )
   | `Author _ | `Since _ | `Alert _ | `Version _ ->
       x (* only contain primitives *)
 

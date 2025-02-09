@@ -49,7 +49,9 @@ let real_run ~odoc_dir ~odocl_dir ~index_dir ~mld_dir path extra_pkgs extra_libs
         in
         Compile.init_stats units;
         let compiled = Compile.compile ~partial_dir:odoc_dir units in
-        let linked = Compile.link ~warnings_tags:[] ~custom_layout:true compiled in
+        let linked =
+          Compile.link ~warnings_tags:[] ~custom_layout:true compiled
+        in
         let occurrence_file =
           let output =
             Fpath.( / ) odoc_dir "occurrences-all.odoc-occurrences"

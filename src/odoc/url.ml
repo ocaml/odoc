@@ -8,11 +8,7 @@ let resolve url_to_string directories reference =
   let reference =
     let open Odoc_model in
     let warnings_options =
-      {
-        Error.warn_error = true;
-        print_warnings = true;
-        warnings_tag = None;
-      }
+      { Error.warn_error = true; print_warnings = true; warnings_tag = None }
     in
     Semantics.parse_reference reference
     |> Error.handle_errors_and_warnings ~warnings_options
