@@ -71,7 +71,7 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
         in
         Compile.init_stats units;
         let compiled = Compile.compile ~partial_dir:odoc_dir units in
-        let linked = Compile.link ~custom_layout:false compiled in
+        let linked = Compile.link ~warnings_tags:packages ~custom_layout:false compiled in
         let occurrence_file =
           let output =
             Fpath.( / ) odoc_dir "occurrences-all.odoc-occurrences"

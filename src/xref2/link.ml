@@ -9,8 +9,8 @@ end
 
 (* omg. Our current warning system is spread on different system. Hence this
    atrocity. *)
-let maybe_suppress suppress_warnings =
-  if suppress_warnings then fun f ->
+let maybe_suppress env warnings_tag =
+  if Env.should_suppress_warnings env warnings_tag then fun f ->
     Lookup_failures.catch_failures ~filename:"" (fun () ->
         Error.catch_warnings f |> fun x ->
         Error.unpack_warnings x |> fst |> Error.unpack_warnings |> fst)
@@ -232,18 +232,18 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
             p)
 
 let rec comment_inline_element :
-    loc:_ -> Env.t -> bool -> Comment.inline_element -> Comment.inline_element =
- fun ~loc:_ env suppress_warnings x ->
+    loc:_ -> Env.t -> string option -> Comment.inline_element -> Comment.inline_element =
+ fun ~loc:_ env warnings_tag x ->
   match x with
   | `Styled (s, ls) ->
       `Styled
         ( s,
           List.map
-            (with_location (comment_inline_element env suppress_warnings))
+            (with_location (comment_inline_element env warnings_tag))
             ls )
   | `Reference (r, content) as orig -> (
       match
-        maybe_suppress suppress_warnings (fun () ->
+        maybe_suppress env warnings_tag (fun () ->
             Ref_tools.resolve_reference env r)
       with
       | Ok (ref_, c) ->
@@ -257,29 +257,29 @@ let rec comment_inline_element :
           in
           `Reference (`Resolved ref_, content)
       | Error e ->
-          if not suppress_warnings then
+          if not (Env.should_suppress_warnings env warnings_tag) then
             Errors.report ~what:(`Reference r) ~tools_error:(`Reference e)
               `Resolve;
           orig)
   | y -> y
 
-and paragraph env suppress_warnings elts =
-  List.map (with_location (comment_inline_element env suppress_warnings)) elts
+and paragraph env warnings_tag elts =
+  List.map (with_location (comment_inline_element env warnings_tag)) elts
 
-and resolve_external_synopsis env suppress_warnings synopsis =
+and resolve_external_synopsis env warnings_tag synopsis =
   let env = Env.inherit_resolver env in
-  paragraph env suppress_warnings synopsis
+  paragraph env warnings_tag synopsis
 
-and comment_nestable_block_element env suppress_warnings parent ~loc:_
+and comment_nestable_block_element env warnings_tag parent ~loc:_
     (x : Comment.nestable_block_element) =
   match x with
-  | `Paragraph elts -> `Paragraph (paragraph env suppress_warnings elts)
+  | `Paragraph elts -> `Paragraph (paragraph env warnings_tag elts)
   | (`Code_block _ | `Math_block _ | `Verbatim _) as x -> x
   | `List (x, ys) ->
       `List
         ( x,
           List.rev_map
-            (comment_nestable_block_element_list env suppress_warnings parent)
+            (comment_nestable_block_element_list env warnings_tag parent)
             ys
           |> List.rev )
   | `Table { data; align } ->
@@ -287,7 +287,7 @@ and comment_nestable_block_element env suppress_warnings parent ~loc:_
         let map f x = List.rev_map f x |> List.rev in
         map
           (map (fun (cell, cell_type) ->
-               ( comment_nestable_block_element_list env suppress_warnings
+               ( comment_nestable_block_element_list env warnings_tag
                    parent cell,
                  cell_type )))
           data
@@ -298,18 +298,18 @@ and comment_nestable_block_element env suppress_warnings parent ~loc:_
         List.rev_map
           (fun (r : Comment.module_reference) ->
             match
-              maybe_suppress suppress_warnings (fun () ->
+              maybe_suppress env warnings_tag (fun () ->
                   Ref_tools.resolve_module_reference env r.module_reference)
             with
             | Ok (r, _, m) ->
                 let module_synopsis =
                   Opt.map
-                    (resolve_external_synopsis env suppress_warnings)
+                    (resolve_external_synopsis env warnings_tag)
                     (synopsis_of_module env m)
                 in
                 { Comment.module_reference = `Resolved r; module_synopsis }
             | Error e ->
-                if not suppress_warnings then
+                if not (Env.should_suppress_warnings env warnings_tag) then
                   Errors.report
                     ~what:(`Reference (r.module_reference :> Paths.Reference.t))
                     ~tools_error:(`Reference e) `Resolve;
@@ -320,93 +320,93 @@ and comment_nestable_block_element env suppress_warnings parent ~loc:_
       `Modules refs
   | `Media (`Reference r, m, content) as orig -> (
       match
-        maybe_suppress suppress_warnings (fun () ->
+        maybe_suppress env warnings_tag (fun () ->
             Ref_tools.resolve_asset_reference env r)
       with
       | Ok x -> `Media (`Reference (`Resolved x), m, content)
       | Error e ->
-          if not suppress_warnings then
+          if not (Env.should_suppress_warnings env warnings_tag) then
             Errors.report
               ~what:(`Reference (r :> Paths.Reference.t))
               ~tools_error:(`Reference e) `Resolve;
           orig)
   | `Media _ as orig -> orig
 
-and comment_nestable_block_element_list env suppress_warnings parent
+and comment_nestable_block_element_list env warnings_tag parent
     (xs : Comment.nestable_block_element Comment.with_location list) =
   List.rev_map
     (with_location
-       (comment_nestable_block_element env suppress_warnings parent))
+       (comment_nestable_block_element env warnings_tag parent))
     xs
   |> List.rev
 
-and comment_tag env suppress_warnings parent ~loc:_ (x : Comment.tag) =
+and comment_tag env warnings_tag parent ~loc:_ (x : Comment.tag) =
   match x with
   | `Deprecated content ->
       `Deprecated
-        (comment_nestable_block_element_list env suppress_warnings parent
+        (comment_nestable_block_element_list env warnings_tag parent
            content)
   | `Param (name, content) ->
       `Param
         ( name,
-          comment_nestable_block_element_list env suppress_warnings parent
+          comment_nestable_block_element_list env warnings_tag parent
             content )
   | `Raise ((`Reference (r, reference_content) as orig), content) -> (
       match
-        maybe_suppress suppress_warnings (fun () ->
+        maybe_suppress env warnings_tag (fun () ->
             Ref_tools.resolve_reference env r)
       with
       | Ok (x, _) ->
           `Raise
             ( `Reference (`Resolved x, reference_content),
-              comment_nestable_block_element_list env suppress_warnings parent
+              comment_nestable_block_element_list env warnings_tag parent
                 content )
       | Error e ->
-          if not suppress_warnings then
+          if not (Env.should_suppress_warnings env warnings_tag) then
             Errors.report ~what:(`Reference r) ~tools_error:(`Reference e)
               `Resolve;
           `Raise
             ( orig,
-              comment_nestable_block_element_list env suppress_warnings parent
+              comment_nestable_block_element_list env warnings_tag parent
                 content ))
   | `Raise ((`Code_span _ as orig), content) ->
       `Raise
         ( orig,
-          comment_nestable_block_element_list env suppress_warnings parent
+          comment_nestable_block_element_list env warnings_tag parent
             content )
   | `Return content ->
       `Return
-        (comment_nestable_block_element_list env suppress_warnings parent
+        (comment_nestable_block_element_list env warnings_tag parent
            content)
   | `See (kind, target, content) ->
       `See
         ( kind,
           target,
-          comment_nestable_block_element_list env suppress_warnings parent
+          comment_nestable_block_element_list env warnings_tag parent
             content )
   | `Before (version, content) ->
       `Before
         ( version,
-          comment_nestable_block_element_list env suppress_warnings parent
+          comment_nestable_block_element_list env warnings_tag parent
             content )
   | `Author _ | `Since _ | `Alert _ | `Version _ ->
       x (* only contain primitives *)
 
-and comment_block_element env suppress_warnings parent ~loc
+and comment_block_element env warnings_tag parent ~loc
     (x : Comment.block_element) =
   match x with
   | #Comment.nestable_block_element as x ->
-      (comment_nestable_block_element env suppress_warnings parent ~loc x
+      (comment_nestable_block_element env warnings_tag parent ~loc x
         :> Comment.block_element)
   | `Heading (attrs, label, elems) ->
-      let cie = comment_inline_element env suppress_warnings in
+      let cie = comment_inline_element env warnings_tag in
       let elems =
         List.rev_map (fun ele -> with_location cie ele) elems |> List.rev
       in
       let h = (attrs, label, elems) in
       check_ambiguous_label ~loc env h;
       `Heading h
-  | `Tag t -> `Tag (comment_tag env suppress_warnings parent ~loc t)
+  | `Tag t -> `Tag (comment_tag env warnings_tag parent ~loc t)
 
 and with_location : type a.
     (loc:_ -> a -> a) -> a Location_.with_location -> a Location_.with_location
@@ -420,11 +420,11 @@ and comment_docs env parent d =
     Comment.elements =
       List.rev_map
         (with_location
-           (comment_block_element env d.Comment.suppress_warnings
+           (comment_block_element env d.Comment.warnings_tag
               (parent :> Id.LabelParent.t)))
         d.Comment.elements
       |> List.rev;
-    suppress_warnings = d.suppress_warnings;
+    warnings_tag = d.warnings_tag;
   }
 
 and comment env parent = function

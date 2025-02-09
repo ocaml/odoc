@@ -11,7 +11,7 @@ let resolve url_to_string directories reference =
       {
         Error.warn_error = true;
         print_warnings = true;
-        suppress_warnings = false;
+        warnings_tag = None;
       }
     in
     Semantics.parse_reference reference

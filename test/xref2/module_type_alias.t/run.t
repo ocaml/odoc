@@ -110,7 +110,7 @@ as they are both referencing items that won't be expanded.
             ]
           }
         ],
-        "suppress_warnings": "false"
+        "warnings_tag": "None"
       }
     }
   }

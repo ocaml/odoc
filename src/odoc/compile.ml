@@ -120,19 +120,19 @@ let resolve_imports resolver imports =
     imports
 
 (** Raises warnings and errors. *)
-let resolve_and_substitute ~resolver ~make_root ~hidden ~suppress_warnings
+let resolve_and_substitute ~resolver ~make_root ~hidden ~warnings_tag
     (parent : Paths.Identifier.ContainerPage.t option) input_file input_type =
   let filename = Fs.File.to_string input_file in
   let unit =
     match input_type with
     | `Cmti ->
-        Odoc_loader.read_cmti ~make_root ~parent ~filename ~suppress_warnings
+        Odoc_loader.read_cmti ~make_root ~parent ~filename ~warnings_tag
         |> Error.raise_errors_and_warnings
     | `Cmt ->
-        Odoc_loader.read_cmt ~make_root ~parent ~filename ~suppress_warnings
+        Odoc_loader.read_cmt ~make_root ~parent ~filename ~warnings_tag
         |> Error.raise_errors_and_warnings
     | `Cmi ->
-        Odoc_loader.read_cmi ~make_root ~parent ~filename ~suppress_warnings
+        Odoc_loader.read_cmi ~make_root ~parent ~filename ~warnings_tag
         |> Error.raise_errors_and_warnings
   in
   let unit = { unit with hidden = hidden || unit.hidden } in
@@ -400,7 +400,7 @@ let compile ~resolver ~hidden ~cli_spec ~warnings_options ~short_title input =
     let result =
       Error.catch_errors_and_warnings (fun () ->
           resolve_and_substitute ~resolver ~make_root ~hidden
-            ~suppress_warnings:warnings_options.suppress_warnings parent_id
+            ~warnings_tag:warnings_options.warnings_tag parent_id
             input input_type)
     in
     (* Extract warnings to write them into the output file *)

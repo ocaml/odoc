@@ -101,7 +101,7 @@ let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
   make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     ?canonical content
 
-let read_cmti ~make_root ~parent ~filename ~suppress_warnings () =
+let read_cmti ~make_root ~parent ~filename ~warnings_tag () =
   let cmt_info = Cmt_format.read_cmt filename in
   match cmt_info.cmt_annots with
   | Interface intf -> (
@@ -119,13 +119,13 @@ let read_cmti ~make_root ~parent ~filename ~suppress_warnings () =
               cmt_info.cmt_builddir )
           in
           let id, sg, canonical =
-            Cmti.read_interface parent name ~suppress_warnings intf
+            Cmti.read_interface parent name ~warnings_tag intf
           in
           compilation_unit_of_sig ~make_root ~imports:cmt_info.cmt_imports
             ~interface ~sourcefile ~name ~id ?canonical sg)
   | _ -> raise Not_an_interface
 
-let read_cmt ~make_root ~parent ~filename ~suppress_warnings () =
+let read_cmt ~make_root ~parent ~filename ~warnings_tag () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error (Not_an_interface _) ->
       raise Not_an_implementation
@@ -178,18 +178,18 @@ let read_cmt ~make_root ~parent ~filename ~suppress_warnings () =
             ~id content
       | Implementation impl ->
           let id, sg, canonical =
-            Cmt.read_implementation parent name ~suppress_warnings impl
+            Cmt.read_implementation parent name ~warnings_tag impl
           in
           compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
             ~name ~id ?canonical sg
       | _ -> raise Not_an_implementation)
 
-let read_cmi ~make_root ~parent ~filename ~suppress_warnings () =
+let read_cmi ~make_root ~parent ~filename ~warnings_tag () =
   let cmi_info = Cmi_format.read_cmi filename in
   match cmi_info.cmi_crcs with
   | (name, (Some _ as interface)) :: imports when name = cmi_info.cmi_name ->
       let id, sg =
-        Cmi.read_interface parent name ~suppress_warnings
+        Cmi.read_interface parent name ~warnings_tag
           (Odoc_model.Compat.signature cmi_info.cmi_sign)
       in
       compilation_unit_of_sig ~make_root ~imports ~interface ~name ~id sg
@@ -255,19 +255,19 @@ let wrap_errors ~filename f =
       | Not_an_interface -> not_an_interface filename
       | Make_root_error m -> error_msg filename m)
 
-let read_cmti ~make_root ~parent ~filename ~suppress_warnings =
+let read_cmti ~make_root ~parent ~filename ~warnings_tag =
   wrap_errors ~filename
-    (read_cmti ~make_root ~parent ~filename ~suppress_warnings)
+    (read_cmti ~make_root ~parent ~filename ~warnings_tag)
 
-let read_cmt ~make_root ~parent ~filename ~suppress_warnings =
+let read_cmt ~make_root ~parent ~filename ~warnings_tag =
   wrap_errors ~filename
-    (read_cmt ~make_root ~parent ~filename ~suppress_warnings)
+    (read_cmt ~make_root ~parent ~filename ~warnings_tag)
 
 let read_impl ~make_root ~filename ~source_id =
   wrap_errors ~filename (read_impl ~make_root ~source_id ~filename)
 
-let read_cmi ~make_root ~parent ~filename ~suppress_warnings =
+let read_cmi ~make_root ~parent ~filename ~warnings_tag =
   wrap_errors ~filename
-    (read_cmi ~make_root ~parent ~filename ~suppress_warnings)
+    (read_cmi ~make_root ~parent ~filename ~warnings_tag)
 
 let read_location = Doc_attr.read_location
