@@ -89,7 +89,10 @@ let run package_name blessed actions odoc_dir odocl_dir
     match actions with
     | CompileOnly -> ()
     | LinkAndGen | All ->
-        let linked = Compile.link ~warnings_tags:[package_name] ~custom_layout:false compiled in
+        let linked =
+          Compile.link ~warnings_tags:[ package_name ] ~custom_layout:false
+            compiled
+        in
         let occurrence_file =
           let output =
             Fpath.( / ) odoc_dir "occurrences-all.odoc-occurrences"
