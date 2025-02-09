@@ -27,7 +27,7 @@ module Env = Ident_env
 
 type env = Cmi.env = {
   ident_env : Ident_env.t;
-  suppress_warnings : bool;
+  warnings_tag : string option;
 }
 
 
@@ -91,7 +91,7 @@ let rec read_pattern env parent doc pat =
 
 let read_value_binding env parent vb =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container vb.vb_attributes in
+  let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container vb.vb_attributes in
     read_pattern env parent doc vb.vb_pat
 
 let read_value_bindings env parent vbs =
@@ -101,7 +101,7 @@ let read_value_bindings env parent vbs =
       (fun acc vb ->
          let open Signature in
         let comments =
-          Doc_attr.standalone_multiple container ~suppress_warnings:env.suppress_warnings vb.vb_attributes in
+          Doc_attr.standalone_multiple container ~warnings_tag:env.warnings_tag vb.vb_attributes in
          let comments = List.map (fun com -> Comment com) comments in
          let vb = read_value_binding env parent vb in
           List.rev_append vb (List.rev_append comments acc))
@@ -113,7 +113,7 @@ let read_type_extension env parent tyext =
   let open Extension in
   let type_path = Env.Path.read_type env.ident_env tyext.tyext_path in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container tyext.tyext_attributes in
+  let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container tyext.tyext_attributes in
   let type_params =
     List.map (fun (ctyp, _) -> ctyp.ctyp_type) tyext.tyext_params
   in
@@ -149,7 +149,7 @@ let rec read_class_type_field env parent ctf =
   let open ClassSignature in
   let open Odoc_model.Names in
   let container = (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container ctf.ctf_attributes in
+  let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container ctf.ctf_attributes in
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
       let open InstanceVariable in
@@ -170,7 +170,7 @@ let rec read_class_type_field env parent ctf =
       let expr = read_class_signature env parent [] cltyp in
       Some (Inherit {Inherit.expr; doc})
   | Tctf_attribute attr ->
-      match Doc_attr.standalone container ~suppress_warnings:env.suppress_warnings attr with
+      match Doc_attr.standalone container ~warnings_tag:env.warnings_tag attr with
       | None -> None
       | Some doc -> Some (Comment doc)
 
@@ -230,7 +230,7 @@ let rec read_class_field env parent cf =
   let open ClassSignature in
   let open Odoc_model.Names in
   let container = (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container (cf.cf_attributes) in
+  let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container (cf.cf_attributes) in
   match cf.cf_desc with
   | Tcf_val({txt = name; _}, mutable_, _, kind, _) ->
       let open InstanceVariable in
@@ -270,7 +270,7 @@ let rec read_class_field env parent cf =
       Some (Inherit {Inherit.expr; doc})
   | Tcf_initializer _ -> mk_class_comment doc
   | Tcf_attribute attr ->
-      match Doc_attr.standalone container ~suppress_warnings:env.suppress_warnings attr with
+      match Doc_attr.standalone container ~warnings_tag:env.warnings_tag attr with
       | None -> None
       | Some doc -> Some (Comment doc)
 
@@ -340,7 +340,7 @@ let read_class_declaration env parent cld =
   let id = Env.find_class_identifier env.ident_env cld.ci_id_class in
   let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container cld.ci_attributes in
+  let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container cld.ci_attributes in
     Cmi.mark_class_declaration cld.ci_decl;
     let virtual_ = (cld.ci_virt = Virtual) in
     let clparams =
@@ -358,7 +358,7 @@ let read_class_declarations env parent clds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let open Signature in
   List.fold_left begin fun (acc, recursive) cld ->
-    let comments = Doc_attr.standalone_multiple container ~suppress_warnings:env.suppress_warnings cld.ci_attributes in
+    let comments = Doc_attr.standalone_multiple container ~warnings_tag:env.warnings_tag cld.ci_attributes in
     let comments = List.map (fun com -> Comment com) comments in
     let cld = read_class_declaration env parent cld in
     ((Class (recursive, cld))::(List.rev_append comments acc), And)
@@ -449,7 +449,7 @@ and read_module_binding env parent mb =
   let id = (mid :> Identifier.Module.t) in
   let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, canonical = Doc_attr.attached ~suppress_warnings:env.suppress_warnings Odoc_model.Semantics.Expect_canonical container mb.mb_attributes in
+  let doc, canonical = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_canonical container mb.mb_attributes in
   let type_, canonical =
     match unwrap_module_expr_desc mb.mb_expr.mod_desc with
     | Tmod_ident (p, _) -> (Alias (Env.Path.read_module env.ident_env p, None), canonical)
@@ -480,7 +480,7 @@ and read_module_bindings env parent mbs =
   let open Signature in
   List.fold_left
     (fun (acc, recursive) mb ->
-      let comments = Doc_attr.standalone_multiple container ~suppress_warnings:env.suppress_warnings mb.mb_attributes in
+      let comments = Doc_attr.standalone_multiple container ~warnings_tag:env.warnings_tag mb.mb_attributes in
       let comments = List.map (fun com -> Comment com) comments in
       match read_module_binding env parent mb with
       | Some mb ->
@@ -550,7 +550,7 @@ and read_structure_item env parent item =
           Cmti.read_class_type_declarations env parent cltyps
     | Tstr_attribute attr ->
       let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-          match Doc_attr.standalone container ~suppress_warnings:env.suppress_warnings attr with
+          match Doc_attr.standalone container ~warnings_tag:env.warnings_tag attr with
           | None -> []
           | Some doc -> [Comment doc]
 
@@ -558,7 +558,7 @@ and read_include env parent incl =
   let open Include in
   let loc = Doc_attr.read_location incl.incl_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, status = Doc_attr.attached ~suppress_warnings:env.suppress_warnings Odoc_model.Semantics.Expect_status container incl.incl_attributes in
+  let doc, status = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_status container incl.incl_attributes in
   let decl_modty =
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
     | Tmod_ident(p, _) ->
@@ -579,7 +579,7 @@ and read_include env parent incl =
 
 and read_open env parent o =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc = Doc_attr.attached_no_tag ~suppress_warnings:env.suppress_warnings container o.open_attributes in
+  let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container o.open_attributes in
   #if OCAML_VERSION >= (4,8,0)
   let signature = o.open_bound_items in
   #else
@@ -601,7 +601,7 @@ and read_structure :
       | Tstr_attribute attr -> Some (`Attribute attr)
       | _ -> None
     in
-    Doc_attr.extract_top_comment internal_tags ~suppress_warnings:env.suppress_warnings ~classify parent str.str_items
+    Doc_attr.extract_top_comment internal_tags ~warnings_tag:env.warnings_tag ~classify parent str.str_items
   in
   let items =
     List.fold_left
@@ -616,13 +616,13 @@ and read_structure :
   | _ ->
     ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; removed = []; doc }, tags)
 
-let read_implementation root name ~suppress_warnings impl =
+let read_implementation root name ~warnings_tag impl =
   let id =
     Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name)
   in
   let sg, canonical =
     read_structure Odoc_model.Semantics.Expect_canonical
-      { ident_env = Env.empty (); suppress_warnings }
+      { ident_env = Env.empty (); warnings_tag }
       id impl
   in
   let canonical =

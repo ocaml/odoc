@@ -9,6 +9,8 @@
 
 - Added suport for overriding tmp directories in odoc_driver_monorepo
   (@jonludlam, #1304)
+- Remove `--suppress-warnings` argument in favour of `--warnings-tag`
+  which is more friendly for caching and voodoo (@jonludlam, #1304)
 
 ### Fixed
 
@@ -17,10 +19,8 @@
 - Fix bug in our CSS hitting verbatim blocks in tags (@jonludlam, #1312)
 - Fix poor behaviour when running odoc_driver with unknown or missing packages
   (@jonludlam, #1311)
-
-### Fixed
-
-- Fix incomplete handling of `--suppress-warnings` (@jonludlam, #1304)
+- Fix incomplete handling of `--suppress-warnings` (now `--warnings-tag`)
+  (@jonludlam, #1304)
 
 # 3.0.0~beta1
 

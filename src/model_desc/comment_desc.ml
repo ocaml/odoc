@@ -192,7 +192,7 @@ let docs =
   Record
     [
       F ("elements", (fun h -> h.elements), elements);
-      F ("suppress_warnings", (fun h -> h.suppress_warnings), bool);
+      F ("warnings_tag", (fun h -> h.warnings_tag), Option string);
     ]
 
 let docs_or_stop : docs_or_stop t =

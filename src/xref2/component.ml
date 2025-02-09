@@ -458,7 +458,7 @@ and CComment : sig
 
   type docs = {
     elements : block_element Odoc_model.Comment.with_location list;
-    suppress_warnings : bool;
+    warnings_tag : string option;
   }
 
   type docs_or_stop = [ `Docs of docs | `Stop ]
@@ -2706,7 +2706,7 @@ module Of_Lang = struct
   and docs ident_map d =
     {
       elements = List.map (block_element ident_map) d.elements;
-      suppress_warnings = d.suppress_warnings;
+      warnings_tag = d.warnings_tag;
     }
 
   and docs_or_stop ident_map = function
@@ -2717,7 +2717,7 @@ end
 let module_of_functor_argument (arg : FunctorParameter.parameter) =
   {
     Module.source_loc = None;
-    doc = { elements = []; suppress_warnings = false };
+    doc = { elements = []; warnings_tag = None };
     type_ = ModuleType arg.expr;
     canonical = None;
     hidden = false;
