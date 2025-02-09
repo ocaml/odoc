@@ -400,8 +400,8 @@ let compile ~resolver ~hidden ~cli_spec ~warnings_options ~short_title input =
     let result =
       Error.catch_errors_and_warnings (fun () ->
           resolve_and_substitute ~resolver ~make_root ~hidden
-            ~warnings_tag:warnings_options.warnings_tag parent_id
-            input input_type)
+            ~warnings_tag:warnings_options.warnings_tag parent_id input
+            input_type)
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Error.unpack_warnings result in

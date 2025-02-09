@@ -33,7 +33,8 @@ let document_of_odocl ~syntax input =
 
 let document_of_input ~resolver ~warnings_options ~syntax input =
   let output = Fs.File.(set_ext ".odocl" input) in
-  Odoc_link.from_odoc ~resolver ~warnings_options ~warnings_tags:[] input output >>= function
+  Odoc_link.from_odoc ~resolver ~warnings_options ~warnings_tags:[] input output
+  >>= function
   | `Page page -> Ok (Renderer.document_of_page ~syntax page)
   | `Module m -> Ok (Renderer.document_of_compilation_unit ~syntax m)
   | `Impl _ ->

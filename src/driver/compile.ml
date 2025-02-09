@@ -144,8 +144,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.any list) =
                  in
                  Odoc.compile ~output_dir:unit.output_dir
                    ~input_file:unit.input_file ~includes
-                   ~warnings_tag:unit.pkgname
-                   ~parent_id:unit.parent_id;
+                   ~warnings_tag:unit.pkgname ~parent_id:unit.parent_id;
                  Atomic.incr Stats.stats.compiled_units;
 
                  unit)
@@ -244,7 +243,8 @@ let compile ?partial ~partial_dir (all : Odoc_unit.any list) =
 
 type linked = Odoc_unit.any
 
-let link : warnings_tags:string list -> custom_layout:bool -> compiled list -> _ =
+let link : warnings_tags:string list -> custom_layout:bool -> compiled list -> _
+    =
  fun ~warnings_tags ~custom_layout compiled ->
   let link : compiled -> linked =
    fun c ->

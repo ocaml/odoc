@@ -56,7 +56,7 @@ let link_unit ~resolver ~filename ~warnings_tags m =
               items = content_for_hidden_modules;
               compiled = false;
               removed = [];
-              doc = { elements = []; warnings_tag = None};
+              doc = { elements = []; warnings_tag = None };
             };
         expansion = None;
       }
