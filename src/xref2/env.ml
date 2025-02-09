@@ -174,9 +174,8 @@ type t = {
 }
 
 let should_suppress_warnings env opt =
-  match opt with
-  | None -> false
-  | Some x -> not (List.mem x env.warnings_tags) (* Suppress warnings unless the tag is in the list *)
+  match opt with None -> false | Some x -> not (List.mem x env.warnings_tags)
+(* Suppress warnings unless the tag is in the list *)
 
 let set_warnings_tags env tags = { env with warnings_tags = tags }
 
