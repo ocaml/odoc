@@ -28,6 +28,7 @@ let make_index ~dirs ~rel_dir ~libs ~pkgs ~index ~enable_warnings ~content :
     pkg_args;
     parent_id;
     input_file;
+    input_copy = None;
     odoc_file;
     odocl_file;
     enable_warnings;
