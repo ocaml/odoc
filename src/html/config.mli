@@ -13,7 +13,7 @@ val v :
   open_details:bool ->
   as_json:bool ->
   remap:(string * string) list ->
-  ?home_breadcrumb:bool ->
+  ?home_breadcrumb:string ->
   unit ->
   t
 (** [search_result] indicates whether this is a summary for a search result. In
@@ -39,4 +39,4 @@ val search_result : t -> bool
 
 val remap : t -> (string * string) list
 
-val home_breadcrumb : t -> bool
+val home_breadcrumb : t -> string option

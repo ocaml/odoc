@@ -80,7 +80,7 @@ See the comments on the types at the end of test.mli for the expectation.
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../index.html">🏠</a> &#x00BB; Test
+     <a href="../index.html">Index</a> &#x00BB; Test
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>Test</span></code></h1>
