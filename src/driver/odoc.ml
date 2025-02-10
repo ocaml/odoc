@@ -211,10 +211,16 @@ let sidebar_generate ?(ignore_output = false) ~output_file ~json input_file () =
   ignore @@ Cmd_outputs.submit log desc cmd (Some output_file)
 
 let html_generate ~output_dir ?sidebar ?(ignore_output = false)
-    ?(search_uris = []) ?remap ?(as_json = false) ~input_file:file () =
+    ?(search_uris = []) ?remap ?(as_json = false) ?home_breadcrumb
+    ~input_file:file () =
   let open Cmd in
   let index =
     match sidebar with None -> empty | Some idx -> v "--sidebar" % p idx
+  in
+  let home_breadcrumb =
+    match home_breadcrumb with
+    | None -> empty
+    | Some name -> v "--home-breadcrumb" % name
   in
   let search_uris =
     List.fold_left
@@ -222,8 +228,8 @@ let html_generate ~output_dir ?sidebar ?(ignore_output = false)
       empty search_uris
   in
   let cmd =
-    !odoc % "html-generate" % "--home-breadcrumb" % p file %% index
-    %% search_uris % "-o" % output_dir
+    !odoc % "html-generate" % p file %% index %% search_uris % "-o" % output_dir
+    %% home_breadcrumb
   in
   let cmd =
     match remap with None -> cmd | Some f -> cmd % "--remap-file" % p f
@@ -235,12 +241,17 @@ let html_generate ~output_dir ?sidebar ?(ignore_output = false)
   in
   ignore @@ Cmd_outputs.submit log desc cmd None
 
-let html_generate_asset ~output_dir ?(ignore_output = false) ~input_file:file
-    ~asset_path () =
+let html_generate_asset ~output_dir ?(ignore_output = false) ?home_breadcrumb
+    ~input_file:file ~asset_path () =
   let open Cmd in
+  let home_breadcrumb =
+    match home_breadcrumb with
+    | None -> empty
+    | Some name -> v "--home-breadcrumb" % name
+  in
   let cmd =
     !odoc % "html-generate-asset" % "-o" % output_dir % "--asset-unit" % p file
-    % p asset_path
+    % p asset_path %% home_breadcrumb
   in
   let desc = Printf.sprintf "Copying asset %s" (Fpath.to_string file) in
   let log =
@@ -249,11 +260,17 @@ let html_generate_asset ~output_dir ?(ignore_output = false) ~input_file:file
   ignore @@ Cmd_outputs.submit log desc cmd None
 
 let html_generate_source ~output_dir ?(ignore_output = false) ~source ?sidebar
-    ?(search_uris = []) ?(as_json = false) ~input_file:file () =
+    ?(search_uris = []) ?(as_json = false) ?home_breadcrumb ~input_file:file ()
+    =
   let open Cmd in
   let file = v "--impl" % p file in
   let sidebar =
     match sidebar with None -> empty | Some idx -> v "--sidebar" % p idx
+  in
+  let home_breadcrumb =
+    match home_breadcrumb with
+    | None -> empty
+    | Some name -> v "--home-breadcrumb" % name
   in
   let search_uris =
     List.fold_left
@@ -262,7 +279,7 @@ let html_generate_source ~output_dir ?(ignore_output = false) ~source ?sidebar
   in
   let cmd =
     !odoc % "html-generate-source" %% file %% sidebar % p source %% search_uris
-    % "-o" % output_dir
+    % "-o" % output_dir %% home_breadcrumb
   in
   let cmd = if as_json then cmd % "--as-json" else cmd in
 

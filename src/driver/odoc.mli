@@ -71,6 +71,7 @@ val html_generate :
   ?search_uris:Fpath.t list ->
   ?remap:Fpath.t ->
   ?as_json:bool ->
+  ?home_breadcrumb:string ->
   input_file:Fpath.t ->
   unit ->
   unit
@@ -78,6 +79,7 @@ val html_generate :
 val html_generate_asset :
   output_dir:string ->
   ?ignore_output:bool ->
+  ?home_breadcrumb:string ->
   input_file:Fpath.t ->
   asset_path:Fpath.t ->
   unit ->
@@ -90,6 +92,7 @@ val html_generate_source :
   ?sidebar:Fpath.t ->
   ?search_uris:Fpath.t list ->
   ?as_json:bool ->
+  ?home_breadcrumb:string ->
   input_file:Fpath.t ->
   unit ->
   unit
