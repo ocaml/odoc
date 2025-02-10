@@ -327,6 +327,7 @@ let html_generate ~occurrence_file ~remaps ~generate_json
    fun remap_file l ->
     if l.to_output then
       let output_dir = Fpath.to_string output_dir in
+      let home_breadcrumb = "Package index" in
       let input_file = l.odocl_file in
       match l.kind with
       | `Intf { hidden = true; _ } -> ()
@@ -340,15 +341,15 @@ let html_generate ~occurrence_file ~remaps ~generate_json
                 (Some search_uris, sidebar)
           in
           Odoc.html_generate_source ?search_uris ?sidebar ~output_dir
-            ~input_file ~source:src_path ();
+            ~input_file ~home_breadcrumb ~source:src_path ();
           Atomic.incr Stats.stats.generated_units;
           if generate_json then (
             Odoc.html_generate_source ?search_uris ?sidebar ~output_dir
-              ~input_file ~source:src_path ~as_json:true ();
+              ~input_file ~source:src_path ~as_json:true ~home_breadcrumb ();
             Atomic.incr Stats.stats.generated_units)
       | `Asset ->
           Odoc.html_generate_asset ~output_dir ~input_file:l.odoc_file
-            ~asset_path:l.input_file ()
+            ~asset_path:l.input_file ~home_breadcrumb ()
       | _ ->
           let search_uris, sidebar =
             match l.index with
@@ -359,11 +360,11 @@ let html_generate ~occurrence_file ~remaps ~generate_json
                 (Some search_uris, sidebar)
           in
           Odoc.html_generate ?search_uris ?sidebar ?remap:remap_file ~output_dir
-            ~input_file ();
+            ~input_file ~home_breadcrumb ();
           Atomic.incr Stats.stats.generated_units;
           if generate_json then (
             Odoc.html_generate ?search_uris ?sidebar ~output_dir ~input_file
-              ~as_json:true ();
+              ~as_json:true ~home_breadcrumb ();
             Atomic.incr Stats.stats.generated_units)
   in
   if List.length remaps = 0 then Fiber.List.iter (html_generate None) linked
