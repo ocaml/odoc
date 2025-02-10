@@ -55,9 +55,7 @@ let init_stats (units : Odoc_unit.any list) =
 
 open Eio.Std
 
-type partial =
-  ((string * string) * Odoc_unit.intf Odoc_unit.t list) list
-  * Odoc_unit.intf Odoc_unit.t list Util.StringMap.t
+type partial = Odoc_unit.intf Odoc_unit.t list Util.StringMap.t
 
 let unmarshal filename : partial =
   let ic = open_in_bin (Fpath.to_string filename) in
@@ -81,11 +79,16 @@ let find_partials odoc_dir :
         let index_m = Fpath.( / ) p odoc_partial_filename in
         match OS.File.exists index_m with
         | Ok true ->
-            let tbl', hashes' = unmarshal index_m in
-            List.iter
-              (fun (k, v) ->
-                Hashtbl.replace tbl k (Promise.create_resolved (Ok v)))
-              tbl';
+            let hashes' = unmarshal index_m in
+            Util.StringMap.iter
+              (fun h units ->
+                List.iter
+                  (fun u ->
+                    Hashtbl.replace tbl
+                      (h, Odoc.Id.to_string u.Odoc_unit.parent_id)
+                      (Promise.create_resolved ()))
+                  units)
+              hashes';
             Util.StringMap.union (fun _x o1 _o2 -> Some o1) hashes hashes'
         | _ -> hashes)
       Util.StringMap.empty odoc_dir
@@ -111,75 +114,62 @@ let compile ?partial ~partial_dir (all : Odoc_unit.any list) =
     let all_hashes =
       Util.StringMap.union (fun _x o1 o2 -> Some (o1 @ o2)) hashes other_hashes
     in
-    let compile_one compile_other hash =
-      match Util.StringMap.find_opt hash all_hashes with
-      | None ->
-          Logs.debug (fun m -> m "Error locating hash: %s" hash);
-          Error Not_found
-      | Some units ->
-          Ok
-            (List.map
-               (fun (unit : Odoc_unit.intf Odoc_unit.t) ->
-                 let deps = match unit.kind with `Intf { deps; _ } -> deps in
-                 let _fibers =
-                   Fiber.List.map
-                     (fun (other_unit_name, other_unit_hash) ->
-                       match compile_other other_unit_hash with
-                       | Ok r -> Some r
-                       | Error _exn ->
-                           Logs.debug (fun m ->
-                               m
-                                 "Error during compilation of module %s (hash \
-                                  %s, required by %s)"
-                                 other_unit_name other_unit_hash
-                                 (Fpath.filename unit.input_file));
-                           None)
-                     deps
-                 in
-                 let includes =
-                   List.fold_left
-                     (fun acc (_lib, path) -> Fpath.Set.add path acc)
-                     Fpath.Set.empty
-                     (Odoc_unit.Pkg_args.compiled_libs unit.pkg_args)
-                 in
-                 Odoc.compile ~output_dir:unit.output_dir
-                   ~input_file:unit.input_file ~includes
-                   ~warnings_tag:unit.pkgname ~parent_id:unit.parent_id;
-                 Atomic.incr Stats.stats.compiled_units;
-
-                 unit)
-               units)
-    in
-    let rec compile_mod :
-        string -> (Odoc_unit.intf Odoc_unit.t list, exn) Result.t =
-     fun hash ->
-      let units = try Util.StringMap.find hash hashes with _ -> [] in
-      let r =
+    let compile_one compile_other (unit : Odoc_unit.intf Odoc_unit.t) =
+      let (`Intf { Odoc_unit.deps; _ }) = unit.kind in
+      let _fibers =
         Fiber.List.map
-          (fun unit ->
-            match
-              Hashtbl.find_opt tbl
-                (hash, Odoc.Id.to_string unit.Odoc_unit.parent_id)
-            with
-            | Some p -> Promise.await p
-            | None ->
-                let p, r = Promise.create () in
-                Hashtbl.add tbl (hash, Odoc.Id.to_string unit.parent_id) p;
-                let result = compile_one compile_mod hash in
-                Promise.resolve r result;
-                result)
-          units
+          (fun (other_unit_name, other_unit_hash) ->
+            match compile_other other_unit_hash with
+            | Ok r -> Some r
+            | Error _exn ->
+                Logs.debug (fun m ->
+                    m
+                      "Error during compilation of module %s (hash %s, \
+                       required by %s)"
+                      other_unit_name other_unit_hash
+                      (Fpath.filename unit.input_file));
+                None)
+          deps
       in
-      let r =
+      let includes =
         List.fold_left
-          (fun acc x ->
-            match (acc, x) with
-            | Error _, _ -> acc
-            | Ok acc, Ok x -> Ok (x @ acc)
-            | Ok _, Error x -> Error x)
-          (Ok []) r
+          (fun acc (_lib, path) -> Fpath.Set.add path acc)
+          Fpath.Set.empty
+          (Odoc_unit.Pkg_args.compiled_libs unit.pkg_args)
       in
-      r
+      Odoc.compile ~output_dir:unit.output_dir ~input_file:unit.input_file
+        ~includes ~warnings_tag:unit.pkgname
+        ~parent_id:unit.parent_id;
+      (match unit.input_copy with
+      | None -> ()
+      | Some p -> Util.cp (Fpath.to_string unit.input_file) (Fpath.to_string p));
+      Atomic.incr Stats.stats.compiled_units
+    in
+    let rec compile_mod : string -> ('a list, [> `Msg of string ]) Result.t =
+     fun hash ->
+      try
+        let units = Util.StringMap.find hash all_hashes in
+        let r =
+          Fiber.List.map
+            (fun unit ->
+              match
+                Hashtbl.find_opt tbl
+                  (hash, Odoc.Id.to_string unit.Odoc_unit.parent_id)
+              with
+              | Some p ->
+                  Promise.await p;
+                  None
+              | None ->
+                  let p, r = Promise.create () in
+                  Hashtbl.add tbl (hash, Odoc.Id.to_string unit.parent_id) p;
+                  let _result = compile_one compile_mod unit in
+                  Promise.resolve r ();
+                  Some unit)
+            units
+        in
+        Ok (List.filter_map Fun.id r)
+      with Not_found ->
+        Error (`Msg ("Module with hash " ^ hash ^ " not found"))
     in
     compile_mod
   in
@@ -217,28 +207,11 @@ let compile ?partial ~partial_dir (all : Odoc_unit.any list) =
         Atomic.incr Stats.stats.compiled_mlds;
         Ok [ unit ]
   in
-  let res = Fiber.List.map compile all in
-  (* For voodoo mode, we need to keep which modules successfully compiled *)
-  let zipped =
-    List.filter_map
-      (function
-        | Ok (Odoc_unit.{ kind = `Intf { hash; _ }; parent_id; _ } :: _ as b) ->
-            let l =
-              List.filter_map
-                (function
-                  | Odoc_unit.{ kind = `Intf { hash = hash'; _ }; _ } as x
-                    when hash' = hash ->
-                      Some x
-                  | _ -> None)
-                b
-            in
-            Some ((hash, Odoc.Id.to_string parent_id), l)
-        | _ -> None)
-      res
-  in
+  let _ = Fiber.List.map compile all in
   (match partial with
-  | Some l -> marshal (zipped, hashes) Fpath.(l / odoc_partial_filename)
+  | Some l -> marshal hashes Fpath.(l / odoc_partial_filename)
   | None -> ());
+
   all
 
 type linked = Odoc_unit.any
