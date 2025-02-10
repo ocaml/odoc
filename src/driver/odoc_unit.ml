@@ -75,6 +75,8 @@ let pp_index fmt x =
 type 'a t = {
   parent_id : Odoc.Id.t;
   input_file : Fpath.t;
+  input_copy : Fpath.t option;
+      (* Used to stash cmtis from virtual libraries into the odoc dir for voodoo mode *)
   output_dir : Fpath.t;
   odoc_file : Fpath.t;
   odocl_file : Fpath.t;
@@ -185,12 +187,6 @@ let fix_virtual ~(precompiled_units : intf t list Util.StringMap.t)
             match Util.StringMap.find uhash all with
             | [ _ ] -> unit
             | xs -> (
-                Logs.debug (fun m ->
-                    m
-                      "Virtual library check: Selecting cmti for hash %s from \
-                       %d possibilities: %a"
-                      uhash (List.length xs) (Fmt.Dump.list pp)
-                      (xs :> any list));
                 let unit_name =
                   Fpath.rem_ext unit.input_file |> Fpath.basename
                 in
@@ -204,12 +200,32 @@ let fix_virtual ~(precompiled_units : intf t list Util.StringMap.t)
                     xs
                 with
                 | [ x ] -> { unit with input_file = x.input_file }
-                | xs ->
+                | xs -> (
                     Logs.debug (fun m ->
                         m
                           "Duplicate hash found, but multiple (%d) matching \
                            cmti found for %a"
                           (List.length xs) Fpath.pp unit.input_file);
-                    unit))
+                    let possibles =
+                      List.filter_map
+                        (fun x ->
+                          match x.input_copy with
+                          | Some x ->
+                              if
+                                x |> Bos.OS.File.exists
+                                |> Result.value ~default:false
+                              then Some x
+                              else None
+                          | None -> None)
+                        xs
+                    in
+                    match possibles with
+                    | [] ->
+                        Logs.debug (fun m -> m "Not replacing input file");
+                        unit
+                    | x :: _ ->
+                        Logs.debug (fun m ->
+                            m "Replacing input_file of unit with %a" Fpath.pp x);
+                        { unit with input_file = x })))
         units)
     units
