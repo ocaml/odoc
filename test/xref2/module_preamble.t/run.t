@@ -40,7 +40,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../../index.html">🏠</a> &#x00BB; 
+     <a href="../../index.html">Index</a> &#x00BB; 
      <a href="../index.html">test</a> &#x00BB; A
     </nav>
     <header class="odoc-preamble"><h1>Module <code><span>A</span></code></h1>
@@ -79,7 +79,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../../../index.html">🏠</a> &#x00BB; 
+     <a href="../../../index.html">Index</a> &#x00BB; 
      <a href="../../index.html">test</a> &#x00BB; <a href="../index.html">A</a>
       &#x00BB; B
     </nav>
@@ -122,7 +122,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../../index.html">🏠</a> &#x00BB; 
+     <a href="../../index.html">Index</a> &#x00BB; 
      <a href="../index.html">test</a> &#x00BB; A__b
     </nav>
     <header class="odoc-preamble">

@@ -1198,10 +1198,12 @@ module Odoc_html_args = struct
 
   let home_breadcrumb =
     let doc =
-      "Wether to add a 'Home' breadcrumb to go up the root of the given \
-       sidebar."
+      "Name for a 'Home' breadcrumb to go up the root of the given sidebar."
     in
-    Arg.(value & flag & info ~docv:"escape" ~doc [ "home-breadcrumb" ])
+    Arg.(
+      value
+      & opt (some string) None
+      & info ~docv:"escape" ~doc [ "home-breadcrumb" ])
 
   let theme_uri =
     let doc =
@@ -1292,7 +1294,7 @@ module Odoc_html_args = struct
       in
       let html_config =
         Odoc_html.Config.v ~theme_uri ~support_uri ~search_uris ~semantic_uris
-          ~indent ~flat ~open_details ~as_json ~remap ~home_breadcrumb ()
+          ~indent ~flat ~open_details ~as_json ~remap ?home_breadcrumb ()
       in
       { Html_page.html_config }
     in

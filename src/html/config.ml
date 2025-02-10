@@ -12,12 +12,12 @@ type t = {
   flat : bool;
   open_details : bool;
   as_json : bool;
-  home_breadcrumb : bool;
+  home_breadcrumb : string option;
 }
 
 let v ?(search_result = false) ?theme_uri ?support_uri ?(search_uris = [])
-    ~semantic_uris ~indent ~flat ~open_details ~as_json ~remap
-    ?(home_breadcrumb = true) () =
+    ~semantic_uris ~indent ~flat ~open_details ~as_json ~remap ?home_breadcrumb
+    () =
   {
     semantic_uris;
     indent;

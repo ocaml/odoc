@@ -47,7 +47,7 @@ Look if all the source files are generated:
    </head>
    <body class="odoc">
     <nav class="odoc-nav"><a href="../index.html">Up</a> – 
-     <a href="../../index.html">🏠</a> &#x00BB; 
+     <a href="../../index.html">Index</a> &#x00BB; 
      <a href="../index.html">Main</a> &#x00BB; A
     </nav>
     <header class="odoc-preamble">
