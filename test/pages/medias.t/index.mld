@@ -7,7 +7,7 @@
 Some image:
 
 - Without alt text:{image!caml.gif}
-- With an alt text: {{image!caml.gif}With alt text and {b emphasis}}
+- With an alt text: {{image!caml.png}With alt text and {b emphasis}}
 - Unresolved without alt text: {image!caqzdqzdml.gif}
 - Unresolved with alt text: {{image!camezfzeffl.gif}With alt text and {b emphasis}}
 
