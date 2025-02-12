@@ -74,6 +74,7 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
           Compile.html_generate ~occurrence_file ~remaps ~generate_json html_dir
             linked
         in
+        List.iter (fun pkg -> Status.file ~html_dir ~pkg ()) all;
         let _ = Odoc.support_files html_dir in
         Stats.stats.finished <- true;
         ())

@@ -38,14 +38,7 @@ let generate_status ~html_dir pkg =
       pkg.Packages.libraries;
     redirections
   in
-  let status = Status.json ~html_dir ~pkg ~redirections () in
-  let status = Yojson.Safe.pretty_to_string status in
-  let status_path = Fpath.(html_dir // Odoc_unit.pkg_dir pkg / "status.json") in
-  match Bos.OS.File.write status_path status with
-  | Ok () -> ()
-  | Error (`Msg msg) ->
-      Logs.err (fun m ->
-          m "Error when generating status.json for %s: %s" pkg.name msg)
+  Status.file ~html_dir ~pkg ~redirections ()
 
 let run package_name blessed actions odoc_dir odocl_dir
     { Common_args.verbose; html_dir; nb_workers; odoc_bin; odoc_md_bin; _ } =
