@@ -1,5 +1,17 @@
 (** Abstract syntax tree representing ocamldoc comments *)
 
+(* TODO: (@faycarsons)
+   We no longer need polymorphism in the parser, so for performance and
+   simplicity's sake the AST should (probably, assuming no issues in other
+   parts of Odoc) be refactored to use nominal sum types
+*)
+
+type list_kind = [ `Ordered | `Unordered ]
+type list_syntax = [ `Light | `Heavy ]
+type list_item = [ `Li | `Dash ]
+
+type table_cell_kind = [ `Header | `Data ]
+
 (** This is a syntactic representation of ocamldoc comments. See
     {{:https://ocaml.org/releases/4.12/htmlman/ocamldoc.html}The manual} for a detailed
     description of the syntax understood. Note that there is no attempt at semantic
@@ -40,8 +52,8 @@ type code_block_meta = {
   tags : string with_location option;
 }
 
-type media = Token.media
-type media_href = Token.media_href
+type media = [ `Audio | `Video | `Image ]
+type media_href = [ `Reference of string | `Link of string ]
 
 type code_block = {
   meta : code_block_meta option;
@@ -56,9 +68,7 @@ and nestable_block_element =
   | `Verbatim of string
   | `Modules of string with_location list
   | `List of
-    [ `Unordered | `Ordered ]
-    * [ `Light | `Heavy ]
-    * nestable_block_element with_location list list
+    list_kind * list_syntax * nestable_block_element with_location list list
   | `Table of table
   | `Math_block of string  (** @since 2.0.0 *)
   | `Media of reference_kind * media_href with_location * string * media

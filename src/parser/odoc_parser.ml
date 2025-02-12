@@ -79,6 +79,19 @@ let offset_to_location :
   in
   scan_to_last_newline reversed_newlines
 
+module Tester = struct
+  include Parser
+  module Lexer = Lexer
+  type token = Tokens.token
+  let is_EOI = function Tokens.END -> true | _ -> false
+  let pp_warning = Warning.to_string
+  let run = Writer.run
+  let reversed_newlines = reversed_newlines
+  let offset_to_location = offset_to_location
+  let string_of_token = Tokens.describe
+  let default_token = Tokens.Word ""
+end
+
 (* Given a Loc.point and the result of [parse_comment], this function returns
    a valid Lexing.position *)
 let position_of_point : t -> Loc.point -> Lexing.position =
@@ -100,21 +113,33 @@ let position_of_point : t -> Loc.point -> Lexing.position =
   { Lexing.pos_bol; pos_lnum; pos_cnum; pos_fname }
 
 (* The main entry point for this module *)
-let parse_comment ~location ~text =
-  let warnings = ref [] in
+let parse_comment : location:Lexing.position -> text:string -> t =
+ fun ~location ~text ->
   let reversed_newlines = reversed_newlines ~input:text in
-  let token_stream =
-    let lexbuf = Lexing.from_string text in
-    let offset_to_location =
-      offset_to_location ~reversed_newlines ~comment_location:location
-    in
-    let input : Lexer.input =
-      { file = location.Lexing.pos_fname; offset_to_location; warnings; lexbuf }
-    in
-    Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
+  let lexbuf = Lexing.from_string text in
+  (* We cannot directly pass parameters to Menhir without converting our parser
+     to a module functor. So we pass our current filename to the lexbuf here *)
+  Lexing.(
+    set_filename lexbuf location.pos_fname;
+    set_position lexbuf location);
+  let lexer_state =
+    Lexer.
+      {
+        warnings = [];
+        offset_to_location =
+          offset_to_location ~reversed_newlines ~comment_location:location;
+        file = Lexing.(location.pos_fname);
+      }
   in
-  let ast, warnings = Syntax.parse warnings token_stream in
-  { ast; warnings; reversed_newlines; original_pos = location }
+  let ast, warnings =
+    Writer.run ~input:text @@ Parser.main (Lexer.token lexer_state) lexbuf
+  in
+  {
+    ast;
+    warnings = warnings @ lexer_state.warnings;
+    reversed_newlines;
+    original_pos = location;
+  }
 
 (* Accessor functions, as [t] is opaque *)
 let warnings t = t.warnings

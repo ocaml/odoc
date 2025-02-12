@@ -1,5 +1,13 @@
 let capitalize_ascii = Astring.String.Ascii.capitalize
 
+let illegal : ?in_what:string -> string -> Loc.span -> Warning.t =
+ fun ?in_what illegal_section span ->
+  match in_what with
+  | Some ctx ->
+      Warning.make "Illegal character or syntax '%s' in %s" illegal_section ctx
+        span
+  | None -> Warning.make "Illegal character or syntax '%s'" illegal_section span
+
 let bad_markup : ?suggestion:string -> string -> Loc.span -> Warning.t =
  fun ?suggestion -> Warning.make ?suggestion "'%s': bad markup."
 

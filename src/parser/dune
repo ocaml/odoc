@@ -1,5 +1,9 @@
 (ocamllex lexer)
 
+(menhir
+ (modules parser)
+ (flags --table --external-tokens Tokens --explain))
+
 (library
  (name odoc_parser)
  (public_name odoc-parser)
@@ -9,4 +13,4 @@
   (backend bisect_ppx))
  (flags
   (:standard -w -50))
- (libraries astring result camlp-streams))
+ (libraries astring result camlp-streams menhirLib))
