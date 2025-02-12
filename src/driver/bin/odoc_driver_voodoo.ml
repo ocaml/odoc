@@ -38,24 +38,7 @@ let generate_status ~html_dir pkg =
       pkg.Packages.libraries;
     redirections
   in
-  let status =
-    let failed = `Bool false in
-    let files = `List [] in
-    let redirections =
-      Hashtbl.fold
-        (fun old_path new_path acc ->
-          `Assoc
-            [
-              ("old_path", `String (Fpath.to_string old_path));
-              ("new_path", `String (Fpath.to_string new_path));
-            ]
-          :: acc)
-        redirections []
-    in
-    let redirections = `List redirections in
-    `Assoc
-      [ ("files", files); ("failed", failed); ("redirections", redirections) ]
-  in
+  let status = Status.json ~html_dir ~pkg ~redirections () in
   let status = Yojson.Safe.pretty_to_string status in
   let status_path = Fpath.(html_dir // Odoc_unit.pkg_dir pkg / "status.json") in
   match Bos.OS.File.write status_path status with
