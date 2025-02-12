@@ -22,6 +22,8 @@
 - Fix incomplete handling of `--suppress-warnings` (now `--warnings-tag`)
   (@jonludlam, #1304)
 - Fix bug in odoc_driver_voodoo related to virtual libraries (@jonludlam, #1309)
+- Fix issue #610 where `odoc html-fragment` wasn't rendering headings correctly
+  (@jonludlam, #1306)
 
 # 3.0.0~beta1
 
