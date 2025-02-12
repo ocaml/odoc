@@ -40,7 +40,7 @@ its RHS correctly replaced with an `int`
     "source_loc": "None",
     "doc": {
       "elements": [],
-      "suppress_warnings": "false"
+      "warnings_tag": "None"
     },
     "equation": {
       "params": [],

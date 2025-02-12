@@ -435,7 +435,7 @@ val sg : Odoc_model.Lang.Signature.t =
              ARG);
          ihash = 379411454; ikey = "mt_ARG.r_Root.p_None"};
        source_loc = None;
-       doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+       doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
        canonical = None;
        expr =
         Some
@@ -461,12 +461,10 @@ val sg : Odoc_model.Lang.Signature.t =
                   ihash = 208722936; ikey = "mt_S.mt_ARG.r_Root.p_None"};
                 source_loc = None;
                 doc =
-                 {Odoc_model__.Comment.elements = [];
-                  suppress_warnings = false};
+                 {Odoc_model__.Comment.elements = []; warnings_tag = None};
                 canonical = None; expr = None}];
             compiled = true; removed = [];
-            doc =
-             {Odoc_model__.Comment.elements = []; suppress_warnings = false}})};
+            doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}})};
      Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
       {Odoc_model.Lang.Module.id =
         {Odoc_model__Paths_types.iv =
@@ -481,7 +479,7 @@ val sg : Odoc_model.Lang.Signature.t =
              F);
          ihash = 748202139; ikey = "m_F.r_Root.p_None"};
        source_loc = None;
-       doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+       doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
        type_ =
         Odoc_model.Lang.Module.ModuleType
          (Odoc_model.Lang.ModuleType.Functor
@@ -539,12 +537,12 @@ val sg : Odoc_model.Lang.Signature.t =
                           source_loc = None;
                           doc =
                            {Odoc_model__.Comment.elements = [];
-                            suppress_warnings = false};
+                            warnings_tag = None};
                           canonical = None; expr = None}];
                       compiled = true; removed = [];
                       doc =
                        {Odoc_model__.Comment.elements = [];
-                        suppress_warnings = false}});
+                        warnings_tag = None}});
                  p_path =
                   `Resolved
                     (`Identifier

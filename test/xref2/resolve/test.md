@@ -102,7 +102,7 @@ Simplest possible resolution:
               t);
           ihash = 1016576344; ikey = "t_t.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         equation =
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -122,7 +122,7 @@ Simplest possible resolution:
               u);
           ihash = 15973539; ikey = "t_u.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         equation =
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -147,7 +147,7 @@ Simplest possible resolution:
           constraints = []};
         representation = None})];
     compiled = true; removed = [];
-    doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false}};
+    doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}};
  expansion = None; linked = false; source_loc = None; canonical = None}
 ```
 
@@ -252,7 +252,7 @@ Basic resolution 2, environment lookup:
               M);
           ihash = 716453475; ikey = "m_M.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         type_ =
          Odoc_model.Lang.Module.ModuleType
           (Odoc_model.Lang.ModuleType.Signature
@@ -278,16 +278,14 @@ Basic resolution 2, environment lookup:
                    ihash = 746522241; ikey = "t_t.m_M.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  canonical = None;
                  equation =
                   {Odoc_model.Lang.TypeDecl.Equation.params = [];
                    private_ = false; manifest = None; constraints = []};
                  representation = None})];
              compiled = true; removed = [];
-             doc =
-              {Odoc_model__.Comment.elements = []; suppress_warnings = false}});
+             doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}});
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
        {Odoc_model.Lang.TypeDecl.id =
@@ -303,7 +301,7 @@ Basic resolution 2, environment lookup:
               u);
           ihash = 15973539; ikey = "t_u.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         equation =
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -330,7 +328,7 @@ Basic resolution 2, environment lookup:
           constraints = []};
         representation = None})];
     compiled = true; removed = [];
-    doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false}};
+    doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}};
  expansion = None; linked = false; source_loc = None; canonical = None}
 ```
 
@@ -408,7 +406,7 @@ Basic resolution 3, module type:
               M);
           ihash = 459143770; ikey = "mt_M.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         expr =
          Some
@@ -435,16 +433,14 @@ Basic resolution 3, module type:
                    ihash = 825731485; ikey = "t_t.mt_M.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  canonical = None;
                  equation =
                   {Odoc_model.Lang.TypeDecl.Equation.params = [];
                    private_ = false; manifest = None; constraints = []};
                  representation = None})];
              compiled = true; removed = [];
-             doc =
-              {Odoc_model__.Comment.elements = []; suppress_warnings = false}})};
+             doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
        {Odoc_model.Lang.Module.id =
          {Odoc_model__Paths_types.iv =
@@ -459,7 +455,7 @@ Basic resolution 3, module type:
               N);
           ihash = 502470005; ikey = "m_N.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         type_ =
          Odoc_model.Lang.Module.ModuleType
           (Odoc_model.Lang.ModuleType.Path
@@ -489,7 +485,7 @@ Basic resolution 3, module type:
                       source_loc = None;
                       doc =
                        {Odoc_model__.Comment.elements = [];
-                        suppress_warnings = false};
+                        warnings_tag = None};
                       canonical = None;
                       equation =
                        {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -497,8 +493,7 @@ Basic resolution 3, module type:
                       representation = None})];
                   compiled = true; removed = [];
                   doc =
-                   {Odoc_model__.Comment.elements = [];
-                    suppress_warnings = false}});
+                   {Odoc_model__.Comment.elements = []; warnings_tag = None}});
              p_path =
               `Resolved
                 (`Identifier
@@ -529,7 +524,7 @@ Basic resolution 3, module type:
               u);
           ihash = 15973539; ikey = "t_u.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         equation =
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -602,7 +597,7 @@ Basic resolution 4, module type:
               M);
           ihash = 459143770; ikey = "mt_M.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         expr =
          Some
@@ -629,8 +624,7 @@ Basic resolution 4, module type:
                    ihash = 998243332; ikey = "m_N.mt_M.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
                    (Odoc_model.Lang.ModuleType.Signature
@@ -666,7 +660,7 @@ Basic resolution 4, module type:
                           source_loc = None;
                           doc =
                            {Odoc_model__.Comment.elements = [];
-                            suppress_warnings = false};
+                            warnings_tag = None};
                           canonical = None;
                           equation =
                            {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -676,11 +670,10 @@ Basic resolution 4, module type:
                       compiled = true; removed = [];
                       doc =
                        {Odoc_model__.Comment.elements = [];
-                        suppress_warnings = false}});
+                        warnings_tag = None}});
                  canonical = None; hidden = false})];
              compiled = true; removed = [];
-             doc =
-              {Odoc_model__.Comment.elements = []; suppress_warnings = false}})};
+             doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
        {Odoc_model.Lang.Module.id =
          {Odoc_model__Paths_types.iv =
@@ -695,7 +688,7 @@ Basic resolution 4, module type:
               A);
           ihash = 353272258; ikey = "m_A.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         type_ =
          Odoc_model.Lang.Module.ModuleType
           (Odoc_model.Lang.ModuleType.Path
@@ -725,7 +718,7 @@ Basic resolution 4, module type:
                       source_loc = None;
                       doc =
                        {Odoc_model__.Comment.elements = [];
-                        suppress_warnings = false};
+                        warnings_tag = None};
                       type_ =
                        Odoc_model.Lang.Module.ModuleType
                         (Odoc_model.Lang.ModuleType.Signature
@@ -856,7 +849,7 @@ and then we can look up the type `t`.
               M);
           ihash = 459143770; ikey = "mt_M.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         expr =
          Some
@@ -882,8 +875,7 @@ and then we can look up the type `t`.
                    ihash = 887387323; ikey = "mt_N.mt_M.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  canonical = None;
                  expr =
                   Some
@@ -920,7 +912,7 @@ and then we can look up the type `t`.
                           source_loc = None;
                           doc =
                            {Odoc_model__.Comment.elements = [];
-                            suppress_warnings = false};
+                            warnings_tag = None};
                           canonical = None;
                           equation =
                            {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -930,7 +922,7 @@ and then we can look up the type `t`.
                       compiled = true; removed = [];
                       doc =
                        {Odoc_model__.Comment.elements = [];
-                        suppress_warnings = false}})};
+                        warnings_tag = None}})};
                Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.Module.id =
@@ -952,8 +944,7 @@ and then we can look up the type `t`.
                    ihash = 301928208; ikey = "m_B.mt_M.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
                    (Odoc_model.Lang.ModuleType.Path
@@ -992,7 +983,7 @@ and then we can look up the type `t`.
                                source_loc = None;
                                doc =
                                 {Odoc_model__.Comment.elements = [];
-                                 suppress_warnings = false};
+                                 warnings_tag = None};
                                canonical = None;
                                equation =
                                 {Odoc_model.Lang.TypeDecl.Equation.params =
@@ -1003,7 +994,7 @@ and then we can look up the type `t`.
                            compiled = true; removed = [];
                            doc =
                             {Odoc_model__.Comment.elements = [];
-                             suppress_warnings = false}});
+                             warnings_tag = None}});
                       p_path =
                        `Resolved
                          (`Identifier
@@ -1062,7 +1053,7 @@ and then we can look up the type `t`.
               M);
           ihash = 459143770; ikey = "mt_M.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         expr =
          Some
@@ -1088,8 +1079,7 @@ and then we can look up the type `t`.
                    ihash = 887387323; ikey = "mt_N.mt_M.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  canonical = None;
                  expr =
                   Some
@@ -1126,7 +1116,7 @@ and then we can look up the type `t`.
                           source_loc = None;
                           doc =
                            {Odoc_model__.Comment.elements = [];
-                            suppress_warnings = false};
+                            warnings_tag = None};
                           canonical = None;
                           equation =
                            {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -1136,7 +1126,7 @@ and then we can look up the type `t`.
                       compiled = true; removed = [];
                       doc =
                        {Odoc_model__.Comment.elements = [];
-                        suppress_warnings = false}})};
+                        warnings_tag = None}})};
                Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
                 {Odoc_model.Lang.Module.id =
@@ -1158,8 +1148,7 @@ and then we can look up the type `t`.
                    ihash = 573009176; ikey = "m_X.mt_M.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
                    (Odoc_model.Lang.ModuleType.Signature
@@ -1195,7 +1184,7 @@ and then we can look up the type `t`.
                           source_loc = None;
                           doc =
                            {Odoc_model__.Comment.elements = [];
-                            suppress_warnings = false};
+                            warnings_tag = None};
                           type_ =
                            Odoc_model.Lang.Module.ModuleType
                             (Odoc_model.Lang.ModuleType.Path
@@ -1283,7 +1272,7 @@ Ensure a substitution is taken into account during resolution:
               A);
           ihash = 231492881; ikey = "mt_A.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         expr =
          Some
@@ -1310,8 +1299,7 @@ Ensure a substitution is taken into account during resolution:
                    ihash = 564635453; ikey = "m_M.mt_A.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
                    (Odoc_model.Lang.ModuleType.Signature
@@ -1346,12 +1334,12 @@ Ensure a substitution is taken into account during resolution:
                           source_loc = None;
                           doc =
                            {Odoc_model__.Comment.elements = [];
-                            suppress_warnings = false};
+                            warnings_tag = None};
                           canonical = None; expr = None}];
                       compiled = true; removed = [];
                       doc =
                        {Odoc_model__.Comment.elements = [];
-                        suppress_warnings = false}});
+                        warnings_tag = None}});
                  canonical = None; hidden = false});
                Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
@@ -1374,8 +1362,7 @@ Ensure a substitution is taken into account during resolution:
                    ihash = 50158313; ikey = "m_N.mt_A.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
                    (Odoc_model.Lang.ModuleType.Path
@@ -1408,8 +1395,7 @@ Ensure a substitution is taken into account during resolution:
                                 S)))});
                  canonical = None; hidden = false})];
              compiled = true; removed = [];
-             doc =
-              {Odoc_model__.Comment.elements = []; suppress_warnings = false}})};
+             doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
        {Odoc_model.Lang.Module.id =
          {Odoc_model__Paths_types.iv =
@@ -1475,7 +1461,7 @@ Ensure a destructive substitution is taken into account during resolution:
               A);
           ihash = 231492881; ikey = "mt_A.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         expr =
          Some
@@ -1502,8 +1488,7 @@ Ensure a destructive substitution is taken into account during resolution:
                    ihash = 564635453; ikey = "m_M.mt_A.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
                    (Odoc_model.Lang.ModuleType.Signature
@@ -1538,12 +1523,12 @@ Ensure a destructive substitution is taken into account during resolution:
                           source_loc = None;
                           doc =
                            {Odoc_model__.Comment.elements = [];
-                            suppress_warnings = false};
+                            warnings_tag = None};
                           canonical = None; expr = None}];
                       compiled = true; removed = [];
                       doc =
                        {Odoc_model__.Comment.elements = [];
-                        suppress_warnings = false}});
+                        warnings_tag = None}});
                  canonical = None; hidden = false});
                Odoc_model.Lang.Signature.Module
                 (Odoc_model.Lang.Signature.Ordinary,
@@ -1566,8 +1551,7 @@ Ensure a destructive substitution is taken into account during resolution:
                    ihash = 50158313; ikey = "m_N.mt_A.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  type_ =
                   Odoc_model.Lang.Module.ModuleType
                    (Odoc_model.Lang.ModuleType.Path
@@ -1600,8 +1584,7 @@ Ensure a destructive substitution is taken into account during resolution:
                                 S)))});
                  canonical = None; hidden = false})];
              compiled = true; removed = [];
-             doc =
-              {Odoc_model__.Comment.elements = []; suppress_warnings = false}})};
+             doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
        {Odoc_model.Lang.Module.id =
          {Odoc_model__Paths_types.iv =
@@ -1662,7 +1645,7 @@ Resolve a module alias:
               A);
           ihash = 353272258; ikey = "m_A.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         type_ =
          Odoc_model.Lang.Module.ModuleType
           (Odoc_model.Lang.ModuleType.Signature
@@ -1688,16 +1671,14 @@ Resolve a module alias:
                    ihash = 394964294; ikey = "t_t.m_A.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  canonical = None;
                  equation =
                   {Odoc_model.Lang.TypeDecl.Equation.params = [];
                    private_ = false; manifest = None; constraints = []};
                  representation = None})];
              compiled = true; removed = [];
-             doc =
-              {Odoc_model__.Comment.elements = []; suppress_warnings = false}});
+             doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}});
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
        {Odoc_model.Lang.Module.id =
@@ -1713,7 +1694,7 @@ Resolve a module alias:
               B);
           ihash = 814134997; ikey = "m_B.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         type_ =
          Odoc_model.Lang.Module.Alias
           (`Resolved
@@ -1745,7 +1726,7 @@ Resolve a module alias:
               t);
           ihash = 1016576344; ikey = "t_t.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         equation =
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -1834,7 +1815,7 @@ Resolve a module alias:
               A);
           ihash = 353272258; ikey = "m_A.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         type_ =
          Odoc_model.Lang.Module.ModuleType
           (Odoc_model.Lang.ModuleType.Signature
@@ -1860,16 +1841,14 @@ Resolve a module alias:
                    ihash = 394964294; ikey = "t_t.m_A.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  canonical = None;
                  equation =
                   {Odoc_model.Lang.TypeDecl.Equation.params = [];
                    private_ = false; manifest = None; constraints = []};
                  representation = None})];
              compiled = true; removed = [];
-             doc =
-              {Odoc_model__.Comment.elements = []; suppress_warnings = false}});
+             doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}});
         canonical = None; hidden = false});
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
        {Odoc_model.Lang.Module.id =
@@ -1885,7 +1864,7 @@ Resolve a module alias:
               B);
           ihash = 814134997; ikey = "m_B.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         type_ =
          Odoc_model.Lang.Module.Alias
           (`Resolved
@@ -1917,7 +1896,7 @@ Resolve a module alias:
               C);
           ihash = 43786577; ikey = "m_C.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         type_ =
          Odoc_model.Lang.Module.Alias
           (`Resolved
@@ -2004,7 +1983,7 @@ Resolve a functor:
               S);
           ihash = 527535255; ikey = "mt_S.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         expr =
          Some
@@ -2031,16 +2010,14 @@ Resolve a functor:
                    ihash = 130637260; ikey = "t_t.mt_S.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  canonical = None;
                  equation =
                   {Odoc_model.Lang.TypeDecl.Equation.params = [];
                    private_ = false; manifest = None; constraints = []};
                  representation = None})];
              compiled = true; removed = [];
-             doc =
-              {Odoc_model__.Comment.elements = []; suppress_warnings = false}})};
+             doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
        {Odoc_model.Lang.Module.id =
          {Odoc_model__Paths_types.iv =
@@ -2055,7 +2032,7 @@ Resolve a functor:
               F);
           ihash = 748202139; ikey = "m_F.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         type_ =
          Odoc_model.Lang.Module.ModuleType
           (Odoc_model.Lang.ModuleType.Functor
@@ -2114,7 +2091,7 @@ Resolve a functor:
                            source_loc = None;
                            doc =
                             {Odoc_model__.Comment.elements = [];
-                             suppress_warnings = false};
+                             warnings_tag = None};
                            canonical = None;
                            equation =
                             {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -2124,7 +2101,7 @@ Resolve a functor:
                        compiled = true; removed = [];
                        doc =
                         {Odoc_model__.Comment.elements = [];
-                         suppress_warnings = false}});
+                         warnings_tag = None}});
                   p_path =
                    `Resolved
                      (`Identifier
@@ -2220,7 +2197,7 @@ Resolve a functor:
               S);
           ihash = 527535255; ikey = "mt_S.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         expr =
          Some
@@ -2247,16 +2224,14 @@ Resolve a functor:
                    ihash = 130637260; ikey = "t_t.mt_S.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  canonical = None;
                  equation =
                   {Odoc_model.Lang.TypeDecl.Equation.params = [];
                    private_ = false; manifest = None; constraints = []};
                  representation = None})];
              compiled = true; removed = [];
-             doc =
-              {Odoc_model__.Comment.elements = []; suppress_warnings = false}})};
+             doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}})};
       Odoc_model.Lang.Signature.ModuleType
        {Odoc_model.Lang.ModuleType.id =
          {Odoc_model__Paths_types.iv =
@@ -2271,7 +2246,7 @@ Resolve a functor:
               S1);
           ihash = 289200525; ikey = "mt_S1.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         expr =
          Some
@@ -2331,7 +2306,7 @@ Resolve a functor:
                            source_loc = None;
                            doc =
                             {Odoc_model__.Comment.elements = [];
-                             suppress_warnings = false};
+                             warnings_tag = None};
                            canonical = None;
                            equation =
                             {Odoc_model.Lang.TypeDecl.Equation.params = [];
@@ -2341,7 +2316,7 @@ Resolve a functor:
                        compiled = true; removed = [];
                        doc =
                         {Odoc_model__.Comment.elements = [];
-                         suppress_warnings = false}});
+                         warnings_tag = None}});
                   p_path =
                    `Resolved
                      (`Identifier
@@ -2455,7 +2430,7 @@ Functor app nightmare:
               Type);
           ihash = 359972898; ikey = "mt_Type.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         canonical = None;
         expr =
          Some
@@ -2481,12 +2456,10 @@ Functor app nightmare:
                    ihash = 1011869183; ikey = "mt_T.mt_Type.r_Root.p_None"};
                  source_loc = None;
                  doc =
-                  {Odoc_model__.Comment.elements = [];
-                   suppress_warnings = false};
+                  {Odoc_model__.Comment.elements = []; warnings_tag = None};
                  canonical = None; expr = None}];
              compiled = true; removed = [];
-             doc =
-              {Odoc_model__.Comment.elements = []; suppress_warnings = false}})};
+             doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}})};
       Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
        {Odoc_model.Lang.Module.id =
          {Odoc_model__Paths_types.iv =
@@ -2501,7 +2474,7 @@ Functor app nightmare:
               App);
           ihash = 855073208; ikey = "m_App.r_Root.p_None"};
         source_loc = None;
-        doc = {Odoc_model__.Comment.elements = []; suppress_warnings = false};
+        doc = {Odoc_model__.Comment.elements = []; warnings_tag = None};
         type_ =
          Odoc_model.Lang.Module.ModuleType
           (Odoc_model.Lang.ModuleType.Functor
@@ -2559,12 +2532,12 @@ Functor app nightmare:
                            source_loc = None;
                            doc =
                             {Odoc_model__.Comment.elements = [];
-                             suppress_warnings = false};
+                             warnings_tag = None};
                            canonical = None; expr = None}];
                        compiled = true; removed = [];
                        doc =
                         {Odoc_model__.Comment.elements = [];
-                         suppress_warnings = false}});
+                         warnings_tag = None}});
                   p_path =
                    `Resolved
                      (`Identifier

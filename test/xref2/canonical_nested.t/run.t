@@ -57,7 +57,7 @@ unresolved in the paths though:
     "source_loc": "None",
     "doc": {
       "elements": [],
-      "suppress_warnings": "false"
+      "warnings_tag": "None"
     },
     "type_": {
       "Alias": [
@@ -126,7 +126,7 @@ unresolved in the paths though:
     "source_loc": "None",
     "doc": {
       "elements": [],
-      "suppress_warnings": "false"
+      "warnings_tag": "None"
     },
     "type_": {
       "Alias": [
@@ -194,7 +194,7 @@ unresolved in the paths though:
     "source_loc": "None",
     "doc": {
       "elements": [],
-      "suppress_warnings": "false"
+      "warnings_tag": "None"
     },
     "type_": {
       "Alias": [
@@ -289,7 +289,7 @@ unresolved in the paths though:
                       "source_loc": "None",
                       "doc": {
                         "elements": [],
-                        "suppress_warnings": "false"
+                        "warnings_tag": "None"
                       },
                       "equation": {
                         "params": [],
@@ -305,7 +305,7 @@ unresolved in the paths though:
               "compiled": "true",
               "doc": {
                 "elements": [],
-                "suppress_warnings": "false"
+                "warnings_tag": "None"
               }
             }
           }

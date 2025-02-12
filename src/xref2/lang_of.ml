@@ -1096,7 +1096,7 @@ and docs :
   {
     elements =
       List.rev_map (fun d -> block_element parent d) ds.elements |> List.rev;
-    suppress_warnings = ds.suppress_warnings;
+    warnings_tag = ds.warnings_tag;
   }
 
 and docs_or_stop parent (d : Component.CComment.docs_or_stop) =

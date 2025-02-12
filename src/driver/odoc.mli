@@ -25,7 +25,7 @@ val compile :
   output_dir:Fpath.t ->
   input_file:Fpath.t ->
   includes:Fpath.set ->
-  suppress_warnings:bool ->
+  warnings_tag:string option ->
   parent_id:Id.t ->
   unit
 val compile_md :
@@ -41,6 +41,7 @@ val link :
   docs:(string * Fpath.t) list ->
   libs:(string * Fpath.t) list ->
   includes:Fpath.t list ->
+  warnings_tags:string list ->
   ?current_package:string ->
   unit ->
   unit

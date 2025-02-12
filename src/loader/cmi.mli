@@ -21,13 +21,13 @@ module Paths = Odoc_model.Paths
 
 type env = {
   ident_env : Ident_env.t; (** Environment *)
-  suppress_warnings : bool (** Suppress warnings *)
+  warnings_tag : string option (** Used to suppress warnings *)
 }
 
 val read_interface :
   Odoc_model.Paths.Identifier.ContainerPage.t option ->
   string ->
-  suppress_warnings:bool ->
+  warnings_tag:string option ->
   Odoc_model.Compat.signature ->
   Paths.Identifier.RootModule.t * Odoc_model.Lang.Signature.t
 
