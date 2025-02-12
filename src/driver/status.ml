@@ -42,3 +42,13 @@ let json ~html_dir ~pkg ?(redirections = Hashtbl.create 0) () =
       ("failed", failed);
       ("redirections", redirections);
     ]
+
+let file ~html_dir ~pkg ?(redirections = Hashtbl.create 0) () =
+  let json = json ~html_dir ~pkg ~redirections () in
+  let json = Yojson.Safe.pretty_to_string json in
+  let status_path = Fpath.(html_dir // Odoc_unit.pkg_dir pkg / "status.json") in
+  match Bos.OS.File.write status_path json with
+  | Ok () -> ()
+  | Error (`Msg msg) ->
+      Logs.err (fun m ->
+          m "Error when generating status.json for %s: %s" pkg.name msg)
