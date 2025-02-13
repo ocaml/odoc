@@ -607,6 +607,7 @@ tt, code, pre {
   border: 1px solid var(--pre-border-color);
   border-radius: 5px;
   overflow-x: auto;
+  text-indent: initial;
 }
 
 .odoc p code,
