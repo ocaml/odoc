@@ -9,6 +9,7 @@
 ### Fixed
 
 - Fix bug causing stack overflow in odoc_driver_monorepo (@jonludlam, #1304)
+- Fix backtrace on invalid input in compile-deps (@jonludlam, #1313)
 
 # 3.0.0~beta1
 
