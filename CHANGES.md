@@ -9,6 +9,7 @@
 ### Fixed
 
 - Fix bug causing stack overflow in odoc_driver_monorepo (@jonludlam, #1304)
+- Fix bug in our CSS hitting verbatim blocks in tags (@jonludlam, #1312)
 
 # 3.0.0~beta1
 
