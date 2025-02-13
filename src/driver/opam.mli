@@ -20,6 +20,7 @@ val all_opam_packages : unit -> package list
 
 val classify_docs : Fpath.t -> string option -> Fpath.t list -> doc_file list
 
+val check : string list -> (unit, Util.StringSet.t) Result.t
 val deps : string list -> package list
 val pkg_to_dir_map : unit -> fpaths_of_package * package_of_fpath
 val pp : Format.formatter -> package -> unit
