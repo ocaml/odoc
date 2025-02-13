@@ -9,6 +9,8 @@
 ### Fixed
 
 - Fix bug causing stack overflow in odoc_driver_monorepo (@jonludlam, #1304)
+- Fix poor behaviour when running odoc_driver with unknown or missing packages
+  (@jonludlam, #1311)
 
 # 3.0.0~beta1
 
