@@ -25,6 +25,8 @@
 - Fix bug in odoc_driver_voodoo related to virtual libraries (@jonludlam, #1309)
 - Fix issue #610 where `odoc html-fragment` wasn't rendering headings correctly
   (@jonludlam, #1306)
+- Fix bug in `odoc classify` when there are archives that can't be co-linked
+  (@jonludlam, #1310)
 
 # 3.0.0~beta1
 
