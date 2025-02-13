@@ -16,6 +16,8 @@
 - Fix bug causing stack overflow in odoc_driver_monorepo (@jonludlam, #1304)
 - Fix backtrace on invalid input in compile-deps (@jonludlam, #1313)
 - Fix bug in our CSS hitting verbatim blocks in tags (@jonludlam, #1312)
+- Fix poor behaviour when running odoc_driver with unknown or missing packages
+  (@jonludlam, #1311)
 
 # 3.0.0~beta1
 
