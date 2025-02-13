@@ -141,6 +141,7 @@ module Deps = struct
         let deps =
           List.filter
             (fun l2 ->
+              ((StringSet.inter l1.Archive.modules l2.Archive.modules |> StringSet.cardinal) = 0) && (* Can't be co-linked if there are common module names *)
               not
               @@ StringSet.is_empty
                    (StringSet.inter l1.Archive.impl_deps l2.Archive.modules))
