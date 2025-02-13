@@ -1411,15 +1411,29 @@ end)
 module Depends = struct
   module Compile = struct
     let list_dependencies input_files =
-      let deps =
-        Depends.for_compile_step (List.map ~f:Fs.File.of_string input_files)
-      in
-      List.iter
-        ~f:(fun t ->
-          Printf.printf "%s %s\n" (Depends.Compile.name t)
-            (Digest.to_hex @@ Depends.Compile.digest t))
-        deps;
-      flush stdout
+      try
+        let deps =
+          Depends.for_compile_step (List.map ~f:Fs.File.of_string input_files)
+        in
+        List.iter
+          ~f:(fun t ->
+            Printf.printf "%s %s\n" (Depends.Compile.name t)
+              (Digest.to_hex @@ Depends.Compile.digest t))
+          deps;
+        flush stdout
+      with Cmi_format.Error e ->
+        let msg =
+          match e with
+          | Not_an_interface file ->
+              Printf.sprintf "File %S is not an interface" file
+          | Wrong_version_interface (file, v) ->
+              Printf.sprintf "File %S is compiled for %s version of OCaml" file
+                v
+          | Corrupted_interface file ->
+              Printf.sprintf "File %S is corrupted" file
+        in
+        Printf.eprintf "ERROR: %s\n%!" msg;
+        exit 1
 
     let cmd =
       let input =
