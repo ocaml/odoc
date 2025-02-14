@@ -281,6 +281,29 @@ let dune_overrides () =
               [])
       | _ -> [])
 
+let check pkgs =
+  let cmd =
+    Cmd.(
+      opam % "list" % "-i" % "--columns" % "package" % "--color" % "never"
+      % "-s")
+  in
+  let cmd = List.fold_left (fun cmd pkg -> Cmd.(cmd % pkg)) cmd pkgs in
+  let out = Util.lines_of_process cmd in
+  let res =
+    List.filter_map
+      (fun x ->
+        match Astring.String.cut ~sep:"." x with
+        | Some (name, _version) -> Some name
+        | None -> None)
+      out
+  in
+  let missing = Util.StringSet.(diff (of_list pkgs) (of_list res)) in
+  let dune_pkgnames =
+    Util.StringSet.of_list (List.map (fun (p, _) -> p.name) (dune_overrides ()))
+  in
+  let missing = Util.StringSet.(diff missing dune_pkgnames) in
+  if Util.StringSet.cardinal missing = 0 then Ok () else Error missing
+
 let pkg_to_dir_map () =
   let dune_overrides = dune_overrides () in
   let pkgs = all_opam_packages () in

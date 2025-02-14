@@ -1,6 +1,19 @@
 (* Odoc driver *)
 open Odoc_driver_lib
 
+let check_packages packages =
+  match packages with
+  | [] -> ()
+  | _ -> (
+      match Opam.check packages with
+      | Ok () -> ()
+      | Error missing ->
+          Logs.err (fun m ->
+              m "Error: Unknown/uninstalled packages: %a"
+                Fmt.Dump.(list string)
+                (Util.StringSet.elements missing));
+          exit 1)
+
 let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
     ~generate_grep ~index_grep ~remap ~index_mld packages
     {
@@ -20,6 +33,7 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
 
   if verbose then Logs.set_level (Some Logs.Debug);
   Logs.set_reporter (Logs_fmt.reporter ());
+  check_packages packages;
   Stats.init_nprocs nb_workers;
 
   let index_mld_content =
