@@ -34,12 +34,19 @@ let from_mld ~xref_base_uri ~resolver ~output ~warnings_options input =
     Odoc_xref2.Link.resolve_page ~filename:input_s env page
     |> Odoc_model.Error.handle_warnings ~warnings_options
     >>= fun resolved ->
-    let page = Odoc_document.Comment.to_ir resolved.content.elements in
+    let page =
+      match Odoc_document.Renderer.document_of_page ~syntax:OCaml resolved with
+      | Page p -> p
+      | Source_page _ -> assert false
+    in
     let config =
       Odoc_html.Config.v ~semantic_uris:false ~indent:false ~flat:false
         ~open_details:false ~as_json:false ~remap:[] ()
     in
-    let html = Odoc_html.Generator.doc ~config ~xref_base_uri page in
+    let html =
+      Odoc_html.Generator.items ~config ~resolve:(Base xref_base_uri)
+        (page.Odoc_document.Types.Page.preamble @ page.items)
+    in
     let oc = open_out (Fs.File.to_string output) in
     let fmt = Format.formatter_of_out_channel oc in
 
