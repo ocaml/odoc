@@ -9,6 +9,8 @@
 ### Fixed
 
 - Fix bug causing stack overflow in odoc_driver_monorepo (@jonludlam, #1304)
+- Fix bug in `odoc classify` when there are archives that can't be co-linked
+  (@jonludlam, #1310)
 
 # 3.0.0~beta1
 
