@@ -13,6 +13,8 @@
 ### Fixed
 
 - Fix bug causing stack overflow in odoc_driver_monorepo (@jonludlam, #1304)
+- Fix issue #610 where `odoc html-fragment` wasn't rendering headings correctly
+  (@jonludlam, #1306)
 
 # 3.0.0~beta1
 
