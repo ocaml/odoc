@@ -649,7 +649,7 @@ module Page = struct
     List.map (include_ ~config ~sidebar) subpages
 
   and page ~config ~sidebar p : Odoc_document.Renderer.page =
-    let { Page.preamble; items = i; url; source_anchor } =
+    let { Page.preamble = _; items = i; url; source_anchor } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
     let subpages = subpages ~config ~sidebar @@ Doctree.Subpages.compute p in
@@ -666,6 +666,9 @@ module Page = struct
     let uses_katex = Doctree.Math.has_math_elements p in
     let toc = Toc.gen_toc ~config ~resolve ~path:url i in
     let content = (items ~config ~resolve i :> any Html.elt list) in
+    let header, preamble = Doctree.PageTitle.render_title ?source_anchor p in
+    let header = items ~config ~resolve header in
+    let preamble = items ~config ~resolve preamble in
     if Config.as_json config then
       let source_anchor =
         match source_anchor with
@@ -673,15 +676,12 @@ module Page = struct
         | None -> None
       in
       Html_fragment_json.make ~config
-        ~preamble:(items ~config ~resolve preamble :> any Html.elt list)
-        ~breadcrumbs ~toc ~url ~uses_katex ~source_anchor content subpages
+        ~preamble:(preamble :> any Html.elt list)
+        ~header ~breadcrumbs ~toc ~url ~uses_katex ~source_anchor content
+        subpages
     else
-      let header =
-        items ~config ~resolve
-          (Doctree.PageTitle.render_title ?source_anchor p @ preamble)
-      in
-      Html_page.make ~sidebar ~config ~header ~toc ~breadcrumbs ~url ~uses_katex
-        content subpages
+      Html_page.make ~sidebar ~config ~header:(header @ preamble) ~toc
+        ~breadcrumbs ~url ~uses_katex content subpages
 
   and source_page ~config ~sidebar sp =
     let { Source_page.url; contents } = sp in
@@ -700,7 +700,8 @@ module Page = struct
       items ~config ~resolve (Doctree.PageTitle.render_src_title sp)
     in
     if Config.as_json config then
-      Html_fragment_json.make_src ~config ~url ~breadcrumbs ~sidebar [ doc ]
+      Html_fragment_json.make_src ~config ~url ~breadcrumbs ~sidebar ~header
+        [ doc ]
     else
       Html_page.make_src ~breadcrumbs ~header ~config ~url ~sidebar title
         [ doc ]
