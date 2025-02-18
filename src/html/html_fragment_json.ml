@@ -42,7 +42,7 @@ let json_of_sidebar config sidebar =
   | Some sidebar -> `String (json_of_html config sidebar)
 
 let make ~config ~preamble ~url ~breadcrumbs ~toc ~uses_katex ~source_anchor
-    content children =
+    ~header content children =
   let filename = Link.Path.as_filename ~config url in
   let filename = Fpath.add_ext ".json" filename in
   let json_to_string json = Json.to_string json in
@@ -54,6 +54,7 @@ let make ~config ~preamble ~url ~breadcrumbs ~toc ~uses_katex ~source_anchor
       (json_to_string
          (`Object
             [
+              ("header", `String (json_of_html config header));
               ("type", `String "documentation");
               ("uses_katex", `Bool uses_katex);
               ("breadcrumbs", json_of_breadcrumbs config breadcrumbs);
@@ -65,7 +66,7 @@ let make ~config ~preamble ~url ~breadcrumbs ~toc ~uses_katex ~source_anchor
   in
   { Odoc_document.Renderer.filename; content; children; path = url }
 
-let make_src ~config ~url ~breadcrumbs ~sidebar content =
+let make_src ~config ~url ~breadcrumbs ~sidebar ~header content =
   let filename = Link.Path.as_filename ~config url in
   let filename = Fpath.add_ext ".json" filename in
   let htmlpp = Html.pp_elt ~indent:(Config.indent config) () in
@@ -79,6 +80,7 @@ let make_src ~config ~url ~breadcrumbs ~sidebar content =
               ("type", `String "source");
               ("breadcrumbs", json_of_breadcrumbs config breadcrumbs);
               ("global_toc", global_toc);
+              ("header", `String (json_of_html config header));
               ( "content",
                 `String
                   (String.concat ~sep:""

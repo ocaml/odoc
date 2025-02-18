@@ -311,10 +311,13 @@ end = struct
 end
 
 module PageTitle : sig
-  val render_title : ?source_anchor:Url.t -> Page.t -> Item.t list
+  val render_title : ?source_anchor:Url.t -> Page.t -> Item.t list * Item.t list
+  (** Also returns the "new" preamble, since in the case of pages, the title may
+      be extracted from the preamle *)
+
   val render_src_title : Source_page.t -> Item.t list
 end = struct
-  let format_title ~source_anchor kind name =
+  let format_title ~source_anchor kind name preamble =
     let mk title =
       let level = 0 and label = None in
       [ Types.Item.Heading { level; label; title; source_anchor } ]
@@ -323,13 +326,17 @@ end = struct
       mk (Types.inline (Text (s ^ " ")) :: Codefmt.code (Codefmt.txt name))
     in
     match kind with
-    | `Module -> prefix "Module"
-    | `Parameter _ -> prefix "Parameter"
-    | `ModuleType -> prefix "Module type"
-    | `ClassType -> prefix "Class type"
-    | `Class -> prefix "Class"
-    | `SourcePage -> prefix "Source file"
-    | `Page | `LeafPage | `File -> []
+    | `Module -> (prefix "Module", preamble)
+    | `Parameter _ -> (prefix "Parameter", preamble)
+    | `ModuleType -> (prefix "Module type", preamble)
+    | `ClassType -> (prefix "Class type", preamble)
+    | `Class -> (prefix "Class", preamble)
+    | `SourcePage -> (prefix "Source file", preamble)
+    | `File -> ([], preamble)
+    | `Page | `LeafPage -> (
+        match preamble with
+        | (Item.Heading _ as h) :: rest -> ([ h ], rest)
+        | _ -> ([], preamble))
 
   let make_name_from_path { Url.Path.name; parent; _ } =
     match parent with
@@ -337,10 +344,13 @@ end = struct
     | Some p -> Printf.sprintf "%s.%s" p.name name
 
   let render_title ?source_anchor (p : Page.t) =
-    format_title ~source_anchor p.url.kind (make_name_from_path p.url)
+    format_title ~source_anchor p.url.kind
+      (make_name_from_path p.url)
+      p.preamble
 
   let render_src_title (p : Source_page.t) =
-    format_title ~source_anchor:None p.url.kind (make_name_from_path p.url)
+    format_title ~source_anchor:None p.url.kind (make_name_from_path p.url) []
+    |> fst
 end
 
 module Math : sig

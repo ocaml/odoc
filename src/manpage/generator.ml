@@ -542,9 +542,8 @@ let on_sub subp =
 
 let page p =
   reset_heading ();
-  let header =
-    Doctree.PageTitle.render_title p @ Shift.compute ~on_sub p.preamble
-  in
+  let header, preamble = Doctree.PageTitle.render_title p in
+  let header = header @ Shift.compute ~on_sub preamble in
   let i = Shift.compute ~on_sub p.items in
   macro "TH" {|%s 3 "" "Odoc" "OCaml Library"|} p.url.name
   ++ macro "SH" "Name"
