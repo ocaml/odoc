@@ -124,7 +124,7 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
       (* Since blank lines were ignored when calculating
          [least_amount_of_whitespace], their length might be less than the
          amount. *)
-      if String.length line < n then line
+      if String.length line < n then ""
       else String.sub line n (String.length line - n)
     in
     let lines =
