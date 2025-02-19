@@ -60,7 +60,9 @@ let aggregate files file_list ~warnings_options:_ ~dst =
     let files = files @ new_files in
     let from_file file : Odoc_occurrences.Table.t =
       let ic = open_in_bin (Fs.File.to_string file) in
-      Marshal.from_channel ic
+      let res = Marshal.from_channel ic in
+      close_in ic;
+      res
     in
     let occtbl =
       match files with
