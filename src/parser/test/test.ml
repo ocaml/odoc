@@ -2947,6 +2947,21 @@ let%expect_test _ =
                 ((f.ml (1 30) (1 37)) (bold (((f.ml (1 33) (1 36)) (word foo))))))))))))
          (warnings ())) |}]
 
+    let delimited_code_block_with_meta_and_output =
+      test "{delim@ocaml env=f1 version>=4.06 [foo]delim[output {b foo}]}";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 61))
+            (code_block
+             (((f.ml (1 7) (1 12)) ocaml)
+              (((f.ml (1 13) (1 33)) "env=f1 version>=4.06")))
+             ((f.ml (1 35) (1 38)) foo)
+             ((paragraph
+               (((f.ml (1 45) (1 51)) (word output)) ((f.ml (1 51) (1 52)) space)
+                ((f.ml (1 52) (1 59)) (bold (((f.ml (1 55) (1 58)) (word foo))))))))))))
+         (warnings ())) |}]
+
     (* Code block contains ']['. *)
     let code_block_with_output_without_delim =
       test "{[foo][output {b foo}]}";
