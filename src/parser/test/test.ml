@@ -2622,9 +2622,10 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (3 7)) (code_block ((f.ml (1 2) (3 5))  "foo\
-                                                               \n \
+                                                               \n\
                                                                \nbar")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let leading_whitespace_with_whitespace_line_long =
       test "{[ foo\n   \n bar]}";
