@@ -104,15 +104,15 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
       | _ -> least_so_far)
   in
 
-  let first_line_max_drop, least_amount_of_whitespace =
+  let least_amount_of_whitespace =
     match lines with
-    | [] -> 0, None
+    | [] -> None
     | first_line :: tl ->
       begin match count_leading_whitespace first_line with
         | Some n ->
-          n, least_amount_of_whitespace (Some (first_line_offset + n)) tl
+          least_amount_of_whitespace (Some (first_line_offset + n)) tl
         | None ->
-          0, least_amount_of_whitespace None tl
+          least_amount_of_whitespace None tl
       end
   in
 
@@ -131,8 +131,9 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
       match lines with
       | [] -> []
       | first_line :: tl ->
-        drop (min first_line_max_drop least_amount_of_whitespace) first_line
-        :: List.map (drop least_amount_of_whitespace) tl
+         let first_line_drop = max 0 (least_amount_of_whitespace - first_line_offset) in
+         drop first_line_drop first_line
+         :: List.map (drop least_amount_of_whitespace) tl
     in
     String.concat "\n" lines
 
