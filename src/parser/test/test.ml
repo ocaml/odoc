@@ -3169,6 +3169,7 @@ let%expect_test "code blocks" =
 
     let stdlib_float =
       test "
+      For example, consider the following program:
   {[let size = 100_000_000
   let a = Float.Array.make size 1.
   let update a f () =
@@ -3180,9 +3181,17 @@ let%expect_test "code blocks" =
       ";
       [%expect {|
         ((output
-          (((f.ml (2 2) (9 4))
+          (((f.ml (2 6) (2 50))
+            (paragraph
+             (((f.ml (2 6) (2 9)) (word For)) ((f.ml (2 9) (2 10)) space)
+              ((f.ml (2 10) (2 18)) (word example,)) ((f.ml (2 18) (2 19)) space)
+              ((f.ml (2 19) (2 27)) (word consider)) ((f.ml (2 27) (2 28)) space)
+              ((f.ml (2 28) (2 31)) (word the)) ((f.ml (2 31) (2 32)) space)
+              ((f.ml (2 32) (2 41)) (word following)) ((f.ml (2 41) (2 42)) space)
+              ((f.ml (2 42) (2 50)) (word program:)))))
+           ((f.ml (3 2) (10 4))
             (code_block
-             ((f.ml (2 4) (9 2))
+             ((f.ml (3 4) (10 2))
                "let size = 100_000_000\
               \nlet a = Float.Array.make size 1.\
               \nlet update a f () =\
@@ -3268,6 +3277,8 @@ let d1 = Domain.spawn (update b (fun x -> x + 1))
 
     let stdlib_arg =
       test "
+   arguments from the command line to the program. For example:
+
 {[
      let usage_msg = ...
      let verbose = ref false
@@ -3277,9 +3288,21 @@ let d1 = Domain.spawn (update b (fun x -> x + 1))
       ";
       [%expect {|
         ((output
-          (((f.ml (2 0) (7 2))
+          (((f.ml (2 3) (2 63))
+            (paragraph
+             (((f.ml (2 3) (2 12)) (word arguments)) ((f.ml (2 12) (2 13)) space)
+              ((f.ml (2 13) (2 17)) (word from)) ((f.ml (2 17) (2 18)) space)
+              ((f.ml (2 18) (2 21)) (word the)) ((f.ml (2 21) (2 22)) space)
+              ((f.ml (2 22) (2 29)) (word command)) ((f.ml (2 29) (2 30)) space)
+              ((f.ml (2 30) (2 34)) (word line)) ((f.ml (2 34) (2 35)) space)
+              ((f.ml (2 35) (2 37)) (word to)) ((f.ml (2 37) (2 38)) space)
+              ((f.ml (2 38) (2 41)) (word the)) ((f.ml (2 41) (2 42)) space)
+              ((f.ml (2 42) (2 50)) (word program.)) ((f.ml (2 50) (2 51)) space)
+              ((f.ml (2 51) (2 54)) (word For)) ((f.ml (2 54) (2 55)) space)
+              ((f.ml (2 55) (2 63)) (word example:)))))
+           ((f.ml (4 0) (9 2))
             (code_block
-             ((f.ml (2 2) (7 0))
+             ((f.ml (4 2) (9 0))
                "let usage_msg = ...\
               \nlet verbose = ref false\
               \nlet input_files = ref []\
@@ -3322,18 +3345,48 @@ let d1 = Domain.spawn (update b (fun x -> x + 1))
 
      let stdlib_dynarray =
        test "
+      but this would involve intermediary allocations.
+
       {[match find x with
         | None -> ...
         | Some v -> ...]}
        ";
        [%expect {|
          ((output
-           (((f.ml (2 6) (4 25))
+           (((f.ml (2 6) (2 54))
+             (paragraph
+              (((f.ml (2 6) (2 9)) (word but)) ((f.ml (2 9) (2 10)) space)
+               ((f.ml (2 10) (2 14)) (word this)) ((f.ml (2 14) (2 15)) space)
+               ((f.ml (2 15) (2 20)) (word would)) ((f.ml (2 20) (2 21)) space)
+               ((f.ml (2 21) (2 28)) (word involve)) ((f.ml (2 28) (2 29)) space)
+               ((f.ml (2 29) (2 41)) (word intermediary)) ((f.ml (2 41) (2 42)) space)
+               ((f.ml (2 42) (2 54)) (word allocations.)))))
+            ((f.ml (4 6) (6 25))
              (code_block
-              ((f.ml (2 8) (4 23))
+              ((f.ml (4 8) (6 23))
                 "match find x with\
                \n| None -> ...\
                \n| Some v -> ...")))))
+          (warnings ())) |}]
+
+     let stdlib_either =
+       test "
+    For example:
+
+{[List.partition_map:
+    ('a -> ('b, 'c) Either.t) -> 'a list -> 'b list * 'c list]}
+       ";
+       [%expect {|
+         ((output
+           (((f.ml (2 4) (2 16))
+             (paragraph
+              (((f.ml (2 4) (2 7)) (word For)) ((f.ml (2 7) (2 8)) space)
+               ((f.ml (2 8) (2 16)) (word example:)))))
+            ((f.ml (4 0) (5 63))
+             (code_block
+              ((f.ml (4 2) (5 61))
+                "List.partition_map:\
+               \n('a -> ('b, 'c) Either.t) -> 'a list -> 'b list * 'c list")))))
           (warnings ())) |}]
 
   end in
