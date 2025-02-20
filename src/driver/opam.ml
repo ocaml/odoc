@@ -287,7 +287,7 @@ let check pkgs =
       opam % "list" % "-i" % "--columns" % "package" % "--color" % "never"
       % "-s")
   in
-  let cmd = List.fold_left (fun cmd pkg -> Cmd.(cmd % pkg)) cmd pkgs in
+  let cmd = List.fold_left Cmd.( % ) cmd pkgs in
   let out = Util.lines_of_process cmd in
   let res =
     List.filter_map
