@@ -208,7 +208,7 @@ let fix_virtual ~(precompiled_units : intf t list Util.StringMap.t)
                            cmti found for %a"
                           (List.length xs) Fpath.pp unit.input_file);
                     let possibles =
-                      List.filter_map
+                      List.find_map
                         (fun x ->
                           match x.input_copy with
                           | Some x ->
@@ -221,10 +221,10 @@ let fix_virtual ~(precompiled_units : intf t list Util.StringMap.t)
                         xs
                     in
                     match possibles with
-                    | [] ->
+                    | None ->
                         Logs.debug (fun m -> m "Not replacing input file");
                         unit
-                    | x :: _ ->
+                    | Some x ->
                         Logs.debug (fun m ->
                             m "Replacing input_file of unit with %a" Fpath.pp x);
                         { unit with input_file = x })))
