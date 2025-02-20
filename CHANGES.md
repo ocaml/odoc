@@ -18,6 +18,8 @@
 - Fix bug in our CSS hitting verbatim blocks in tags (@jonludlam, #1312)
 - Fix poor behaviour when running odoc_driver with unknown or missing packages
   (@jonludlam, #1311)
+- Clean up how leading indentation is trimmed in code blocks
+  (@noahtheduke, #1318)
 
 # 3.0.0~beta1
 
