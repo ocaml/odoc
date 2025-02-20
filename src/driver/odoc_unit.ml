@@ -76,7 +76,8 @@ type 'a t = {
   parent_id : Odoc.Id.t;
   input_file : Fpath.t;
   input_copy : Fpath.t option;
-      (* Used to stash cmtis from virtual libraries into the odoc dir for voodoo mode *)
+      (* Used to stash cmtis from virtual libraries into the odoc dir for voodoo mode.
+         See https://github.com/ocaml/odoc/pull/1309 *)
   output_dir : Fpath.t;
   odoc_file : Fpath.t;
   odocl_file : Fpath.t;
