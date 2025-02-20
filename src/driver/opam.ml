@@ -301,7 +301,7 @@ let check pkgs =
   let dune_pkgnames =
     Util.StringSet.of_list (List.map (fun (p, _) -> p.name) (dune_overrides ()))
   in
-  let missing = Util.StringSet.(diff missing dune_pkgnames) in
+  let missing = Util.StringSet.diff missing dune_pkgnames in
   if Util.StringSet.cardinal missing = 0 then Ok () else Error missing
 
 let pkg_to_dir_map () =
