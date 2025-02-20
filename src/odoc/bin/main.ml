@@ -146,8 +146,10 @@ let warnings_options =
     let doc =
       "Warnings tag. This is useful when you want to declare that warnings \
        that would be generated resolving the references defined in this unit \
-       should be ignored if they end up in expansions in other units. When \
-       linking, only warnings with specified tags are reported."
+       should be ignored if they end up in expansions in other units. If this \
+       option is passed, link-time warnings will be suppressed unless the link \
+       command is passed the tag via the --warnings-tags parameter. A suitable \
+       tag would be the name of the package."
     in
     let env = Arg.env_var "ODOC_WARNINGS_TAG" ~doc in
     Arg.(
@@ -711,8 +713,7 @@ end = struct
 
   let warnings_tags =
     let doc =
-      "Warnings tags. Only report warnings in references that have been \
-       compiled with these specific tags. Can be passed multiple times."
+      "Filter warnings that were compiled with a tag that is not in the list of --warnings-tags passed."
     in
     let env = Arg.env_var "ODOC_WARNINGS_TAGS" ~doc in
     Arg.(value & opt_all string [] & info ~docs ~doc ~env [ "warnings-tags" ])
