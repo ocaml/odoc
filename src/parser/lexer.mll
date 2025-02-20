@@ -131,9 +131,14 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
       match lines with
       | [] -> []
       | first_line :: tl ->
-         let first_line_drop = max 0 (least_amount_of_whitespace - first_line_offset) in
-         drop first_line_drop first_line
-         :: List.map (drop least_amount_of_whitespace) tl
+         let first_line =
+           let spaces_to_remove = least_amount_of_whitespace - first_line_offset in
+           if spaces_to_remove >= 0 then
+             drop spaces_to_remove first_line
+           else
+             (String.make (-spaces_to_remove) ' ') ^ first_line
+         in
+         first_line :: List.map (drop least_amount_of_whitespace) tl
     in
     String.concat "\n" lines
 
