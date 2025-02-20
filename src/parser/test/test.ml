@@ -2483,7 +2483,7 @@ let%expect_test _ =
   end in
   ()
 
-let%expect_test _ =
+let%expect_test "code blocks" =
   let module Code_block = struct
     let basic =
       test "{[foo]}";
@@ -2593,7 +2593,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "  foo\
+          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\
                                                                \nbar")))))
          (warnings ())) |}]
 
@@ -2603,7 +2603,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 11)) (code_block ((f.ml (1 2) (2 9))  "foo\
-                                                                \n   bar")))))
+                                                                \nbar")))))
          (warnings ())) |}]
 
     let leading_whitespace_with_empty_line =
@@ -2622,7 +2622,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (3 7)) (code_block ((f.ml (1 2) (3 5))  "foo\
-                                                               \n \
+                                                               \n\
                                                                \nbar")))))
          (warnings ())) |}]
 
@@ -3166,6 +3166,176 @@ let%expect_test _ =
               (code_block (((f.ml (1 7) (1 12)) ocaml) ())
                ((f.ml (1 13) (1 18)) "foo ") ()))))
            (warnings ())) |}]
+
+    let stdlib_float =
+      test "
+  {[let size = 100_000_000
+  let a = Float.Array.make size 1.
+  let update a f () =
+     Float.Array.iteri (fun i x -> Float.Array.set a i (f x)) a
+  let d1 = Domain.spawn (update a (fun x -> x +. 1.))
+  let d2 = Domain.spawn (update a (fun x ->  2. *. x +. 1.))
+  let () = Domain.join d1; Domain.join d2
+  ]}
+      ";
+      [%expect {|
+        ((output
+          (((f.ml (2 2) (9 4))
+            (code_block
+             ((f.ml (2 4) (9 2))
+               "let size = 100_000_000\
+              \nlet a = Float.Array.make size 1.\
+              \nlet update a f () =\
+              \n   Float.Array.iteri (fun i x -> Float.Array.set a i (f x)) a\
+              \nlet d1 = Domain.spawn (update a (fun x -> x +. 1.))\
+              \nlet d2 = Domain.spawn (update a (fun x ->  2. *. x +. 1.))\
+              \nlet () = Domain.join d1; Domain.join d2")))))
+         (warnings ())) |}]
+
+    let stdlib_condition =
+      test "
+   {[
+     Mutex.lock m;
+     while not P do
+       Mutex.unlock m; Mutex.lock m
+     done;
+     <update the data structure>;
+     Mutex.unlock m
+   ]}
+      ";
+      [%expect {|
+        ((output
+          (((f.ml (2 3) (9 5))
+            (code_block
+             ((f.ml (2 5) (9 3))
+               "Mutex.lock m;\
+              \nwhile not P do\
+              \n  Mutex.unlock m; Mutex.lock m\
+              \ndone;\
+              \n<update the data structure>;\
+              \nMutex.unlock m")))))
+         (warnings ())) |}]
+
+    let stdlib_bytes_1 =
+      test "
+   {[
+let string_init len f : string =
+  let s = Bytes.create len in
+  for i = 0 to len - 1 do Bytes.set s i (f i) done;
+  Bytes.unsafe_to_string s
+   ]}
+      ";
+      [%expect {|
+        ((output
+          (((f.ml (2 3) (7 5))
+            (code_block
+             ((f.ml (2 5) (7 3))
+               "let string_init len f : string =\
+              \n  let s = Bytes.create len in\
+              \n  for i = 0 to len - 1 do Bytes.set s i (f i) done;\
+              \n  Bytes.unsafe_to_string s")))))
+         (warnings ())) |}]
+
+    let stdlib_bytes_2 =
+      test "
+    For example, consider the following program:
+{[let size = 100_000_000
+let b = Bytes.make size  ' '
+let update b f ()  =
+  Bytes.iteri (fun i x -> Bytes.set b i (Char.chr (f (Char.code x)))) b
+let d1 = Domain.spawn (update b (fun x -> x + 1))
+]}
+      ";
+      [%expect {|
+        ((output
+          (((f.ml (2 4) (2 48))
+            (paragraph
+             (((f.ml (2 4) (2 7)) (word For)) ((f.ml (2 7) (2 8)) space)
+              ((f.ml (2 8) (2 16)) (word example,)) ((f.ml (2 16) (2 17)) space)
+              ((f.ml (2 17) (2 25)) (word consider)) ((f.ml (2 25) (2 26)) space)
+              ((f.ml (2 26) (2 29)) (word the)) ((f.ml (2 29) (2 30)) space)
+              ((f.ml (2 30) (2 39)) (word following)) ((f.ml (2 39) (2 40)) space)
+              ((f.ml (2 40) (2 48)) (word program:)))))
+           ((f.ml (3 0) (8 2))
+            (code_block
+             ((f.ml (3 2) (8 0))
+               "let size = 100_000_000\
+              \nlet b = Bytes.make size  ' '\
+              \nlet update b f ()  =\
+              \n  Bytes.iteri (fun i x -> Bytes.set b i (Char.chr (f (Char.code x)))) b\
+              \nlet d1 = Domain.spawn (update b (fun x -> x + 1))")))))
+         (warnings ())) |}]
+
+    let stdlib_arg =
+      test "
+{[
+     let usage_msg = ...
+     let verbose = ref false
+     let input_files = ref []
+     let output_file = ref \"\"
+]}
+      ";
+      [%expect {|
+        ((output
+          (((f.ml (2 0) (7 2))
+            (code_block
+             ((f.ml (2 2) (7 0))
+               "let usage_msg = ...\
+              \nlet verbose = ref false\
+              \nlet input_files = ref []\
+              \nlet output_file = ref \"\"")))))
+         (warnings ())) |}]
+
+     let stdlib_nativeint =
+       test "
+    {[
+     let zero: nativeint = 0n
+     let one: nativeint = 1n
+     let m_one: nativeint = -1n
+    ]}
+       ";
+       [%expect {|
+         ((output
+           (((f.ml (2 4) (6 6))
+             (code_block
+              ((f.ml (2 6) (6 4))
+                "let zero: nativeint = 0n\
+               \nlet one: nativeint = 1n\
+               \nlet m_one: nativeint = -1n")))))
+          (warnings ())) |}]
+
+     let stdlib_queue =
+       test "
+    {[
+    # let q = Queue.create ()
+    val q : '_weak1 Queue.t = <abstr>
+    ]}
+       ";
+       [%expect {|
+         ((output
+           (((f.ml (2 4) (5 6))
+             (code_block
+              ((f.ml (2 6) (5 4))
+                "# let q = Queue.create ()\
+               \nval q : '_weak1 Queue.t = <abstr>")))))
+          (warnings ())) |}]
+
+     let stdlib_dynarray =
+       test "
+      {[match find x with
+        | None -> ...
+        | Some v -> ...]}
+       ";
+       [%expect {|
+         ((output
+           (((f.ml (2 6) (4 25))
+             (code_block
+              ((f.ml (2 8) (4 23))
+                "match find x with\
+               \n| None -> ...\
+               \n| Some v -> ...")))))
+          (warnings ())) |}]
+
   end in
   ()
 
