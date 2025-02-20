@@ -713,7 +713,8 @@ end = struct
 
   let warnings_tags =
     let doc =
-      "Filter warnings that were compiled with a tag that is not in the list of --warnings-tags passed."
+      "Filter warnings that were compiled with a tag that is not in the list \
+       of --warnings-tags passed."
     in
     let env = Arg.env_var "ODOC_WARNINGS_TAGS" ~doc in
     Arg.(value & opt_all string [] & info ~docs ~doc ~env [ "warnings-tags" ])
