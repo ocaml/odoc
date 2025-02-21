@@ -138,8 +138,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.any list) =
           (Odoc_unit.Pkg_args.compiled_libs unit.pkg_args)
       in
       Odoc.compile ~output_dir:unit.output_dir ~input_file:unit.input_file
-        ~includes ~warnings_tag:unit.pkgname
-        ~parent_id:unit.parent_id;
+        ~includes ~warnings_tag:unit.pkgname ~parent_id:unit.parent_id;
       (match unit.input_copy with
       | None -> ()
       | Some p -> Util.cp (Fpath.to_string unit.input_file) (Fpath.to_string p));
