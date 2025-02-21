@@ -147,26 +147,25 @@ let compile ?partial ~partial_dir (all : Odoc_unit.any list) =
     in
     let rec compile_mod : string -> ('a list, [> `Msg of string ]) Result.t =
      fun hash ->
+      let map_units =
+        Fiber.List.map (fun unit ->
+            match
+              Hashtbl.find_opt tbl
+                (hash, Odoc.Id.to_string unit.Odoc_unit.parent_id)
+            with
+            | Some p ->
+                Promise.await p;
+                None
+            | None ->
+                let p, r = Promise.create () in
+                Hashtbl.add tbl (hash, Odoc.Id.to_string unit.parent_id) p;
+                let _result = compile_one compile_mod unit in
+                Promise.resolve r ();
+                Some unit)
+      in
       try
         let units = Util.StringMap.find hash all_hashes in
-        let r =
-          Fiber.List.map
-            (fun unit ->
-              match
-                Hashtbl.find_opt tbl
-                  (hash, Odoc.Id.to_string unit.Odoc_unit.parent_id)
-              with
-              | Some p ->
-                  Promise.await p;
-                  None
-              | None ->
-                  let p, r = Promise.create () in
-                  Hashtbl.add tbl (hash, Odoc.Id.to_string unit.parent_id) p;
-                  let _result = compile_one compile_mod unit in
-                  Promise.resolve r ();
-                  Some unit)
-            units
-        in
+        let r = map_units units in
         Ok (List.filter_map Fun.id r)
       with Not_found ->
         Error (`Msg ("Module with hash " ^ hash ^ " not found"))
