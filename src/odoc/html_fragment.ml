@@ -1,3 +1,4 @@
+open Odoc_utils
 open Or_error
 
 let from_mld ~xref_base_uri ~resolver ~output ~warnings_options input =
@@ -47,11 +48,8 @@ let from_mld ~xref_base_uri ~resolver ~output ~warnings_options input =
       Odoc_html.Generator.items ~config ~resolve:(Base xref_base_uri)
         (page.Odoc_document.Types.Page.preamble @ page.items)
     in
-    let oc = open_out (Fs.File.to_string output) in
-    let fmt = Format.formatter_of_out_channel oc in
-
+    Io_utils.with_formatter_out (Fs.File.to_string output) @@ fun fmt ->
     Format.fprintf fmt "%a@." (Format.pp_print_list (Tyxml.Html.pp_elt ())) html;
-    close_out oc;
     Ok ()
   in
   match Fs.File.read input with

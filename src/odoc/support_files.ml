@@ -1,3 +1,5 @@
+open Odoc_utils
+
 let should_include ~without_theme file =
   if without_theme then
     match file with
@@ -25,9 +27,7 @@ let write =
       let dir = Fs.File.dirname name in
       Fs.Directory.mkdir_p dir;
       let name = Fs.File.to_string name in
-      let channel = open_out name in
-      output_string channel content;
-      close_out channel)
+      Io_utils.with_open_out name (fun oc -> output_string oc content))
 
 let print_filenames =
   iter_files (fun name _content -> print_endline (Fs.File.to_string name))

@@ -1,3 +1,4 @@
+open Odoc_utils
 open Odoc_document
 open Or_error
 open Odoc_model
@@ -53,10 +54,8 @@ let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
   let pages = renderer.Renderer.render extra sidebar doc in
   Renderer.traverse pages ~f:(fun filename content ->
       let filename = prepare ~extra_suffix ~output_dir:root_dir filename in
-      let oc = open_out (Fs.File.to_string filename) in
-      let fmt = Format.formatter_of_out_channel oc in
-      Format.fprintf fmt "%t@?" content;
-      close_out oc)
+      Io_utils.with_formatter_out (Fs.File.to_string filename) @@ fun fmt ->
+      Format.fprintf fmt "%t@?" content)
 
 let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
     =
