@@ -101,8 +101,14 @@ module Io_utils = struct
   let read_lines fname =
     List.rev (fold_lines fname (fun line acc -> line :: acc) [])
 
+  let with_open_out fname f =
+    _with_resource (open_out fname) ~close:close_out_noerr f
+
   let with_open_out_bin fname f =
     _with_resource (open_out_bin fname) ~close:close_out_noerr f
+
+  let with_formatter_out fname f =
+    with_open_out fname (fun oc -> f (Format.formatter_of_out_channel oc))
 
   let marshal fname v =
     _with_resource (open_out_bin fname) ~close:close_out_noerr (fun oc ->
