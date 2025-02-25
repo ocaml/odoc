@@ -3,8 +3,8 @@
 (* Given a directory with cmis, cmas and so on, partition the modules between the libraries *)
 (* open Bos *)
 
+open Odoc_utils
 open Cmo_format
-open Result
 
 module StringSet = Set.Make (String)
 let list_of_stringset x =
@@ -222,12 +222,12 @@ let classify files libraries =
           (fun cur path ->
             if not (Sys.file_exists path) then cur
             else
-              let ic = open_in_bin path in
+              Io_utils.with_open_in_bin path (fun ic ->
               match read_library ic cur with
               | Ok lib -> lib
               | Error (`Msg m) ->
                   Format.eprintf "Error reading library: %s\n%!" m;
-                  cur)
+                  cur))
           (Archive.empty (Fpath.basename lpath)) paths)
       libraries
   in
@@ -411,7 +411,7 @@ let classify files libraries =
       let archive = Archive.filter_by_cmis cmi_names archive_all in
       if Archive.has_modules archive then
         Printf.printf "%s %s\n" a.Archive.name
-          (archive.Archive.modules |> StringSet.elements |> String.concat " "))
+          (archive.Archive.modules |> StringSet.elements |> String.concat ~sep:" "))
     archives;
 
   ()
