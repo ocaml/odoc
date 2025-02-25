@@ -134,17 +134,21 @@ module Deps = struct
     in
     loop deps
 
-  (* Return a dag showing dependencies between archives due to module initialisation order *)
+  (* Return a dag showing dependencies between archives due to module initialisation order.
+     In rare cases, modules are shared between archives which would lead to the graph
+     having cycles, so we explicitly remove those from consideration by checking that the
+     intersection of module names in the archives is empty. These archives can't be linked
+     together anyway. *)
   let impl_deps archives =
     List.map
-      (fun l1 ->
+      (fun (l1 : Archive.t) ->
         let deps =
           List.filter
-            (fun l2 ->
-              ((StringSet.inter l1.Archive.modules l2.Archive.modules |> StringSet.cardinal) = 0) && (* Can't be co-linked if there are common module names *)
+            (fun (l2 : Archive.t) ->
+              ((StringSet.inter l1.modules l2.modules |> StringSet.cardinal) = 0) &&
               not
               @@ StringSet.is_empty
-                   (StringSet.inter l1.Archive.impl_deps l2.Archive.modules))
+                   (StringSet.inter l1.impl_deps l2.modules))
             archives
         in
         (l1.name, List.map (fun x -> x.Archive.name) deps |> StringSet.of_list))
