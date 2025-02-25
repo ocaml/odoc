@@ -1,5 +1,6 @@
-open Odoc_utils
 open Bos
+
+let ( >>= ) = Result.bind
 
 module StringSet = Set.Make (String)
 module StringMap = Map.Make (String)
@@ -26,7 +27,6 @@ let lines_of_process cmd =
 (** Opens a file for writing and calls [f]. The destination directory is created
     if needed. *)
 let with_out_to filename f =
-  let open ResultMonad in
   let filename = Fpath.normalize filename in
   OS.Dir.create (Fpath.parent filename) >>= fun _ ->
   OS.File.with_oc filename
@@ -35,6 +35,5 @@ let with_out_to filename f =
       Ok ())
     ()
   |> Result.join
-  >>= fun () -> Ok ()
 
 let cp src dst = assert (lines_of_process Cmd.(v "cp" % src % dst) = [])
