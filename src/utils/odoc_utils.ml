@@ -80,17 +80,37 @@ module Forest = Tree.Forest
 module Json = Json
 
 module Io_utils = struct
-  let marshal filename v =
-    let oc = open_out_bin filename in
-    Fun.protect
-      ~finally:(fun () -> close_out oc)
-      (fun () -> Marshal.to_channel oc v [])
+  let _with_resource res ~close f =
+    Fun.protect ~finally:(fun () -> close res) (fun () -> f res)
 
-  let unmarshal filename =
-    let ic = open_in_bin filename in
-    Fun.protect
-      ~finally:(fun () -> close_in ic)
-      (fun () -> Marshal.from_channel ic)
+  let with_open_in fname f =
+    _with_resource (open_in fname) ~close:close_in_noerr f
+
+  let with_open_in_bin fname f =
+    _with_resource (open_in_bin fname) ~close:close_in_noerr f
+
+  let fold_lines fname f acc =
+    _with_resource (open_in fname) ~close:close_in_noerr (fun ic ->
+        let rec loop acc =
+          match input_line ic with
+          | exception End_of_file -> acc
+          | line -> loop (f line acc)
+        in
+        loop acc)
+
+  let read_lines fname =
+    List.rev (fold_lines fname (fun line acc -> line :: acc) [])
+
+  let with_open_out_bin fname f =
+    _with_resource (open_out_bin fname) ~close:close_out_noerr f
+
+  let marshal fname v =
+    _with_resource (open_out_bin fname) ~close:close_out_noerr (fun oc ->
+        Marshal.to_channel oc v [])
+
+  let unmarshal fname =
+    _with_resource (open_in_bin fname) ~close:close_in_noerr
+      Marshal.from_channel
 end
 
 include Astring

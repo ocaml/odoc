@@ -1,3 +1,5 @@
+open Odoc_utils
+
 type sexp = Sexplib0.Sexp.t = Atom of string | List of sexp list
 
 type enabledif = Min of string | Max of string | MinMax of string * string
@@ -102,26 +104,12 @@ let gen_rule_for_source_file { input; cmt; odoc; odocl; enabledif } =
       odocl_target_rule enabledif odoc odocl;
     ]
 
-let read_lines ic =
-  let lines = ref [] in
-  try
-    while true do
-      lines := input_line ic :: !lines
-    done;
-    assert false
-  with End_of_file -> List.rev !lines
-
-let lines_of_file path =
-  let ic = open_in (Fpath.to_string path) in
-  let lines = read_lines ic in
-  close_in ic;
-  lines
-
 let targets_file_path f = Fpath.(base f |> set_ext ".targets")
 
 let expected_targets backend test_case =
   let targets_file = Fpath.( // ) backend (targets_file_path test_case) in
-  try lines_of_file targets_file |> List.map Fpath.v with _ -> []
+  try Io_utils.read_lines (Fpath.to_string targets_file) |> List.map Fpath.v
+  with _ -> []
 
 let gen_targets_file enabledif ?flat_flag backend target_path relinput =
   let flat_flag = match flat_flag with None -> [] | Some x -> [ x ] in

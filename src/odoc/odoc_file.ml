@@ -81,26 +81,22 @@ let load_ file f =
   (if Sys.file_exists file then Ok file
    else Error (`Msg (Printf.sprintf "File does not exist")))
   >>= fun file ->
-  let ic = open_in_bin file in
-  let res =
-    try
-      let actual_magic = really_input_string ic (String.length magic) in
-      if actual_magic = magic then f ic
-      else
-        let msg =
-          Printf.sprintf "%s: invalid magic number %S, expected %S\n%!" file
-            actual_magic magic
-        in
-        Error (`Msg msg)
-    with exn ->
+  Io_utils.with_open_in_bin file @@ fun ic ->
+  try
+    let actual_magic = really_input_string ic (String.length magic) in
+    if actual_magic = magic then f ic
+    else
       let msg =
-        Printf.sprintf "Error while unmarshalling %S: %s\n%!" file
-          (match exn with Failure s -> s | _ -> Printexc.to_string exn)
+        Printf.sprintf "%s: invalid magic number %S, expected %S\n%!" file
+          actual_magic magic
       in
       Error (`Msg msg)
-  in
-  close_in ic;
-  res
+  with exn ->
+    let msg =
+      Printf.sprintf "Error while unmarshalling %S: %s\n%!" file
+        (match exn with Failure s -> s | _ -> Printexc.to_string exn)
+    in
+    Error (`Msg msg)
 
 let load file =
   load_ file (fun ic ->
