@@ -79,4 +79,18 @@ module Tree = Tree
 module Forest = Tree.Forest
 module Json = Json
 
+module Io_utils = struct
+  let marshal filename v =
+    let oc = open_out_bin filename in
+    Fun.protect
+      ~finally:(fun () -> close_out oc)
+      (fun () -> Marshal.to_channel oc v [])
+
+  let unmarshal filename =
+    let ic = open_in_bin filename in
+    Fun.protect
+      ~finally:(fun () -> close_in ic)
+      (fun () -> Marshal.from_channel ic)
+end
+
 include Astring

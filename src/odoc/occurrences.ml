@@ -1,5 +1,5 @@
+open Odoc_utils
 open Or_error
-open Astring
 
 let handle_file file ~f =
   if String.is_prefix ~affix:"impl-" (Fpath.filename file) then
@@ -31,8 +31,7 @@ let count ~dst ~warnings_options:_ directories include_hidden =
   in
   fold_dirs ~dirs:directories ~f ~init:() >>= fun () ->
   Fs.Directory.mkdir_p (Fs.File.dirname dst);
-  let oc = open_out_bin (Fs.File.to_string dst) in
-  Marshal.to_channel oc htbl [];
+  Io_utils.marshal (Fs.File.to_string dst) htbl;
   Ok ()
 
 open Astring
@@ -54,28 +53,24 @@ let parse_input_files input =
     (Ok []) input
   >>= fun files -> Ok (List.concat files)
 
+let read_occurrences file : Odoc_occurrences.Table.t =
+  Io_utils.unmarshal (Fpath.to_string file)
+
 let aggregate files file_list ~warnings_options:_ ~dst =
   try
     parse_input_files file_list >>= fun new_files ->
     let files = files @ new_files in
-    let from_file file : Odoc_occurrences.Table.t =
-      let ic = open_in_bin (Fs.File.to_string file) in
-      let res = Marshal.from_channel ic in
-      close_in ic;
-      res
-    in
     let occtbl =
       match files with
       | [] -> Odoc_occurrences.Table.v ()
       | file :: files ->
-          let acc = from_file file in
+          let acc = read_occurrences file in
           List.iter
             (fun file ->
-              Odoc_occurrences.aggregate ~tbl:acc ~data:(from_file file))
+              Odoc_occurrences.aggregate ~tbl:acc ~data:(read_occurrences file))
             files;
           acc
     in
-    let oc = open_out_bin (Fs.File.to_string dst) in
-    Marshal.to_channel oc occtbl [];
+    Io_utils.marshal (Fs.File.to_string dst) occtbl;
     Ok ()
   with Sys_error s -> Error (`Msg s)
