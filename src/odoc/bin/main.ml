@@ -3,6 +3,8 @@
    It would make the interaction with jenga nicer if we could specify a file to
    output the result to. *)
 
+open Odoc_utils
+module List = ListLabels
 open Odoc_odoc
 open Compatcmdliner
 
@@ -40,7 +42,7 @@ let convert_fpath =
 
 let convert_named_root =
   let parse inp =
-    match Astring.String.cuts inp ~sep:":" with
+    match String.cuts inp ~sep:":" with
     | [ s1; s2 ] -> Result.Ok (s1, Fs.Directory.of_string s2)
     | _ -> Error (`Msg "")
   in
@@ -190,7 +192,7 @@ module Compile : sig
 end = struct
   let has_page_prefix file =
     file |> Fs.File.basename |> Fs.File.to_string
-    |> Astring.String.is_prefix ~affix:"page-"
+    |> String.is_prefix ~affix:"page-"
 
   let unique_id =
     let doc = "For debugging use" in
@@ -411,7 +413,7 @@ module Compile_impl = struct
   let output_file output_dir parent_id input =
     let name =
       Fs.File.basename input |> Fpath.set_ext "odoc" |> Fs.File.to_string
-      |> Astring.String.Ascii.uncapitalize
+      |> String.Ascii.uncapitalize
     in
     let name = prefix ^ name in
 
@@ -1150,7 +1152,7 @@ module Odoc_html_args = struct
       || str.[0] = '/'
 
     let conv_rel_dir rel =
-      let l = Astring.String.cuts ~sep:"/" rel in
+      let l = String.cuts ~sep:"/" rel in
       List.fold_left
         ~f:(fun acc seg ->
           Some Odoc_document.Url.Path.{ kind = `Page; parent = acc; name = seg })
@@ -1164,7 +1166,7 @@ module Odoc_html_args = struct
           let last_char = str.[String.length str - 1] in
           let str =
             if last_char <> '/' then str
-            else String.sub str ~pos:0 ~len:(String.length str - 1)
+            else String.with_range ~len:(String.length str - 1) str
           in
           `Ok
             (if is_absolute str then (Absolute str : uri)
@@ -1186,7 +1188,7 @@ module Odoc_html_args = struct
         if String.length str = 0 then `Error "invalid URI"
         else
           let conv_rel_file rel =
-            match Astring.String.cut ~rev:true ~sep:"/" rel with
+            match String.cut ~rev:true ~sep:"/" rel with
             | Some (before, after) ->
                 let base = conv_rel_dir before in
                 Odoc_document.Url.Path.
@@ -1268,7 +1270,7 @@ module Odoc_html_args = struct
   let remap =
     let convert_remap =
       let parse inp =
-        match Astring.String.cut ~sep:":" inp with
+        match String.cut ~sep:":" inp with
         | Some (orig, mapped) -> Result.Ok (orig, mapped)
         | _ -> Error (`Msg "Map must be of the form '<orig>:https://...'")
       and print fmt (orig, mapped) = Format.fprintf fmt "%s:%s" orig mapped in
@@ -1289,18 +1291,12 @@ module Odoc_html_args = struct
         match remap_file with
         | None -> remap
         | Some f ->
-            let ic = open_in f in
-            let rec loop acc =
-              match input_line ic with
-              | exception _ ->
-                  close_in ic;
-                  acc
-              | line -> (
-                  match Astring.String.cut ~sep:":" line with
-                  | Some (orig, mapped) -> loop ((orig, mapped) :: acc)
-                  | None -> loop acc)
-            in
-            loop []
+            Io_utils.fold_lines f
+              (fun line acc ->
+                match String.cut ~sep:":" line with
+                | Some (orig, mapped) -> (orig, mapped) :: acc
+                | None -> acc)
+              []
       in
       let html_config =
         Odoc_html.Config.v ~theme_uri ~support_uri ~search_uris ~semantic_uris

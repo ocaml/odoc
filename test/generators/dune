@@ -26,7 +26,7 @@
 
 (library
  (name gen_rules_lib)
- (libraries sexplib0 unix fpath)
+ (libraries sexplib0 unix fpath odoc_utils)
  (enabled_if
   (>= %{ocaml_version} 4.04)))
 

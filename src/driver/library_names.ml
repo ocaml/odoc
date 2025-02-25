@@ -1,3 +1,5 @@
+open Bos
+
 (** To extract the library names for a given package, without using dune, we
 
     1. parse the META file of the package with ocamlfind to see which libraries
@@ -44,9 +46,11 @@ let read_libraries_from_pkg_defs ~library_name pkg_defs =
 
 let process_meta_file file =
   let () = Format.eprintf "process_meta_file: %s\n%!" (Fpath.to_string file) in
-  let ic = open_in (Fpath.to_string file) in
   let meta_dir = Fpath.parent file in
-  let meta = Fl_metascanner.parse ic in
+  let meta =
+    OS.File.with_ic file (fun ic () -> Fl_metascanner.parse ic) ()
+    |> Result.get_ok
+  in
   let base_library_name =
     if Fpath.basename file = "META" then Fpath.parent file |> Fpath.basename
     else Fpath.get_ext file
@@ -116,7 +120,7 @@ let directories v =
           (* NB. topkg installs a META file that points to a ../topkg-care directory
               that is installed by the topkg-care package. We filter that out here,
               though I've not thought of a good way to sort out the `topkg-care` package *)
-          match Bos.OS.Dir.exists dir with
+          match OS.Dir.exists dir with
           | Ok true -> Fpath.Set.add dir acc
           | _ -> acc))
     Fpath.Set.empty libraries

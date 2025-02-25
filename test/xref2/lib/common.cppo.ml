@@ -85,36 +85,6 @@ let signature_of_mli_string str =
     let _, sg, _ = model_of_string str in
     sg
 
-let string_of_file f =
-    let ic = open_in f in
-    let buffer = Buffer.create 100 in
-    let rec loop () =
-        try
-            Buffer.add_channel buffer ic 1024;
-            loop ()
-        with End_of_file ->
-            ()
-    in loop ();
-    close_in ic;
-    Buffer.contents buffer
-
-let file_of_string ~filename str =
-    let oc = open_out filename in
-    Printf.fprintf oc "%s%!" str;
-    close_out oc
-
-let list_files path =
-    Sys.readdir path |> Array.to_list
-
-let load_cmti filename =
-  let make_root = root_of_compilation_unit ~package:"nopackage" ~hidden:false in
-  Odoc_loader.read_cmti ~make_root ~filename
-
-let load_cmt filename =
-    let make_root = root_of_compilation_unit ~package:"nopackage" ~hidden:false in
-    Odoc_loader.read_cmt ~make_root ~filename
-  
-
 module Ident = Ident
 
 module LangUtils = struct
