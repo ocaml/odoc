@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Odoc_utils
 open Odoc_model
 open Or_error
 
@@ -35,8 +36,7 @@ let save_ file f =
   Fs.Directory.mkdir_p (Fs.File.dirname file);
   let oc = open_out_bin (Fs.File.to_string file) in
   output_string oc magic;
-  f oc;
-  close_out oc
+  Fun.protect ~finally:(fun () -> close_out oc) (fun () -> f oc)
 
 let save_unit file (root : Root.t) (t : t) =
   save_ file (fun oc ->

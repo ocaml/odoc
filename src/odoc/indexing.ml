@@ -47,11 +47,6 @@ let compile_to_json ~output ~occurrences ~wrap ~simplified hierarchies =
        var idx_fuse = new Fuse(documents, options);\n";
   Ok ()
 
-let read_occurrences file =
-  let ic = open_in_bin file in
-  let htbl : Odoc_occurrences.Table.t = Marshal.from_channel ic in
-  htbl
-
 let absolute_normalization p =
   let p =
     if Fpath.is_rel p then Fpath.( // ) (Fpath.v (Sys.getcwd ())) p else p
@@ -70,7 +65,7 @@ let compile out_format ~output ~warnings_options ~occurrences ~roots
   let occurrences =
     match occurrences with
     | None -> None
-    | Some occurrences -> Some (read_occurrences (Fpath.to_string occurrences))
+    | Some occurrences -> Some (Occurrences.read_occurrences occurrences)
   in
   let all_files =
     roots
