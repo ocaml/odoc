@@ -24,11 +24,8 @@ let parse_input_files input =
   >>= fun files -> Ok (List.concat files)
 
 let compile_to_json ~output ~occurrences ~wrap ~simplified hierarchies =
-  let output_channel =
-    Fs.Directory.mkdir_p (Fs.File.dirname output);
-    open_out_bin (Fs.File.to_string output)
-  in
-  let output = Format.formatter_of_out_channel output_channel in
+  Fs.Directory.mkdir_p (Fs.File.dirname output);
+  Io_utils.with_formatter_out (Fs.File.to_string output) @@ fun output ->
   if wrap then Format.fprintf output "let documents = ";
   let all =
     List.fold_left
