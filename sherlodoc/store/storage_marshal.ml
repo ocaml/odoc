@@ -6,6 +6,4 @@ let save ~db t = Marshal.to_channel db t []
 
 let load name =
   let file = open_in name in
-  let t = Marshal.from_channel file in
-  close_in file ;
-  [ t ]
+  Fun.protect ~finally:(fun () -> close_in file) (fun () -> [ Marshal.from_channel file ])
