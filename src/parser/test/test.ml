@@ -2531,28 +2531,31 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "foo\
+          (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "  foo\
                                                                \nbar")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let cr_lf =
       test "{[foo\r\nbar]}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "foo\r\
+          (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "  foo\r\
                                                                \nbar")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let blank_line =
       test "{[foo\n\nbar]}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 5)) (code_block ((f.ml (1 2) (3 3))  "foo\
+          (((f.ml (1 0) (3 5)) (code_block ((f.ml (1 2) (3 3))  "  foo\
                                                                \n\
                                                                \nbar")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let leading_whitespace =
       test "{[ foo]}";
@@ -2566,18 +2569,20 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\
+          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "  foo\
                                                                \nbar")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let leading_whitespace_two_cr_lf =
       test "{[ foo\r\n bar]}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\r\
+          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "  foo\r\
                                                                \nbar")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let leading_whitespace_two_different_indent =
       test "{[ foo\n   bar]}";
@@ -2593,9 +2598,10 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "  foo\
+          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "    foo\
                                                                \nbar")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let leading_whitespace_two_different_indent_reloc =
       test "{[ foo\n      bar]}";
@@ -2611,30 +2617,48 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 6)) (code_block ((f.ml (1 2) (3 4))  "foo\
+          (((f.ml (1 0) (3 6)) (code_block ((f.ml (1 2) (3 4))  "  foo\
                                                                \n\
                                                                \nbar")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let leading_whitespace_with_whitespace_line_short =
       test "{[  foo\n \n  bar]}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 7)) (code_block ((f.ml (1 2) (3 5))  "foo\
-                                                               \n \
+          (((f.ml (1 0) (3 7)) (code_block ((f.ml (1 2) (3 5))  "  foo\
+                                                               \n\
                                                                \nbar")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
+
+    let bli =
+      test {|
+       {[ a
+ b
+ c]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (2 7) (4 4))
+            (code_block ((f.ml (2 9) (4 2))  "         a\
+                                            \nb\
+                                            \nc")))))
+         (warnings ()))
+        |}]
 
     let leading_whitespace_with_whitespace_line_long =
       test "{[ foo\n   \n bar]}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 6)) (code_block ((f.ml (1 2) (3 4))  "foo\
+          (((f.ml (1 0) (3 6)) (code_block ((f.ml (1 2) (3 4))  "  foo\
                                                                \n  \
                                                                \nbar")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let leading_whitespace_leading_newline =
       test "{[\n  foo\n  bar\n]}";
@@ -2657,18 +2681,34 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\
+          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  " \tfoo\
                                                                \nbar")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let leading_tab_two_different_indent =
       test "{[\tfoo\n\t\tbar]}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 7)) (code_block ((f.ml (1 2) (2 5))  "foo\
+          (((f.ml (1 0) (2 7)) (code_block ((f.ml (1 2) (2 5))  "\tfoo\
                                                                \nbar")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
+
+    let leading_whitespace_when_box_model_not_applicable =
+      test {|
+ {[  foo
+ bar
+ ]}
+|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (2 1) (4 3)) (code_block ((f.ml (2 3) (4 1))  "    foo\
+                                                               \nbar")))))
+         (warnings ()))
+        |}]
 
     let leading_newline =
       test "{[\nfoo]}";
@@ -2892,9 +2932,10 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 14))
-            (code_block ((f.ml (1 2) (2 12))  "(* foo *)\
+            (code_block ((f.ml (1 2) (2 12))  "  (* foo *)\
                                              \nlet bar = ()")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let docstring =
       test "{[(** foo *)\nlet bar = ()]}";
@@ -2902,9 +2943,10 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 14))
-            (code_block ((f.ml (1 2) (2 12))  "(** foo *)\
+            (code_block ((f.ml (1 2) (2 12))  "  (** foo *)\
                                              \nlet bar = ()")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let docstring_with_code_block =
       test "{[(** {[foo]} *)\nlet bar = ()]}";
