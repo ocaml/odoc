@@ -761,7 +761,7 @@ and handle_fragments env id sg subs =
   List.fold_left
     (fun (sg_res, subs) lsub ->
       match (sg_res, lsub) with
-      | Result.Ok sg, ModuleEq (frag, decl) ->
+      | Ok sg, ModuleEq (frag, decl) ->
           let frag' =
             match frag with
             | `Resolved f ->

@@ -4,7 +4,7 @@ let run inp =
   let inp = Fpath.v inp in
   let index =
     Odoc_odoc.Odoc_file.load_index inp |> function
-    | Result.Ok x -> x
+    | Ok x -> x
     | _ -> failwith "failed to load index"
   in
   let rec tree_to_yojson

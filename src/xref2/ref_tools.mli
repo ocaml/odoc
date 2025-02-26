@@ -5,8 +5,7 @@ type module_lookup_result =
 
 type asset_lookup_result = Resolved.Asset.t
 
-type 'a ref_result =
-  ('a, Errors.Tools_error.reference_lookup_error) Result.result
+type 'a ref_result = ('a, Errors.Tools_error.reference_lookup_error) result
 
 val resolve_module_reference :
   Env.t ->

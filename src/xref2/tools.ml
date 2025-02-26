@@ -214,25 +214,23 @@ open Errors.Tools_error
 type resolve_module_result =
   ( Cpath.Resolved.module_ * Component.Module.t Component.Delayed.t,
     simple_module_lookup_error )
-  Result.result
+  result
 
 type resolve_module_type_result =
   ( Cpath.Resolved.module_type * Component.ModuleType.t,
     simple_module_type_lookup_error )
-  Result.result
+  result
 
 type resolve_type_result =
-  ( Cpath.Resolved.type_ * Find.careful_type,
-    simple_type_lookup_error )
-  Result.result
+  (Cpath.Resolved.type_ * Find.careful_type, simple_type_lookup_error) result
 
 type resolve_value_result =
-  (Cpath.Resolved.value * Find.value, simple_value_lookup_error) Result.result
+  (Cpath.Resolved.value * Find.value, simple_value_lookup_error) result
 
 type resolve_class_type_result =
   ( Cpath.Resolved.class_type * Find.careful_class,
     simple_type_lookup_error )
-  Result.result
+  result
 
 type ('a, 'b, 'c) sig_map = { type_ : 'a; module_ : 'b; module_type : 'c }
 
@@ -285,7 +283,7 @@ module LookupModuleMemo = MakeMemo (struct
   type result =
     ( Component.Module.t Component.Delayed.t,
       simple_module_lookup_error )
-    Result.result
+    Result.t
 
   let equal = ( = )
 
@@ -298,7 +296,7 @@ module LookupParentMemo = MakeMemo (struct
   type result =
     ( Component.Signature.t * Component.Substitution.t,
       [ `Parent of parent_lookup_error ] )
-    Result.result
+    Result.t
 
   let equal = ( = )
 
@@ -328,7 +326,7 @@ end)
 module ExpansionOfModuleMemo = MakeMemo (struct
   type t = Cpath.Resolved.module_
 
-  type result = (expansion, expansion_of_module_error) Result.result
+  type result = (expansion, expansion_of_module_error) Result.t
 
   let equal = ( = )
 
@@ -552,9 +550,8 @@ and handle_class_type_lookup id p sg =
 and lookup_module_gpath :
     Env.t ->
     Odoc_model.Paths.Path.Resolved.Module.t ->
-    ( Component.Module.t Component.Delayed.t,
-      simple_module_lookup_error )
-    Result.result =
+    (Component.Module.t Component.Delayed.t, simple_module_lookup_error) result
+    =
  fun env path ->
   match path with
   | `Identifier i ->
@@ -589,9 +586,8 @@ and lookup_module_gpath :
 and lookup_module :
     Env.t ->
     Cpath.Resolved.module_ ->
-    ( Component.Module.t Component.Delayed.t,
-      simple_module_lookup_error )
-    Result.result =
+    (Component.Module.t Component.Delayed.t, simple_module_lookup_error) result
+    =
  fun env' path' ->
   let lookup env (path : ExpansionOfModuleMemo.M.key) =
     match path with
@@ -630,7 +626,7 @@ and lookup_module :
 and lookup_module_type_gpath :
     Env.t ->
     Odoc_model.Paths.Path.Resolved.ModuleType.t ->
-    (Component.ModuleType.t, simple_module_type_lookup_error) Result.result =
+    (Component.ModuleType.t, simple_module_type_lookup_error) result =
  fun env path ->
   match path with
   | `Identifier i ->
@@ -655,7 +651,7 @@ and lookup_module_type_gpath :
 and lookup_module_type :
     Env.t ->
     Cpath.Resolved.module_type ->
-    (Component.ModuleType.t, simple_module_type_lookup_error) Result.result =
+    (Component.ModuleType.t, simple_module_type_lookup_error) result =
  fun env path ->
   let lookup env =
     match path with
@@ -682,7 +678,7 @@ and lookup_parent :
     Cpath.Resolved.parent ->
     ( Component.Signature.t * Component.Substitution.t,
       [ `Parent of parent_lookup_error ] )
-    Result.result =
+    result =
  fun env' parent' ->
   let lookup env parent =
     match parent with
@@ -714,7 +710,7 @@ and lookup_parent_gpath :
     Odoc_model.Paths.Path.Resolved.Module.t ->
     ( Component.Signature.t * Component.Substitution.t,
       [ `Parent of parent_lookup_error ] )
-    Result.result =
+    result =
  fun env parent ->
   lookup_module_gpath env parent
   |> map_error (fun e -> `Parent (`Parent_module e))
@@ -728,7 +724,7 @@ and lookup_parent_gpath :
 and lookup_type_gpath :
     Env.t ->
     Odoc_model.Paths.Path.Resolved.Type.t ->
-    (Find.careful_type, simple_type_lookup_error) Result.result =
+    (Find.careful_type, simple_type_lookup_error) result =
  fun env p ->
   let do_type p name =
     lookup_parent_gpath env p
@@ -774,7 +770,7 @@ and lookup_type_gpath :
 and lookup_value_gpath :
     Env.t ->
     Odoc_model.Paths.Path.Resolved.Value.t ->
-    (Find.value, simple_value_lookup_error) Result.result =
+    (Find.value, simple_value_lookup_error) result =
  fun env p ->
   let do_value p name =
     lookup_parent_gpath env p
@@ -797,7 +793,7 @@ and lookup_value_gpath :
 and lookup_class_type_gpath :
     Env.t ->
     Odoc_model.Paths.Path.Resolved.ClassType.t ->
-    (Find.careful_class, simple_type_lookup_error) Result.result =
+    (Find.careful_class, simple_type_lookup_error) result =
  fun env p ->
   let do_type p name =
     lookup_parent_gpath env p
@@ -831,7 +827,7 @@ and lookup_class_type_gpath :
 and lookup_type :
     Env.t ->
     Cpath.Resolved.type_ ->
-    (Find.careful_type, simple_type_lookup_error) Result.result =
+    (Find.careful_type, simple_type_lookup_error) result =
  fun env p ->
   let do_type p name =
     lookup_parent env p |> map_error (fun e -> (e :> simple_type_lookup_error))
@@ -862,9 +858,7 @@ and lookup_type :
   res
 
 and lookup_value :
-    Env.t ->
-    Cpath.Resolved.value ->
-    (_, simple_value_lookup_error) Result.result =
+    Env.t -> Cpath.Resolved.value -> (_, simple_value_lookup_error) result =
  fun env p ->
   match p with
   | `Value (p, id) ->
@@ -878,7 +872,7 @@ and lookup_value :
 and lookup_class_type :
     Env.t ->
     Cpath.Resolved.class_type ->
-    (Find.careful_class, simple_type_lookup_error) Result.result =
+    (Find.careful_class, simple_type_lookup_error) result =
  fun env p ->
   let do_type p name =
     lookup_parent env p |> map_error (fun e -> (e :> simple_type_lookup_error))
@@ -1522,9 +1516,8 @@ and reresolve_parent : Env.t -> Cpath.Resolved.parent -> Cpath.Resolved.parent =
 and module_type_expr_of_module_decl :
     Env.t ->
     Component.Module.decl ->
-    ( Component.ModuleType.expr,
-      simple_module_type_expr_of_module_error )
-    Result.result =
+    (Component.ModuleType.expr, simple_module_type_expr_of_module_error) result
+    =
  fun env decl ->
   match decl with
   | Component.Module.Alias (`Resolved r, _) ->
@@ -1545,16 +1538,15 @@ and module_type_expr_of_module_decl :
 and module_type_expr_of_module :
     Env.t ->
     Component.Module.t ->
-    ( Component.ModuleType.expr,
-      simple_module_type_expr_of_module_error )
-    Result.result =
+    (Component.ModuleType.expr, simple_module_type_expr_of_module_error) result
+    =
  fun env m -> module_type_expr_of_module_decl env m.type_
 
 and expansion_of_module_path :
     Env.t ->
     strengthen:bool ->
     Cpath.module_ ->
-    (expansion, expansion_of_module_error) Result.result =
+    (expansion, expansion_of_module_error) result =
  fun env ~strengthen path ->
   match resolve_module env path with
   | Ok (p', m) -> (
@@ -1578,7 +1570,7 @@ and handle_signature_with_subs :
     Env.t ->
     Component.Signature.t ->
     Component.ModuleType.substitution list ->
-    (Component.Signature.t, expansion_of_module_error) Result.result =
+    (Component.Signature.t, expansion_of_module_error) result =
  fun env sg subs ->
   let open Odoc_utils.ResultMonad in
   List.fold_left
@@ -1586,7 +1578,7 @@ and handle_signature_with_subs :
     (Ok sg) subs
 
 and assert_not_functor : type err.
-    expansion -> (Component.Signature.t, err) Result.result = function
+    expansion -> (Component.Signature.t, err) result = function
   | Signature sg -> Ok sg
   | _ -> assert false
 
@@ -1605,7 +1597,7 @@ and signature_of_module_type_of :
     Env.t ->
     Component.ModuleType.type_of_desc ->
     original_path:Cpath.module_ ->
-    (expansion, expansion_of_module_error) Result.result =
+    (expansion, expansion_of_module_error) result =
  fun env desc ~original_path:_ ->
   let p, strengthen =
     match desc with ModPath p -> (p, false) | StructInclude p -> (p, true)
@@ -1625,7 +1617,7 @@ and signature_of_module_type_of :
 and signature_of_u_module_type_expr :
     Env.t ->
     Component.ModuleType.U.expr ->
-    (Component.Signature.t, expansion_of_module_error) Result.result =
+    (Component.Signature.t, expansion_of_module_error) result =
  fun env m ->
   match m with
   | Component.ModuleType.U.Path p -> (
@@ -1655,7 +1647,7 @@ and expansion_of_simple_expansion :
 and expansion_of_module_type_expr :
     Env.t ->
     Component.ModuleType.expr ->
-    (expansion, expansion_of_module_error) Result.result =
+    (expansion, expansion_of_module_error) result =
  fun env m ->
   match m with
   | Component.ModuleType.Path { p_expansion = Some e; _ } ->
@@ -1685,7 +1677,7 @@ and expansion_of_module_type_expr :
 and expansion_of_module_type :
     Env.t ->
     Component.ModuleType.t ->
-    (expansion, expansion_of_module_error) Result.result =
+    (expansion, expansion_of_module_error) result =
  fun env m ->
   match m.expr with
   | None -> Error `OpaqueModule
@@ -1694,7 +1686,7 @@ and expansion_of_module_type :
 and expansion_of_module_decl :
     Env.t ->
     Component.Module.decl ->
-    (expansion, expansion_of_module_error) Result.result =
+    (expansion, expansion_of_module_error) result =
  fun env decl ->
   match decl with
   (* | Component.Module.Alias (_, Some e) -> Ok (expansion_of_simple_expansion e) *)
@@ -1703,9 +1695,8 @@ and expansion_of_module_decl :
   | Component.Module.ModuleType expr -> expansion_of_module_type_expr env expr
 
 and expansion_of_module :
-    Env.t ->
-    Component.Module.t ->
-    (expansion, expansion_of_module_error) Result.result =
+    Env.t -> Component.Module.t -> (expansion, expansion_of_module_error) result
+    =
  fun env m ->
   expansion_of_module_decl env m.type_ >>= function
   | Signature sg ->
@@ -1723,7 +1714,7 @@ and expansion_of_module_cached :
     Env.t ->
     Cpath.Resolved.module_ ->
     Component.Module.t ->
-    (expansion, expansion_of_module_error) Result.result =
+    (expansion, expansion_of_module_error) result =
  fun env' path m ->
   let id = path in
   let run env _id = expansion_of_module env m in
@@ -1773,7 +1764,7 @@ and fragmap :
     Env.t ->
     Component.ModuleType.substitution ->
     Component.Signature.t ->
-    (Component.Signature.t, expansion_of_module_error) Result.result =
+    (Component.Signature.t, expansion_of_module_error) result =
  fun env sub sg ->
   (* Used when we haven't finished the substitution. For example, if the
      substitution is `M.t = u`, this function is used to map the declaration
@@ -2117,9 +2108,8 @@ and find_module_with_replacement :
     Env.t ->
     Component.Signature.t ->
     ModuleName.t ->
-    ( Component.Module.t Component.Delayed.t,
-      simple_module_lookup_error )
-    Result.result =
+    (Component.Module.t Component.Delayed.t, simple_module_lookup_error) result
+    =
  fun env sg name ->
   match Find.careful_module_in_sig sg name with
   | Some (`FModule (_, m)) -> Ok (Component.Delayed.put_val m)
@@ -2133,7 +2123,7 @@ and find_module_type_with_replacement :
     ModuleTypeName.t ->
     ( Component.ModuleType.t Component.Delayed.t,
       simple_module_type_lookup_error )
-    Result.result =
+    result =
  fun _env sg name ->
   match Find.careful_module_type_in_sig sg name with
   | Some (`FModuleType (_, m)) -> Ok (Component.Delayed.put_val m)
