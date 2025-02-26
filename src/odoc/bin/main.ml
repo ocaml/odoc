@@ -35,7 +35,7 @@ let convert_directory ?(create = false) () : Fs.Directory.t Arg.conv =
 let convert_fpath =
   let parse inp =
     match Arg.(conv_parser file) inp with
-    | Ok s -> Result.Ok (Fs.File.of_string s)
+    | Ok s -> Ok (Fs.File.of_string s)
     | Error _ as e -> e
   and print = Fpath.pp in
   Arg.conv (parse, print)
@@ -43,7 +43,7 @@ let convert_fpath =
 let convert_named_root =
   let parse inp =
     match String.cuts inp ~sep:":" with
-    | [ s1; s2 ] -> Result.Ok (s1, Fs.Directory.of_string s2)
+    | [ s1; s2 ] -> Ok (s1, Fs.Directory.of_string s2)
     | _ -> Error (`Msg "")
   in
   let print ppf (s, t) =
@@ -52,7 +52,7 @@ let convert_named_root =
   Arg.conv (parse, print)
 
 let handle_error = function
-  | Result.Ok () -> ()
+  | Ok () -> ()
   | Error (`Cli_error msg) ->
       Printf.eprintf "%s\n%!" msg;
       exit 2
@@ -84,7 +84,7 @@ module Antichain = struct
             rest
           && check rest
     in
-    if check l then Result.Ok ()
+    if check l then Ok ()
     else
       let msg =
         Format.sprintf "Paths given to all %s options must be disjoint" opt
@@ -1271,7 +1271,7 @@ module Odoc_html_args = struct
     let convert_remap =
       let parse inp =
         match String.cut ~sep:":" inp with
-        | Some (orig, mapped) -> Result.Ok (orig, mapped)
+        | Some (orig, mapped) -> Ok (orig, mapped)
         | _ -> Error (`Msg "Map must be of the form '<orig>:https://...'")
       and print fmt (orig, mapped) = Format.fprintf fmt "%s:%s" orig mapped in
       Arg.conv (parse, print)

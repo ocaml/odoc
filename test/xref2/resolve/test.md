@@ -62,7 +62,7 @@ which takes a `Model.Lang.Signature.t` and runs the resolve mapping functions
 over the tree. For this example the interesting point comes when we get to
 looking at the manifest for type `u`. We see that we have a `Constr` that has a
 path in it, so we look up the component from the path via the function
-`Tools.lookup_type_from_model_path`. This returns us a `Result.result`
+`Tools.lookup_type_from_model_path`. This returns us a `result`
 containing the resolved path and the `Component.Type.t` that represents the
 type `t`. We don't particularly care about this, but the returned path we use
 in place of the path we had before.

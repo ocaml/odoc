@@ -74,7 +74,7 @@ type tag_payload = Comment.nestable_block_element Location_.with_location list
 let parse_children_order loc (co : tag_payload) =
   let rec parse_words acc words =
     match words with
-    | [] -> Result.Ok (Location_.at loc (Children_order (List.rev acc)))
+    | [] -> Ok (Location_.at loc (Children_order (List.rev acc)))
     | ({ Location_.value = `Word word; _ } as w) :: tl ->
         parse_words ({ w with value = parse_child word } :: acc) tl
     | { Location_.value = `Space; _ } :: tl -> parse_words acc tl
@@ -93,7 +93,7 @@ let parse_short_title loc (t : tag_payload) =
   match t with
   | [ { Location_.value = `Paragraph words; _ } ] ->
       let short_title = Comment.link_content_of_inline_elements words in
-      Result.Ok (Location_.at loc (Short_title short_title))
+      Ok (Location_.at loc (Short_title short_title))
   | _ ->
       Error
         (Error.make
@@ -104,14 +104,14 @@ let parse_toc_status loc (t : tag_payload) =
   | [
    { Location_.value = `Paragraph [ { Location_.value = `Word "open"; _ } ]; _ };
   ] ->
-      Result.Ok (Location_.at loc (Toc_status `Open))
+      Ok (Location_.at loc (Toc_status `Open))
   | [
    {
      Location_.value = `Paragraph [ { Location_.value = `Word "hidden"; _ } ];
      _;
    };
   ] ->
-      Result.Ok (Location_.at loc (Toc_status `Hidden))
+      Ok (Location_.at loc (Toc_status `Hidden))
   | _ ->
       Error
         (Error.make "@toc_status can only take the 'open' and 'hidden' value"
@@ -121,7 +121,7 @@ let parse_order_category loc (t : tag_payload) =
   match t with
   | [ { Location_.value = `Paragraph [ { Location_.value = `Word w; _ } ]; _ } ]
     ->
-      Result.Ok (Location_.at loc (Order_category w))
+      Ok (Location_.at loc (Order_category w))
   | _ ->
       Error
         (Error.make "@order_category can only take a single word as value" loc)

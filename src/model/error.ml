@@ -1,5 +1,3 @@
-open Result
-
 let enable_missing_root_warning = ref false
 
 type full_location_payload = Odoc_parser.Warning.t = {
@@ -90,7 +88,7 @@ let catch_warnings f =
       let warnings = List.rev !raised_warnings in
       { value; warnings })
 
-type 'a with_errors_and_warnings = ('a, t) Result.result with_warnings
+type 'a with_errors_and_warnings = ('a, t) result with_warnings
 
 let raise_errors_and_warnings we =
   match raise_warnings we with Ok x -> x | Error e -> raise_exception e
