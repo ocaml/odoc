@@ -32,3 +32,15 @@ let rec find_map f = function
 
 (* Since 5.1 *)
 let is_empty = function [] -> true | _ :: _ -> false
+
+let rec skip_until ~p = function
+  | [] -> []
+  | h :: t -> if p h then t else skip_until ~p t
+
+let split_at ~f lst =
+  let rec loop acc = function
+    | hd :: _ as rest when f hd -> (List.rev acc, rest)
+    | [] -> (List.rev acc, [])
+    | hd :: tl -> loop (hd :: acc) tl
+  in
+  loop [] lst
