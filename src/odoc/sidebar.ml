@@ -1,5 +1,5 @@
-open Or_error
 open Odoc_utils
+open ResultMonad
 
 let compile_to_json ~output sidebar =
   let json = Odoc_html.Sidebar.to_json sidebar in

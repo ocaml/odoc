@@ -47,7 +47,6 @@ depends: [
   "dune" {>= "3.7.0"}
   "fpath"
   "ocaml" {>= "4.08.0" & < "5.4"}
-  "result"
   "tyxml" {>= "4.4.0"}
   "fmt"
   "crunch" {>= "1.4.1"}

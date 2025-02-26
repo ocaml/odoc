@@ -1,6 +1,6 @@
 open Odoc_utils
+open ResultMonad
 open Odoc_document
-open Or_error
 open Odoc_model
 
 let prepare ~extra_suffix ~output_dir filename =

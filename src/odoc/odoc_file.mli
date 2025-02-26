@@ -16,8 +16,8 @@
 
 (** Load and save [.odoc] and [.odocl] files. *)
 
+open Odoc_utils
 open Odoc_model
-open Or_error
 
 (** Either a page or a module or something else. *)
 type content =

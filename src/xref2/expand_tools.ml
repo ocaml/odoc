@@ -25,7 +25,7 @@ let handle_expansion env id expansion =
         (env', Subst.module_type_expr subst expr)
   in
   let rec expand id env expansion :
-      (Env.t * Component.ModuleType.simple_expansion, _) Result.result =
+      (Env.t * Component.ModuleType.simple_expansion, _) result =
     match expansion with
     | Tools.Signature sg ->
         Ok

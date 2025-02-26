@@ -14,8 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Odoc_utils
+open ResultMonad
 open StdLabels
-open Or_error
 
 module Odoc_compile = Compile
 

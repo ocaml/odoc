@@ -4,6 +4,7 @@
    output the result to. *)
 
 open Odoc_utils
+open ResultMonad
 module List = ListLabels
 open Odoc_odoc
 open Compatcmdliner
@@ -35,7 +36,7 @@ let convert_directory ?(create = false) () : Fs.Directory.t Arg.conv =
 let convert_fpath =
   let parse inp =
     match Arg.(conv_parser file) inp with
-    | Ok s -> Result.Ok (Fs.File.of_string s)
+    | Ok s -> Ok (Fs.File.of_string s)
     | Error _ as e -> e
   and print = Fpath.pp in
   Arg.conv (parse, print)
@@ -43,7 +44,7 @@ let convert_fpath =
 let convert_named_root =
   let parse inp =
     match String.cuts inp ~sep:":" with
-    | [ s1; s2 ] -> Result.Ok (s1, Fs.Directory.of_string s2)
+    | [ s1; s2 ] -> Ok (s1, Fs.Directory.of_string s2)
     | _ -> Error (`Msg "")
   in
   let print ppf (s, t) =
@@ -52,7 +53,7 @@ let convert_named_root =
   Arg.conv (parse, print)
 
 let handle_error = function
-  | Result.Ok () -> ()
+  | Ok () -> ()
   | Error (`Cli_error msg) ->
       Printf.eprintf "%s\n%!" msg;
       exit 2
@@ -84,7 +85,7 @@ module Antichain = struct
             rest
           && check rest
     in
-    if check l then Result.Ok ()
+    if check l then Ok ()
     else
       let msg =
         Format.sprintf "Paths given to all %s options must be disjoint" opt
@@ -223,7 +224,6 @@ end = struct
   let compile hidden directories resolve_fwd_refs dst output_dir package_opt
       parent_name_opt parent_id_opt open_modules children input warnings_options
       unique_id short_title =
-    let open Or_error in
     let _ =
       match unique_id with
       | Some id -> Odoc_model.Names.set_unique_ident id
@@ -474,8 +474,6 @@ module Compile_impl = struct
 end
 
 module Indexing = struct
-  open Or_error
-
   let output_file ~dst marshall =
     match (dst, marshall) with
     | Some file, `JSON
@@ -576,8 +574,6 @@ module Indexing = struct
 end
 
 module Sidebar = struct
-  open Or_error
-
   let output_file ~dst marshall =
     match (dst, marshall) with
     | Some file, `JSON when not (Fpath.has_ext "json" (Fpath.v file)) ->
@@ -666,8 +662,6 @@ end = struct
     match output_file with
     | Some file -> Fs.File.of_string file
     | None -> Fs.File.(set_ext ".odocl" input)
-
-  open Or_error
 
   (** Find the package/library name the output is part of *)
   let find_root_of_input l o =
@@ -1271,7 +1265,7 @@ module Odoc_html_args = struct
     let convert_remap =
       let parse inp =
         match String.cut ~sep:":" inp with
-        | Some (orig, mapped) -> Result.Ok (orig, mapped)
+        | Some (orig, mapped) -> Ok (orig, mapped)
         | _ -> Error (`Msg "Map must be of the form '<orig>:https://...'")
       and print fmt (orig, mapped) = Format.fprintf fmt "%s:%s" orig mapped in
       Arg.conv (parse, print)
@@ -1473,7 +1467,6 @@ module Depends = struct
       | Some p -> Format.fprintf pp "%a/" fmt_page p
 
     let list_dependencies input_file =
-      let open Or_error in
       Depends.for_rendering_step (Fs.Directory.of_string input_file)
       >>= fun depends ->
       List.iter depends ~f:(fun (root : Odoc_model.Root.t) ->
@@ -1557,8 +1550,6 @@ module Targets = struct
 end
 
 module Occurrences = struct
-  open Or_error
-
   let dst_of_string s =
     let f = Fs.File.of_string s in
     if not (Fs.File.has_ext ".odoc-occurrences" f) then
@@ -1650,7 +1641,6 @@ end
 module Odoc_error = struct
   let errors input =
     let open Odoc_odoc in
-    let open Or_error in
     let input = Fs.File.of_string input in
     Odoc_file.load input >>= fun unit ->
     Odoc_model.Error.print_errors unit.warnings;

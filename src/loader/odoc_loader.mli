@@ -1,4 +1,3 @@
-open Result
 open Odoc_model
 open Odoc_model.Paths
 

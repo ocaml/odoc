@@ -14,5 +14,4 @@
   logs
   logs.fmt
   eio_main
-  sexplib
-  odoc_utils))
+  sexplib))

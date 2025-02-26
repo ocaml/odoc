@@ -479,7 +479,7 @@ type 'a scope = {
   root : string -> t -> 'a option;
 }
 
-type 'a maybe_ambiguous = ('a, [ 'a amb_err | `Not_found ]) Result.result
+type 'a maybe_ambiguous = ('a, [ 'a amb_err | `Not_found ]) result
 
 let make_scope ?(root = fun _ _ -> None) ?check
     (filter : _ -> ([< Component.Element.any ] as 'a) option) : 'a scope =
@@ -503,12 +503,10 @@ let lookup_by_name scope name env =
   with
   | ([ x ] as results), Some c -> (
       record_lookup_results env results;
-      match c env x with
-      | Some (`Ambiguous _ as e) -> Result.Error e
-      | None -> Result.Ok x)
+      match c env x with Some (`Ambiguous _ as e) -> Error e | None -> Ok x)
   | ([ x ] as results), None ->
       record_lookup_results env results;
-      Result.Ok x
+      Ok x
   | (x :: tl as results), _ ->
       record_lookup_results env results;
       Error (`Ambiguous (x, tl))

@@ -1,4 +1,4 @@
-open Or_error
+open Odoc_utils
 
 val compile :
   parent_id:string ->

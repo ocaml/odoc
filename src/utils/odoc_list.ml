@@ -8,6 +8,7 @@ let rec concat_map_sep ~sep ~f = function
       let tl = concat_map_sep ~sep ~f xs in
       hd @ (sep :: tl)
 
+(* Since 4.10 *)
 let concat_map f l =
   let rec aux f acc = function
     | [] -> rev acc
@@ -17,28 +18,29 @@ let concat_map f l =
   in
   aux f [] l
 
-let rec filter_map acc f = function
-  | hd :: tl ->
-      let acc = match f hd with Some x -> x :: acc | None -> acc in
-      filter_map acc f tl
-  | [] -> List.rev acc
-
-let filter_map f x = filter_map [] f x
-
 (** @raise Failure if the list is empty. *)
 let rec last = function
   | [] -> failwith "Odoc_utils.List.last"
   | [ x ] -> x
   | _ :: tl -> last tl
 
-(* From ocaml/ocaml *)
+(* Since 4.10. Copied ocaml/ocaml *)
 let rec find_map f = function
   | [] -> None
   | x :: l -> (
       match f x with Some _ as result -> result | None -> find_map f l)
 
-let rec find_opt p = function
-  | [] -> None
-  | x :: l -> if p x then Some x else find_opt p l
-
+(* Since 5.1 *)
 let is_empty = function [] -> true | _ :: _ -> false
+
+let rec skip_until ~p = function
+  | [] -> []
+  | h :: t -> if p h then t else skip_until ~p t
+
+let split_at ~f lst =
+  let rec loop acc = function
+    | hd :: _ as rest when f hd -> (List.rev acc, rest)
+    | [] -> (List.rev acc, [])
+    | hd :: tl -> loop (hd :: acc) tl
+  in
+  loop [] lst

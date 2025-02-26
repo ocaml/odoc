@@ -192,10 +192,10 @@ let rec inline_element :
   | { value = `Reference (kind, target, content) as value; location } -> (
       let { Location.value = target; location = target_location } = target in
       match Error.raise_warnings (Reference.parse target_location target) with
-      | Result.Ok target ->
+      | Ok target ->
           let content = non_link_inline_elements ~surrounding:value content in
           Location.at location (`Reference (target, content))
-      | Result.Error error ->
+      | Error error ->
           Error.raise_warning error;
           let placeholder =
             match kind with
@@ -238,9 +238,9 @@ let rec nestable_block_element :
             match
               Error.raise_warnings (Reference.read_mod_longident location value)
             with
-            | Result.Ok r ->
+            | Ok r ->
                 { Comment.module_reference = r; module_synopsis = None } :: acc
-            | Result.Error error ->
+            | Error error ->
                 Error.raise_warning error;
                 acc)
           [] modules
@@ -278,9 +278,9 @@ let rec nestable_block_element :
         |> Location.at location
       in
       match Error.raise_warnings (Reference.parse_asset href_location href) with
-      | Result.Ok target ->
+      | Ok target ->
           `Media (`Reference target, m, content) |> Location.at location
-      | Result.Error error -> fallback error)
+      | Error error -> fallback error)
 
 and nestable_block_elements elements = List.map nestable_block_element elements
 
@@ -290,13 +290,13 @@ let tag :
     Ast.ocamldoc_tag ->
     ( Comment.block_element with_location,
       internal_tags_removed with_location )
-    Result.result =
+    result =
  fun ~location status tag ->
   if not status.tags_allowed then
     (* Trigger a warning but do not remove the tag. Avoid turning tags into
        text that would render the same. *)
     Error.raise_warning (tags_not_allowed location);
-  let ok t = Result.Ok (Location.at location (`Tag t)) in
+  let ok t = Ok (Location.at location (`Tag t)) in
   match tag with
   | (`Author _ | `Since _ | `Version _) as tag -> ok tag
   | `Deprecated content -> ok (`Deprecated (nestable_block_elements content))
@@ -305,9 +305,9 @@ let tag :
   | `Raise (name, content) -> (
       match Error.raise_warnings (Reference.parse location name) with
       (* TODO: location for just name *)
-      | Result.Ok target ->
+      | Ok target ->
           ok (`Raise (`Reference (target, []), nestable_block_elements content))
-      | Result.Error error ->
+      | Error error ->
           Error.raise_warning error;
           let placeholder = `Code_span name in
           ok (`Raise (placeholder, nestable_block_elements content)))
@@ -455,11 +455,11 @@ let top_level_block_elements status ast_elements =
               ast_elements
         | { value = `Tag the_tag; location } -> (
             match tag ~location status the_tag with
-            | Result.Ok element ->
+            | Ok element ->
                 traverse ~top_heading_level
                   (element :: comment_elements_acc)
                   ast_elements
-            | Result.Error placeholder ->
+            | Error placeholder ->
                 traverse ~top_heading_level comment_elements_acc
                   (placeholder :: ast_elements))
         | { value = `Heading _ as heading; _ } ->
@@ -500,8 +500,8 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
             match
               Error.raise_warnings (Reference.read_path_longident r_location s)
             with
-            | Result.Ok path -> next (`Canonical path)
-            | Result.Error e ->
+            | Ok path -> next (`Canonical path)
+            | Error e ->
                 Error.raise_warning e;
                 loop ~start tags ast' tl))
     | ({
