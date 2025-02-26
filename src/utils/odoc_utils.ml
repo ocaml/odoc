@@ -1,3 +1,5 @@
+type msg = [ `Msg of string ]
+
 (** The [result] type and a bind operator. This module is meant to be opened. *)
 module ResultMonad = struct
   let map_error f = function Ok _ as ok -> ok | Error e -> Error (f e)

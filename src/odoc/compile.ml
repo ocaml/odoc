@@ -1,7 +1,7 @@
+open Odoc_utils
+open ResultMonad
 open Odoc_model
 open Odoc_model.Names
-open Or_error
-open Odoc_utils
 
 (*
  * Copyright (c) 2014 Leo White <leo@lpw25.net>

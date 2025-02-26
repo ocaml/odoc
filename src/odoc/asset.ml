@@ -1,4 +1,5 @@
-open Or_error
+open Odoc_utils
+open ResultMonad
 
 let compile ~parent_id ~name ~output_dir =
   let open Odoc_model in

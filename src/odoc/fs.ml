@@ -16,7 +16,6 @@
 
 open Odoc_utils
 open StdLabels
-open Or_error
 
 type directory = Fpath.t
 

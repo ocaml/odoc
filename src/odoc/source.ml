@@ -1,5 +1,6 @@
+open Odoc_utils
+open ResultMonad
 open Odoc_model
-open Or_error
 
 let resolve_and_substitute ~resolver ~make_root ~source_id input_file =
   let filename = Fs.File.to_string input_file in

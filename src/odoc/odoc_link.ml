@@ -1,4 +1,5 @@
-open Or_error
+open Odoc_utils
+open ResultMonad
 
 let link_page ~resolver ~filename page =
   let env = Resolver.build_env_for_page resolver page in
