@@ -33,9 +33,6 @@ module Directory : sig
 
   val append : t -> t -> t
 
-  val reach_from : dir:t -> string -> t
-  (** @raise Invalid_argument if [parent/name] exists but is not a directory. *)
-
   val contains : parentdir:t -> file -> bool
 
   val compare : t -> t -> int
@@ -64,8 +61,6 @@ module Directory : sig
   (** [fold_files_rec_result ~ext f acc d] recursively folds [f] over the files
       with extension matching [ext] (defaults to [""]) contained in [d] and its
       sub directories. Stop as soon as [f] returns [Error _]. *)
-
-  module Table : Hashtbl.S with type key = t
 end
 
 module File : sig
@@ -89,8 +84,6 @@ module File : sig
 
   val to_string : t -> string
 
-  val segs : t -> string list
-
   val read : t -> (string, [> msg ]) result
 
   val copy : src:t -> dst:t -> (unit, [> msg ]) result
@@ -100,9 +93,4 @@ module File : sig
   val of_segs : string list -> t
   (** [of_segs segs] Returns an absolute path if [segs] starts with an empty
       segment. Raises [Invalid_argument] if [segs] is empty. *)
-
-  val append_segs : t -> string list -> t
-  (** Append a list of segments to a path. Do not raise. *)
-
-  module Table : Hashtbl.S with type key = t
 end
