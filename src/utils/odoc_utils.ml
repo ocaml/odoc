@@ -80,6 +80,10 @@ module Forest = Tree.Forest
 module Json = Json
 
 module Io_utils = struct
+  (** [with_open_*] are resource safe wrappers around opening and closing
+      channels. They are equivalent to the same functions in OCaml 4.14's
+      [In_channel] and [Out_channel]. *)
+
   let _with_resource res ~close f =
     Fun.protect ~finally:(fun () -> close res) (fun () -> f res)
 
@@ -89,6 +93,7 @@ module Io_utils = struct
   let with_open_in_bin fname f =
     _with_resource (open_in_bin fname) ~close:close_in_noerr f
 
+  (** Read a file line-by-line by folding [f]. *)
   let fold_lines fname f acc =
     _with_resource (open_in fname) ~close:close_in_noerr (fun ic ->
         let rec loop acc =
@@ -98,6 +103,7 @@ module Io_utils = struct
         in
         loop acc)
 
+  (** Read a file as a list of lines. *)
   let read_lines fname =
     List.rev (fold_lines fname (fun line acc -> line :: acc) [])
 
@@ -107,16 +113,15 @@ module Io_utils = struct
   let with_open_out_bin fname f =
     _with_resource (open_out_bin fname) ~close:close_out_noerr f
 
+  (** Like [with_open_out] but operate on a [Format] buffer. *)
   let with_formatter_out fname f =
     with_open_out fname (fun oc -> f (Format.formatter_of_out_channel oc))
 
+  (** Shortcuts for composing [with_open_*] functions and [Marshal]. *)
   let marshal fname v =
-    _with_resource (open_out_bin fname) ~close:close_out_noerr (fun oc ->
-        Marshal.to_channel oc v [])
+    with_open_out_bin fname (fun oc -> Marshal.to_channel oc v [])
 
-  let unmarshal fname =
-    _with_resource (open_in_bin fname) ~close:close_in_noerr
-      Marshal.from_channel
+  let unmarshal fname = with_open_in_bin fname Marshal.from_channel
 end
 
 include Astring
