@@ -1,3 +1,4 @@
+open Odoc_utils
 module ManLink = Link
 open Odoc_document
 open Types
@@ -299,7 +300,7 @@ and inline (l : Inline.t) =
               | { Inline.desc = Text s; _ } -> Accum [ s ]
               | _ -> Stop_and_keep)
           in
-          str {|%s|} (String.concat "" l) ++ inline rest
+          str {|%s|} (String.concat ~sep:"" l) ++ inline rest
       | Entity e ->
           let x = entity e in
           x ++ inline rest
@@ -343,7 +344,7 @@ let table pp { Table.data; align } =
               | Default -> "l")
             align
     in
-    Align_line (String.concat "" alignment)
+    Align_line (String.concat ~sep:"" alignment)
   in
   env "TS" "TE" ""
     (str "allbox;" ++ alignment
@@ -408,7 +409,7 @@ let next_heading, reset_heading =
     | 1, n :: _ -> [ n + 1 ]
     | i, n :: t -> n :: succ_heading (i - 1) t
   in
-  let print_heading l = String.concat "." @@ List.map string_of_int l in
+  let print_heading l = String.concat ~sep:"." @@ List.map string_of_int l in
   let next level =
     let new_heading = succ_heading level !heading_stack in
     heading_stack := new_heading;
@@ -547,7 +548,7 @@ let page p =
   let i = Shift.compute ~on_sub p.items in
   macro "TH" {|%s 3 "" "Odoc" "OCaml Library"|} p.url.name
   ++ macro "SH" "Name"
-  ++ str "%s" (String.concat "." @@ Link.for_printing p.url)
+  ++ str "%s" (String.concat ~sep:"." @@ Link.for_printing p.url)
   ++ macro "SH" "Synopsis" ++ vspace ++ item ~nested:false header
   ++ macro "SH" "Documentation" ++ vspace ++ macro "nf" ""
   ++ item ~nested:false i
@@ -558,7 +559,7 @@ let rec subpage subp =
 
 and render_page (p : Page.t) =
   let p = Doctree.Labels.disambiguate_page ~enter_subpages:true p
-  and children = Utils.flatmap ~f:subpage @@ Subpages.compute p in
+  and children = List.concat_map subpage (Subpages.compute p) in
   let content ppf = Format.fprintf ppf "%a@." Roff.pp (page p) in
   let filename = Link.as_filename p.url in
   { Renderer.filename; content; children; path = p.url }

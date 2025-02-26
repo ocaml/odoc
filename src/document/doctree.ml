@@ -1,3 +1,4 @@
+open Odoc_utils
 open Types
 
 module Take = struct
@@ -97,19 +98,23 @@ module Subpages : sig
   val compute : Page.t -> Subpage.t list
 end = struct
   let rec walk_documentedsrc (l : DocumentedSrc.t) =
-    Utils.flatmap l ~f:(function
-      | DocumentedSrc.Code _ -> []
-      | Documented _ -> []
-      | Nested { code; _ } -> walk_documentedsrc code
-      | Subpage p -> [ p ]
-      | Alternative (Expansion r) -> walk_documentedsrc r.expansion)
+    List.concat_map
+      (function
+        | DocumentedSrc.Code _ -> []
+        | Documented _ -> []
+        | Nested { code; _ } -> walk_documentedsrc code
+        | Subpage p -> [ p ]
+        | Alternative (Expansion r) -> walk_documentedsrc r.expansion)
+      l
 
   let rec walk_items (l : Item.t list) =
-    Utils.flatmap l ~f:(function
-      | Item.Text _ -> []
-      | Heading _ -> []
-      | Declaration { content; _ } -> walk_documentedsrc content
-      | Include i -> walk_items i.content.content)
+    List.concat_map
+      (function
+        | Item.Text _ -> []
+        | Heading _ -> []
+        | Declaration { content; _ } -> walk_documentedsrc content
+        | Include i -> walk_items i.content.content)
+      l
 
   let compute (p : Page.t) = walk_items (p.preamble @ p.items)
 end
