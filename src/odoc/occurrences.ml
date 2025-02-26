@@ -1,5 +1,5 @@
 open Odoc_utils
-open Or_error
+open ResultMonad
 
 let handle_file file ~f =
   if String.is_prefix ~affix:"impl-" (Fpath.filename file) then
@@ -33,9 +33,6 @@ let count ~dst ~warnings_options:_ directories include_hidden =
   Fs.Directory.mkdir_p (Fs.File.dirname dst);
   Io_utils.marshal (Fs.File.to_string dst) htbl;
   Ok ()
-
-open Astring
-open Or_error
 
 let parse_input_file input =
   let is_sep = function '\n' | '\r' -> true | _ -> false in

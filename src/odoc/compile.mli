@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Odoc_utils
 open Odoc_model
 open Odoc_model.Paths
-open Or_error
 
 type package_spec = { package : string; output : Fpath.t }
 type parent_spec = {

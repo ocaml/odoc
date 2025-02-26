@@ -1,5 +1,5 @@
 open Odoc_utils
-open Or_error
+open ResultMonad
 
 let from_mld ~xref_base_uri ~resolver ~output ~warnings_options input =
   (* Internal names, they don't have effect on the output. *)

@@ -4,6 +4,7 @@
    output the result to. *)
 
 open Odoc_utils
+open ResultMonad
 module List = ListLabels
 open Odoc_odoc
 open Cmdliner
@@ -225,7 +226,6 @@ end = struct
   let compile hidden directories resolve_fwd_refs dst output_dir package_opt
       parent_name_opt parent_id_opt open_modules children input warnings_options
       unique_id short_title =
-    let open Or_error in
     let _ =
       match unique_id with
       | Some id -> Odoc_model.Names.set_unique_ident id
@@ -476,8 +476,6 @@ module Compile_impl = struct
 end
 
 module Indexing = struct
-  open Or_error
-
   let output_file ~dst marshall =
     match (dst, marshall) with
     | Some file, `JSON
@@ -578,8 +576,6 @@ module Indexing = struct
 end
 
 module Sidebar = struct
-  open Or_error
-
   let output_file ~dst marshall =
     match (dst, marshall) with
     | Some file, `JSON when not (Fpath.has_ext "json" (Fpath.v file)) ->
@@ -668,8 +664,6 @@ end = struct
     match output_file with
     | Some file -> Fs.File.of_string file
     | None -> Fs.File.(set_ext ".odocl" input)
-
-  open Or_error
 
   (** Find the package/library name the output is part of *)
   let find_root_of_input l o =
@@ -1475,7 +1469,6 @@ module Depends = struct
       | Some p -> Format.fprintf pp "%a/" fmt_page p
 
     let list_dependencies input_file =
-      let open Or_error in
       Depends.for_rendering_step (Fs.Directory.of_string input_file)
       >>= fun depends ->
       List.iter depends ~f:(fun (root : Odoc_model.Root.t) ->
@@ -1559,8 +1552,6 @@ module Targets = struct
 end
 
 module Occurrences = struct
-  open Or_error
-
   let dst_of_string s =
     let f = Fs.File.of_string s in
     if not (Fs.File.has_ext ".odoc-occurrences" f) then
@@ -1652,7 +1643,6 @@ end
 module Odoc_error = struct
   let errors input =
     let open Odoc_odoc in
-    let open Or_error in
     let input = Fs.File.of_string input in
     Odoc_file.load input >>= fun unit ->
     Odoc_model.Error.print_errors unit.warnings;

@@ -32,7 +32,7 @@
    which will generally fix this issue. *)
 
 open Odoc_utils
-open Or_error
+open ResultMonad
 
 type named_root = string * Fs.Directory.t
 module Named_roots : sig

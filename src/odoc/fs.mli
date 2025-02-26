@@ -1,4 +1,4 @@
-open Or_error
+open Odoc_utils
 
 (*
  * Copyright (c) 2016 Thomas Refis <trefis@janestreet.com>
@@ -23,8 +23,6 @@ type file = Fpath.t
 type directory
 
 module Directory : sig
-  open Or_error
-
   type t = directory
 
   val dirname : t -> t
