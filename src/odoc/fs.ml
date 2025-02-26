@@ -55,7 +55,6 @@ module File = struct
     | Ok psuf -> Fpath.(normalize @@ (directory // psuf))
 
   let to_string = Fpath.to_string
-  let segs = Fpath.segs
 
   let of_string s =
     match Fpath.of_string s with
@@ -124,16 +123,6 @@ module File = struct
     | [] -> invalid_arg "Fs.File.of_segs"
     | "" :: rest -> of_segs_tl (Fpath.v "/") rest
     | first :: rest -> of_segs_tl (Fpath.v first) rest
-
-  let append_segs path segs = of_segs_tl path segs
-
-  module Table = Hashtbl.Make (struct
-    type nonrec t = t
-
-    let equal = Fpath.equal
-
-    let hash = Hashtbl.hash
-  end)
 end
 
 module Directory = struct
@@ -144,20 +133,6 @@ module Directory = struct
   let basename = Fpath.base
 
   let append = Fpath.append
-
-  let make_path p name =
-    match Fpath.of_string name with
-    | Error _ as e -> e
-    | Ok psuf -> Ok Fpath.(normalize @@ to_dir_path @@ (p // psuf))
-
-  let reach_from ~dir path =
-    match make_path dir path with
-    | Error (`Msg e) -> invalid_arg ("Odoc.Fs.Directory.create: " ^ e)
-    | Ok path ->
-        let pstr = Fpath.to_string path in
-        if Sys.file_exists pstr && not (Sys.is_directory pstr) then
-          invalid_arg "Odoc.Fs.Directory.create: not a directory";
-        path
 
   let contains ~parentdir f = Fpath.is_rooted ~root:parentdir f
 
@@ -206,12 +181,4 @@ module Directory = struct
     in
     try Ok (fold_files_rec ?ext f acc d)
     with Stop_iter (`Msg _ as e) -> Error e
-
-  module Table = Hashtbl.Make (struct
-    type nonrec t = t
-
-    let equal = Fpath.equal
-
-    let hash = Hashtbl.hash
-  end)
 end
