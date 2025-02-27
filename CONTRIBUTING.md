@@ -86,7 +86,7 @@ The tests cover esy and opam builds on Windows, macOS, and Linux. The Linux test
 
 ### Loading
 
-The [`odoc.loader`](https://ocaml.github.io/odoc/odoc/odoc.loader/) library is responsible for converting from the OCaml [`Typedtree`](https://ocaml.org/p/esperanto/0.0.4/doc/Typedtree/index.html) representations to the [internal representation](https://ocaml.github.io/odoc/odoc/odoc.model/Odoc_model/Lang/index.html).
+The [`odoc.loader`](https://ocaml.github.io/odoc/odoc/odoc.loader/) library is responsible for converting from the OCaml [`Typedtree`](https://ocaml.github.io/odoc/ocaml-base-compiler/compiler-libs.common/Typedtree/index.html) representations to the [internal representation](https://ocaml.github.io/odoc/odoc/odoc.model/Odoc_model/Lang/index.html).
 
 ### Model
 
