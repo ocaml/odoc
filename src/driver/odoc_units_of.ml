@@ -168,7 +168,7 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
         in
         let unit =
           make_unit ~name ~kind ~rel_dir ~input_file:impl.mip_path ~pkg
-            ~lib_deps ~enable_warnings:pkg.selected ~to_output:pkg.selected
+            ~lib_deps ~enable_warnings:false ~to_output:pkg.selected
             ~stash_input:false
         in
         Some unit
