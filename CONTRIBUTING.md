@@ -86,30 +86,30 @@ The tests cover esy and opam builds on Windows, macOS, and Linux. The Linux test
 
 ### Loading
 
-The [`odoc.loader`](https://ocaml.github.io/odoc/odoc_loader/index.html) library is responsible for converting from the OCaml [`Typedtree`](https://ocaml.github.io/odoc/deps/stdlib/Typedtree/index.html) representations to the [internal representation](https://ocaml.github.io/odoc/odoc_model/Odoc_model/Lang/index.html).
+The [`odoc.loader`](https://ocaml.github.io/odoc/odoc/odoc.loader/) library is responsible for converting from the OCaml [`Typedtree`](https://ocaml.org/p/esperanto/0.0.4/doc/Typedtree/index.html) representations to the [internal representation](https://ocaml.github.io/odoc/odoc/odoc.model/Odoc_model/Lang/index.html).
 
 ### Model
 
-The [`odoc.model`](https://ocaml.github.io/odoc/odoc_model/index.html) library contains definitions of the internal types used to represent OCaml interfaces.
+The [`odoc.model`](https://ocaml.github.io/odoc/odoc/odoc.model/) library contains definitions of the internal types used to represent OCaml interfaces.
 
 ### Resolution and Expansion
 
-Resolution of Paths, Fragments and References, and Expansion of Modules and Module Types are handled by the [`odoc.xref2`](https://ocaml.github.io/odoc/odoc_xref2/index.html) library.
+Resolution of Paths, Fragments and References, and Expansion of Modules and Module Types are handled by the [`odoc.xref2`](https://ocaml.github.io/odoc/odoc/odoc.xref2/) library.
 
 ### Intermediate Representation and Renderers
 
-The generic documentation intermediate format is defined in the [`odoc.document`](https://ocaml.github.io/odoc/odoc_document/index.html) library.
+The generic documentation intermediate format is defined in the [`odoc.document`](https://ocaml.github.io/odoc/odoc/odoc.document/) library.
 
-The three current renderers are implemented within the following libraries: [`odoc.html`](https://ocaml.github.io/odoc/odoc_html/index.html), [`odoc.latex`](https://ocaml.github.io/odoc/odoc_latex/index.html), and [`odoc.manpage`](https://ocaml.github.io/odoc/odoc_manpage/index.html).
+The three current renderers are implemented within the following libraries: [`odoc.html`](https://ocaml.github.io/odoc/odoc/odoc.html/), [`odoc.latex`](https://ocaml.github.io/odoc/odoc/odoc.latex/), and [`odoc.manpage`](https://ocaml.github.io/odoc/odoc/odoc.manpage/).
 
 ### CLI and Driver
 
-The CLI for `odoc` and various helper functions for driving the process are contained in the [`odoc.odoc`](https://ocaml.github.io/odoc/odoc_odoc/index.html) library.
+The CLI for `odoc` and various helper functions for driving the process are contained in the [`odoc.odoc`](https://ocaml.github.io/odoc/odoc/odoc.odoc/) library.
 
 ### Test and Internal Libraries
 
-There are a couple of libraries used internally for testing - [`odoc.xref_test`](https://ocaml.github.io/odoc/odoc_xref_test/index.html) and [`odoc.model_desc`](https://ocaml.github.io/odoc/odoc_model_desc/index.html).
+There are a couple of libraries used internally for testing - [`odoc.xref_test`](https://ocaml.github.io/odoc/odoc/odoc.xref_test/) and [`odoc.model_desc`](https://ocaml.github.io/odoc/odoc/odoc.model_desc/).
 
 ## Dependency Libraries
 
-There are several [dependency libraries](https://ocaml.github.io/odoc/deps/index.html) that `odoc` uses, whose functions, type, and module declarations are essential for understanding how `odoc` works. See the [driver](https://ocaml.github.io/odoc/driver.html) page for details on how the documentation for these libraries are included.
+There are several [dependency libraries](https://github.com/ocaml/odoc/blob/b8c8d99e85b90da8bc31c7a7e5e94d4daa653ab1/odoc.opam#L42) that `odoc` uses, whose functions, type, and module declarations are essential for understanding how `odoc` works. See the [driver](https://ocaml.github.io/odoc/odoc/driver.html) page for details on how the documentation for these libraries are included.
