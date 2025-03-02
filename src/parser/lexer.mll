@@ -104,15 +104,15 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
       | _ -> least_so_far)
   in
 
-  let first_line_max_drop, least_amount_of_whitespace =
+  let least_amount_of_whitespace =
     match lines with
-    | [] -> 0, None
+    | [] -> None
     | first_line :: tl ->
       begin match count_leading_whitespace first_line with
         | Some n ->
-          n, least_amount_of_whitespace (Some (first_line_offset + n)) tl
+          least_amount_of_whitespace (Some (first_line_offset + n)) tl
         | None ->
-          0, least_amount_of_whitespace None tl
+          least_amount_of_whitespace None tl
       end
   in
 
@@ -124,15 +124,21 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
       (* Since blank lines were ignored when calculating
          [least_amount_of_whitespace], their length might be less than the
          amount. *)
-      if String.length line < n then line
+      if String.length line < n then ""
       else String.sub line n (String.length line - n)
     in
     let lines =
       match lines with
       | [] -> []
       | first_line :: tl ->
-        drop (min first_line_max_drop least_amount_of_whitespace) first_line
-        :: List.map (drop least_amount_of_whitespace) tl
+         let first_line =
+           let spaces_to_remove = least_amount_of_whitespace - first_line_offset in
+           if spaces_to_remove >= 0 then
+             drop spaces_to_remove first_line
+           else
+             (String.make (-spaces_to_remove) ' ') ^ first_line
+         in
+         first_line :: List.map (drop least_amount_of_whitespace) tl
     in
     String.concat "\n" lines
 
