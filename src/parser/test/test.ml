@@ -2648,7 +2648,9 @@ let%expect_test _ =
           (((f.ml (2 7) (4 4)) (code_block ((f.ml (2 9) (4 2))  "      a\
                                                                \nb\
                                                                \nc")))))
-         (warnings ()))
+         (warnings
+          ( "File \"f.ml\", line 2, character 7 to line 4, character 4:\
+           \nCode blocks should be indented at the opening `{`.")))
         |}]
 
     let leading_whitespace_with_whitespace_line_long =
