@@ -45,7 +45,7 @@ can use the name of the tree in the reference.
 
 Different situations will give different meanings to the trees. In the case of
 [opam] packages, though, there is a natural meaning to give to those trees
-(you'll find more details in the {{!label-conv}convention for opam-installed packages}). Any
+(you'll find more details in the {{!section-conv}convention for opam-installed packages}). Any
 opam package will have an associated "documentation tree", named with the name
 of the package. Any of its libraries will have an associated "module tree",
 named with the name of the library. Another package can thus refer to the doc
