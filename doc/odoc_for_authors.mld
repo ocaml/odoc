@@ -481,6 +481,9 @@ formatted as code but with no particular style applied.
 *)
 ]}
 
+Verbatims' indentation is treated as for code blocks, see the
+{{!indentation_code_blocks}explanation} there!
+
 {3:escaping Escaping}
 
 In most contexts, the characters [{ [ ] } @] all need to be escaped with a backslash.
