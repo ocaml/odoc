@@ -88,7 +88,7 @@ doc, you can add the following to your [doc/dune] file:
   (files (asset.jpg as odoc-pages/asset.jpg)))
 v}
 
-Odoc 3.0 introduces a per-package configuration file, {{!section-config-file}odoc-config.sexp}, which is important if you'd like your
+Odoc 3.0 introduces a per-package configuration file, {{!section-"config-file"}odoc-config.sexp}, which is important if you'd like your
 documentation to link to the docs of other packages or libraries. If your documentation needs
 this configuration file, this will also need to be installed as follows:
 
@@ -954,7 +954,7 @@ Finally, documentation pages should start with a level-0 heading:
 
 {v
 {0 Title of the page}
-v}.
+v}
 
 Level-0 headings should not be used elsewhere.
 
