@@ -149,7 +149,7 @@ let reference_token media start target input lexbuf =
      let content = media token_descr (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf in
      `Media_with_replacement_text (target, kind, content)
 
-let trim_leading_space_or_accept_whitespace input start_offset text =
+let require_whitespace_first input start_offset text =
   match text.[0] with
   | ' ' -> String.sub text 1 (String.length text - 1)
   | '\t' | '\r' | '\n' -> text
@@ -166,8 +166,8 @@ let trim_leading_space_or_accept_whitespace input start_offset text =
     If that is not possible (eg there is a non-whitespace line starting with
     less than [offset] whitespaces), it unindents as much as possible and raises
     a warning. *)
-let trim_leading_whitespace : _ -> start_offset:_ -> string -> string =
-  fun input ~start_offset s ->
+let trim_leading_whitespace : what:string -> _ -> start_offset:_ -> string -> string =
+  fun ~what input ~start_offset s ->
   let start_location = input.offset_to_location start_offset in
   let offset = start_location.Loc.column in
   (* Whitespace-only lines do not count, so they return [None]. *)
@@ -198,7 +198,7 @@ let trim_leading_whitespace : _ -> start_offset:_ -> string -> string =
   in
   if least_amount_of_whitespace < offset then
     warning input ~start_offset
-      Parse_error.not_enough_indentation_in_code_block;
+      (Parse_error.not_enough_indentation_in_code_block ~what);
   let drop n line =
     (* Since blank lines were ignored when calculating
        [least_amount_of_whitespace], their length might be less than the
@@ -209,24 +209,12 @@ let trim_leading_whitespace : _ -> start_offset:_ -> string -> string =
   let lines = List.map (drop least_amount_of_whitespace) lines in
   String.concat "\n" lines
 
-let trim_trailing_space_or_accept_whitespace text =
-  match text.[String.length text - 1] with
-  | ' ' -> String.sub text 0 (String.length text - 1)
-  | '\t' | '\r' | '\n' -> text
-  | _ -> text
-  | exception Invalid_argument _ -> text
+(** Single lines and multilines blocks are handled differently. This formats the
+    content in a string that can be processed independently of whether it comes
+    from a single line code block, a multiline without leading new line, or a
+    normal multiline block.
 
-let emit_verbatim input start_offset buffer =
-  let t = Buffer.contents buffer in
-  let t = trim_trailing_space_or_accept_whitespace t in
-  let t = trim_leading_space_or_accept_whitespace input start_offset t in
-  let t = trim_leading_blank_lines t in
-  let t = trim_trailing_blank_lines t in
-  emit input (`Verbatim t) ~start_offset
-
-(** Code blocks are supposed to start with a new line, as they will be
-    "deindented". If they do not, we transform them, aligning the first
-    non-whitespace character with the opening brace:
+    Namely, we turn:
     {delim@plain[
       {[   aa]}
     ]delim}
@@ -234,8 +222,10 @@ let emit_verbatim input start_offset buffer =
     {delim@plain[
       {[
       aa]}
-    ]delim} *)
-let sanitize_code_block input ~start_offset s =
+    ]delim}
+    and additionally trim single line blocks.
+ *)
+let sanitize_code_block ~what input ~start_offset s =
   let start_location = input.offset_to_location start_offset in
   let indent = start_location.column in
   let rec loop index =
@@ -243,14 +233,26 @@ let sanitize_code_block input ~start_offset s =
     else
       match s.[index] with
       | ' ' | '\t' | '\r' -> loop (index + 1)
+      (* Multiline starting with an empty line *)
       | '\n' -> s
-      | _ ->
-          if String.contains_from s index '\n'  then
-            warning input ~start_offset
-              Parse_error.no_leading_newline_in_code_block;
+      (* Multiline NOT starting with an empty line *)
+      | _ when String.contains_from s index '\n' ->
+          warning input ~start_offset
+            (Parse_error.no_leading_newline_in_code_block ~what);
           String.make indent ' ' ^ String.sub s index (String.length s - index)
+      (* Single line *)
+      | _ -> String.make indent ' ' ^ String.trim s
   in
   loop 0
+
+let emit_verbatim input start_offset buffer =
+  let t = Buffer.contents buffer in
+  let t = require_whitespace_first input start_offset t in
+  let t = sanitize_code_block ~what:"verbatim" input ~start_offset t in
+  let t = trim_trailing_blank_lines t in
+  let t = trim_leading_blank_lines t in
+  let t = trim_leading_whitespace ~what:"verbatim" input ~start_offset t in
+  emit input (`Verbatim t) ~start_offset
 
 (* The locations have to be treated carefully in this function. We need to ensure that
    the [`Code_block] location matches the entirety of the block including the terminator,
@@ -263,10 +265,10 @@ let emit_code_block ~start_offset content_offset input metadata delim terminator
   let c = Buffer.contents c in
   (* We first handle the case wehere there is no line at the beginning, then
      remove trailing, leading lines and deindent *)
-  let c = sanitize_code_block input ~start_offset c in
+  let c = sanitize_code_block ~what:"code block" input ~start_offset c in
   let c = trim_trailing_blank_lines c in
   let c = trim_leading_blank_lines c in
-  let c = trim_leading_whitespace input ~start_offset c in
+  let c = trim_leading_whitespace ~what:"code block" input ~start_offset c in
   let c =
     with_location_adjustments ~adjust_end_by:terminator
       ~start_offset:content_offset
