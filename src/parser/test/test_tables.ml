@@ -687,8 +687,6 @@ let%expect_test _ =
              (align (default default))))))
          (warnings
           ( "File \"f.ml\", line 3, characters 13-20:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 3, characters 13-20:\
            \n'{[...]}' (code block) is not allowed in '{t ...}' (table).")))
         |}]
 
@@ -717,8 +715,6 @@ let%expect_test _ =
              (align (default default))))))
          (warnings
           ( "File \"f.ml\", line 3, characters 11-18:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 3, characters 11-18:\
            \n'{[...]}' (code block) is not allowed in '{t ...}' (table).")))
         |}]
 
