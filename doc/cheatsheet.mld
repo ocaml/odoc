@@ -9,7 +9,8 @@ Quick reference for the odoc language!
     {th Render as}}
   {tr
     {th Paragraphs}
-    {td {@text[
+    {td
+      {@text[
       A first paragraph
 
       A second paragraph]}}
@@ -19,7 +20,8 @@ Quick reference for the odoc language!
       A second paragraph}}
   {tr
     {th {{!odoc_for_authors.sections}Headings}}
-    {td {@text[
+    {td
+      {@text[
       {1 Title}
       {2 Subtitle}
       {3 Subsubtitle}
@@ -51,7 +53,8 @@ Quick reference for the odoc language!
     {td   H{_ 2}O and 1{^ st}}}
   {tr
     {th {{!odoc_for_authors.links_and_references}Link} }
-    {td {@text[
+    {td
+      {@text[
       Here is a link: {:https://www.example.com}.
 
       You can also click {{:https://www.example.com}here}.]}}
@@ -61,7 +64,8 @@ Quick reference for the odoc language!
       You can also click {{:https://www.example.com}here}.}}
   {tr
     {th {{!odoc_for_authors.links_and_references}References} }
-    {td {@text[
+    {td
+      {@text[
       See {!Odoc_odoc.Compile.compile}.
 
       See {{!Odoc_odoc.Compile.compile}this function}.
@@ -83,7 +87,8 @@ Quick reference for the odoc language!
       See {{!odoc_for_authors.links_and_references}this section} for the syntax of references.}}
     {tr
       {th {{!odoc_for_authors.lists}Lists} }
-    {td {@text[
+    {td
+      {@text[
       - First item
       - Second item
 
@@ -117,43 +122,46 @@ Quick reference for the odoc language!
         {li can also be used}}}}
   {tr
     {th {{!odoc_for_authors.code_blocks}Code Blocks} }
-    {td {example@text[
+    {td
+      {example@text[
       Inline [code].
 
       {[
-        let _ = "Block code"
+      let _ = "Block code"
       ]}
 
       {foo@text[
-        Code block with {[inner code block syntax]}
+      Code block with {[inner code block syntax]}
       ]foo}
 
       {@python[
-        [i+1 for i in xrange(2)]
+      [i+1 for i in xrange(2)]
       ]}]example}}
     {td
 
       Inline [code].
 
       {[
-        let _ = "Block code"
+      let _ = "Block code"
       ]}
 
       {foo@text[
-        Code block with {[inner code block syntax]}
+      Code block with {[inner code block syntax]}
       ]foo}
 
       {@python[
-        [i+1 for i in xrange(2)]
+      [i+1 for i in xrange(2)]
       ]}}}
   {tr
     {th {{!odoc_for_authors.verbatim_blocks}Verbatim} }
-    {td {example@text[
+    {td
+      {example@text[
       {v verbatim text v}]example}}
     {td {v verbatim text v}}}
   {tr
     {th {{!odoc_for_authors.math}Math} }
-    {td {@text[
+    {td
+      {@text[
       For inline math: {m \sqrt 2}.
 
       For display math:
@@ -167,7 +175,8 @@ Quick reference for the odoc language!
       {math \sqrt 2}}}
   {tr
     {th {{!odoc_for_authors.media}Images} }
-    {td {@text[
+    {td
+      {@text[
       {image!path/to/file.png}
 
       {image:https://picsum.photos/200/100}
@@ -179,7 +188,8 @@ Quick reference for the odoc language!
     }}
   {tr
     {th {{!odoc_for_authors.tables}Table} }
-    {td {@text[
+    {td
+      {@text[
       Light syntax:
 
       {t | Header 1 | Header 2 |
@@ -221,7 +231,8 @@ Quick reference for the odoc language!
           {td Cell 4}}}}}
   {tr
     {th HTML }
-    {td {example@text[
+    {td
+      {example@text[
       {%html:
         <blockquote>
           Odoc language lack support for quotation!
@@ -235,7 +246,8 @@ Quick reference for the odoc language!
       %}}}
   {tr
     {th {{!page-odoc_for_authors.tags}Tags} }
-    {td {example@text[
+    {td
+      {example@text[
       @since 4.08
 
       Tags are explained in {{!page-odoc_for_authors.tags}this section}.]example}}
