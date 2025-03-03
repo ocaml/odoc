@@ -245,7 +245,9 @@ let sanitize_code_block input ~start_offset s =
       | ' ' | '\t' | '\r' -> loop (index + 1)
       | '\n' -> s
       | _ ->
-          warning input ~start_offset Parse_error.no_leading_newline_in_code_block;
+          if String.contains_from s index '\n'  then
+            warning input ~start_offset
+              Parse_error.no_leading_newline_in_code_block;
           String.make indent ' ' ^ String.sub s index (String.length s - index)
   in
   loop 0
