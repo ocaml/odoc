@@ -41,6 +41,9 @@ let no_leading_whitespace_in_verbatim : Loc.span -> Warning.t =
 let not_enough_indentation_in_code_block : Loc.span -> Warning.t =
   Warning.make "Code blocks should be indented at the opening `{`."
 
+let no_leading_newline_in_code_block : Loc.span -> Warning.t =
+  Warning.make "Code blocks' content should start on a newline."
+
 let no_trailing_whitespace_in_verbatim : Loc.span -> Warning.t =
   Warning.make "'v}' should be preceded by whitespace."
 
