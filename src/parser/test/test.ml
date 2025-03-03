@@ -3222,6 +3222,147 @@ let%expect_test _ =
               (code_block (((f.ml (1 7) (1 12)) ocaml) ())
                ((f.ml (1 13) (1 18)) "foo ") ()))))
            (warnings ())) |}]
+
+    (** {3 Code block indentation}
+
+        Code blocks strip some whitespace from the content of a multiline code
+        block. We test that here, as well as warnings related to that.
+
+        Let's test warnings first. We have two kind of warnings: when a
+        multiline code block starts without a new line first, and when the
+        indentation is less than the identation of the opening bracket. *)
+
+    let too_few_indentation =
+      test {|
+   {[
+  foo
+ ]}|};
+      [%expect
+        {|
+        ((output (((f.ml (2 3) (4 3)) (code_block ((f.ml (2 5) (4 1)) foo)))))
+         (warnings
+          ( "File \"f.ml\", line 2, character 3 to line 4, character 3:\
+           \nCode blocks should be indented at the opening `{`.")))
+        |}]
+
+    let multiline_without_newline =
+      test {|
+   {[ foo
+ ]}|};
+      [%expect
+        {|
+        ((output (((f.ml (2 3) (3 3)) (code_block ((f.ml (2 5) (3 1)) foo)))))
+         (warnings
+          ( "File \"f.ml\", line 2, character 3 to line 3, character 3:\
+           \nMultiline code blocks' content should start on a newline.")))
+        |}]
+
+    let everything_is_wrong =
+      test {|
+   {[ foo
+  bar ]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (2 3) (3 8)) (code_block ((f.ml (2 5) (3 6))  " foo\
+                                                               \nbar ")))))
+         (warnings
+          ( "File \"f.ml\", line 2, character 3 to line 3, character 8:\
+           \nMultiline code blocks' content should start on a newline."
+            "File \"f.ml\", line 2, character 3 to line 3, character 8:\
+           \nCode blocks should be indented at the opening `{`.")))
+        |}]
+
+    let all_good_multiline =
+      test {|
+   {[
+   foo
+ ]}|};
+      [%expect
+        {|
+        ((output (((f.ml (2 3) (4 3)) (code_block ((f.ml (2 5) (4 1)) foo)))))
+         (warnings ()))
+        |}]
+
+    let all_good_single_line =
+      test {| {[ foo ]} |};
+      [%expect
+        {|
+        ((output (((f.ml (1 1) (1 10)) (code_block ((f.ml (1 3) (1 8)) "foo ")))))
+         (warnings ()))
+        |}]
+
+    (** Let's now test that the correct amount of whitespace is removed. *)
+
+    let ascending_stair =
+      test {|
+   {[
+   foo
+     bar
+       baz
+ ]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (2 3) (6 3))
+            (code_block ((f.ml (2 5) (6 1))  "foo\
+                                            \n  bar\
+                                            \n    baz")))))
+         (warnings ()))
+        |}]
+
+    let ascending_stair =
+      test {|
+   {[
+       baz
+     bar
+   foo
+ ]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (2 3) (6 3))
+            (code_block ((f.ml (2 5) (6 1))  "    baz\
+                                            \n  bar\
+                                            \nfoo")))))
+         (warnings ()))
+        |}]
+
+    let indented_after_opening_fence =
+      test {|
+   {[
+       baz
+     bar
+       foo
+ ]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (2 3) (6 3))
+            (code_block ((f.ml (2 5) (6 1))  "    baz\
+                                            \n  bar\
+                                            \n    foo")))))
+         (warnings ()))
+        |}]
+
+    let indentation_warning_case =
+      test {|
+   {[
+    baz
+  bar
+    foo
+ ]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (2 3) (6 3))
+            (code_block ((f.ml (2 5) (6 1))  "  baz\
+                                            \nbar\
+                                            \n  foo")))))
+         (warnings
+          ( "File \"f.ml\", line 2, character 3 to line 6, character 3:\
+           \nCode blocks should be indented at the opening `{`.")))
+        |}]
   end in
   ()
 
