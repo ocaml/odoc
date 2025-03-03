@@ -36,7 +36,8 @@ let compile_deps f =
   | [ (_, digest) ], deps -> Ok { digest; deps }
   | _ -> Error (`Msg "odd")
 
-let compile ~output_dir ~input_file:file ~includes ~warnings_tag ~parent_id =
+let compile ~output_dir ~input_file:file ~includes ~warnings_tag ~parent_id
+    ~ignore_output =
   let open Cmd in
   let includes =
     Fpath.Set.fold
@@ -59,10 +60,10 @@ let compile ~output_dir ~input_file:file ~includes ~warnings_tag ~parent_id =
     | Some tag -> cmd % "--warnings-tag" % tag
   in
   let desc = Printf.sprintf "Compiling %s" (Fpath.to_string file) in
-  ignore
-  @@ Cmd_outputs.submit
-       (Some (`Compile, Fpath.to_string file))
-       desc cmd output_file
+  let log =
+    if ignore_output then None else Some (`Compile, Fpath.to_string file)
+  in
+  ignore @@ Cmd_outputs.submit log desc cmd output_file
 
 let compile_md ~output_dir ~input_file:file ~parent_id =
   let open Cmd in

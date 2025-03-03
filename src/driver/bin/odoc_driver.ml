@@ -130,7 +130,7 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
   List.iter
     (fun { Cmd_outputs.log_dest; prefix; run } ->
       match log_dest with
-      | `Link ->
+      | `Link | `Compile ->
           [ run.Run.output; run.Run.errors ]
           |> List.iter @@ fun content ->
              if String.length content = 0 then ()
