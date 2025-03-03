@@ -12,6 +12,7 @@
 - Remove `--suppress-warnings` argument in favour of `--warnings-tag`
   which is more friendly for caching and voodoo (@jonludlam, #1304)
 - Filter out warnings coming from linking implementations (@jonludlam, #1319)
+- Output warnings coming from the `compile` phase in the driver (@jonludlam, #1323)
 
 ### Fixed
 
