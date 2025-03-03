@@ -65,8 +65,7 @@ let trim_trailing_blank_lines : string -> string = fun s ->
   in
   let last = String.length s - 1 in
   match scan_for_last_newline last None with
-  | None ->
-    s
+  | None -> s
   | Some trim_from ->
     let trim_from =
       if trim_from > 0 && s.[trim_from - 1] = '\r' then
@@ -76,9 +75,13 @@ let trim_trailing_blank_lines : string -> string = fun s ->
     in
     String.sub s 0 trim_from
 
-(** Returns [None] for an empty, [Some ident] for an indented line. *)
-let trim_leading_whitespace : first_line_offset:int -> string -> string =
- fun ~first_line_offset s ->
+(** [trim_leading_whitespace ~offset c] "unindents" [c] by the [offset] amount.
+    If that is not possible (eg there is a non-whitespace line starting with
+    less than [offset] whitespaces), it unindents as much as possible and raises
+    a warning. *)
+let trim_leading_whitespace : offset:int -> string -> string =
+ fun ~offset s ->
+  (* Whitespace-only lines do not count, so they return [None]. *)
   let count_leading_whitespace line =
     let rec count_leading_whitespace' index len =
       if index = len then None
@@ -97,50 +100,23 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
   let lines = Astring.String.cuts ~sep:"\n" s in
 
   let least_amount_of_whitespace =
-    List.fold_left (fun least_so_far line ->
-      match (count_leading_whitespace line, least_so_far) with
-      | (Some _ as n', None) -> n'
-      | (Some n as n', Some least) when n < least -> n'
-      | _ -> least_so_far)
+    List.fold_left
+      (fun least_so_far line ->
+        match (count_leading_whitespace line, least_so_far) with
+        | Some n, least when n < least -> n
+        | _ -> least_so_far)
+      offset lines
   in
-
-  let least_amount_of_whitespace =
-    match lines with
-    | [] -> None
-    | first_line :: tl ->
-      begin match count_leading_whitespace first_line with
-        | Some n ->
-          least_amount_of_whitespace (Some (first_line_offset + n)) tl
-        | None ->
-          least_amount_of_whitespace None tl
-      end
+  if least_amount_of_whitespace < offset then () (* TODO: raise warning *);
+  let drop n line =
+    (* Since blank lines were ignored when calculating
+       [least_amount_of_whitespace], their length might be less than the
+       amount. *)
+    if String.length line < n then ""
+    else String.sub line n (String.length line - n)
   in
-
-  match least_amount_of_whitespace with
-  | None ->
-    s
-  | Some least_amount_of_whitespace ->
-    let drop n line =
-      (* Since blank lines were ignored when calculating
-         [least_amount_of_whitespace], their length might be less than the
-         amount. *)
-      if String.length line < n then ""
-      else String.sub line n (String.length line - n)
-    in
-    let lines =
-      match lines with
-      | [] -> []
-      | first_line :: tl ->
-         let first_line =
-           let spaces_to_remove = least_amount_of_whitespace - first_line_offset in
-           if spaces_to_remove >= 0 then
-             drop spaces_to_remove first_line
-           else
-             (String.make (-spaces_to_remove) ' ') ^ first_line
-         in
-         first_line :: List.map (drop least_amount_of_whitespace) tl
-    in
-    String.concat "\n" lines
+  let lines = List.map (drop least_amount_of_whitespace) lines in
+  String.concat "\n" lines
 
 type input = {
   file : string;
@@ -244,24 +220,52 @@ let emit_verbatim input start_offset buffer =
   let t = trim_trailing_blank_lines t in
   emit input (`Verbatim t) ~start_offset
 
+(** Code blocks are supposed to start with a new line, as they will be
+    "deindented". If they do not, we transform them, aligning the first
+    non-whitespace character with the opening brace:
+    {delim@plain[
+      {[   aa]}
+    ]delim}
+    is turned into
+    {delim@plain[
+      {[
+      aa]}
+    ]delim} *)
+let sanitize_code_block ~indent s =
+  let rec loop index =
+    if index >= String.length s then s
+    else
+      match s.[index] with
+      | ' ' | '\t' | '\r' -> loop (index + 1)
+      | '\n' -> s
+      | _ ->
+          String.make indent ' ' ^ String.sub s index (String.length s - index)
+  in
+  loop 0
+
 (* The locations have to be treated carefully in this function. We need to ensure that
-   the []`Code_block] location matches the entirety of the block including the terminator,
-   and the content location is precicely the location of the text of the code itself.
+   the [`Code_block] location matches the entirety of the block including the terminator,
+   and the content location is precisely the location of the text of the code itself.
    Note that the location reflects the content _without_ stripping of whitespace, whereas
    the value of the content in the tree has whitespace stripped from the beginning,
    and trailing empty lines removed. *)
-let emit_code_block ~start_offset content_offset input metadata delim terminator c has_results =
-  let c = Buffer.contents c |> trim_trailing_blank_lines in
-  let content_location = input.offset_to_location content_offset in
+let emit_code_block ~start_offset content_offset input metadata delim terminator
+    c has_results =
+  let c = Buffer.contents c in
+  let start_location = input.offset_to_location start_offset in
+  let indent = start_location.column in
+  (* We first handle the case wehere there is no line at the beginning, then
+     remove trailing, leading lines and deindent *)
+  let c = sanitize_code_block ~indent c in
+  let c = trim_trailing_blank_lines c in
+  let c = trim_leading_blank_lines c in
+  let c = trim_leading_whitespace ~offset:indent c in
   let c =
-    with_location_adjustments
-      (fun _ _location c ->
-         let first_line_offset = content_location.column in
-         trim_leading_whitespace ~first_line_offset c)
+    with_location_adjustments ~adjust_end_by:terminator
+      ~start_offset:content_offset
+      (fun _ -> Loc.at)
       input c
   in
-  let c = trim_leading_blank_lines c in
-  let c = with_location_adjustments ~adjust_end_by:terminator ~start_offset:content_offset (fun _ -> Loc.at) input c in
   emit ~start_offset input (`Code_block (metadata, delim, c, has_results))
 
 let heading_level input level =
