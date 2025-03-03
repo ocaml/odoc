@@ -27,6 +27,7 @@ val compile :
   includes:Fpath.set ->
   warnings_tag:string option ->
   parent_id:Id.t ->
+  ignore_output:bool ->
   unit
 val compile_md :
   output_dir:Fpath.t -> input_file:Fpath.t -> parent_id:Id.t -> unit
