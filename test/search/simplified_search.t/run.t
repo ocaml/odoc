@@ -6,8 +6,12 @@ Compile the files
 Compile and link the documentation
 
   $ odoc compile -I . page.mld
+  File "page.mld", line 7, characters 0-12:
+  Warning: Code blocks' content should start on a newline.
   $ odoc compile --parent-id page --output-dir . -I . j.cmt
   $ odoc compile --parent-id page --output-dir . -I . main.cmt
+  File "main.ml", line 59, characters 6-16:
+  Warning: Code blocks' content should start on a newline.
 
   $ odoc link -I . page/j.odoc
   $ odoc link -I . page/main.odoc

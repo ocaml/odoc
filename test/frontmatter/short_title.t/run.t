@@ -35,6 +35,8 @@ With other block
   > {0 Test1}
   > EOF
   $ odoc compile --parent-id pkg --output-dir _odoc index.mld
+  File "index.mld", line 1, characters 13-27:
+  Warning: Code blocks' content should start on a newline.
   File "index.mld", line 1, characters 0-27:
   Warning: Short titles cannot contain other block than a single paragraph
   $ odoc_print _odoc/pkg/page-index.odoc | jq .frontmatter.short_title -c
