@@ -2531,7 +2531,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "  foo\
+          (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "foo\
                                                                \nbar")))))
          (warnings ()))
         |}]
@@ -2541,7 +2541,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "  foo\r\
+          (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "foo\r\
                                                                \nbar")))))
          (warnings ()))
         |}]
@@ -2551,7 +2551,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 5)) (code_block ((f.ml (1 2) (3 3))  "  foo\
+          (((f.ml (1 0) (3 5)) (code_block ((f.ml (1 2) (3 3))  "foo\
                                                                \n\
                                                                \nbar")))))
          (warnings ()))
@@ -2561,16 +2561,17 @@ let%expect_test _ =
       test "{[ foo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo)))))
-           (warnings ())) |}]
+        ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo)))))
+         (warnings ()))
+        |}]
 
     let leading_whitespace_two =
       test "{[ foo\n bar]}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "  foo\
-                                                               \nbar")))))
+          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\
+                                                               \n bar")))))
          (warnings ()))
         |}]
 
@@ -2579,8 +2580,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "  foo\r\
-                                                               \nbar")))))
+          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\r\
+                                                               \n bar")))))
          (warnings ()))
         |}]
 
@@ -2590,16 +2591,17 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 8)) (code_block ((f.ml (1 2) (2 6))  "foo\
-                                                               \nbar")))))
-         (warnings ())) |}]
+                                                               \n   bar")))))
+         (warnings ()))
+        |}]
 
     let leading_whitespace_two_different_indent_rev =
       test "{[   foo\n bar]}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "    foo\
-                                                               \nbar")))))
+          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\
+                                                               \n bar")))))
          (warnings ()))
         |}]
 
@@ -2609,17 +2611,18 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 11)) (code_block ((f.ml (1 2) (2 9))  "foo\
-                                                                \n   bar")))))
-         (warnings ())) |}]
+                                                                \n      bar")))))
+         (warnings ()))
+        |}]
 
     let leading_whitespace_with_empty_line =
       test "{[ foo\n\n bar]}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 6)) (code_block ((f.ml (1 2) (3 4))  "  foo\
+          (((f.ml (1 0) (3 6)) (code_block ((f.ml (1 2) (3 4))  "foo\
                                                                \n\
-                                                               \nbar")))))
+                                                               \n bar")))))
          (warnings ()))
         |}]
 
@@ -2628,9 +2631,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 7)) (code_block ((f.ml (1 2) (3 5))  "  foo\
-                                                               \n\
-                                                               \nbar")))))
+          (((f.ml (1 0) (3 7)) (code_block ((f.ml (1 2) (3 5))  "foo\
+                                                               \n \
+                                                               \n  bar")))))
          (warnings ()))
         |}]
 
@@ -2642,10 +2645,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (2 7) (4 4))
-            (code_block ((f.ml (2 9) (4 2))  "         a\
-                                            \nb\
-                                            \nc")))))
+          (((f.ml (2 7) (4 4)) (code_block ((f.ml (2 9) (4 2))  "      a\
+                                                               \nb\
+                                                               \nc")))))
          (warnings ()))
         |}]
 
@@ -2654,9 +2656,9 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (3 6)) (code_block ((f.ml (1 2) (3 4))  "  foo\
-                                                               \n  \
-                                                               \nbar")))))
+          (((f.ml (1 0) (3 6)) (code_block ((f.ml (1 2) (3 4))  "foo\
+                                                               \n   \
+                                                               \n bar")))))
          (warnings ()))
         |}]
 
@@ -2665,24 +2667,26 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (4 2)) (code_block ((f.ml (1 2) (4 0))  "foo\
-                                                               \nbar")))))
-         (warnings ())) |}]
+          (((f.ml (1 0) (4 2)) (code_block ((f.ml (1 2) (4 0))  "  foo\
+                                                               \n  bar")))))
+         (warnings ()))
+        |}]
 
     let leading_tab =
       test "{[\tfoo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo)))))
-           (warnings ())) |}]
+        ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo)))))
+         (warnings ()))
+        |}]
 
     let leading_tab_two =
       test "{[\tfoo\n\tbar]}";
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  " \tfoo\
-                                                               \nbar")))))
+          (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "foo\
+                                                               \n\tbar")))))
          (warnings ()))
         |}]
 
@@ -2691,8 +2695,8 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (2 7)) (code_block ((f.ml (1 2) (2 5))  "\tfoo\
-                                                               \nbar")))))
+          (((f.ml (1 0) (2 7)) (code_block ((f.ml (1 2) (2 5))  "foo\
+                                                               \n\t\tbar")))))
          (warnings ()))
         |}]
 
@@ -2705,7 +2709,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (2 1) (4 3)) (code_block ((f.ml (2 3) (4 1))  "    foo\
+          (((f.ml (2 1) (4 3)) (code_block ((f.ml (2 3) (4 1))  "foo\
                                                                \nbar")))))
          (warnings ()))
         |}]
@@ -2735,8 +2739,9 @@ let%expect_test _ =
       test "{[\n foo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4)) foo)))))
-           (warnings ())) |}]
+        ((output (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4)) " foo")))))
+         (warnings ()))
+        |}]
 
     let leading_newline_with_trash =
       test "{[ \nfoo]}";
@@ -2932,7 +2937,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 14))
-            (code_block ((f.ml (1 2) (2 12))  "  (* foo *)\
+            (code_block ((f.ml (1 2) (2 12))  "(* foo *)\
                                              \nlet bar = ()")))))
          (warnings ()))
         |}]
@@ -2943,7 +2948,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 14))
-            (code_block ((f.ml (1 2) (2 12))  "  (** foo *)\
+            (code_block ((f.ml (1 2) (2 12))  "(** foo *)\
                                              \nlet bar = ()")))))
          (warnings ()))
         |}]
@@ -3098,7 +3103,8 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (2 9))
             (code_block (((f.ml (1 2) (1 7)) ocaml) ()) ((f.ml (2 1) (2 7)) "code ")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let newlines_after_meta =
       test "{@ocaml kind=toplevel\n[ code ]}";
@@ -3109,7 +3115,8 @@ let%expect_test _ =
             (code_block
              (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
              ((f.ml (2 1) (2 7)) "code ")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let spaces_after_meta =
       test "{@ocaml kind=toplevel [ code ]}";
@@ -3120,7 +3127,8 @@ let%expect_test _ =
             (code_block
              (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
              ((f.ml (1 23) (1 29)) "code ")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let spaces_and_newline_after_meta =
       test "{@ocaml kind=toplevel \n  [ code ]}";
@@ -3131,7 +3139,8 @@ let%expect_test _ =
             (code_block
              (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
              ((f.ml (2 3) (2 9)) "code ")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let newlines_inside_meta =
       test "{@ocaml kind=toplevel\nenv=e1[ code ]}";
@@ -3144,7 +3153,8 @@ let%expect_test _ =
               (((f.ml (1 8) (2 6))  "kind=toplevel\
                                    \nenv=e1")))
              ((f.ml (2 7) (2 13)) "code ")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let newlines_between_meta =
       test "{@ocaml\nkind=toplevel[ code ]}";
@@ -3155,7 +3165,8 @@ let%expect_test _ =
             (code_block
              (((f.ml (1 2) (1 7)) ocaml) (((f.ml (2 0) (2 13)) kind=toplevel)))
              ((f.ml (2 14) (2 20)) "code ")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let langtag_non_word =
       test "{@ocaml,top[ code ]}";
@@ -3174,11 +3185,12 @@ let%expect_test _ =
       test "{delim@ocaml[ all{}[2[{{]doo}}]]'''(* ]} ]delim}";
       [%expect
         {|
-          ((output
-            (((f.ml (1 0) (1 48))
-              (code_block (((f.ml (1 7) (1 12)) ocaml) ())
-               ((f.ml (1 13) (1 41)) "all{}[2[{{]doo}}]]'''(* ]} ")))))
-           (warnings ())) |}]
+        ((output
+          (((f.ml (1 0) (1 48))
+            (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+             ((f.ml (1 13) (1 41)) "all{}[2[{{]doo}}]]'''(* ]} ")))))
+         (warnings ()))
+        |}]
 
     let code_block_with_output =
       test
@@ -3197,26 +3209,33 @@ let%expect_test _ =
          (warnings
           ( "File \"f.ml\", line 2, characters 8-9:\
            \nUnpaired ']' (end of code).\
-           \nSuggestion: try '\\]'.")))|}]
+           \nSuggestion: try '\\]'.")))
+        |}]
 
     let delimited_code_block_with_output =
       test "{delim@ocaml[ foo ]delim[ ]}";
       [%expect
         {|
-          ((output
-            (((f.ml (1 0) (1 28))
-              (code_block (((f.ml (1 7) (1 12)) ocaml) ())
-               ((f.ml (1 13) (1 18)) "foo ") ()))))
-           (warnings ())) |}]
+        ((output
+          (((f.ml (1 0) (1 28))
+            (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+             ((f.ml (1 13) (1 18)) "foo ") ()))))
+         (warnings ()))
+        |}]
   end in
   ()
 
 let%expect_test _ =
   let module Verbatim = struct
     let basic =
-      test "{v foo v}";
+      test {|
+{v
+          foo
+ v}
+
+            |};
       [%expect
-        {| ((output (((f.ml (1 0) (1 9)) (verbatim foo)))) (warnings ())) |}]
+        {| ((output (((f.ml (2 0) (4 3)) (verbatim "          foo")))) (warnings ())) |}]
 
     let empty =
       test "{v v}";
