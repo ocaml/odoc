@@ -383,6 +383,66 @@ doc.
 *)
 v}
 
+{4:indentation_code_blocks Indentation in code blocks}
+
+We distinguish two kind of code blocks: the single line one, and the multi-line
+one.
+
+Single line code blocks can be on the same line as their delimiters:
+
+{v
+(** This how one adds a type annotation in OCaml:
+    {[ let x : int = 0 ]}
+*)
+v}
+
+On the contrary, multi-line code blocks must have a new line after the opening
+fence, and be indented as the opening fence:
+
+{v
+(** This how one match a value in OCaml:
+    {[
+    let x =
+      match l with
+      | [] -> None
+      | h :: _ -> Some h
+    ]}
+*)
+v}
+
+Leading and trailing newlines are stripped from the content.
+
+If the indentation exceeds the opening fence, the whole code block ends up
+keeping the indentation excess:
+
+{v
+(** First we define the name of the variable
+    {[
+    let x =
+    ]}
+    Then we define the value it is bound to:
+    {[
+      match l with
+      | [] -> None
+      | h :: _ -> Some h
+    ]}
+*)
+v}
+
+If the indentation is less than the opening fence, indentation is removed until
+the least indented line, and a warning is raised:
+
+{v
+(** This how one match a value in OCaml:
+    {[
+ let x =
+   match l with
+   | [] -> None
+   | h :: _ -> Some h
+    ]}
+*)
+v}
+
 {4:language_headers Language Headers}
 
 As of [odoc.2.2], it is possible to write blocks with explicit language headers.
