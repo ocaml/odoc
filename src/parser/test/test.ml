@@ -1172,8 +1172,6 @@ let%expect_test _ =
            ((f.ml (1 3) (1 10)) (code_block ((f.ml (1 5) (1 8)) foo)))))
          (warnings
           ( "File \"f.ml\", line 1, characters 3-10:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 1, characters 3-10:\
            \n'{[...]}' (code block) is not allowed in '{b ...}' (boldface text)."
             "File \"f.ml\", line 1, characters 0-2:\
            \n'{b ...}' (boldface text) should not be empty."
@@ -2493,9 +2491,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let empty =
@@ -2530,9 +2526,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 11)) (code_block ((f.ml (1 2) (1 9)) "foo bar")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-11:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let newline =
@@ -2544,7 +2538,7 @@ let%expect_test _ =
                                                                \nbar")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 2, character 5:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let cr_lf =
@@ -2556,7 +2550,7 @@ let%expect_test _ =
                                                                \nbar")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 2, character 5:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let blank_line =
@@ -2569,7 +2563,7 @@ let%expect_test _ =
                                                                \nbar")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 3, character 5:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let leading_whitespace =
@@ -2577,9 +2571,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo)))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-8:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let leading_whitespace_two =
@@ -2591,7 +2583,7 @@ let%expect_test _ =
                                                                \n bar")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 2, character 6:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let leading_whitespace_two_cr_lf =
@@ -2603,7 +2595,7 @@ let%expect_test _ =
                                                                \n bar")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 2, character 6:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let leading_whitespace_two_different_indent =
@@ -2615,7 +2607,7 @@ let%expect_test _ =
                                                                \n   bar")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 2, character 8:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let leading_whitespace_two_different_indent_rev =
@@ -2627,7 +2619,7 @@ let%expect_test _ =
                                                                \n bar")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 2, character 6:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let leading_whitespace_two_different_indent_reloc =
@@ -2639,7 +2631,7 @@ let%expect_test _ =
                                                                 \n      bar")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 2, character 11:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let leading_whitespace_with_empty_line =
@@ -2652,7 +2644,7 @@ let%expect_test _ =
                                                                \n bar")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 3, character 6:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let leading_whitespace_with_whitespace_line_short =
@@ -2665,7 +2657,7 @@ let%expect_test _ =
                                                                \n  bar")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 3, character 7:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let bli =
@@ -2681,7 +2673,7 @@ let%expect_test _ =
                                                                \nc")))))
          (warnings
           ( "File \"f.ml\", line 2, character 7 to line 4, character 4:\
-           \nCode blocks' content should start on a newline."
+           \nMultiline code blocks' content should start on a newline."
             "File \"f.ml\", line 2, character 7 to line 4, character 4:\
            \nCode blocks should be indented at the opening `{`.")))
         |}]
@@ -2696,7 +2688,7 @@ let%expect_test _ =
                                                                \n bar")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 3, character 6:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let leading_whitespace_leading_newline =
@@ -2714,9 +2706,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo)))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-8:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let leading_tab_two =
@@ -2728,7 +2718,7 @@ let%expect_test _ =
                                                                \n\tbar")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 2, character 6:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let leading_tab_two_different_indent =
@@ -2740,7 +2730,7 @@ let%expect_test _ =
                                                                \n\t\tbar")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 2, character 7:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let leading_whitespace_when_box_model_not_applicable =
@@ -2756,7 +2746,7 @@ let%expect_test _ =
                                                                \nbar")))))
          (warnings
           ( "File \"f.ml\", line 2, character 1 to line 4, character 3:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let leading_newline =
@@ -2800,9 +2790,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 4)) {[)))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-6:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let nested_closer =
@@ -2810,9 +2798,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let nested_bracket =
@@ -2820,9 +2806,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 3)) ])))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-5:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let two_nested_brackets =
@@ -2830,9 +2814,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 4)) ]])))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-6:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let nested_brackets_in_text =
@@ -2840,9 +2822,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 12)) (code_block ((f.ml (1 2) (1 10)) foo]]bar)))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-12:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let trailing_whitespace =
@@ -2850,9 +2830,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) "foo ")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-8:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let trailing_tab =
@@ -2860,9 +2838,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) "foo\t")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-8:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let trailing_newline =
@@ -2872,7 +2848,7 @@ let%expect_test _ =
         ((output (((f.ml (1 0) (2 2)) (code_block ((f.ml (1 2) (2 0)) foo)))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 2, character 2:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let trailing_cr_lf =
@@ -2882,7 +2858,7 @@ let%expect_test _ =
         ((output (((f.ml (1 0) (2 2)) (code_block ((f.ml (1 2) (2 0)) foo)))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 2, character 2:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let trailing_newlines =
@@ -2892,7 +2868,7 @@ let%expect_test _ =
         ((output (((f.ml (1 0) (3 2)) (code_block ((f.ml (1 2) (3 0)) foo)))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 3, character 2:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let preceded_by_whitespace =
@@ -2900,9 +2876,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let followed_by_whitespace =
@@ -2910,9 +2884,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let two_on_one_line =
@@ -2923,11 +2895,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
            ((f.ml (1 8) (1 15)) (code_block ((f.ml (1 10) (1 13)) bar)))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 1, characters 8-15:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 1, characters 8-15:\
+          ( "File \"f.ml\", line 1, characters 8-15:\
            \n'{[...]}' (code block) should begin on its own line.")))
         |}]
 
@@ -2938,11 +2906,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
            ((f.ml (2 0) (2 7)) (code_block ((f.ml (2 2) (2 5)) bar)))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 2, characters 0-7:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let two_with_blank_line =
@@ -2952,11 +2916,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
            ((f.ml (3 0) (3 7)) (code_block ((f.ml (3 2) (3 5)) bar)))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 3, characters 0-7:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let followed_by_words =
@@ -2967,9 +2927,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
            ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word bar)))))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 1, characters 8-11:\
+          ( "File \"f.ml\", line 1, characters 8-11:\
            \nParagraph should begin on its own line.")))
         |}]
 
@@ -2983,8 +2941,6 @@ let%expect_test _ =
            ((f.ml (1 4) (1 11)) (code_block ((f.ml (1 6) (1 9)) bar)))))
          (warnings
           ( "File \"f.ml\", line 1, characters 4-11:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 1, characters 4-11:\
            \n'{[...]}' (code block) should begin on its own line.")))
         |}]
 
@@ -2995,9 +2951,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
            ((f.ml (2 0) (2 7)) (code_block ((f.ml (2 2) (2 5)) bar)))))
-         (warnings
-          ( "File \"f.ml\", line 2, characters 0-7:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let followed_by_paragraph =
@@ -3007,9 +2961,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
            ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word bar)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let unterminated =
@@ -3020,9 +2972,7 @@ let%expect_test _ =
          (warnings
           ( "File \"f.ml\", line 1, characters 0-5:\
            \nMissing end of code block.\
-           \nSuggestion: add ']}'."
-            "File \"f.ml\", line 1, characters 0-5:\
-           \nCode blocks' content should start on a newline.")))
+           \nSuggestion: add ']}'.")))
         |}]
 
     let unterminated_bracket =
@@ -3033,9 +2983,7 @@ let%expect_test _ =
          (warnings
           ( "File \"f.ml\", line 1, characters 0-6:\
            \nMissing end of code block.\
-           \nSuggestion: add ']}'."
-            "File \"f.ml\", line 1, characters 0-6:\
-           \nCode blocks' content should start on a newline.")))
+           \nSuggestion: add ']}'.")))
         |}]
 
     let trailing_cr =
@@ -3043,9 +2991,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) "foo\r")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-8:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let comment =
@@ -3058,7 +3004,7 @@ let%expect_test _ =
                                              \nlet bar = ()")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 2, character 14:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let docstring =
@@ -3071,7 +3017,7 @@ let%expect_test _ =
                                              \nlet bar = ()")))))
          (warnings
           ( "File \"f.ml\", line 1, character 0 to line 2, character 14:\
-           \nCode blocks' content should start on a newline.")))
+           \nMultiline code blocks' content should start on a newline.")))
         |}]
 
     let docstring_with_code_block =
@@ -3088,9 +3034,7 @@ let%expect_test _ =
               ((f.ml (2 8) (2 9)) (word =)) ((f.ml (2 9) (2 10)) space)
               ((f.ml (2 10) (2 12)) (word "()")))))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 0-13:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 1, characters 14-16:\
+          ( "File \"f.ml\", line 1, characters 14-16:\
            \nParagraph should begin on its own line.")))
         |}]
 
@@ -3104,9 +3048,7 @@ let%expect_test _ =
              (((f.ml (1 2) (1 7)) ocaml)
               (((f.ml (1 8) (1 28)) "env=f1 version>=4.06")))
              ((f.ml (1 30) (1 44)) "code goes here")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-46:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let code_block_with_output =
@@ -3119,9 +3061,7 @@ let%expect_test _ =
              ((paragraph
                (((f.ml (1 23) (1 29)) (word output)) ((f.ml (1 29) (1 30)) space)
                 ((f.ml (1 30) (1 37)) (bold (((f.ml (1 33) (1 36)) (word foo))))))))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-23:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let delimited_code_block_with_meta_and_output =
@@ -3137,9 +3077,7 @@ let%expect_test _ =
              ((paragraph
                (((f.ml (1 45) (1 51)) (word output)) ((f.ml (1 51) (1 52)) space)
                 ((f.ml (1 52) (1 59)) (bold (((f.ml (1 55) (1 58)) (word foo))))))))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-45:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     (* Code block contains ']['. *)
@@ -3150,9 +3088,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 23))
             (code_block ((f.ml (1 2) (1 21)) "foo][output {b foo}")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-23:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     (* Code block contains ']['. *)
@@ -3164,9 +3100,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 29))
             (code_block (((f.ml (1 2) (1 7)) ocaml) ())
              ((f.ml (1 8) (1 27)) "foo][output {b foo}")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-29:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let code_block_with_output_unexpected_delim =
@@ -3176,9 +3110,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 33))
             (code_block ((f.ml (1 2) (1 31)) "foo]unexpected[output {b foo}")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-33:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let code_block_with_output_lang_unexpected_delim =
@@ -3189,9 +3121,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 39))
             (code_block (((f.ml (1 2) (1 7)) ocaml) ())
              ((f.ml (1 8) (1 37)) "foo]unexpected[output {b foo}")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-39:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let code_block_with_output_wrong_delim =
@@ -3202,9 +3132,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 44))
             (code_block (((f.ml (1 7) (1 12)) ocaml) ())
              ((f.ml (1 13) (1 37)) "foo]wrong[output {b foo}")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-44:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let code_block_empty_meta =
@@ -3216,9 +3144,7 @@ let%expect_test _ =
          (warnings
           ( "File \"f.ml\", line 1, characters 0-3:\
            \n'{@' should be followed by a language tag.\
-           \nSuggestion: try '{[ ... ]}' or '{@ocaml[ ... ]}'."
-            "File \"f.ml\", line 1, characters 0-19:\
-           \nCode blocks' content should start on a newline.")))
+           \nSuggestion: try '{[ ... ]}' or '{@ocaml[ ... ]}'.")))
         |}]
 
     let unterminated_code_block_with_meta =
@@ -3231,9 +3157,7 @@ let%expect_test _ =
          (warnings
           ( "File \"f.ml\", line 1, characters 0-10:\
            \nMissing end of code block.\
-           \nSuggestion: add ']}'."
-            "File \"f.ml\", line 1, characters 0-10:\
-           \nCode blocks' content should start on a newline.")))
+           \nSuggestion: add ']}'.")))
         |}]
 
     let unterminated_code_block_with_meta =
@@ -3257,9 +3181,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (2 9))
             (code_block (((f.ml (1 2) (1 7)) ocaml) ()) ((f.ml (2 1) (2 7)) "code ")))))
-         (warnings
-          ( "File \"f.ml\", line 1, character 0 to line 2, character 9:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let newlines_after_meta =
@@ -3271,9 +3193,7 @@ let%expect_test _ =
             (code_block
              (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
              ((f.ml (2 1) (2 7)) "code ")))))
-         (warnings
-          ( "File \"f.ml\", line 1, character 0 to line 2, character 9:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let spaces_after_meta =
@@ -3285,9 +3205,7 @@ let%expect_test _ =
             (code_block
              (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
              ((f.ml (1 23) (1 29)) "code ")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-31:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let spaces_and_newline_after_meta =
@@ -3299,9 +3217,7 @@ let%expect_test _ =
             (code_block
              (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
              ((f.ml (2 3) (2 9)) "code ")))))
-         (warnings
-          ( "File \"f.ml\", line 1, character 0 to line 2, character 11:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let newlines_inside_meta =
@@ -3315,9 +3231,7 @@ let%expect_test _ =
               (((f.ml (1 8) (2 6))  "kind=toplevel\
                                    \nenv=e1")))
              ((f.ml (2 7) (2 13)) "code ")))))
-         (warnings
-          ( "File \"f.ml\", line 1, character 0 to line 2, character 15:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let newlines_between_meta =
@@ -3329,9 +3243,7 @@ let%expect_test _ =
             (code_block
              (((f.ml (1 2) (1 7)) ocaml) (((f.ml (2 0) (2 13)) kind=toplevel)))
              ((f.ml (2 14) (2 20)) "code ")))))
-         (warnings
-          ( "File \"f.ml\", line 1, character 0 to line 2, character 22:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let langtag_non_word =
@@ -3345,9 +3257,7 @@ let%expect_test _ =
          (warnings
           ( "File \"f.ml\", line 1, characters 0-8:\
            \nInvalid character ',' in language tag.\
-           \nSuggestion: try '{@ocaml[ ... ]}'."
-            "File \"f.ml\", line 1, characters 0-20:\
-           \nCode blocks' content should start on a newline.")))
+           \nSuggestion: try '{@ocaml[ ... ]}'.")))
         |}]
 
     let delimited_code_block =
@@ -3358,9 +3268,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 48))
             (code_block (((f.ml (1 7) (1 12)) ocaml) ())
              ((f.ml (1 13) (1 41)) "all{}[2[{{]doo}}]]'''(* ]} ")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-48:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let code_block_with_output =
@@ -3378,11 +3286,7 @@ let%expect_test _ =
               (paragraph
                (((f.ml (2 8) (2 9)) (word ])) ((f.ml (2 9) (2 14)) (word delim)))))))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 0-29:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 1, characters 30-71:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 2, characters 8-9:\
+          ( "File \"f.ml\", line 2, characters 8-9:\
            \nUnpaired ']' (end of code).\
            \nSuggestion: try '\\]'.")))
         |}]
@@ -3395,9 +3299,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 28))
             (code_block (((f.ml (1 7) (1 12)) ocaml) ())
              ((f.ml (1 13) (1 18)) "foo ") ()))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-25:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
   end in
   ()
@@ -3853,9 +3755,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 9))
             (unordered light
              ((((f.ml (1 2) (1 9)) (code_block ((f.ml (1 4) (1 7)) foo)))))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 2-9:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let verbatim =
@@ -3876,9 +3776,7 @@ let%expect_test _ =
             (unordered light
              ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))
                ((f.ml (2 0) (2 7)) (code_block ((f.ml (2 2) (2 5)) bar)))))))))
-         (warnings
-          ( "File \"f.ml\", line 2, characters 0-7:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let followed_by_code_block =
@@ -3890,9 +3788,7 @@ let%expect_test _ =
             (unordered light
              ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
            ((f.ml (3 0) (3 7)) (code_block ((f.ml (3 2) (3 5)) bar)))))
-         (warnings
-          ( "File \"f.ml\", line 3, characters 0-7:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let different_kinds =
@@ -3960,9 +3856,7 @@ let%expect_test _ =
             (unordered light
              ((((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word bar)))))))))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 1, characters 8-9:\
+          ( "File \"f.ml\", line 1, characters 8-9:\
            \n'-' (bulleted list item) should begin on its own line.")))
         |}]
   end in
@@ -4288,9 +4182,7 @@ let%expect_test _ =
             (unordered heavy
              ((((f.ml (1 16) (1 19)) (paragraph (((f.ml (1 16) (1 19)) (word bar)))))))))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 1, characters 8-11:\
+          ( "File \"f.ml\", line 1, characters 8-11:\
            \n'{ul ...}' (bulleted list) should begin on its own line.")))
         |}]
   end in
@@ -4539,9 +4431,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
            ((f.ml (1 8) (1 19)) (@deprecated))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 1, characters 8-19:\
+          ( "File \"f.ml\", line 1, characters 8-19:\
            \n'@deprecated' should begin on its own line.")))
         |}]
 
@@ -4693,9 +4583,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
            ((f.ml (1 8) (1 18)) (@param foo))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 1, characters 8-18:\
+          ( "File \"f.ml\", line 1, characters 8-18:\
            \n'@param' should begin on its own line.")))
         |}]
   end in
@@ -4873,9 +4761,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
            ((f.ml (1 8) (1 18)) (@see url foo))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nCode blocks' content should start on a newline."
-            "File \"f.ml\", line 1, characters 8-18:\
+          ( "File \"f.ml\", line 1, characters 8-18:\
            \n'@see' should begin on its own line.")))
         |}]
 
@@ -5530,9 +5416,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo})))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-8:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let right_brace_in_verbatim_text =
@@ -5794,9 +5678,7 @@ let%expect_test _ =
       [%expect
         {|
         ((output (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 4)) "\206\187")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-6:\
-           \nCode blocks' content should start on a newline.")))
+         (warnings ()))
         |}]
 
     let verbatim =
