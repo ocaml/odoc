@@ -197,7 +197,7 @@ let sanitize_code_block input ~what ~start_offset s =
   in
   let s = handle_first_newline 0 in
   let rec handle_last_newline index =
-    if index <= 0 then ""
+    if index < 0 then ""
     else
       match s.[index] with
       | ' ' | '\t' | '\r' -> handle_last_newline (index - 1)
