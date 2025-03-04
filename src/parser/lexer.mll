@@ -122,6 +122,13 @@ let require_whitespace_first input start_offset text =
       Parse_error.no_leading_whitespace_in_verbatim;
     text
 
+let strip_whitespace_last text =
+  match text.[String.length text - 1] with
+  | ' ' -> String.sub text 0 (String.length text - 1)
+  | '\t' | '\r' | '\n' -> text
+  | exception Invalid_argument _ -> ""
+  | _ -> text
+
 (** [trim_leading_whitespace ~offset c] "unindents" [c] by the [offset] amount.
     If that is not possible (eg there is a non-whitespace line starting with
     less than [offset] whitespaces), it unindents as much as possible and raises
@@ -206,6 +213,7 @@ let sanitize_code_block input ~what ~start_offset s =
 let emit_verbatim input start_offset buffer =
   let t = Buffer.contents buffer in
   let t = require_whitespace_first input start_offset t in
+  let t = strip_whitespace_last t in
   let t = sanitize_code_block input ~what:"verbatim" ~start_offset t in
   emit input (`Verbatim t) ~start_offset
 
