@@ -375,13 +375,95 @@ OCaml code blocks can be written using the enclosing tags [ {[ ... ]} ].
 The code inside these blocks will be properly styled as OCaml in the generated
 doc.
 
-{v
+{delim@ocaml[
 (** This how one binds a variable in OCaml:
     {[
     let x = 0
     ]}
 *)
+]delim}
+
+Note that the content of the code block above is ["let x = 0"]. How is the initial content (["\n    let x = 0\n    "]) turned into that?
+
+{4:indentation_code_blocks Indentation in code blocks}
+
+Odoc strips whitespace from the content of a codeblock, so that it contains only what is in the following box:
+
+{v
+  {[
+  +-----------------------
+  |
+  |    content
+  |
+  +-----------------------
+  ]}
 v}
+
+In other words, [odoc], in order:
+{ol
+{- Does not remove any content if [{\[] and [\]}] are on the same line.}
+{- Removes the content of the line after [{\[] if it contains only whitespace.}
+{- Removes the content of the line before [\]}] if it contains only whitespace.}
+{- Removes spaces and tabs (counted as a single spaces) to reach the column of the opening curly brace of the [{\[] marker. If there is non-whitespace on the left of this column, the content is deindented only as much as it can without stripping non-whitespace, and a warning is raised.}}
+
+Also, note that if point 2 above does not remove a line, the content of the code
+block is considered as if starting at the upper [+] in the box above:
+
+{delim@ocaml[
+(**
+  The following two code blocks have the same content:
+  {[let x = 0]}
+  {[
+  let x = 0]}
+*)
+]delim}
+
+{4:code_blocks_example Examples}
+
+Here are a few examples to illustrate the explanation above:
+
+{v
+  {[ ]}
+v}
+  {[ ]}
+{v
+  {[let x = 0]}
+v}
+  {[let x = 0]}
+{v
+  {[ let x = 0 ]}
+v}
+  {[ let x = 0 ]}
+{v
+  {[let x = function
+    | [] -> None
+    | h :: _ -> Some h ]}
+v}
+  {[let x = function
+    | [] -> None
+    | h :: _ -> Some h ]}
+{v
+  {[
+  let x = function
+    | [] -> None
+    | h :: _ -> Some h ]}
+v}
+  {[
+  let x = function
+    | [] -> None
+    | h :: _ -> Some h ]}
+{v
+  {[let x = function]}
+  Some comment
+  {[
+    | [] -> None
+    | h :: _ -> Some h ]}
+v}
+  {[let x = function]}
+  Some comment
+  {[
+    | [] -> None
+    | h :: _ -> Some h ]}
 
 {4:language_headers Language Headers}
 
@@ -420,6 +502,9 @@ formatted as code but with no particular style applied.
     v}
 *)
 ]}
+
+Verbatims' indentation is treated as for code blocks, see the
+{{!indentation_code_blocks}explanation} there!
 
 {3:escaping Escaping}
 
