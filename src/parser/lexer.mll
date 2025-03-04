@@ -35,46 +35,6 @@ let math_constr kind x =
   | Inline -> `Math_span x
   | Block -> `Math_block x
 
-(* This is used for code and verbatim blocks. It can be done with a regular
-   expression, but the regexp gets quite ugly, so a function is easier to
-   understand. *)
-let trim_leading_blank_lines : string -> string = fun s ->
-  let rec scan_for_last_newline : int -> int -> int =
-      fun index trim_until ->
-    if index >= String.length s then
-      String.length s
-    else
-      match s.[index] with
-      | ' ' | '\t' | '\r' -> scan_for_last_newline (index + 1) trim_until
-      | '\n' -> scan_for_last_newline (index + 1) (index + 1)
-      | _ -> trim_until
-  in
-  let trim_until = scan_for_last_newline 0 0 in
-  String.sub s trim_until (String.length s - trim_until)
-
-let trim_trailing_blank_lines : string -> string = fun s ->
-  let rec scan_for_last_newline : int -> int option -> int option =
-      fun index trim_from ->
-    if index < 0 then
-      Some 0
-    else
-      match s.[index] with
-      | ' ' | '\t' | '\r' -> scan_for_last_newline (index - 1) trim_from
-      | '\n' -> scan_for_last_newline (index - 1) (Some index)
-      | _ -> trim_from
-  in
-  let last = String.length s - 1 in
-  match scan_for_last_newline last None with
-  | None -> s
-  | Some trim_from ->
-    let trim_from =
-      if trim_from > 0 && s.[trim_from - 1] = '\r' then
-        trim_from - 1
-      else
-        trim_from
-    in
-    String.sub s 0 trim_from
-
 type input = {
   file : string;
   offset_to_location : int -> Loc.point;
@@ -166,7 +126,7 @@ let require_whitespace_first input start_offset text =
     If that is not possible (eg there is a non-whitespace line starting with
     less than [offset] whitespaces), it unindents as much as possible and raises
     a warning. *)
-let trim_leading_whitespace : what:string -> _ -> start_offset:_ -> string -> string =
+let deindent : what:string -> _ -> start_offset:_ -> string -> string =
   fun ~what input ~start_offset s ->
   let start_location = input.offset_to_location start_offset in
   let offset = start_location.Loc.column in
@@ -209,49 +169,44 @@ let trim_leading_whitespace : what:string -> _ -> start_offset:_ -> string -> st
   let lines = List.map (drop least_amount_of_whitespace) lines in
   String.concat "\n" lines
 
-(** Single lines and multilines blocks are handled differently. This formats the
-    content in a string that can be processed independently of whether it comes
-    from a single line code block, a multiline without leading new line, or a
-    normal multiline block.
+(** Removes at most one leading whitespace line, and at most one trailing empty
+    line. This is in order to have the opening token and the first line of the
+    content not on the same line.
 
-    Namely, we turn:
-    {delim@plain[
-      {[   aa]}
-    ]delim}
-    is turned into
-    {delim@plain[
-      {[
-      aa]}
-    ]delim}
-    and additionally trim single line blocks.
- *)
-let sanitize_code_block ~what input ~start_offset s =
+    If the leading line is not whitespace, indent this line as much as the
+    opening token (to account for the offset to the left margin).  *)
+let sanitize_code_block input ~what ~start_offset s =
   let start_location = input.offset_to_location start_offset in
   let indent = start_location.column in
-  let rec loop index =
-    if index >= String.length s then s
+  let rec handle_first_newline index =
+    if index >= String.length s then ""
     else
       match s.[index] with
-      | ' ' | '\t' | '\r' -> loop (index + 1)
+      | ' ' | '\t' | '\r' -> handle_first_newline (index + 1)
       (* Multiline starting with an empty line *)
-      | '\n' -> s
+      | '\n' -> String.sub s (index + 1) (String.length s - index - 1)
       (* Multiline NOT starting with an empty line *)
-      | _ when String.contains_from s index '\n' ->
-          warning input ~start_offset
-            (Parse_error.no_leading_newline_in_code_block ~what);
-          String.make indent ' ' ^ String.sub s index (String.length s - index)
-      (* Single line *)
-      | _ -> String.make indent ' ' ^ String.trim s
+      | _ -> String.make indent ' ' ^ s
   in
-  loop 0
+  let s = handle_first_newline 0 in
+  let rec handle_last_newline index =
+    if index <= 0 then ""
+    else
+      match s.[index] with
+      | ' ' | '\t' | '\r' -> handle_last_newline (index - 1)
+      (* Multiline starting with an empty line *)
+      | '\n' -> String.sub s 0 index
+      (* Multiline NOT starting with an empty line *)
+      | _ -> s
+  in
+  let s = handle_last_newline (String.length s - 1) in
+  deindent ~what input ~start_offset s
+
 
 let emit_verbatim input start_offset buffer =
   let t = Buffer.contents buffer in
   let t = require_whitespace_first input start_offset t in
-  let t = sanitize_code_block ~what:"verbatim" input ~start_offset t in
-  let t = trim_trailing_blank_lines t in
-  let t = trim_leading_blank_lines t in
-  let t = trim_leading_whitespace ~what:"verbatim" input ~start_offset t in
+  let t = sanitize_code_block input ~what:"verbatim" ~start_offset t in
   emit input (`Verbatim t) ~start_offset
 
 (* The locations have to be treated carefully in this function. We need to ensure that
@@ -265,10 +220,7 @@ let emit_code_block ~start_offset content_offset input metadata delim terminator
   let c = Buffer.contents c in
   (* We first handle the case wehere there is no line at the beginning, then
      remove trailing, leading lines and deindent *)
-  let c = sanitize_code_block ~what:"code block" input ~start_offset c in
-  let c = trim_trailing_blank_lines c in
-  let c = trim_leading_blank_lines c in
-  let c = trim_leading_whitespace ~what:"code block" input ~start_offset c in
+  let c = sanitize_code_block input ~what:"code block" ~start_offset c in
   let c =
     with_location_adjustments ~adjust_end_by:terminator
       ~start_offset:content_offset

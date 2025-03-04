@@ -44,10 +44,6 @@ let not_enough_indentation_in_code_block : what:string -> Loc.span -> Warning.t
   Warning.make "%ss should be indented at the opening `{`."
     (String.capitalize_ascii what)
 
-let no_leading_newline_in_code_block : what:string -> Loc.span -> Warning.t =
- fun ~what ->
-  Warning.make "Multiline content of %ss should start on a newline." what
-
 let no_trailing_whitespace_in_verbatim : Loc.span -> Warning.t =
   Warning.make "'v}' should be preceded by whitespace."
 
