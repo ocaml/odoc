@@ -2744,10 +2744,8 @@ let%expect_test _ =
       test "{[]]}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 3)) "")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-5:\
-           \n'{[...]}' (code block) should not be empty.")))
+        ((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 3)) ])))))
+         (warnings ()))
         |}]
 
     let two_nested_brackets =
@@ -3523,12 +3521,7 @@ let%expect_test _ =
     let nested_v =
       test "{v v v}";
       [%expect
-        {|
-        ((output (((f.ml (1 0) (1 7)) (verbatim ""))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \n'{v ... v}' (verbatim text) should not be empty.")))
-        |}]
+        {| ((output (((f.ml (1 0) (1 7)) (verbatim v)))) (warnings ())) |}]
 
     let two_nested_vs =
       test "{v vv v}";
@@ -5660,12 +5653,7 @@ let%expect_test _ =
     let right_bracket_in_verbatim =
       test "{v ] v}";
       [%expect
-        {|
-        ((output (((f.ml (1 0) (1 7)) (verbatim ""))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \n'{v ... v}' (verbatim text) should not be empty.")))
-        |}]
+        {| ((output (((f.ml (1 0) (1 7)) (verbatim ])))) (warnings ())) |}]
 
     let right_bracket_in_list =
       test "{ul ]}";
