@@ -186,7 +186,7 @@ let sanitize_code_block input ~what ~start_offset s =
   let start_location = input.offset_to_location start_offset in
   let indent = start_location.column in
   let rec handle_first_newline index =
-    if index >= String.length s then ""
+    if index >= String.length s then String.make indent ' ' ^ s
     else
       match s.[index] with
       | ' ' | '\t' | '\r' -> handle_first_newline (index + 1)
@@ -197,7 +197,7 @@ let sanitize_code_block input ~what ~start_offset s =
   in
   let s = handle_first_newline 0 in
   let rec handle_last_newline index =
-    if index < 0 then ""
+    if index < 0 then s
     else
       match s.[index] with
       | ' ' | '\t' | '\r' -> handle_last_newline (index - 1)
