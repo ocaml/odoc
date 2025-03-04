@@ -228,9 +228,19 @@ let rec nestable_block_element :
         | None -> None
         | Some l -> Some (List.map nestable_block_element l)
       in
+      let trimmed_content, warnings =
+        Odoc_parser.codeblock_content location content.value
+      in
+      let warnings = List.map Error.t_of_parser_t warnings in
+      List.iter (Error.raise_warning ~non_fatal:true) warnings;
+      let content = Location.at content.location trimmed_content in
       Location.at location (`Code_block (lang_tag, content, outputs))
   | { value = `Math_block s; location } -> Location.at location (`Math_block s)
-  | { value = `Verbatim _; _ } as element -> element
+  | { value = `Verbatim v; location } ->
+      let v, warnings = Odoc_parser.codeblock_content location v in
+      let warnings = List.map Error.t_of_parser_t warnings in
+      List.iter (Error.raise_warning ~non_fatal:true) warnings;
+      Location.at location (`Verbatim v)
   | { value = `Modules modules; location } ->
       let modules =
         List.fold_left

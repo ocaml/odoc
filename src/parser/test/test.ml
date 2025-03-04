@@ -10,16 +10,21 @@ module Location_to_sexp = struct
   let span : Loc.span -> sexp =
    fun { file; start; end_ } -> List [ Atom file; point start; point end_ ]
 
-  let at : ('a -> sexp) -> 'a Loc.with_location -> sexp =
-   fun f { location; value } -> List [ span location; f value ]
+  let at : ('a Loc.with_location -> sexp) -> 'a Loc.with_location -> sexp =
+   fun f ({ location; _ } as v) -> List [ span location; f v ]
 end
+
+let error err = Atom (Odoc_parser.Warning.to_string err)
 
 module Ast_to_sexp = struct
   (* let at = Location_to_sexp.at *)
-  type at = { at : 'a. ('a -> sexp) -> 'a Loc.with_location -> sexp }
+  type at = {
+    at : 'a. ('a Loc.with_location -> sexp) -> 'a Loc.with_location -> sexp;
+  }
 
   let loc_at = { at = Location_to_sexp.at }
   let str s = Atom s
+  let str_at s = Atom s.Loc.value
   let opt f s = match s with Some s -> List [ f s ] | None -> List []
 
   let style : Ast.style -> sexp = function
@@ -44,7 +49,9 @@ module Ast_to_sexp = struct
     | `Video -> Atom "video"
     | `Audio -> Atom "audio"
 
-  let rec inline_element at : Ast.inline_element -> sexp = function
+  let rec inline_element at : Ast.inline_element Loc.with_location -> sexp =
+   fun v ->
+    match v.value with
     | `Space _ -> Atom "space"
     | `Word w -> List [ Atom "word"; Atom w ]
     | `Code_span c -> List [ Atom "code_span"; Atom c ]
@@ -57,42 +64,86 @@ module Ast_to_sexp = struct
         List
           [
             reference_kind kind;
-            at.at str r;
+            at.at str_at r;
             List (List.map (at.at (inline_element at)) es);
           ]
     | `Link (u, es) ->
         List [ str u; List (List.map (at.at (inline_element at)) es) ]
 
   let code_block_lang at { Ast.language; tags } =
-    List [ at.at str language; opt (at.at str) tags ]
+    List [ at.at str_at language; opt (at.at str_at) tags ]
 
-  let media_href = function
+  let media_href =
+   fun v ->
+    match v.Loc.value with
     | `Reference href -> List [ Atom "Reference"; Atom href ]
     | `Link href -> List [ Atom "Link"; Atom href ]
 
-  let rec nestable_block_element at : Ast.nestable_block_element -> sexp =
-    function
+  let rec nestable_block_element at :
+      Ast.nestable_block_element Loc.with_location -> sexp =
+   fun v ->
+    match v.value with
     | `Paragraph es ->
         List
           [ Atom "paragraph"; List (List.map (at.at (inline_element at)) es) ]
     | `Math_block s -> List [ Atom "math_block"; Atom s ]
     | `Code_block { Ast.meta = None; content; output = None; _ } ->
-        List [ Atom "code_block"; at.at str content ]
+        let trimmed_content, warnings =
+          Odoc_parser.codeblock_content v.location content.value
+        in
+        let warnings =
+          if warnings = [] then []
+          else [ List (Atom "Warnings" :: List.map error warnings) ]
+        in
+        let content = Loc.at content.location trimmed_content in
+        List ([ Atom "code_block"; at.at str_at content ] @ warnings)
     | `Code_block { meta = Some meta; content; output = None; _ } ->
-        List [ Atom "code_block"; code_block_lang at meta; at.at str content ]
-    | `Code_block { meta = Some meta; content; output = Some output; _ } ->
+        let trimmed_content, warnings =
+          Odoc_parser.codeblock_content v.location content.value
+        in
+        let warnings =
+          if warnings = [] then []
+          else [ List (Atom "Warnings" :: List.map error warnings) ]
+        in
+        let content = Loc.at content.location trimmed_content in
         List
-          [
-            Atom "code_block";
-            code_block_lang at meta;
-            at.at str content;
-            List
-              (List.map (fun v -> nestable_block_element at v.Loc.value) output);
-          ]
+          ([ Atom "code_block"; code_block_lang at meta; at.at str_at content ]
+          @ warnings)
+    | `Code_block
+        {
+          meta = Some meta;
+          content;
+          output = Some output (* ; outer_location *);
+          _;
+        } ->
+        let trimmed_content, warnings =
+          Odoc_parser.codeblock_content v.location content.value
+        in
+        let warnings =
+          if warnings = [] then []
+          else [ List (Atom "Warnings" :: List.map error warnings) ]
+        in
+        let content = Loc.at content.location trimmed_content in
+        List
+          ([
+             Atom "code_block";
+             code_block_lang at meta;
+             at.at str_at content;
+             List (List.map (nestable_block_element at) output);
+           ]
+          @ warnings)
     | `Code_block { meta = None; content = _; output = Some _output; _ } ->
         List [ Atom "code_block_err" ]
-    | `Verbatim t -> List [ Atom "verbatim"; Atom t ]
-    | `Modules ps -> List [ Atom "modules"; List (List.map (at.at str) ps) ]
+    | `Verbatim t ->
+        let trimmed_content, warnings =
+          Odoc_parser.verbatim_content v.location t
+        in
+        let warnings =
+          if warnings = [] then []
+          else [ List (Atom "Warnings" :: List.map error warnings) ]
+        in
+        List ([ Atom "verbatim"; Atom trimmed_content ] @ warnings)
+    | `Modules ps -> List [ Atom "modules"; List (List.map (at.at str_at) ps) ]
     | `List (kind, weight, items) ->
         let kind =
           match kind with `Unordered -> "unordered" | `Ordered -> "ordered"
@@ -174,26 +225,25 @@ module Ast_to_sexp = struct
           ([ Atom "@before"; Atom s ]
           @ List.map (at.at (nestable_block_element at)) es)
     | `Version s -> List [ Atom "@version"; Atom s ]
-    | `Canonical p -> List [ Atom "@canonical"; at.at str p ]
+    | `Canonical p -> List [ Atom "@canonical"; at.at str_at p ]
     | `Inline -> Atom "@inline"
     | `Open -> Atom "@open"
     | `Closed -> Atom "@closed"
     | `Hidden -> Atom "@hidden"
 
-  let block_element at : Ast.block_element -> sexp = function
-    | #Ast.nestable_block_element as e -> nestable_block_element at e
-    | `Heading (level, label, es) ->
+  let block_element at : Ast.block_element Loc.with_location -> sexp = function
+    | { value = #Ast.nestable_block_element; _ } as e ->
+        nestable_block_element at e
+    | { value = `Heading (level, label, es); _ } ->
         let label = List [ Atom "label"; opt str label ] in
         let level = string_of_int level in
         List
           [ Atom level; label; List (List.map (at.at (inline_element at)) es) ]
-    | `Tag t -> tag at t
+    | { value = `Tag t; _ } -> tag at t
 
   let docs at : Ast.t -> sexp =
    fun f -> List (List.map (at.at (block_element at)) f)
 end
-
-let error err = Atom (Odoc_parser.Warning.to_string err)
 
 let parser_output formatter v =
   let ast, warnings = Odoc_parser.(ast v, warnings v) in
@@ -2691,15 +2741,17 @@ let%expect_test _ =
       test "{[\nfoo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo)))))
-           (warnings ())) |}]
+        ((output (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo)))))
+         (warnings ()))
+        |}]
 
     let leading_cr_lf =
       test "{[\r\nfoo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo)))))
-           (warnings ())) |}]
+        ((output (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo)))))
+         (warnings ()))
+        |}]
 
     let leading_newlines =
       test "{[\n\nfoo]}";
@@ -2722,8 +2774,9 @@ let%expect_test _ =
       test "{[ \nfoo]}";
       [%expect
         {|
-          ((output (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo)))))
-           (warnings ())) |}]
+        ((output (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo)))))
+         (warnings ()))
+        |}]
 
     let nested_opener =
       test "{[{[]}";
@@ -3222,10 +3275,13 @@ let%expect_test _ =
  ]}|};
       [%expect
         {|
-        ((output (((f.ml (2 3) (4 3)) (code_block ((f.ml (2 5) (4 1)) foo)))))
-         (warnings
-          ( "File \"f.ml\", line 2, character 3 to line 4, character 3:\
-           \nCode blocks should be indented at the opening `{`.")))
+        ((output
+          (((f.ml (2 3) (4 3))
+            (code_block ((f.ml (2 5) (4 1)) foo)
+             (Warnings
+               "File \"f.ml\", line 2, character 3 to line 4, character 3:\
+              \nCode blocks should be indented at the opening `{`.")))))
+         (warnings ()))
         |}]
 
     let multiline_without_newline =
@@ -3245,11 +3301,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (2 3) (3 8)) (code_block ((f.ml (2 5) (3 6))  "  foo\
-                                                               \nbar ")))))
-         (warnings
-          ( "File \"f.ml\", line 2, character 3 to line 3, character 8:\
-           \nCode blocks should be indented at the opening `{`.")))
+          (((f.ml (2 3) (3 8))
+            (code_block ((f.ml (2 5) (3 6))  "  foo\
+                                            \nbar ")
+             (Warnings
+               "File \"f.ml\", line 2, character 3 to line 3, character 8:\
+              \nCode blocks should be indented at the opening `{`.")))))
+         (warnings ()))
         |}]
 
     let all_good_multiline =
@@ -3337,10 +3395,11 @@ let%expect_test _ =
           (((f.ml (2 3) (6 3))
             (code_block ((f.ml (2 5) (6 1))  "  baz\
                                             \nbar\
-                                            \n  foo")))))
-         (warnings
-          ( "File \"f.ml\", line 2, character 3 to line 6, character 3:\
-           \nCode blocks should be indented at the opening `{`.")))
+                                            \n  foo")
+             (Warnings
+               "File \"f.ml\", line 2, character 3 to line 6, character 3:\
+              \nCode blocks should be indented at the opening `{`.")))))
+         (warnings ()))
         |}]
   end in
   ()
@@ -3699,10 +3758,13 @@ let%expect_test _ =
  v}|};
       [%expect
         {|
-        ((output (((f.ml (2 3) (4 3)) (verbatim foo))))
-         (warnings
-          ( "File \"f.ml\", line 2, character 3 to line 4, character 3:\
-           \nVerbatims should be indented at the opening `{`.")))
+        ((output
+          (((f.ml (2 3) (4 3))
+            (verbatim foo
+             (Warnings
+               "File \"f.ml\", line 2, character 3 to line 4, character 3:\
+              \nVerbatims should be indented at the opening `{`.")))))
+         (warnings ()))
         |}]
 
     let multiline_without_newline =
@@ -3719,11 +3781,13 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (2 3) (3 8)) (code_block ((f.ml (2 5) (3 6))  "  foo\
-                                                               \nbar ")))))
-         (warnings
-          ( "File \"f.ml\", line 2, character 3 to line 3, character 8:\
-           \nCode blocks should be indented at the opening `{`.")))
+          (((f.ml (2 3) (3 8))
+            (code_block ((f.ml (2 5) (3 6))  "  foo\
+                                            \nbar ")
+             (Warnings
+               "File \"f.ml\", line 2, character 3 to line 3, character 8:\
+              \nCode blocks should be indented at the opening `{`.")))))
+         (warnings ()))
         |}]
 
     let all_good_multiline =
@@ -3795,12 +3859,15 @@ let%expect_test _ =
  v}|};
       [%expect
         {|
-        ((output (((f.ml (2 3) (6 3)) (verbatim  "  baz\
-                                                \nbar\
-                                                \n  foo"))))
-         (warnings
-          ( "File \"f.ml\", line 2, character 3 to line 6, character 3:\
-           \nVerbatims should be indented at the opening `{`.")))
+        ((output
+          (((f.ml (2 3) (6 3))
+            (verbatim  "  baz\
+                      \nbar\
+                      \n  foo"
+             (Warnings
+               "File \"f.ml\", line 2, character 3 to line 6, character 3:\
+              \nVerbatims should be indented at the opening `{`.")))))
+         (warnings ()))
         |}]
   end in
   ()
@@ -6008,7 +6075,7 @@ let%expect_test _ =
       let ast, warnings = Odoc_parser.(ast pv, warnings pv) in
       let at conv v =
         let { Loc.start; end_; _ } = Loc.location v in
-        let v' = Loc.value v |> conv in
+        let v' = v |> conv in
         let start' =
           Odoc_parser.position_of_point pv start |> lexing_pos_to_sexp
         in
