@@ -375,73 +375,94 @@ OCaml code blocks can be written using the enclosing tags [ {[ ... ]} ].
 The code inside these blocks will be properly styled as OCaml in the generated
 doc.
 
-{v
+{delim@ocaml[
 (** This how one binds a variable in OCaml:
     {[
     let x = 0
     ]}
 *)
-v}
+]delim}
+
+Note that the content of the code block above is ["let x = 0"]. How is the initial content (["\n    let x = 0\n    "]) turned into that?
 
 {4:indentation_code_blocks Indentation in code blocks}
 
-We distinguish two kind of code blocks: the single line one, and the multi-line
-one.
-
-Single line code blocks can be on the same line as their delimiters:
+Odoc strips whitespace from the content of a codeblock, so that it contains only what is in the following box:
 
 {v
-(** This how one adds a type annotation in OCaml:
-    {[ let x : int = 0 ]}
-*)
+  {[
+  +-----------------------
+  |
+  |    content
+  |
+  +-----------------------
+  ]}
 v}
 
-On the contrary, multi-line code blocks must have a new line after the opening
-fence, and be indented as the opening fence:
+In other words, [odoc]:
+{ol
+{- Removes the first line if it contains only whitespace,}
+{- Removes the last line if it contains only whitespace,}
+{- Deindents as much as the opening curly brace's column.}}
+
+Note that if there is non-whitespace content in the first new line, it is
+considered starting at the upper [+] in the box above:
+
+{delim@ocaml[
+(**
+  The following two code blocks have the same content:
+  {[let x = 0]}
+  {[
+  let x = 0]}
+*)
+]delim}
+
+Also note that if there is non-whitespace on the left of the box above, the
+content is deindented only as much as it can without stripping non-whitespace,
+and a warning is raised.
+
+{4:code_blocks_example Examples}
+
+Here are a few examples to illustrate the explanation above:
 
 {v
-(** This how one match a value in OCaml:
-    {[
-    let x =
-      match l with
-      | [] -> None
-      | h :: _ -> Some h
-    ]}
-*)
+  {[let x = 0]}
 v}
-
-Leading and trailing newlines are stripped from the content.
-
-If the indentation exceeds the opening fence, the whole code block ends up
-keeping the indentation excess:
-
+  {[let x = 0]}
 {v
-(** First we define the name of the variable
-    {[
-    let x =
-    ]}
-    Then we define the value it is bound to:
-    {[
-      match l with
-      | [] -> None
-      | h :: _ -> Some h
-    ]}
-*)
+  {[ let x = 0 ]}
 v}
-
-If the indentation is less than the opening fence, indentation is removed until
-the least indented line, and a warning is raised:
-
+  {[ let x = 0 ]}
 {v
-(** This how one match a value in OCaml:
-    {[
- let x =
-   match l with
-   | [] -> None
-   | h :: _ -> Some h
-    ]}
-*)
+  {[let x = function
+    | [] -> None
+    | h :: _ -> Some h ]}
 v}
+  {[let x = function
+    | [] -> None
+    | h :: _ -> Some h ]}
+{v
+  {[
+  let x = function
+    | [] -> None
+    | h :: _ -> Some h ]}
+v}
+  {[
+  let x = function
+    | [] -> None
+    | h :: _ -> Some h ]}
+{v
+  {[let x = function]}
+  Some comment
+  {[
+    | [] -> None
+    | h :: _ -> Some h ]}
+v}
+  {[let x = function]}
+  Some comment
+  {[
+    | [] -> None
+    | h :: _ -> Some h ]}
 
 {4:language_headers Language Headers}
 
