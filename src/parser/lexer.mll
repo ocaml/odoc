@@ -133,89 +133,10 @@ let verbatim_whitespace_last text =
   | exception Invalid_argument _ -> ""
   | _ -> text
 
-(** [deindent ~what input ~start_offset s] "deindents" [s] by an offset computed
-    from [start_offset] and [input], corresponding to the begining of a code
-    block or verbatim.  If that is not possible (eg there is a non-whitespace
-    line starting with less than [offset] whitespaces), it unindents as much as
-    possible and raises a warning. *)
-let deindent : what:string -> _ -> start_offset:_ -> string -> string =
-  fun ~what input ~start_offset s ->
-  let start_location = input.offset_to_location start_offset in
-  let offset = start_location.Loc.column in
-  (* Whitespace-only lines do not count, so they return [None]. *)
-  let count_leading_whitespace line =
-    let rec count_leading_whitespace' index len =
-      if index = len then None
-      else
-        match line.[index] with
-        | ' ' | '\t' -> count_leading_whitespace' (index + 1) len
-        | _ -> Some index
-    in
-    let len = String.length line in
-    (* '\r' may remain because we only split on '\n' below. This is important
-       for the first line, which would be considered not empty without this check. *)
-    let len = if len > 0 && line.[len - 1] = '\r' then len - 1 else len in
-    count_leading_whitespace' 0 len
-  in
-
-  let lines = Astring.String.cuts ~sep:"\n" s in
-
-  let least_amount_of_whitespace =
-    List.fold_left
-      (fun least_so_far line ->
-        match (count_leading_whitespace line, least_so_far) with
-        | Some n, least when n < least -> n
-        | _ -> least_so_far)
-      offset lines
-  in
-  if least_amount_of_whitespace < offset then
-    warning input ~start_offset
-      (Parse_error.not_enough_indentation_in_code_block ~what);
-  let drop n line =
-    (* Since blank lines were ignored when calculating
-       [least_amount_of_whitespace], their length might be less than the
-       amount. *)
-    if String.length line < n then ""
-    else String.sub line n (String.length line - n)
-  in
-  let lines = List.map (drop least_amount_of_whitespace) lines in
-  String.concat "\n" lines
-
-(** Implements the rules for code block as specified in [odoc_for_authors],
-    section on code blocks and indentation.  *)
-let code_block_content input ~what ~start_offset s =
-  let start_location = input.offset_to_location start_offset in
-  let indent = start_location.column in
-  let rec handle_first_newline index =
-    if index >= String.length s then String.make indent ' ' ^ s
-    else
-      match s.[index] with
-      | ' ' | '\t' | '\r' -> handle_first_newline (index + 1)
-      (* Multiline starting with an empty line *)
-      | '\n' -> String.sub s (index + 1) (String.length s - index - 1)
-      (* Multiline NOT starting with an empty line *)
-      | _ -> String.make indent ' ' ^ s
-  in
-  let s = handle_first_newline 0 in
-  let rec handle_last_newline index =
-    if index < 0 then s
-    else
-      match s.[index] with
-      | ' ' | '\t' | '\r' -> handle_last_newline (index - 1)
-      (* Multiline starting with an empty line *)
-      | '\n' -> String.sub s 0 index
-      (* Multiline NOT starting with an empty line *)
-      | _ -> s
-  in
-  let s = handle_last_newline (String.length s - 1) in
-  deindent ~what input ~start_offset s
-
-
 let emit_verbatim input start_offset buffer =
   let t = Buffer.contents buffer in
   let t = verbatim_whitespace_first input start_offset t in
   let t = verbatim_whitespace_last t in
-  let t = code_block_content input ~what:"verbatim" ~start_offset t in
   emit input (`Verbatim t) ~start_offset
 
 (* The locations have to be treated carefully in this function. We need to ensure that
@@ -229,7 +150,6 @@ let emit_code_block ~start_offset content_offset input metadata delim terminator
   let c = Buffer.contents c in
   (* We first handle the case wehere there is no line at the beginning, then
      remove trailing, leading lines and deindent *)
-  let c = code_block_content input ~what:"code block" ~start_offset c in
   let c =
     with_location_adjustments ~adjust_end_by:terminator
       ~start_offset:content_offset
