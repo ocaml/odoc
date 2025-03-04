@@ -149,13 +149,13 @@ This is a reference to \f[CI]foo\fR\. References can have replacement text: \f[C
 This is a code block:
 .sp 
 .EX 
-let foo = ()
-(** There are some nested comments in here, but an unpaired comment
-    terminator would terminate the whole doc surrounding comment\. It's
-    best to keep code blocks no wider than 72 characters\. *)
+    let foo = ()
+    (** There are some nested comments in here, but an unpaired comment
+        terminator would terminate the whole doc surrounding comment\. It's
+        best to keep code blocks no wider than 72 characters\. *)
 
-let bar =
-  ignore foo
+    let bar =
+      ignore foo
 .EE 
 .sp 
 There are also verbatim blocks:
