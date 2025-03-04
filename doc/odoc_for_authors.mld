@@ -399,19 +399,14 @@ Odoc strips whitespace from the content of a codeblock, so that it contains only
   ]}
 v}
 
-In other words, [odoc]:
+In other words, [odoc], in order:
 {ol
-{- Removes the first line if it contains only whitespace,}
-{- Removes the last line if it contains only whitespace,}
-{- Deindents as much as the opening curly brace's column. If there is
-non-whitespace on the left of the box above, the content is deindented only as
-much as it can without stripping non-whitespace, and a warning is raised.}}
+{- Does not remove any content if [{\[] and [\]}] are on the same line.}
+{- Removes the content of the line after [{\[] if it contains only whitespace.}
+{- Removes the content of the line before [\]}] if it contains only whitespace.}
+{- Removes spaces and tabs (counted as a single spaces) to reach the column of the opening curly brace of the [{\[] marker. If there is non-whitespace on the left of this column, the content is deindented only as much as it can without stripping non-whitespace, and a warning is raised.}}
 
-Note that removal of lines are meant "including the newline character" (so,
-nothing is removed if there is no newline character: [{[ content ]}] stays the
-same, but so do [{[ ]}]).
-
-Also, note that if point 1 above does not remove a line, the content of the code
+Also, note that if point 2 above does not remove a line, the content of the code
 block is considered as if starting at the upper [+] in the box above:
 
 {delim@ocaml[
