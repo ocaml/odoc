@@ -168,13 +168,14 @@
    </h2><p>This is a code block:</p>
    <pre class="language-ocaml">
     <code>
-     let foo = ()
-     (** There are some nested comments in here, but an unpaired comment
-         terminator would terminate the whole doc surrounding comment. It's
-         best to keep code blocks no wider than 72 characters. *)
+         let foo = ()
+         (** There are some nested comments in here, but an unpaired comment
+             terminator would terminate the whole doc surrounding comment.
+     It's
+             best to keep code blocks no wider than 72 characters. *)
      
-     let bar =
-       ignore foo
+         let bar =
+           ignore foo
     </code>
    </pre><p>There are also verbatim blocks:</p>
    <pre>The main difference is these don't get syntax highlighting.</pre>
