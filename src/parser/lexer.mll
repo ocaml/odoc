@@ -109,7 +109,9 @@ let reference_token media start target input lexbuf =
      let content = media token_descr (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf in
      `Media_with_replacement_text (target, kind, content)
 
-let require_whitespace_first input start_offset text =
+(** Verbatims' content must be separated from their delimiters: [{v content v}]
+    and not [{vcontentv}]. Such leading space is not part of the content. *)
+let verbatim_whitespace_first input start_offset text =
   match text.[0] with
   | ' ' -> String.sub text 1 (String.length text - 1)
   | '\t' | '\r' | '\n' -> text
@@ -122,17 +124,20 @@ let require_whitespace_first input start_offset text =
       Parse_error.no_leading_whitespace_in_verbatim;
     text
 
-let strip_whitespace_last text =
+(** Verbatims' content must be separated from their delimiters: [{v content v}]
+    and not [{vcontentv}]. Such leading space is not part of the content. *)
+let verbatim_whitespace_last text =
   match text.[String.length text - 1] with
   | ' ' -> String.sub text 0 (String.length text - 1)
   | '\t' | '\r' | '\n' -> text
   | exception Invalid_argument _ -> ""
   | _ -> text
 
-(** [trim_leading_whitespace ~offset c] "unindents" [c] by the [offset] amount.
-    If that is not possible (eg there is a non-whitespace line starting with
-    less than [offset] whitespaces), it unindents as much as possible and raises
-    a warning. *)
+(** [deindent ~what input ~start_offset s] "deindents" [s] by an offset computed
+    from [start_offset] and [input], corresponding to the begining of a code
+    block or verbatim.  If that is not possible (eg there is a non-whitespace
+    line starting with less than [offset] whitespaces), it unindents as much as
+    possible and raises a warning. *)
 let deindent : what:string -> _ -> start_offset:_ -> string -> string =
   fun ~what input ~start_offset s ->
   let start_location = input.offset_to_location start_offset in
@@ -176,13 +181,9 @@ let deindent : what:string -> _ -> start_offset:_ -> string -> string =
   let lines = List.map (drop least_amount_of_whitespace) lines in
   String.concat "\n" lines
 
-(** Removes at most one leading whitespace line, and at most one trailing empty
-    line. This is in order to have the opening token and the first line of the
-    content not on the same line.
-
-    If the leading line is not whitespace, indent this line as much as the
-    opening token (to account for the offset to the left margin).  *)
-let sanitize_code_block input ~what ~start_offset s =
+(** Implements the rules for code block as specified in [odoc_for_authors],
+    section on code blocks and indentation.  *)
+let code_block_content input ~what ~start_offset s =
   let start_location = input.offset_to_location start_offset in
   let indent = start_location.column in
   let rec handle_first_newline index =
@@ -212,9 +213,9 @@ let sanitize_code_block input ~what ~start_offset s =
 
 let emit_verbatim input start_offset buffer =
   let t = Buffer.contents buffer in
-  let t = require_whitespace_first input start_offset t in
-  let t = strip_whitespace_last t in
-  let t = sanitize_code_block input ~what:"verbatim" ~start_offset t in
+  let t = verbatim_whitespace_first input start_offset t in
+  let t = verbatim_whitespace_last t in
+  let t = code_block_content input ~what:"verbatim" ~start_offset t in
   emit input (`Verbatim t) ~start_offset
 
 (* The locations have to be treated carefully in this function. We need to ensure that
@@ -228,7 +229,7 @@ let emit_code_block ~start_offset content_offset input metadata delim terminator
   let c = Buffer.contents c in
   (* We first handle the case wehere there is no line at the beginning, then
      remove trailing, leading lines and deindent *)
-  let c = sanitize_code_block input ~what:"code block" ~start_offset c in
+  let c = code_block_content input ~what:"code block" ~start_offset c in
   let c =
     with_location_adjustments ~adjust_end_by:terminator
       ~start_offset:content_offset
