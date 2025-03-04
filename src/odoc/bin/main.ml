@@ -1681,6 +1681,47 @@ module Classify = struct
          are specified by the --library option."
 end
 
+module Extract_code = struct
+  let extract dst input line_directives names =
+    Ok (Extract_code.extract ~dst ~input ~line_directives ~names)
+
+  let line_directives =
+    let doc = "Whether to include line directives in the output file" in
+    Arg.(value & flag & info ~doc [ "line-directives" ])
+
+  let names =
+    let doc = "From which name of code blocks to extract content" in
+    Arg.(value & opt_all string [] & info ~doc [ "name" ])
+
+  let input =
+    let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
+    Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE" [])
+
+  let dst =
+    let doc =
+      "Output file path. Non-existing intermediate directories are created. If \
+       absent outputs a $(i,BASE.odoc) file in the same directory as the input \
+       file where $(i,BASE) is the basename of the input file. For mld files \
+       the \"page-\" prefix will be added if not already present in the input \
+       basename."
+    in
+    Arg.(
+      value
+      & opt (some string) None
+      & info ~docs ~docv:"PATH" ~doc [ "o"; "output" ])
+
+  let cmd =
+    Term.(
+      const handle_error
+      $ (const extract $ dst $ input $ line_directives $ names))
+
+  let info ~docs =
+    Term.info "extract-code" ~docs
+      ~doc:
+        "Classify the modules into libraries based on heuristics. Libraries \
+         are specified by the --library option."
+end
+
 let section_pipeline = "COMMANDS: Compilation pipeline"
 let section_generators = "COMMANDS: Alternative generators"
 let section_support = "COMMANDS: Scripting"
@@ -1733,6 +1774,7 @@ let () =
       Css.(cmd, info ~docs:section_deprecated);
       Depends.Odoc_html.(cmd, info ~docs:section_deprecated);
       Classify.(cmd, info ~docs:section_pipeline);
+      Extract_code.(cmd, info ~docs:section_pipeline);
     ]
   in
   let default =
