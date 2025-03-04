@@ -13,7 +13,9 @@
   which is more friendly for caching and voodoo (@jonludlam, #1304)
 - Filter out warnings coming from linking implementations (@jonludlam, #1319)
 - Output warnings coming from the `compile` phase in the driver (@jonludlam, #1323)
-- Changed the rules for code block indentation (@panglesd, #1137)
+- Changed the rules for code block and verbatim content (@panglesd, #1317)
+- Store raw content in verbatim and code block, and expose a function to process
+  it (@panglesd, #1325)
 
 ### Fixed
 
