@@ -2505,10 +2505,9 @@ let%expect_test _ =
       test "{[ ]}";
       [%expect
         {|
-        ((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 3)) "")))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-5:\
-           \n'{[...]}' (code block) should not be empty."))) |}]
+        ((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 3)) " ")))))
+         (warnings ()))
+        |}]
 
     let blank_line_only =
       test "{[\n  \n]}";

@@ -403,10 +403,16 @@ In other words, [odoc]:
 {ol
 {- Removes the first line if it contains only whitespace,}
 {- Removes the last line if it contains only whitespace,}
-{- Deindents as much as the opening curly brace's column.}}
+{- Deindents as much as the opening curly brace's column. If there is
+non-whitespace on the left of the box above, the content is deindented only as
+much as it can without stripping non-whitespace, and a warning is raised.}}
 
-Note that if there is non-whitespace content in the first new line, it is
-considered starting at the upper [+] in the box above:
+Note that removal of lines are meant "including the newline character" (so,
+nothing is removed if there is no newline character: [{[ content ]}] stays the
+same, but so do [{[ ]}]).
+
+Also, note that if point 1 above does not remove a line, the content of the code
+block is considered as if starting at the upper [+] in the box above:
 
 {delim@ocaml[
 (**
@@ -417,14 +423,14 @@ considered starting at the upper [+] in the box above:
 *)
 ]delim}
 
-Also note that if there is non-whitespace on the left of the box above, the
-content is deindented only as much as it can without stripping non-whitespace,
-and a warning is raised.
-
 {4:code_blocks_example Examples}
 
 Here are a few examples to illustrate the explanation above:
 
+{v
+  {[ ]}
+v}
+  {[ ]}
 {v
   {[let x = 0]}
 v}
