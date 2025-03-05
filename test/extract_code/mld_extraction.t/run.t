@@ -78,12 +78,13 @@ We can output to a file
      let y = x + 6. (* This is a typing error *)
      
 
-Let's check line directive work:
+Let's check line directive work ("-color always" to make sure the error message
+is the same in all context):
 
-  $ ocaml error.ml
+  $ ocaml -color always error.ml
   File "main.mld", line 26, characters 15-17:
-  Error: This expression has type "float" but an expression was expected of type
-           "int"
+  Error: This expression has type float but an expression was expected of type
+           int
   [2]
 
 Here is the line 26, and the characters 15-17:
