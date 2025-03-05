@@ -1,0 +1,3 @@
+(cram
+ (package odoc)
+ (deps %{bin:odoc}))
