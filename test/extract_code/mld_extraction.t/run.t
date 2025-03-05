@@ -26,13 +26,13 @@ Multiple name can be given
 
   $ odoc extract-code --line-directives --name error.ml --name printing main.mld
   #18 "main.mld"
-                                       let five = 5
+                                      let five = 5
   #20 "main.mld"
-                            
+                           
      let () = print_int five
     
   #25 "main.mld"
-                            
+                           
      let y = five +. five (* This is a typing error *)
      
 
@@ -42,18 +42,18 @@ We can add (OCaml) line directives
 
   $ odoc extract-code --line-directives main.mld
   #5 "main.mld"
-     
+    
   (** By default, an odoc code block is assumed to contain OCaml code *)
   let () = ()
   
   #18 "main.mld"
-                                       let five = 5
+                                      let five = 5
   #20 "main.mld"
-                            
+                           
      let () = print_int five
     
   #25 "main.mld"
-                            
+                           
      let y = five +. five (* This is a typing error *)
      
 
@@ -61,9 +61,9 @@ Let's restrict to a named code blocks
 
   $ odoc extract-code --line-directives --name error.ml main.mld
   #18 "main.mld"
-                                       let five = 5
+                                      let five = 5
   #25 "main.mld"
-                            
+                           
      let y = five +. five (* This is a typing error *)
      
 
@@ -72,9 +72,9 @@ We can output to a file
   $ odoc extract-code --line-directives --name error.ml -o error.ml main.mld
   $ cat error.ml
   #18 "main.mld"
-                                       let five = 5
+                                      let five = 5
   #25 "main.mld"
-                            
+                           
      let y = five +. five (* This is a typing error *)
      
 

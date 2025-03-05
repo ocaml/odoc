@@ -268,3 +268,5 @@ let read_cmi ~make_root ~parent ~filename ~warnings_tag =
   wrap_errors ~filename (read_cmi ~make_root ~parent ~filename ~warnings_tag)
 
 let read_location = Doc_attr.read_location
+
+let parse_attribute = Doc_attr.parse_attribute

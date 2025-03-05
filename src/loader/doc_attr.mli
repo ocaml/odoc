@@ -81,3 +81,15 @@ val conv_canonical_module : Odoc_model.Reference.path -> Paths.Path.Module.t
 val conv_canonical_type : Odoc_model.Reference.path -> Paths.Path.Type.t option
 val conv_canonical_module_type :
   Odoc_model.Reference.path -> Paths.Path.ModuleType.t option
+
+type payload = string * Location.t
+
+type parsed_attribute =
+  [ `Text of payload (* Standalone comment. *)
+  | `Doc of payload (* Attached comment. *)
+  | `Stop of Location.t (* [(**/**)]. *)
+  | `Alert of string * payload option * Location.t
+    (* [`Alert (name, payload, loc)] is for [\[@@alert name "payload"\]] attributes. *)
+  ]
+
+val parse_attribute : Parsetree.attribute -> parsed_attribute option
