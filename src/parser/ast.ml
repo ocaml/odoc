@@ -48,6 +48,9 @@ type code_block = {
   meta : code_block_meta option;
   delimiter : string option;
   content : string with_location;
+      (** This is the raw content, that is the exact string inside the
+          delimiters. In order to get the "processed" content, see
+          {!Odoc_parser.codeblock_content} *)
   output : nestable_block_element with_location list option;
 }
 
@@ -55,6 +58,9 @@ and nestable_block_element =
   [ `Paragraph of inline_element with_location list
   | `Code_block of code_block
   | `Verbatim of string
+    (** This is the raw content, that is the exact string inside the delimiters.
+        In order to get the "processed" content, see
+        {!Odoc_parser.verbatim_content} *)
   | `Modules of string with_location list
   | `List of
     [ `Unordered | `Ordered ]
