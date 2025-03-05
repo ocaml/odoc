@@ -15,13 +15,13 @@ printf(a,10,34,a,34);
 }
 ]}
 
-{@ocaml name=error.ml name=printing[let x = 5]}
+{@ocaml name=error.ml name=printing[let five = 5]}
 
    {@ocaml name=printing[
-   let () = print_int x
+   let () = print_int five
   ]}
 
 
    {@ocaml name=error.ml[
-   let y = x + 6. (* This is a typing error *)
+   let y = five +. five (* This is a typing error *)
    ]}
