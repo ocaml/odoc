@@ -6,10 +6,10 @@ Without --name argument, all **OCaml** code blocks are extracted
   
   (** By default, an odoc code block is assumed to contain OCaml code *)
   let () = ()
-  let x = 5
-     let () = print_int x
+  let five = 5
+     let () = print_int five
     
-     let y = x + 6. (* This is a typing error *)
+     let y = five +. five (* This is a typing error *)
      
 
 With --name argument, language does not matter
@@ -26,14 +26,14 @@ Multiple name can be given
 
   $ odoc extract-code --line-directives --name error.ml --name printing main.mld
   #18 "main.mld"
-                                       let x = 5
+                                       let five = 5
   #20 "main.mld"
                             
-     let () = print_int x
+     let () = print_int five
     
   #25 "main.mld"
                             
-     let y = x + 6. (* This is a typing error *)
+     let y = five +. five (* This is a typing error *)
      
 
 ------- Line directives ---------------------------------------
@@ -47,24 +47,24 @@ We can add (OCaml) line directives
   let () = ()
   
   #18 "main.mld"
-                                       let x = 5
+                                       let five = 5
   #20 "main.mld"
                             
-     let () = print_int x
+     let () = print_int five
     
   #25 "main.mld"
                             
-     let y = x + 6. (* This is a typing error *)
+     let y = five +. five (* This is a typing error *)
      
 
 Let's restrict to a named code blocks
 
   $ odoc extract-code --line-directives --name error.ml main.mld
   #18 "main.mld"
-                                       let x = 5
+                                       let five = 5
   #25 "main.mld"
                             
-     let y = x + 6. (* This is a typing error *)
+     let y = five +. five (* This is a typing error *)
      
 
 We can output to a file
@@ -72,24 +72,25 @@ We can output to a file
   $ odoc extract-code --line-directives --name error.ml -o error.ml main.mld
   $ cat error.ml
   #18 "main.mld"
-                                       let x = 5
+                                       let five = 5
   #25 "main.mld"
                             
-     let y = x + 6. (* This is a typing error *)
+     let y = five +. five (* This is a typing error *)
      
 
-Let's check line directive work ("-color always" to make sure the error message
-is the same in all context):
+Let's check line directive work (we only look at the location to avoid ocaml
+version-dependent output):
 
-  $ ocaml -color always error.ml
-  File "main.mld", line 26, characters 15-17:
-  Error: This expression has type float but an expression was expected of type
-           int
+  $ ocaml error.ml 2> error.txt
   [2]
+  $ grep File error.txt
+  File "main.mld", line 26, characters 11-15:
 
-Here is the line 26, and the characters 15-17:
+Here is the line 26, and the characters 11-15:
 
   $ sed -n '26p' main.mld
-     let y = x + 6. (* This is a typing error *)
-  $ sed -n '26p' main.mld | cut -c15-17
-   6.
+     let y = five +. five (* This is a typing error *)
+  $ sed -n '26p' main.mld | cut -c11-15
+   five
+
+"five" has type int and should have type float.
