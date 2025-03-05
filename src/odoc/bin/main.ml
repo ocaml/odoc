@@ -1692,21 +1692,18 @@ module Extract_code = struct
     Arg.(value & flag & info ~doc [ "line-directives" ])
 
   let names =
-    let doc = "From which name of code blocks to extract content" in
+    let doc =
+      "From which name(s) of code blocks to extract content. When no names are \
+       provided, extract all OCaml code blocks."
+    in
     Arg.(value & opt_all string [] & info ~doc [ "name" ])
 
   let input =
-    let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
+    let doc = "Input $(i,.mld) file." in
     Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE" [])
 
   let dst =
-    let doc =
-      "Output file path. Non-existing intermediate directories are created. If \
-       absent outputs a $(i,BASE.odoc) file in the same directory as the input \
-       file where $(i,BASE) is the basename of the input file. For mld files \
-       the \"page-\" prefix will be added if not already present in the input \
-       basename."
-    in
+    let doc = "Output file path." in
     Arg.(
       value
       & opt (some string) None
@@ -1720,8 +1717,7 @@ module Extract_code = struct
   let info ~docs =
     Term.info "extract-code" ~docs
       ~doc:
-        "Classify the modules into libraries based on heuristics. Libraries \
-         are specified by the --library option."
+        "Extract code blocks from mld files in order to be able to execute them"
 end
 
 let section_pipeline = "COMMANDS: Compilation pipeline"

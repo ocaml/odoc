@@ -1,15 +1,30 @@
-Without --name argument, all OCaml code blocks are extracted
+----------- Names ---------------------------------------------
+
+Without --name argument, all **OCaml** code blocks are extracted
 
   $ odoc extract-code main.mld
+  
+  (** By default, an odoc code block is assumed to contain OCaml code *)
+  let () = ()
   let x = 5
      let () = print_int x
     
      let y = x + 6. (* This is a typing error *)
      
 
-We can add (OCaml) line directives
+With --name argument, language does not matter
 
-  $ odoc extract-code --line-directives main.mld
+  $ odoc extract-code --name c-quine main.mld
+  
+  #include <stdio.h>
+  int main(){
+  char*a="#include <stdio.h>%cint main(){char*a=%c%s%c;printf(a,10,34,a,34);}";
+  printf(a,10,34,a,34);
+  }
+
+Multiple name can be given
+
+  $ odoc extract-code --line-directives --name error.ml --name printing main.mld
   #18 "main.mld"
                                        let x = 5
   #20 "main.mld"
@@ -21,7 +36,28 @@ We can add (OCaml) line directives
      let y = x + 6. (* This is a typing error *)
      
 
-We can restrict to a named code blocks
+------- Line directives ---------------------------------------
+
+We can add (OCaml) line directives
+
+  $ odoc extract-code --line-directives main.mld
+  #5 "main.mld"
+     
+  (** By default, an odoc code block is assumed to contain OCaml code *)
+  let () = ()
+  
+  #18 "main.mld"
+                                       let x = 5
+  #20 "main.mld"
+                            
+     let () = print_int x
+    
+  #25 "main.mld"
+                            
+     let y = x + 6. (* This is a typing error *)
+     
+
+Let's restrict to a named code blocks
 
   $ odoc extract-code --line-directives --name error.ml main.mld
   #18 "main.mld"
@@ -56,24 +92,3 @@ Here is the line 26, and the characters 15-17:
      let y = x + 6. (* This is a typing error *)
   $ sed -n '26p' main.mld | cut -c15-17
    6.
-
-We can get content from multiple names
-
-  $ odoc extract-code --line-directives --name error.ml --name printing main.mld
-  #18 "main.mld"
-                                       let x = 5
-  #20 "main.mld"
-                            
-     let () = print_int x
-    
-  #25 "main.mld"
-                            
-     let y = x + 6. (* This is a typing error *)
-     
-  $ odoc extract-code --line-directives --name error.ml --name printing -o names.ml main.mld
-  $ ocaml names.ml
-  File "main.mld", line 26, characters 15-17:
-  Error: This expression has type "float" but an expression was expected of type
-           "int"
-  5
-  [2]
