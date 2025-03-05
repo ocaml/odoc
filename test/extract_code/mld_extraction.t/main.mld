@@ -1,0 +1,27 @@
+{0 Test}
+
+By default, language is assumed to be OCaml
+
+{[
+(** By default, an odoc code block is assumed to contain OCaml code *)
+let () = ()
+]}
+
+{@c name=c-quine[
+#include <stdio.h>
+int main(){
+char*a="#include <stdio.h>%cint main(){char*a=%c%s%c;printf(a,10,34,a,34);}";
+printf(a,10,34,a,34);
+}
+]}
+
+{@ocaml name=error.ml name=printing[let five = 5]}
+
+   {@ocaml name=printing[
+   let () = print_int five
+  ]}
+
+
+   {@ocaml name=error.ml[
+   let y = five +. five (* This is a typing error *)
+   ]}
