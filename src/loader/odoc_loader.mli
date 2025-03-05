@@ -41,3 +41,5 @@ val read_cmi :
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
 val read_location : Location.t -> Location_.span
+
+val parse_attribute : Parsetree.attribute -> Doc_attr.parsed_attribute option
