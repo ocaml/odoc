@@ -174,25 +174,25 @@ let deindent : what:string -> loc:Loc.span -> string -> string * Warning.t list
     section on code blocks and indentation. *)
 let code_block_content ~what ~loc s =
   let indent = loc.Loc.start.column in
+  (* Remove the first line (to first \n char, included) if it's whitespace only.
+     Otherwise, indent at [indent] level to account for offset. *)
   let rec handle_first_newline index =
     if index >= String.length s then String.make indent ' ' ^ s
     else
       match s.[index] with
       | ' ' | '\t' | '\r' -> handle_first_newline (index + 1)
-      (* Multiline starting with an empty line *)
       | '\n' -> String.sub s (index + 1) (String.length s - index - 1)
-      (* Multiline NOT starting with an empty line *)
       | _ -> String.make indent ' ' ^ s
   in
   let s = handle_first_newline 0 in
+  (* Remove the last line (from last \n char, included) if it's whitespace
+     only. *)
   let rec handle_last_newline index =
     if index < 0 then s
     else
       match s.[index] with
       | ' ' | '\t' | '\r' -> handle_last_newline (index - 1)
-      (* Multiline starting with an empty line *)
       | '\n' -> String.sub s 0 index
-      (* Multiline NOT starting with an empty line *)
       | _ -> s
   in
   let s = handle_last_newline (String.length s - 1) in
