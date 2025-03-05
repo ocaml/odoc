@@ -4,6 +4,8 @@
 
 - Added support for (local) images in the latex backend (@Octachron, #1297)
 - Added a `header` field to the json output (@panglesd, #1314)
+- Added an `extract-code` subcommand to extract code blocks from mld files
+  (@panglesd, #1326)
 
 ### Changed
 
