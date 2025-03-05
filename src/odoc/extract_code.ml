@@ -11,17 +11,18 @@ let tags_included_in_names names tags =
     fields
 
 let needs_extraction names meta =
-  let check_language l = String.equal "ocaml" l.Loc.value in
-  let check_name tags =
-    if List.is_empty names then true
-    else
-      match tags with
-      | None -> false
-      | Some tags -> tags_included_in_names names tags.Loc.value
+  let check_language () =
+    match meta with
+    | None -> true
+    | Some { Ast.language; _ } -> String.equal "ocaml" language.Loc.value
   in
-  match meta with
-  | None -> false
-  | Some meta -> check_language meta.Ast.language && check_name meta.tags
+  let check_name () =
+    match meta with
+    | Some { Ast.tags = Some tags; _ } ->
+        tags_included_in_names names tags.Loc.value
+    | _ -> false
+  in
+  match names with [] -> check_language () | _ :: _ -> check_name ()
 
 let print oc line_directives location value =
   if line_directives then (
