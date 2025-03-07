@@ -7,4 +7,3 @@ type t
 (** {1 Section 2} *)
 
 type u
-
