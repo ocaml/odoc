@@ -15,6 +15,7 @@
  *)
 
 [@@@warning "-32-26-27"]
+[@@@warning "-39"] (* rec flag *)
 
 open Odoc_utils
 
@@ -24,17 +25,12 @@ module Html = Tyxml.Html
 module Doctree = Odoc_document.Doctree
 module Url = Odoc_document.Url
 module Link = HLink
-module Blocks = Cmarkit.Block
 
-type any = Html_types.flow5
-
-type item = Html_types.flow5_without_header_footer
-
-type flow = Html_types.flow5_without_sectioning_heading_header_footer
-
-type phrasing = Html_types.phrasing
-
-type non_link_phrasing = Html_types.phrasing_without_interactive
+module Md = struct
+  module Block = Cmarkit.Block
+  module Inline = Cmarkit.Inline
+  let meta = Cmarkit.Meta.none
+end
 
 let mk_anchor_link id =
   [ Html.a ~a:[ Html.a_href ("#" ^ id); Html.a_class [ "anchor" ] ] [] ]
@@ -78,16 +74,22 @@ and raw_markup (t : Raw_markup.t) =
       [ Html.Unsafe.data content ]
   | _ -> []
 
-and source k ?a (t : Source.t) =
+and source (k : Inline.one list -> Md.Inline.t list) ?a (t : Source.t) =
   let rec token (x : Source.token) =
     match x with
     | Elt i -> k i
     | Tag (None, l) ->
         let content = tokens l in
-        if content = [] then [] else [ Html.span content ]
-    | Tag (Some s, l) -> [ Html.span ~a:[ Html.a_class [ s ] ] (tokens l) ]
+        if content = [] then []
+        else
+          (* TODO: extract content, lang?, ??? *)
+          let heading_1_inline = Md.Inline.Text ("Heading 1", Md.meta) in
+          [ heading_1_inline ]
+    | Tag (Some s, l) ->
+        (* [ Html.span ~a:[ Html.a_class [ s ] ] (tokens l) ] *)
+        failwith "source not implemented tag Some"
   and tokens t = List.concat_map token t in
-  match tokens t with [] -> [] | l -> [ Html.code ?a l ]
+  match tokens t with [] -> [] | l -> l
 
 and styled style ~emph_level =
   match style with
@@ -104,7 +106,7 @@ let rec internallink ~config ~emph_level ~resolve ?(a = []) target content
   let a = match tooltip with Some s -> Html.a_title s :: a | None -> a in
   let elt =
     match target with
-    | Target.Resolved uri ->
+    (* | Target.Resolved uri ->
         let href = Link.href ~config ~resolve uri in
         let content = inline_nolink ~emph_level content in
 
@@ -118,41 +120,46 @@ let rec internallink ~config ~emph_level ~resolve ?(a = []) target content
          *       (ref_to_string ref)
          * in *)
         let a = Html.a_class [ "xref-unresolved" ] :: a in
-        Html.span ~a (inline ~config ~emph_level ~resolve content)
+        Html.span ~a (inline ~config ~emph_level ~resolve content) *)
+    | _ -> failwith "internallink not implemented"
   in
-  [ (elt :> phrasing Html.elt) ]
+  [ elt ]
 
-and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) :
-    phrasing Html.elt list =
-  let one (t : Inline.one) =
-    let a = class_ t.attr in
+and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) : Md.Inline.t list
+    =
+  let one (t : Inline.one) : Md.Inline.t list =
     match t.desc with
-    | Text "" -> []
     | Text s ->
-        if a = [] then [ Html.txt s ] else [ Html.span ~a [ Html.txt s ] ]
+        let inline = Md.Inline.Text (s, Md.meta) in
+        [ inline ]
     | Entity s ->
-        if a = [] then [ Html.entity s ] else [ Html.span ~a [ Html.entity s ] ]
-    | Linebreak -> [ Html.br ~a () ]
+        failwith "inline not implemented entity"
+        (* if a = [] then [ Html.entity s ] else [ Html.span ~a [ Html.entity s ] ] *)
+    | Linebreak -> failwith "inline not implemented linebreak"
     | Styled (style, c) ->
-        let emph_level, app_style = styled style ~emph_level in
-        [ app_style @@ inline ~config ~emph_level ~resolve c ]
+        failwith "inline not implemented styled"
+        (* let emph_level, app_style = styled style ~emph_level in
+        [ app_style @@ inline ~config ~emph_level ~resolve c ] *)
     | Link { target = External href; content = c; _ } ->
-        let a = (a :> Html_types.a_attrib Html.attrib list) in
+        failwith "inline not implemented ext link"
+        (* let a = (a :> Html_types.a_attrib Html.attrib list) in
         let content = inline_nolink ~emph_level c in
-        [ Html.a ~a:(Html.a_href href :: a) content ]
+        [ Html.a ~a:(Html.a_href href :: a) content ] *)
     | Link { target = Internal t; content; tooltip } ->
-        internallink ~config ~emph_level ~resolve ~a t content tooltip
-    | Source c -> source (inline ~config ~emph_level ~resolve) ~a c
-    | Math s -> [ inline_math s ]
-    | Raw_markup r -> raw_markup r
+        failwith "inline not implemented inline link"
+        (* internallink ~config ~emph_level ~resolve ~a t content tooltip *)
+    | Source c -> source (inline ~config ~emph_level ~resolve) c
+    | Math s -> (* [ inline_math s ] *) failwith "inline not implemented math"
+    | Raw_markup r ->
+        (* raw_markup r *)
+        failwith "inline not implemented markup!"
   in
   List.concat_map one l
 
-and inline_nolink ?(emph_level = 0) (l : Inline.t) :
-    non_link_phrasing Html.elt list =
+and inline_nolink ?(emph_level = 0) (l : Inline.t) : Md.Block.t list =
   let one (t : Inline.one) =
-    let a = class_ t.attr in
-    match t.desc with
+    failwith "inline_nolink not implemented"
+    (* match t.desc with
     | Text "" -> []
     | Text s ->
         if a = [] then [ Html.txt s ] else [ Html.span ~a [ Html.txt s ] ]
@@ -165,28 +172,18 @@ and inline_nolink ?(emph_level = 0) (l : Inline.t) :
     | Link _ -> assert false
     | Source c -> source (inline_nolink ~emph_level) ~a c
     | Math s -> [ inline_math s ]
-    | Raw_markup r -> raw_markup r
+    | Raw_markup r -> raw_markup r *)
   in
   List.concat_map one l
 
-let heading ~config ~resolve (h : Heading.t) =
-  let a, anchor =
-    match h.label with
-    | Some id -> ([ Html.a_id id ], mk_anchor_link id)
-    | None -> ([], [])
+let heading ~config ~resolve (h : Heading.t) : Md.Block.t list =
+  let id = h.label in
+  let inlines = inline ~config ~resolve h.title in
+  let content = Md.Inline.Inlines (inlines, Md.meta) in
+  let heading =
+    Md.Block.Heading (Md.Block.Heading.make ~level:h.level content, Md.meta)
   in
-  let content = inline ~config ~resolve h.title in
-  let source_link = mk_link_to_source ~config ~resolve h.source_anchor in
-  let mk =
-    match h.level with
-    | 0 -> Html.h1
-    | 1 -> Html.h2
-    | 2 -> Html.h3
-    | 3 -> Html.h4
-    | 4 -> Html.h5
-    | _ -> Html.h6
-  in
-  mk ~a (anchor @ content @ source_link)
+  [ heading ]
 
 let text_align = function
   | Table.Left -> [ Html.a_style "text-align:left" ]
@@ -196,10 +193,9 @@ let text_align = function
 
 let cell_kind = function `Header -> Html.th | `Data -> Html.td
 
-let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
-  let as_flow x = (x : phrasing Html.elt list :> flow Html.elt list) in
-  let one (t : Block.one) =
-    let mk_block ?(extra_class = []) mk content =
+let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
+  let one (t : Block.one) : Md.Block.t list =
+    (* let mk_block ?(extra_class = []) mk content =
       let a = Some (class_ (extra_class @ t.attr)) in
       [ mk ?a content ]
     in
@@ -216,8 +212,17 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
             [ Html.span ~a content ]
       in
       mk_block Html.div block
-    in
+    in *)
     match t.desc with
+    | Paragraph paragraph ->
+        let inlines = inline ~config ~resolve paragraph in
+        let inlines = Md.Inline.Inlines (inlines, Md.meta) in
+        let paragraph_block =
+          Md.Block.Paragraph (Md.Block.Paragraph.make inlines, Md.meta)
+        in
+        [ paragraph_block ]
+    | _ -> failwith "block not implemented"
+    (* match t.desc with
     | Inline i ->
         if t.attr = [] then as_flow @@ inline ~config ~resolve i
         else mk_block Html.span (inline ~config ~resolve i)
@@ -274,13 +279,12 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
           in
           [ img ]
         in
-        mk_media_block image target alt
+        mk_media_block image target alt *)
   in
-
   List.concat_map one l
 
-and mk_rows ~config ~resolve { align; data } =
-  let mk_row row =
+and mk_rows ~config ~resolve (* { align; data } *) _ =
+  (* let mk_row row =
     let mk_cell ~align (x, h) =
       let a = text_align align in
       cell_kind ~a h (block ~config ~resolve x)
@@ -300,27 +304,22 @@ and mk_rows ~config ~resolve { align; data } =
     in
     Html.tr (List.rev acc)
   in
-  List.map mk_row data
+  List.map mk_row data *)
+  failwith "notimpemented"
 
 (* This coercion is actually sound, but is not currently accepted by Tyxml.
    See https://github.com/ocsigen/tyxml/pull/265 for details
    Can be replaced by a simple type coercion once this is fixed
 *)
-let flow_to_item : flow Html.elt list -> item Html.elt list =
- fun x -> Html.totl @@ Html.toeltl x
-
-let div : (Html_types.div_attrib, [< item ], [> Html_types.div ]) Html.star =
-  Html.Unsafe.node "div"
-
-let spec_class attr = class_ ("spec" :: attr)
 
 let spec_doc_div ~config ~resolve = function
   | [] -> []
   | docs ->
-      let a = [ Html.a_class [ "spec-doc" ] ] in
-      [ div ~a (flow_to_item @@ block ~config ~resolve docs) ]
+      (* let a = [ Html.a_class [ "spec-doc" ] ] in
+      [ div ~a (flow_to_item @@ block ~config ~resolve docs) ] *)
+      []
 
-let rec documentedSrc ~config ~resolve (t : DocumentedSrc.t) :
+(* let rec documentedSrc ~config ~resolve (t : DocumentedSrc.t) :
     item Html.elt list =
   let open DocumentedSrc in
   let take_code l =
@@ -375,15 +374,13 @@ let rec documentedSrc ~config ~resolve (t : DocumentedSrc.t) :
         in
         Html.ol (List.map one l) :: to_html rest
   in
-  to_html t
+  to_html t *)
 
 and subpage ~config:_ ~resolve:_ (_subp : Subpage.t) =
   (* items ~config ~resolve subp.content.items *)
   []
 
-(* I will be right back *)
-
-and items ~config ~resolve l : Blocks.t list =
+and items ~config ~resolve l : Md.Block.t list =
   let rec walk_items acc (t : Item.t list) =
     let continue_with rest elts =
       (walk_items [@tailcall]) (List.rev_append elts acc) rest
@@ -396,16 +393,10 @@ and items ~config ~resolve l : Blocks.t list =
             | Item.Text text -> Accum text
             | _ -> Stop_and_keep)
         in
-        (* let content = flow_to_item @@ block ~config ~resolve text in *)
-        (* let inline = Cmarkit.Inline.(Text "asdf") in *)
-        (* let text = Cmarkit.Inline.text "This is paragraph text" in
-        let inline = Cmarkit.Inline.of_text text in
-        let content = Cmarkit.Block.paragraph inline in *)
-        let content = [ Blocks.empty ] in
+        let content = block ~config ~resolve text in
         (continue_with [@tailcall]) rest content
     | Heading h :: rest ->
-        let headings = [ Blocks.empty ] in
-        (continue_with [@tailcall]) rest headings
+        (continue_with [@tailcall]) rest (heading ~config ~resolve h)
     | Include
         {
           attr;
@@ -415,13 +406,13 @@ and items ~config ~resolve l : Blocks.t list =
           content = { summary; status; content };
         }
       :: rest ->
-        let doc = spec_doc_div ~config ~resolve doc in
+        (* let doc = spec_doc_div ~config ~resolve doc in
         let included_html = items content in
         let a_class =
           if List.length content = 0 then [ "odoc-include"; "shadowed-include" ]
           else [ "odoc-include" ]
-        in
-        let content = [ Blocks.empty ] in
+        in *)
+        let content = [ Md.Block.empty ] in
         (* let content =
           let details ~open' =
             let open' = if open' then [ Html.a_open () ] else [] in
@@ -450,13 +441,13 @@ and items ~config ~resolve l : Blocks.t list =
         in *)
         (continue_with [@tailcall]) rest content
     | Declaration { Item.attr; anchor; source_anchor; content; doc } :: rest ->
-        let extra_attr, extra_class, anchor_link = mk_anchor anchor in
+        (* let extra_attr, extra_class, anchor_link = mk_anchor anchor in
         let link_to_source = mk_link_to_source ~config ~resolve source_anchor in
         let a = spec_class (attr @ extra_class) @ extra_attr in
         let content =
           anchor_link @ link_to_source @ documentedSrc ~config ~resolve content
-        in
-        let spec = [ Blocks.empty ] in
+        in *)
+        let spec = [ Md.Block.empty ] in
         (* let spec =
           let doc = spec_doc_div ~config ~resolve doc in
           [ div ~a:[ Html.a_class [ "odoc-spec" ] ] (div ~a content :: doc) ]
@@ -476,16 +467,12 @@ module Toc = struct
   let gen_toc ~config ~resolve ~path i =
     let toc = Toc.compute path ~on_sub i in
     let rec section { Toc.url; text; children } =
-      let text = inline_nolink text in
+      (* let text = inline_nolink text in *)
       let title =
-        (text
-          : non_link_phrasing Html.elt list
-          :> Html_types.flow5_without_interactive Html.elt list)
+        (* (text) *)
+        []
       in
-      let title_str =
-        List.map (Format.asprintf "%a" (Tyxml.Html.pp_elt ())) text
-        |> String.concat ~sep:""
-      in
+      let title_str = "" in
       let href = Link.href ~config ~resolve url in
       { title; title_str; href; children = List.map section children }
     in
@@ -587,7 +574,8 @@ module Breadcrumbs = struct
                 Some (Link.href ~config ~resolve:(Current current_url) url)
               else None
             in
-            let name = inline_nolink content in
+            (* let name = inline_nolink content in *)
+            let name = [] in
             let breadcrumb = { href; name; kind = url.page.kind } in
             if url.page = current_url then Some (`Current breadcrumb)
             else Some (`Parent (breadcrumb, children))
@@ -651,15 +639,13 @@ module Page = struct
     let uses_katex = Doctree.Math.has_math_elements p in
     let toc = Toc.gen_toc ~config ~resolve ~path:url i in
     let content = items ~config ~resolve i in
-    let content =
-      (* Cmarkit.Doc.empty *)
-      Cmarkit.Doc.of_string ~layout:true ~strict:false "## Markdown"
-    in
+    let root_block = Md.Block.Blocks (content, Md.meta) in
+    let doc = Cmarkit.Doc.make root_block in
     let header, preamble = Doctree.PageTitle.render_title ?source_anchor p in
     let header = items ~config ~resolve header in
     let preamble = items ~config ~resolve preamble in
     Markdown_page.make ~sidebar ~config ~header:(header @ preamble) ~toc
-      ~breadcrumbs ~url ~uses_katex content subpages
+      ~breadcrumbs ~url ~uses_katex doc subpages
 
   and source_page ~config ~sidebar sp =
     let { Source_page.url; contents } = sp in
@@ -673,7 +659,7 @@ module Page = struct
           (Some (block ~config ~resolve sidebar) :> any Html.elt list option) *)
       None
     in
-    let title = url.Url.Path.name and doc = [ Blocks.empty ] in
+    let title = url.Url.Path.name and doc = [ Md.Block.empty ] in
     (* and doc = Markdown_source.html_of_doc ~config ~resolve contents in *)
     let header =
       (* items ~config ~resolve (Doctree.PageTitle.render_src_title sp) *)
