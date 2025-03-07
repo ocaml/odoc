@@ -5,6 +5,7 @@
   compiler-libs.common
   fpath
   odoc_html
+  odoc_markdown
   odoc_html_support_files
   odoc_latex
   odoc_loader
