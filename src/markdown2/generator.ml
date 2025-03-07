@@ -15,7 +15,6 @@
  *)
 
 [@@@warning "-32-26-27"]
-[@@@warning "-39"] (* rec flag *)
 
 open Odoc_utils
 
@@ -80,16 +79,12 @@ and source (k : Inline.one list -> Md.Inline.t list) ?a (t : Source.t) =
     | Elt i -> k i
     | Tag (None, l) ->
         let content = tokens l in
-        if content = [] then []
-        else
-          (* TODO: extract content, lang?, ??? *)
-          let heading_1_inline = Md.Inline.Text ("Heading 1", Md.meta) in
-          [ heading_1_inline ]
+        content
     | Tag (Some s, l) ->
         (* [ Html.span ~a:[ Html.a_class [ s ] ] (tokens l) ] *)
         failwith "source not implemented tag Some"
   and tokens t = List.concat_map token t in
-  match tokens t with [] -> [] | l -> l
+  tokens t
 
 and styled style ~emph_level =
   match style with
@@ -108,7 +103,7 @@ let rec internallink ~config ~emph_level ~resolve ?(a = []) target content
     match target with
     (* | Target.Resolved uri ->
         let href = Link.href ~config ~resolve uri in
-        let content = inline_nolink ~emph_level content in
+        let content = inline ~emph_level content in
 
         let a =
           Html.a_href href :: (a :> Html_types.a_attrib Html.attrib list)
@@ -143,7 +138,7 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) : Md.Inline.t list
     | Link { target = External href; content = c; _ } ->
         failwith "inline not implemented ext link"
         (* let a = (a :> Html_types.a_attrib Html.attrib list) in
-        let content = inline_nolink ~emph_level c in
+        let content = inline ~emph_level c in
         [ Html.a ~a:(Html.a_href href :: a) content ] *)
     | Link { target = Internal t; content; tooltip } ->
         failwith "inline not implemented inline link"
@@ -153,26 +148,6 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) : Md.Inline.t list
     | Raw_markup r ->
         (* raw_markup r *)
         failwith "inline not implemented markup!"
-  in
-  List.concat_map one l
-
-and inline_nolink ?(emph_level = 0) (l : Inline.t) : Md.Block.t list =
-  let one (t : Inline.one) =
-    failwith "inline_nolink not implemented"
-    (* match t.desc with
-    | Text "" -> []
-    | Text s ->
-        if a = [] then [ Html.txt s ] else [ Html.span ~a [ Html.txt s ] ]
-    | Entity s ->
-        if a = [] then [ Html.entity s ] else [ Html.span ~a [ Html.entity s ] ]
-    | Linebreak -> [ Html.br ~a () ]
-    | Styled (style, c) ->
-        let emph_level, app_style = styled style ~emph_level in
-        [ app_style @@ inline_nolink ~emph_level c ]
-    | Link _ -> assert false
-    | Source c -> source (inline_nolink ~emph_level) ~a c
-    | Math s -> [ inline_math s ]
-    | Raw_markup r -> raw_markup r *)
   in
   List.concat_map one l
 
@@ -192,6 +167,8 @@ let text_align = function
   | Default -> []
 
 let cell_kind = function `Header -> Html.th | `Data -> Html.td
+
+[@@@warning "-39"]
 
 let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
   let one (t : Block.one) : Md.Block.t list =
@@ -447,7 +424,7 @@ and items ~config ~resolve l : Md.Block.t list =
         let content =
           anchor_link @ link_to_source @ documentedSrc ~config ~resolve content
         in *)
-        let spec = [ Md.Block.empty ] in
+        let spec = block ~config ~resolve doc in
         (* let spec =
           let doc = spec_doc_div ~config ~resolve doc in
           [ div ~a:[ Html.a_class [ "odoc-spec" ] ] (div ~a content :: doc) ]
@@ -467,7 +444,7 @@ module Toc = struct
   let gen_toc ~config ~resolve ~path i =
     let toc = Toc.compute path ~on_sub i in
     let rec section { Toc.url; text; children } =
-      (* let text = inline_nolink text in *)
+      let text = inline ~config ~resolve text in
       let title =
         (* (text) *)
         []
@@ -574,7 +551,7 @@ module Breadcrumbs = struct
                 Some (Link.href ~config ~resolve:(Current current_url) url)
               else None
             in
-            (* let name = inline_nolink content in *)
+            (* let name = inline content in *)
             let name = [] in
             let breadcrumb = { href; name; kind = url.page.kind } in
             if url.page = current_url then Some (`Current breadcrumb)
