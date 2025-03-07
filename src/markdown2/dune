@@ -1,0 +1,4 @@
+(library
+ (name odoc_markdown)
+ (public_name odoc.markdown)
+ (libraries odoc_model odoc_document cmarkit))
