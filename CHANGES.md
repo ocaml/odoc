@@ -17,6 +17,7 @@
 - Changed the rules for code block and verbatim content (@panglesd, #1317)
 - Store raw content in verbatim and code block, and expose a function to process
   it (@panglesd, #1325)
+- Remove cmdliner compatibility layer, no longer needed (@dbuenzli, #1328)
 
 ### Fixed
 
