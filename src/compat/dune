@@ -1,7 +1,0 @@
-(library
- (name compatcmdliner)
- (libraries cmdliner)
- (instrumentation
-  (backend landmarks --auto))
- (instrumentation
-  (backend bisect_ppx)))
