@@ -289,13 +289,14 @@ let a_show_removed =
 
 let cmd =
   let doc = "Print the content of .odoc files into a text format. For tests" in
-  Cmd.v (Cmd.info "odoc_print" ~doc) @@
-  Term.( const run $ a_inp $ a_short $ a_long_paths $ a_show_canonical
-         $ a_show_expansions $ a_show_include_expansions $ a_show_removed
-         $ reference)
+  Cmd.v (Cmd.info "odoc_print" ~doc)
+  @@ Term.(
+       const run $ a_inp $ a_short $ a_long_paths $ a_show_canonical
+       $ a_show_expansions $ a_show_include_expansions $ a_show_removed
+       $ reference)
 
-
-let () = match Cmd.eval_value' cmd with
+let () =
+  match Cmd.eval_value' cmd with
   | `Ok (Ok ()) -> ()
   | `Ok (Error (`Msg msg)) ->
       Printf.eprintf "Error: %s\n" msg;

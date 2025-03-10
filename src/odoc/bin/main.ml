@@ -22,8 +22,7 @@ let convert_syntax : Odoc_document.Renderer.syntax Arg.conv =
 
 let convert_directory ?(create = false) () : Fs.Directory.t Arg.conv =
   let dir_parser, dir_printer =
-    Arg.conv_parser Arg.string,
-    Arg.conv_printer Arg.string
+    (Arg.conv_parser Arg.string, Arg.conv_printer Arg.string)
   in
   let odoc_dir_parser str =
     let () = if create then Fs.Directory.(mkdir_p (of_string str)) in
@@ -1704,41 +1703,41 @@ let () =
   Printexc.record_backtrace true;
   let cmd_make (term, info) = Cmd.v info term in
   let subcommands =
-    List.map ~f:cmd_make @@
-    [
-      Occurrences.Count.(cmd, info ~docs:section_pipeline);
-      Occurrences.Aggregate.(cmd, info ~docs:section_pipeline);
-      Compile.(cmd, info ~docs:section_pipeline);
-      Compile_asset.(cmd, info ~docs:section_pipeline);
-      Odoc_link.(cmd, info ~docs:section_pipeline);
-      Odoc_html.generate ~docs:section_pipeline;
-      Odoc_html.generate_source ~docs:section_pipeline;
-      Odoc_html.generate_asset ~docs:section_pipeline;
-      Support_files_command.(cmd, info ~docs:section_pipeline);
-      Compile_impl.(cmd, info ~docs:section_pipeline);
-      Indexing.(cmd, info ~docs:section_pipeline);
-      Sidebar.(cmd, info ~docs:section_pipeline);
-      Odoc_manpage.generate ~docs:section_generators;
-      Odoc_latex.generate ~docs:section_generators;
-      Odoc_html_url.(cmd, info ~docs:section_support);
-      Odoc_latex_url.(cmd, info ~docs:section_support);
-      Targets.Support_files.(cmd, info ~docs:section_support);
-      Odoc_error.(cmd, info ~docs:section_support);
-      Odoc_html.targets ~docs:section_support;
-      Odoc_html.targets_source ~docs:section_support;
-      Odoc_manpage.targets ~docs:section_support;
-      Odoc_latex.targets ~docs:section_support;
-      Depends.Compile.(cmd, info ~docs:section_support);
-      Targets.Compile.(cmd, info ~docs:section_support);
-      Html_fragment.(cmd, info ~docs:section_legacy);
-      Odoc_html.process ~docs:section_legacy;
-      Odoc_manpage.process ~docs:section_legacy;
-      Odoc_latex.process ~docs:section_legacy;
-      Depends.Link.(cmd, info ~docs:section_legacy);
-      Css.(cmd, info ~docs:section_deprecated);
-      Depends.Odoc_html.(cmd, info ~docs:section_deprecated);
-      Classify.(cmd, info ~docs:section_pipeline);
-    ]
+    List.map ~f:cmd_make
+    @@ [
+         Occurrences.Count.(cmd, info ~docs:section_pipeline);
+         Occurrences.Aggregate.(cmd, info ~docs:section_pipeline);
+         Compile.(cmd, info ~docs:section_pipeline);
+         Compile_asset.(cmd, info ~docs:section_pipeline);
+         Odoc_link.(cmd, info ~docs:section_pipeline);
+         Odoc_html.generate ~docs:section_pipeline;
+         Odoc_html.generate_source ~docs:section_pipeline;
+         Odoc_html.generate_asset ~docs:section_pipeline;
+         Support_files_command.(cmd, info ~docs:section_pipeline);
+         Compile_impl.(cmd, info ~docs:section_pipeline);
+         Indexing.(cmd, info ~docs:section_pipeline);
+         Sidebar.(cmd, info ~docs:section_pipeline);
+         Odoc_manpage.generate ~docs:section_generators;
+         Odoc_latex.generate ~docs:section_generators;
+         Odoc_html_url.(cmd, info ~docs:section_support);
+         Odoc_latex_url.(cmd, info ~docs:section_support);
+         Targets.Support_files.(cmd, info ~docs:section_support);
+         Odoc_error.(cmd, info ~docs:section_support);
+         Odoc_html.targets ~docs:section_support;
+         Odoc_html.targets_source ~docs:section_support;
+         Odoc_manpage.targets ~docs:section_support;
+         Odoc_latex.targets ~docs:section_support;
+         Depends.Compile.(cmd, info ~docs:section_support);
+         Targets.Compile.(cmd, info ~docs:section_support);
+         Html_fragment.(cmd, info ~docs:section_legacy);
+         Odoc_html.process ~docs:section_legacy;
+         Odoc_manpage.process ~docs:section_legacy;
+         Odoc_latex.process ~docs:section_legacy;
+         Depends.Link.(cmd, info ~docs:section_legacy);
+         Css.(cmd, info ~docs:section_deprecated);
+         Depends.Odoc_html.(cmd, info ~docs:section_deprecated);
+         Classify.(cmd, info ~docs:section_pipeline);
+       ]
   in
   let main =
     let print_default () =

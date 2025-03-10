@@ -33,7 +33,6 @@ let cmd =
   let doc =
     "Print the content of occurrences files into a text format. For tests"
   in
-  Cmd.v (Cmd.info "occurrences_print" ~doc) @@
-  Term.(const run $ a_inp)
+  Cmd.v (Cmd.info "occurrences_print" ~doc) @@ Term.(const run $ a_inp)
 
 let () = exit (Cmd.eval cmd)
