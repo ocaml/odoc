@@ -17,7 +17,6 @@ depends: [
   "dune" {>= "3.7"}
   "ocaml" {>= "4.08.0" & < "5.4"}
   "astring"
-  "result"
   "camlp-streams"
   "ppx_expect" {with-test}
   "sexplib0" {with-test}

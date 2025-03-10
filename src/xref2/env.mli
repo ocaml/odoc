@@ -2,7 +2,6 @@
 
 open Odoc_model
 open Odoc_model.Paths
-open Odoc_utils
 
 type lookup_unit_result = Forward_reference | Found of Lang.Compilation_unit.t
 
@@ -116,7 +115,7 @@ type 'a scope constraint 'a = [< Component.Element.any ]
 (** Target of a lookup *)
 
 type 'a maybe_ambiguous =
-  ('a, [ `Ambiguous of 'a * 'a list | `Not_found ]) Result.result
+  ('a, [ `Ambiguous of 'a * 'a list | `Not_found ]) result
 
 val lookup_by_name : 'a scope -> string -> t -> 'a maybe_ambiguous
 (** Lookup an element in Env depending on the given [scope]. Return

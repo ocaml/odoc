@@ -1,7 +1,6 @@
 open Odoc_utils
-open Astring
+open ResultMonad
 open Odoc_json_index
-open Or_error
 open Odoc_model
 
 module H = Odoc_model.Paths.Identifier.Hashtbl.Any

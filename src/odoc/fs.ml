@@ -16,7 +16,6 @@
 
 open Odoc_utils
 open StdLabels
-open Or_error
 
 type directory = Fpath.t
 
@@ -51,23 +50,22 @@ module File = struct
 
   let create ~directory ~name =
     match Fpath.of_string name with
-    | Result.Error (`Msg e) -> invalid_arg ("Odoc.Fs.File.create: " ^ e)
-    | Result.Ok psuf -> Fpath.(normalize @@ (directory // psuf))
+    | Error (`Msg e) -> invalid_arg ("Odoc.Fs.File.create: " ^ e)
+    | Ok psuf -> Fpath.(normalize @@ (directory // psuf))
 
   let to_string = Fpath.to_string
-  let segs = Fpath.segs
 
   let of_string s =
     match Fpath.of_string s with
-    | Result.Error (`Msg e) -> invalid_arg ("Odoc.Fs.File.of_string: " ^ e)
-    | Result.Ok p -> p
+    | Error (`Msg e) -> invalid_arg ("Odoc.Fs.File.of_string: " ^ e)
+    | Ok p -> p
 
   let read file =
     let input_one_shot len ic =
       let buf = Bytes.create len in
       really_input ic buf 0 len;
       close_in ic;
-      Result.Ok (Bytes.unsafe_to_string buf)
+      Ok (Bytes.unsafe_to_string buf)
     in
     let input_stream file ic =
       let bsize =
@@ -78,9 +76,9 @@ module File = struct
       let rec loop () =
         match Buffer.add_channel buf ic bsize with
         | () -> loop ()
-        | exception End_of_file -> Result.Ok (Buffer.contents buf)
+        | exception End_of_file -> Ok (Buffer.contents buf)
         | exception Failure _ ->
-            Result.Error (`Msg (Printf.sprintf "%s: input too large" file))
+            Error (`Msg (Printf.sprintf "%s: input too large" file))
       in
       loop ()
     in
@@ -95,8 +93,8 @@ module File = struct
       | len when len <= Sys.max_string_length -> input_one_shot len ic
       | len ->
           let err = Printf.sprintf "%s: file too large (%d bytes)" file len in
-          Result.Error (`Msg err)
-    with Sys_error e -> Result.Error (`Msg e)
+          Error (`Msg err)
+    with Sys_error e -> Error (`Msg e)
 
   let copy ~src ~dst =
     try
@@ -112,7 +110,7 @@ module File = struct
                   loop ())
               in
               Ok (loop ())))
-    with Sys_error e -> Result.Error (`Msg e)
+    with Sys_error e -> Error (`Msg e)
 
   let exists file = Sys.file_exists (Fpath.to_string file)
 
@@ -124,16 +122,6 @@ module File = struct
     | [] -> invalid_arg "Fs.File.of_segs"
     | "" :: rest -> of_segs_tl (Fpath.v "/") rest
     | first :: rest -> of_segs_tl (Fpath.v first) rest
-
-  let append_segs path segs = of_segs_tl path segs
-
-  module Table = Hashtbl.Make (struct
-    type nonrec t = t
-
-    let equal = Fpath.equal
-
-    let hash = Hashtbl.hash
-  end)
 end
 
 module Directory = struct
@@ -144,21 +132,6 @@ module Directory = struct
   let basename = Fpath.base
 
   let append = Fpath.append
-
-  let make_path p name =
-    match Fpath.of_string name with
-    | Result.Error _ as e -> e
-    | Result.Ok psuf ->
-        Result.Ok Fpath.(normalize @@ to_dir_path @@ (p // psuf))
-
-  let reach_from ~dir path =
-    match make_path dir path with
-    | Result.Error (`Msg e) -> invalid_arg ("Odoc.Fs.Directory.create: " ^ e)
-    | Result.Ok path ->
-        let pstr = Fpath.to_string path in
-        if Sys.file_exists pstr && not (Sys.is_directory pstr) then
-          invalid_arg "Odoc.Fs.Directory.create: not a directory";
-        path
 
   let contains ~parentdir f = Fpath.is_rooted ~root:parentdir f
 
@@ -172,8 +145,8 @@ module Directory = struct
 
   let of_string s =
     match Fpath.of_string s with
-    | Result.Error (`Msg e) -> invalid_arg ("Odoc.Fs.Directory.of_string: " ^ e)
-    | Result.Ok p -> Fpath.to_dir_path p
+    | Error (`Msg e) -> invalid_arg ("Odoc.Fs.Directory.of_string: " ^ e)
+    | Ok p -> Fpath.to_dir_path p
 
   let of_file f = Fpath.to_dir_path f
 
@@ -207,12 +180,4 @@ module Directory = struct
     in
     try Ok (fold_files_rec ?ext f acc d)
     with Stop_iter (`Msg _ as e) -> Error e
-
-  module Table = Hashtbl.Make (struct
-    type nonrec t = t
-
-    let equal = Fpath.equal
-
-    let hash = Hashtbl.hash
-  end)
 end

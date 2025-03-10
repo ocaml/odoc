@@ -1,5 +1,5 @@
+open Odoc_utils
 open Odoc_document
-open Or_error
 
 val render_odoc :
   resolver:Resolver.t ->
@@ -42,7 +42,7 @@ val generate_asset_odoc :
   extra_suffix:string option ->
   'a ->
   Fs.file ->
-  (unit, [> Or_error.msg ]) result
+  (unit, [> msg ]) result
 
 val targets_odoc :
   resolver:Resolver.t ->
@@ -62,4 +62,4 @@ val targets_source_odoc :
   extra:'a ->
   source_file:Fpath.t ->
   Fs.file ->
-  (unit, [> Or_error.msg ]) result
+  (unit, [> msg ]) result

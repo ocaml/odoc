@@ -16,7 +16,7 @@ val raise_exception : t -> _
 (** Raise a {!t} as an exception. Can be caught with {!catch} or
     {!catch_errors_and_warnings}. *)
 
-val catch : (unit -> 'a) -> ('a, t) Result.result
+val catch : (unit -> 'a) -> ('a, t) result
 
 type 'a with_warnings
 
@@ -30,7 +30,7 @@ val raise_warnings : 'a with_warnings -> 'a
 val catch_warnings : (unit -> 'a) -> 'a with_warnings
 (** Catch warnings accumulated by [raise_warning]. Safe to nest. *)
 
-type 'a with_errors_and_warnings = ('a, t) Result.result with_warnings
+type 'a with_errors_and_warnings = ('a, t) result with_warnings
 (** Subtype of [with_warnings]. *)
 
 val raise_errors_and_warnings : 'a with_errors_and_warnings -> 'a
@@ -48,14 +48,14 @@ type warnings_options = {
 val handle_warnings :
   warnings_options:warnings_options ->
   'a with_warnings ->
-  ('a, [> `Msg of string ]) Result.result
+  ('a, [> `Msg of string ]) result
 (** Print warnings to stderr. If [warn_error] is [true] and there was warnings,
     returns an [Error]. *)
 
 val handle_errors_and_warnings :
   warnings_options:warnings_options ->
   'a with_errors_and_warnings ->
-  ('a, [> `Msg of string ]) Result.result
+  ('a, [> `Msg of string ]) result
 (** Like [handle_warnings] but works on the output of
     [catch_errors_and_warnings]. Error case is converted into a [`Msg]. *)
 

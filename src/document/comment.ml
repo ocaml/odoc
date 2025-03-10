@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Odoc_utils
 open Types
 module Comment = Odoc_model.Comment
 open Odoc_model.Names
@@ -67,7 +68,7 @@ module Reference = struct
       | `TAbsolutePath -> "/"
       | `TCurrentPackage -> "//"
     in
-    tag ^ String.concat "/" cs
+    tag ^ String.concat ~sep:"/" cs
 
   let rec render_unresolved : Reference.t -> string =
     let open Reference in
@@ -412,11 +413,11 @@ let synopsis ~decl_doc ~expansion_doc =
   match Comment.synopsis docs with Some p -> [ paragraph p ] | None -> []
 
 let standalone docs =
-  Utils.flatmap ~f:item_element
+  List.concat_map item_element
   @@ List.map (fun x -> x.Odoc_model.Location_.value) docs
 
 let to_ir (docs : Comment.elements) =
-  Utils.flatmap ~f:block_element
+  List.concat_map block_element
   @@ List.map (fun x -> x.Odoc_model.Location_.value) docs
 
 let has_doc docs = docs <> []

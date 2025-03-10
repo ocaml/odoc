@@ -15,8 +15,8 @@
  *)
 
 open Odoc_utils
+open ResultMonad
 open Odoc_model
-open Or_error
 
 type unit_content = Lang.Compilation_unit.t
 

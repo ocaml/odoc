@@ -20,21 +20,21 @@ type tag_payload = Comment.nestable_block_element Location_.with_location list
 val parse_children_order :
   Location_.span ->
   tag_payload ->
-  (line Location_.with_location, Error.t) Result.result
+  (line Location_.with_location, Error.t) result
 
 val parse_short_title :
   Location_.span ->
   tag_payload ->
-  (line Location_.with_location, Error.t) Result.result
+  (line Location_.with_location, Error.t) result
 
 val parse_toc_status :
   Location_.span ->
   tag_payload ->
-  (line Location_.with_location, Error.t) Result.result
+  (line Location_.with_location, Error.t) result
 
 val parse_order_category :
   Location_.span ->
   tag_payload ->
-  (line Location_.with_location, Error.t) Result.result
+  (line Location_.with_location, Error.t) result
 
 val of_lines : line Location_.with_location list -> t Error.with_warnings
