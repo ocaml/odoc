@@ -29,7 +29,7 @@ synopsis: "Meta package defining dependencies for the benchmark rule. Not releas
 
 depends: [
   "astring"
-  "cmdliner" {>= "1.0.0"}
+  "cmdliner" {>= "1.3.0"}
   "cppo" {build & >= "1.1.0"}
   "dune" {>= "3.7.0"}
   "fpath"
