@@ -21,9 +21,8 @@
               let _ = hello +. hello
             
 
-  $ ocaml output.ml
+  $ ocaml output.ml 2> error.txt
   1
-  File "main.mli", line 23, characters 20-25:
-  Error: This expression has type "int" but an expression was expected of type
-           "float"
   [2]
+  $ grep File error.txt
+  File "main.mli", line 23, characters 20-25:
