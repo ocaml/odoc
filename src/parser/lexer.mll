@@ -717,13 +717,27 @@ and code_block_metadata_tail input acc = parse
       code_block_metadata_tail input acc lexbuf
     }
  | (space_char+ as prefix)
- (('"' (tag_quoted_atom as key) '"' |
-        (tag_unquoted_atom as key)) '=' (('"' (tag_quoted_atom as value) '"') |
-                                        (tag_unquoted_atom as value)
-  ))
-    {
-      let adjust_start_by = prefix in
-      let binding = `Binding (unescape_word key, unescape_word value) in
+      ((('"' (tag_quoted_atom as key) '"' as full_key) |
+          ((tag_unquoted_atom as key) as full_key))
+                          '='
+         ((('"' (tag_quoted_atom as value) '"') as full_value) |
+            ((tag_unquoted_atom as value) as full_value)))
+      {
+      let key =
+        let adjust_start_by = prefix in
+        let adjust_end_by = "=" ^ full_value in
+        let key = unescape_word key in
+        with_location_adjustments
+          ~adjust_start_by ~adjust_end_by
+          (fun _ -> Loc.at) input key
+      in
+      let value =
+        let adjust_start_by = prefix ^ full_key ^ "=" in
+        let value = unescape_word value in
+        with_location_adjustments ~adjust_start_by
+          (fun _ -> Loc.at) input value
+      in
+      let binding = `Binding (key, value) in
       let binding =
        let adjust_start_by = prefix in
         with_location_adjustments ~adjust_start_by (fun _ -> Loc.at) input binding
