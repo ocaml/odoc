@@ -11,6 +11,7 @@ loader/lookup_def.ml
 loader/lookup_def.mli
 syntax_highlighter/syntax_highlighter.ml
 model/*.cppo.ml
+odoc/*.cppo.ml
 html_support_files/*.ml
 xref2/shape_tools.*
 odoc/classify.cppo.ml
