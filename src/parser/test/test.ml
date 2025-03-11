@@ -71,6 +71,7 @@ module Ast_to_sexp = struct
         List [ str u; List (List.map (at.at (inline_element at)) es) ]
 
   let code_block_tags at tags =
+    let tags = Loc.value tags in
     let code_block_tag t =
       match t.Loc.value with
       | `Tag s -> Atom s
@@ -79,7 +80,7 @@ module Ast_to_sexp = struct
     List (List.map (at.at code_block_tag) tags)
 
   let code_block_lang at { Ast.language; tags } =
-    List [ at.at str_at language; opt (code_block_tags at) tags ]
+    List [ at.at str_at language; opt (at.at (code_block_tags at)) tags ]
 
   let media_href =
    fun v ->
@@ -3021,10 +3022,11 @@ let%expect_test _ =
           (((f.ml (1 0) (1 46))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((((f.ml (1 8) (1 14))
-                 (((f.ml (1 8) (1 11)) env) ((f.ml (1 12) (1 14)) f1)))
-                ((f.ml (1 15) (1 28))
-                 (((f.ml (1 15) (1 23)) version>) ((f.ml (1 24) (1 28)) 4.06))))))
+              (((f.ml (1 7) (1 29))
+                (((f.ml (1 8) (1 14))
+                  (((f.ml (1 8) (1 11)) env) ((f.ml (1 12) (1 14)) f1)))
+                 ((f.ml (1 15) (1 28))
+                  (((f.ml (1 15) (1 23)) version>) ((f.ml (1 24) (1 28)) 4.06)))))))
              ((f.ml (1 30) (1 44)) "code goes here")))))
          (warnings ())) |}]
 
@@ -3048,10 +3050,11 @@ let%expect_test _ =
           (((f.ml (1 0) (1 61))
             (code_block
              (((f.ml (1 7) (1 12)) ocaml)
-              ((((f.ml (1 13) (1 19))
-                 (((f.ml (1 13) (1 16)) env) ((f.ml (1 17) (1 19)) f1)))
-                ((f.ml (1 20) (1 33))
-                 (((f.ml (1 20) (1 28)) version>) ((f.ml (1 29) (1 33)) 4.06))))))
+              (((f.ml (1 12) (1 34))
+                (((f.ml (1 13) (1 19))
+                  (((f.ml (1 13) (1 16)) env) ((f.ml (1 17) (1 19)) f1)))
+                 ((f.ml (1 20) (1 33))
+                  (((f.ml (1 20) (1 28)) version>) ((f.ml (1 29) (1 33)) 4.06)))))))
              ((f.ml (1 35) (1 38)) foo)
              ((paragraph
                (((f.ml (1 45) (1 51)) (word output)) ((f.ml (1 51) (1 52)) space)
@@ -3164,8 +3167,9 @@ let%expect_test _ =
           (((f.ml (1 0) (2 9))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((((f.ml (1 8) (1 21))
-                 (((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel))))))
+              (((f.ml (1 7) (2 0))
+                (((f.ml (1 8) (1 21))
+                  (((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel)))))))
              ((f.ml (2 1) (2 7)) " code ")))))
          (warnings ()))
         |}]
@@ -3178,8 +3182,9 @@ let%expect_test _ =
           (((f.ml (1 0) (1 31))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((((f.ml (1 8) (1 21))
-                 (((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel))))))
+              (((f.ml (1 7) (1 22))
+                (((f.ml (1 8) (1 21))
+                  (((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel)))))))
              ((f.ml (1 23) (1 29)) " code ")))))
          (warnings ()))
         |}]
@@ -3192,8 +3197,9 @@ let%expect_test _ =
           (((f.ml (1 0) (2 11))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((((f.ml (1 8) (1 21))
-                 (((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel))))))
+              (((f.ml (1 7) (2 2))
+                (((f.ml (1 8) (1 21))
+                  (((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel)))))))
              ((f.ml (2 3) (2 9)) " code ")))))
          (warnings ()))
         |}]
@@ -3206,10 +3212,11 @@ let%expect_test _ =
           (((f.ml (1 0) (2 15))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((((f.ml (1 8) (1 21))
-                 (((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel)))
-                ((f.ml (2 0) (2 6))
-                 (((f.ml (2 0) (2 3)) env) ((f.ml (2 4) (2 6)) e1))))))
+              (((f.ml (1 7) (2 6))
+                (((f.ml (1 8) (1 21))
+                  (((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel)))
+                 ((f.ml (2 0) (2 6))
+                  (((f.ml (2 0) (2 3)) env) ((f.ml (2 4) (2 6)) e1)))))))
              ((f.ml (2 7) (2 13)) " code ")))))
          (warnings ()))
         |}]
@@ -3222,8 +3229,9 @@ let%expect_test _ =
           (((f.ml (1 0) (2 22))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((((f.ml (2 0) (2 13))
-                 (((f.ml (2 0) (2 4)) kind) ((f.ml (2 5) (2 13)) toplevel))))))
+              (((f.ml (1 7) (2 13))
+                (((f.ml (2 0) (2 13))
+                  (((f.ml (2 0) (2 4)) kind) ((f.ml (2 5) (2 13)) toplevel)))))))
              ((f.ml (2 14) (2 20)) " code ")))))
          (warnings ()))
         |}]
@@ -3439,19 +3447,20 @@ let%expect_test _ =
           (((f.ml (1 0) (1 137))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((((f.ml (1 8) (1 14))
-                 (((f.ml (1 8) (1 11)) env) ((f.ml (1 12) (1 14)) f1)))
-                ((f.ml (1 15) (1 27))
-                 (((f.ml (1 15) (1 22)) version) ((f.ml (1 23) (1 27)) 4.06)))
-                ((f.ml (1 28) (1 52)) "tag with several words")
-                ((f.ml (1 53) (1 78))
-                 (((f.ml (1 53) (1 67)) "binding with")
-                  ((f.ml (1 68) (1 78)) singleword)))
-                ((f.ml (1 79) (1 96))
-                 (((f.ml (1 79) (1 83)) also) ((f.ml (1 84) (1 96)) "other case")))
-                ((f.ml (1 97) (1 130))
-                 (((f.ml (1 97) (1 113)) "everything has")
-                  ((f.ml (1 114) (1 130)) "multiple words"))))))
+              (((f.ml (1 7) (1 131))
+                (((f.ml (1 8) (1 14))
+                  (((f.ml (1 8) (1 11)) env) ((f.ml (1 12) (1 14)) f1)))
+                 ((f.ml (1 15) (1 27))
+                  (((f.ml (1 15) (1 22)) version) ((f.ml (1 23) (1 27)) 4.06)))
+                 ((f.ml (1 28) (1 52)) "tag with several words")
+                 ((f.ml (1 53) (1 78))
+                  (((f.ml (1 53) (1 67)) "binding with")
+                   ((f.ml (1 68) (1 78)) singleword)))
+                 ((f.ml (1 79) (1 96))
+                  (((f.ml (1 79) (1 83)) also) ((f.ml (1 84) (1 96)) "other case")))
+                 ((f.ml (1 97) (1 130))
+                  (((f.ml (1 97) (1 113)) "everything has")
+                   ((f.ml (1 114) (1 130)) "multiple words")))))))
              ((f.ml (1 132) (1 135)) foo)))))
          (warnings ())) |}]
 
@@ -3472,20 +3481,21 @@ let%expect_test _ =
           (((f.ml (1 0) (9 15))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((((f.ml (2 9) (2 15))
-                 (((f.ml (2 9) (2 12)) env) ((f.ml (2 13) (2 15)) f1)))
-                ((f.ml (3 9) (3 21))
-                 (((f.ml (3 9) (3 16)) version) ((f.ml (3 17) (3 21)) 4.06)))
-                ((f.ml (4 9) (4 19)) single_tag)
-                ((f.ml (5 9) (5 33)) "tag with several words")
-                ((f.ml (6 9) (6 34))
-                 (((f.ml (6 9) (6 23)) "binding with")
-                  ((f.ml (6 24) (6 34)) singleword)))
-                ((f.ml (7 9) (7 26))
-                 (((f.ml (7 9) (7 13)) also) ((f.ml (7 14) (7 26)) "other case")))
-                ((f.ml (8 9) (8 42))
-                 (((f.ml (8 9) (8 25)) "everything has")
-                  ((f.ml (8 26) (8 42)) "multiple words"))))))
+              (((f.ml (1 7) (9 9))
+                (((f.ml (2 9) (2 15))
+                  (((f.ml (2 9) (2 12)) env) ((f.ml (2 13) (2 15)) f1)))
+                 ((f.ml (3 9) (3 21))
+                  (((f.ml (3 9) (3 16)) version) ((f.ml (3 17) (3 21)) 4.06)))
+                 ((f.ml (4 9) (4 19)) single_tag)
+                 ((f.ml (5 9) (5 33)) "tag with several words")
+                 ((f.ml (6 9) (6 34))
+                  (((f.ml (6 9) (6 23)) "binding with")
+                   ((f.ml (6 24) (6 34)) singleword)))
+                 ((f.ml (7 9) (7 26))
+                  (((f.ml (7 9) (7 13)) also) ((f.ml (7 14) (7 26)) "other case")))
+                 ((f.ml (8 9) (8 42))
+                  (((f.ml (8 9) (8 25)) "everything has")
+                   ((f.ml (8 26) (8 42)) "multiple words")))))))
              ((f.ml (9 10) (9 13)) foo)))))
          (warnings ())) |}]
 
@@ -3497,8 +3507,9 @@ let%expect_test _ =
           (((f.ml (1 0) (1 24))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((((f.ml (1 8) (1 17))
-                 (((f.ml (1 8) (1 12)) "\"") ((f.ml (1 13) (1 17)) "\""))))))
+              (((f.ml (1 7) (1 18))
+                (((f.ml (1 8) (1 17))
+                  (((f.ml (1 8) (1 12)) "\"") ((f.ml (1 13) (1 17)) "\"")))))))
              ((f.ml (1 19) (1 22)) foo)))))
          (warnings ())) |}]
 

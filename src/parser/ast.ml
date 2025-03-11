@@ -43,7 +43,7 @@ type code_block_tags = code_block_tag with_location list
 
 type code_block_meta = {
   language : string with_location;
-  tags : code_block_tags (* with_location *) option;
+  tags : code_block_tags with_location option;
 }
 
 type media = Token.media
