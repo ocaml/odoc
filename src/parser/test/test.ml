@@ -71,15 +71,15 @@ module Ast_to_sexp = struct
         List [ str u; List (List.map (at.at (inline_element at)) es) ]
 
   let code_block_tags at tags =
-    List
-      (List.map
-         (function
-           | `Tag s -> Atom s
-           | `Binding (key, value) -> List [ Atom key; Atom value ])
-         tags)
+    let code_block_tag t =
+      match t.Loc.value with
+      | `Tag s -> Atom s
+      | `Binding (key, value) -> List [ Atom key; Atom value ]
+    in
+    List (List.map (at.at code_block_tag) tags)
 
   let code_block_lang at { Ast.language; tags } =
-    List [ at.at str_at language; opt (code_block_tags str_at) tags ]
+    List [ at.at str_at language; opt (code_block_tags at) tags ]
 
   let media_href =
    fun v ->
@@ -3019,7 +3019,10 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 46))
-            (code_block (((f.ml (1 2) (1 7)) ocaml) (((env f1) (version> 4.06))))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml)
+              ((((f.ml (1 8) (1 14)) (env f1))
+                ((f.ml (1 15) (1 28)) (version> 4.06)))))
              ((f.ml (1 30) (1 44)) "code goes here")))))
          (warnings ())) |}]
 
@@ -3041,7 +3044,10 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 61))
-            (code_block (((f.ml (1 7) (1 12)) ocaml) (((env f1) (version> 4.06))))
+            (code_block
+             (((f.ml (1 7) (1 12)) ocaml)
+              ((((f.ml (1 13) (1 19)) (env f1))
+                ((f.ml (1 20) (1 33)) (version> 4.06)))))
              ((f.ml (1 35) (1 38)) foo)
              ((paragraph
                (((f.ml (1 45) (1 51)) (word output)) ((f.ml (1 51) (1 52)) space)
@@ -3152,7 +3158,8 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 9))
-            (code_block (((f.ml (1 2) (1 7)) ocaml) (((kind toplevel))))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml) ((((f.ml (1 8) (1 21)) (kind toplevel)))))
              ((f.ml (2 1) (2 7)) " code ")))))
          (warnings ()))
         |}]
@@ -3163,7 +3170,8 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 31))
-            (code_block (((f.ml (1 2) (1 7)) ocaml) (((kind toplevel))))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml) ((((f.ml (1 8) (1 21)) (kind toplevel)))))
              ((f.ml (1 23) (1 29)) " code ")))))
          (warnings ()))
         |}]
@@ -3174,7 +3182,8 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 11))
-            (code_block (((f.ml (1 2) (1 7)) ocaml) (((kind toplevel))))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml) ((((f.ml (1 8) (1 21)) (kind toplevel)))))
              ((f.ml (2 3) (2 9)) " code ")))))
          (warnings ()))
         |}]
@@ -3185,7 +3194,9 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 15))
-            (code_block (((f.ml (1 2) (1 7)) ocaml) (((kind toplevel) (env e1))))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml)
+              ((((f.ml (1 8) (1 21)) (kind toplevel)) ((f.ml (2 0) (2 6)) (env e1)))))
              ((f.ml (2 7) (2 13)) " code ")))))
          (warnings ()))
         |}]
@@ -3196,7 +3207,8 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 22))
-            (code_block (((f.ml (1 2) (1 7)) ocaml) (((kind toplevel))))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml) ((((f.ml (2 0) (2 13)) (kind toplevel)))))
              ((f.ml (2 14) (2 20)) " code ")))))
          (warnings ()))
         |}]
@@ -3412,9 +3424,11 @@ let%expect_test _ =
           (((f.ml (1 0) (1 137))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              (((env f1) (version 4.06) "tag with several words"
-                ("binding with" singleword) (also "other case")
-                ("everything has" "multiple words"))))
+              ((((f.ml (1 8) (1 14)) (env f1)) ((f.ml (1 15) (1 27)) (version 4.06))
+                ((f.ml (1 28) (1 52)) "tag with several words")
+                ((f.ml (1 53) (1 78)) ("binding with" singleword))
+                ((f.ml (1 79) (1 96)) (also "other case"))
+                ((f.ml (1 97) (1 130)) ("everything has" "multiple words")))))
              ((f.ml (1 132) (1 135)) foo)))))
          (warnings ())) |}]
 
@@ -3423,6 +3437,7 @@ let%expect_test _ =
         {|{@ocaml
          env=f1
          version=4.06
+         single_tag
          "tag with several words"
          "binding with"=singleword
          also="other case"
@@ -3431,13 +3446,16 @@ let%expect_test _ =
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (8 15))
+          (((f.ml (1 0) (9 15))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              (((env f1) (version 4.06) "tag with several words"
-                ("binding with" singleword) (also "other case")
-                ("everything has" "multiple words"))))
-             ((f.ml (8 10) (8 13)) foo)))))
+              ((((f.ml (2 9) (2 15)) (env f1)) ((f.ml (3 9) (3 21)) (version 4.06))
+                ((f.ml (4 9) (4 19)) single_tag)
+                ((f.ml (5 9) (5 33)) "tag with several words")
+                ((f.ml (6 9) (6 34)) ("binding with" singleword))
+                ((f.ml (7 9) (7 26)) (also "other case"))
+                ((f.ml (8 9) (8 42)) ("everything has" "multiple words")))))
+             ((f.ml (9 10) (9 13)) foo)))))
          (warnings ())) |}]
 
     let escaping1 =
@@ -3446,7 +3464,8 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 24))
-            (code_block (((f.ml (1 2) (1 7)) ocaml) ((("\"" "\""))))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml) ((((f.ml (1 8) (1 17)) ("\"" "\"")))))
              ((f.ml (1 19) (1 22)) foo)))))
          (warnings ())) |}]
 

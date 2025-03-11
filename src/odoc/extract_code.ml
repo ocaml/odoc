@@ -4,7 +4,9 @@ open Odoc_parser
 let tags_included_in_names names tags =
   List.exists
     (function
-      | `Binding ("name", n) when List.exists (String.equal n) names -> true
+      | { Loc.value = `Binding ("name", n) }
+        when List.exists (String.equal n) names ->
+          true
       | _ -> false)
     tags
 

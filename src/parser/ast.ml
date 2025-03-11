@@ -40,7 +40,7 @@ type code_block_tag =
   [ `Tag of string
   | `Binding of string (* with_location *) * string (* with_location *) ]
 
-type code_block_tags = code_block_tag (* with_location *) list
+type code_block_tags = code_block_tag with_location list
 
 type code_block_meta = {
   language : string with_location;

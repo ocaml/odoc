@@ -48,7 +48,7 @@ type code_block_tag =
   | `Binding of string (* Loc.with_location *) * string (* Loc.with_location *)
   ]
 
-type code_block_tags = code_block_tag (* Loc.with_location *) list
+type code_block_tags = code_block_tag Loc.with_location list
 
 type t =
   [ (* End of input. *)
