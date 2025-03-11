@@ -188,13 +188,30 @@ let iterator line_directives oc names =
     module_expr;
   }
 
-let load_cmti line_directives oc names input =
-  let cmt_info = Cmt_format.read_cmt input in
-  match cmt_info.cmt_annots with
-  | Interface intf ->
-      let iterator = iterator line_directives oc names in
-      iterator.signature iterator intf
-  | _ -> failwith "TODO"
+let load_cmti line_directives oc names input ~warnings_options =
+  try
+    let res =
+      Odoc_loader.wrap_errors ~filename:input @@ fun () ->
+      let cmt_info = Cmt_format.read_cmt input in
+      match cmt_info.cmt_annots with
+      | Interface intf ->
+          let iterator = iterator line_directives oc names in
+          iterator.signature iterator intf;
+          Ok ()
+      | _ ->
+          Error
+            (`Msg (Format.sprintf "Provided file %s is not an interface" input))
+    in
+    Odoc_model.Error.handle_errors_and_warnings ~warnings_options res
+    |> Result.join
+  with exn ->
+    Error
+      (`Msg
+         (Format.sprintf
+            "Error while unmarshalling input file %s:\n\
+             %s\n\
+             Check that the input file is a valid cmti file"
+            input (Printexc.to_string exn)))
 
 let load_mld line_directives oc names input =
   let location =
@@ -203,14 +220,16 @@ let load_mld line_directives oc names input =
   let c = Io_utils.read_lines input |> String.concat ~sep:"\n" in
   let parsed = parse_comment ~location ~text:c in
   let ast = ast parsed in
-  List.iter (block_element line_directives oc names) ast
+  List.iter (block_element line_directives oc names) ast;
+  Ok ()
 
-let extract ~dst ~input ~names ~line_directives =
-  let loader =
+let extract ~dst ~input ~names ~line_directives ~warnings_options =
+  let ( let* ) = Result.bind in
+  let* loader =
     match input |> Fpath.v |> Fpath.get_ext with
-    | ".mld" -> load_mld
-    | ".cmti" -> load_cmti
-    | _ -> failwith "TODO"
+    | ".mld" -> Ok load_mld
+    | ".cmti" -> Ok (load_cmti ~warnings_options)
+    | _ -> Error (`Msg "Input must have either mld or cmti as extension")
   in
   match dst with
   | None -> loader line_directives stdout names input
