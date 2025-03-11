@@ -89,8 +89,7 @@ type t =
   | media_markup
   | (* Leaf block element markup. *)
     `Code_block of
-    (string Loc.with_location * code_block_tags (* Loc.with_location *) option)
-    option
+    (string Loc.with_location * code_block_tags Loc.with_location option) option
     * string
     * string Loc.with_location
     * bool
