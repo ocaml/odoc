@@ -365,7 +365,7 @@ and token input = parse
         code_block allow_result_block start_offset content_offset metadata
           prefix delim input lexbuf
       in
-      match code_block_metadata_tail [] lexbuf with
+      match code_block_metadata_tail input [] lexbuf with
       | `Ok metadata -> code_block_with_metadata metadata
       | `Eof ->
           warning input ~start_offset Parse_error.truncated_code_block_meta;
@@ -699,25 +699,37 @@ and bad_markup_recovery start_offset input = parse
         (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
       emit input (`Code_span text) ~start_offset}
 
-and code_block_metadata_tail acc = parse
+and code_block_metadata_tail input acc = parse
  | (space_char* '[') {
    match acc with [] -> `Ok None | _ ->
    `Ok (Some (List.rev acc))
  }
- | (space_char+) (('"' (tag_quoted_atom as value) '"')
-                  | (tag_unquoted_atom as value))
-    {
-      let acc = `Tag (unescape_word value) :: acc in
-      code_block_metadata_tail acc lexbuf
+ | (space_char+ as prefix)
+       (('"' (tag_quoted_atom as value) '"')
+         | (tag_unquoted_atom as value))
+   {
+     let value = `Tag (unescape_word value) in
+     let tag =
+       let adjust_start_by = prefix in
+        with_location_adjustments ~adjust_start_by (fun _ -> Loc.at) input value
+      in
+      let acc = tag :: acc in
+      code_block_metadata_tail input acc lexbuf
     }
- | (space_char+)
-  (('"' (tag_quoted_atom as key) '"' |
+ | (space_char+ as prefix)
+ (('"' (tag_quoted_atom as key) '"' |
         (tag_unquoted_atom as key)) '=' (('"' (tag_quoted_atom as value) '"') |
                                         (tag_unquoted_atom as value)
   ))
     {
-      let acc = `Binding (unescape_word key, unescape_word value) :: acc in
-      code_block_metadata_tail acc lexbuf
+      let adjust_start_by = prefix in
+      let binding = `Binding (unescape_word key, unescape_word value) in
+      let binding =
+       let adjust_start_by = prefix in
+        with_location_adjustments ~adjust_start_by (fun _ -> Loc.at) input binding
+      in
+      let acc = binding :: acc in
+      code_block_metadata_tail input acc lexbuf
     }
   | _ as c
     { `Invalid_char c }
