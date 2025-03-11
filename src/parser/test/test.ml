@@ -70,8 +70,16 @@ module Ast_to_sexp = struct
     | `Link (u, es) ->
         List [ str u; List (List.map (at.at (inline_element at)) es) ]
 
+  let code_block_tags at tags =
+    List
+      (List.map
+         (function
+           | `Tag s -> Atom s
+           | `Binding (key, value) -> List [ Atom key; Atom value ])
+         tags)
+
   let code_block_lang at { Ast.language; tags } =
-    List [ at.at str_at language; opt (at.at str_at) tags ]
+    List [ at.at str_at language; opt (code_block_tags str_at) tags ]
 
   let media_href =
    fun v ->
@@ -3011,9 +3019,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 46))
-            (code_block
-             (((f.ml (1 2) (1 7)) ocaml)
-              (((f.ml (1 8) (1 28)) "env=f1 version>=4.06")))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) (((env f1) (version> 4.06))))
              ((f.ml (1 30) (1 44)) "code goes here")))))
          (warnings ())) |}]
 
@@ -3035,9 +3041,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 61))
-            (code_block
-             (((f.ml (1 7) (1 12)) ocaml)
-              (((f.ml (1 13) (1 33)) "env=f1 version>=4.06")))
+            (code_block (((f.ml (1 7) (1 12)) ocaml) (((env f1) (version> 4.06))))
              ((f.ml (1 35) (1 38)) foo)
              ((paragraph
                (((f.ml (1 45) (1 51)) (word output)) ((f.ml (1 51) (1 52)) space)
@@ -3148,8 +3152,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 9))
-            (code_block
-             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) (((kind toplevel))))
              ((f.ml (2 1) (2 7)) " code ")))))
          (warnings ()))
         |}]
@@ -3160,8 +3163,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 31))
-            (code_block
-             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) (((kind toplevel))))
              ((f.ml (1 23) (1 29)) " code ")))))
          (warnings ()))
         |}]
@@ -3172,8 +3174,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 11))
-            (code_block
-             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (1 8) (1 21)) kind=toplevel)))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) (((kind toplevel))))
              ((f.ml (2 3) (2 9)) " code ")))))
          (warnings ()))
         |}]
@@ -3184,10 +3185,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 15))
-            (code_block
-             (((f.ml (1 2) (1 7)) ocaml)
-              (((f.ml (1 8) (2 6))  "kind=toplevel\
-                                   \nenv=e1")))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) (((kind toplevel) (env e1))))
              ((f.ml (2 7) (2 13)) " code ")))))
          (warnings ()))
         |}]
@@ -3198,8 +3196,7 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (2 22))
-            (code_block
-             (((f.ml (1 2) (1 7)) ocaml) (((f.ml (2 0) (2 13)) kind=toplevel)))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) (((kind toplevel))))
              ((f.ml (2 14) (2 20)) " code ")))))
          (warnings ()))
         |}]

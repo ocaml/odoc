@@ -2,13 +2,11 @@ open Odoc_utils
 open Odoc_parser
 
 let tags_included_in_names names tags =
-  let fields = String.fields ~empty:false tags in
   List.exists
-    (fun tag ->
-      match String.cut ~sep:"=" tag with
-      | Some ("name", n) -> List.exists (String.equal n) names
+    (function
+      | `Binding ("name", n) when List.exists (String.equal n) names -> true
       | _ -> false)
-    fields
+    tags
 
 let needs_extraction names meta =
   let check_language () =
@@ -18,8 +16,7 @@ let needs_extraction names meta =
   in
   let check_name () =
     match meta with
-    | Some { Ast.tags = Some tags; _ } ->
-        tags_included_in_names names tags.Loc.value
+    | Some { Ast.tags = Some tags; _ } -> tags_included_in_names names tags
     | _ -> false
   in
   match names with [] -> check_language () | _ :: _ -> check_name ()
