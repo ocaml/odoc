@@ -1,3 +1,4 @@
+#if OCAML_VERSION >= (4,10,0)
 open Odoc_utils
 open Odoc_parser
 
@@ -236,3 +237,10 @@ let extract ~dst ~input ~names ~line_directives ~warnings_options =
   | Some dst ->
       Io_utils.with_open_out dst @@ fun oc ->
       loader line_directives oc names input
+
+#else
+
+let extract ~dst:_ ~input:_ ~names:_ ~line_directives:_ ~warnings_options:_ =
+  Error (`Msg "Extract-code is not available for OCaml < 4.10")
+
+#endif
