@@ -3398,6 +3398,70 @@ let%expect_test _ =
               \nCode blocks should be indented at the opening `{`.")))))
          (warnings ()))
         |}]
+
+    (** {3 Metadata tags}
+
+        Code blocks have a metadata field, with bindings and simple tags. *)
+
+    let lots_of_tags =
+      test
+        {|{@ocaml env=f1 version=4.06 "tag with several words" "binding with"=singleword also="other case" "everything has"="multiple words" [foo]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 137))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml)
+              (((env f1) (version 4.06) "tag with several words"
+                ("binding with" singleword) (also "other case")
+                ("everything has" "multiple words"))))
+             ((f.ml (1 132) (1 135)) foo)))))
+         (warnings ())) |}]
+
+    let lots_of_tags_with_newlines =
+      test
+        {|{@ocaml
+         env=f1
+         version=4.06
+         "tag with several words"
+         "binding with"=singleword
+         also="other case"
+         "everything has"="multiple words"
+         [foo]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (8 15))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml)
+              (((env f1) (version 4.06) "tag with several words"
+                ("binding with" singleword) (also "other case")
+                ("everything has" "multiple words"))))
+             ((f.ml (8 10) (8 13)) foo)))))
+         (warnings ())) |}]
+
+    let escaping1 =
+      test {|{@ocaml "\""="\"" [foo]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 24))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) ((("\"" "\""))))
+             ((f.ml (1 19) (1 22)) foo)))))
+         (warnings ())) |}]
+
+    let escaping2 =
+      test {|{@ocaml \"=\" [foo]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 20))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+             ((f.ml (1 10) (1 18)) "=\\\" [foo")))))
+         (warnings
+          ( "File \"f.ml\", line 1, characters 0-10:\
+           \nInvalid character '\"' in language tag.\
+           \nSuggestion: try '{@ocaml[ ... ]}'."))) |}]
   end in
   ()
 
