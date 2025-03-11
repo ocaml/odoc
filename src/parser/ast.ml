@@ -36,9 +36,15 @@ type 'a row = 'a cell list
 type 'a grid = 'a row list
 type 'a abstract_table = 'a grid * alignment option list option
 
+type code_block_tag =
+  [ `Tag of string
+  | `Binding of string (* with_location *) * string (* with_location *) ]
+
+type code_block_tags = code_block_tag (* with_location *) list
+
 type code_block_meta = {
   language : string with_location;
-  tags : string with_location option;
+  tags : code_block_tags (* with_location *) option;
 }
 
 type media = Token.media
