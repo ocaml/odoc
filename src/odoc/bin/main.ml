@@ -1715,7 +1715,7 @@ module Extract_code = struct
       $ (const extract $ dst $ input $ line_directives $ names))
 
   let info ~docs =
-    Term.info "extract-code" ~docs
+    Cmd.info "extract-code" ~docs
       ~doc:
         "Extract code blocks from mld files in order to be able to execute them"
 end
