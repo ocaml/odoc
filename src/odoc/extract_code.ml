@@ -70,6 +70,7 @@ let pad_loc loc =
   { loc.Location.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 }
 
 let iterator line_directives oc names =
+  let default_iterator = Tast_iterator.default_iterator in
   let attribute _ attr =
     match Odoc_loader.parse_attribute attr with
     | None | Some (`Stop _ | `Alert _) -> ()
@@ -80,15 +81,110 @@ let iterator line_directives oc names =
         let ast = Odoc_parser.ast ast_docs in
         List.iter (block_element line_directives oc names) ast
   in
+  let attributes sub attrs = List.iter (attribute sub) attrs in
   (* For some reason, Tast_iterator.default_iterator does not recurse on
      Tsig_attribute and on attributes... *)
   let signature_item sub sig_ =
     match sig_.Typedtree.sig_desc with
     | Tsig_attribute attr -> attribute sub attr
-    | _ -> Tast_iterator.default_iterator.signature_item sub sig_
+    | Tsig_include incl -> attributes sub incl.incl_attributes
+    | Tsig_open o -> attributes sub o.open_attributes
+    | _ -> default_iterator.signature_item sub sig_
   in
-  let attributes sub attrs = List.iter (attribute sub) attrs in
-  { Tast_iterator.default_iterator with attribute; attributes; signature_item }
+  let row_field sub rf =
+    attributes sub rf.Typedtree.rf_attributes;
+    default_iterator.row_field sub rf
+  in
+  let value_description sub vd =
+    attributes sub vd.Typedtree.val_attributes;
+    default_iterator.value_description sub vd
+  in
+  let label_declaration sub lbls =
+    List.iter (fun ld -> attributes sub ld.Typedtree.ld_attributes) lbls
+  in
+  let constructor_declaration sub cd =
+    (match cd.Typedtree.cd_args with
+    | Cstr_record lds -> label_declaration sub lds
+    | _ -> ());
+    attributes sub cd.cd_attributes
+  in
+  let type_kind sub tk =
+    (match tk with
+    | Typedtree.Ttype_record lbls -> label_declaration sub lbls
+    | Ttype_variant cstrs -> List.iter (constructor_declaration sub) cstrs
+    | _ -> ());
+    default_iterator.type_kind sub tk
+  in
+  let type_declaration sub decl =
+    attributes sub decl.Typedtree.typ_attributes;
+    default_iterator.type_declaration sub decl
+  in
+  let extension_constructor sub ext =
+    attributes sub ext.Typedtree.ext_attributes;
+    default_iterator.extension_constructor sub ext
+  in
+  let class_type_field sub ctf =
+    attributes sub ctf.Typedtree.ctf_attributes;
+    (match ctf.ctf_desc with
+    | Tctf_attribute attr -> attribute sub attr
+    | _ -> ());
+    default_iterator.class_type_field sub ctf
+  in
+  let class_type_declaration sub ctd =
+    attributes sub ctd.Typedtree.ci_attributes;
+    default_iterator.class_type_declaration sub ctd
+  in
+  let class_description sub cd =
+    attributes sub cd.Typedtree.ci_attributes;
+    default_iterator.class_description sub cd
+  in
+  (* let type_exception sub exc = *)
+  (*   attributes sub ext.Typedtree.ext_attributes; *)
+  (*   default_iterator.extension_constructor sub ext *)
+  (* in *)
+  let type_extension sub ext =
+    attributes sub ext.Typedtree.tyext_attributes;
+    default_iterator.type_extension sub ext
+  in
+  let module_type_declaration sub mtd =
+    attributes sub mtd.Typedtree.mtd_attributes;
+    default_iterator.module_type_declaration sub mtd
+  in
+  let module_declaration sub md =
+    attributes sub md.Typedtree.md_attributes;
+    default_iterator.module_declaration sub md
+  in
+  let module_expr sub me =
+    attributes sub me.Typedtree.mod_attributes;
+    default_iterator.module_expr sub me
+  in
+  let module_substitution sub ms =
+    attributes sub ms.Typedtree.ms_attributes;
+    default_iterator.module_substitution sub ms
+  in
+  (* let module_type_substitution sub mtd = *)
+  (*   attributes sub mtd.Typedtree.mtd_attributes; *)
+  (*   default_iterator.module_type_substitution sub ms *)
+  (* in *)
+  {
+    default_iterator with
+    row_field
+    (* ; attribute *)
+    (* ; attributes *);
+    value_description;
+    signature_item;
+    type_kind;
+    type_declaration;
+    extension_constructor;
+    type_extension;
+    class_type_field;
+    class_type_declaration;
+    class_description;
+    module_type_declaration;
+    module_declaration;
+    module_substitution;
+    module_expr;
+  }
 
 let load_cmti line_directives oc names input =
   let cmt_info = Cmt_format.read_cmt input in
