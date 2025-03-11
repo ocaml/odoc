@@ -42,4 +42,9 @@ val read_cmi :
 
 val read_location : Location.t -> Location_.span
 
+val wrap_errors :
+  filename:string ->
+  (unit -> 'a) ->
+  'a Odoc_model.Error.with_errors_and_warnings
+
 val parse_attribute : Parsetree.attribute -> Doc_attr.parsed_attribute option
