@@ -1682,8 +1682,8 @@ module Classify = struct
 end
 
 module Extract_code = struct
-  let extract dst input line_directives names =
-    Ok (Extract_code.extract ~dst ~input ~line_directives ~names)
+  let extract dst input line_directives names warnings_options =
+    Extract_code.extract ~dst ~input ~line_directives ~names ~warnings_options
 
   let line_directives =
     let doc = "Whether to include line directives in the output file" in
@@ -1710,7 +1710,8 @@ module Extract_code = struct
   let cmd =
     Term.(
       const handle_error
-      $ (const extract $ dst $ input $ line_directives $ names))
+      $ (const extract $ dst $ input $ line_directives $ names
+       $ warnings_options))
 
   let info ~docs =
     Term.info "extract-code" ~docs
