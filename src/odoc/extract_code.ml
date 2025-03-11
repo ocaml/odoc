@@ -20,7 +20,8 @@ let needs_extraction names meta =
   in
   let check_name () =
     match meta with
-    | Some { Ast.tags = Some tags; _ } -> tags_included_in_names names tags
+    | Some { Ast.tags = Some tags; _ } ->
+        tags_included_in_names names tags.Loc.value
     | _ -> false
   in
   match names with [] -> check_language () | _ :: _ -> check_name ()

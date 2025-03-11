@@ -365,7 +365,7 @@ and token input = parse
         code_block allow_result_block start_offset content_offset metadata
           prefix delim input lexbuf
       in
-      match code_block_metadata_tail input [] lexbuf with
+      match code_block_metadata_tail None input [] lexbuf with
       | `Ok metadata -> code_block_with_metadata metadata
       | `Eof ->
           warning input ~start_offset Parse_error.truncated_code_block_meta;
@@ -699,22 +699,28 @@ and bad_markup_recovery start_offset input = parse
         (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
       emit input (`Code_span text) ~start_offset}
 
-and code_block_metadata_tail input acc = parse
+and code_block_metadata_tail start_offset input acc = parse
  | (space_char* '[') {
-   match acc with [] -> `Ok None | _ ->
-   `Ok (Some (List.rev acc))
+  match acc with [] -> `Ok None | _ ->
+    let start_offset = match start_offset with None -> Lexing.lexeme_start lexbuf | Some s -> s in
+    let res =
+      let res = List.rev acc in
+      with_location_adjustments ~start_offset ~adjust_end_by:"[" (fun _ -> Loc.at) input res
+    in
+   `Ok (Some res)
  }
  | (space_char+ as prefix)
        (('"' (tag_quoted_atom as value) '"')
          | (tag_unquoted_atom as value))
    {
+     let start_offset = match start_offset with None -> Some (Lexing.lexeme_start lexbuf) | Some _ -> start_offset in
      let value = `Tag (unescape_word value) in
      let tag =
        let adjust_start_by = prefix in
         with_location_adjustments ~adjust_start_by (fun _ -> Loc.at) input value
       in
       let acc = tag :: acc in
-      code_block_metadata_tail input acc lexbuf
+      code_block_metadata_tail start_offset input acc lexbuf
     }
  | (space_char+ as prefix)
       ((('"' (tag_quoted_atom as key) '"' as full_key) |
@@ -723,6 +729,7 @@ and code_block_metadata_tail input acc = parse
          ((('"' (tag_quoted_atom as value) '"') as full_value) |
             ((tag_unquoted_atom as value) as full_value)))
       {
+     let start_offset = match start_offset with None -> Some (Lexing.lexeme_start lexbuf) | Some _ -> start_offset in
       let key =
         let adjust_start_by = prefix in
         let adjust_end_by = "=" ^ full_value in
@@ -743,7 +750,7 @@ and code_block_metadata_tail input acc = parse
         with_location_adjustments ~adjust_start_by (fun _ -> Loc.at) input binding
       in
       let acc = binding :: acc in
-      code_block_metadata_tail input acc lexbuf
+      code_block_metadata_tail start_offset input acc lexbuf
     }
   | _ as c
     { `Invalid_char c }
