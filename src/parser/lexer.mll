@@ -16,7 +16,7 @@ let unescape_word : string -> string = fun s ->
           | '\\' ->
             if index + 1 < String.length s then
               match s.[index + 1] with
-              | '{' | '}' | '[' | ']' | '@' as c -> c, 2
+              | '{' | '}' | '[' | ']' | '@' | '"' as c -> c, 2
               | _ -> c, 1
             else c, 1
           | _ -> c, 1
@@ -707,7 +707,7 @@ and code_block_metadata_tail acc = parse
  | (space_char+) (('"' (tag_quoted_atom as value) '"')
                   | (tag_unquoted_atom as value))
     {
-      let acc = `Tag (value) :: acc in
+      let acc = `Tag (unescape_word value) :: acc in
       code_block_metadata_tail acc lexbuf
     }
  | (space_char+)
@@ -716,7 +716,7 @@ and code_block_metadata_tail acc = parse
                                         (tag_unquoted_atom as value)
   ))
     {
-      let acc = `Binding (key, value) :: acc in
+      let acc = `Binding (unescape_word key, unescape_word value) :: acc in
       code_block_metadata_tail acc lexbuf
     }
   | _ as c
