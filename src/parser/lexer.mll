@@ -203,6 +203,13 @@ let language_tag_char =
 let delim_char =
   ['a'-'z' 'A'-'Z' '0'-'9' '_' ]
 
+let tag_unquoted_char = (_ # '=' # '"' # space_char # '[')
+let tag_unquoted_atom = tag_unquoted_char+
+
+let tag_escape = '\\' '"'
+let tag_quoted_char = _ # '"'
+let tag_quoted_atom = (tag_quoted_char | tag_escape)*
+
 rule reference_paren_content input start ref_offset start_offset depth_paren
   buffer =
   parse
@@ -358,7 +365,7 @@ and token input = parse
         code_block allow_result_block start_offset content_offset metadata
           prefix delim input lexbuf
       in
-      match code_block_metadata_tail input lexbuf with
+      match code_block_metadata_tail [] lexbuf with
       | `Ok metadata -> code_block_with_metadata metadata
       | `Eof ->
           warning input ~start_offset Parse_error.truncated_code_block_meta;
@@ -692,21 +699,26 @@ and bad_markup_recovery start_offset input = parse
         (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
       emit input (`Code_span text) ~start_offset}
 
-(* The second field of the metadata.
-   This rule keeps whitespaces and newlines in the 'metadata' field except the
-   ones just before the '['. *)
-and code_block_metadata_tail input = parse
- | (space_char+ as prefix)
-   ((space_char* (_ # space_char # ['['])+)+ as meta)
-   ((space_char* '[') as suffix)
+and code_block_metadata_tail acc = parse
+ | (space_char* '[') {
+   match acc with [] -> `Ok None | _ ->
+   `Ok (Some (List.rev acc))
+ }
+ | (space_char+) (('"' (tag_quoted_atom as value) '"')
+                  | (tag_unquoted_atom as value))
     {
-      let meta =
-        with_location_adjustments ~adjust_start_by:prefix ~adjust_end_by:suffix (fun _ -> Loc.at) input meta
-      in
-      `Ok (Some meta)
+      let acc = `Tag (value) :: acc in
+      code_block_metadata_tail acc lexbuf
     }
-  | (newline | horizontal_space)* '['
-    { `Ok None }
+ | (space_char+)
+  (('"' (tag_quoted_atom as key) '"' |
+        (tag_unquoted_atom as key)) '=' (('"' (tag_quoted_atom as value) '"') |
+                                        (tag_unquoted_atom as value)
+  ))
+    {
+      let acc = `Binding (key, value) :: acc in
+      code_block_metadata_tail acc lexbuf
+    }
   | _ as c
     { `Invalid_char c }
   | eof
