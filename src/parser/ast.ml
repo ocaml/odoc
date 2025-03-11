@@ -37,8 +37,7 @@ type 'a grid = 'a row list
 type 'a abstract_table = 'a grid * alignment option list option
 
 type code_block_tag =
-  [ `Tag of string
-  | `Binding of string (* with_location *) * string (* with_location *) ]
+  [ `Tag of string | `Binding of string with_location * string with_location ]
 
 type code_block_tags = code_block_tag with_location list
 
