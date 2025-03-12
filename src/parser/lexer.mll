@@ -27,26 +27,6 @@ let unescape_word : string -> string = fun s ->
     scan_word 0;
     Buffer.contents buffer
 
-let unescape_tag s =
-  (* The common case is that there are no escape sequences. *)
-  match String.index s '\\' with
-  | exception Not_found -> s
-  | _ ->
-      let buffer = Buffer.create (String.length s) in
-      let rec scan_word index =
-        if index >= String.length s then ()
-        else
-          let c, increment =
-            match s.[index] with
-            | '\\' when index + 1 < String.length s -> (s.[index + 1], 2)
-            | _ as c -> (c, 1)
-          in
-          Buffer.add_char buffer c;
-          scan_word (index + increment)
-      in
-      scan_word 0;
-      Buffer.contents buffer
-
 type math_kind =
   Inline | Block
 
@@ -96,9 +76,45 @@ let with_location_adjustments
 let emit =
   with_location_adjustments (fun _ -> Loc.at)
 
+let warning_loc =
+  fun input location error ->
+    input.warnings := (error location) :: !(input.warnings)
+
 let warning =
-  with_location_adjustments (fun input location error ->
-    input.warnings := (error location) :: !(input.warnings))
+  with_location_adjustments warning_loc
+
+let unescape_tag s start_loc input =
+  let warn n c =
+    let start = input.offset_to_location @@ start_loc + n in
+    let end_ = input.offset_to_location @@ start_loc + n + 2 in
+    let loc =
+      {
+        Loc.file = input.file; start; end_;
+      }
+    in
+    warning_loc input loc (Parse_error.should_not_be_escaped c)
+  in
+  (* The common case is that there are no escape sequences. *)
+  match String.index s '\\' with
+  | exception Not_found -> s
+  | _ ->
+      let maybe_warn index = function '\\' | '"' -> () | _ as c -> warn index c in
+      let buffer = Buffer.create (String.length s) in
+      let rec scan_word index =
+        if index >= String.length s then ()
+        else
+          let c, increment =
+            match s.[index] with
+            | '\\' when index + 1 < String.length s ->
+                maybe_warn index s.[index + 1];
+                (s.[index + 1], 2)
+            | _ as c -> (c, 1)
+          in
+          Buffer.add_char buffer c;
+          scan_word (index + increment)
+      in
+      scan_word 0;
+      Buffer.contents buffer
 
 let reference_token media start target input lexbuf =
   match start with
@@ -730,37 +746,57 @@ and code_block_metadata_tail start_offset input acc = parse
    `Ok (Some res)
  }
  | (space_char+ as prefix)
-       (('"' (tag_quoted_atom as value) '"')
+       ((('"' as quote) (tag_quoted_atom as value) '"')
          | (tag_unquoted_atom as value))
    {
-     let start_offset = match start_offset with None -> Some (Lexing.lexeme_start lexbuf) | Some _ -> start_offset in
-     let value = `Tag (unescape_tag value) in
+     let start_offset =
+       match start_offset with
+       | None -> Some (Lexing.lexeme_start lexbuf)
+       | Some _ -> start_offset
+     in
+     let adjust_start_by = prefix in
+     let start_loc =
+       Lexing.lexeme_start input.lexbuf +
+         (String.length adjust_start_by) +
+         (match quote with Some _ -> 1 | _ -> 0)
+     in
+     let value = `Tag (unescape_tag value start_loc input) in
      let tag =
-       let adjust_start_by = prefix in
         with_location_adjustments ~adjust_start_by (fun _ -> Loc.at) input value
       in
       let acc = tag :: acc in
       code_block_metadata_tail start_offset input acc lexbuf
     }
  | (space_char+ as prefix)
-      ((('"' (tag_quoted_atom as key) '"' as full_key) |
+      (((('"' as key_quote) (tag_quoted_atom as key) '"' as full_key) |
           ((tag_unquoted_atom as key) as full_key))
                           '='
-         ((('"' (tag_quoted_atom as value) '"') as full_value) |
+         (((('"' as tag_quote) (tag_quoted_atom as value) '"') as full_value) |
             ((tag_unquoted_atom as value) as full_value)))
       {
      let start_offset = match start_offset with None -> Some (Lexing.lexeme_start lexbuf) | Some _ -> start_offset in
       let key =
         let adjust_start_by = prefix in
         let adjust_end_by = "=" ^ full_value in
-        let key = unescape_tag key in
+        let start_loc =
+          Lexing.lexeme_start input.lexbuf +
+            (String.length adjust_start_by) +
+            (match key_quote with Some _ -> 1 | _ -> 0)
+        in
+        let key = unescape_tag key start_loc input in
         with_location_adjustments
           ~adjust_start_by ~adjust_end_by
           (fun _ -> Loc.at) input key
       in
       let value =
         let adjust_start_by = prefix ^ full_key ^ "=" in
-        let value = unescape_tag value in
+        let start_loc =
+          Lexing.lexeme_start input.lexbuf +
+            (String.length adjust_start_by) +
+            (match key_quote with Some _ -> 2 | _ -> 0) +
+            (match tag_quote with Some _ -> 1 | _ -> 0)
+        in
+        let value = unescape_tag value start_loc input in
         with_location_adjustments ~adjust_start_by
           (fun _ -> Loc.at) input value
       in
