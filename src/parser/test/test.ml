@@ -3539,17 +3539,61 @@ let%expect_test _ =
          (warnings ()))
         |}]
 
-    let escaped_char_are_allowed =
-      test {|{@ocaml "\a\b\c" [foo]}|};
+    let escaped_char_are_allowed_but_warn =
+      test {|
+     {@ocaml "\a\b\c" [foo]}|};
       [%expect
         {|
         ((output
-          (((f.ml (1 0) (1 23))
+          (((f.ml (2 5) (2 28))
             (code_block
-             (((f.ml (1 2) (1 7)) ocaml)
-              (((f.ml (1 7) (1 17)) (((f.ml (1 8) (1 16)) abc)))))
-             ((f.ml (1 18) (1 21)) foo)))))
-         (warnings ()))
+             (((f.ml (2 7) (2 12)) ocaml)
+              (((f.ml (2 12) (2 22)) (((f.ml (2 13) (2 21)) abc)))))
+             ((f.ml (2 23) (2 26)) foo)))))
+         (warnings
+          ( "File \"f.ml\", line 2, characters 14-16:\
+           \nThe 'a' character should not be escaped.\
+           \nSuggestion: Remove \\."
+            "File \"f.ml\", line 2, characters 16-18:\
+           \nThe 'b' character should not be escaped.\
+           \nSuggestion: Remove \\."
+            "File \"f.ml\", line 2, characters 18-20:\
+           \nThe 'c' character should not be escaped.\
+           \nSuggestion: Remove \\.")))
+        |}]
+
+    let escaped_char_are_allowed_but_warn2 =
+      test {|
+     {@ocaml "\a\b\c"="\x\y\z" [foo]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (2 5) (2 37))
+            (code_block
+             (((f.ml (2 7) (2 12)) ocaml)
+              (((f.ml (2 12) (2 31))
+                (((f.ml (2 13) (2 30))
+                  (((f.ml (2 13) (2 21)) abc) ((f.ml (2 22) (2 30)) xyz)))))))
+             ((f.ml (2 32) (2 35)) foo)))))
+         (warnings
+          ( "File \"f.ml\", line 2, characters 14-16:\
+           \nThe 'a' character should not be escaped.\
+           \nSuggestion: Remove \\."
+            "File \"f.ml\", line 2, characters 16-18:\
+           \nThe 'b' character should not be escaped.\
+           \nSuggestion: Remove \\."
+            "File \"f.ml\", line 2, characters 18-20:\
+           \nThe 'c' character should not be escaped.\
+           \nSuggestion: Remove \\."
+            "File \"f.ml\", line 2, characters 25-27:\
+           \nThe 'x' character should not be escaped.\
+           \nSuggestion: Remove \\."
+            "File \"f.ml\", line 2, characters 27-29:\
+           \nThe 'y' character should not be escaped.\
+           \nSuggestion: Remove \\."
+            "File \"f.ml\", line 2, characters 29-31:\
+           \nThe 'z' character should not be escaped.\
+           \nSuggestion: Remove \\.")))
         |}]
   end in
   ()
