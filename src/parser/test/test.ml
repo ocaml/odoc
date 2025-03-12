@@ -3525,6 +3525,32 @@ let%expect_test _ =
           ( "File \"f.ml\", line 1, characters 0-10:\
            \nInvalid character '\"' in language tag.\
            \nSuggestion: try '{@ocaml[ ... ]}'."))) |}]
+
+    let two_slashes_are_required =
+      test {|{@ocaml "\\" [foo]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 19))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml)
+              (((f.ml (1 7) (1 13)) (((f.ml (1 8) (1 12)) "\\")))))
+             ((f.ml (1 14) (1 17)) foo)))))
+         (warnings ()))
+        |}]
+
+    let escaped_char_are_allowed =
+      test {|{@ocaml "\a\b\c" [foo]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 23))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml)
+              (((f.ml (1 7) (1 17)) (((f.ml (1 8) (1 16)) abc)))))
+             ((f.ml (1 18) (1 21)) foo)))))
+         (warnings ()))
+        |}]
   end in
   ()
 

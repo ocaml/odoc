@@ -16,7 +16,7 @@ let unescape_word : string -> string = fun s ->
           | '\\' ->
             if index + 1 < String.length s then
               match s.[index + 1] with
-              | '{' | '}' | '[' | ']' | '@' | '"' as c -> c, 2
+              | '{' | '}' | '[' | ']' | '@' as c -> c, 2
               | _ -> c, 1
             else c, 1
           | _ -> c, 1
@@ -26,6 +26,26 @@ let unescape_word : string -> string = fun s ->
     in
     scan_word 0;
     Buffer.contents buffer
+
+let unescape_tag s =
+  (* The common case is that there are no escape sequences. *)
+  match String.index s '\\' with
+  | exception Not_found -> s
+  | _ ->
+      let buffer = Buffer.create (String.length s) in
+      let rec scan_word index =
+        if index >= String.length s then ()
+        else
+          let c, increment =
+            match s.[index] with
+            | '\\' when index + 1 < String.length s -> (s.[index + 1], 2)
+            | _ as c -> (c, 1)
+          in
+          Buffer.add_char buffer c;
+          scan_word (index + increment)
+      in
+      scan_word 0;
+      Buffer.contents buffer
 
 type math_kind =
   Inline | Block
@@ -714,7 +734,7 @@ and code_block_metadata_tail start_offset input acc = parse
          | (tag_unquoted_atom as value))
    {
      let start_offset = match start_offset with None -> Some (Lexing.lexeme_start lexbuf) | Some _ -> start_offset in
-     let value = `Tag (unescape_word value) in
+     let value = `Tag (unescape_tag value) in
      let tag =
        let adjust_start_by = prefix in
         with_location_adjustments ~adjust_start_by (fun _ -> Loc.at) input value
@@ -733,14 +753,14 @@ and code_block_metadata_tail start_offset input acc = parse
       let key =
         let adjust_start_by = prefix in
         let adjust_end_by = "=" ^ full_value in
-        let key = unescape_word key in
+        let key = unescape_tag key in
         with_location_adjustments
           ~adjust_start_by ~adjust_end_by
           (fun _ -> Loc.at) input key
       in
       let value =
         let adjust_start_by = prefix ^ full_key ^ "=" in
-        let value = unescape_word value in
+        let value = unescape_tag value in
         with_location_adjustments ~adjust_start_by
           (fun _ -> Loc.at) input value
       in
