@@ -92,3 +92,8 @@ let end_not_allowed : in_what:string -> Loc.span -> Warning.t =
  fun ~in_what ->
   Warning.make ~suggestion:"add '}'." "End of text is not allowed in %s."
     in_what
+
+let should_not_be_escaped : char -> Loc.span -> Warning.t =
+ fun c ->
+  Warning.make ~suggestion:"Remove \\."
+    "The '%c' character should not be escaped." c
