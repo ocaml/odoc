@@ -1683,6 +1683,44 @@ module Classify = struct
          are specified by the --library option."
 end
 
+module Extract_code = struct
+  let extract dst input line_directives names warnings_options =
+    Extract_code.extract ~dst ~input ~line_directives ~names ~warnings_options
+
+  let line_directives =
+    let doc = "Whether to include line directives in the output file" in
+    Arg.(value & flag & info ~doc [ "line-directives" ])
+
+  let names =
+    let doc =
+      "From which name(s) of code blocks to extract content. When no names are \
+       provided, extract all OCaml code blocks."
+    in
+    Arg.(value & opt_all string [] & info ~doc [ "name" ])
+
+  let input =
+    let doc = "Input $(i,.mld) file." in
+    Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE" [])
+
+  let dst =
+    let doc = "Output file path." in
+    Arg.(
+      value
+      & opt (some string) None
+      & info ~docs ~docv:"PATH" ~doc [ "o"; "output" ])
+
+  let cmd =
+    Term.(
+      const handle_error
+      $ (const extract $ dst $ input $ line_directives $ names
+       $ warnings_options))
+
+  let info ~docs =
+    Cmd.info "extract-code" ~docs
+      ~doc:
+        "Extract code blocks from mld files in order to be able to execute them"
+end
+
 let section_pipeline = "COMMANDS: Compilation pipeline"
 let section_generators = "COMMANDS: Alternative generators"
 let section_support = "COMMANDS: Scripting"
@@ -1737,6 +1775,7 @@ let () =
          Css.(cmd, info ~docs:section_deprecated);
          Depends.Odoc_html.(cmd, info ~docs:section_deprecated);
          Classify.(cmd, info ~docs:section_pipeline);
+         Extract_code.(cmd, info ~docs:section_pipeline);
        ]
   in
   let main =

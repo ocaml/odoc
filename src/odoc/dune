@@ -29,5 +29,14 @@
    %{workspace_root}
    (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x} -o %{targets}))))
 
+(rule
+ (targets extract_code.ml)
+ (deps
+  (:x extract_code.cppo.ml))
+ (action
+  (chdir
+   %{workspace_root}
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x} -o %{targets}))))
+
 (documentation
  (package odoc))
