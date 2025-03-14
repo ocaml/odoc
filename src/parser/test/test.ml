@@ -3022,8 +3022,8 @@ let%expect_test _ =
           (((f.ml (1 0) (1 46))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((binding ((f.ml (1 7) (1 12)) env) ((f.ml (1 12) (1 14)) f1))
-               (binding ((f.ml (1 14) (1 24)) version>) ((f.ml (1 24) (1 28)) 4.06))))
+              ((binding ((f.ml (1 8) (1 11)) env) ((f.ml (1 12) (1 14)) f1))
+               (binding ((f.ml (1 15) (1 23)) version>) ((f.ml (1 24) (1 28)) 4.06))))
              ((f.ml (1 30) (1 44)) "code goes here")))))
          (warnings ()))
         |}]
@@ -3038,7 +3038,8 @@ let%expect_test _ =
              ((paragraph
                (((f.ml (1 23) (1 29)) (word output)) ((f.ml (1 29) (1 30)) space)
                 ((f.ml (1 30) (1 37)) (bold (((f.ml (1 33) (1 36)) (word foo))))))))))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let delimited_code_block_with_meta_and_output =
       test "{delim@ocaml env=f1 version>=4.06 [foo]delim[output {b foo}]}";
@@ -3048,8 +3049,8 @@ let%expect_test _ =
           (((f.ml (1 0) (1 61))
             (code_block
              (((f.ml (1 7) (1 12)) ocaml)
-              ((binding ((f.ml (1 12) (1 17)) env) ((f.ml (1 17) (1 19)) f1))
-               (binding ((f.ml (1 19) (1 29)) version>) ((f.ml (1 29) (1 33)) 4.06))))
+              ((binding ((f.ml (1 13) (1 16)) env) ((f.ml (1 17) (1 19)) f1))
+               (binding ((f.ml (1 20) (1 28)) version>) ((f.ml (1 29) (1 33)) 4.06))))
              ((f.ml (1 35) (1 38)) foo)
              ((paragraph
                (((f.ml (1 45) (1 51)) (word output)) ((f.ml (1 51) (1 52)) space)
@@ -3065,7 +3066,8 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 23))
             (code_block ((f.ml (1 2) (1 21)) "foo][output {b foo}")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     (* Code block contains ']['. *)
     let code_block_with_output_and_lang_without_delim =
@@ -3076,7 +3078,8 @@ let%expect_test _ =
           (((f.ml (1 0) (1 29))
             (code_block (((f.ml (1 2) (1 7)) ocaml) ())
              ((f.ml (1 8) (1 27)) "foo][output {b foo}")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let code_block_with_output_unexpected_delim =
       test "{[foo]unexpected[output {b foo}]}";
@@ -3085,7 +3088,8 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 33))
             (code_block ((f.ml (1 2) (1 31)) "foo]unexpected[output {b foo}")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let code_block_with_output_lang_unexpected_delim =
       test "{@ocaml[foo]unexpected[output {b foo}]}";
@@ -3095,7 +3099,8 @@ let%expect_test _ =
           (((f.ml (1 0) (1 39))
             (code_block (((f.ml (1 2) (1 7)) ocaml) ())
              ((f.ml (1 8) (1 37)) "foo]unexpected[output {b foo}")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let code_block_with_output_wrong_delim =
       test "{delim@ocaml[foo]wrong[output {b foo}]delim}";
@@ -3105,7 +3110,8 @@ let%expect_test _ =
           (((f.ml (1 0) (1 44))
             (code_block (((f.ml (1 7) (1 12)) ocaml) ())
              ((f.ml (1 13) (1 37)) "foo]wrong[output {b foo}")))))
-         (warnings ())) |}]
+         (warnings ()))
+        |}]
 
     let code_block_empty_meta =
       test "{@[code goes here]}";
@@ -3116,7 +3122,8 @@ let%expect_test _ =
          (warnings
           ( "File \"f.ml\", line 1, characters 0-3:\
            \n'{@' should be followed by a language tag.\
-           \nSuggestion: try '{[ ... ]}' or '{@ocaml[ ... ]}'."))) |}]
+           \nSuggestion: try '{[ ... ]}' or '{@ocaml[ ... ]}'.")))
+        |}]
 
     let unterminated_code_block_with_meta =
       test "{@meta[foo";
@@ -3128,7 +3135,8 @@ let%expect_test _ =
          (warnings
           ( "File \"f.ml\", line 1, characters 0-10:\
            \nMissing end of code block.\
-           \nSuggestion: add ']}'."))) |}]
+           \nSuggestion: add ']}'.")))
+        |}]
 
     let unterminated_code_block_with_meta =
       test "{@met";
@@ -3142,7 +3150,8 @@ let%expect_test _ =
            \nMissing end of code block.\
            \nSuggestion: try '{@ocaml[ ... ]}'."
             "File \"f.ml\", line 1, characters 0-5:\
-           \n'{[...]}' (code block) should not be empty."))) |}]
+           \n'{[...]}' (code block) should not be empty.")))
+        |}]
 
     let newlines_after_langtag =
       test "{@ocaml\n[ code ]}";
@@ -3163,7 +3172,7 @@ let%expect_test _ =
           (((f.ml (1 0) (2 9))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((binding ((f.ml (1 7) (1 13)) kind) ((f.ml (1 13) (1 21)) toplevel))))
+              ((binding ((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel))))
              ((f.ml (2 1) (2 7)) " code ")))))
          (warnings ()))
         |}]
@@ -3176,7 +3185,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 31))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((binding ((f.ml (1 7) (1 13)) kind) ((f.ml (1 13) (1 21)) toplevel))))
+              ((binding ((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel))))
              ((f.ml (1 23) (1 29)) " code ")))))
          (warnings ()))
         |}]
@@ -3189,7 +3198,7 @@ let%expect_test _ =
           (((f.ml (1 0) (2 11))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((binding ((f.ml (1 7) (1 13)) kind) ((f.ml (1 13) (1 21)) toplevel))))
+              ((binding ((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel))))
              ((f.ml (2 3) (2 9)) " code ")))))
          (warnings ()))
         |}]
@@ -3202,8 +3211,8 @@ let%expect_test _ =
           (((f.ml (1 0) (2 15))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((binding ((f.ml (1 7) (1 13)) kind) ((f.ml (1 13) (1 21)) toplevel))
-               (binding ((f.ml (1 21) (2 4)) env) ((f.ml (2 4) (2 6)) e1))))
+              ((binding ((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel))
+               (binding ((f.ml (2 0) (2 3)) env) ((f.ml (2 4) (2 6)) e1))))
              ((f.ml (2 7) (2 13)) " code ")))))
          (warnings ()))
         |}]
@@ -3216,7 +3225,7 @@ let%expect_test _ =
           (((f.ml (1 0) (2 22))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((binding ((f.ml (1 7) (2 5)) kind) ((f.ml (2 5) (2 13)) toplevel))))
+              ((binding ((f.ml (2 0) (2 4)) kind) ((f.ml (2 5) (2 13)) toplevel))))
              ((f.ml (2 14) (2 20)) " code ")))))
          (warnings ()))
         |}]
@@ -3228,11 +3237,10 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 20))
             (code_block (((f.ml (1 2) (1 7)) ocaml) ())
-             ((f.ml (1 8) (1 18)) "top[ code ")))))
+             ((f.ml (1 12) (1 18)) " code ")))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 0-8:\
-           \nInvalid character ',' in language tag.\
-           \nSuggestion: try '{@ocaml[ ... ]}'.")))
+          ( "File \"f.ml\", line 1, characters 7-12:\
+           \nInvalid character in code block metadata tag ','.")))
         |}]
 
     let delimited_code_block =
@@ -3432,12 +3440,12 @@ let%expect_test _ =
           (((f.ml (1 0) (1 137))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((binding ((f.ml (1 7) (1 12)) env) ((f.ml (1 12) (1 14)) f1))
-               (binding ((f.ml (1 14) (1 23)) version) ((f.ml (1 23) (1 27)) 4.06))
+              ((binding ((f.ml (1 8) (1 11)) env) ((f.ml (1 12) (1 14)) f1))
+               (binding ((f.ml (1 15) (1 22)) version) ((f.ml (1 23) (1 27)) 4.06))
                (tag ((f.ml (1 29) (1 51)) "tag with several words"))
                (binding ((f.ml (1 54) (1 66)) "binding with")
                 ((f.ml (1 68) (1 78)) singleword))
-               (binding ((f.ml (1 78) (1 84)) also)
+               (binding ((f.ml (1 79) (1 83)) also)
                 ((f.ml (1 85) (1 95)) "other case"))
                (binding ((f.ml (1 98) (1 112)) "everything has")
                 ((f.ml (1 115) (1 129)) "multiple words"))))
@@ -3462,13 +3470,13 @@ let%expect_test _ =
           (((f.ml (1 0) (9 15))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((binding ((f.ml (1 7) (2 13)) env) ((f.ml (2 13) (2 15)) f1))
-               (binding ((f.ml (2 15) (3 17)) version) ((f.ml (3 17) (3 21)) 4.06))
-               (tag ((f.ml (3 21) (4 19)) single_tag))
+              ((binding ((f.ml (2 9) (2 12)) env) ((f.ml (2 13) (2 15)) f1))
+               (binding ((f.ml (3 9) (3 16)) version) ((f.ml (3 17) (3 21)) 4.06))
+               (tag ((f.ml (4 9) (4 19)) single_tag))
                (tag ((f.ml (5 10) (5 32)) "tag with several words"))
                (binding ((f.ml (6 10) (6 22)) "binding with")
                 ((f.ml (6 24) (6 34)) singleword))
-               (binding ((f.ml (6 34) (7 14)) also)
+               (binding ((f.ml (7 9) (7 13)) also)
                 ((f.ml (7 15) (7 25)) "other case"))
                (binding ((f.ml (8 10) (8 24)) "everything has")
                 ((f.ml (8 27) (8 41)) "multiple words"))))
@@ -3495,12 +3503,11 @@ let%expect_test _ =
         {|
         ((output
           (((f.ml (1 0) (1 20))
-            (code_block (((f.ml (1 2) (1 7)) ocaml) ())
-             ((f.ml (1 10) (1 18)) "=\\\" [foo")))))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) ()) ((f.ml (1 15) (1 18)) foo)))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 0-10:\
-           \nInvalid character '\"' in language tag.\
-           \nSuggestion: try '{@ocaml[ ... ]}'."))) |}]
+          ( "File \"f.ml\", line 1, characters 9-15:\
+           \nInvalid character in code block metadata tag '\"'.")))
+        |}]
 
     let two_slashes_are_required =
       test {|{@ocaml "\\" [foo]}|};
@@ -3522,14 +3529,11 @@ let%expect_test _ =
         ((output
           (((f.ml (2 5) (2 28))
             (code_block
-             (((f.ml (2 7) (2 12)) ocaml) ((tag ((f.ml (2 14) (2 20)) abc))))
+             (((f.ml (2 7) (2 12)) ocaml) ((tag ((f.ml (2 14) (2 20)) "a\bc"))))
              ((f.ml (2 23) (2 26)) foo)))))
          (warnings
           ( "File \"f.ml\", line 2, characters 14-16:\
            \nThe 'a' character should not be escaped.\
-           \nSuggestion: Remove \\."
-            "File \"f.ml\", line 2, characters 16-18:\
-           \nThe 'b' character should not be escaped.\
            \nSuggestion: Remove \\."
             "File \"f.ml\", line 2, characters 18-20:\
            \nThe 'c' character should not be escaped.\
@@ -3545,14 +3549,11 @@ let%expect_test _ =
           (((f.ml (2 5) (2 37))
             (code_block
              (((f.ml (2 7) (2 12)) ocaml)
-              ((binding ((f.ml (2 14) (2 20)) abc) ((f.ml (2 23) (2 29)) xyz))))
+              ((binding ((f.ml (2 14) (2 20)) "a\bc") ((f.ml (2 23) (2 29)) xyz))))
              ((f.ml (2 32) (2 35)) foo)))))
          (warnings
           ( "File \"f.ml\", line 2, characters 14-16:\
            \nThe 'a' character should not be escaped.\
-           \nSuggestion: Remove \\."
-            "File \"f.ml\", line 2, characters 16-18:\
-           \nThe 'b' character should not be escaped.\
            \nSuggestion: Remove \\."
             "File \"f.ml\", line 2, characters 18-20:\
            \nThe 'c' character should not be escaped.\
