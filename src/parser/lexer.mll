@@ -27,6 +27,7 @@ let unescape_word : string -> string = fun s ->
     scan_word 0;
     Buffer.contents buffer
 
+
 type math_kind =
   Inline | Block
 
@@ -84,6 +85,30 @@ let warning_loc =
 
 let warning =
   with_location_adjustments warning_loc
+
+(* From ocaml.git/parsing/lexer.mll *)
+let digit_value c =
+  match c with
+  | 'a' .. 'f' -> 10 + Char.code c - Char.code 'a'
+  | 'A' .. 'F' -> 10 + Char.code c - Char.code 'A'
+  | '0' .. '9' -> Char.code c - Char.code '0'
+  | _ -> assert false
+
+let num_value lexbuf ~base ~first ~last =
+  let c = ref 0 in
+  for i = first to last do
+    let v = digit_value (Lexing.lexeme_char lexbuf i) in
+    assert(v < base);
+    c := (base * !c) + v
+  done;
+  !c
+
+let char_for_decimal_code input lexbuf i =
+  let c = num_value lexbuf ~base:10 ~first:i ~last:(i+2) in
+  if (c < 0 || c > 255) then
+    (warning input (Parse_error.invalid_char_code c);
+    'x')
+  else Char.chr c
 
 let reference_token media start target input lexbuf =
   match start with
@@ -707,7 +732,9 @@ and bad_markup_recovery start_offset input = parse
    if necessary. Using the missing cases will cause a warning *)
 and string input = parse
  | '\"'
-   { Buffer.contents string_buffer }
+   { let result = Buffer.contents string_buffer in
+     Buffer.clear string_buffer;
+     result }
  | '\\' newline [' ' '\t']*
    { string input lexbuf }
  | '\\' (['\\' '\'' '\"' 'n' 't' 'b' 'r' ' '] as c)
@@ -723,6 +750,9 @@ and string input = parse
         | ' ' -> ' '
         | _ -> assert false);
      string input lexbuf }
+  | '\\' ['0'-'9'] ['0'-'9'] ['0'-'9']
+    { Buffer.add_char string_buffer (char_for_decimal_code input lexbuf 1);
+      string input lexbuf }
   | '\\' (_ as c)
     { warning input (Parse_error.should_not_be_escaped c);
       Buffer.add_char string_buffer c;
@@ -752,7 +782,7 @@ and code_block_metadata_tail input tag acc = parse
    { let acc = match tag with | Some t -> `Tag t :: acc | None -> acc in
      let tag = code_block_metadata_atom input lexbuf in
      code_block_metadata_tail input (Some tag) acc lexbuf }
- | space_char* '['
+ | space_char* '[' (* Nb this will be a longer match than the above case! *)
    {
      let acc = match tag with | Some t -> `Tag t :: acc | None -> acc in
      `Ok (List.rev acc) }
