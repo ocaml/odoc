@@ -454,12 +454,8 @@ let code_block_to_nestable_block_element ~locator cb m (bs, warns) =
             split_info_string_locs ~left_count ~right_count im
           in
           let env =
-            if env = "" then None
-            else
-              Some
-                (Loc.at
-                   (textloc_to_loc ~locator env_loc)
-                   [ Loc.at (textloc_to_loc ~locator env_loc) (`Tag env) ])
+            if env = "" then []
+            else [ `Tag (Loc.at (textloc_to_loc ~locator env_loc) env) ]
           in
           let lang = Loc.at (textloc_to_loc ~locator lang_loc) lang in
           let metadata = Some { Ast.language = lang; tags = env } in
