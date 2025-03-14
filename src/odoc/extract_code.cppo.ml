@@ -5,9 +5,7 @@ open Odoc_parser
 let tags_included_in_names names tags =
   List.exists
     (function
-      | {
-          Loc.value = `Binding ({ Loc.value = "name"; _ }, { Loc.value = n; _ }); _
-        }
+      | `Binding ({ Loc.value = "name"; _ }, { Loc.value = n; _ })
         when List.exists (String.equal n) names ->
           true
       | _ -> false)
@@ -21,8 +19,8 @@ let needs_extraction names meta =
   in
   let check_name () =
     match meta with
-    | Some { Ast.tags = Some tags; _ } ->
-        tags_included_in_names names tags.Loc.value
+    | Some { Ast.tags; _ } ->
+        tags_included_in_names names tags
     | _ -> false
   in
   match names with [] -> check_language () | _ :: _ -> check_name ()

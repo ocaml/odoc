@@ -83,7 +83,8 @@ let warning_loc =
 let warning =
   with_location_adjustments warning_loc
 
-let unescape_tag s start_loc input =
+let unescape_tag s offset input =
+  let start_loc = Lexing.lexeme_start input.lexbuf + String.length offset in
   let warn n c =
     let start = input.offset_to_location @@ start_loc + n in
     let end_ = input.offset_to_location @@ start_loc + n + 2 in
@@ -389,7 +390,7 @@ and token input = parse
       in
       let emit_truncated_code_block () =
         let empty_content = with_location_adjustments (fun _ -> Loc.at) input "" in
-        emit ~start_offset input (`Code_block (Some (lang_tag, None), delim, empty_content, false))
+        emit ~start_offset input (`Code_block (Some (lang_tag, []), delim, empty_content, false))
       in
       (* Disallow result block sections for code blocks without a delimiter.
          This avoids the surprising parsing of '][' ending the code block. *)
@@ -401,7 +402,7 @@ and token input = parse
         code_block allow_result_block start_offset content_offset metadata
           prefix delim input lexbuf
       in
-      match code_block_metadata_tail None input [] lexbuf with
+      match code_block_metadata_tail input [] lexbuf with
       | `Ok metadata -> code_block_with_metadata metadata
       | `Eof ->
           warning input ~start_offset Parse_error.truncated_code_block_meta;
@@ -409,7 +410,7 @@ and token input = parse
       | `Invalid_char c ->
           warning input ~start_offset
             (Parse_error.language_tag_invalid_char lang_tag_ c);
-          code_block_with_metadata None
+          code_block_with_metadata []
     }
 
   | "{@" horizontal_space* '['
@@ -735,79 +736,41 @@ and bad_markup_recovery start_offset input = parse
         (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
       emit input (`Code_span text) ~start_offset}
 
-and code_block_metadata_tail start_offset input acc = parse
- | (space_char* '[') {
-  match acc with [] -> `Ok None | _ ->
-    let start_offset = match start_offset with None -> Lexing.lexeme_start lexbuf | Some s -> s in
-    let res =
-      let res = List.rev acc in
-      with_location_adjustments ~start_offset ~adjust_end_by:"[" (fun _ -> Loc.at) input res
-    in
-   `Ok (Some res)
- }
- | (space_char+ as prefix)
-       ((('"' as quote) (tag_quoted_atom as value) '"')
-         | (tag_unquoted_atom as value))
+and code_block_metadata_atom input = parse
+ | '"' (tag_quoted_atom as value) '"'
    {
-     let start_offset =
-       match start_offset with
-       | None -> Some (Lexing.lexeme_start lexbuf)
-       | Some _ -> start_offset
-     in
-     let adjust_start_by = prefix in
-     let start_loc =
-       Lexing.lexeme_start input.lexbuf +
-         (String.length adjust_start_by) +
-         (match quote with Some _ -> 1 | _ -> 0)
-     in
-     let value = `Tag (unescape_tag value start_loc input) in
-     let tag =
-        with_location_adjustments ~adjust_start_by (fun _ -> Loc.at) input value
-      in
-      let acc = tag :: acc in
-      code_block_metadata_tail start_offset input acc lexbuf
-    }
+    let adjust_start_by = "\"" in
+    with_location_adjustments ~adjust_start_by ~adjust_end_by:"\"" (fun _ -> Loc.at) input (unescape_tag value adjust_start_by input) }
+ | (tag_unquoted_atom as value)
+   { with_location_adjustments (fun _ -> Loc.at) input value } 
+
+and code_block_metadata_tail input acc = parse
+ | (space_char* '[') { `Ok (List.rev acc) }
  | (space_char+ as prefix)
-      (((('"' as key_quote) (tag_quoted_atom as key) '"' as full_key) |
-          ((tag_unquoted_atom as key) as full_key))
-                          '='
-         (((('"' as tag_quote) (tag_quoted_atom as value) '"') as full_value) |
-            ((tag_unquoted_atom as value) as full_value)))
+      '"' (tag_quoted_atom as key) '"' '='
+      { 
+        let adjust_start_by = prefix ^ "\"" in
+        let key = with_location_adjustments ~adjust_start_by ~adjust_end_by:"\"="
+          (fun _ -> Loc.at) input (unescape_tag key adjust_start_by input) in
+        let value = code_block_metadata_atom input lexbuf in
+        code_block_metadata_tail input (`Binding (key, value) :: acc) lexbuf }
+  | (space_char+ as prefix)
+      '"' (tag_quoted_atom as tag) '"' {
+        let adjust_start_by = prefix ^ "\"" in
+        let tag = with_location_adjustments ~adjust_start_by ~adjust_end_by:"\""
+          (fun _ -> Loc.at) input (unescape_tag tag adjust_start_by input) in
+        code_block_metadata_tail input (`Tag tag :: acc) lexbuf }
+  | (space_char+ as _prefix)
+      (tag_unquoted_atom as key) '='
       {
-     let start_offset = match start_offset with None -> Some (Lexing.lexeme_start lexbuf) | Some _ -> start_offset in
-      let key =
-        let adjust_start_by = prefix in
-        let adjust_end_by = "=" ^ full_value in
-        let start_loc =
-          Lexing.lexeme_start input.lexbuf +
-            (String.length adjust_start_by) +
-            (match key_quote with Some _ -> 1 | _ -> 0)
-        in
-        let key = unescape_tag key start_loc input in
-        with_location_adjustments
-          ~adjust_start_by ~adjust_end_by
-          (fun _ -> Loc.at) input key
-      in
-      let value =
-        let adjust_start_by = prefix ^ full_key ^ "=" in
-        let start_loc =
-          Lexing.lexeme_start input.lexbuf +
-            (String.length adjust_start_by) +
-            (match key_quote with Some _ -> 2 | _ -> 0) +
-            (match tag_quote with Some _ -> 1 | _ -> 0)
-        in
-        let value = unescape_tag value start_loc input in
-        with_location_adjustments ~adjust_start_by
-          (fun _ -> Loc.at) input value
-      in
-      let binding = `Binding (key, value) in
-      let binding =
-       let adjust_start_by = prefix in
-        with_location_adjustments ~adjust_start_by (fun _ -> Loc.at) input binding
-      in
-      let acc = binding :: acc in
-      code_block_metadata_tail start_offset input acc lexbuf
-    }
+        let key = with_location_adjustments (fun _ -> Loc.at) input key in
+        let value = code_block_metadata_atom input lexbuf in
+        code_block_metadata_tail input (`Binding (key, value) :: acc) lexbuf }
+  | (space_char+ as _prefix)
+      (tag_unquoted_atom as tag)
+      {
+        let tag = with_location_adjustments (fun _ -> Loc.at) input tag in
+        code_block_metadata_tail input (`Tag tag :: acc) lexbuf }
   | _ as c
     { `Invalid_char c }
   | eof
