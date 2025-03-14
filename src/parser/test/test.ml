@@ -3230,6 +3230,48 @@ let%expect_test _ =
          (warnings ()))
         |}]
 
+    let empty_key =
+      test "{@ocaml =foo [ code ]}";
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 22))
+            (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+             ((f.ml (1 14) (1 20)) " code ")))))
+         (warnings
+          ( "File \"f.ml\", line 1, characters 8-9:\
+           \nInvalid character in code block metadata tag '='."
+            "File \"f.ml\", line 1, characters 9-14:\
+           \nInvalid character in code block metadata tag 'f'.")))
+        |}]
+
+    let no_escape_without_quotes =
+      test {|{@ocaml \n\t\b=hello [ code ]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 30))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml)
+              ((binding ((f.ml (1 8) (1 14)) "\\n\\t\\b")
+                ((f.ml (1 15) (1 20)) hello))))
+             ((f.ml (1 22) (1 28)) " code ")))))
+         (warnings ()))
+        |}]
+
+    let escape_within_quotes =
+      test {|{@ocaml "\065"=hello [ code ]}|};
+      [%expect
+        {|
+        ((output
+          (((f.ml (1 0) (1 30))
+            (code_block
+             (((f.ml (1 2) (1 7)) ocaml)
+              ((binding ((f.ml (1 9) (1 13)) A) ((f.ml (1 15) (1 20)) hello))))
+             ((f.ml (1 22) (1 28)) " code ")))))
+         (warnings ()))
+        |}]
+
     let langtag_non_word =
       test "{@ocaml,top[ code ]}";
       [%expect

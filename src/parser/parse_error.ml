@@ -88,6 +88,9 @@ let language_tag_invalid_char lang_tag : char -> Loc.span -> Warning.t =
 let code_block_tag_invalid_char : char -> Loc.span -> Warning.t =
   Warning.make "Invalid character in code block metadata tag '%c'."
 
+let invalid_char_code : int -> Loc.span -> Warning.t =
+  Warning.make "Invalid escape sequence '\\%d"
+
 let truncated_code_block_meta : Loc.span -> Warning.t =
   Warning.make ~suggestion:"try '{@ocaml[ ... ]}'." "Missing end of code block."
 
