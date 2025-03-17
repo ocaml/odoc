@@ -41,9 +41,8 @@ type input = {
   offset_to_location : int -> Loc.point;
   warnings : Warning.t list ref;
   lexbuf : Lexing.lexbuf;
+  string_buffer : Buffer.t;
 }
-
-let string_buffer = Buffer.create 256
 
 let with_location_adjustments
     k input ?start_offset ?adjust_start_by ?end_offset ?adjust_end_by value =
@@ -728,13 +727,13 @@ and bad_markup_recovery start_offset input = parse
    if necessary. Using the missing cases will cause a warning *)
 and string input = parse
  | '\"'
-   { let result = Buffer.contents string_buffer in
-     Buffer.clear string_buffer;
+   { let result = Buffer.contents input.string_buffer in
+     Buffer.clear input.string_buffer;
      result }
  | '\\' newline [' ' '\t']*
    { string input lexbuf }
  | '\\' (['\\' '\'' '\"' 'n' 't' 'b' 'r' ' '] as c)
-   { Buffer.add_char string_buffer
+   { Buffer.add_char input.string_buffer
        (match c with
         | '\\' -> '\\'
         | '\'' -> '\''
@@ -747,24 +746,24 @@ and string input = parse
         | _ -> assert false);
      string input lexbuf }
   | '\\' ['0'-'9'] ['0'-'9'] ['0'-'9']
-    { Buffer.add_char string_buffer (char_for_decimal_code input lexbuf 1);
+    { Buffer.add_char input.string_buffer (char_for_decimal_code input lexbuf 1);
       string input lexbuf }
   | '\\' (_ as c)
     { warning input (Parse_error.should_not_be_escaped c);
-      Buffer.add_char string_buffer c;
+      Buffer.add_char input.string_buffer c;
       string input lexbuf }
   | eof
     { warning input Parse_error.truncated_string;
-      Buffer.contents string_buffer }
+      Buffer.contents input.string_buffer }
   | (_ as c)
-    { Buffer.add_char string_buffer c;
+    { Buffer.add_char input.string_buffer c;
       string input lexbuf }
   
 and code_block_metadata_atom input = parse
  | '"'
    {
     let start_offset = Lexing.lexeme_start input.lexbuf in
-    Buffer.clear string_buffer;
+    Buffer.clear input.string_buffer;
     let s = string input lexbuf in
     with_location_adjustments ~start_offset (fun _ -> Loc.at) input s }
  | (tag_unquoted_atom as value)
