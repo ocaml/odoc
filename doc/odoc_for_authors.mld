@@ -489,6 +489,22 @@ Here is some Python code:
     return 0
 ]}
 
+{4:code_block_tags Code Block Tags}
+Code blocks may have arbitrary metadata associated with them. This metadata is
+used, for example, for selecting code blocks when extracting them from a source file via the
+[odoc extract-code] command. The metadata may also be used by other tools that
+operate on code blocks, for example, {{!https://github.com/realworldocaml/mdx}mdx}.
+
+The metadata follows immediately after the language header, and is a list of tags and bindings, separated by whitespace. Tags are simple
+keywords, and bindings are key-value pairs separated by an equals sign. If whitespace
+is needed in keys, values or tags, it should be enclosed in double quotes. For example:
+
+{v
+{@ocaml tag1 "tag 2" key1="value 1" "key 2"="value 2"[
+   ... code goes here ...
+]}
+v}
+
 {4:verbatim_blocks Verbatim Blocks}
 
 It is possible to write language agnostic code blocks, also called verbatim

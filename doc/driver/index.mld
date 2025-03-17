@@ -50,7 +50,7 @@ File "src/parser/odoc_parser.mli", line 45, characters 30-45:
 Warning: Failed to resolve reference unresolvedroot(parse_coment) Couldn't find "parse_coment"
 ]}
 
-which highlights 
+which here is highlighting an error in a reference in `odoc_parser.mli`.
 
 {2 Remapping dependencies}
 
