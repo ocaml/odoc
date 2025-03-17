@@ -3241,7 +3241,7 @@ let%expect_test _ =
          (warnings
           ( "File \"f.ml\", line 1, characters 8-9:\
            \nInvalid character in code block metadata tag '='."
-            "File \"f.ml\", line 1, characters 9-14:\
+            "File \"f.ml\", line 1, characters 9-10:\
            \nInvalid character in code block metadata tag 'f'.")))
         |}]
 
@@ -3267,7 +3267,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 30))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((binding ((f.ml (1 9) (1 13)) A) ((f.ml (1 15) (1 20)) hello))))
+              ((binding ((f.ml (1 8) (1 14)) A) ((f.ml (1 15) (1 20)) hello))))
              ((f.ml (1 22) (1 28)) " code ")))))
          (warnings ()))
         |}]
@@ -3281,7 +3281,7 @@ let%expect_test _ =
             (code_block (((f.ml (1 2) (1 7)) ocaml) ())
              ((f.ml (1 12) (1 18)) " code ")))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 7-12:\
+          ( "File \"f.ml\", line 1, characters 7-8:\
            \nInvalid character in code block metadata tag ','.")))
         |}]
 
@@ -3484,13 +3484,13 @@ let%expect_test _ =
              (((f.ml (1 2) (1 7)) ocaml)
               ((binding ((f.ml (1 8) (1 11)) env) ((f.ml (1 12) (1 14)) f1))
                (binding ((f.ml (1 15) (1 22)) version) ((f.ml (1 23) (1 27)) 4.06))
-               (tag ((f.ml (1 29) (1 51)) "tag with several words"))
-               (binding ((f.ml (1 54) (1 66)) "binding with")
+               (tag ((f.ml (1 28) (1 52)) "tag with several words"))
+               (binding ((f.ml (1 53) (1 67)) "binding with")
                 ((f.ml (1 68) (1 78)) singleword))
                (binding ((f.ml (1 79) (1 83)) also)
-                ((f.ml (1 85) (1 95)) "other case"))
-               (binding ((f.ml (1 98) (1 112)) "everything has")
-                ((f.ml (1 115) (1 129)) "multiple words"))))
+                ((f.ml (1 84) (1 96)) "other case"))
+               (binding ((f.ml (1 97) (1 113)) "everything has")
+                ((f.ml (1 114) (1 130)) "multiple words"))))
              ((f.ml (1 132) (1 135)) foo)))))
          (warnings ()))
         |}]
@@ -3515,13 +3515,13 @@ let%expect_test _ =
               ((binding ((f.ml (2 9) (2 12)) env) ((f.ml (2 13) (2 15)) f1))
                (binding ((f.ml (3 9) (3 16)) version) ((f.ml (3 17) (3 21)) 4.06))
                (tag ((f.ml (4 9) (4 19)) single_tag))
-               (tag ((f.ml (5 10) (5 32)) "tag with several words"))
-               (binding ((f.ml (6 10) (6 22)) "binding with")
+               (tag ((f.ml (5 9) (5 33)) "tag with several words"))
+               (binding ((f.ml (6 9) (6 23)) "binding with")
                 ((f.ml (6 24) (6 34)) singleword))
                (binding ((f.ml (7 9) (7 13)) also)
-                ((f.ml (7 15) (7 25)) "other case"))
-               (binding ((f.ml (8 10) (8 24)) "everything has")
-                ((f.ml (8 27) (8 41)) "multiple words"))))
+                ((f.ml (7 14) (7 26)) "other case"))
+               (binding ((f.ml (8 9) (8 25)) "everything has")
+                ((f.ml (8 26) (8 42)) "multiple words"))))
              ((f.ml (9 10) (9 13)) foo)))))
          (warnings ()))
         |}]
@@ -3534,7 +3534,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 24))
             (code_block
              (((f.ml (1 2) (1 7)) ocaml)
-              ((binding ((f.ml (1 9) (1 11)) "\"") ((f.ml (1 14) (1 16)) "\""))))
+              ((binding ((f.ml (1 8) (1 12)) "\"") ((f.ml (1 13) (1 17)) "\""))))
              ((f.ml (1 19) (1 22)) foo)))))
          (warnings ()))
         |}]
@@ -3547,7 +3547,7 @@ let%expect_test _ =
           (((f.ml (1 0) (1 20))
             (code_block (((f.ml (1 2) (1 7)) ocaml) ()) ((f.ml (1 15) (1 18)) foo)))))
          (warnings
-          ( "File \"f.ml\", line 1, characters 9-15:\
+          ( "File \"f.ml\", line 1, characters 9-10:\
            \nInvalid character in code block metadata tag '\"'.")))
         |}]
 
@@ -3558,7 +3558,7 @@ let%expect_test _ =
         ((output
           (((f.ml (1 0) (1 19))
             (code_block
-             (((f.ml (1 2) (1 7)) ocaml) ((tag ((f.ml (1 9) (1 11)) "\\"))))
+             (((f.ml (1 2) (1 7)) ocaml) ((tag ((f.ml (1 8) (1 12)) "\\"))))
              ((f.ml (1 14) (1 17)) foo)))))
          (warnings ()))
         |}]
@@ -3571,7 +3571,7 @@ let%expect_test _ =
         ((output
           (((f.ml (2 5) (2 28))
             (code_block
-             (((f.ml (2 7) (2 12)) ocaml) ((tag ((f.ml (2 14) (2 20)) "a\bc"))))
+             (((f.ml (2 7) (2 12)) ocaml) ((tag ((f.ml (2 13) (2 21)) "a\bc"))))
              ((f.ml (2 23) (2 26)) foo)))))
          (warnings
           ( "File \"f.ml\", line 2, characters 14-16:\
@@ -3591,7 +3591,7 @@ let%expect_test _ =
           (((f.ml (2 5) (2 37))
             (code_block
              (((f.ml (2 7) (2 12)) ocaml)
-              ((binding ((f.ml (2 14) (2 20)) "a\bc") ((f.ml (2 23) (2 29)) xyz))))
+              ((binding ((f.ml (2 13) (2 21)) "a\bc") ((f.ml (2 22) (2 30)) xyz))))
              ((f.ml (2 32) (2 35)) foo)))))
          (warnings
           ( "File \"f.ml\", line 2, characters 14-16:\
