@@ -21,16 +21,17 @@ jobs:
           - "4.14"
           - "5.0"
           - "5.2"
+          - "5.3"
         include:
           - os: ubuntu-latest
-            ocaml-compiler: "5.2"
+            ocaml-compiler: "5.3"
             # We don't need to compute coverage for more than one build
             send-coverage: true
             # Mdx tests Mdx tests
             run-mdx: true
             test-sherlodoc: true
           - os: macos-latest
-            ocaml-compiler: "5.2"
+            ocaml-compiler: "5.3"
           # - os: windows-latest
           #   ocaml-compiler: "5.2"
 
