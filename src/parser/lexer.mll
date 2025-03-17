@@ -400,10 +400,6 @@ and token input = parse
       | `Eof ->
           warning input ~start_offset Parse_error.truncated_code_block_meta;
           emit_truncated_code_block ()
-      | `Invalid_char c ->
-          warning input ~start_offset
-            (Parse_error.language_tag_invalid_char lang_tag_ c);
-          code_block_with_metadata []
     }
 
   | "{@" horizontal_space* '['
@@ -767,13 +763,13 @@ and string input = parse
 and code_block_metadata_atom input = parse
  | '"'
    {
-    let start_offset = Lexing.lexeme_start input.lexbuf + 1 in
+    let start_offset = Lexing.lexeme_start input.lexbuf in
     Buffer.clear string_buffer;
     let s = string input lexbuf in
-    with_location_adjustments ~start_offset ~adjust_end_by:"\"" (fun _ -> Loc.at) input s }
+    with_location_adjustments ~start_offset (fun _ -> Loc.at) input s }
  | (tag_unquoted_atom as value)
    { with_location_adjustments (fun _ -> Loc.at) input value }
- | (_ as c) 
+ | ('=' as c) 
    { warning input (Parse_error.code_block_tag_invalid_char c);
      with_location_adjustments (fun _ -> Loc.at) input "" }
 
@@ -794,9 +790,12 @@ and code_block_metadata_tail input tag acc = parse
      | None ->
        warning input (Parse_error.code_block_tag_invalid_char '=');
        code_block_metadata_tail input None acc lexbuf }
- | (_ # space_char # '[' # '=' as c) [^ '[']* '['
-   { warning input (Parse_error.code_block_tag_invalid_char c);
-     `Ok (List.rev acc)}
+ | (_ # space_char # '[' # '=' as c) (_ # space_char # '[')*
+   {
+      let start_offset = Lexing.lexeme_start input.lexbuf in
+      let end_offset = start_offset + 1 in
+      warning input ~start_offset ~end_offset (Parse_error.code_block_tag_invalid_char c);
+    code_block_metadata_tail input None acc lexbuf }
  | eof
     { `Eof }
 
