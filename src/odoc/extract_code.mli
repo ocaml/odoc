@@ -4,4 +4,4 @@ val extract :
   names:string list ->
   line_directives:bool ->
   warnings_options:Odoc_model.Error.warnings_options ->
-  (unit, [> `Msg of string ]) result
+  (unit, [> `Msg of string ]) Result.result

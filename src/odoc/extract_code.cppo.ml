@@ -239,6 +239,6 @@ let extract ~dst ~input ~names ~line_directives ~warnings_options =
 #else
 
 let extract ~dst:_ ~input:_ ~names:_ ~line_directives:_ ~warnings_options:_ =
-  Error (`Msg "Extract-code is not available for OCaml < 4.10")
+  Result.Error (`Msg "Extract-code is not available for OCaml < 4.10")
 
 #endif
