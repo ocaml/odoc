@@ -25,7 +25,7 @@ authors: [
 ]
 dev-repo: "git+https://github.com/ocaml/odoc.git"
 
-synopsis: "Meta package defining dependencies for the benchmark rule. Not released."
+synopsis: "Meta package defining dependencies for the benchmark rule. Not released"
 
 depends: [
   "astring"
