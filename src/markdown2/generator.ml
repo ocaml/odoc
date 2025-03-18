@@ -315,9 +315,21 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
             (fun inline ->
               Md.Block.Paragraph (Md.Block.Paragraph.make inline, Md.meta))
             table_inlines
-    | Description _l ->
-        (* TODO: What's a description? *)
-        failwith "block not implemented: Description"
+    | Description l ->
+        let item ({ key; definition; attr = _ } : Description.one) =
+          let term = inline ~config ~resolve key in
+          (* We extract definition as inline, since it came as "Block". There seems to be no way (in Cmarkit) to make it inline *)
+          let definition_inline =
+            Md.Inline.Text
+              (String.concat ~sep:" " (block_text_only definition), Md.meta)
+          in
+          let space = Md.Inline.Text (" ", Md.meta) in
+          let term_inline =
+            Md.Inline.Inlines (term @ [ space; definition_inline ], Md.meta)
+          in
+          [ Md.Block.Paragraph (Md.Block.Paragraph.make term_inline, Md.meta) ]
+        in
+        List.concat_map item l
     | Verbatim s ->
         (* TODO: Not entirely sure if this is right, in HTML is `mk_block Html.pre [ Html.txt s ]` *)
         let code_snippet =
