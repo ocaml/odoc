@@ -14,10 +14,10 @@ module Link = struct
 
   let page p = Format.asprintf "%a" flatten_path p
 
+  let anchor p a = Format.asprintf "%a-%s" flatten_path p a
+
   let label (x : Odoc_document.Url.t) =
-    match x.anchor with
-    | "" -> page x.page
-    | anchor -> Format.asprintf "%a-%s" flatten_path x.page anchor
+    match x.anchor with "" -> page x.page | a -> anchor x.page a
 
   let rec is_class_or_module_path (url : Odoc_document.Url.Path.t) =
     match url.kind with
@@ -264,9 +264,13 @@ and inline ~in_source ~verbatim (l : Inline.t) =
   in
   prettify l
 
-let heading (h : Heading.t) =
+let heading p (h : Heading.t) =
   let content = inline ~in_source:false ~verbatim:false h.title in
-  [ Section { label = h.label; level = h.level; content }; Break Aesthetic ]
+  [
+    Section
+      { label = Option.map (Link.anchor p) h.label; level = h.level; content };
+    Break Aesthetic;
+  ]
 
 let non_empty_block_code c =
   let s = source (inline ~verbatim:true ~in_source:true) c in
@@ -366,7 +370,7 @@ let rec documentedSrc (t : DocumentedSrc.t) =
          else non_empty_code_fragment e.summary)
         @ to_latex rest
     | Subpage subp :: rest ->
-        Indented (items subp.content.items) :: to_latex rest
+        Indented (items subp.content.url subp.content.items) :: to_latex rest
     | (Documented _ | Nested _) :: _ ->
         let take_descr l =
           Doctree.Take.until l ~classify:(function
@@ -408,10 +412,10 @@ let rec documentedSrc (t : DocumentedSrc.t) =
   in
   to_latex t
 
-and items l =
-  let rec walk_items ~only_text acc (t : Item.t list) =
+and items page_url l =
+  let rec walk_items ~page_url ~only_text acc (t : Item.t list) =
     let continue_with rest elts =
-      walk_items ~only_text (List.rev_append elts acc) rest
+      walk_items ~page_url ~only_text (List.rev_append elts acc) rest
     in
     match t with
     | [] -> List.rev acc
@@ -424,7 +428,7 @@ and items l =
         let content = block ~in_source:false text in
         let elts = content in
         elts |> continue_with rest
-    | Heading h :: rest -> heading h |> continue_with rest
+    | Heading h :: rest -> heading page_url h |> continue_with rest
     | Include
         {
           attr = _;
@@ -434,7 +438,7 @@ and items l =
           content = { summary; status = _; content };
         }
       :: rest ->
-        let included = items content in
+        let included = items page_url content in
         let docs = block ~in_source:true doc in
         let summary = source (inline ~verbatim:false ~in_source:true) summary in
         let content = included in
@@ -450,8 +454,10 @@ and items l =
               @ [ Indented (block ~in_source:true docs); Break Separation ]
         in
         continue_with rest elts
-  and items l = walk_items ~only_text:(is_only_text l) [] l in
-  items l
+  and items page_url l =
+    walk_items ~page_url ~only_text:(is_only_text l) [] l
+  in
+  items page_url l
 
 module Doc = struct
   let link_children ppf children =
@@ -492,8 +498,8 @@ module Page = struct
     and subpages = subpages ~with_children @@ Doctree.Subpages.compute p in
     let i = Doctree.Shift.compute ~on_sub i in
     let header, preamble = Doctree.PageTitle.render_title p in
-    let header = items (header @ preamble) in
-    let content = items i in
+    let header = items url (header @ preamble) in
+    let content = items url i in
     let page = Doc.make ~with_children url (header @ content) subpages in
     page
 end
