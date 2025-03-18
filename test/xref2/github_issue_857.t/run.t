@@ -12,8 +12,8 @@ In latex, labels in subpages should be disambiguated since the subpage is inline
   $ cat latex/A.tex | sed 's/\\/\n\\/g' | grep label
   \label{A}%
   \label{A-module-type-A}
-  \label{first}}%
-  \label{first_2}}%
+  \label{A-module-type-A-first}}%
+  \label{A-first_2}}%
 
 In html, labels in subpages should not be disambiguated since they won't have the same URL.
 
