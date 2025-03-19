@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+[@@@warning "-26-27"]
+
 open Odoc_utils
 
 module HLink = Link
@@ -415,67 +417,87 @@ and items ~config ~resolve l : Md.Block.t list =
           attr = _attr;
           anchor = _anchor;
           source_anchor = _source_anchor;
-          doc = _doc;
+          doc;
           content = { summary = _summary; status = _status; content = _content };
         }
       :: rest ->
-        (* let doc = spec_doc_div ~config ~resolve doc in
-        let included_html = items content in
-        let a_class =
-          if List.length content = 0 then [ "odoc-include"; "shadowed-include" ]
-          else [ "odoc-include" ]
-        in *)
-        let content = [ Md.Block.empty ] in
-        (* let content =
-          let details ~open' =
-            let open' = if open' then [ Html.a_open () ] else [] in
-            let summary =
-              let extra_attr, extra_class, anchor_link = mk_anchor anchor in
-              let link_to_source =
-                mk_link_to_source ~config ~resolve source_anchor
-              in
-              let a = spec_class (attr @ extra_class) @ extra_attr in
-              Html.summary ~a @@ anchor_link @ link_to_source
-              @ source (inline ~config ~resolve) summary
-            in
-            let inner =
-              [
-                Html.details ~a:open' summary
-                  (included_html :> any Html.elt list);
-              ]
-            in
-            [ Html.div ~a:[ Html.a_class a_class ] (doc @ inner) ]
-          in
-          match status with
-          | `Inline -> doc @ included_html
-          | `Closed -> details ~open':false
-          | `Open -> details ~open':true
-          | `Default -> details ~open':true (* (Config.open_details config) *)
-        in *)
+        (* TODO: Test includes *)
+        let content = block ~config ~resolve doc in
         (continue_with [@tailcall]) rest content
     | Declaration
         {
           Item.attr = _attr;
           anchor = _anchor;
           source_anchor = _source_anchor;
-          content = _content;
+          content;
           doc;
         }
       :: rest ->
-        (* let extra_attr, extra_class, anchor_link = mk_anchor anchor in
-        let link_to_source = mk_link_to_source ~config ~resolve source_anchor in
-        let a = spec_class (attr @ extra_class) @ extra_attr in
-        let content =
-          anchor_link @ link_to_source @ documentedSrc ~config ~resolve content
-        in *)
-        let spec = block ~config ~resolve doc in
-        (* let spec =
-          let doc = spec_doc_div ~config ~resolve doc in
-          [ div ~a:[ Html.a_class [ "odoc-spec" ] ] (div ~a content :: doc) ]
-        in *)
-        (continue_with [@tailcall]) rest spec
+        let spec = documentedSrc ~config ~resolve content in
+        let doc = block ~config ~resolve doc in
+        let content = spec @ doc in
+        (continue_with [@tailcall]) rest content
   and items l = walk_items [] l in
   items l
+
+and documentedSrc ~config ~resolve (t : DocumentedSrc.t) =
+  let open DocumentedSrc in
+  let take_code l =
+    Doctree.Take.until l ~classify:(fun x ->
+        match (x : DocumentedSrc.one) with
+        | Code code -> Accum code
+        | Alternative (Expansion { summary; _ }) -> Accum summary
+        | _ -> Stop_and_keep)
+  in
+  let take_descr l =
+    Doctree.Take.until l ~classify:(function
+      | Documented { attrs; anchor; code; doc; markers } ->
+          Accum
+            [ { DocumentedSrc.attrs; anchor; code = `D code; doc; markers } ]
+      | Nested { attrs; anchor; code; doc; markers } ->
+          Accum
+            [ { DocumentedSrc.attrs; anchor; code = `N code; doc; markers } ]
+      | _ -> Stop_and_keep)
+  in
+  let rec to_markdown t : Md.Block.t list =
+    match t with
+    | [] -> []
+    | (Code _ | Alternative _) :: _ ->
+        let code, _, rest = take_code t in
+        let inline_source = source (inline ~config ~resolve) code in
+        let inlines = Md.Inline.Inlines (inline_source, Md.meta) in
+        let block =
+          Md.Block.Paragraph (Md.Block.Paragraph.make inlines, Md.meta)
+        in
+        [ block ] @ to_markdown rest
+    | Subpage subp :: _ -> subpage ~config ~resolve subp
+    | (Documented _ | Nested _) :: _ ->
+        let l, _, rest = take_descr t in
+        let one { DocumentedSrc.attrs = _; anchor = _; code; doc; markers = _ }
+            =
+          let content =
+            match code with
+            | `D code ->
+                let inline_source = inline ~config ~resolve code in
+                let inlines = Md.Inline.Inlines (inline_source, Md.meta) in
+                let block =
+                  Md.Block.Paragraph (Md.Block.Paragraph.make inlines, Md.meta)
+                in
+                [ block ]
+            | `N n -> to_markdown n
+          in
+
+          let block_doc = block ~config ~resolve doc in
+          List.append content block_doc
+        in
+        let all_blocks = List.concat_map one l in
+        let rest_of_markdown = to_markdown rest in
+        all_blocks @ rest_of_markdown
+  in
+  to_markdown t
+
+and subpage ~config ~resolve (subp : Subpage.t) =
+  items ~config ~resolve subp.content.items
 
 module Toc = struct
   open Odoc_document.Doctree

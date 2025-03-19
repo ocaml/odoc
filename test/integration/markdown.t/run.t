@@ -1,12 +1,6 @@
   $ ocamlc -c -bin-annot test.mli
   $ ocamlc -c -bin-annot test2.mli
   $ odoc compile --package test -I . page.mld
-  File "page.mld", line 33, characters 4-12:
-  Warning: '{{links}': bad markup.
-  Suggestion: did you mean '{!{links}' or '[{links]'?
-  File "page.mld", line 33, characters 24-25:
-  Warning: Unpaired '}' (end of markup).
-  Suggestion: try '\}'.
   File "page.mld", line 51, characters 24-25:
   Warning: Unpaired '}' (end of markup).
   Suggestion: try '\}'.
@@ -22,17 +16,6 @@
   File "page.mld", line 119, characters 0-11:
   Warning: Tags are not allowed in pages.
   $ odoc compile --package test test.cmti
-  $ ls
-  odoc_logo_placeholder.jpg
-  page-page.odoc
-  page.mld
-  test.cmi
-  test.cmti
-  test.mli
-  test.odoc
-  test2.cmi
-  test2.cmti
-  test2.mli
   $ odoc compile --package test -I . test2.cmti
   $ odoc link test.odoc
   $ odoc link test2.odoc
@@ -45,10 +28,13 @@
   Warning: Failed to resolve reference /test.v Path '/test' not found
   $ odoc markdown-generate test.odocl -o markdown
   ## Section 1
+  type t = int
   A very important type
   ### Section 2
+  val v : [t](#type-t)
   A very important value
   $ odoc markdown-generate test2.odocl -o markdown
+  val v : [Test.t](Test.html#type-t)
   $ odoc markdown-generate page-page.odocl -o markdown
   ## Title
   ### Subtitle
@@ -65,9 +51,7 @@
   See `Odoc_odoc.Compile.compile`.
   See [this function from another library]().
   See [this page from another package]().
-  See `{links`this section
-  }
-  for the syntax of references.
+  See [this section](#styled) for the syntax of references.
   #### Lists
   - First item
   - Second item
