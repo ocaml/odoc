@@ -2,8 +2,14 @@ module Link : sig
   val label : Odoc_document.Url.t -> string
 end
 
+type config = {
+  with_children : bool;
+  shorten_beyond_depth : int option;
+  remove_functor_arg_link : bool;
+}
+
 val render :
-  with_children:bool ->
+  config:config ->
   Odoc_document.Types.Document.t ->
   Odoc_document.Renderer.page list
 

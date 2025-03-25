@@ -1,9 +1,12 @@
 open Odoc_document
 
-type args = { with_children : bool }
+type args = Odoc_latex.Generator.config = {
+  with_children : bool;
+  shorten_beyond_depth : int option;
+  remove_functor_arg_link : bool;
+}
 
-let render args _sidebar page =
-  Odoc_latex.Generator.render ~with_children:args.with_children page
+let render args _sidebar page = Odoc_latex.Generator.render ~config:args page
 
 let filepath _args url = Odoc_latex.Generator.filepath url
 
