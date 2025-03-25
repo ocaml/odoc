@@ -1404,9 +1404,25 @@ module Odoc_latex = Make_renderer (struct
     let doc = "Include children at the end of the page." in
     Arg.(value & opt bool true & info ~docv:"BOOL" ~doc [ "with-children" ])
 
+  let shorten_beyond_depth =
+    let doc = "Shorten items beyond the given depth." in
+    Arg.(
+      value
+      & opt (some' int) None
+      & info ~docv:"INT" ~doc [ "shorten-beyond-depth" ])
+
+  let remove_functor_arg_link =
+    let doc = "Remove link to functor argument." in
+    Arg.(
+      value & opt bool false
+      & info ~docv:"BOOL" ~doc [ "remove-functor-arg-link" ])
+
   let extra_args =
-    let f with_children = { Latex.with_children } in
-    Term.(const f $ with_children)
+    let f with_children shorten_beyond_depth remove_functor_arg_link =
+      { Latex.with_children; shorten_beyond_depth; remove_functor_arg_link }
+    in
+    Term.(
+      const f $ with_children $ shorten_beyond_depth $ remove_functor_arg_link)
 end)
 
 module Depends = struct
