@@ -14,7 +14,7 @@ module Link = struct
 
   let page p = Format.asprintf "%a" flatten_path p
 
-  let anchor p a = Format.asprintf "%a-%s" flatten_path p a
+  let anchor p a = Format.asprintf "%a--%s" flatten_path p a
 
   let label (x : Odoc_document.Url.t) =
     match x.anchor with "" -> page x.page | a -> anchor x.page a
