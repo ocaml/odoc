@@ -11,10 +11,11 @@
   (>= %{ocaml_version} 4.04))
  (action
   (with-stdout-to
-   link.dune.inc.gen
-   (pipe-stdout
-    (run gen_rules/gen_rules.exe)
-    (run dune format-dune-file)))))
+   link.dune.inc.gen.raw
+   (run gen_rules/gen_rules.exe))))
+
+(rule
+ (format-dune-file link.dune.inc.gen.raw link.dune.inc.gen))
 
 (rule
  (alias runtest)
