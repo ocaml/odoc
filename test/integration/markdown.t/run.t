@@ -22,6 +22,11 @@
   File "page.mld", line 29, characters 4-50:
   Warning: Failed to resolve reference /test.v Path '/test' not found
   $ odoc markdown-generate test.odocl -o markdown
+  $ odoc markdown-generate test2.odocl -o markdown
+  $ odoc markdown-generate page-page.odocl -o markdown
+  $ odoc markdown-generate list.odocl -o markdown
+
+  $ cat markdown/test/Test.md
   ## Section 1
   ```
   type t = int
@@ -32,117 +37,6 @@
   val v : t
   ```
   A very important value
-  $ odoc markdown-generate test2.odocl -o markdown
   ```
-  val v : Test.t
+  module List : sig ... end
   ```
-  $ odoc markdown-generate page-page.odocl -o markdown
-  ## Title
-  ### Subtitle
-  #### Referenceable title
-  See [Referenceable title](#my_id).
-  #### Styled
-  **bold** text, *italic* text, *emphasized* text
-  H2O and 1st
-  #### Link
-  Here is a link: [https://www.example.com](https://www.example.com).
-  You can also click [here](https://www.example.com).
-  #### References
-  See `Odoc_odoc.Compile.compile`.
-  See `Odoc_odoc.Compile.compile`.
-  See [this function from another library]().
-  See [this page from another package]().
-  See [this section](#styled) for the syntax of references.
-  #### Lists
-  - First item
-  - Second item
-  0. First ordered item
-  1. Second numbered item
-  - First item
-  - Second item
-  - can also be used
-  0. First numbered item
-  1. Second numbered item
-  2. can also be used
-  #### Code blocks
-  Inline `code`.
-  ```ocaml
-  let _ = "Block code"
-  ```
-  ```text
-  Code block with {[inner code block syntax]}
-  ```
-  ```python
-  [i+1 for i in xrange(2)]
-  ```
-  #### Verbatim
-  ```
-  verbatim text
-  ```
-  #### Math
-  For inline math: `\sqrt 2`.
-  For display math:
-  ```
-  \sqrt 2
-  ```
-  #### Images
-  ![./odoc\_logo\_placeholder.jpg]()
-  ![https://picsum.photos/200/100](https://picsum.photos/200/100)
-  #### Table
-  ##### Explicit syntax
-  \| Header   1 \| Header   2 \|
-  \| --- \| --- \|
-  \| Cell   1 \| Cell   2 \|
-  \| Cell   3 \| Cell   4 \|
-  ##### Light syntax
-  \| Header   1 \| Header   2 \|
-  \| --- \| --- \|
-  \| Cell   1 \| Cell   2 \|
-  \| Cell   3 \| Cell   4 \|
-  #### HTML
-  This is a strong tag:  <strong> Odoc language lack support for quotation! </strong>
-  
-  
-    <div>
-      <blockquote>
-        Odoc language lack support for quotation!
-      </blockquote>
-    </div>
-  
-  #### Tags
-  since 4\.08
-  Tags are explained in this section.
-  $ odoc markdown-generate list.odocl -o markdown
-  # List
-  Utilities for List data type.
-  This module is compatible with original ocaml stdlib. In general, all functions comes with the original stdlib also applies to this collection, however, this module provides faster and stack safer utilities
-  ```
-  type 'a t = 'a list
-  ```
-  `'a t` is compatible with built-in `list` type
-  ### length
-  ```
-  val make : 'a t -> int
-  ```
-  `length xs`
-  returns the length of the list xs
-  ### size
-  ```
-  val size : 'a t -> int
-  ```
-  **See** [length](#length)
-  ### head
-  ```
-  val head : 'a t -> 'a option
-  ```
-  `head xs` returns `None` if `xs` is the empty list, otherwise it returns `Some value` where `value` is the first element in the list.
-  ```ocaml
-    head [] = None;;
-    head [ 1; 2; 3 ] = Some 1
-  ```
-  ```
-  val headExn : 'a t -> 'a
-  ```
-  `headExn xs`
-  **See** [`head`](#val-head)
-  **raise** an exception if `xs` is empty

@@ -42,13 +42,13 @@ module Path = struct
     let dir = List.map segment_to_string dir in
     let file =
       match file with
-      | [] -> "index.html"
-      | [ (`LeafPage, name) ] -> name ^ ".html"
+      | [] -> "index.md"
+      | [ (`LeafPage, name) ] -> name ^ ".md"
       | [ (`File, name) ] -> name
-      | [ (`SourcePage, name) ] -> name ^ ".html"
+      | [ (`SourcePage, name) ] -> name ^ ".md"
       | xs ->
           (* assert (Config.flat config); *)
-          String.concat "-" (List.map segment_to_string xs) ^ ".html"
+          String.concat "-" (List.map segment_to_string xs) ^ ".md"
     in
     (dir, file)
 
@@ -89,7 +89,6 @@ let href ~config ~resolve t =
             let dir, file = Path.get_dir_and_file ~config path in
             dir @ [ file ]
           in
-
           let current_from_common_ancestor, target_from_common_ancestor =
             drop_shared_prefix current_loc target_loc
           in
@@ -110,16 +109,6 @@ let href ~config ~resolve t =
                 List.map (fun _ -> "..") (List.tl l)
                 @ target_from_common_ancestor
           in
-          let remove_index_html l =
-            match List.rev l with
-            | "index.html" :: rest -> List.rev ("" :: rest)
-            | _ -> l
-          in
-          let relative_target =
-            if (* Config.semantic_uris config *) true then
-              remove_index_html relative_target
-            else relative_target
-          in
           match (relative_target, anchor) with
           | [], "" -> "#"
-          | page, _ -> add_anchor @@ String.concat "/" page))
+          | page, _ -> "./" ^ add_anchor @@ String.concat "/" page))
