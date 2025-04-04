@@ -32,12 +32,7 @@ end
 
 let source fn (t : Source.t) =
   let rec token (x : Source.token) =
-    match x with
-    | Elt i -> fn i
-    | Tag (None, l) -> tokens l
-    | Tag (Some _s, l) ->
-        (* TODO: Implement tag with Some, what's the difference between Some and None? *)
-        tokens l
+    match x with Elt i -> fn i | Tag (_, l) -> tokens l
   and tokens t = List.concat_map token t in
   tokens t
 
@@ -54,17 +49,18 @@ and styled style ~emph_level:_ content =
       let emphasis = Md.Inline.Emphasis.make inlines_as_one_inline in
       [ Md.Inline.Emphasis (emphasis, Md.meta) ]
   | `Superscript | `Subscript ->
-      (* CommonMark doesn't have native support for superscript/subscript,
-             so we just include the content as inline directly *)
+      (* CommonMark doesn't have support for superscript/subscript, render the content as inline *)
       content
 
-let rec inline_text_only (inline : Inline.t) : string list =
+let entity = function "#45" -> "-" | "gt" -> ">" | e -> "&" ^ e ^ ";"
+
+let rec inline_text_only inline =
   List.concat_map
     (fun (i : Inline.one) ->
       match i.desc with
       | Text "" -> []
       | Text s -> [ s ]
-      | Entity s -> [ s ]
+      | Entity s -> [ entity s ]
       | Linebreak -> []
       | Styled (_, content) -> inline_text_only content
       | Link { content; _ } -> inline_text_only content
@@ -88,12 +84,10 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) =
     match t.desc with
     | Text s -> [ Md.Inline.Text (s, Md.meta) ]
     | Entity s ->
-        (* In Markdown, HTML entities are supported directly, so we can just output them as text *)
+        (* In CommonMark, HTML entities are supported directly, so we can just output them as text *)
         [ Md.Inline.Text (s, Md.meta) ]
     | Linebreak ->
-        (* In CommonMark, a hard line break can be represented by a backslash followed by a newline
-           or by two or more spaces at the end of a line. We'll use the hard break here. *)
-        (* We could use Thematic_break ? *)
+        (* In CommonMark, a hard line break can be represented by a backslash followed by a newline or by two or more spaces at the end of a line. We use a hard break *)
         let break = Md.Inline.Break.make `Hard in
         [ Md.Inline.Break (break, Md.meta) ]
     | Styled (style, c) ->
@@ -108,8 +102,7 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) =
         let link_reference = `Inline (link_definition, Md.meta) in
         let inline_link = Md.Inline.Link.make link_inline link_reference in
         [ Md.Inline.Link (inline_link, Md.meta) ]
-    | Link { target = Internal internal; content; tooltip = _ } ->
-        (* TODO: What's tooltip? *)
+    | Link { target = Internal internal; content; _ } ->
         let href =
           match internal with
           | Resolved uri ->
@@ -117,7 +110,7 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) =
               let url = Link.href ~config ~resolve uri in
               (url, Md.meta)
           | Unresolved ->
-              (* TODO: What's unresolved? A non-existing page/link? *)
+              (* TODO: What's unresolved? A non-existing page/link? Do we want to raise or empty? *)
               ("", Md.meta)
         in
         let inline_content = inline ~config ~emph_level ~resolve content in
@@ -127,23 +120,28 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) =
         let inline_link = Md.Inline.Link.make link_inline link_reference in
         [ Md.Inline.Link (inline_link, Md.meta) ]
     | Source c ->
-        (* Markdown doesn't allow any complex node inside inline text, right now rendering only inline nodes, in the future we can render everything as strings *)
+        (* CommonMark doesn't allow any complex node inside inline text, right now rendering inline nodes as text *)
         let content = String.concat ~sep:"" (source inline_text_only c) in
         [ Md.Inline.Code_span (Md.Inline.Code_span.of_string content, Md.meta) ]
     | Math s ->
-        (* Since CommonMark doesn't support Math's, we just treat it as text.
-          | Ext_math_block of Code_block.t node
-          {{!Cmarkit.ext_math_display}display math} *)
-        [ Md.Inline.Text (s, Md.meta) ]
-    | Raw_markup _ ->
-        (* TODO: Is there any way to trick this? *)
-        failwith "Markdown doesn't support raw markup in inline text"
+        (* Since CommonMark doesn't support Math's, we just treat it as code. Maybe could use Ext_math_block or Ext_math_display *)
+        [ Md.Inline.Code_span (Md.Inline.Code_span.of_string s, Md.meta) ]
+    | Raw_markup (target, content) -> (
+        match Astring.String.Ascii.lowercase target with
+        | "html" ->
+            let block_lines = Md.Block_line.tight_list_of_string content in
+            [ Md.Inline.Raw_html (block_lines, Md.meta) ]
+        | another_lang ->
+            (* TODO: Is this correct? *)
+            let msg =
+              "Markdown only supports html blocks. There's a raw with "
+              ^ another_lang
+            in
+            failwith msg)
   in
   List.concat_map one l
 
 let heading ~config ~resolve (h : Heading.t) : Md.Block.t list =
-  (* TODO: Can I do something with the id? *)
-  let _id = h.label in
   let inlines = inline ~config ~resolve h.title in
   let content = Md.Inline.Inlines (inlines, Md.meta) in
   let heading =
@@ -325,7 +323,7 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
           (* We extract definition as inline, since it came as "Block". There seems to be no way (in Cmarkit) to make it inline *)
           let definition_inline =
             Md.Inline.Text
-              (String.concat ~sep:" " (block_text_only definition), Md.meta)
+              (String.concat ~sep:"" (block_text_only definition), Md.meta)
           in
           let space = Md.Inline.Text (" ", Md.meta) in
           let term_inline =
@@ -335,7 +333,6 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
         in
         List.concat_map item l
     | Verbatim s ->
-        (* TODO: Not entirely sure if this is right, in HTML is `mk_block Html.pre [ Html.txt s ]` *)
         let code_snippet =
           Md.Block.Code_block
             (Md.Block.Code_block.make [ (s, Md.meta) ], Md.meta)
@@ -352,19 +349,24 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
         in
         [ code_snippet ]
     | Math s ->
-        let math_as_inline_text = Md.Inline.Text (s, Md.meta) in
-        let inlines = Md.Inline.Inlines ([ math_as_inline_text ], Md.meta) in
-        let paragraph_block =
-          Md.Block.Paragraph (Md.Block.Paragraph.make inlines, Md.meta)
+        (* Since CommonMark doesn't support Math's, we just treat it as code. Maybe could use Ext_math_block or Ext_math_display *)
+        let block =
+          Md.Block.Code_block
+            (Md.Block.Code_block.make [ (s, Md.meta) ], Md.meta)
         in
-        [ paragraph_block ]
+        [ block ]
     | Raw_markup (target, content) -> (
-        (* TODO: Is this correct? *)
         match Astring.String.Ascii.lowercase target with
         | "html" ->
             let block_lines = Md.Block_line.list_of_string content in
             [ Md.Block.Html_block (block_lines, Md.meta) ]
-        | _ -> [])
+        | another_lang ->
+            (* TODO: Is this correct? *)
+            let msg =
+              "Markdown only supports html blocks. There's a raw with "
+              ^ another_lang
+            in
+            failwith msg)
     | Audio (_target, _alt) ->
         (* TODO: Raise a decent error here? Only saw assert false :( *)
         failwith "Audio isn't supported in markdown"
@@ -423,7 +425,6 @@ and items ~config ~resolve l : Md.Block.t list =
           content = { summary = _summary; status = _status; content = _content };
         }
       :: rest ->
-        (* TODO: Test includes *)
         let content = block ~config ~resolve doc in
         (continue_with [@tailcall]) rest content
     | Declaration
@@ -473,15 +474,9 @@ and documentedSrc ~config ~resolve (t : DocumentedSrc.t) =
         in
         let inline_source = source inline_text_only code in
         let code_block = [ (String.concat ~sep:"" inline_source, Md.meta) ] in
-        let fenced =
-          Md.Block.Code_block.
-            { indent = 0; opening_fence = ("", Md.meta); closing_fence = None }
-        in
         let block =
           Md.Block.Code_block
-            ( Md.Block.Code_block.make ~layout:(`Fenced fenced) ?info_string
-                code_block,
-              Md.meta )
+            (Md.Block.Code_block.make ?info_string code_block, Md.meta)
         in
         [ block ] @ to_markdown rest
     | Subpage subp :: _ -> subpage ~config ~resolve subp
@@ -704,23 +699,13 @@ module Page = struct
       ~breadcrumbs ~url ~uses_katex doc subpages
 
   and source_page ~config ~sidebar sp =
+    (* TODO: I'm not enturely sure when this is called *)
     let { Source_page.url; contents = _ } = sp in
     let _resolve = Link.Current sp.url in
     let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~sidebar ~url in
-    let sidebar =
-      (* match sidebar with
-      | None -> None
-      | Some sidebar ->
-          let sidebar = Odoc_document.Sidebar.to_block sidebar url in
-          (Some (block ~config ~resolve sidebar) :> any Html.elt list option) *)
-      None
-    in
+    let sidebar = None in
     let title = url.Url.Path.name and doc = [ Md.Block.empty ] in
-    (* and doc = Markdown_source.html_of_doc ~config ~resolve contents in *)
-    let header =
-      (* items ~config ~resolve (Doctree.PageTitle.render_src_title sp) *)
-      []
-    in
+    let header = [] in
     Markdown_page.make_src ~breadcrumbs ~header ~config ~url ~sidebar title doc
 end
 
@@ -731,13 +716,6 @@ let render ~(config : Config.t) ~sidebar = function
   | Source_page src -> [ Page.source_page ~config ~sidebar src ]
 
 let filepath ~config url = Link.Path.as_filename ~config url
-
-(* TODO: Where is this beeing called? *)
-let doc ~config ~xref_base_uri b =
-  let resolve = Link.Base xref_base_uri in
-  let block = block ~config ~resolve b in
-  let root_block = Md.Block.Blocks (block, Md.meta) in
-  Cmarkit.Doc.make root_block
 
 let inline ~config ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in

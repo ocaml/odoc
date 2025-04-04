@@ -48,8 +48,7 @@ See {{!styled}this section} for the syntax of references.
 {ol
   {- First numbered item}
   {- Second numbered item}
-  {li can also be used}}}
-
+  {li can also be used}}
 
 {3 Code blocks}
 
@@ -65,7 +64,7 @@ Code block with {[inner code block syntax]}
 
 {@python[
 [i+1 for i in xrange(2)]
-]}}
+]}
 
 {3 Verbatim}
 
@@ -97,7 +96,7 @@ For display math:
     {td Cell 2}}
   {tr
     {td Cell 3}
-    {td Cell 4}}}]}}
+    {td Cell 4}}}]}
 
 {4 Light syntax}
 
@@ -108,11 +107,16 @@ For display math:
 
 {3 HTML}
 
+This is a strong tag: {%html: <strong> Odoc language lack support for quotation! </strong>
+%}
+
 {%html:
-  <blockquote>
-    Odoc language lack support for quotation!
-  </blockquote>
-%}}
+  <div>
+    <blockquote>
+      Odoc language lack support for quotation!
+    </blockquote>
+  </div>
+%}
 
 {3 Tags}
 
