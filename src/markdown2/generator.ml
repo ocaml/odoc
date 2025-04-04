@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-[@@@warning "-26-27"]
+[@@@warning "-26-27-32"]
 
 open Odoc_utils
 
@@ -30,10 +30,10 @@ module Md = struct
   let meta = Cmarkit.Meta.none
 end
 
-let source k (t : Source.t) =
+let source fn (t : Source.t) =
   let rec token (x : Source.token) =
     match x with
-    | Elt i -> k i
+    | Elt i -> fn i
     | Tag (None, l) -> tokens l
     | Tag (Some _s, l) ->
         (* TODO: Implement tag with Some, what's the difference between Some and None? *)
@@ -62,8 +62,10 @@ let rec inline_text_only (inline : Inline.t) : string list =
   List.concat_map
     (fun (i : Inline.one) ->
       match i.desc with
+      | Text "" -> []
       | Text s -> [ s ]
       | Entity s -> [ s ]
+      | Linebreak -> []
       | Styled (_, content) -> inline_text_only content
       | Link { content; _ } -> inline_text_only content
       | Source s -> source inline_text_only s
@@ -125,7 +127,7 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) =
         let inline_link = Md.Inline.Link.make link_inline link_reference in
         [ Md.Inline.Link (inline_link, Md.meta) ]
     | Source c ->
-        (* Markdown doesn't allow any complex node inside inline text, right now rendering only Inline.Text nodes, in the future we can render everything as strings *)
+        (* Markdown doesn't allow any complex node inside inline text, right now rendering only inline nodes, in the future we can render everything as strings *)
         let content = String.concat ~sep:"" (source inline_text_only c) in
         [ Md.Inline.Code_span (Md.Inline.Code_span.of_string content, Md.meta) ]
     | Math s ->
@@ -463,11 +465,23 @@ and documentedSrc ~config ~resolve (t : DocumentedSrc.t) =
     match t with
     | [] -> []
     | (Code _ | Alternative _) :: _ ->
-        let code, _, rest = take_code t in
-        let inline_source = source (inline ~config ~resolve) code in
-        let inlines = Md.Inline.Inlines (inline_source, Md.meta) in
+        let code, header, rest = take_code t in
+        let info_string =
+          match header with
+          | Some header -> Some (header, Md.meta)
+          | None -> None
+        in
+        let inline_source = source inline_text_only code in
+        let code_block = [ (String.concat ~sep:"" inline_source, Md.meta) ] in
+        let fenced =
+          Md.Block.Code_block.
+            { indent = 0; opening_fence = ("", Md.meta); closing_fence = None }
+        in
         let block =
-          Md.Block.Paragraph (Md.Block.Paragraph.make inlines, Md.meta)
+          Md.Block.Code_block
+            ( Md.Block.Code_block.make ~layout:(`Fenced fenced) ?info_string
+                code_block,
+              Md.meta )
         in
         [ block ] @ to_markdown rest
     | Subpage subp :: _ -> subpage ~config ~resolve subp
@@ -491,8 +505,7 @@ and documentedSrc ~config ~resolve (t : DocumentedSrc.t) =
           List.append content block_doc
         in
         let all_blocks = List.concat_map one l in
-        let rest_of_markdown = to_markdown rest in
-        all_blocks @ rest_of_markdown
+        all_blocks @ to_markdown rest
   in
   to_markdown t
 
