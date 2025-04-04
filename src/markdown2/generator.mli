@@ -12,12 +12,6 @@ val items :
   Odoc_document.Types.Item.t list ->
   Cmarkit.Block.t list
 
-val doc :
-  config:Config.t ->
-  xref_base_uri:string ->
-  Odoc_document.Types.Block.t ->
-  Cmarkit.Doc.t
-
 val inline :
   config:Config.t ->
   xref_base_uri:string ->

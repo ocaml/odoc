@@ -1,15 +1,13 @@
-(** HTML-specific interpretation of {!Odoc_document.Url} *)
+(** Markdown-specific interpretation of {!Odoc_document.Url} *)
 
-module Url = Odoc_document.Url
+type resolve = Current of Odoc_document.Url.Path.t | Base of string
 
-type resolve = Current of Url.Path.t | Base of string
-
-val href : config:Config.t -> resolve:resolve -> Url.t -> string
+val href : config:Config.t -> resolve:resolve -> Odoc_document.Url.t -> string
 
 module Path : sig
-  val is_leaf_page : Url.Path.t -> bool
+  val is_leaf_page : Odoc_document.Url.Path.t -> bool
 
-  val for_printing : Url.Path.t -> string list
+  val for_printing : Odoc_document.Url.Path.t -> string list
 
-  val as_filename : config:Config.t -> Url.Path.t -> Fpath.t
+  val as_filename : config:Config.t -> Odoc_document.Url.Path.t -> Fpath.t
 end
