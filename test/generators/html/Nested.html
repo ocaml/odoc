@@ -12,7 +12,7 @@
    <a href="index.html">Index</a> &#x00BB; Nested
   </nav>
   <header class="odoc-preamble">
-   <h1>Module <code><span>Nested</span></code></h1>
+   <section><h1>Module <code><span>Nested</span></code></h1></section>
    <p>This comment needs to be here before #235 is fixed.</p>
   </header>
   <div class="odoc-tocs">
@@ -25,77 +25,90 @@
    </nav>
   </div>
   <div class="odoc-content">
-   <h2 id="module"><a href="#module" class="anchor"></a>Module</h2>
-   <div class="odoc-spec">
-    <div class="spec module anchored" id="module-X">
-     <a href="#module-X" class="anchor"></a>
-     <code>
-      <span><span class="keyword">module</span> <a href="Nested-X.html">X</a>
-      </span>
-      <span> : <span class="keyword">sig</span> ... 
-       <span class="keyword">end</span>
-      </span>
-     </code>
-    </div><div class="spec-doc"><p>This is module X.</p></div>
-   </div>
-   <h2 id="module-type"><a href="#module-type" class="anchor"></a>Module type
-   </h2>
-   <div class="odoc-spec">
-    <div class="spec module-type anchored" id="module-type-Y">
-     <a href="#module-type-Y" class="anchor"></a>
-     <code>
-      <span><span class="keyword">module</span> 
-       <span class="keyword">type</span> 
-       <a href="Nested-module-type-Y.html">Y</a>
-      </span>
-      <span> = <span class="keyword">sig</span> ... 
-       <span class="keyword">end</span>
-      </span>
-     </code>
-    </div><div class="spec-doc"><p>This is module type Y.</p></div>
-   </div><h2 id="functor"><a href="#functor" class="anchor"></a>Functor</h2>
-   <div class="odoc-spec">
-    <div class="spec module anchored" id="module-F">
-     <a href="#module-F" class="anchor"></a>
-     <code>
-      <span><span class="keyword">module</span> <a href="Nested-F.html">F</a>
-      </span>
-      <span> (<a href="Nested-F-argument-1-Arg1.html">Arg1</a> : 
-       <a href="Nested-module-type-Y.html">Y</a>) (
-       <a href="Nested-F-argument-2-Arg2.html">Arg2</a> : 
-       <span class="keyword">sig</span> ... <span class="keyword">end</span>
-       ) : <span class="keyword">sig</span> ... 
-       <span class="keyword">end</span>
-      </span>
-     </code>
-    </div><div class="spec-doc"><p>This is a functor F.</p></div>
-   </div><h2 id="class"><a href="#class" class="anchor"></a>Class</h2>
-   <div class="odoc-spec">
-    <div class="spec class anchored" id="class-z">
-     <a href="#class-z" class="anchor"></a>
-     <code>
-      <span><span class="keyword">class</span> 
-       <span class="keyword">virtual</span> 
-      </span><span><a href="Nested-class-z.html">z</a></span>
-      <span> : <span class="keyword">object</span> ... 
-       <span class="keyword">end</span>
-      </span>
-     </code>
-    </div><div class="spec-doc"><p>This is class z.</p></div>
-   </div>
-   <div class="odoc-spec">
-    <div class="spec class anchored" id="class-inherits">
-     <a href="#class-inherits" class="anchor"></a>
-     <code>
-      <span><span class="keyword">class</span> 
-       <span class="keyword">virtual</span> 
-      </span><span><a href="Nested-class-inherits.html">inherits</a></span>
-      <span> : <span class="keyword">object</span> ... 
-       <span class="keyword">end</span>
-      </span>
-     </code>
+   <section id="section-module">
+    <h2 id="module"><a href="#module" class="anchor"></a>Module</h2>
+    <div class="odoc-spec">
+     <div class="spec module anchored" id="module-X">
+      <a href="#module-X" class="anchor"></a>
+      <code>
+       <span><span class="keyword">module</span> 
+        <a href="Nested-X.html">X</a>
+       </span>
+       <span> : <span class="keyword">sig</span> ... 
+        <span class="keyword">end</span>
+       </span>
+      </code>
+     </div><div class="spec-doc"><p>This is module X.</p></div>
     </div>
-   </div>
+   </section>
+   <section id="section-module-type">
+    <h2 id="module-type"><a href="#module-type" class="anchor"></a>Module
+      type
+    </h2>
+    <div class="odoc-spec">
+     <div class="spec module-type anchored" id="module-type-Y">
+      <a href="#module-type-Y" class="anchor"></a>
+      <code>
+       <span><span class="keyword">module</span> 
+        <span class="keyword">type</span> 
+        <a href="Nested-module-type-Y.html">Y</a>
+       </span>
+       <span> = <span class="keyword">sig</span> ... 
+        <span class="keyword">end</span>
+       </span>
+      </code>
+     </div><div class="spec-doc"><p>This is module type Y.</p></div>
+    </div>
+   </section>
+   <section id="section-functor">
+    <h2 id="functor"><a href="#functor" class="anchor"></a>Functor</h2>
+    <div class="odoc-spec">
+     <div class="spec module anchored" id="module-F">
+      <a href="#module-F" class="anchor"></a>
+      <code>
+       <span><span class="keyword">module</span> 
+        <a href="Nested-F.html">F</a>
+       </span>
+       <span> (<a href="Nested-F-argument-1-Arg1.html">Arg1</a> : 
+        <a href="Nested-module-type-Y.html">Y</a>) (
+        <a href="Nested-F-argument-2-Arg2.html">Arg2</a> : 
+        <span class="keyword">sig</span> ... <span class="keyword">end</span>
+        ) : <span class="keyword">sig</span> ... 
+        <span class="keyword">end</span>
+       </span>
+      </code>
+     </div><div class="spec-doc"><p>This is a functor F.</p></div>
+    </div>
+   </section>
+   <section id="section-class">
+    <h2 id="class"><a href="#class" class="anchor"></a>Class</h2>
+    <div class="odoc-spec">
+     <div class="spec class anchored" id="class-z">
+      <a href="#class-z" class="anchor"></a>
+      <code>
+       <span><span class="keyword">class</span> 
+        <span class="keyword">virtual</span> 
+       </span><span><a href="Nested-class-z.html">z</a></span>
+       <span> : <span class="keyword">object</span> ... 
+        <span class="keyword">end</span>
+       </span>
+      </code>
+     </div><div class="spec-doc"><p>This is class z.</p></div>
+    </div>
+    <div class="odoc-spec">
+     <div class="spec class anchored" id="class-inherits">
+      <a href="#class-inherits" class="anchor"></a>
+      <code>
+       <span><span class="keyword">class</span> 
+        <span class="keyword">virtual</span> 
+       </span><span><a href="Nested-class-inherits.html">inherits</a></span>
+       <span> : <span class="keyword">object</span> ... 
+        <span class="keyword">end</span>
+       </span>
+      </code>
+     </div>
+    </div>
+   </section>
   </div>
  </body>
 </html>

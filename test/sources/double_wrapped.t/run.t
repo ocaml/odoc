@@ -51,9 +51,11 @@ Look if all the source files are generated:
      <a href="../index.html">Main</a> &#x00BB; A
     </nav>
     <header class="odoc-preamble">
-     <h1>Module <code><span>Main.A</span></code>
-      <a href="../../src/a.ml.html" class="source_link">Source</a>
-     </h1>
+     <section>
+      <h1>Module <code><span>Main.A</span></code>
+       <a href="../../src/a.ml.html" class="source_link">Source</a>
+      </h1>
+     </section>
     </header>
     <div class="odoc-content">
      <div class="odoc-spec">

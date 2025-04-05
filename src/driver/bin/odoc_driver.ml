@@ -15,7 +15,8 @@ let check_packages packages =
           exit 1)
 
 let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
-    ~generate_grep ~index_grep ~remap ~index_mld packages
+    ~generate_grep ~index_grep ~remap ~index_mld ~packages_dir ~lib_map_name
+    packages
     {
       Common_args.verbose;
       html_dir;
@@ -49,7 +50,11 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
   Eio_main.run @@ fun env ->
   Eio.Switch.run @@ fun sw ->
   let () = Worker_pool.start_workers env sw nb_workers in
-  let all = Packages.of_packages ~packages_dir:None packages in
+  let all =
+    Packages.of_packages ~packages_dir
+      ~package_dir_overrides:[ ("odoc_notebook", "notebooks") ]
+      packages
+  in
   let all = Packages.remap_virtual all in
   let extra_paths = Voodoo.empty_extra_paths in
 
@@ -58,6 +63,29 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
   in
 
   Logs.app (fun m -> m "Starting the compilation process...");
+
+  let lib_map = Hashtbl.create 1024 in
+  List.iter
+    (fun (pkg : Packages.t) ->
+      let libs = pkg.libraries in
+      List.iter
+        (fun (lib : Packages.libty) ->
+          let lib_dir = Odoc_unit.lib_dir pkg lib in
+          Hashtbl.add lib_map lib.lib_name lib_dir)
+        libs)
+    all;
+
+  (let oc = open_out (Fpath.to_string Fpath.(odoc_dir / "lib_map.json")) in
+   Printf.fprintf oc "{\n";
+   let lines =
+     Hashtbl.fold
+       (fun lib lib_dir acc ->
+         Printf.sprintf "\"%s\": \"%s\"" lib (Fpath.to_string lib_dir) :: acc)
+       lib_map []
+   in
+   Printf.fprintf oc "%s" (String.concat ",\n" lines);
+   Printf.fprintf oc "}\n";
+   close_out oc);
 
   let () =
     Eio.Fiber.both
@@ -148,10 +176,10 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
   if stats then Stats.bench_results html_dir
 
 let run dirs compile_grep link_grep generate_grep index_grep remap packages
-    index_mld common : unit =
+    index_mld packages_dir lib_map_name common : unit =
   let fn =
     run_inner ~compile_grep ~link_grep ~generate_grep ~index_grep ~remap
-      ~index_mld packages common
+      ~index_mld ~packages_dir ~lib_map_name packages common
   in
   Common_args.with_dirs dirs fn
 
@@ -201,11 +229,26 @@ let index_mld =
     & opt (some Common_args.fpath_arg) None
     & info [ "index-mld" ] ~docv:"INDEX" ~doc)
 
+let packages_dir =
+  let doc = "Directory containing the opam packages" in
+  Arg.(
+    value
+    & opt (some Common_args.fpath_arg) None
+    & info [ "packages-dir" ] ~docv:"DIR" ~doc)
+
+let lib_map_name =
+  let doc = "Filename to output json map from library name to lib directory" in
+  Arg.(
+    value
+    & opt (some Common_args.fpath_arg) None
+    & info [ "lib-map" ] ~docv:"DIR" ~doc)
+
 let cmd_term =
   let module A = Common_args in
   Term.(
     const run $ A.dirs_term $ compile_grep $ link_grep $ generate_grep
-    $ index_grep $ remap $ packages $ index_mld $ Common_args.term)
+    $ index_grep $ remap $ packages $ index_mld $ packages_dir $ lib_map_name
+    $ Common_args.term)
 
 let cmd =
   let doc =

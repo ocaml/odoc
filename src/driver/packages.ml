@@ -439,7 +439,7 @@ let of_libs ~packages_dir libs =
   let packages = Util.StringMap.bindings packages |> List.map snd in
   fix_missing_deps packages
 
-let of_packages ~packages_dir packages =
+let of_packages ~packages_dir ~package_dir_overrides packages =
   Logs.app (fun m -> m "Deciding which packages to build...");
   let deps =
     if packages = [] then Opam.all_opam_packages () else Opam.deps packages
@@ -495,7 +495,10 @@ let of_packages ~packages_dir packages =
             []
             (files.Opam.libs |> Fpath.Set.to_list)
         in
-        let pkg_dir = pkg_dir packages_dir pkg.name in
+        let pkg_dir =
+          try List.assoc pkg.name package_dir_overrides |> Fpath.v
+          with _ -> pkg_dir packages_dir pkg.name
+        in
         let config =
           match files.odoc_config with
           | None -> Global_config.empty

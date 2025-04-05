@@ -234,7 +234,8 @@ let rec nestable_block_element :
       let warnings = List.map Error.t_of_parser_t warnings in
       List.iter (Error.raise_warning ~non_fatal:true) warnings;
       let content = Location.at content.location trimmed_content in
-      Location.at location (`Code_block (lang_tag, content, other_tags, outputs))
+      Location.at location
+        (`Code_block (lang_tag, content, other_tags, outputs))
   | { value = `Math_block s; location } -> Location.at location (`Math_block s)
   | { value = `Verbatim v; location } ->
       let v, warnings = Odoc_parser.codeblock_content location v in

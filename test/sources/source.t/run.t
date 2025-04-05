@@ -105,9 +105,9 @@ Compile the pages with the --source option:
 Source links generated in the documentation:
 
   $ grep source_link html/A/index.html -B 2
-    <header class="odoc-preamble">
-     <h1>Module <code><span>A</span></code>
-      <a href="../src/a.ml.html" class="source_link">Source</a>
+     <section>
+      <h1>Module <code><span>A</span></code>
+       <a href="../src/a.ml.html" class="source_link">Source</a>
   --
       <div class="spec type anchored" id="type-t">
        <a href="#type-t" class="anchor"></a>

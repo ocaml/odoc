@@ -393,7 +393,7 @@ let rec block (l : Block.t) =
             indent 2 (str "@" ++ key ++ str ":" ++ sp ++ def)
           in
           list ~sep:break (List.map f descrs) ++ continue rest
-      | Source (_, _, _, content) ->
+      | Source (_, _, _, content, _) ->
           env "EX" "EE" "" (source_code content) ++ continue rest
       | Math s -> math s ++ continue rest
       | Verbatim content -> env "EX" "EE" "" (str "%s" content) ++ continue rest

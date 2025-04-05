@@ -221,19 +221,25 @@ let rec nestable_block_element :
       in
       let value : 'a Odoc_parser.Loc.with_location -> 'a = fun x -> x.value in
       let classes =
-        List.filter_map (function
-          | `Binding (_, _) -> None
-          | `Tag t -> Some (value t)) tags in
+        List.filter_map
+          (function `Binding (_, _) -> None | `Tag t -> Some (value t))
+          tags
+      in
       let data =
-        List.filter_map (function
-          | `Binding (k, v) ->
-              Some (value k, value v)
-          | `Tag _ -> None) tags in
+        List.filter_map
+          (function
+            | `Binding (k, v) -> Some (value k, value v) | `Tag _ -> None)
+          tags
+      in
       [
         block
-        @@ Source (lang_tag, classes, data, source_of_code (Odoc_model.Location_.value code));
+        @@ Source
+             ( lang_tag,
+               classes,
+               data,
+               source_of_code (Odoc_model.Location_.value code),
+               rest );
       ]
-      @ rest
   | `Math_block s -> [ block @@ Math s ]
   | `Verbatim s -> [ block @@ Verbatim s ]
   | `Modules ms -> [ module_references ms ]

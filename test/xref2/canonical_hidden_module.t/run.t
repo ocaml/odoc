@@ -83,7 +83,7 @@ See the comments on the types at the end of test.mli for the expectation.
      <a href="../index.html">Index</a> &#x00BB; Test
     </nav>
     <header class="odoc-preamble">
-     <h1>Module <code><span>Test</span></code></h1>
+     <section><h1>Module <code><span>Test</span></code></h1></section>
     </header>
     <div class="odoc-content">
      <div class="odoc-spec">

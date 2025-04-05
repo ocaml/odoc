@@ -13,8 +13,8 @@
    <a href="Ocamlary.html">Ocamlary</a> &#x00BB; Aliases
   </nav>
   <header class="odoc-preamble">
-   <h1>Module <code><span>Ocamlary.Aliases</span></code></h1>
-   <p>Let's imitate jst's layout.</p>
+   <section><h1>Module <code><span>Ocamlary.Aliases</span></code></h1>
+   </section><p>Let's imitate jst's layout.</p>
   </header>
   <div class="odoc-tocs">
    <nav class="odoc-toc odoc-local-toc">
@@ -105,139 +105,142 @@
       </span>
      </code>
     </div>
-   </div><h4 id="incl"><a href="#incl" class="anchor"></a>include of Foo</h4>
-   <p>Just for giggle, let's see what happens when we include 
-    <a href="Ocamlary-Aliases-Foo.html"><code>Foo</code></a>.
-   </p>
-   <div class="odoc-include">
-    <details open="open">
-     <summary class="spec include">
+   </div>
+   <section id="section-incl">
+    <h4 id="incl"><a href="#incl" class="anchor"></a>include of Foo</h4>
+    <p>Just for giggle, let's see what happens when we include 
+     <a href="Ocamlary-Aliases-Foo.html"><code>Foo</code></a>.
+    </p>
+    <div class="odoc-include">
+     <details open="open">
+      <summary class="spec include">
+       <code>
+        <span><span class="keyword">include</span> 
+         <span class="keyword">module</span> 
+         <span class="keyword">type</span> <span class="keyword">of</span>
+          <a href="Ocamlary-Aliases-Foo.html">Foo</a>
+        </span>
+       </code>
+      </summary>
+      <div class="odoc-spec">
+       <div class="spec module anchored" id="module-A">
+        <a href="#module-A" class="anchor"></a>
+        <code><span><span class="keyword">module</span> A</span>
+         <span> = <a href="Ocamlary-Aliases-Foo-A.html">Foo.A</a></span>
+        </code>
+       </div>
+      </div>
+      <div class="odoc-spec">
+       <div class="spec module anchored" id="module-B">
+        <a href="#module-B" class="anchor"></a>
+        <code><span><span class="keyword">module</span> B</span>
+         <span> = <a href="Ocamlary-Aliases-Foo-B.html">Foo.B</a></span>
+        </code>
+       </div>
+      </div>
+      <div class="odoc-spec">
+       <div class="spec module anchored" id="module-C">
+        <a href="#module-C" class="anchor"></a>
+        <code><span><span class="keyword">module</span> C</span>
+         <span> = <a href="Ocamlary-Aliases-Foo-C.html">Foo.C</a></span>
+        </code>
+       </div>
+      </div>
+      <div class="odoc-spec">
+       <div class="spec module anchored" id="module-D">
+        <a href="#module-D" class="anchor"></a>
+        <code><span><span class="keyword">module</span> D</span>
+         <span> = <a href="Ocamlary-Aliases-Foo-D.html">Foo.D</a></span>
+        </code>
+       </div>
+      </div>
+      <div class="odoc-spec">
+       <div class="spec module anchored" id="module-E">
+        <a href="#module-E" class="anchor"></a>
+        <code>
+         <span><span class="keyword">module</span> 
+          <a href="Ocamlary-Aliases-E.html">E</a>
+         </span>
+         <span> : <span class="keyword">sig</span> ... 
+          <span class="keyword">end</span>
+         </span>
+        </code>
+       </div>
+      </div>
+     </details>
+    </div>
+    <div class="odoc-spec">
+     <div class="spec type anchored" id="type-testa">
+      <a href="#type-testa" class="anchor"></a>
+      <code><span><span class="keyword">type</span> testa</span>
+       <span> = <a href="Ocamlary-Aliases-Foo-A.html#type-t">A.t</a></span>
+      </code>
+     </div>
+    </div>
+    <p>And also, let's refer to 
+     <a href="Ocamlary-Aliases-Foo-A.html#type-t"><code>A.t</code></a>
+      and 
+     <a href="Ocamlary-Aliases-Foo-B.html#val-id"><code>Foo.B.id</code></a>
+    </p>
+    <div class="odoc-spec">
+     <div class="spec module anchored" id="module-P1">
+      <a href="#module-P1" class="anchor"></a>
       <code>
-       <span><span class="keyword">include</span> 
-        <span class="keyword">module</span> <span class="keyword">type</span>
-         <span class="keyword">of</span> 
-        <a href="Ocamlary-Aliases-Foo.html">Foo</a>
+       <span><span class="keyword">module</span> 
+        <a href="Ocamlary-Aliases-P1.html">P1</a>
+       </span>
+       <span> : <span class="keyword">sig</span> ... 
+        <span class="keyword">end</span>
        </span>
       </code>
-     </summary>
-     <div class="odoc-spec">
-      <div class="spec module anchored" id="module-A">
-       <a href="#module-A" class="anchor"></a>
-       <code><span><span class="keyword">module</span> A</span>
-        <span> = <a href="Ocamlary-Aliases-Foo-A.html">Foo.A</a></span>
-       </code>
-      </div>
      </div>
-     <div class="odoc-spec">
-      <div class="spec module anchored" id="module-B">
-       <a href="#module-B" class="anchor"></a>
-       <code><span><span class="keyword">module</span> B</span>
-        <span> = <a href="Ocamlary-Aliases-Foo-B.html">Foo.B</a></span>
-       </code>
-      </div>
+    </div>
+    <div class="odoc-spec">
+     <div class="spec module anchored" id="module-P2">
+      <a href="#module-P2" class="anchor"></a>
+      <code>
+       <span><span class="keyword">module</span> 
+        <a href="Ocamlary-Aliases-P2.html">P2</a>
+       </span>
+       <span> : <span class="keyword">sig</span> ... 
+        <span class="keyword">end</span>
+       </span>
+      </code>
      </div>
-     <div class="odoc-spec">
-      <div class="spec module anchored" id="module-C">
-       <a href="#module-C" class="anchor"></a>
-       <code><span><span class="keyword">module</span> C</span>
-        <span> = <a href="Ocamlary-Aliases-Foo-C.html">Foo.C</a></span>
-       </code>
-      </div>
+    </div>
+    <div class="odoc-spec">
+     <div class="spec module anchored" id="module-X1">
+      <a href="#module-X1" class="anchor"></a>
+      <code><span><span class="keyword">module</span> X1</span>
+       <span> = <a href="Ocamlary-Aliases-P2-Z.html">P2.Z</a></span>
+      </code>
      </div>
-     <div class="odoc-spec">
-      <div class="spec module anchored" id="module-D">
-       <a href="#module-D" class="anchor"></a>
-       <code><span><span class="keyword">module</span> D</span>
-        <span> = <a href="Ocamlary-Aliases-Foo-D.html">Foo.D</a></span>
-       </code>
-      </div>
+    </div>
+    <div class="odoc-spec">
+     <div class="spec module anchored" id="module-X2">
+      <a href="#module-X2" class="anchor"></a>
+      <code><span><span class="keyword">module</span> X2</span>
+       <span> = <a href="Ocamlary-Aliases-P2-Z.html">P2.Z</a></span>
+      </code>
      </div>
-     <div class="odoc-spec">
-      <div class="spec module anchored" id="module-E">
-       <a href="#module-E" class="anchor"></a>
-       <code>
-        <span><span class="keyword">module</span> 
-         <a href="Ocamlary-Aliases-E.html">E</a>
-        </span>
-        <span> : <span class="keyword">sig</span> ... 
-         <span class="keyword">end</span>
-        </span>
-       </code>
-      </div>
+    </div>
+    <div class="odoc-spec">
+     <div class="spec type anchored" id="type-p1">
+      <a href="#type-p1" class="anchor"></a>
+      <code><span><span class="keyword">type</span> p1</span>
+       <span> = <a href="Ocamlary-Aliases-P2-Z.html#type-t">X1.t</a></span>
+      </code>
      </div>
-    </details>
-   </div>
-   <div class="odoc-spec">
-    <div class="spec type anchored" id="type-testa">
-     <a href="#type-testa" class="anchor"></a>
-     <code><span><span class="keyword">type</span> testa</span>
-      <span> = <a href="Ocamlary-Aliases-Foo-A.html#type-t">A.t</a></span>
-     </code>
     </div>
-   </div>
-   <p>And also, let's refer to 
-    <a href="Ocamlary-Aliases-Foo-A.html#type-t"><code>A.t</code></a>
-     and 
-    <a href="Ocamlary-Aliases-Foo-B.html#val-id"><code>Foo.B.id</code></a>
-   </p>
-   <div class="odoc-spec">
-    <div class="spec module anchored" id="module-P1">
-     <a href="#module-P1" class="anchor"></a>
-     <code>
-      <span><span class="keyword">module</span> 
-       <a href="Ocamlary-Aliases-P1.html">P1</a>
-      </span>
-      <span> : <span class="keyword">sig</span> ... 
-       <span class="keyword">end</span>
-      </span>
-     </code>
+    <div class="odoc-spec">
+     <div class="spec type anchored" id="type-p2">
+      <a href="#type-p2" class="anchor"></a>
+      <code><span><span class="keyword">type</span> p2</span>
+       <span> = <a href="Ocamlary-Aliases-P2-Z.html#type-t">X2.t</a></span>
+      </code>
+     </div>
     </div>
-   </div>
-   <div class="odoc-spec">
-    <div class="spec module anchored" id="module-P2">
-     <a href="#module-P2" class="anchor"></a>
-     <code>
-      <span><span class="keyword">module</span> 
-       <a href="Ocamlary-Aliases-P2.html">P2</a>
-      </span>
-      <span> : <span class="keyword">sig</span> ... 
-       <span class="keyword">end</span>
-      </span>
-     </code>
-    </div>
-   </div>
-   <div class="odoc-spec">
-    <div class="spec module anchored" id="module-X1">
-     <a href="#module-X1" class="anchor"></a>
-     <code><span><span class="keyword">module</span> X1</span>
-      <span> = <a href="Ocamlary-Aliases-P2-Z.html">P2.Z</a></span>
-     </code>
-    </div>
-   </div>
-   <div class="odoc-spec">
-    <div class="spec module anchored" id="module-X2">
-     <a href="#module-X2" class="anchor"></a>
-     <code><span><span class="keyword">module</span> X2</span>
-      <span> = <a href="Ocamlary-Aliases-P2-Z.html">P2.Z</a></span>
-     </code>
-    </div>
-   </div>
-   <div class="odoc-spec">
-    <div class="spec type anchored" id="type-p1">
-     <a href="#type-p1" class="anchor"></a>
-     <code><span><span class="keyword">type</span> p1</span>
-      <span> = <a href="Ocamlary-Aliases-P2-Z.html#type-t">X1.t</a></span>
-     </code>
-    </div>
-   </div>
-   <div class="odoc-spec">
-    <div class="spec type anchored" id="type-p2">
-     <a href="#type-p2" class="anchor"></a>
-     <code><span><span class="keyword">type</span> p2</span>
-      <span> = <a href="Ocamlary-Aliases-P2-Z.html#type-t">X2.t</a></span>
-     </code>
-    </div>
-   </div>
+   </section>
   </div>
  </body>
 </html>

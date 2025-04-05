@@ -26,7 +26,9 @@ Root is used for the missing index in the unnamed root directory. TODO
    </head>
    <body class="odoc"><nav class="odoc-nav">index &#x00BB; Foo</nav>
     <header class="odoc-preamble">
-     <h1 id="foo"><a href="#foo" class="anchor"></a>Foo</h1>
+     <section id="section-foo">
+      <h1 id="foo"><a href="#foo" class="anchor"></a>Foo</h1>
+     </section>
     </header>
     <div class="odoc-tocs">
      <nav class="odoc-toc odoc-global-toc">

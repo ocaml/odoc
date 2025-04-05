@@ -27,44 +27,46 @@ To test visually, indent:
 Testing the working references:
 
   $ cat html/pkg1/index.html | grep img
-        <a href="caml.gif" class="img-link">
-         <img src="caml.gif" alt="caml.gif"/>
-        <a href="caml.png" class="img-link">
-         <img src="caml.png" alt="With alt text and {b emphasis}"/>
-        <a href="https://picsum.photos/200/300" class="img-link">
-         <img src="https://picsum.photos/200/300" alt="reference"/>
-        <a href="https://picsum.photos/200/300" class="img-link">
-         <img src="https://picsum.photos/200/300"
+          <a href="caml.gif" class="img-link">
+           <img src="caml.gif" alt="caml.gif"/>
+          <a href="caml.png" class="img-link">
+           <img src="caml.png" alt="With alt text and {b emphasis}"/>
+          <a href="https://picsum.photos/200/300" class="img-link">
+           <img src="https://picsum.photos/200/300" alt="reference"/>
+          <a href="https://picsum.photos/200/300" class="img-link">
+           <img src="https://picsum.photos/200/300"
 
   $ cat html/pkg1/index.html | grep video
        <li><a href="#video">Video</a>
-     </div><h2 id="video"><a href="#video" class="anchor"></a>Video</h2>
-      <video src="flower.webm" controls="controls" aria-label="flower.webm">
-      </video>
-      <video src="flower.webm" controls="controls"
-       aria-label="A video of a blossoming flower">
-      </video>
-      <video
-       src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm"
-       aria-label="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm"
-      </video>
+     <section id="section-video">
+      <h2 id="video"><a href="#video" class="anchor"></a>Video</h2>
+        <video src="flower.webm" controls="controls" aria-label="flower.webm">
+        </video>
+        <video src="flower.webm" controls="controls"
+         aria-label="A video of a blossoming flower">
+        </video>
+        <video
+         src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm"
+         aria-label="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm"
+        </video>
 
   $ cat html/pkg1/index.html | grep audio
        <li><a href="#audio">Audio</a>
-     </ul><h2 id="audio"><a href="#audio" class="anchor"></a>Audio</h2>
-      <audio src="Cri_du_chameau.ogg" controls="controls"
-      </audio>
-      <audio
-      </audio>
-      <audio
-      </audio>
+     <section id="section-audio">
+      <h2 id="audio"><a href="#audio" class="anchor"></a>Audio</h2>
+        <audio src="Cri_du_chameau.ogg" controls="controls"
+        </audio>
+        <audio
+        </audio>
+        <audio
+        </audio>
 
 Testing the unresolved references:
 
   $ cat html/pkg1/index.html | grep xref-unresolved
-       <div><span class="xref-unresolved">./caqzdqzdml.gif</span></div>
-       <div><span class="xref-unresolved">With alt text and {b emphasis}</span>
-       <div><span class="xref-unresolved">./module-x</span></div>
+         <div><span class="xref-unresolved">./caqzdqzdml.gif</span></div>
+          <span class="xref-unresolved">With alt text and {b emphasis}</span>
+        <div><span class="xref-unresolved">./module-x</span></div>
 
 Testing latex and manpages
 

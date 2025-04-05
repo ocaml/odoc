@@ -12,7 +12,7 @@
    <a href="index.html">Index</a> &#x00BB; Section
   </nav>
   <header class="odoc-preamble">
-   <h1>Module <code><span>Section</span></code></h1>
+   <section><h1>Module <code><span>Section</span></code></h1></section>
    <p>This is the module comment. Eventually, sections won't be allowed
      in it.
    </p>
@@ -42,39 +42,56 @@
    </nav>
   </div>
   <div class="odoc-content">
-   <h2 id="empty-section"><a href="#empty-section" class="anchor"></a>
-    Empty section
-   </h2>
-   <h2 id="text-only"><a href="#text-only" class="anchor"></a>Text only</h2>
-   <p>Foo bar.</p>
-   <h2 id="aside-only"><a href="#aside-only" class="anchor"></a>Aside only
-   </h2><p>Foo bar.</p>
-   <h2 id="value-only"><a href="#value-only" class="anchor"></a>Value only
-   </h2>
-   <div class="odoc-spec">
-    <div class="spec value anchored" id="val-foo">
-     <a href="#val-foo" class="anchor"></a>
-     <code><span><span class="keyword">val</span> foo : unit</span></code>
+   <section id="section-empty-section">
+    <h2 id="empty-section"><a href="#empty-section" class="anchor"></a>
+     Empty section
+    </h2>
+   </section>
+   <section id="section-text-only">
+    <h2 id="text-only"><a href="#text-only" class="anchor"></a>Text only</h2>
+    <p>Foo bar.</p>
+   </section>
+   <section id="section-aside-only">
+    <h2 id="aside-only"><a href="#aside-only" class="anchor"></a>Aside only
+    </h2><p>Foo bar.</p>
+   </section>
+   <section id="section-value-only">
+    <h2 id="value-only"><a href="#value-only" class="anchor"></a>Value only
+    </h2>
+    <div class="odoc-spec">
+     <div class="spec value anchored" id="val-foo">
+      <a href="#val-foo" class="anchor"></a>
+      <code><span><span class="keyword">val</span> foo : unit</span></code>
+     </div>
     </div>
-   </div>
-   <h2 id="empty-section_2"><a href="#empty-section_2" class="anchor"></a>
-    Empty section
-   </h2>
-   <h2 id="within-a-comment"><a href="#within-a-comment" class="anchor"></a>
-    within a comment
-   </h2>
-   <h3 id="and-one-with-a-nested-section">
-    <a href="#and-one-with-a-nested-section" class="anchor"></a>and one
-     with a nested section
-   </h3>
-   <h2 id="this-section-title-has-markup">
-    <a href="#this-section-title-has-markup" class="anchor"></a><em>This</em>
-     <code>section</code> <b>title</b> <sub>has</sub> <sup>markup</sup>
-   </h2>
-   <p>But links are impossible thanks to the parser, so we never have
-     trouble rendering a section title in a table of contents – no 
-    link will be nested inside another link.
-   </p>
+   </section>
+   <section id="section-empty-section_2">
+    <h2 id="empty-section_2"><a href="#empty-section_2" class="anchor"></a>
+     Empty section
+    </h2>
+   </section>
+   <section id="section-within-a-comment">
+    <h2 id="within-a-comment"><a href="#within-a-comment" class="anchor"></a>
+     within a comment
+    </h2>
+    <section id="section-and-one-with-a-nested-section">
+     <h3 id="and-one-with-a-nested-section">
+      <a href="#and-one-with-a-nested-section" class="anchor"></a>and
+       one with a nested section
+     </h3>
+    </section>
+   </section>
+   <section id="section-this-section-title-has-markup">
+    <h2 id="this-section-title-has-markup">
+     <a href="#this-section-title-has-markup" class="anchor"></a>
+     <em>This</em> <code>section</code> <b>title</b> <sub>has</sub> 
+     <sup>markup</sup>
+    </h2>
+    <p>But links are impossible thanks to the parser, so we never have
+      trouble rendering a section title in a table of contents – no
+      link will be nested inside another link.
+    </p>
+   </section>
   </div>
  </body>
 </html>

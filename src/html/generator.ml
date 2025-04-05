@@ -212,7 +212,7 @@ let cell_kind = function `Header -> Html.th | `Data -> Html.td
 let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
   let as_flow x = (x : phrasing Html.elt list :> flow Html.elt list) in
   let one (t : Block.one) =
-    let mk_block ?(extra_class = []) ?(data=[]) mk content =
+    let mk_block ?(extra_class = []) ?(data = []) mk content =
       let a = Some (class_ (extra_class @ t.attr)) in
       ignore data;
       [ mk ?a content ]
@@ -257,9 +257,12 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
         mk_block Html.ul (List.map item l)
     | Raw_markup r -> raw_markup r
     | Verbatim s -> mk_block Html.pre [ Html.txt s ]
-    | Source (lang_tag, classes, data, c) ->
+    | Source (lang_tag, classes, data, c, output) ->
         let extra_class = [ "language-" ^ lang_tag ] @ classes in
-        mk_block Html.div (mk_block ~extra_class ~data Html.pre (source (inline ~config ~resolve) c))
+        mk_block Html.div
+          ((mk_block ~extra_class ~data Html.pre
+             (source (inline ~config ~resolve) c))
+           @ mk_block Html.div ~extra_class:["odoc-src-output"] (block ~config ~resolve output))
     | Math s -> mk_block Html.div [ block_math s ]
     | Audio (target, alt) ->
         let audio src alt =
@@ -413,12 +416,19 @@ and items ~config ~resolve l : item Html.elt list =
     | Heading h :: foo ->
         let x, _, othersections =
           Doctree.Take.until foo ~classify:(function
-            | Item.Heading h' when h'.level<=h.level -> Stop_and_keep
-            | x -> Accum [x])
+            | Item.Heading h' when h'.level <= h.level -> Stop_and_keep
+            | x -> Accum [ x ])
         in
-        let result = (heading ~config ~resolve h) :: (items x) in
-        let a = match h.label with | Some id -> [Html.a_id ("section-" ^ id)] | None -> [] in
-        (continue_with [@tailcall]) othersections [Html.section ~a (result :> Html_types.section_content Html.elt list)]
+        let result = heading ~config ~resolve h :: items x in
+        let a =
+          match h.label with
+          | Some id -> [ Html.a_id ("section-" ^ id) ]
+          | None -> []
+        in
+        (continue_with [@tailcall]) othersections
+          [
+            Html.section ~a (result :> Html_types.section_content Html.elt list);
+          ]
     | Include
         {
           attr;

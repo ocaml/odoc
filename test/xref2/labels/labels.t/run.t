@@ -57,7 +57,7 @@ There are two references in N, one should point to a local label and the other t
      <a href="../index.html">Test</a> &#x00BB; N
     </nav>
     <header class="odoc-preamble">
-     <h1>Module <code><span>Test.N</span></code></h1>
+     <section><h1>Module <code><span>Test.N</span></code></h1></section>
     </header>
     <div class="odoc-tocs">
      <nav class="odoc-toc odoc-local-toc">
@@ -65,10 +65,13 @@ There are two references in N, one should point to a local label and the other t
      </nav>
     </div>
     <div class="odoc-content">
-     <h2 id="B"><a href="#B" class="anchor"></a>An other conflicting label</h2>
-     <p><a href="#B" title="B">An other conflicting label</a> 
-      <a href="../M/index.html#B" title="B">Potentially conflicting label</a>
-     </p>
+     <section id="section-B">
+      <h2 id="B"><a href="#B" class="anchor"></a>An other conflicting label
+      </h2>
+      <p><a href="#B" title="B">An other conflicting label</a> 
+       <a href="../M/index.html#B" title="B">Potentially conflicting label</a>
+      </p>
+     </section>
     </div>
    </body>
   </html>
@@ -92,7 +95,7 @@ The second occurence of 'B' in the main page should be disambiguated
      <a href="../index.html">test</a> &#x00BB; Test
     </nav>
     <header class="odoc-preamble">
-     <h1>Module <code><span>Test</span></code></h1>
+     <section><h1>Module <code><span>Test</span></code></h1></section>
     </header>
     <div class="odoc-tocs">
      <nav class="odoc-toc odoc-local-toc">
@@ -103,41 +106,48 @@ The second occurence of 'B' in the main page should be disambiguated
      </nav>
     </div>
     <div class="odoc-content">
-     <h2 id="A"><a href="#A" class="anchor"></a>First label</h2>
-     <h2 id="B"><a href="#B" class="anchor"></a>Floating label</h2>
-     <div class="odoc-spec">
-      <div class="spec module anchored" id="module-M">
-       <a href="#module-M" class="anchor"></a>
-       <code>
-        <span><span class="keyword">module</span> <a href="M/index.html">M</a>
-        </span>
-        <span> : <span class="keyword">sig</span> ... 
-         <span class="keyword">end</span>
-        </span>
-       </code>
+     <section id="section-A">
+      <h2 id="A"><a href="#A" class="anchor"></a>First label</h2>
+     </section>
+     <section id="section-B">
+      <h2 id="B"><a href="#B" class="anchor"></a>Floating label</h2>
+      <div class="odoc-spec">
+       <div class="spec module anchored" id="module-M">
+        <a href="#module-M" class="anchor"></a>
+        <code>
+         <span><span class="keyword">module</span> <a href="M/index.html">M</a>
+         </span>
+         <span> : <span class="keyword">sig</span> ... 
+          <span class="keyword">end</span>
+         </span>
+        </code>
+       </div>
       </div>
-     </div>
-     <div class="odoc-spec">
-      <div class="spec module anchored" id="module-N">
-       <a href="#module-N" class="anchor"></a>
-       <code>
-        <span><span class="keyword">module</span> <a href="N/index.html">N</a>
-        </span>
-        <span> : <span class="keyword">sig</span> ... 
-         <span class="keyword">end</span>
-        </span>
-       </code>
+      <div class="odoc-spec">
+       <div class="spec module anchored" id="module-N">
+        <a href="#module-N" class="anchor"></a>
+        <code>
+         <span><span class="keyword">module</span> <a href="N/index.html">N</a>
+         </span>
+         <span> : <span class="keyword">sig</span> ... 
+          <span class="keyword">end</span>
+         </span>
+        </code>
+       </div>
       </div>
-     </div><h2 id="B_2"><a href="#B_2" class="anchor"></a>Dupplicate B</h2>
-     <p>Define <code>B</code> again in the same scope.</p>
-     <p>References to the labels:</p>
-     <p><a href="#A" title="A">First label</a> 
-      <a href="#B" title="B">Dupplicate B</a> 
-      <a href="M/index.html#C" title="C">First label of M</a> 
-      <a href="M/index.html#D" title="D">Floating label in M</a> 
-      <a href="M/index.html#B" title="B">Potentially conflicting label</a>
-       <a href="N/index.html#B" title="B">An other conflicting label</a>
-     </p>
+     </section>
+     <section id="section-B_2">
+      <h2 id="B_2"><a href="#B_2" class="anchor"></a>Dupplicate B</h2>
+      <p>Define <code>B</code> again in the same scope.</p>
+      <p>References to the labels:</p>
+      <p><a href="#A" title="A">First label</a> 
+       <a href="#B" title="B">Dupplicate B</a> 
+       <a href="M/index.html#C" title="C">First label of M</a> 
+       <a href="M/index.html#D" title="D">Floating label in M</a> 
+       <a href="M/index.html#B" title="B">Potentially conflicting label</a>
+        <a href="N/index.html#B" title="B">An other conflicting label</a>
+      </p>
+     </section>
     </div>
    </body>
   </html>
