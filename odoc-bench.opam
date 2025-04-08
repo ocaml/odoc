@@ -31,7 +31,7 @@ depends: [
   "astring"
   "cmdliner" {>= "1.3.0"}
   "cppo" {build & >= "1.1.0"}
-  "dune" {>= "3.7.0"}
+  "dune" {>= "3.18.0"}
   "fpath"
   "ocaml" {>= "4.02.0"}
   "result"
