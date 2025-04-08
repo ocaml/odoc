@@ -36,7 +36,7 @@ documentation for installed packages.
 depends: [
   "ocaml" {>= "5.1.0"}
   "odoc" {= version}
-  "dune" {>= "3.7.0"}
+  "dune" {>= "3.18.0"}
   "odoc-md"
   "bos"
   "fpath"
