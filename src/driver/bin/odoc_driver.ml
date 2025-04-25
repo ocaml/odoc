@@ -15,7 +15,7 @@ let check_packages packages =
           exit 1)
 
 let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
-    ~generate_grep ~index_grep ~remap ~index_mld ~packages_dir ~lib_map_name
+    ~generate_grep ~index_grep ~remap ~index_mld ~packages_dir ~lib_map_name:_
     packages
     {
       Common_args.verbose;

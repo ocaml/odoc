@@ -41,10 +41,10 @@ let archives pkg =
       |> List.filter (fun x -> String.length x > 0)
       |> List.sort_uniq String.compare
 
-let js_files pkg =
+(* let js_files pkg =
   init ();
   let package = Fl_package_base.query pkg in
-  Fl_metascanner.lookup "jsoo_runtime" [] package.Fl_package_base.package_defs
+  Fl_metascanner.lookup "jsoo_runtime" [] package.Fl_package_base.package_defs *)
 
 let sub_libraries top =
   init ();
