@@ -41,17 +41,24 @@ let json_of_sidebar config sidebar =
   | None -> `Null
   | Some sidebar -> `String (json_of_html config sidebar)
 
-let make ~config ~frontmatter ~preamble ~url ~breadcrumbs ~toc ~uses_katex ~source_anchor
-    ~header content children =
+let make ~config ~frontmatter ~preamble ~url ~breadcrumbs ~toc ~uses_katex
+    ~source_anchor ~header content children =
   let filename = Link.Path.as_filename ~config url in
   let filename = Fpath.add_ext ".json" filename in
   let json_to_string json = Json.to_string json in
   let source_anchor =
     match source_anchor with Some url -> `String url | None -> `Null
   in
-  let frontmatter = `Object [
-    "other_config", `Object (List.map (fun (k, v) -> (k, `String v)) frontmatter.Odoc_model.Frontmatter.other_config)
-  ] in
+  let frontmatter =
+    `Object
+      [
+        ( "other_config",
+          `Object
+            (List.map
+               (fun (k, v) -> (k, `String v))
+               frontmatter.Odoc_model.Frontmatter.other_config) );
+      ]
+  in
   let content ppf =
     Format.pp_print_string ppf
       (json_to_string
@@ -65,7 +72,7 @@ let make ~config ~frontmatter ~preamble ~url ~breadcrumbs ~toc ~uses_katex ~sour
               ("source_anchor", source_anchor);
               ("preamble", `String (json_of_html config preamble));
               ("content", `String (json_of_html config content));
-              ("frontmatter", frontmatter)
+              ("frontmatter", frontmatter);
             ]))
   in
   { Odoc_document.Renderer.filename; content; children; path = url }

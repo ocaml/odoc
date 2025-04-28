@@ -303,10 +303,12 @@ let tag :
       internal_tags_removed with_location )
     Result.result =
  fun ~location status tag ->
-  if not status.tags_allowed then
-    (* Trigger a warning but do not remove the tag. Avoid turning tags into
+  (match (tag, status.tags_allowed) with
+  | `Custom _, _ | _, true -> ()
+  | _, false ->
+      (* Trigger a warning but do not remove the tag. Avoid turning tags into
        text that would render the same. *)
-    Error.raise_warning (tags_not_allowed location);
+      Error.raise_warning (tags_not_allowed location));
   let ok t = Result.Ok (Location.at location (`Tag t)) in
   match tag with
   | (`Author _ | `Since _ | `Version _) as tag -> ok tag
@@ -530,6 +532,16 @@ let strip_internal_tags ast : internal_tags_removed with_location list * _ =
   in
   loop ~start:true [] [] ast
 
+let extract_custom_tags ast =
+  List.fold_left
+    (fun acc el ->
+      match el with
+      | { Location.value = `Tag (`Custom (name, content)); location } ->
+          let content = nestable_block_elements content in
+          (location, name, content) :: acc
+      | _ -> acc)
+    [] ast
+
 (** Append alerts at the end of the comment. Tags are favoured in case of alerts
     of the same name. *)
 let append_alerts_to_comment alerts
@@ -548,7 +560,8 @@ let append_alerts_to_comment alerts
   in
   comment @ (alerts :> Comment.elements)
 
-let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
+let handle_internal_tags (type a) tags custom_tags : a handle_internal_tags -> a
+    = function
   | Expect_status -> (
       match
         find_tag
@@ -586,14 +599,6 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
               Error.raise_warning e;
               None
         in
-        let do2 parse loc str els =
-          let els = nestable_block_elements els in
-          match parse loc str els with
-          | Ok res -> Some res
-          | Error e ->
-              Error.raise_warning e;
-              None
-        in
         List.filter_map
           (function
             | `Children_order co, loc ->
@@ -601,12 +606,16 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
             | `Toc_status co, loc -> do_ Frontmatter.parse_toc_status loc co
             | `Short_title t, loc -> do_ Frontmatter.parse_short_title loc t
             | `Order_category t, loc ->
-                do_ Frontmatter.parse_order_category loc t
-            | `Custom (name, content), loc ->
-                do2 Frontmatter.parse_custom_tag loc name content)
+                do_ Frontmatter.parse_order_category loc t)
           unparsed_lines
       in
-      Frontmatter.of_lines lines |> Error.raise_warnings
+      let other_lines =
+        List.filter_map
+          (fun (loc, tag, content) ->
+            Frontmatter.parse_custom_tag loc tag content |> Result.to_option)
+          custom_tags
+      in
+      Frontmatter.of_lines (lines @ other_lines) |> Error.raise_warnings
   | Expect_none ->
       (* Will raise warnings. *)
       ignore (find_tag ~filter:(fun _ -> None) tags);
@@ -617,10 +626,11 @@ let ast_to_comment ~internal_tags ~tags_allowed ~parent_of_sections
   Error.catch_warnings (fun () ->
       let status = { tags_allowed; parent_of_sections } in
       let ast, tags = strip_internal_tags ast in
+      let custom_tags = extract_custom_tags ast in
       let elts =
         top_level_block_elements status ast |> append_alerts_to_comment alerts
       in
-      (elts, handle_internal_tags tags internal_tags))
+      (elts, handle_internal_tags tags custom_tags internal_tags))
 
 let parse_comment ~internal_tags ~tags_allowed ~containing_definition ~location
     ~text =
