@@ -49,7 +49,8 @@ and general_tag =
   | `Since of string
   | `Before of string * general_docs
   | `Version of string
-  | `Alert of string * string option ]
+  | `Alert of string * string option
+  | `Custom of string * general_docs ]
 
 and general_docs = general_block_element with_location list
 
@@ -182,7 +183,8 @@ and tag : general_tag t =
     | `Since x -> C ("`Since", x, string)
     | `Before (x1, x2) -> C ("`Before", (x1, x2), Pair (string, general_content))
     | `Version x -> C ("`Version", x, string)
-    | `Alert (x1, x2) -> C ("`Alert", (x1, x2), Pair (string, Option string)))
+    | `Alert (x1, x2) -> C ("`Alert", (x1, x2), Pair (string, Option string))
+    | `Custom (x1, x2) -> C ("`" ^ x1, x2, general_content))
 
 and general_content : general_docs t =
   List (Indirect (ignore_loc, block_element))

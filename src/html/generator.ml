@@ -260,9 +260,10 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
     | Source (lang_tag, classes, data, c, output) ->
         let extra_class = [ "language-" ^ lang_tag ] @ classes in
         mk_block Html.div
-          ((mk_block ~extra_class ~data Html.pre
-             (source (inline ~config ~resolve) c))
-           @ mk_block Html.div ~extra_class:["odoc-src-output"] (block ~config ~resolve output))
+          (mk_block ~extra_class ~data Html.pre
+             (source (inline ~config ~resolve) c)
+          @ mk_block Html.div ~extra_class:[ "odoc-src-output" ]
+              (block ~config ~resolve output))
     | Math s -> mk_block Html.div [ block_math s ]
     | Audio (target, alt) ->
         let audio src alt =

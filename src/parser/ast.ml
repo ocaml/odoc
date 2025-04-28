@@ -94,7 +94,6 @@ type internal_tag =
   | `Toc_status of nestable_block_element with_location list
   | `Order_category of nestable_block_element with_location list
   | `Short_title of nestable_block_element with_location list ]
-
 (** Internal tags are used to exercise fine control over the output of odoc.
     They are never rendered in the output *)
 
@@ -103,6 +102,7 @@ type ocamldoc_tag =
   | `Deprecated of nestable_block_element with_location list
   | `Param of string * nestable_block_element with_location list
   | `Raise of string * nestable_block_element with_location list
+  | `Custom of string * nestable_block_element with_location list
   | `Return of nestable_block_element with_location list
   | `See of
     [ `Url | `File | `Document ]

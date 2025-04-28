@@ -4,68 +4,6 @@ Various tests for the 'compile' command.
 
   $ ocamlc -bin-annot -c ast.mli
   $ odoc compile --package foo ast.cmti
-  File "ast.mli", line 1, characters 4-17:
-  Warning: Unknown tag '@TxtAttribute'.
-  File "ast.mli", line 4, characters 4-21:
-  Warning: Unknown tag '@ValueDeclaration'.
-  File "ast.mli", line 6, characters 4-21:
-  Warning: Unknown tag '@ValueDeclaration'.
-  File "ast.mli", line 8, characters 4-21:
-  Warning: Unknown tag '@ValueDeclaration'.
-  File "ast.mli", line 11, characters 4-20:
-  Warning: Unknown tag '@TypeDeclaration'.
-  File "ast.mli", line 13, characters 4-20:
-  Warning: Unknown tag '@TypeDeclaration'.
-  File "ast.mli", line 14, characters 16-39:
-  Warning: Unknown tag '@ConstructorDeclaration'.
-  File "ast.mli", line 15, characters 16-39:
-  Warning: Unknown tag '@ConstructorDeclaration'.
-  File "ast.mli", line 22, characters 4-20:
-  Warning: Unknown tag '@TypeDeclaration'.
-  File "ast.mli", line 24, characters 15-32:
-  Warning: Unknown tag '@LabelDeclaration'.
-  File "ast.mli", line 25, characters 16-33:
-  Warning: Unknown tag '@LabelDeclaration'.
-  File "ast.mli", line 29, characters 4-20:
-  Warning: Unknown tag '@TypeDeclaration'.
-  File "ast.mli", line 31, characters 4-18:
-  Warning: Unknown tag '@TypeExtension'.
-  File "ast.mli", line 32, characters 17-27:
-  Warning: Unknown tag '@Extension'.
-  File "ast.mli", line 33, characters 17-27:
-  Warning: Unknown tag '@Extension'.
-  File "ast.mli", line 35, characters 4-26:
-  Warning: Unknown tag '@ModuleTypeDeclaration'.
-  File "ast.mli", line 37, characters 6-19:
-  Warning: Unknown tag '@TxtAttribute'.
-  File "ast.mli", line 40, characters 6-22:
-  Warning: Unknown tag '@TypeDeclaration'.
-  File "ast.mli", line 43, characters 4-22:
-  Warning: Unknown tag '@ModuleDeclaration'.
-  File "ast.mli", line 45, characters 6-19:
-  Warning: Unknown tag '@TxtAttribute'.
-  File "ast.mli", line 47, characters 6-24:
-  Warning: Unknown tag '@ModuleDeclaration'.
-  File "ast.mli", line 49, characters 8-21:
-  Warning: Unknown tag '@TxtAttribute'.
-  File "ast.mli", line 52, characters 8-24:
-  Warning: Unknown tag '@TypeDeclaration'.
-  File "ast.mli", line 57, characters 4-14:
-  Warning: Unknown tag '@Exception'.
-  File "ast.mli", line 60, characters 4-11:
-  Warning: Unknown tag '@Hidden'.
-  File "ast.mli", line 63, characters 4-23:
-  Warning: Unknown tag '@IncludeDescription'.
-  File "ast.mli", line 68, characters 6-22:
-  Warning: Unknown tag '@TypeDeclaration'.
-  File "ast.mli", line 65, characters 6-19:
-  Warning: Unknown tag '@TxtAttribute'.
-  File "ast.mli", line 68, characters 6-22:
-  Warning: Unknown tag '@TypeDeclaration'.
-  File "ast.mli", line 71, characters 4-10:
-  Warning: Unknown tag '@Class'.
-  File "ast.mli", line 74, characters 6-13:
-  Warning: Unknown tag '@Method'.
 
 Test different parsing errors.
 
@@ -104,8 +42,6 @@ Test different parsing errors.
   Warning: Identifier in reference should not be empty.
   File "parser_errors.mli", line 40, characters 4-8:
   Warning: '@see' should be followed by <url>, 'file', or "document title".
-  File "parser_errors.mli", line 43, characters 4-15:
-  Warning: Unknown tag '@UnknownTag'.
   File "parser_errors.mli", line 46, characters 4-5:
   Warning: Unpaired '}' (end of markup).
   Suggestion: try '\}'.
@@ -155,8 +91,6 @@ With warn-error enabled.
   Error: Identifier in reference should not be empty.
   File "parser_errors.mli", line 40, characters 4-8:
   Error: '@see' should be followed by <url>, 'file', or "document title".
-  File "parser_errors.mli", line 43, characters 4-15:
-  Error: Unknown tag '@UnknownTag'.
   File "parser_errors.mli", line 46, characters 4-5:
   Error: Unpaired '}' (end of markup).
   Suggestion: try '\}'.

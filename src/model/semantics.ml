@@ -310,6 +310,8 @@ let tag :
   let ok t = Result.Ok (Location.at location (`Tag t)) in
   match tag with
   | (`Author _ | `Since _ | `Version _) as tag -> ok tag
+  | `Custom (name, content) ->
+      ok (`Custom (name, nestable_block_elements content))
   | `Deprecated content -> ok (`Deprecated (nestable_block_elements content))
   | `Param (name, content) ->
       ok (`Param (name, nestable_block_elements content))

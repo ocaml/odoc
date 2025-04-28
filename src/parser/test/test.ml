@@ -239,6 +239,9 @@ module Ast_to_sexp = struct
     | `Open -> Atom "@open"
     | `Closed -> Atom "@closed"
     | `Hidden -> Atom "@hidden"
+    | `Custom (name, es) ->
+        List
+          (Atom ("@" ^ name) :: List.map (at.at (nestable_block_element at)) es)
 
   let block_element at : Ast.block_element Loc.with_location -> sexp = function
     | { value = #Ast.nestable_block_element; _ } as e ->
@@ -4839,13 +4842,7 @@ let%expect_test _ =
     let prefix =
       test "@deprecatedfoo";
       [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 14))
-            (paragraph (((f.ml (1 0) (1 14)) (word @deprecatedfoo)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-14:\
-           \nUnknown tag '@deprecatedfoo'."))) |}]
+        {| ((output (((f.ml (1 0) (1 14)) (@deprecatedfoo)))) (warnings ())) |}]
 
     let after_code_block =
       test "{[foo]} @deprecated";
@@ -4991,12 +4988,7 @@ let%expect_test _ =
     let prefix =
       test "@paramfoo";
       [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word @paramfoo)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-9:\
-           \nUnknown tag '@paramfoo'."))) |}]
+        {| ((output (((f.ml (1 0) (1 9)) (@paramfoo)))) (warnings ())) |}]
 
     let after_code_block =
       test "{[foo]} @param foo";
@@ -5043,12 +5035,7 @@ let%expect_test _ =
     let prefix =
       test "@raisefoo";
       [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word @raisefoo)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-9:\
-           \nUnknown tag '@raisefoo'."))) |}]
+        {| ((output (((f.ml (1 0) (1 9)) (@raisefoo)))) (warnings ())) |}]
   end in
   ()
 
@@ -5074,13 +5061,7 @@ let%expect_test _ =
     let prefix =
       test "@returnfoo";
       [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph (((f.ml (1 0) (1 10)) (word @returnfoo)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-10:\
-           \nUnknown tag '@returnfoo'."))) |}]
+        {| ((output (((f.ml (1 0) (1 10)) (@returnfoo)))) (warnings ())) |}]
   end in
   ()
 
@@ -5167,13 +5148,7 @@ let%expect_test _ =
 
     let prefix =
       test "@seefoo";
-      [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word @seefoo)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nUnknown tag '@seefoo'."))) |}]
+      [%expect {| ((output (((f.ml (1 0) (1 7)) (@seefoo)))) (warnings ())) |}]
 
     let after_code_block =
       test "{[foo]} @see <foo>";
@@ -5238,12 +5213,7 @@ let%expect_test _ =
     let prefix =
       test "@sincefoo";
       [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word @sincefoo)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-9:\
-           \nUnknown tag '@sincefoo'."))) |}]
+        {| ((output (((f.ml (1 0) (1 9)) (@sincefoo)))) (warnings ())) |}]
 
     let with_whitespace =
       test "@since foo bar";
@@ -5303,13 +5273,7 @@ let%expect_test _ =
     let prefix =
       test "@beforefoo";
       [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph (((f.ml (1 0) (1 10)) (word @beforefoo)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-10:\
-           \nUnknown tag '@beforefoo'."))) |}]
+        {| ((output (((f.ml (1 0) (1 10)) (@beforefoo)))) (warnings ())) |}]
   end in
   ()
 
@@ -5332,13 +5296,7 @@ let%expect_test _ =
     let prefix =
       test "@versionfoo";
       [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 11))
-            (paragraph (((f.ml (1 0) (1 11)) (word @versionfoo)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-11:\
-           \nUnknown tag '@versionfoo'."))) |}]
+        {| ((output (((f.ml (1 0) (1 11)) (@versionfoo)))) (warnings ())) |}]
 
     let with_whitespace =
       test "@version foo bar";
@@ -5403,13 +5361,7 @@ let%expect_test _ =
     let prefix =
       test "@canonicalfoo";
       [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 13))
-            (paragraph (((f.ml (1 0) (1 13)) (word @canonicalfoo)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-13:\
-           \nUnknown tag '@canonicalfoo'."))) |}]
+        {| ((output (((f.ml (1 0) (1 13)) (@canonicalfoo)))) (warnings ())) |}]
 
     (* TODO This should probably be an error of some kind, as Foo Bar is not a
            valid module path. *)
@@ -5432,13 +5384,7 @@ let%expect_test _ =
     let prefix =
       test "@inlinefoo";
       [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph (((f.ml (1 0) (1 10)) (word @inlinefoo)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-10:\
-           \nUnknown tag '@inlinefoo'."))) |}]
+        {| ((output (((f.ml (1 0) (1 10)) (@inlinefoo)))) (warnings ())) |}]
 
     let extra_whitespace =
       test "@inline";
@@ -5494,13 +5440,7 @@ let%expect_test _ =
 
     let prefix =
       test "@openfoo";
-      [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word @openfoo)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-8:\
-           \nUnknown tag '@openfoo'."))) |}]
+      [%expect {| ((output (((f.ml (1 0) (1 8)) (@openfoo)))) (warnings ())) |}]
 
     let extra_whitespace =
       test "@open";
@@ -5557,13 +5497,7 @@ let%expect_test _ =
     let prefix =
       test "@closedfoo";
       [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph (((f.ml (1 0) (1 10)) (word @closedfoo)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-10:\
-           \nUnknown tag '@closedfoo'."))) |}]
+        {| ((output (((f.ml (1 0) (1 10)) (@closedfoo)))) (warnings ())) |}]
 
     let extra_whitespace =
       test "@closed";
@@ -5620,13 +5554,7 @@ let%expect_test _ =
     let prefix =
       test "@hiddenfoo";
       [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 10))
-            (paragraph (((f.ml (1 0) (1 10)) (word @hiddenfoo)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-10:\
-           \nUnknown tag '@hiddenfoo'."))) |}]
+        {| ((output (((f.ml (1 0) (1 10)) (@hiddenfoo)))) (warnings ())) |}]
 
     let extra_whitespace =
       test "@hidden";
@@ -6167,21 +6095,11 @@ let%expect_test _ =
   let module Comment_location = struct
     let error_on_first_line =
       test "@foo";
-      [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word @foo)))))))
-         (warnings ( "File \"f.ml\", line 1, characters 0-4:\
-                    \nUnknown tag '@foo'."))) |}]
+      [%expect {| ((output (((f.ml (1 0) (1 4)) (@foo)))) (warnings ())) |}]
 
     let error_on_second_line =
       test "  \n  @foo";
-      [%expect
-        {|
-        ((output
-          (((f.ml (2 2) (2 6)) (paragraph (((f.ml (2 2) (2 6)) (word @foo)))))))
-         (warnings ( "File \"f.ml\", line 2, characters 2-6:\
-                    \nUnknown tag '@foo'."))) |}]
+      [%expect {| ((output (((f.ml (2 2) (2 6)) (@foo)))) (warnings ())) |}]
   end in
   ()
 
@@ -6235,13 +6153,7 @@ let%expect_test _ =
 
     let custom_tag =
       test "@custom";
-      [%expect
-        {|
-        ((output
-          (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word @custom)))))))
-         (warnings
-          ( "File \"f.ml\", line 1, characters 0-7:\
-           \nUnknown tag '@custom'."))) |}]
+      [%expect {| ((output (((f.ml (1 0) (1 7)) (@custom)))) (warnings ())) |}]
 
     let custom_reference_kind =
       test "{!custom:foo}";

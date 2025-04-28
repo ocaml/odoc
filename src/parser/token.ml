@@ -25,7 +25,8 @@ type tag =
     | `Inline
     | `Open
     | `Closed
-    | `Hidden ] ]
+    | `Hidden
+    | `Custom of string ] ]
 
 type media = [ `Audio | `Video | `Image ]
 type media_href = [ `Reference of string | `Link of string ]
@@ -134,6 +135,7 @@ let print : [< t ] -> string = function
       let label = match label with None -> "" | Some label -> ":" ^ label in
       Printf.sprintf "'{%i%s'" level label
   | `Tag (`Author _) -> "'@author'"
+  | `Tag (`Custom s) -> "'@" ^ s ^ "'"
   | `Tag `Deprecated -> "'@deprecated'"
   | `Tag (`Param _) -> "'@param'"
   | `Tag (`Raise _) -> "'@raise'"
@@ -250,6 +252,7 @@ let describe : [< t | `Comment ] -> string = function
   | `Tag `Toc_status -> "'@toc_status"
   | `Tag `Order_category -> "'@order_category"
   | `Tag `Short_title -> "'@short_title"
+  | `Tag (`Custom s) -> "'@" ^ s ^ "'"
   | `Comment -> "top-level text"
 
 let describe_element = function

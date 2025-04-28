@@ -952,8 +952,7 @@ let%expect_test _ =
     let prefix =
       test "@authorfoo";
       [%expect
-        {|
-        {"value":[{"`Paragraph":[{"`Word":"@authorfoo"}]}],"warnings":["File \"f.ml\", line 1, characters 0-10:\nUnknown tag '@authorfoo'.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]} |}]
+        {| {"value":[{"`Tag":{"`authorfoo":[]}}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]} |}]
 
     let not_allowed =
       test ~tags_allowed:false "@author Foo bar";

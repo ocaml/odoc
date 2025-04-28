@@ -51,9 +51,7 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
   Eio.Switch.run @@ fun sw ->
   let () = Worker_pool.start_workers env sw nb_workers in
   let all =
-    Packages.of_packages ~packages_dir
-      ~package_dir_overrides:[ ]
-      packages
+    Packages.of_packages ~packages_dir ~package_dir_overrides:[] packages
   in
   let all = Packages.remap_virtual all in
   let extra_paths = Voodoo.empty_extra_paths in

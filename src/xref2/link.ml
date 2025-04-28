@@ -343,6 +343,10 @@ and comment_nestable_block_element_list env warnings_tag parent
 
 and comment_tag env warnings_tag parent ~loc:_ (x : Comment.tag) =
   match x with
+  | `Custom (name, content) ->
+      `Custom
+        ( name,
+          comment_nestable_block_element_list env warnings_tag parent content )
   | `Deprecated content ->
       `Deprecated
         (comment_nestable_block_element_list env warnings_tag parent content)

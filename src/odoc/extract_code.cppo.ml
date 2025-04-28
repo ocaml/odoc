@@ -56,12 +56,14 @@ let block_element line_directives oc names v =
       | `Raise (_, l)
       | `Return l
       | `See (_, _, l)
-      | `Before (_, l) ) ->
+      | `Before (_, l)
+      | `Custom (_, l) ) ->
       List.iter (nestable_block_element line_directives oc names) l
   | `Tag
       ( `Author _ | `Since _ | `Version _ | `Canonical _ | `Inline | `Open
       | `Children_order _ | `Toc_status _ | `Order_category _ | `Short_title _
-      | `Closed | `Hidden )
+      | `Closed | `Hidden ) ->
+      ()
   | `Heading _ ->
       ()
   | #Ast.nestable_block_element as value ->

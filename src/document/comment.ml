@@ -384,6 +384,8 @@ let tag : Comment.tag -> Description.one =
       let content = content_to_inline ~prefix:[ sp ] content in
       item ~tag:"alert"
         [ block (Block.Inline ([ inline @@ Text tag ] @ content)) ]
+  | `Custom (name, content) ->
+      item ~tag:name (nestable_block_element_list content)
 
 let attached_block_element : Comment.attached_block_element -> Block.t =
   function
