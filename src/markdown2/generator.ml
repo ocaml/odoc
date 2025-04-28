@@ -199,7 +199,6 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
                 rows
         in
 
-        (* If we have no data, return an empty paragraph *)
         if rows_data = [] then
           [
             Md.Block.Paragraph
@@ -207,7 +206,6 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
                 Md.meta );
           ]
         else
-          (* Find maximum number of columns across all rows *)
           let max_columns =
             List.fold_left
               (fun max_cols row ->
@@ -216,7 +214,6 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
               0 rows_data
           in
 
-          (* Find out if we have a header row *)
           let has_header_row =
             match rows_data with
             | first_row :: _ ->
@@ -226,12 +223,10 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
             | [] -> false
           in
 
-          (* Helper to create a list with n elements *)
           let rec make_list n v =
             if n <= 0 then [] else v :: make_list (n - 1) v
           in
 
-          (* Create table content with proper Markdown structure *)
           let header_cells, content_rows =
             match rows_data with
             | first_row :: rest when has_header_row ->
@@ -253,7 +248,6 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
             if missing > 0 then cells @ make_list missing "" else cells
           in
 
-          (* Create the header row as inline text *)
           let header_inline =
             let header_text =
               "| " ^ String.concat ~sep:" | " header_cells ^ " |"
@@ -264,7 +258,6 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
 
           (* Create the separator row (based on column alignment) *)
           let separator_inline =
-            (* Ensure alignment list is the right length *)
             let alignments =
               if List.length t.align >= max_columns then
                 (* Take only the first max_columns elements *)
@@ -274,7 +267,6 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
                 in
                 take max_columns t.align
               else
-                (* Pad with defaults *)
                 t.align
                 @ make_list (max_columns - List.length t.align) Table.Default
             in
@@ -296,7 +288,6 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
             Md.Inline.Inlines ([ sep_md ], Md.meta)
           in
 
-          (* Create the content rows *)
           let content_inlines =
             List.map
               (fun row ->
@@ -306,17 +297,10 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
                 Md.Inline.Inlines ([ row_md ], Md.meta))
               content_rows
           in
-
-          (* Build all rows in order: header, separator, content *)
-          let table_inlines =
-            [ header_inline; separator_inline ] @ content_inlines
-          in
-
-          (* Create paragraphs for each row *)
           List.map
             (fun inline ->
               Md.Block.Paragraph (Md.Block.Paragraph.make inline, Md.meta))
-            table_inlines
+            ([ header_inline; separator_inline ] @ content_inlines)
     | Description l ->
         let item ({ key; definition; attr = _ } : Description.one) =
           let term = inline ~config ~resolve key in
@@ -507,156 +491,6 @@ and documentedSrc ~config ~resolve (t : DocumentedSrc.t) =
 and subpage ~config ~resolve (subp : Subpage.t) =
   items ~config ~resolve subp.content.items
 
-module Toc = struct
-  open Odoc_document.Doctree
-  open Types
-
-  let on_sub : Subpage.status -> bool = function
-    | `Closed | `Open | `Default -> false
-    | `Inline -> true
-
-  let gen_toc ~config ~resolve ~path i =
-    let toc = Toc.compute path ~on_sub i in
-    let rec section { Toc.url; text; children } =
-      let _text = inline ~config ~resolve text in
-      let title =
-        (* (text) *)
-        []
-      in
-      let title_str = "" in
-      let href = Link.href ~config ~resolve url in
-      { title; title_str; href; children = List.map section children }
-    in
-    List.map section toc
-end
-
-module Breadcrumbs = struct
-  open Types
-
-  let page_parent (page : Url.Path.t) =
-    let page =
-      match page with
-      | { parent = Some parent; name = "index"; kind = `LeafPage } -> parent
-      | _ -> page
-    in
-    match page with
-    | { parent = None; name = "index"; kind = `LeafPage } -> None
-    | { parent = Some parent; _ } -> Some parent
-    | { parent = None; _ } ->
-        Some { Url.Path.parent = None; name = "index"; kind = `LeafPage }
-
-  let home_breadcrumb ~home_name:_ config ~current_path ~home_path =
-    let href =
-      Some
-        (Link.href ~config ~resolve:(Current current_path)
-           (Odoc_document.Url.from_path home_path))
-    in
-    { href; name = [ (* Html.txt home_name *) ]; kind = `LeafPage }
-
-  let gen_breadcrumbs_no_sidebar ~config ~url =
-    let url =
-      match url with
-      | { Url.Path.name = "index"; parent = Some parent; kind = `LeafPage } ->
-          parent
-      | _ -> url
-    in
-    match url with
-    | { Url.Path.name = "index"; parent = None; kind = `LeafPage } ->
-        let kind = `LeafPage in
-        let current = { href = None; name = [ (* Html.txt "" *) ]; kind } in
-        { parents = []; up_url = None; current }
-    | url -> (
-        (* This is the pre 3.0 way of computing the breadcrumbs *)
-        let rec get_parent_paths x =
-          match x with
-          | [] -> []
-          | x :: xs -> (
-              match Odoc_document.Url.Path.of_list (List.rev (x :: xs)) with
-              | Some x -> x :: get_parent_paths xs
-              | None -> get_parent_paths xs)
-        in
-        let to_breadcrumb path =
-          let href =
-            Some
-              (Link.href ~config ~resolve:(Current url)
-                 (Odoc_document.Url.from_path path))
-          in
-          { href; name = [ (* Html.txt path.name *) ]; kind = path.kind }
-        in
-        let parent_paths =
-          get_parent_paths (List.rev (Odoc_document.Url.Path.to_list url))
-          |> List.rev
-        in
-        match List.rev parent_paths with
-        | [] -> assert false
-        | current :: parents ->
-            let up_url =
-              match page_parent current with
-              | None -> None
-              | Some up ->
-                  Some
-                    (Link.href ~config ~resolve:(Current url)
-                       (Odoc_document.Url.from_path up))
-            in
-            let current = to_breadcrumb current in
-            let parents = List.map to_breadcrumb parents |> List.rev in
-            let home =
-              home_breadcrumb ~home_name:"Index" config ~current_path:url
-                ~home_path:
-                  { Url.Path.name = "index"; parent = None; kind = `LeafPage }
-            in
-            { current; parents = home :: parents; up_url })
-
-  let gen_breadcrumbs_with_sidebar ~config ~sidebar ~url:current_url =
-    let find_parent =
-      List.find_opt (function
-        | ({ node = { url = { page; anchor = ""; _ }; _ }; _ } :
-            Odoc_document.Sidebar.entry Tree.t)
-          when Url.Path.is_prefix page current_url ->
-            true
-        | _ -> false)
-    in
-    let rec extract acc (tree : Odoc_document.Sidebar.t) =
-      let parent =
-        match find_parent tree with
-        | Some { node = { url; valid_link; content = _; _ }; children } ->
-            let href =
-              if valid_link then
-                Some (Link.href ~config ~resolve:(Current current_url) url)
-              else None
-            in
-            (* let name = inline content in *)
-            let name = [] in
-            let breadcrumb = { href; name; kind = url.page.kind } in
-            if url.page = current_url then Some (`Current breadcrumb)
-            else Some (`Parent (breadcrumb, children))
-        | _ -> None
-      in
-      match parent with
-      | Some (`Parent (bc, children)) -> extract (bc :: acc) children
-      | Some (`Current current) ->
-          let up_url =
-            List.find_map (fun (b : Types.breadcrumb) -> b.href) acc
-          in
-          { Types.current; parents = List.rev acc; up_url }
-      | None ->
-          let kind = current_url.kind and _name = current_url.name in
-          let current = { href = None; name = [ (* Html.txt name *) ]; kind } in
-          let up_url =
-            List.find_map (fun (b : Types.breadcrumb) -> b.href) acc
-          in
-          let parents = List.rev acc in
-          { Types.current; parents; up_url }
-    in
-    let escape = [] in
-    extract escape sidebar
-
-  let gen_breadcrumbs ~config ~sidebar ~url =
-    match sidebar with
-    | None -> gen_breadcrumbs_no_sidebar ~config ~url
-    | Some sidebar -> gen_breadcrumbs_with_sidebar ~config ~sidebar ~url
-end
-
 module Page = struct
   let on_sub = function
     | `Page _ -> None
@@ -665,55 +499,39 @@ module Page = struct
         | `Closed | `Open | `Default -> None
         | `Inline -> Some 0)
 
-  let rec include_ ~config ~sidebar { Subpage.content; _ } =
-    page ~config ~sidebar content
+  let rec include_ ~config { Subpage.content; _ } = page ~config content
 
-  and subpages ~config ~sidebar subpages =
-    List.map (include_ ~config ~sidebar) subpages
+  and subpages ~config subpages = List.map (include_ ~config) subpages
 
-  and page ~config ~sidebar p : Odoc_document.Renderer.page =
+  and page ~config p : Odoc_document.Renderer.page =
     let { Page.preamble = _; items = i; url; source_anchor } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
-    let subpages = subpages ~config ~sidebar @@ Doctree.Subpages.compute p in
+    let subpages = subpages ~config @@ Doctree.Subpages.compute p in
     let resolve = Link.Current url in
-    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~sidebar ~url in
-    let sidebar =
-      (* match sidebar with
-      | None -> None
-      | Some sidebar ->
-          let sidebar = Odoc_document.Sidebar.to_block sidebar url in
-          (Some (block ~config ~resolve sidebar) :> any Html.elt list option) *)
-      None
-    in
     let i = Doctree.Shift.compute ~on_sub i in
-    let uses_katex = Doctree.Math.has_math_elements p in
-    let toc = Toc.gen_toc ~config ~resolve ~path:url i in
     let content = items ~config ~resolve i in
     let root_block = Md.Block.Blocks (content, Md.meta) in
     let doc = Cmarkit.Doc.make root_block in
     let header, preamble = Doctree.PageTitle.render_title ?source_anchor p in
     let header = items ~config ~resolve header in
     let preamble = items ~config ~resolve preamble in
-    Markdown_page.make ~sidebar ~config ~header:(header @ preamble) ~toc
-      ~breadcrumbs ~url ~uses_katex doc subpages
+    Markdown_page.make ~config ~header:(header @ preamble) ~url doc subpages
 
-  and source_page ~config ~sidebar sp =
-    (* TODO: I'm not enturely sure when this is called *)
+  and source_page ~config sp =
     let { Source_page.url; contents = _ } = sp in
     let _resolve = Link.Current sp.url in
-    let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~sidebar ~url in
-    let sidebar = None in
     let title = url.Url.Path.name and doc = [ Md.Block.empty ] in
+    (* What's the header? *)
     let header = [] in
-    Markdown_page.make_src ~breadcrumbs ~header ~config ~url ~sidebar title doc
+    Markdown_page.make_src ~header ~config ~url title doc
 end
 
-let render ~(config : Config.t) ~sidebar = function
+let render ~(config : Config.t) = function
   (* .mld *)
-  | Document.Page page -> [ Page.page ~config ~sidebar page ]
+  | Document.Page page -> [ Page.page ~config page ]
   (* .mli docs *)
-  | Source_page src -> [ Page.source_page ~config ~sidebar src ]
+  | Source_page src -> [ Page.source_page ~config src ]
 
 let filepath ~config url = Link.Path.as_filename ~config url
 

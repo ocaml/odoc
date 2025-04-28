@@ -7,4 +7,3 @@ module Markdown_page = Markdown_page
 module Generator = Generator
 module Link = Link
 module Json = Odoc_utils.Json
-module Sidebar = Sidebar
