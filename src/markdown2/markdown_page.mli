@@ -22,10 +22,6 @@ val make :
   config:Config.t ->
   url:Odoc_document.Url.Path.t ->
   header:Cmarkit.Block.t list ->
-  breadcrumbs:Types.breadcrumbs ->
-  sidebar:Cmarkit.Block.t list option ->
-  toc:Types.toc list ->
-  uses_katex:bool ->
   Cmarkit.Doc.t ->
   Odoc_document.Renderer.page list ->
   Odoc_document.Renderer.page
@@ -33,9 +29,7 @@ val make :
 val make_src :
   config:Config.t ->
   url:Odoc_document.Url.Path.t ->
-  breadcrumbs:Types.breadcrumbs ->
   header:Cmarkit.Block.t list ->
-  sidebar:Cmarkit.Block.t list option ->
   string ->
   Cmarkit.Block.t list ->
   Odoc_document.Renderer.page

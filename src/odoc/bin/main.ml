@@ -1311,8 +1311,7 @@ module Odoc_html = Make_renderer (Odoc_html_args)
 module Odoc_markdown_cmd = Make_renderer (struct
   type args = Odoc_markdown.Config.t
 
-  let render config sidebar page =
-    Odoc_markdown.Generator.render ~config ~sidebar page
+  let render config _sidebar page = Odoc_markdown.Generator.render ~config page
 
   let filepath _url = failwith "Not implemented"
   (* Odoc_html.Generator.filepath ~config:html_config url *)
