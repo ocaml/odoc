@@ -7,6 +7,7 @@ type line =
   | Short_title of short_title
   | Toc_status of [ `Open | `Hidden ]
   | Order_category of string
+  | Custom_tag of string * string
 
 type children_order = child Location_.with_location list Location_.with_location
 
@@ -15,6 +16,7 @@ type t = {
   short_title : short_title option;
   toc_status : [ `Open | `Hidden ] option;
   order_category : string option;
+  other_config : (string * string) list;
 }
 
 let empty =
@@ -23,6 +25,7 @@ let empty =
     short_title = None;
     toc_status = None;
     order_category = None;
+    other_config = [];
   }
 
 let update ~tag_name ~loc v new_v =
@@ -57,6 +60,11 @@ let apply fm line =
           name
       in
       { fm with order_category }
+  | Custom_tag (s, content) ->
+      if List.mem_assoc s fm.other_config then
+        Error.raise_warning (Error.make "Duplicated @%s entry" s line.location);
+      let other_config = (s, content) :: List.remove_assoc s fm.other_config in
+      { fm with other_config }
 
 let parse_child c =
   let mod_prefix = "module-" in
@@ -125,6 +133,25 @@ let parse_order_category loc (t : tag_payload) =
   | _ ->
       Error
         (Error.make "@order_category can only take a single word as value" loc)
+
+let parse_custom_tag loc tag (t : tag_payload) =
+  let content =
+    List.filter_map
+      (function
+        | { Location_.value = `Paragraph words; _ } ->
+            let words =
+              List.filter_map
+                (function
+                  | { Location_.value = `Word w; _ } -> Some w
+                  | { Location_.value = `Space; _ } -> None
+                  | _ -> None)
+                words
+            in
+            Some (String.concat " " words)
+        | _ -> None)
+      t
+  in
+  Result.Ok (Location_.at loc (Custom_tag (tag, String.concat " " content)))
 
 let of_lines lines =
   Error.catch_warnings @@ fun () -> List.fold_left apply empty lines

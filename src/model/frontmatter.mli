@@ -11,6 +11,7 @@ type t = {
   short_title : short_title option;
   toc_status : [ `Open | `Hidden ] option;
   order_category : string option;
+  other_config : (string * string) list;
 }
 
 val empty : t
@@ -36,5 +37,11 @@ val parse_order_category :
   Location_.span ->
   tag_payload ->
   (line Location_.with_location, Error.t) Result.result
+
+val parse_custom_tag :
+  Location_.span ->
+  string ->
+  tag_payload ->
+  (line Comment.with_location, Error.t) result
 
 val of_lines : line Location_.with_location list -> t Error.with_warnings

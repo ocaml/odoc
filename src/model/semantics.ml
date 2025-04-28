@@ -586,6 +586,14 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
               Error.raise_warning e;
               None
         in
+        let do2 parse loc str els =
+          let els = nestable_block_elements els in
+          match parse loc str els with
+          | Ok res -> Some res
+          | Error e ->
+              Error.raise_warning e;
+              None
+        in
         List.filter_map
           (function
             | `Children_order co, loc ->
@@ -593,7 +601,9 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
             | `Toc_status co, loc -> do_ Frontmatter.parse_toc_status loc co
             | `Short_title t, loc -> do_ Frontmatter.parse_short_title loc t
             | `Order_category t, loc ->
-                do_ Frontmatter.parse_order_category loc t)
+                do_ Frontmatter.parse_order_category loc t
+            | `Custom (name, content), loc ->
+                do2 Frontmatter.parse_custom_tag loc name content)
           unparsed_lines
       in
       Frontmatter.of_lines lines |> Error.raise_warnings
