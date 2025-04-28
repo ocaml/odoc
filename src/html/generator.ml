@@ -661,17 +661,17 @@ module Page = struct
         | `Closed | `Open | `Default -> None
         | `Inline -> Some 0)
 
-  let rec include_ ~config ~sidebar { Subpage.content; _ } =
-    page ~config ~sidebar content
+  let rec include_ ~config ~frontmatter ~sidebar { Subpage.content; _ } =
+    page ~config ~frontmatter ~sidebar content
 
-  and subpages ~config ~sidebar subpages =
-    List.map (include_ ~config ~sidebar) subpages
+  and subpages ~config ~frontmatter ~sidebar subpages =
+    List.map (include_ ~config ~frontmatter ~sidebar) subpages
 
-  and page ~config ~sidebar p : Odoc_document.Renderer.page =
+  and page ~config ~frontmatter ~sidebar p : Odoc_document.Renderer.page =
     let { Page.preamble = _; items = i; url; source_anchor } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
-    let subpages = subpages ~config ~sidebar @@ Doctree.Subpages.compute p in
+    let subpages = subpages ~config ~frontmatter ~sidebar @@ Doctree.Subpages.compute p in
     let resolve = Link.Current url in
     let breadcrumbs = Breadcrumbs.gen_breadcrumbs ~config ~sidebar ~url in
     let sidebar =
@@ -694,7 +694,7 @@ module Page = struct
         | Some url -> Some (Link.href ~config ~resolve url)
         | None -> None
       in
-      Html_fragment_json.make ~config
+      Html_fragment_json.make ~config ~frontmatter
         ~preamble:(preamble :> any Html.elt list)
         ~header ~breadcrumbs ~toc ~url ~uses_katex ~source_anchor content
         subpages
@@ -726,8 +726,8 @@ module Page = struct
         [ doc ]
 end
 
-let render ~config ~frontmatter:_ ~sidebar = function
-  | Document.Page page -> [ Page.page ~config ~sidebar page ]
+let render ~config ~frontmatter ~sidebar = function
+  | Document.Page page -> [ Page.page ~config ~frontmatter ~sidebar page ]
   | Source_page src -> [ Page.source_page ~config ~sidebar src ]
 
 let filepath ~config url = Link.Path.as_filename ~config url
