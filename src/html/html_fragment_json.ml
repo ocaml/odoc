@@ -49,13 +49,13 @@ let make ~config ~frontmatter ~preamble ~url ~breadcrumbs ~toc ~uses_katex
   let source_anchor =
     match source_anchor with Some url -> `String url | None -> `Null
   in
-  let frontmatter =
+  let frontmatter : Json.json =
     `Object
       [
         ( "other_config",
-          `Object
+          `Array
             (List.map
-               (fun (k, v) -> (k, `String v))
+               (fun (k, v) -> ((`Array [`String k; `String v]) : Json.json))
                frontmatter.Odoc_model.Frontmatter.other_config) );
       ]
   in
