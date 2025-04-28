@@ -1,5 +1,6 @@
 val render :
   config:Config.t ->
+  frontmatter:Odoc_model.Frontmatter.t ->
   sidebar:Odoc_document.Sidebar.t option ->
   Odoc_document.Types.Document.t ->
   Odoc_document.Renderer.page list

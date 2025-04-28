@@ -726,7 +726,7 @@ module Page = struct
         [ doc ]
 end
 
-let render ~config ~sidebar = function
+let render ~config ~frontmatter:_ ~sidebar = function
   | Document.Page page -> [ Page.page ~config ~sidebar page ]
   | Source_page src -> [ Page.source_page ~config ~sidebar src ]
 

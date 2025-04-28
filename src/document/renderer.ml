@@ -24,7 +24,7 @@ type input =
 
 type 'a t = {
   name : string;
-  render : 'a -> Sidebar.t option -> Types.Document.t -> page list;
+  render : 'a -> Odoc_model.Frontmatter.t -> Sidebar.t option -> Types.Document.t -> page list;
   filepath : 'a -> Url.Path.t -> Fpath.t;
 }
 

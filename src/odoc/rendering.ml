@@ -18,9 +18,9 @@ let document_of_odocl ~syntax input =
   Odoc_file.load input >>= fun unit ->
   match unit.content with
   | Odoc_file.Page_content odoctree ->
-      Ok (Renderer.document_of_page ~syntax odoctree)
+      Ok (Renderer.document_of_page ~syntax odoctree, odoctree.frontmatter)
   | Unit_content odoctree ->
-      Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
+      Ok (Renderer.document_of_compilation_unit ~syntax odoctree, Frontmatter.empty)
   | Impl_content _ ->
       Error
         (`Msg
@@ -36,8 +36,8 @@ let document_of_input ~resolver ~warnings_options ~syntax input =
   let output = Fs.File.(set_ext ".odocl" input) in
   Odoc_link.from_odoc ~resolver ~warnings_options ~warnings_tags:[] input output
   >>= function
-  | `Page page -> Ok (Renderer.document_of_page ~syntax page)
-  | `Module m -> Ok (Renderer.document_of_compilation_unit ~syntax m)
+  | `Page page -> Ok (Renderer.document_of_page ~syntax page, page.frontmatter)
+  | `Module m -> Ok (Renderer.document_of_compilation_unit ~syntax m, Frontmatter.empty)
   | `Impl _ ->
       Error
         (`Msg
@@ -49,9 +49,9 @@ let document_of_input ~resolver ~warnings_options ~syntax input =
            "Wrong kind of unit: Expected a page or module unit, got an asset \
             unit. Use the dedicated command for assets.")
 
-let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
+let render_document renderer ~frontmatter ~sidebar ~output:root_dir ~extra_suffix ~extra doc
     =
-  let pages = renderer.Renderer.render extra sidebar doc in
+  let pages = renderer.Renderer.render extra frontmatter sidebar doc in
   Renderer.traverse pages ~f:(fun filename content ->
       let filename = prepare ~extra_suffix ~output_dir:root_dir filename in
       Io_utils.with_formatter_out (Fs.File.to_string filename) @@ fun fmt ->
@@ -60,8 +60,8 @@ let render_document renderer ~sidebar ~output:root_dir ~extra_suffix ~extra doc
 let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
     =
   let extra_suffix = None in
-  document_of_input ~resolver ~warnings_options ~syntax file >>= fun doc ->
-  render_document renderer ~sidebar:None ~output ~extra_suffix ~extra doc;
+  document_of_input ~resolver ~warnings_options ~syntax file >>= fun (doc, frontmatter) ->
+  render_document renderer ~frontmatter ~sidebar:None ~output ~extra_suffix ~extra doc;
   Ok ()
 
 let generate_odoc ~syntax ~warnings_options:_ ~renderer ~output ~extra_suffix
@@ -70,8 +70,8 @@ let generate_odoc ~syntax ~warnings_options:_ ~renderer ~output ~extra_suffix
   | None -> Ok None
   | Some x -> Odoc_file.load_sidebar x >>= fun sidebar -> Ok (Some sidebar))
   >>= fun sidebar ->
-  document_of_odocl ~syntax file >>= fun doc ->
-  render_document renderer ~output ~sidebar ~extra_suffix ~extra doc;
+  document_of_odocl ~syntax file >>= fun (doc, frontmatter) ->
+  render_document renderer ~frontmatter ~output ~sidebar ~extra_suffix ~extra doc;
   Ok ()
 
 let documents_of_implementation ~warnings_options:_ ~syntax impl source_file =
@@ -104,7 +104,7 @@ let generate_source_odoc ~syntax ~warnings_options ~renderer ~output
       documents_of_implementation ~warnings_options ~syntax impl source_file
       >>= fun docs ->
       List.iter
-        (render_document renderer ~output ~sidebar ~extra_suffix ~extra)
+        (render_document renderer ~frontmatter:Frontmatter.empty ~output ~sidebar ~extra_suffix ~extra)
         docs;
       Ok ()
   | Page_content _ | Unit_content _ | Asset_content _ ->
@@ -129,8 +129,8 @@ let targets_odoc ~resolver ~warnings_options ~syntax ~renderer ~output:root_dir
       document_of_input ~resolver ~warnings_options ~syntax odoctree
     else document_of_odocl ~syntax odoctree
   in
-  doc >>= fun doc ->
-  let pages = renderer.Renderer.render extra None doc in
+  doc >>= fun (doc, frontmatter) ->
+  let pages = renderer.Renderer.render extra frontmatter None doc in
   Renderer.traverse pages ~f:(fun filename _content ->
       let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
       Format.printf "%a\n" Fpath.pp filename);
@@ -145,7 +145,7 @@ let targets_source_odoc ~syntax ~warnings_options ~renderer ~output:root_dir
       >>= fun docs ->
       List.iter
         (fun doc ->
-          let pages = renderer.Renderer.render extra None doc in
+          let pages = renderer.Renderer.render extra Frontmatter.empty None doc in
           Renderer.traverse pages ~f:(fun filename _content ->
               let filename =
                 Fpath.normalize @@ Fs.File.append root_dir filename
