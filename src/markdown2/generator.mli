@@ -3,7 +3,7 @@ val render :
   Odoc_document.Types.Document.t ->
   Odoc_document.Renderer.page list
 
-val filepath : config:Config.t -> Odoc_document.Url.Path.t -> Fpath.t
+(* val filepath : config:Config.t -> Odoc_document.Url.Path.t -> Fpath.t *)
 
 val items :
   config:Config.t ->

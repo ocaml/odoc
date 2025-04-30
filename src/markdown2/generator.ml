@@ -1,37 +1,18 @@
-(*
- * Copyright (c) 2016 Thomas Refis <trefis@janestreet.com>
- *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *)
-
-[@@@warning "-26-27-32"]
-
 open Odoc_utils
-
 module HLink = Link
-open Odoc_document.Types
+
+module Types = Odoc_document.Types
 module Doctree = Odoc_document.Doctree
 module Url = Odoc_document.Url
 module Link = HLink
 
 module Md = struct
   include Cmarkit
-
   let meta = Cmarkit.Meta.none
 end
 
-let source fn (t : Source.t) =
-  let rec token (x : Source.token) =
+let source fn (t : Types.Source.t) =
+  let rec token (x : Types.Source.token) =
     match x with Elt i -> fn i | Tag (_, l) -> tokens l
   and tokens t = List.concat_map token t in
   tokens t
@@ -56,7 +37,7 @@ let entity = function "#45" -> "-" | "gt" -> ">" | e -> "&" ^ e ^ ";"
 
 let rec inline_text_only inline =
   List.concat_map
-    (fun (i : Inline.one) ->
+    (fun (i : Types.Inline.one) ->
       match i.desc with
       | Text "" -> []
       | Text s -> [ s ]
@@ -68,9 +49,9 @@ let rec inline_text_only inline =
       | _ -> [])
     inline
 
-and block_text_only (blocks : Block.t) : string list =
+and block_text_only blocks : string list =
   List.concat_map
-    (fun (b : Block.one) ->
+    (fun (b : Types.Block.one) ->
       match b.desc with
       | Paragraph inline | Inline inline -> inline_text_only inline
       | Source (_, s) -> source inline_text_only s
@@ -79,8 +60,8 @@ and block_text_only (blocks : Block.t) : string list =
       | _ -> [])
     blocks
 
-and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) =
-  let one (t : Inline.one) =
+and inline ~config ?(emph_level = 0) ~resolve l =
+  let one (t : Types.Inline.one) =
     match t.desc with
     | Text s -> [ Md.Inline.Text (s, Md.meta) ]
     | Entity s ->
@@ -141,17 +122,8 @@ and inline ~config ?(emph_level = 0) ~resolve (l : Inline.t) =
   in
   List.concat_map one l
 
-let heading ~config ~resolve (h : Heading.t) : Md.Block.t list =
-  let inlines = inline ~config ~resolve h.title in
-  let content = Md.Inline.Inlines (inlines, Md.meta) in
-  let heading =
-    Md.Block.Heading
-      (Md.Block.Heading.make ~level:(h.level + 1) content, Md.meta)
-  in
-  [ heading ]
-
-let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
-  let one (t : Block.one) : Md.Block.t list =
+let rec block ~config ~resolve l =
+  let one (t : Types.Block.one) =
     match t.desc with
     | Paragraph paragraph ->
         let inlines = inline ~config ~resolve paragraph in
@@ -175,134 +147,16 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
             l
         in
         [
-          (* TODO: Do we need to make it tight based on something? *)
+          (* TODO: Do we need the list (~tight:false) based on surrounding content or can we always be ~tight:true? *)
           Md.Block.List
             (Md.Block.List'.make ~tight:true list_type list_items, Md.meta);
         ]
     | Inline i ->
         let inlines = Md.Inline.Inlines (inline ~config ~resolve i, Md.meta) in
         [ Md.Block.Paragraph (Md.Block.Paragraph.make inlines, Md.meta) ]
-    | Table t ->
-        let rows_data : (string * [ `Data | `Header ]) list list =
-          match t.data with
-          | [] -> []
-          | rows ->
-              List.map
-                (fun (row : (Block.t * [ `Data | `Header ]) list) ->
-                  List.map
-                    (fun (content, cell_type) ->
-                      let cell_text =
-                        String.concat ~sep:" " (block_text_only content)
-                      in
-                      (cell_text, cell_type))
-                    row)
-                rows
-        in
-
-        if rows_data = [] then
-          [
-            Md.Block.Paragraph
-              ( Md.Block.Paragraph.make (Md.Inline.Inlines ([], Md.meta)),
-                Md.meta );
-          ]
-        else
-          let max_columns =
-            List.fold_left
-              (fun max_cols row ->
-                let row_cols = List.length row in
-                if row_cols > max_cols then row_cols else max_cols)
-              0 rows_data
-          in
-
-          let has_header_row =
-            match rows_data with
-            | first_row :: _ ->
-                List.exists
-                  (fun (_, cell_type) -> cell_type = `Header)
-                  first_row
-            | [] -> false
-          in
-
-          let rec make_list n v =
-            if n <= 0 then [] else v :: make_list (n - 1) v
-          in
-
-          let header_cells, content_rows =
-            match rows_data with
-            | first_row :: rest when has_header_row ->
-                (* Pad header cells to match max_columns *)
-                let padded_header =
-                  let cells = List.map fst first_row in
-                  let missing = max_columns - List.length cells in
-                  if missing > 0 then cells @ make_list missing "" else cells
-                in
-                (padded_header, rest)
-            | _ ->
-                (* No header - create an empty header matching the max columns *)
-                (make_list max_columns "", rows_data)
-          in
-
-          let pad_row row =
-            let cells = List.map fst row in
-            let missing = max_columns - List.length cells in
-            if missing > 0 then cells @ make_list missing "" else cells
-          in
-
-          let header_inline =
-            let header_text =
-              "| " ^ String.concat ~sep:" | " header_cells ^ " |"
-            in
-            let header_md = Md.Inline.Text (header_text, Md.meta) in
-            Md.Inline.Inlines ([ header_md ], Md.meta)
-          in
-
-          (* Create the separator row (based on column alignment) *)
-          let separator_inline =
-            let alignments =
-              if List.length t.align >= max_columns then
-                (* Take only the first max_columns elements *)
-                let rec take n lst =
-                  if n <= 0 then []
-                  else match lst with [] -> [] | h :: t -> h :: take (n - 1) t
-                in
-                take max_columns t.align
-              else
-                t.align
-                @ make_list (max_columns - List.length t.align) Table.Default
-            in
-
-            let separator_cells =
-              List.map
-                (fun align ->
-                  match align with
-                  | Table.Left -> ":---"
-                  | Table.Center -> ":---:"
-                  | Table.Right -> "---:"
-                  | Table.Default -> "---")
-                alignments
-            in
-            let sep_text =
-              "| " ^ String.concat ~sep:" | " separator_cells ^ " |"
-            in
-            let sep_md = Md.Inline.Text (sep_text, Md.meta) in
-            Md.Inline.Inlines ([ sep_md ], Md.meta)
-          in
-
-          let content_inlines =
-            List.map
-              (fun row ->
-                let cells = pad_row row in
-                let row_text = "| " ^ String.concat ~sep:" | " cells ^ " |" in
-                let row_md = Md.Inline.Text (row_text, Md.meta) in
-                Md.Inline.Inlines ([ row_md ], Md.meta))
-              content_rows
-          in
-          List.map
-            (fun inline ->
-              Md.Block.Paragraph (Md.Block.Paragraph.make inline, Md.meta))
-            ([ header_inline; separator_inline ] @ content_inlines)
+    | Table t -> block_table t
     | Description l ->
-        let item ({ key; definition; attr = _ } : Description.one) =
+        let item ({ key; definition; attr = _ } : Types.Description.one) =
           let term = inline ~config ~resolve key in
           (* We extract definition as inline, since it came as "Block". There seems to be no way (in Cmarkit) to make it inline *)
           let definition_inline =
@@ -352,19 +206,19 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
             in
             failwith msg)
     | Audio (_target, _alt) ->
-        (* TODO: Raise a decent error here? Only saw assert false :( *)
+        (* TODO: Raise a decent error here? Maybe warnings, I only saw assert false *)
         failwith "Audio isn't supported in markdown"
     | Video (_target, _alt) ->
-        (* TODO: Raise a decent error here? Only saw assert false :( *)
+        (* TODO: Raise a decent error here? Maybe warnings, I only saw assert false *)
         failwith "Video isn't supported in markdown"
     | Image (target, alt) ->
         let dest =
-          match target with
-          | Target.External url -> (url, Md.meta)
-          | Target.Internal (Resolved uri) ->
+          match (target : Types.Target.t) with
+          | External url -> (url, Md.meta)
+          | Internal (Resolved uri) ->
               let url = Link.href ~config ~resolve uri in
               (url, Md.meta)
-          | Target.Internal Unresolved ->
+          | Internal Unresolved ->
               (* TODO: What's unresolved? A non-existing page/link? *)
               ("", Md.meta)
         in
@@ -383,8 +237,119 @@ let rec block ~config ~resolve (l : Block.t) : Md.Block.t list =
   in
   List.concat_map one l
 
+and block_table t =
+  let rows_data : (string * [ `Data | `Header ]) list list =
+    match t.data with
+    | [] -> []
+    | rows ->
+        List.map
+          (fun (row : (Types.Block.t * [ `Data | `Header ]) list) ->
+            List.map
+              (fun (content, cell_type) ->
+                let cell_text =
+                  String.concat ~sep:" " (block_text_only content)
+                in
+                (cell_text, cell_type))
+              row)
+          rows
+  in
+
+  if rows_data = [] then
+    [
+      Md.Block.Paragraph
+        (Md.Block.Paragraph.make (Md.Inline.Inlines ([], Md.meta)), Md.meta);
+    ]
+  else
+    let max_columns =
+      List.fold_left
+        (fun max_cols row ->
+          let row_cols = List.length row in
+          if row_cols > max_cols then row_cols else max_cols)
+        0 rows_data
+    in
+
+    let has_header_row =
+      match rows_data with
+      | first_row :: _ ->
+          List.exists (fun (_, cell_type) -> cell_type = `Header) first_row
+      | [] -> false
+    in
+
+    let rec make_list n v = if n <= 0 then [] else v :: make_list (n - 1) v in
+
+    let header_cells, content_rows =
+      match rows_data with
+      | first_row :: rest when has_header_row ->
+          (* Pad header cells to match max_columns *)
+          let padded_header =
+            let cells = List.map fst first_row in
+            let missing = max_columns - List.length cells in
+            if missing > 0 then cells @ make_list missing "" else cells
+          in
+          (padded_header, rest)
+      | _ ->
+          (* No header - create an empty header matching the max columns *)
+          (make_list max_columns "", rows_data)
+    in
+
+    let pad_row row =
+      let cells = List.map fst row in
+      let missing = max_columns - List.length cells in
+      if missing > 0 then cells @ make_list missing "" else cells
+    in
+
+    let header_inline =
+      let header_text = "| " ^ String.concat ~sep:" | " header_cells ^ " |" in
+      let header_md = Md.Inline.Text (header_text, Md.meta) in
+      Md.Inline.Inlines ([ header_md ], Md.meta)
+    in
+
+    (* Create the separator row (based on column alignment) *)
+    let separator_inline =
+      let alignments =
+        if List.length t.align >= max_columns then
+          (* Take only the first max_columns elements *)
+          let rec take n lst =
+            if n <= 0 then []
+            else match lst with [] -> [] | h :: t -> h :: take (n - 1) t
+          in
+          take max_columns t.align
+        else
+          t.align
+          @ make_list (max_columns - List.length t.align) Types.Table.Default
+      in
+
+      let separator_cells =
+        List.map
+          (fun align ->
+            match (align : Types.Table.alignment) with
+            | Left -> ":---"
+            | Center -> ":---:"
+            | Right -> "---:"
+            | Default -> "---")
+          alignments
+      in
+      let sep_text = "| " ^ String.concat ~sep:" | " separator_cells ^ " |" in
+      let sep_md = Md.Inline.Text (sep_text, Md.meta) in
+      Md.Inline.Inlines ([ sep_md ], Md.meta)
+    in
+
+    let content_inlines =
+      List.map
+        (fun row ->
+          let cells = pad_row row in
+          let row_text = "| " ^ String.concat ~sep:" | " cells ^ " |" in
+          let row_md = Md.Inline.Text (row_text, Md.meta) in
+          Md.Inline.Inlines ([ row_md ], Md.meta))
+        content_rows
+    in
+    List.map
+      (fun inline ->
+        Md.Block.Paragraph (Md.Block.Paragraph.make inline, Md.meta))
+      ([ header_inline; separator_inline ] @ content_inlines)
+
 and items ~config ~resolve l : Md.Block.t list =
-  let rec walk_items acc (t : Item.t list) =
+  let rec walk_items acc (t : Types.Item.t list) =
     let continue_with rest elts =
       (walk_items [@tailcall]) (List.rev_append elts acc) rest
     in
@@ -393,13 +358,17 @@ and items ~config ~resolve l : Md.Block.t list =
     | Text _ :: _ as t ->
         let text, _, rest =
           Doctree.Take.until t ~classify:(function
-            | Item.Text text -> Accum text
+            | Types.Item.Text text -> Accum text
             | _ -> Stop_and_keep)
         in
         let content = block ~config ~resolve text in
         (continue_with [@tailcall]) rest content
     | Heading h :: rest ->
-        (continue_with [@tailcall]) rest (heading ~config ~resolve h)
+        let inlines = inline ~config ~resolve h.title in
+        let content = Md.Inline.Inlines (inlines, Md.meta) in
+        let block = Md.Block.Heading.make ~level:(h.level + 1) content in
+        let heading = [ Md.Block.Heading (block, Md.meta) ] in
+        (continue_with [@tailcall]) rest heading
     | Include
         {
           attr = _attr;
@@ -413,7 +382,7 @@ and items ~config ~resolve l : Md.Block.t list =
         (continue_with [@tailcall]) rest content
     | Declaration
         {
-          Item.attr = _attr;
+          attr = _attr;
           anchor = _anchor;
           source_anchor = _source_anchor;
           content;
@@ -427,11 +396,11 @@ and items ~config ~resolve l : Md.Block.t list =
   and items l = walk_items [] l in
   items l
 
-and documentedSrc ~config ~resolve (t : DocumentedSrc.t) =
-  let open DocumentedSrc in
+and documentedSrc ~config ~resolve t =
+  let open Types.DocumentedSrc in
   let take_code l =
     Doctree.Take.until l ~classify:(fun x ->
-        match (x : DocumentedSrc.one) with
+        match (x : one) with
         | Code code -> Accum code
         | Alternative (Expansion { summary; _ }) -> Accum summary
         | _ -> Stop_and_keep)
@@ -439,11 +408,9 @@ and documentedSrc ~config ~resolve (t : DocumentedSrc.t) =
   let take_descr l =
     Doctree.Take.until l ~classify:(function
       | Documented { attrs; anchor; code; doc; markers } ->
-          Accum
-            [ { DocumentedSrc.attrs; anchor; code = `D code; doc; markers } ]
+          Accum [ { attrs; anchor; code = `D code; doc; markers } ]
       | Nested { attrs; anchor; code; doc; markers } ->
-          Accum
-            [ { DocumentedSrc.attrs; anchor; code = `N code; doc; markers } ]
+          Accum [ { attrs; anchor; code = `N code; doc; markers } ]
       | _ -> Stop_and_keep)
   in
   let rec to_markdown t : Md.Block.t list =
@@ -466,8 +433,7 @@ and documentedSrc ~config ~resolve (t : DocumentedSrc.t) =
     | Subpage subp :: _ -> subpage ~config ~resolve subp
     | (Documented _ | Nested _) :: _ ->
         let l, _, rest = take_descr t in
-        let one { DocumentedSrc.attrs = _; anchor = _; code; doc; markers = _ }
-            =
+        let one { attrs = _; anchor = _; code; doc; markers = _ } =
           let content =
             match code with
             | `D code ->
@@ -488,23 +454,23 @@ and documentedSrc ~config ~resolve (t : DocumentedSrc.t) =
   in
   to_markdown t
 
-and subpage ~config ~resolve (subp : Subpage.t) =
+and subpage ~config ~resolve (subp : Types.Subpage.t) =
   items ~config ~resolve subp.content.items
 
 module Page = struct
   let on_sub = function
     | `Page _ -> None
-    | `Include x -> (
-        match x.Include.status with
+    | `Include (x : Types.Include.t) -> (
+        match x.status with
         | `Closed | `Open | `Default -> None
         | `Inline -> Some 0)
 
-  let rec include_ ~config { Subpage.content; _ } = page ~config content
+  let rec include_ ~config { Types.Subpage.content; _ } = page ~config content
 
   and subpages ~config subpages = List.map (include_ ~config) subpages
 
   and page ~config p : Odoc_document.Renderer.page =
-    let { Page.preamble = _; items = i; url; source_anchor } =
+    let { Types.Page.preamble = _; items = i; url; source_anchor } =
       Doctree.Labels.disambiguate_page ~enter_subpages:false p
     in
     let subpages = subpages ~config @@ Doctree.Subpages.compute p in
@@ -512,14 +478,14 @@ module Page = struct
     let i = Doctree.Shift.compute ~on_sub i in
     let content = items ~config ~resolve i in
     let root_block = Md.Block.Blocks (content, Md.meta) in
-    let doc = Cmarkit.Doc.make root_block in
+    let doc = Md.Doc.make root_block in
     let header, preamble = Doctree.PageTitle.render_title ?source_anchor p in
     let header = items ~config ~resolve header in
     let preamble = items ~config ~resolve preamble in
     Markdown_page.make ~config ~header:(header @ preamble) ~url doc subpages
 
   and source_page ~config sp =
-    let { Source_page.url; contents = _ } = sp in
+    let { Types.Source_page.url; contents = _ } = sp in
     let _resolve = Link.Current sp.url in
     let title = url.Url.Path.name and doc = [ Md.Block.empty ] in
     (* What's the header? *)
@@ -527,13 +493,12 @@ module Page = struct
     Markdown_page.make_src ~header ~config ~url title doc
 end
 
-let render ~(config : Config.t) = function
+let render ~(config : Config.t) doc =
+  match (doc : Types.Document.t) with
   (* .mld *)
-  | Document.Page page -> [ Page.page ~config page ]
+  | Page page -> [ Page.page ~config page ]
   (* .mli docs *)
   | Source_page src -> [ Page.source_page ~config src ]
-
-let filepath ~config url = Link.Path.as_filename ~config url
 
 let inline ~config ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in

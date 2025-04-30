@@ -1,6 +1,6 @@
-(** {0 List}
+(** {0 Array}
 
-    Utilities for List data type.
+    Utilities for Array data type.
 
     This module is compatible with original ocaml stdlib. In general, all
     functions comes with the original stdlib also applies to this collection,
@@ -25,7 +25,7 @@ val size : 'a t -> int
 
 val head : 'a t -> 'a option
 (** [head xs] returns [None] if [xs] is the empty list, otherwise it returns
-    [Some value] where [value] is the first element in the list.
+    [Some value] where [val ue] is the first element in the list.
     {[
       head [] = None;;
       head [ 1; 2; 3 ] = Some 1
