@@ -4,7 +4,11 @@
   $ odoc compile --package test -I . page.mld
   File "page.mld", line 25, characters 23-34:
   Warning: '{{!...} ...}' (cross-reference) should not be empty.
-  File "page.mld", line 121, characters 0-11:
+  File "page.mld", line 35, characters 23-32:
+  Warning: '{{!...} ...}' (cross-reference) should not be empty.
+  File "page.mld", line 35, characters 49-59:
+  Warning: '{{!...} ...}' (cross-reference) should not be empty.
+  File "page.mld", line 125, characters 0-11:
   Warning: Tags are not allowed in pages.
   $ odoc compile --package test test.cmti
   $ odoc compile --package test -I . test2.cmti
@@ -17,7 +21,7 @@
   File "list.mli", line 37, characters 12-19:
   Warning: Reference to 'head' is ambiguous. Please specify its kind: section-head, val-head.
   $ odoc link page-page.odoc
-  File "page.mld", line 81, characters 0-33:
+  File "page.mld", line 85, characters 0-33:
   Warning: Failed to resolve reference ./odoc_logo_placeholder.jpg Path 'odoc_logo_placeholder.jpg' not found
   File "page.mld", line 29, characters 4-49:
   Warning: Failed to resolve reference ./test.mli Path 'test' not found
@@ -72,6 +76,8 @@
   See [this function from another library](./Test.md#val-v).
   See [this page from another package]().
   See [this section](./#styled) for the syntax of references.
+  ##### Subpages
+  There's a subpage here [`Test`](./Test.md) and another one [`Test2`](./Test2.md)
   #### Lists
   - First item
   - Second item
