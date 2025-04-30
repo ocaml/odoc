@@ -30,6 +30,10 @@ See {{!./test.mli}this page from another package}.
 
 See {{!styled}this section} for the syntax of references.
 
+{4 Subpages}
+
+There's a subpage here {{!test}} and another one {{!test2}}
+
 {3 Lists}
 
 - First item

@@ -147,7 +147,7 @@ let rec block ~config ~resolve l =
             l
         in
         [
-          (* TODO: Do we need the list (~tight:false) based on surrounding content or can we always be ~tight:true? *)
+          (* TODO: Do we need the list ~tight:false based on surrounding content or can we always be ~tight:true? *)
           Md.Block.List
             (Md.Block.List'.make ~tight:true list_type list_items, Md.meta);
         ]
@@ -176,11 +176,11 @@ let rec block ~config ~resolve l =
             (Md.Block.Code_block.make [ (s, Md.meta) ], Md.meta)
         in
         [ code_snippet ]
-    | Source (lang_tag, s) ->
+    | Source (lang, s) ->
         let code_block =
           s |> source inline_text_only |> List.map (fun s -> (s, Md.meta))
         in
-        let info_string = (lang_tag, Md.meta) in
+        let info_string = (lang, Md.meta) in
         let code_snippet =
           Md.Block.Code_block
             (Md.Block.Code_block.make ~info_string code_block, Md.meta)
@@ -470,7 +470,7 @@ module Page = struct
   and subpages ~config subpages = List.map (include_ ~config) subpages
 
   and page ~config p : Odoc_document.Renderer.page =
-    (* TODO: I'm not sure if we need to disambiguate the page with Doctree.Labels.disambiguate_page *)
+    (* TODO: disambiguate the page? *)
     let subpages = subpages ~config @@ Doctree.Subpages.compute p in
     let resolve = Link.Current p.url in
     let i = Doctree.Shift.compute ~on_sub p.items in
