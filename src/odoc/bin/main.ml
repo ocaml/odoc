@@ -1313,8 +1313,8 @@ module Odoc_markdown_cmd = Make_renderer (struct
 
   let render config _sidebar page = Odoc_markdown.Generator.render ~config page
 
-  let filepath _url = failwith "Not implemented"
-  (* Odoc_html.Generator.filepath ~config:html_config url *)
+  (* QUESTION: Where is this being used? *)
+  let filepath config url = Odoc_markdown.Generator.filepath ~config url
 
   let extra_args = Term.const { Odoc_markdown.Config.root_url = None }
   let renderer = { Odoc_document.Renderer.name = "markdown"; render; filepath }
