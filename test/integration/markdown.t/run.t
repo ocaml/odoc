@@ -27,6 +27,7 @@
   $ odoc markdown-generate list.odocl -o markdown
 
   $ cat markdown/test/Test.md
+  # Module `Test`
   ## Section 1
   ```
   type t = int
@@ -41,7 +42,21 @@
   module List : sig ... end
   ```
 
+  $ cat markdown/test/Test-List.md
+  # Module `Test.List`
+  ```
+  type 'a t = 'a list
+  ```
+  ```
+  val head : 'a t -> 'a option
+  ```
+  ```
+  val headExn : 'a t -> 'a
+  ```
+
   $ cat markdown/test/page.md
+  # The title
+  Quick reference for the odoc language rendering markdown
   ## Title
   ### Subtitle
   #### Referenceable title
