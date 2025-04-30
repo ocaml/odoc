@@ -24,13 +24,11 @@ let make ~config ~url doc children =
   in
   { Odoc_document.Renderer.filename; content; children; path = url }
 
-let make_src ~config ~url ~header _title block_list =
+let make_src ~config ~url _title block_list =
   let filename = Link.Path.as_filename ~config url in
   let content (ppf : Format.formatter) =
     let renderer = Cmarkit_commonmark.renderer () in
-    let root_block =
-      Cmarkit.Block.Blocks (header @ block_list, Cmarkit.Meta.none)
-    in
+    let root_block = Cmarkit.Block.Blocks (block_list, Cmarkit.Meta.none) in
     let doc = Cmarkit.Doc.make root_block in
     Format.fprintf ppf "%s" (Cmarkit_renderer.doc_to_string renderer doc)
   in

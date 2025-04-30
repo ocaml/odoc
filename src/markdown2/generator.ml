@@ -470,29 +470,30 @@ module Page = struct
   and subpages ~config subpages = List.map (include_ ~config) subpages
 
   and page ~config p : Odoc_document.Renderer.page =
-    let { Types.Page.preamble = _; items = i; url; source_anchor } =
-      Doctree.Labels.disambiguate_page ~enter_subpages:false p
-    in
+    (* TODO: I'm not sure if we need to disambiguate the page with Doctree.Labels.disambiguate_page *)
     let subpages = subpages ~config @@ Doctree.Subpages.compute p in
-    let resolve = Link.Current url in
-    let i = Doctree.Shift.compute ~on_sub i in
-    let header, preamble = Doctree.PageTitle.render_title ?source_anchor p in
+    let resolve = Link.Current p.url in
+    let i = Doctree.Shift.compute ~on_sub p.items in
+    let header, preamble =
+      Doctree.PageTitle.render_title ?source_anchor:p.source_anchor p
+    in
     let header = items ~config ~resolve header in
     let preamble = items ~config ~resolve preamble in
     let content = items ~config ~resolve i in
     let root_block = Md.Block.Blocks (header @ preamble @ content, Md.meta) in
     let doc = Md.Doc.make root_block in
-    Markdown_page.make ~config ~url doc subpages
+    Markdown_page.make ~config ~url:p.url doc subpages
 
   and source_page ~config sp =
     let { Types.Source_page.url; contents = _ } = sp in
     let resolve = Link.Current sp.url in
     let title = url.Url.Path.name in
-    let doc = [ Md.Block.empty ] in
     let header =
       items ~config ~resolve (Doctree.PageTitle.render_src_title sp)
     in
-    Markdown_page.make_src ~header ~config ~url title doc
+    (* why empty? *)
+    let doc = header @ [ Md.Block.empty ] in
+    Markdown_page.make_src ~config ~url title doc
 end
 
 let render ~(config : Config.t) doc =
