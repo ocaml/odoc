@@ -28,7 +28,6 @@ val make :
 val make_src :
   config:Config.t ->
   url:Odoc_document.Url.Path.t ->
-  header:Cmarkit.Block.t list ->
   string ->
   Cmarkit.Block.t list ->
   Odoc_document.Renderer.page
