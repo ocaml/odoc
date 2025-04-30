@@ -476,20 +476,22 @@ module Page = struct
     let subpages = subpages ~config @@ Doctree.Subpages.compute p in
     let resolve = Link.Current url in
     let i = Doctree.Shift.compute ~on_sub i in
-    let content = items ~config ~resolve i in
-    let root_block = Md.Block.Blocks (content, Md.meta) in
-    let doc = Md.Doc.make root_block in
     let header, preamble = Doctree.PageTitle.render_title ?source_anchor p in
     let header = items ~config ~resolve header in
     let preamble = items ~config ~resolve preamble in
-    Markdown_page.make ~config ~header:(header @ preamble) ~url doc subpages
+    let content = items ~config ~resolve i in
+    let root_block = Md.Block.Blocks (header @ preamble @ content, Md.meta) in
+    let doc = Md.Doc.make root_block in
+    Markdown_page.make ~config ~url doc subpages
 
   and source_page ~config sp =
     let { Types.Source_page.url; contents = _ } = sp in
-    let _resolve = Link.Current sp.url in
-    let title = url.Url.Path.name and doc = [ Md.Block.empty ] in
-    (* What's the header? *)
-    let header = [] in
+    let resolve = Link.Current sp.url in
+    let title = url.Url.Path.name in
+    let doc = [ Md.Block.empty ] in
+    let header =
+      items ~config ~resolve (Doctree.PageTitle.render_src_title sp)
+    in
     Markdown_page.make_src ~header ~config ~url title doc
 end
 
