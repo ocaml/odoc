@@ -16,24 +16,20 @@
 
 module Url = Odoc_document.Url
 
-let page_creator doc =
- fun (ppf : Format.formatter) ->
-  let renderer = Cmarkit_commonmark.renderer () in
-  Format.fprintf ppf "%s" (Cmarkit_renderer.doc_to_string renderer doc)
-
-let make ~config ~url ~header:_ content children =
+let make ~config ~url ~header:_ doc children =
   let filename = Link.Path.as_filename ~config url in
-  let content = page_creator content in
+  let content ppf =
+    let renderer = Cmarkit_commonmark.renderer () in
+    Format.fprintf ppf "%s" (Cmarkit_renderer.doc_to_string renderer doc)
+  in
   { Odoc_document.Renderer.filename; content; children; path = url }
 
-let src_page_creator _name (block_list : Cmarkit.Block.t list) =
- fun (ppf : Format.formatter) ->
-  let renderer = Cmarkit_commonmark.renderer () in
-  let root_block = Cmarkit.Block.Blocks (block_list, Cmarkit.Meta.none) in
-  let doc = Cmarkit.Doc.make root_block in
-  Format.fprintf ppf "%s" (Cmarkit_renderer.doc_to_string renderer doc)
-
-let make_src ~config ~url ~header:_ title content =
+let make_src ~config ~url ~header:_ _title block_list =
   let filename = Link.Path.as_filename ~config url in
-  let content = src_page_creator title content in
+  let content (ppf : Format.formatter) =
+    let renderer = Cmarkit_commonmark.renderer () in
+    let root_block = Cmarkit.Block.Blocks (block_list, Cmarkit.Meta.none) in
+    let doc = Cmarkit.Doc.make root_block in
+    Format.fprintf ppf "%s" (Cmarkit_renderer.doc_to_string renderer doc)
+  in
   { Odoc_document.Renderer.filename; content; children = []; path = url }

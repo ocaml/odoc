@@ -22,11 +22,9 @@ You can also click {{:https://www.example.com}here}.
 
 {3 References}
 
-See [Odoc_odoc.Compile.compile].
+See an empty reference {{!test.v}}.
 
-See [Odoc_odoc.Compile.compile].
-
-See {{!/test.v}this function from another library}.
+See {{!test.v}this function from another library}.
 
 See {{!./test.mli}this page from another package}.
 
