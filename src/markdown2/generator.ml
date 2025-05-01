@@ -485,14 +485,50 @@ module Page = struct
     Markdown_page.make ~config ~url:p.url doc subpages
 
   and source_page ~config sp =
-    let { Types.Source_page.url; contents = _ } = sp in
+    (* TODO: source_page isn't tested in markdown2 *)
+    let { Types.Source_page.url; contents; _ } = sp in
     let resolve = Link.Current sp.url in
     let title = url.Url.Path.name in
     let header =
       items ~config ~resolve (Doctree.PageTitle.render_src_title sp)
     in
-    (* why empty? *)
-    let doc = header @ [ Md.Block.empty ] in
+    let markdown_of_doc ~config ~resolve docs =
+      let rec doc_to_markdown doc =
+        match doc with
+        | Types.Source_page.Plain_code s ->
+            let plain_code =
+              Md.Block.Code_block
+                (Md.Block.Code_block.make [ (s, Md.meta) ], Md.meta)
+            in
+            [ plain_code ]
+        | Tagged_code (info, docs) -> (
+            let childrens = List.concat_map doc_to_markdown docs in
+            match info with
+            | Syntax tok ->
+                let syntax =
+                  Md.Block.Code_block
+                    (Md.Block.Code_block.make [ (tok, Md.meta) ], Md.meta)
+                in
+                [ syntax; Md.Block.Blocks (childrens, Md.meta) ]
+            | Link { documentation = _; implementation = None } -> childrens
+            | Link { documentation = _; implementation = Some anchor } ->
+                let name = anchor.page.name in
+                let inline_name = Md.Inline.Text (name, Md.meta) in
+                let href = Link.href ~config ~resolve anchor in
+                let link_definition =
+                  Md.Link_definition.make ~dest:(href, Md.meta) ()
+                in
+                let link_reference = `Inline (link_definition, Md.meta) in
+                let inline_link =
+                  Md.Inline.Link.make inline_name link_reference
+                in
+                let _ = [ Md.Inline.Link (inline_link, Md.meta) ] in
+                childrens
+            | Anchor _lbl -> childrens)
+      in
+      List.concat_map doc_to_markdown docs
+    in
+    let doc = header @ markdown_of_doc ~config ~resolve contents in
     Markdown_page.make_src ~config ~url title doc
 end
 
