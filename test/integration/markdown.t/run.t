@@ -107,14 +107,14 @@
   
   - First item
   - Second item
-  0. First ordered item
-  1. Second numbered item
+  1. First ordered item
+  2. Second numbered item
   - First item
   - Second item
   - can also be used
-  0. First numbered item
-  1. Second numbered item
-  2. can also be used
+  1. First numbered item
+  2. Second numbered item
+  3. can also be used
   
   #### Code blocks
   
