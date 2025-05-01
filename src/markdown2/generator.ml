@@ -17,8 +17,7 @@ let source fn (t : Types.Source.t) =
   and tokens t = List.concat_map token t in
   tokens t
 
-(* TODO: What's emph_level? *)
-and styled style ~emph_level:_ content =
+and styled style content =
   match style with
   | `Bold ->
       let inlines_as_one_inline = Md.Inline.Inlines (content, Md.meta) in
@@ -60,7 +59,7 @@ and block_text_only blocks : string list =
       | _ -> [])
     blocks
 
-and inline ~config ?(emph_level = 0) ~resolve l =
+and inline ~config ~resolve l =
   let one (t : Types.Inline.one) =
     match t.desc with
     | Text s -> [ Md.Inline.Text (s, Md.meta) ]
@@ -72,10 +71,10 @@ and inline ~config ?(emph_level = 0) ~resolve l =
         let break = Md.Inline.Break.make `Hard in
         [ Md.Inline.Break (break, Md.meta) ]
     | Styled (style, c) ->
-        let inline_content = inline ~config ~emph_level ~resolve c in
-        styled ~emph_level style inline_content
+        let inline_content = inline ~config ~resolve c in
+        styled style inline_content
     | Link { target = External href; content; _ } ->
-        let inline_content = inline ~config ~emph_level ~resolve content in
+        let inline_content = inline ~config ~resolve content in
         let link_inline = Md.Inline.Inlines (inline_content, Md.meta) in
         let link_definition =
           Md.Link_definition.make ~dest:(href, Md.meta) ()
@@ -94,7 +93,7 @@ and inline ~config ?(emph_level = 0) ~resolve l =
               (* TODO: What's unresolved? A non-existing page/link? Do we want to raise or empty? *)
               ("", Md.meta)
         in
-        let inline_content = inline ~config ~emph_level ~resolve content in
+        let inline_content = inline ~config ~resolve content in
         let link_inline = Md.Inline.Inlines (inline_content, Md.meta) in
         let link_definition = Md.Link_definition.make ~dest:href () in
         let link_reference = `Inline (link_definition, Md.meta) in
