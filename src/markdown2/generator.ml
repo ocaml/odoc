@@ -67,7 +67,6 @@ and inline ~config ~resolve l =
         (* In CommonMark, HTML entities are supported directly, so we can just output them as text *)
         [ Md.Inline.Text (s, Md.meta) ]
     | Linebreak ->
-        (* In CommonMark, a line break can be represented by a backslash followed by a newline or by two or more spaces at the end of a line. We use a hard break *)
         let break = Md.Inline.Break.make `Hard in
         [ Md.Inline.Break (break, Md.meta) ]
     | Styled (style, c) ->
