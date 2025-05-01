@@ -1721,7 +1721,6 @@ let () =
       Odoc_html.generate ~docs:section_pipeline;
       Odoc_html.generate_source ~docs:section_pipeline;
       Odoc_markdown_cmd.generate ~docs:section_pipeline;
-      (* TODO: Do this Odoc_markdown_cmd.generate_source ~docs:section_pipeline; *)
       Odoc_html.generate_asset ~docs:section_pipeline;
       Support_files_command.(cmd, info ~docs:section_pipeline);
       Compile_impl.(cmd, info ~docs:section_pipeline);
