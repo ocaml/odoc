@@ -31,13 +31,19 @@
   $ odoc markdown-generate list.odocl -o markdown
 
   $ cat markdown/test/Test.md
+  
   # Module `Test`
+  
+  
   ## Section 1
+  
   ```
   type t = int
   ```
   A very important type
+  
   ### Section 2
+  
   ```
   val v : t
   ```
@@ -47,7 +53,9 @@
   ```
 
   $ cat markdown/test/Test-List.md
+  
   # Module `Test.List`
+  
   ```
   type 'a t = 'a list
   ```
@@ -59,26 +67,44 @@
   ```
 
   $ cat markdown/test/page.md
+  
   # The title
+  
   Quick reference for the odoc language rendering markdown
+  
   ## Title
+  
+  
   ### Subtitle
+  
+  
   #### Referenceable title
+  
   See [Referenceable title](./#my_id).
+  
   #### Styled
+  
   **bold** text, *italic* text, *emphasized* text
   H2O and 1st
+  
   #### Link
+  
   Here is a link: [https://www.example.com](https://www.example.com).
   You can also click [here](https://www.example.com).
+  
   #### References
+  
   See an empty reference [`Test.v`](./Test.md#val-v).
   See [this function from another library](./Test.md#val-v).
   See [this page from another package]().
   See [this section](./#styled) for the syntax of references.
+  
   ##### Subpages
+  
   There's a subpage here [`Test`](./Test.md) and another one [`Test2`](./Test2.md)
+  
   #### Lists
+  
   - First item
   - Second item
   0. First ordered item
@@ -89,7 +115,9 @@
   0. First numbered item
   1. Second numbered item
   2. can also be used
+  
   #### Code blocks
+  
   Inline `code`.
   ```ocaml
   let _ = "Block code"
@@ -100,31 +128,45 @@
   ```python
   [i+1 for i in xrange(2)]
   ```
+  
   #### Verbatim
+  
   ```
   verbatim text
   ```
+  
   #### Math
+  
   For inline math: `\sqrt 2`.
   For display math:
   ```
   \sqrt 2
   ```
+  
   #### Images
+  
   ![./odoc\_logo\_placeholder.jpg]()
   ![https://picsum.photos/200/100](https://picsum.photos/200/100)
+  
   #### Table
+  
+  
   ##### Explicit syntax
+  
   \| Header   1 \| Header   2 \|
   \| --- \| --- \|
   \| Cell   1 \| Cell   2 \|
   \| Cell   3 \| Cell   4 \|
+  
   ##### Light syntax
+  
   \| Header   1 \| Header   2 \|
   \| --- \| --- \|
   \| Cell   1 \| Cell   2 \|
   \| Cell   3 \| Cell   4 \|
+  
   #### HTML
+  
   This is a strong tag:  <strong> Odoc language lack support for quotation! </strong>
   
   
@@ -134,6 +176,8 @@
       </blockquote>
     </div>
   
+  
   #### Tags
+  
   since 4\.08
   Tags are explained in this section.

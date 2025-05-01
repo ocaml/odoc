@@ -364,11 +364,13 @@ and items ~config ~resolve l : Md.Block.t list =
         let content = block ~config ~resolve text in
         (continue_with [@tailcall]) rest content
     | Heading h :: rest ->
+        (* Markdown headings are rendered as a blank line before and after the heading, otherwise it treats it as an inline paragraph *)
+        let break = Md.Block.Blank_line ("", Md.meta) in
         let inlines = inline ~config ~resolve h.title in
         let content = Md.Inline.Inlines (inlines, Md.meta) in
         let block = Md.Block.Heading.make ~level:(h.level + 1) content in
-        let heading = [ Md.Block.Heading (block, Md.meta) ] in
-        (continue_with [@tailcall]) rest heading
+        let heading_block = Md.Block.Heading (block, Md.meta) in
+        (continue_with [@tailcall]) rest [ break; heading_block; break ]
     | Include
         {
           attr = _attr;
@@ -445,7 +447,6 @@ and documentedSrc ~config ~resolve t =
                 [ block ]
             | `N n -> to_markdown n
           in
-
           let block_doc = block ~config ~resolve doc in
           List.append content block_doc
         in
