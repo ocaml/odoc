@@ -135,7 +135,7 @@ let rec block ~config ~resolve l =
     | List (typ, l) ->
         let list_type =
           match typ with
-          | Ordered -> `Ordered (0, '.')
+          | Ordered -> `Ordered (1, '.')
           | Unordered -> `Unordered '-'
         in
         let list_items =
