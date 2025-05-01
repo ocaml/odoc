@@ -198,14 +198,3 @@
   
   since 4\.08
   Tags are explained in this section.
-  
-  
-  #### Break lines
-  
-  **Motivation**
-  
-  The motivation for creating such library is to provide Melange users a better end-to-end user experience, since the original OCaml stdlib was not written with JS in mind. Below is a list of areas this lib aims to improve:
-  
-  1. Consistency in name convention: camlCase, and arguments order
-  2. Exception thrown functions are all suffixed with *Exn*, e.g, *getExn*
-  3. Better performance and smaller code size running on JS platform
