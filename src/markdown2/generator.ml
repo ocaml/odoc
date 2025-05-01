@@ -67,7 +67,7 @@ and inline ~config ~resolve l =
         (* In CommonMark, HTML entities are supported directly, so we can just output them as text *)
         [ Md.Inline.Text (s, Md.meta) ]
     | Linebreak ->
-        (* In CommonMark, a hard line break can be represented by a backslash followed by a newline or by two or more spaces at the end of a line. We use a hard break *)
+        (* In CommonMark, a line break can be represented by a backslash followed by a newline or by two or more spaces at the end of a line. We use a hard break *)
         let break = Md.Inline.Break.make `Hard in
         [ Md.Inline.Break (break, Md.meta) ]
     | Styled (style, c) ->
@@ -86,7 +86,6 @@ and inline ~config ~resolve l =
         let href =
           match internal with
           | Resolved uri ->
-              (* TODO: Maybe internal links should be relative? *)
               let url = Link.href ~config ~resolve uri in
               (url, Md.meta)
           | Unresolved ->
@@ -100,7 +99,7 @@ and inline ~config ~resolve l =
         let inline_link = Md.Inline.Link.make link_inline link_reference in
         [ Md.Inline.Link (inline_link, Md.meta) ]
     | Source c ->
-        (* CommonMark doesn't allow any complex node inside inline text, right now rendering inline nodes as text *)
+        (* CommonMark doesn't allow any complex node inside inline text, rendering inline nodes as text *)
         let content = String.concat ~sep:"" (source inline_text_only c) in
         [ Md.Inline.Code_span (Md.Inline.Code_span.of_string content, Md.meta) ]
     | Math s ->
@@ -130,7 +129,9 @@ let rec block ~config ~resolve l =
         let paragraph_block =
           Md.Block.Paragraph (Md.Block.Paragraph.make inlines, Md.meta)
         in
-        [ paragraph_block ]
+        (* CommonMark treats paragraph as a block, to align the behavior with other generators such as HTML, we add a blank line after it *)
+        let break = Md.Block.Blank_line ("", Md.meta) in
+        [ paragraph_block; break ]
     | List (typ, l) ->
         let list_type =
           match typ with

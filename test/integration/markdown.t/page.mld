@@ -124,3 +124,17 @@ This is a strong tag: {%html: <strong> Odoc language lack support for quotation!
 
 @since 4.08
 Tags are explained in this section.
+
+{3 Break lines}
+
+{b Motivation}
+
+The motivation for creating such library is to provide Melange users a
+better end-to-end user experience, since the original OCaml stdlib was not
+written with JS in mind. Below is a list of areas this lib aims to
+improve:
+{ol
+{- Consistency in name convention: camlCase, and arguments order}
+{- Exception thrown functions are all suffixed with {i Exn}, e.g, {i getExn}}
+{- Better performance and smaller code size running on JS platform}
+}

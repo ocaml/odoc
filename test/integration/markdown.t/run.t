@@ -42,12 +42,14 @@
   ```
   A very important type
   
+  
   ### Section 2
   
   ```
   val v : t
   ```
   A very important value
+  
   ```
   module List : sig ... end
   ```
@@ -72,6 +74,7 @@
   
   Quick reference for the odoc language rendering markdown
   
+  
   ## Title
   
   
@@ -82,26 +85,36 @@
   
   See [Referenceable title](./#my_id).
   
+  
   #### Styled
   
   **bold** text, *italic* text, *emphasized* text
+  
   H2O and 1st
+  
   
   #### Link
   
   Here is a link: [https://www.example.com](https://www.example.com).
+  
   You can also click [here](https://www.example.com).
+  
   
   #### References
   
   See an empty reference [`Test.v`](./Test.md#val-v).
+  
   See [this function from another library](./Test.md#val-v).
+  
   See [this page from another package]().
+  
   See [this section](./#styled) for the syntax of references.
+  
   
   ##### Subpages
   
   There's a subpage here [`Test`](./Test.md) and another one [`Test2`](./Test2.md)
+  
   
   #### Lists
   
@@ -119,6 +132,7 @@
   #### Code blocks
   
   Inline `code`.
+  
   ```ocaml
   let _ = "Block code"
   ```
@@ -138,7 +152,9 @@
   #### Math
   
   For inline math: `\sqrt 2`.
+  
   For display math:
+  
   ```
   \sqrt 2
   ```
@@ -170,6 +186,7 @@
   This is a strong tag:  <strong> Odoc language lack support for quotation! </strong>
   
   
+  
     <div>
       <blockquote>
         Odoc language lack support for quotation!
@@ -181,3 +198,14 @@
   
   since 4\.08
   Tags are explained in this section.
+  
+  
+  #### Break lines
+  
+  **Motivation**
+  
+  The motivation for creating such library is to provide Melange users a better end-to-end user experience, since the original OCaml stdlib was not written with JS in mind. Below is a list of areas this lib aims to improve:
+  
+  1. Consistency in name convention: camlCase, and arguments order
+  2. Exception thrown functions are all suffixed with *Exn*, e.g, *getExn*
+  3. Better performance and smaller code size running on JS platform
