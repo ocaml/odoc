@@ -1,4 +1,4 @@
-open Compatcmdliner
+open Cmdliner
 
 let run inp =
   let inp = Fpath.v inp in
@@ -29,13 +29,10 @@ let a_inp =
   let doc = "Input file." in
   Arg.(required & pos 0 (some file) None & info ~doc ~docv:"PATH" [])
 
-let term =
+let cmd =
   let doc =
     "Print the content of occurrences files into a text format. For tests"
   in
-  Term.(const run $ a_inp, info "occurrences_print" ~doc)
+  Cmd.v (Cmd.info "occurrences_print" ~doc) @@ Term.(const run $ a_inp)
 
-let () =
-  match Term.eval term with
-  | `Ok () -> ()
-  | (`Version | `Help | `Error _) as x -> Term.exit x
+let () = exit (Cmd.eval cmd)

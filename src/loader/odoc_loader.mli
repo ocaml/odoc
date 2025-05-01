@@ -41,3 +41,10 @@ val read_cmi :
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
 val read_location : Location.t -> Location_.span
+
+val wrap_errors :
+  filename:string ->
+  (unit -> 'a) ->
+  'a Odoc_model.Error.with_errors_and_warnings
+
+val parse_attribute : Parsetree.attribute -> Doc_attr.parsed_attribute option

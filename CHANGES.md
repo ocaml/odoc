@@ -4,6 +4,8 @@
 
 - Added support for (local) images in the latex backend (@Octachron, #1297)
 - Added a `header` field to the json output (@panglesd, #1314)
+- Added an `extract-code` subcommand to extract code blocks from mld files
+  (@panglesd, #1326)
 
 ### Changed
 
@@ -17,6 +19,7 @@
 - Changed the rules for code block and verbatim content (@panglesd, #1317)
 - Store raw content in verbatim and code block, and expose a function to process
   it (@panglesd, #1325)
+- Remove cmdliner compatibility layer, no longer needed (@dbuenzli, #1328)
 
 ### Fixed
 

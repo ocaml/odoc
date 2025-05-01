@@ -1,0 +1,5 @@
+(cram
+ (package odoc)
+ (enabled_if
+  (>= %{ocaml_version} 4.10.0))
+ (deps %{bin:odoc}))

@@ -253,7 +253,7 @@ let run inp short long_paths show_canonical show_expansions
       print_json_desc Lang_desc.asset_t a;
       Ok ()
 
-open Compatcmdliner
+open Cmdliner
 
 let reference =
   let doc = "reference to print" in
@@ -287,18 +287,18 @@ let a_show_removed =
   let doc = "Show removed items in signature expansions in short output." in
   Arg.(value & flag & info ~doc [ "show-removed" ])
 
-let term =
+let cmd =
   let doc = "Print the content of .odoc files into a text format. For tests" in
-  Term.
-    ( const run $ a_inp $ a_short $ a_long_paths $ a_show_canonical
-      $ a_show_expansions $ a_show_include_expansions $ a_show_removed
-      $ reference,
-      info "odoc_print" ~doc )
+  Cmd.v (Cmd.info "odoc_print" ~doc)
+  @@ Term.(
+       const run $ a_inp $ a_short $ a_long_paths $ a_show_canonical
+       $ a_show_expansions $ a_show_include_expansions $ a_show_removed
+       $ reference)
 
 let () =
-  match Term.eval term with
+  match Cmd.eval_value' cmd with
   | `Ok (Ok ()) -> ()
   | `Ok (Error (`Msg msg)) ->
       Printf.eprintf "Error: %s\n" msg;
       exit 1
-  | (`Version | `Help | `Error _) as x -> Term.exit x
+  | `Exit c -> exit c

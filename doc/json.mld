@@ -12,11 +12,12 @@ In addition, there is a per-package 'global' sidebar json file.
 
 {@json[
 {
+  "header": "<h1>Module <code><span>Stdlib</span></code><a href=\"../../src/stdlib/stdlib.ml.html\" class=\"source_link\">Source</a></h1>",
   "type": "documentation",
   "uses_katex": false,
   "breadcrumbs": [
     {
-      "name": "🏠",
+      "name": "Package index",
       "href": "../../../index.html",
       "kind": "leaf-page"
     },
@@ -66,6 +67,7 @@ ace\" ...."
 
 The fields of the JSON are as follows:
 
+- [header] is a string containing HTML for the header of the page.
 - [type] field is either [documentation] or [source].
 - [uses_katex] is [true] if the page has math entries ([{m ...}] or [{math ...}]).
 - [breadcrumbs] is a list of breadcrumb entries with members [name], [href] and [kind]. If [href] is null then there is no index page at that location in the hierarchy. [kind] is one of
