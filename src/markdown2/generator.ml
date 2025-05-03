@@ -59,7 +59,7 @@ and block_text_only blocks : string list =
       | _ -> [])
     blocks
 
-and inline ~config ~resolve l =
+and inline ~(config : Config.t) ~resolve l =
   let one (t : Types.Inline.one) =
     match t.desc with
     | Text s -> [ Md.Inline.Text (s, Md.meta) ]
@@ -72,31 +72,7 @@ and inline ~config ~resolve l =
     | Styled (style, c) ->
         let inline_content = inline ~config ~resolve c in
         styled style inline_content
-    | Link { target = External href; content; _ } ->
-        let inline_content = inline ~config ~resolve content in
-        let link_inline = Md.Inline.Inlines (inline_content, Md.meta) in
-        let link_definition =
-          Md.Link_definition.make ~dest:(href, Md.meta) ()
-        in
-        let link_reference = `Inline (link_definition, Md.meta) in
-        let inline_link = Md.Inline.Link.make link_inline link_reference in
-        [ Md.Inline.Link (inline_link, Md.meta) ]
-    | Link { target = Internal internal; content; _ } ->
-        let href =
-          match internal with
-          | Resolved uri ->
-              let url = Link.href ~config ~resolve uri in
-              (url, Md.meta)
-          | Unresolved ->
-              (* TODO: What's unresolved? A non-existing page/link? Do we want to raise or empty? *)
-              ("", Md.meta)
-        in
-        let inline_content = inline ~config ~resolve content in
-        let link_inline = Md.Inline.Inlines (inline_content, Md.meta) in
-        let link_definition = Md.Link_definition.make ~dest:href () in
-        let link_reference = `Inline (link_definition, Md.meta) in
-        let inline_link = Md.Inline.Link.make link_inline link_reference in
-        [ Md.Inline.Link (inline_link, Md.meta) ]
+    | Link link -> inline_link ~config ~resolve link
     | Source c ->
         (* CommonMark doesn't allow any complex node inside inline text, rendering inline nodes as text *)
         let content = String.concat ~sep:"" (source inline_text_only c) in
@@ -118,6 +94,29 @@ and inline ~config ~resolve l =
             failwith msg)
   in
   List.concat_map one l
+
+and inline_link ~config ~resolve link =
+  let href =
+    match link.target with
+    | External href -> Some href
+    | Internal internal -> (
+        match internal with
+        | Resolved uri -> Some (Link.href ~config ~resolve uri)
+        | Unresolved ->
+            (* TODO: What's unresolved? A non-existing page/link? Do we want to raise or empty? *)
+            None)
+  in
+  match href with
+  | Some href ->
+      let inline_content = inline ~config ~resolve link.content in
+      let link_inline = Md.Inline.Inlines (inline_content, Md.meta) in
+      let link_definition = Md.Link_definition.make ~dest:(href, Md.meta) () in
+      let link_reference = `Inline (link_definition, Md.meta) in
+      let inline_link = Md.Inline.Link.make link_inline link_reference in
+      [ Md.Inline.Link (inline_link, Md.meta) ]
+  | None ->
+      let content = String.concat ~sep:"" (inline_text_only link.content) in
+      [ Md.Inline.Code_span (Md.Inline.Code_span.of_string content, Md.meta) ]
 
 let rec block ~config ~resolve l =
   let one (t : Types.Block.one) =
