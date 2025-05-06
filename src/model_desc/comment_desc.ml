@@ -199,3 +199,6 @@ let docs =
 
 let docs_or_stop : docs_or_stop t =
   Variant (function `Docs x -> C ("`Docs", x, docs) | `Stop -> C0 "`Stop")
+
+let inline_elements : inline_element with_location list t =
+  List (Indirect (ignore_loc, inline_element))

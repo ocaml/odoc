@@ -55,7 +55,7 @@ let make ~config ~frontmatter ~preamble ~url ~breadcrumbs ~toc ~uses_katex
         ( "other_config",
           `Array
             (List.map
-               (fun (k, v) -> ((`Array [`String k; `String v]) : Json.json))
+               (fun (k, v) -> (`Array [ `String k; `String v ] : Json.json))
                frontmatter.Odoc_model.Frontmatter.other_config) );
       ]
   in

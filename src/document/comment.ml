@@ -210,12 +210,14 @@ let rec nestable_block_element :
  fun content ->
   match content with
   | `Paragraph p -> [ paragraph p ]
-  | `Code_block (lang_tag, code, tags, outputs) ->
-      let lang_tag =
-        match lang_tag with None -> default_lang_tag | Some t -> t
+  | `Code_block c ->
+      let lang_tag, other_tags =
+        match c.meta with
+        | Some { language = { Odoc_parser.Loc.value; _ }; tags } -> (value, tags)
+        | None -> (default_lang_tag, [])
       in
       let rest =
-        match outputs with
+        match c.output with
         | Some xs -> nestable_block_element_list xs
         | None -> []
       in
@@ -223,13 +225,13 @@ let rec nestable_block_element :
       let classes =
         List.filter_map
           (function `Binding (_, _) -> None | `Tag t -> Some (value t))
-          tags
+          other_tags
       in
       let data =
         List.filter_map
           (function
             | `Binding (k, v) -> Some (value k, value v) | `Tag _ -> None)
-          tags
+          other_tags
       in
       [
         block
@@ -237,7 +239,7 @@ let rec nestable_block_element :
              ( lang_tag,
                classes,
                data,
-               source_of_code (Odoc_model.Location_.value code),
+               source_of_code (Odoc_model.Location_.value c.content),
                rest );
       ]
   | `Math_block s -> [ block @@ Math s ]

@@ -1,7 +1,7 @@
 open Odoc_model
 open Odoc_model.Comment
 
-val inline_element : inline_element Location_.with_location list Type_desc.t
+val inline_elements : inline_element Location_.with_location list Type_desc.t
 
 val elements : elements Type_desc.t
 

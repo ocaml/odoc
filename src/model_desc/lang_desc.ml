@@ -721,7 +721,7 @@ and frontmatter =
           (fun t ->
             (t.short_title
               :> Comment.inline_element Location_.with_location list option)),
-          Option Comment_desc.inline_element );
+          Option Comment_desc.inline_elements );
       F
         ( "toc_status",
           (fun t ->

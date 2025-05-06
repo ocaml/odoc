@@ -55,7 +55,7 @@ module Of_comments = struct
         |> List.concat |> String.concat " "
     | `Heading (_, _, h) -> inlines h
     | `Modules _ -> ""
-    | `Code_block (_, s, _, _todo) -> s |> get_value
+    | `Code_block c -> c.content |> get_value
     | `Verbatim v -> v
     | `Math_block m -> m
     | `Media (_, _, is) -> is
