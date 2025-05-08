@@ -106,7 +106,7 @@
   
   See [this function from another library](./Test.md#val-v).
   
-  See [this page from another package]().
+  See `this page from another package`.
   
   See [this section](./#styled) for the syntax of references.
   
