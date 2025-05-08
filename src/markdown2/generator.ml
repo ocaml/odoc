@@ -102,9 +102,7 @@ and inline_link ~config ~resolve link =
     | Internal internal -> (
         match internal with
         | Resolved uri -> Some (Link.href ~config ~resolve uri)
-        | Unresolved ->
-            (* TODO: What's unresolved? A non-existing page/link? Do we want to raise or empty? *)
-            None)
+        | Unresolved -> None)
   in
   match href with
   | Some href ->
