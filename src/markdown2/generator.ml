@@ -6,9 +6,10 @@ module Doctree = Odoc_document.Doctree
 module Url = Odoc_document.Url
 module Link = HLink
 
+(* TODO: Remove Md module *)
 module Md = struct
-  include Cmarkit
-  let meta = Cmarkit.Meta.none
+  include Renderer
+  let meta = Renderer.Meta.none
 end
 
 let source fn (t : Types.Source.t) =
