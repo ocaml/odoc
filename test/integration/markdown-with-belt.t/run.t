@@ -9,14 +9,6 @@
   $ odoc markdown-generate Belt.odocl -o markdown
   $ odoc markdown-generate Belt_Id.odocl -o markdown
 
-  $ tree markdown
-  markdown
-  `-- Belt
-      |-- Belt.md
-      `-- Belt_Id.md
-  
-  1 directory, 2 files
-
   $ cat markdown/Belt/Belt.md
   
   # Module `Belt`
