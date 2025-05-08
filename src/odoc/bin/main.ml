@@ -1322,7 +1322,8 @@ module Odoc_markdown_cmd = Make_renderer (struct
   (* QUESTION: Where is this being used? *)
   let filepath config url = Odoc_markdown.Generator.filepath ~config url
 
-  let extra_args = Term.const { Odoc_markdown.Config.root_url = None }
+  let extra_args =
+    Term.const { Odoc_markdown.Config.root_url = None; allow_html = true }
   let renderer = { Odoc_document.Renderer.name = "markdown"; render; filepath }
 end)
 
