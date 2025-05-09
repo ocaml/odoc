@@ -1,189 +1,34 @@
-(* TODO: What can we do with Uchar / Uset and Umap? *)
-(* TODO: What can we do with Ascii? *)
+let is_control = function '\x00' .. '\x1F' | '\x7F' -> true | _ -> false
 
-module Uset = struct
-  include Set.Make (Uchar)
-  let of_array =
-    let add acc u = add (Uchar.unsafe_of_int u) acc in
-    Array.fold_left add empty
-end
+let is_letter = function 'a' .. 'z' | 'A' .. 'Z' -> true | _ -> false
 
-module Umap = struct
-  include Map.Make (Uchar)
-  let of_array =
-    let add acc (u, f) = add (Uchar.unsafe_of_int u) f acc in
-    Array.fold_left add empty
-end
+let is_digit = function '0' .. '9' -> true | _ -> false
 
-let case_fold_umap = Umap.of_array Data_uchar.case_fold
-let unicode_case_fold u = Umap.find_opt u case_fold_umap
-let punctuation_uset = Uset.of_array Data_uchar.punctuation
-let is_unicode_punctuation u = Uset.mem u punctuation_uset
+let is_alphanum = function
+  | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' -> true
+  | _ -> false
 
-module Ascii = struct
-  let is_control = function '\x00' .. '\x1F' | '\x7F' -> true | _ -> false
-  let is_letter = function 'a' .. 'z' | 'A' .. 'Z' -> true | _ -> false
-  let is_upper = function 'A' .. 'Z' -> true | _ -> false
-  let is_lower = function 'a' .. 'z' -> true | _ -> false
-  let is_digit = function '0' .. '9' -> true | _ -> false
-  let is_hex_digit = function
-    | '0' .. '9' | 'A' .. 'F' | 'a' .. 'f' -> true
-    | _ -> false
-
-  let hex_digit_to_int = function
-    | '0' .. '9' as c -> Char.code c - 0x30
-    | 'A' .. 'F' as c -> Char.code c - 0x37
-    | 'a' .. 'f' as c -> Char.code c - 0x57
-    | _ -> assert false
-
-  let is_alphanum = function
-    | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' -> true
-    | _ -> false
-
-  let is_white = function
-    | '\x20' | '\x09' | '\x0A' | '\x0B' | '\x0C' | '\x0D' -> true
-    | _ -> false
-
-  let is_punct = function
-    (* https://spec.commonmark.org/current/#ascii-punctuation-character *)
-    | '!' | '\"' | '#' | '$' | '%' | '&' | '\'' | '(' | ')' | '*' | '+' | ','
-    | '-' | '.' | '/' | ':' | ';' | '<' | '=' | '>' | '?' | '@' | '[' | '\\'
-    | ']' | '^' | '_' | '`' | '{' | '|' | '}' | '~' ->
-        true
-    | _ -> false
-
-  let is_blank = function ' ' | '\t' -> true | _ -> false
-
-  let caseless_starts_with ~prefix s =
-    let get = String.get in
-    let len_a = String.length prefix in
-    let len_s = String.length s in
-    if len_a > len_s then false
-    else
-      let max_idx_a = len_a - 1 in
-      let rec loop s i max =
-        if i > max then true
-        else
-          let c =
-            match get s i with
-            | 'A' .. 'Z' as c -> Char.(unsafe_chr (code c + 32))
-            | c -> c
-          in
-          if get prefix i <> c then false else loop s (i + 1) max
-      in
-      loop s 0 max_idx_a
-
-  let match' ~sub s ~start =
-    (* assert (start + String.length sub - 1 < String.length s) *)
-    try
-      for i = 0 to String.length sub - 1 do
-        if s.[start + i] <> sub.[i] then raise_notrace Exit
-      done;
-      true
-    with Exit -> false
-
-  let caseless_match ~sub s ~start =
-    (* assert (start + String.length sub - 1 < String.length s) *)
-    try
-      for i = 0 to String.length sub - 1 do
-        let c =
-          match s.[start + i] with
-          | 'A' .. 'Z' as c -> Char.(unsafe_chr (code c + 32))
-          | c -> c
-        in
-        if c <> sub.[i] then raise_notrace Exit
-      done;
-      true
-    with Exit -> false
-
-  let lowercase_sub s first len =
-    let b = Bytes.create len in
-    for i = 0 to len - 1 do
-      let c =
-        match s.[first + i] with
-        | 'A' .. 'Z' as c -> Char.(unsafe_chr (code c + 32))
-        | c -> c
-      in
-      Bytes.set b i c
-    done;
-    Bytes.unsafe_to_string b
-end
-
-module Match = struct
-  let rec first_non_blank s ~last ~start =
-    if start > last then last + 1
-    else
-      match s.[start] with
-      | ' ' | '\t' -> first_non_blank s ~last ~start:(start + 1)
-      | _ -> start
-
-  let autolink_email s ~last ~start =
-    (* https://spec.commonmark.org/current/#email-address
-     Via the ABNF "<" email ">" with email defined by:
-     https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address *)
-    let is_atext_plus_dot = function
-      | 'a' .. 'z'
-      | 'A' .. 'Z'
-      | '0' .. '9'
-      | '!' | '#' | '$' | '%' | '&' | '\'' | '*' | '+' | '-' | '/' | '=' | '?'
-      | '^' | '_' | '`' | '{' | '|' | '}' | '~' | '.' ->
-          true
-      | _ -> false
-    in
-    let is_let_dig = Ascii.is_alphanum in
-    let is_let_dig_hyp c = Ascii.is_alphanum c || c = '-' in
-    let rec label_seq s last k =
-      let rec loop s last c k =
-        if k > last then None
-        else if is_let_dig_hyp s.[k] && c <= 63 then loop s last (c + 1) (k + 1)
-        else if c > 63 || not (is_let_dig s.[k - 1]) then None
-        else
-          match s.[k] with
-          | '>' -> Some k
-          | '.' -> label_seq s last (k + 1)
-          | _ -> None
-      in
-      if k > last || not (is_let_dig s.[k]) then None else loop s last 1 (k + 1)
-    in
-    let rec atext_seq s last k =
-      if k > last then None
-      else if is_atext_plus_dot s.[k] then atext_seq s last (k + 1)
-      else if s.[k] = '@' && is_atext_plus_dot s.[k - 1] then
-        label_seq s last (k + 1)
-      else None
-    in
-    if start > last || s.[start] <> '<' then None
-    else atext_seq s last (start + 1)
-end
-
-module Block_line = struct
-  let _list_of_string flush s =
-    (* cuts [s] on newlines *)
-    let rec loop s acc max start k =
-      if k > max then List.rev (flush s start max acc)
-      else if not (s.[k] = '\n' || s.[k] = '\r') then
-        loop s acc max start (k + 1)
-      else
-        let acc = flush s start (k - 1) acc in
-        let next = k + 1 in
-        let start =
-          if s.[k] = '\r' && next <= max && s.[next] = '\n' then next + 1
-          else next
-        in
-        loop s acc max start start
-    in
-    loop s [] (String.length s - 1) 0 0
-
+let block_line_of_string s =
   let flush s start last acc =
     let sub = String.sub s start (last - start + 1) in
     sub :: acc
+  in
+  (* cuts [s] on newlines *)
+  let rec loop s acc max start k =
+    if k > max then List.rev (flush s start max acc)
+    else if not (s.[k] = '\n' || s.[k] = '\r') then loop s acc max start (k + 1)
+    else
+      let acc = flush s start (k - 1) acc in
+      let next = k + 1 in
+      let start =
+        if s.[k] = '\r' && next <= max && s.[next] = '\n' then next + 1
+        else next
+      in
+      loop s acc max start start
+  in
+  loop s [] (String.length s - 1) 0 0
 
-  let list_of_string s = _list_of_string flush s
-
-  type tight = string
-end
-
-type label = { key : string; text : Block_line.tight list }
+type label = { key : string; text : string list }
 
 module Link_definition = struct
   (* let default_layout =
@@ -200,7 +45,7 @@ module Link_definition = struct
     label : label option;
     defined_label : label option;
     dest : string option;
-    title : Block_line.tight list option;
+    title : string list option;
   }
 
   let make ?defined_label ?label ?dest ?title () =
@@ -217,14 +62,14 @@ end
 module Inline = struct
   type t =
     | Break
-    | Code_span of string list
-    | Emphasis of t
-    | Image of link
     | Inlines of t list
-    | Link of link
-    | Raw_html of string list
-    | Strong_emphasis of t
-    | Text of string
+    | Text of string (* plain text *)
+    | Code_span of string list (* `code` *)
+    | Emphasis of t (* *emphasis* *)
+    | Strong_emphasis of t (* **strong emphasis** *)
+    | Image of link (* ![alt text](url) *)
+    | Link of link (* [link text](url) *)
+    | Raw_html of string list (* raw html *)
   and link = { text : t; reference : Link_definition.t }
 
   let is_empty = function Text "" | Inlines [] -> true | _ -> false
@@ -237,26 +82,10 @@ module Block = struct
   type id = [ `Auto of string | `Id of string ]
   type heading = { level : int; inline : Inline.t; id : id option }
 
-  type t =
-    | Blank_line
-    | Blocks of t list
-    | Code_block of code_block
-    | Heading of heading
-    | Html_block of string list
-    | Link_reference_definition of Link_definition.t
-    | List of list'
-    | Paragraph of Inline.t
-  and list' = { type_ : list_type; tight : bool; items : t list }
-  let empty = Blocks []
-
-  (* Extensions *)
-
   module Table = struct
-    type align = [ `Left | `Center | `Right ]
-    type sep = align option
+    type sep = [ `Left | `Center | `Right ] option
     type row =
       [ `Header of Inline.t list | `Sep of sep list | `Data of Inline.t list ]
-
     type t = { col_count : int; rows : row list }
 
     let col_count rows =
@@ -302,14 +131,24 @@ module Block = struct
       in
       loop [] cs
   end
+
+  type t =
+    | Blank_line
+    | Blocks of t list
+    | Code_block of code_block (* ``` xxx ``` *)
+    | Heading of heading (* # heading *)
+    | Html_block of string list (* raw html *)
+    | Unordered_list of t list (* - item *)
+    | Ordered_list of t list (* 1. item *)
+    | Paragraph of Inline.t (* paragraph *)
+    | Table of Table.t
+  let empty = Blocks []
 end
 
 type doc = Block.t
 
-(* Heterogeneous dictionaries *)
-
-module Dict = struct
-  (* Type identifiers, can be deleted once we require 5.1 *)
+module Heterogeneous_dict = struct
+  (* Type identifiers *)
   module Type = struct
     type (_, _) eq = Equal : ('a, 'a) eq
     module Id = struct
@@ -362,25 +201,29 @@ type t = {
   block : block;
 }
 
-and context = { renderer : t; mutable state : Dict.t; b : Buffer.t }
+and context = {
+  renderer : t;
+  mutable state : Heterogeneous_dict.t;
+  b : Buffer.t;
+}
 
 and inline = context -> Inline.t -> unit
 and block = context -> Block.t -> unit
 
 module Context = struct
   type t = context
-  let make renderer b = { renderer; b; state = Dict.empty }
+  let make renderer b = { renderer; b; state = Heterogeneous_dict.empty }
 
   let buffer c = c.b
 
   module State = struct
-    type 'a t = 'a Dict.key
-    let make = Dict.key
-    let find c st = Dict.find st c.state
-    let get c st = Option.get (Dict.find st c.state)
+    type 'a t = 'a Heterogeneous_dict.key
+    let make = Heterogeneous_dict.key
+    let find c st = Heterogeneous_dict.find st c.state
+    let get c st = Option.get (Heterogeneous_dict.find st c.state)
     let set c st = function
-      | None -> c.state <- Dict.remove st c.state
-      | Some s -> c.state <- Dict.add st s c.state
+      | None -> c.state <- Heterogeneous_dict.remove st c.state
+      | Some s -> c.state <- Heterogeneous_dict.add st s c.state
   end
 
   let init c d = c.renderer.init_context c d
@@ -439,7 +282,7 @@ let buffer_add_escaped_string ?(esc_ctrl = true) b cs s =
         flush b max start i;
         buffer_add_bslash_esc b c;
         loop b s max next next)
-      else if esc_ctrl && Ascii.is_control c then (
+      else if esc_ctrl && is_control c then (
         flush b max start i;
         buffer_add_dec_esc b c;
         loop b s max next next)
@@ -460,7 +303,7 @@ let buffer_add_escaped_text b s =
     | _ -> false
   in
   let esc_amp s max next =
-    next <= max && (Ascii.is_letter s.[next] || s.[next] = '#')
+    next <= max && (is_letter s.[next] || s.[next] = '#')
   in
   let esc_tilde s max prev next =
     (not (Char.equal prev '~')) && next <= max && s.[next] = '~'
@@ -469,7 +312,7 @@ let buffer_add_escaped_text b s =
     if i = 0 || i > 9 (* marker has from 1-9 digits *) then false
     else
       let k = ref (i - 1) in
-      while !k >= 0 && Ascii.is_digit s.[!k] do
+      while !k >= 0 && is_digit s.[!k] do
         decr k
       done;
       !k < 0
@@ -482,7 +325,7 @@ let buffer_add_escaped_text b s =
     else
       let next = i + 1 in
       let c = String.get s i in
-      if Ascii.is_control c then (
+      if is_control c then (
         flush b max start i;
         buffer_add_dec_esc b c;
         loop b s max next c next)
@@ -712,17 +555,6 @@ let html_block c h =
   indent c;
   block_lines c h
 
-let link_reference_definition c ld =
-  newline c;
-  indent c;
-  nchars c 0 ' ';
-  Context.byte c '[';
-  (match Link_definition.label ld with
-  | None -> ()
-  | Some label -> escaped_tight_block_lines c esc_link_label label.text);
-  Context.string c "]:";
-  link_definition c ld
-
 let unordered_item c marker i =
   let before = 0 in
   let after = 1 in
@@ -741,14 +573,9 @@ let ordered_item c num i =
   pop_indent c;
   num + 1
 
-let list c (l : Block.list') =
-  match l.type_ with
-  | Unordered ->
-      let marker = String.make 1 '-' in
-      List.iter (unordered_item c marker) l.items
-  | Ordered ->
-      let start = 1 in
-      ignore (List.fold_left (ordered_item c) start l.items)
+let unordered_list c l = List.iter (unordered_item c "-") l
+
+let ordered_list c l = ignore (List.fold_left (ordered_item c) 1 l)
 
 let paragraph c p =
   newline c;
@@ -757,20 +584,61 @@ let paragraph c p =
   Context.inline c p;
   Context.string c ""
 
-let block c b =
-  match (b : Block.t) with
-  | Blank_line -> blank_line c ""
-  | Blocks bs -> List.iter (Context.block c) bs
-  | Code_block cb -> code_block c cb
-  | Heading h -> heading c h
-  | Html_block h -> html_block c h
-  | Link_reference_definition ld -> link_reference_definition c ld
-  | List l -> list c l
-  | Paragraph p -> paragraph c p
+(* TODO: This isn't tested *)
+let table c t =
+  let col c i =
+    Context.byte c '|';
+    (* Context.string c before; *)
+    Context.inline c i (* ;
+    Context.string c after *)
+  in
+  let sep c align =
+    (* TODO: len is hardcoded, it shouldn't be *)
+    let len = 1 in
+    Context.byte c '|';
+    match align with
+    | None -> nchars c len '-'
+    | Some `Left ->
+        Context.byte c ':';
+        nchars c len '-'
+    | Some `Center ->
+        Context.byte c ':';
+        nchars c len '-';
+        Context.byte c ':'
+    | Some `Right ->
+        nchars c len '-';
+        Context.byte c ':'
+  in
+  let row c (row : Block.Table.row) =
+    match row with
+    | `Header cols | `Data cols ->
+        newline c;
+        indent c;
+        if cols = [] then Context.byte c '|' else List.iter (col c) cols;
+        Context.byte c '|'
+    | `Sep seps ->
+        newline c;
+        indent c;
+        if seps = [] then Context.byte c '|' else List.iter (sep c) seps;
+        Context.byte c '|'
+  in
+  List.iter (row c) (Block.Table.rows t);
+  pop_indent c
+
+let block c = function
+  | Block.Blank_line -> blank_line c ""
+  | Block.Blocks bs -> List.iter (Context.block c) bs
+  | Block.Code_block cb -> code_block c cb
+  | Block.Heading h -> heading c h
+  | Block.Html_block h -> html_block c h
+  | Block.Unordered_list l -> unordered_list c l
+  | Block.Ordered_list l -> ordered_list c l
+  | Block.Paragraph p -> paragraph c p
+  | Block.Table t -> table c t
 
 let to_string d =
   let t = { init_context; inline; block } in
   let buffer = Buffer.create 1024 in
-  let c = Context.make t buffer in
-  Context.doc c d;
+  let ctx = Context.make t buffer in
+  Context.doc ctx d;
   Buffer.contents buffer

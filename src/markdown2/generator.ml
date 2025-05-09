@@ -67,7 +67,7 @@ and inline ~(config : Config.t) ~resolve l =
         let content = source inline_text_only c in
         [ Renderer.Inline.Code_span content ]
     | Math s ->
-        (* Since CommonMark doesn't support Math's, we just treat it as code. Maybe could use Ext_math_block or Ext_math_display *)
+        (* Since CommonMark doesn't support Math's, we treat it a inline code *)
         [ Renderer.Inline.Code_span [ s ] ]
     | Raw_markup (target, content) -> (
         match Astring.String.Ascii.lowercase target with
@@ -115,24 +115,18 @@ let rec block ~config ~resolve l =
         (* CommonMark treats paragraph as a block, to align the behavior with other generators such as HTML, we add a blank line after it *)
         let break = Renderer.Block.Blank_line in
         [ paragraph_block; break ]
-    | List (typ, l) ->
-        let list_type =
-          match typ with
-          | Ordered -> Renderer.Block.Ordered
-          | Unordered -> Renderer.Block.Unordered
-        in
-        let list_items =
+    | List (type_, l) ->
+        let items =
           List.map
             (fun items ->
               let block = block ~config ~resolve items in
-              let blocks = Renderer.Block.Blocks block in
-              blocks)
+              Renderer.Block.Blocks block)
             l
         in
         [
-          (* TODO: Do we need the list ~tight:false based on surrounding content or can we always be ~tight:true? *)
-          Renderer.Block.List
-            { type_ = list_type; tight = true; items = list_items };
+          (match type_ with
+          | Ordered -> Renderer.Block.Ordered_list items
+          | Unordered -> Renderer.Block.Unordered_list items);
         ]
     | Inline i ->
         let inlines = Renderer.Inline.Inlines (inline ~config ~resolve i) in
@@ -173,7 +167,8 @@ let rec block ~config ~resolve l =
     | Raw_markup (target, content) -> (
         match Astring.String.Ascii.lowercase target with
         | "html" ->
-            let block_lines = Renderer.Block_line.list_of_string content in
+            (* TODO: Make sure block_line_of_string is needed *)
+            let block_lines = Renderer.block_line_of_string content in
             [ Renderer.Block.Html_block block_lines ]
         | another_lang ->
             (* TODO: Is this correct? *)
@@ -212,6 +207,7 @@ let rec block ~config ~resolve l =
   in
   List.concat_map one l
 
+(* TODO: Use Block.Table instead of operating on text *)
 and block_table t =
   let rows_data : (string * [ `Data | `Header ]) list list =
     match t.data with
