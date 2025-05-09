@@ -178,44 +178,12 @@ module Block_line = struct
     let sub = String.sub s start (last - start + 1) in
     sub :: acc
 
-  (* let flush_tight s start last acc =
-    (* If [s] has newlines, blanks after newlines are layout *)
-    if start > last then "" :: acc
-    else
-      match acc with
-      | [] (* On the first line the blanks are legit *) ->
-          String.sub s start (last - start + 1) :: acc
-      | acc ->
-          let nb = Match.first_non_blank s ~last ~start in
-          String.sub s start (nb - 1 - start + 1)
-          :: String.sub s nb (last - nb + 1)
-          :: acc
- *)
-  (* Block lines *)
-
-  let to_string = fst
   let list_of_string s = _list_of_string flush s
 
-  (* Tight lines *)
-
   type tight = string
-
-  (* let tight_list_of_string s = _list_of_string flush_tight s *)
-
-  (* Blank lines *)
 end
 
-(* TODO: What's label? *)
-module Label = struct
-  type key = string
-  type t = { key : key; text : Block_line.tight list }
-  let make ~key text = { key; text }
-  let key t = t.key
-  let text t = t.text
-  let text_to_string t = String.concat " " t.text
-
-  let compare l0 l1 = String.compare l0.key l1.key
-end
+type label = { key : string; text : Block_line.tight list }
 
 module Link_definition = struct
   (* let default_layout =
@@ -229,8 +197,8 @@ module Link_definition = struct
     } *)
 
   type t = {
-    label : Label.t option;
-    defined_label : Label.t option;
+    label : label option;
+    defined_label : label option;
     dest : string option;
     title : Block_line.tight list option;
   }
@@ -427,25 +395,20 @@ module Context = struct
     c.renderer.block c d
 end
 
-let buffer_add_doc r b d = Context.doc (Context.make r b) d
+type indent = [ `I of int | `L of int * string * int * Uchar.t option ]
 
-type indent =
-  [ `I of int
-  | `L of int * string * int * Uchar.t option
-  | `Q of int
-  | `Fn of int * Label.t ]
-
-(* TODO: Can we kill the state? *)
 type state = {
-  nl : string; (* newline to output. *)
-  mutable sot : bool; (* start of text *)
-  mutable indents : indent list; (* indentation stack. *)
+  newline_to_output : string;
+  mutable start_of_text : bool;
+  mutable identation_stack : indent list;
 }
 
 let state : state Context.State.t = Context.State.make ()
 let get_state c = Context.State.get c state
 let init_context c _d =
-  Context.State.set c state (Some { nl = "\n"; sot = true; indents = [] })
+  Context.State.set c state
+    (Some
+       { newline_to_output = "\n"; start_of_text = true; identation_stack = [] })
 
 module Char_set = Set.Make (Char)
 
@@ -565,26 +528,25 @@ let nchars c n char =
 
 let newline c =
   (* Block generally introduce newlines, except the first one. *)
-  let st = get_state c in
-  if st.sot then st.sot <- false else Context.string c st.nl
+  let state = get_state c in
+  if state.start_of_text then state.start_of_text <- false
+  else Context.string c state.newline_to_output
 
 let push_indent c n =
-  let st = get_state c in
-  st.indents <- n :: st.indents
+  let state = get_state c in
+  state.identation_stack <- n :: state.identation_stack
+
 let pop_indent c =
-  let st = get_state c in
-  match st.indents with [] -> () | ns -> st.indents <- List.tl ns
+  let state = get_state c in
+  match state.identation_stack with
+  | [] -> ()
+  | ns -> state.identation_stack <- List.tl ns
 
 let rec indent c =
   let rec loop c acc = function
     | [] -> acc
     | (`I n as i) :: is ->
         nchars c n ' ';
-        loop c (i :: acc) is
-    | (`Q n as i) :: is ->
-        nchars c n ' ';
-        Context.byte c '>';
-        Context.byte c ' ';
         loop c (i :: acc) is
     | `L (before, m, after, task) :: is ->
         nchars c before ' ';
@@ -601,16 +563,10 @@ let rec indent c =
         in
         (* On the next call we'll just indent for the list item *)
         loop c (`I (before + String.length m + after) :: acc) is
-    | `Fn (before, label) :: is ->
-        nchars c before ' ';
-        Context.byte c '[';
-        link_label_lines c (Label.text label);
-        Context.string c "]:";
-        (* On the next call we'll just indent to ^ for the footnote  *)
-        loop c (`I (before + 1) :: acc) is
+    | _ -> []
   in
-  let st = get_state c in
-  st.indents <- loop c [] (List.rev st.indents)
+  let state = get_state c in
+  state.identation_stack <- loop c [] (List.rev state.identation_stack)
 
 and link_label_lines c lines = escaped_tight_block_lines c esc_link_label lines
 
@@ -700,19 +656,18 @@ let link c (l : Inline.link) =
 let image c l =
   Context.byte c '!';
   link c l
-let raw_html c h = List.iter (Context.string c) h
 let text c t = escaped_text c t
 
 let inline c = function
+  | Inline.Text t -> text c t
+  | Inline.Link l -> link c l
   | Inline.Break -> break c
-  | Inline.Code_span cs -> code_span c cs
   | Inline.Emphasis e -> emphasis c e
+  | Inline.Code_span cs -> code_span c cs
   | Inline.Image i -> image c i
   | Inline.Inlines is -> List.iter (Context.inline c) is
-  | Inline.Link l -> link c l
-  | Inline.Raw_html html -> raw_html c html
   | Inline.Strong_emphasis e -> strong_emphasis c e
-  | Inline.Text t -> text c t
+  | Inline.Raw_html html -> List.iter (Context.string c) html
 
 let blank_line c l =
   newline c;
@@ -764,7 +719,7 @@ let link_reference_definition c ld =
   Context.byte c '[';
   (match Link_definition.label ld with
   | None -> ()
-  | Some label -> escaped_tight_block_lines c esc_link_label (Label.text label));
+  | Some label -> escaped_tight_block_lines c esc_link_label label.text);
   Context.string c "]:";
   link_definition c ld
 

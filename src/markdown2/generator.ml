@@ -1,10 +1,8 @@
 open Odoc_utils
-module HLink = Link
 
 module Types = Odoc_document.Types
 module Doctree = Odoc_document.Doctree
 module Url = Odoc_document.Url
-module Link = HLink
 
 let source fn (t : Types.Source.t) =
   let rec token (x : Types.Source.token) =
@@ -82,6 +80,7 @@ and inline ~(config : Config.t) ~resolve l =
               "Markdown only supports html blocks. There's a raw with "
               ^ another_lang
             in
+            (* QUESTION: Should we render an empty block? Can we do something else rather failwith? *)
             failwith msg)
   in
   List.concat_map one l
