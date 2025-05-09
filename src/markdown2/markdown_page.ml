@@ -18,18 +18,14 @@ module Url = Odoc_document.Url
 
 let make ~config ~url doc children =
   let filename = Link.Path.as_filename ~config url in
-  let content ppf =
-    let renderer = Renderer.renderer () in
-    Format.fprintf ppf "%s" (Renderer.doc_to_string renderer doc)
-  in
+  let content ppf = Format.fprintf ppf "%s" (Renderer.to_string doc) in
   { Odoc_document.Renderer.filename; content; children; path = url }
 
 let make_src ~config ~url _title block_list =
   let filename = Link.Path.as_filename ~config url in
   let content (ppf : Format.formatter) =
-    let renderer = Renderer.renderer () in
-    let root_block = Renderer.Block.Blocks (block_list, Renderer.Meta.none) in
-    let doc = Renderer.Doc.make root_block in
-    Format.fprintf ppf "%s" (Renderer.doc_to_string renderer doc)
+    let root_block = Renderer.Block.Blocks block_list in
+    let doc = root_block in
+    Format.fprintf ppf "%s" (Renderer.to_string doc)
   in
   { Odoc_document.Renderer.filename; content; children = []; path = url }

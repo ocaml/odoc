@@ -21,7 +21,7 @@
 val make :
   config:Config.t ->
   url:Odoc_document.Url.Path.t ->
-  Renderer.Doc.t ->
+  Renderer.doc ->
   Odoc_document.Renderer.page list ->
   Odoc_document.Renderer.page
 
