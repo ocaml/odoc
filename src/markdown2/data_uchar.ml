@@ -113,7 +113,7 @@ let [@ocamlformat "disable"] punctuation =
     0x1BC9F; 0x1DA87; 0x1DA88; 0x1DA89; 0x1DA8A; 0x1DA8B; 0x1E5FF; 0x1E95E;
     0x1E95F|]
 
-let case_fold =
+let [@ocamlformat "disable"] case_fold =
   [|0x0041, "\u{0061}"; 0x0042, "\u{0062}"; 0x0043, "\u{0063}";
     0x0044, "\u{0064}"; 0x0045, "\u{0065}"; 0x0046, "\u{0066}";
     0x0047, "\u{0067}"; 0x0048, "\u{0068}"; 0x0049, "\u{0069}";
