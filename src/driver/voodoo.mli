@@ -6,6 +6,7 @@ val of_voodoo : string -> blessed:bool -> Packages.t list
 type extra_paths = {
   pkgs : Fpath.t Util.StringMap.t;
   libs : Fpath.t Util.StringMap.t;
+  libs_of_pkg : string list Util.StringMap.t;
 }
 
 val empty_extra_paths : extra_paths
