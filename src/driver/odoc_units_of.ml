@@ -8,10 +8,9 @@ type indices_style =
 let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     any list =
   let { odoc_dir; odocl_dir; index_dir; mld_dir = _ } = dirs in
-  (* [module_of_hash] Maps a hash to the corresponding [Package.t], library name and
-     [Packages.modulety]. [lib_dirs] maps a library name to the odoc dir containing its
-     odoc files. *)
+
   let extra_libs_paths = extra_paths.Voodoo.libs in
+  let extra_libs_of_pkg = extra_paths.Voodoo.libs_of_pkg in
   let extra_pkg_paths = extra_paths.Voodoo.pkgs in
 
   let lib_dirs =
@@ -31,6 +30,16 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     List.fold_left
       (fun acc pkg -> Util.StringMap.add pkg.Packages.name (doc_dir pkg) acc)
       extra_pkg_paths pkgs
+  in
+
+  let libs_of_pkg =
+    let libs_of_pkg pkg =
+      List.map (fun lib -> lib.Packages.lib_name) pkg.Packages.libraries
+    in
+    List.fold_left
+      (fun acc pkg ->
+        Util.StringMap.add pkg.Packages.name (libs_of_pkg pkg) acc)
+      extra_libs_of_pkg pkgs
   in
 
   let dash_p pkgname path = (pkgname, path) in
@@ -67,6 +76,13 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
           | Some path -> Some (dash_p pkgname path))
         packages
     in
+    (* Add all liraries from added packages *)
+    let libraries_from_pkgs =
+      List.filter_map
+        (fun pkgname -> Util.StringMap.find_opt pkgname libs_of_pkg)
+        packages
+    in
+    let libraries = List.concat @@ (libraries :: libraries_from_pkgs) in
     let libs_rel = List.concat_map dash_l libraries in
     Pkg_args.v ~pages:pages_rel ~libs:libs_rel ~includes:[] ~odoc_dir ~odocl_dir
   in
