@@ -1123,7 +1123,7 @@ As an example, here is [odoc]'s configuration file:
 v}
 
 This file applies to all pages and all modules of all libraries in a package. With this config file, the
-modules of the [fmt] library, and the pages of the [odoc-driver], [cmdliner] and [odig] packages can be
+modules of the [fmt] library, and the {e modules and pages} of the [odoc-driver], [cmdliner] and [odig] packages can be
 linked to via the following syntax:
 
 {v
