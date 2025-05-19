@@ -1,5 +1,12 @@
 # Unreleased
 
+### Changed
+
+- Allow referencing libraries from package added in `odoc-config.sexp`
+  (@panglesd, #1343)
+
+# 3.0.0
+
 ### Added
 
 - Added support for (local) images in the latex backend (@Octachron, #1297)
