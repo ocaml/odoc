@@ -1,5 +1,6 @@
 (library
  (name query)
+ (public_name sherlodoc.query)
  (libraries db))
 
 (menhir
