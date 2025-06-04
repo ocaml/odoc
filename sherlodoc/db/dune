@@ -1,3 +1,4 @@
 (library
  (name db)
+ (public_name sherlodoc.db)
  (libraries fmt))
