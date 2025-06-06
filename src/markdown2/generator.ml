@@ -20,7 +20,7 @@ and styled style content =
       let inlines_as_one_inline = Renderer.Inline.Inlines content in
       [ Renderer.Inline.Emphasis inlines_as_one_inline ]
   | `Superscript | `Subscript ->
-      (* CommonMark doesn't have support for superscript/subscript, render the content as inline *)
+      (* CommonMark doesn't have support for superscript/subscript, we fallback to inline *)
       content
 
 let entity = function "#45" -> "-" | "gt" -> ">" | e -> "&" ^ e ^ ";"
@@ -55,7 +55,7 @@ and inline ~(config : Config.t) ~resolve l =
     match t.desc with
     | Text s -> [ Renderer.Inline.Text s ]
     | Entity s ->
-        (* In CommonMark, HTML entities are supported directly, so we can just output them as text *)
+        (* In CommonMark, HTML entities are supported directly, so we can just output them as text. Some markdown parsers may not support some entities. *)
         [ Renderer.Inline.Text s ]
     | Linebreak -> [ Renderer.Inline.Break ]
     | Styled (style, c) ->
@@ -98,11 +98,7 @@ and inline_link ~config ~resolve link =
   | Some href ->
       let inline_content = inline ~config ~resolve link.content in
       let link_inline = Renderer.Inline.Inlines inline_content in
-      let link_definition = Renderer.Link_definition.make ~dest:href () in
-      let inline_link : Renderer.Inline.link =
-        { text = link_inline; reference = link_definition }
-      in
-      [ Renderer.Inline.Link inline_link ]
+      [ Renderer.Inline.Link { text = link_inline; url = Some href } ]
   | None -> [ Renderer.Inline.Code_span (inline_text_only link.content) ]
 
 let rec block ~config ~resolve l =
@@ -135,7 +131,7 @@ let rec block ~config ~resolve l =
     | Description l ->
         let item ({ key; definition; attr = _ } : Types.Description.one) =
           let term = inline ~config ~resolve key in
-          (* We extract definition as inline, since it came as "Block". There seems to be no way (in Cmarkit) to make it inline *)
+          (* We extract definition as inline *)
           let definition_inline =
             Renderer.Inline.Text
               (String.concat ~sep:"" (block_text_only definition))
@@ -167,9 +163,8 @@ let rec block ~config ~resolve l =
     | Raw_markup (target, content) -> (
         match Astring.String.Ascii.lowercase target with
         | "html" ->
-            (* TODO: Make sure block_line_of_string is needed *)
-            let block_lines = Renderer.block_line_of_string content in
-            [ Renderer.Block.Html_block block_lines ]
+            let html_block_lines = Renderer.block_line_of_string content in
+            [ Renderer.Block.Html_block html_block_lines ]
         | another_lang ->
             (* TODO: Is this correct? *)
             let msg =
@@ -195,10 +190,7 @@ let rec block ~config ~resolve l =
               ""
         in
         let image : Renderer.Inline.link =
-          {
-            text = Renderer.Inline.Text alt;
-            reference = Renderer.Link_definition.make ~dest ();
-          }
+          { text = Renderer.Inline.Text alt; url = Some dest }
         in
         [
           Renderer.Block.Paragraph
@@ -477,13 +469,12 @@ module Page = struct
                 let name = anchor.page.name in
                 let inline_name = Renderer.Inline.Text name in
                 let href = Link.href ~config ~resolve anchor in
-                let link_definition =
-                  Renderer.Link_definition.make ~dest:href ()
+                (* TODO: ??? *)
+                let _ =
+                  [
+                    Renderer.Inline.Link { text = inline_name; url = Some href };
+                  ]
                 in
-                let inline_link : Renderer.Inline.link =
-                  { text = inline_name; reference = link_definition }
-                in
-                let _ = [ Renderer.Inline.Link inline_link ] in
                 childrens
             | Anchor _lbl -> childrens)
       in
