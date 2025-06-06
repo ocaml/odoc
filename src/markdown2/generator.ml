@@ -74,14 +74,9 @@ and inline ~(config : Config.t) ~resolve l =
         | "html" ->
             let block_lines = content in
             [ Renderer.Inline.Raw_html [ block_lines ] ]
-        | another_lang ->
-            (* TODO: Is this correct? *)
-            let msg =
-              "Markdown only supports html blocks. There's a raw with "
-              ^ another_lang
-            in
-            (* QUESTION: Should we render an empty block? Can we do something else rather failwith? *)
-            failwith msg)
+        | _ ->
+            (* Markdown only supports html blocks *)
+            [])
   in
   List.concat_map one l
 
@@ -165,19 +160,7 @@ let rec block ~config ~resolve l =
         | "html" ->
             let html_block_lines = Renderer.block_line_of_string content in
             [ Renderer.Block.Html_block html_block_lines ]
-        | another_lang ->
-            (* TODO: Is this correct? *)
-            let msg =
-              "Markdown only supports html blocks. There's a raw with "
-              ^ another_lang
-            in
-            failwith msg)
-    | Audio (_target, _alt) ->
-        (* TODO: Raise a decent error here? Maybe warnings, I only saw assert false *)
-        failwith "Audio isn't supported in markdown"
-    | Video (_target, _alt) ->
-        (* TODO: Raise a decent error here? Maybe warnings, I only saw assert false *)
-        failwith "Video isn't supported in markdown"
+        | _ -> (* Markdown only supports html blocks *) [])
     | Image (target, alt) ->
         let dest =
           match (target : Types.Target.t) with
@@ -196,6 +179,9 @@ let rec block ~config ~resolve l =
           Renderer.Block.Paragraph
             (Renderer.Inline.Inlines [ Renderer.Inline.Image image ]);
         ]
+    | Audio (_target, _alt) | Video (_target, _alt) ->
+        (* Audio and video aren't supported in markdown *)
+        []
   in
   List.concat_map one l
 
