@@ -1,3 +1,5 @@
+(* This module is based on cmarkit (https://github.com/dbuenzli/cmarkit) which is distributed under the ISC License. *)
+
 let is_control = function '\x00' .. '\x1F' | '\x7F' -> true | _ -> false
 
 let is_letter = function 'a' .. 'z' | 'A' .. 'Z' -> true | _ -> false
