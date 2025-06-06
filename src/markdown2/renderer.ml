@@ -548,30 +548,30 @@ let paragraph c p =
   Context.inline c p;
   Context.string c ""
 
-(* TODO: This isn't tested *)
 let table c t =
   let col c i =
     Context.byte c '|';
-    (* Context.string c before; *)
-    Context.inline c i (* ;
-    Context.string c after *)
+    Context.byte c ' ';
+    Context.inline c i;
+    Context.byte c ' '
   in
   let sep c align =
-    (* TODO: len is hardcoded, it shouldn't be *)
-    let len = 1 in
+    let len = 3 in
     Context.byte c '|';
-    match align with
+    Context.byte c ' ';
+    (match align with
     | None -> nchars c len '-'
     | Some `Left ->
         Context.byte c ':';
-        nchars c len '-'
+        nchars c (len - 1) '-'
     | Some `Center ->
         Context.byte c ':';
-        nchars c len '-';
+        nchars c (len - 2) '-';
         Context.byte c ':'
     | Some `Right ->
-        nchars c len '-';
-        Context.byte c ':'
+        nchars c (len - 1) '-';
+        Context.byte c ':');
+    Context.byte c ' '
   in
   let row c (row : Block.Table.row) =
     match row with
@@ -586,8 +586,7 @@ let table c t =
         if seps = [] then Context.byte c '|' else List.iter (sep c) seps;
         Context.byte c '|'
   in
-  List.iter (row c) (Block.Table.rows t);
-  pop_indent c
+  List.iter (row c) (Block.Table.rows t)
 
 let block c = function
   | Block.Blank_line -> blank_line c ""
