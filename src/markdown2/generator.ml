@@ -122,7 +122,7 @@ let rec block ~config ~resolve l =
     | Inline i ->
         let inlines = Renderer.Inline.Inlines (inline ~config ~resolve i) in
         [ Renderer.Block.Paragraph inlines ]
-    | Table t -> block_table t
+    | Table t -> block_table ~config ~resolve t
     | Description l ->
         let item ({ key; definition; attr = _ } : Types.Description.one) =
           let term = inline ~config ~resolve key in
@@ -185,113 +185,49 @@ let rec block ~config ~resolve l =
   in
   List.concat_map one l
 
-(* TODO: Use Block.Table instead of operating on text *)
-and block_table t =
-  let rows_data : (string * [ `Data | `Header ]) list list =
-    match t.data with
-    | [] -> []
-    | rows ->
-        List.map
-          (fun (row : (Types.Block.t * [ `Data | `Header ]) list) ->
-            List.map
-              (fun (content, cell_type) ->
-                let cell_text =
-                  String.concat ~sep:" " (block_text_only content)
-                in
-                (cell_text, cell_type))
-              row)
-          rows
+and block_table ~config ~resolve t =
+  let alignment = function
+    | Types.Table.Left -> Some `Left
+    | Types.Table.Center -> Some `Center
+    | Types.Table.Right -> Some `Right
+    | Types.Table.Default -> None
   in
 
-  if rows_data = [] then
-    [ Renderer.Block.Paragraph (Renderer.Inline.Inlines []) ]
-  else
-    let max_columns =
-      List.fold_left
-        (fun max_cols row ->
-          let row_cols = List.length row in
-          if row_cols > max_cols then row_cols else max_cols)
-        0 rows_data
-    in
+  let convert_cell content =
+    match content with
+    | [ { Types.Block.desc = Paragraph p; _ } ]
+    | [ { Types.Block.desc = Inline p; _ } ] ->
+        inline ~config ~resolve p
+    | blocks ->
+        let text = String.concat ~sep:" " (block_text_only blocks) in
+        [ Renderer.Inline.Text text ]
+  in
 
-    let has_header_row =
-      match rows_data with
-      | first_row :: _ ->
-          List.exists (fun (_, cell_type) -> cell_type = `Header) first_row
-      | [] -> false
-    in
-
-    let rec make_list n v = if n <= 0 then [] else v :: make_list (n - 1) v in
-
-    let header_cells, content_rows =
-      match rows_data with
-      | first_row :: rest when has_header_row ->
-          (* Pad header cells to match max_columns *)
-          let padded_header =
-            let cells = List.map fst first_row in
-            let missing = max_columns - List.length cells in
-            if missing > 0 then cells @ make_list missing "" else cells
-          in
-          (padded_header, rest)
-      | _ ->
-          (* No header - create an empty header matching the max columns *)
-          (make_list max_columns "", rows_data)
-    in
-
-    let pad_row row =
-      let cells = List.map fst row in
-      let missing = max_columns - List.length cells in
-      if missing > 0 then cells @ make_list missing "" else cells
-    in
-
-    let header_inline =
-      let header_text = "| " ^ String.concat ~sep:" | " header_cells ^ " |" in
-      let header_md = Renderer.Inline.Text header_text in
-      Renderer.Inline.Inlines [ header_md ]
-    in
-
-    (* Create the separator row (based on column alignment) *)
-    let separator_inline =
-      let alignments =
-        if List.length t.align >= max_columns then
-          (* Take only the first max_columns elements *)
-          let rec take n lst =
-            if n <= 0 then []
-            else match lst with [] -> [] | h :: t -> h :: take (n - 1) t
-          in
-          take max_columns t.align
-        else
-          t.align
-          @ make_list (max_columns - List.length t.align) Types.Table.Default
-      in
-
-      let separator_cells =
-        List.map
-          (fun align ->
-            match (align : Types.Table.alignment) with
-            | Left -> ":---"
-            | Center -> ":---:"
-            | Right -> "---:"
-            | Default -> "---")
-          alignments
-      in
-      let sep_text = "| " ^ String.concat ~sep:" | " separator_cells ^ " |" in
-      let sep_md = Renderer.Inline.Text sep_text in
-      Renderer.Inline.Inlines [ sep_md ]
-    in
-
-    let content_inlines =
+  let convert_row (row : (Types.Block.t * [ `Data | `Header ]) list) =
+    let cells =
       List.map
-        (fun row ->
-          let cells = pad_row row in
-          let row_text = "| " ^ String.concat ~sep:" | " cells ^ " |" in
-          let row_md = Renderer.Inline.Text row_text in
-          Renderer.Inline.Inlines [ row_md ])
-        content_rows
+        (fun (content, _) -> Renderer.Inline.Inlines (convert_cell content))
+        row
     in
-    List.map
-      (fun inline -> Renderer.Block.Paragraph inline)
-      ([ header_inline; separator_inline ] @ content_inlines)
+    match row with (_, `Header) :: _ -> `Header cells | _ -> `Data cells
+  in
+
+  match t.data with
+  | [] -> [ Renderer.Block.Paragraph (Renderer.Inline.Inlines []) ]
+  | rows ->
+      let table_rows = List.map convert_row rows in
+      let separator = `Sep (List.map alignment t.align) in
+      let rec insert_separator acc = function
+        | [] -> List.rev acc
+        | (`Header _ as h) :: (`Data _ :: _ as rest) ->
+            List.rev (h :: acc) @ [ separator ] @ rest
+        | (`Header _ as h) :: rest -> insert_separator (h :: acc) rest
+        | rows -> List.rev acc @ [ separator ] @ rows
+      in
+
+      let final_rows = insert_separator [] table_rows in
+      let table = Renderer.Block.Table.make final_rows in
+      [ Renderer.Block.Table table ]
 
 and items ~config ~resolve l : Renderer.Block.t list =
   let rec walk_items acc (t : Types.Item.t list) =
