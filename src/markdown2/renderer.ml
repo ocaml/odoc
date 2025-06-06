@@ -30,35 +30,6 @@ let block_line_of_string s =
 
 type label = { key : string; text : string list }
 
-module Link_definition = struct
-  (* let default_layout =
-    {
-      indent = 0;
-      angled_dest = false;
-      before_dest = [];
-      after_dest = [];
-      title_open_delim = '\"';
-      after_title = [];
-    } *)
-
-  type t = {
-    label : label option;
-    defined_label : label option;
-    dest : string option;
-    title : string list option;
-  }
-
-  let make ?defined_label ?label ?dest ?title () =
-    let defined_label =
-      match defined_label with None -> label | Some d -> d
-    in
-    { label; defined_label; dest; title }
-  let label ld = ld.label
-  let defined_label ld = ld.defined_label
-  let dest ld = ld.dest
-  let title ld = ld.title
-end
-
 module Inline = struct
   type t =
     | Break
@@ -69,8 +40,9 @@ module Inline = struct
     | Strong_emphasis of t (* **strong emphasis** *)
     | Image of link (* ![alt text](url) *)
     | Link of link (* [link text](url) *)
-    | Raw_html of string list (* raw html *)
-  and link = { text : t; reference : Link_definition.t }
+    | Raw_html of string list (* <div></div> *)
+  and link = { text : t; url : string option }
+  (* and reference = { url : string option; title : string list option } *)
 
   let is_empty = function Text "" | Inlines [] -> true | _ -> false
 end
@@ -98,7 +70,7 @@ module Block = struct
       loop 0 rows
 
     let make rows = { col_count = col_count rows; rows }
-    let col_count t = t.col_count
+
     let rows t = t.rows
 
     let parse_sep_row cs =
@@ -478,22 +450,14 @@ let link_title c open_delim title =
       escaped_tight_block_lines c escapes lines;
       Context.byte c close
 
-let link_definition c ld =
-  (match Link_definition.dest ld with
-  | None -> ()
-  | Some dest -> escaped_string c esc_parens dest);
-  if
-    Option.is_some (Link_definition.dest ld)
-    && Option.is_some (Link_definition.title ld)
-  then Context.byte c ' ' (* at least a space is needed *);
-  link_title c '\"' (Link_definition.title ld)
-
 let link c (l : Inline.link) =
   Context.byte c '[';
   Context.inline c l.text;
   Context.byte c ']';
   Context.byte c '(';
-  link_definition c l.reference;
+  (match l.url with
+  | None -> ()
+  | Some dest -> escaped_string c esc_parens dest);
   Context.byte c ')'
 
 let image c l =
