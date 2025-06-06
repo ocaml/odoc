@@ -1313,7 +1313,6 @@ module Odoc_markdown_cmd = Make_renderer (struct
 
   let render config _sidebar page = Odoc_markdown.Generator.render ~config page
 
-  (* QUESTION: Where is this being used? *)
   let filepath config url = Odoc_markdown.Generator.filepath ~config url
 
   let extra_args =
