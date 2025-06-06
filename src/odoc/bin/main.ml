@@ -1769,6 +1769,7 @@ let () =
          Indexing.(cmd, info ~docs:section_pipeline);
          Sidebar.(cmd, info ~docs:section_pipeline);
          Odoc_markdown_cmd.generate ~docs:section_pipeline;
+         Odoc_markdown_cmd.generate_source ~docs:section_pipeline;
          Odoc_manpage.generate ~docs:section_generators;
          Odoc_latex.generate ~docs:section_generators;
          Odoc_html_url.(cmd, info ~docs:section_support);

@@ -357,47 +357,27 @@ module Page = struct
     Markdown_page.make ~config ~url:p.url doc subpages
 
   and source_page ~config sp =
-    (* TODO: source_page isn't tested in markdown2 *)
     let { Types.Source_page.url; contents; _ } = sp in
     let resolve = Link.Current sp.url in
     let title = url.Url.Path.name in
     let header =
       items ~config ~resolve (Doctree.PageTitle.render_src_title sp)
     in
-    let markdown_of_doc ~config ~resolve docs =
-      let rec doc_to_markdown doc =
+    let extract_source_text docs =
+      let rec doc_to_text doc =
         match doc with
-        | Types.Source_page.Plain_code s ->
-            let plain_code =
-              Renderer.Block.Code_block { info_string = None; code = [ s ] }
-            in
-            [ plain_code ]
-        | Tagged_code (info, docs) -> (
-            let childrens = List.concat_map doc_to_markdown docs in
-            match info with
-            | Syntax tok ->
-                let syntax =
-                  Renderer.Block.Code_block
-                    { info_string = Some tok; code = [ tok ] }
-                in
-                [ syntax; Renderer.Block.Blocks childrens ]
-            | Link { documentation = _; implementation = None } -> childrens
-            | Link { documentation = _; implementation = Some anchor } ->
-                let name = anchor.page.name in
-                let inline_name = Renderer.Inline.Text name in
-                let href = Link.href ~config ~resolve anchor in
-                (* TODO: ??? *)
-                let _ =
-                  [
-                    Renderer.Inline.Link { text = inline_name; url = Some href };
-                  ]
-                in
-                childrens
-            | Anchor _lbl -> childrens)
+        | Types.Source_page.Plain_code s -> s
+        | Tagged_code (_, docs) ->
+            String.concat ~sep:"" (List.map doc_to_text docs)
       in
-      List.concat_map doc_to_markdown docs
+      String.concat ~sep:"" (List.map doc_to_text docs)
     in
-    let doc = header @ markdown_of_doc ~config ~resolve contents in
+    let source_text = extract_source_text contents in
+    let source_block =
+      Renderer.Block.Code_block
+        { info_string = Some "ocaml"; code = [ source_text ] }
+    in
+    let doc = header @ [ source_block ] in
     Markdown_page.make_src ~config ~url title doc
 end
 
