@@ -50,7 +50,6 @@ depends: [
   "tyxml" {>= "4.4.0"}
   "fmt"
   "crunch" {>= "1.4.1"}
-  "cmarkit" {>= "0.3.0" & ocaml:version >= "4.14"}
   "ocamlfind" {with-test}
   "yojson" {>= "2.1.0" & with-test}
   "sexplib0" {with-test}
