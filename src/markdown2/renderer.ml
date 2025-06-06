@@ -44,7 +44,6 @@ module Inline = struct
     | Link of link (* [link text](url) *)
     | Raw_html of string list (* <div></div> *)
   and link = { text : t; url : string option }
-  (* and reference = { url : string option; title : string list option } *)
 
   let is_empty = function Text "" | Inlines [] -> true | _ -> false
 end
