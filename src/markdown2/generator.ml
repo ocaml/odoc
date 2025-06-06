@@ -364,18 +364,18 @@ module Page = struct
       items ~config ~resolve (Doctree.PageTitle.render_src_title sp)
     in
     let extract_source_text docs =
-      let rec doc_to_text doc =
-        match doc with
-        | Types.Source_page.Plain_code s -> s
+      let rec doc_to_text span =
+        match (span : Types.Source_page.span) with
+        | Plain_code s -> s
         | Tagged_code (_, docs) ->
             String.concat ~sep:"" (List.map doc_to_text docs)
       in
-      String.concat ~sep:"" (List.map doc_to_text docs)
+
+      docs |> List.map doc_to_text |> String.concat ~sep:"" |> String.trim
     in
-    let source_text = extract_source_text contents in
     let source_block =
       Renderer.Block.Code_block
-        { info_string = Some "ocaml"; code = [ source_text ] }
+        { info_string = Some "ocaml"; code = [ extract_source_text contents ] }
     in
     let doc = header @ [ source_block ] in
     Markdown_page.make_src ~config ~url title doc

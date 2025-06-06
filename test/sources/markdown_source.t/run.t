@@ -42,5 +42,4 @@ Check the generated markdown source file:
   
   ```ocaml
   let x = 42
-  
   ```
