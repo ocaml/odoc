@@ -162,18 +162,14 @@ let rec block ~config ~resolve l =
             [ Renderer.Block.Html_block html_block_lines ]
         | _ -> (* Markdown only supports html blocks *) [])
     | Image (target, alt) ->
-        let dest =
+        let url =
           match (target : Types.Target.t) with
-          | External url -> url
-          | Internal (Resolved uri) ->
-              let url = Link.href ~config ~resolve uri in
-              url
-          | Internal Unresolved ->
-              (* TODO: What's unresolved? A non-existing page/link? *)
-              ""
+          | External url -> Some url
+          | Internal (Resolved uri) -> Some (Link.href ~config ~resolve uri)
+          | Internal Unresolved -> None
         in
         let image : Renderer.Inline.link =
-          { text = Renderer.Inline.Text alt; url = Some dest }
+          { text = Renderer.Inline.Text alt; url }
         in
         [
           Renderer.Block.Paragraph
@@ -347,7 +343,6 @@ module Page = struct
   and subpages ~config subpages = List.map (include_ ~config) subpages
 
   and page ~config p =
-    (* TODO: disambiguate the page? *)
     let subpages = subpages ~config @@ Doctree.Subpages.compute p in
     let resolve = Link.Current p.url in
     let i = Doctree.Shift.compute ~on_sub p.items in
