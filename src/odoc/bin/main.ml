@@ -1322,7 +1322,8 @@ module Odoc_markdown_cmd = Make_renderer (struct
   (* QUESTION: Where is this being used? *)
   let filepath config url = Odoc_markdown.Generator.filepath ~config url
 
-  let extra_args = Term.const { Odoc_markdown.Config.root_url = None }
+  let extra_args =
+    Term.const { Odoc_markdown.Config.root_url = None; allow_html = true }
   let renderer = { Odoc_document.Renderer.name = "markdown"; render; filepath }
 end)
 
@@ -1768,6 +1769,7 @@ let () =
          Indexing.(cmd, info ~docs:section_pipeline);
          Sidebar.(cmd, info ~docs:section_pipeline);
          Odoc_markdown_cmd.generate ~docs:section_pipeline;
+         Odoc_markdown_cmd.generate_source ~docs:section_pipeline;
          Odoc_manpage.generate ~docs:section_generators;
          Odoc_latex.generate ~docs:section_generators;
          Odoc_html_url.(cmd, info ~docs:section_support);

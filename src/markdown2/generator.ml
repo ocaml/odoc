@@ -1,15 +1,8 @@
 open Odoc_utils
-module HLink = Link
 
 module Types = Odoc_document.Types
 module Doctree = Odoc_document.Doctree
 module Url = Odoc_document.Url
-module Link = HLink
-
-module Md = struct
-  include Cmarkit
-  let meta = Cmarkit.Meta.none
-end
 
 let source fn (t : Types.Source.t) =
   let rec token (x : Types.Source.token) =
@@ -20,16 +13,14 @@ let source fn (t : Types.Source.t) =
 and styled style content =
   match style with
   | `Bold ->
-      let inlines_as_one_inline = Md.Inline.Inlines (content, Md.meta) in
-      let emphasis = Md.Inline.Emphasis.make inlines_as_one_inline in
-      [ Md.Inline.Strong_emphasis (emphasis, Md.meta) ]
+      let inlines_as_one_inline = Renderer.Inline.Inlines content in
+      [ Renderer.Inline.Strong_emphasis inlines_as_one_inline ]
   | `Italic | `Emphasis ->
       (* We treat emphasis as italic, since there's no difference in Markdown *)
-      let inlines_as_one_inline = Md.Inline.Inlines (content, Md.meta) in
-      let emphasis = Md.Inline.Emphasis.make inlines_as_one_inline in
-      [ Md.Inline.Emphasis (emphasis, Md.meta) ]
+      let inlines_as_one_inline = Renderer.Inline.Inlines content in
+      [ Renderer.Inline.Emphasis inlines_as_one_inline ]
   | `Superscript | `Subscript ->
-      (* CommonMark doesn't have support for superscript/subscript, render the content as inline *)
+      (* CommonMark doesn't have support for superscript/subscript, we fallback to inline *)
       content
 
 let entity = function "#45" -> "-" | "gt" -> ">" | e -> "&" ^ e ^ ";"
@@ -62,36 +53,30 @@ and block_text_only blocks : string list =
 and inline ~(config : Config.t) ~resolve l =
   let one (t : Types.Inline.one) =
     match t.desc with
-    | Text s -> [ Md.Inline.Text (s, Md.meta) ]
+    | Text s -> [ Renderer.Inline.Text s ]
     | Entity s ->
-        (* In CommonMark, HTML entities are supported directly, so we can just output them as text *)
-        [ Md.Inline.Text (s, Md.meta) ]
-    | Linebreak ->
-        let break = Md.Inline.Break.make `Hard in
-        [ Md.Inline.Break (break, Md.meta) ]
+        (* In CommonMark, HTML entities are supported directly, so we can just output them as text. Some markdown parsers may not support some entities. *)
+        [ Renderer.Inline.Text s ]
+    | Linebreak -> [ Renderer.Inline.Break ]
     | Styled (style, c) ->
         let inline_content = inline ~config ~resolve c in
         styled style inline_content
     | Link link -> inline_link ~config ~resolve link
     | Source c ->
         (* CommonMark doesn't allow any complex node inside inline text, rendering inline nodes as text *)
-        let content = String.concat ~sep:"" (source inline_text_only c) in
-        [ Md.Inline.Code_span (Md.Inline.Code_span.of_string content, Md.meta) ]
+        let content = source inline_text_only c in
+        [ Renderer.Inline.Code_span content ]
     | Math s ->
-        (* Since CommonMark doesn't support Math's, we just treat it as code. Maybe could use Ext_math_block or Ext_math_display *)
-        [ Md.Inline.Code_span (Md.Inline.Code_span.of_string s, Md.meta) ]
+        (* Since CommonMark doesn't support Math's, we treat it a inline code *)
+        [ Renderer.Inline.Code_span [ s ] ]
     | Raw_markup (target, content) -> (
         match Astring.String.Ascii.lowercase target with
         | "html" ->
-            let block_lines = Md.Block_line.tight_list_of_string content in
-            [ Md.Inline.Raw_html (block_lines, Md.meta) ]
-        | another_lang ->
-            (* TODO: Is this correct? *)
-            let msg =
-              "Markdown only supports html blocks. There's a raw with "
-              ^ another_lang
-            in
-            failwith msg)
+            let block_lines = content in
+            [ Renderer.Inline.Raw_html [ block_lines ] ]
+        | _ ->
+            (* Markdown only supports html blocks *)
+            [])
   in
   List.concat_map one l
 
@@ -107,244 +92,140 @@ and inline_link ~config ~resolve link =
   match href with
   | Some href ->
       let inline_content = inline ~config ~resolve link.content in
-      let link_inline = Md.Inline.Inlines (inline_content, Md.meta) in
-      let link_definition = Md.Link_definition.make ~dest:(href, Md.meta) () in
-      let link_reference = `Inline (link_definition, Md.meta) in
-      let inline_link = Md.Inline.Link.make link_inline link_reference in
-      [ Md.Inline.Link (inline_link, Md.meta) ]
-  | None ->
-      let content = String.concat ~sep:"" (inline_text_only link.content) in
-      [ Md.Inline.Code_span (Md.Inline.Code_span.of_string content, Md.meta) ]
+      let link_inline = Renderer.Inline.Inlines inline_content in
+      [ Renderer.Inline.Link { text = link_inline; url = Some href } ]
+  | None -> [ Renderer.Inline.Code_span (inline_text_only link.content) ]
 
 let rec block ~config ~resolve l =
   let one (t : Types.Block.one) =
     match t.desc with
     | Paragraph paragraph ->
         let inlines = inline ~config ~resolve paragraph in
-        let inlines = Md.Inline.Inlines (inlines, Md.meta) in
-        let paragraph_block =
-          Md.Block.Paragraph (Md.Block.Paragraph.make inlines, Md.meta)
-        in
+        let inlines = Renderer.Inline.Inlines inlines in
+        let paragraph_block = Renderer.Block.Paragraph inlines in
         (* CommonMark treats paragraph as a block, to align the behavior with other generators such as HTML, we add a blank line after it *)
-        let break = Md.Block.Blank_line ("", Md.meta) in
+        let break = Renderer.Block.Blank_line in
         [ paragraph_block; break ]
-    | List (typ, l) ->
-        let list_type =
-          match typ with
-          | Ordered -> `Ordered (1, '.')
-          | Unordered -> `Unordered '-'
-        in
-        let list_items =
+    | List (type_, l) ->
+        let items =
           List.map
             (fun items ->
               let block = block ~config ~resolve items in
-              let blocks = Md.Block.Blocks (block, Md.meta) in
-              (Md.Block.List_item.make blocks, Md.meta))
+              Renderer.Block.Blocks block)
             l
         in
         [
-          (* TODO: Do we need the list ~tight:false based on surrounding content or can we always be ~tight:true? *)
-          Md.Block.List
-            (Md.Block.List'.make ~tight:true list_type list_items, Md.meta);
+          (match type_ with
+          | Ordered -> Renderer.Block.Ordered_list items
+          | Unordered -> Renderer.Block.Unordered_list items);
         ]
     | Inline i ->
-        let inlines = Md.Inline.Inlines (inline ~config ~resolve i, Md.meta) in
-        [ Md.Block.Paragraph (Md.Block.Paragraph.make inlines, Md.meta) ]
-    | Table t -> block_table t
+        let inlines = Renderer.Inline.Inlines (inline ~config ~resolve i) in
+        [ Renderer.Block.Paragraph inlines ]
+    | Table t -> block_table ~config ~resolve t
     | Description l ->
         let item ({ key; definition; attr = _ } : Types.Description.one) =
           let term = inline ~config ~resolve key in
-          (* We extract definition as inline, since it came as "Block". There seems to be no way (in Cmarkit) to make it inline *)
+          (* We extract definition as inline *)
           let definition_inline =
-            Md.Inline.Text
-              (String.concat ~sep:"" (block_text_only definition), Md.meta)
+            Renderer.Inline.Text
+              (String.concat ~sep:"" (block_text_only definition))
           in
-          let space = Md.Inline.Text (" ", Md.meta) in
+          let space = Renderer.Inline.Text " " in
           let term_inline =
-            Md.Inline.Inlines (term @ [ space; definition_inline ], Md.meta)
+            Renderer.Inline.Inlines (term @ [ space; definition_inline ])
           in
-          [ Md.Block.Paragraph (Md.Block.Paragraph.make term_inline, Md.meta) ]
+          [ Renderer.Block.Paragraph term_inline ]
         in
         List.concat_map item l
     | Verbatim s ->
         let code_snippet =
-          Md.Block.Code_block
-            (Md.Block.Code_block.make [ (s, Md.meta) ], Md.meta)
+          Renderer.Block.Code_block { info_string = None; code = [ s ] }
         in
         [ code_snippet ]
     | Source (lang, s) ->
-        let code_block =
-          s |> source inline_text_only |> List.map (fun s -> (s, Md.meta))
-        in
-        let info_string = (lang, Md.meta) in
+        let code = s |> source inline_text_only |> List.map (fun s -> s) in
         let code_snippet =
-          Md.Block.Code_block
-            (Md.Block.Code_block.make ~info_string code_block, Md.meta)
+          Renderer.Block.Code_block { info_string = Some lang; code }
         in
         [ code_snippet ]
     | Math s ->
         (* Since CommonMark doesn't support Math's, we just treat it as code. Maybe could use Ext_math_block or Ext_math_display *)
         let block =
-          Md.Block.Code_block
-            (Md.Block.Code_block.make [ (s, Md.meta) ], Md.meta)
+          Renderer.Block.Code_block { info_string = None; code = [ s ] }
         in
         [ block ]
     | Raw_markup (target, content) -> (
         match Astring.String.Ascii.lowercase target with
         | "html" ->
-            let block_lines = Md.Block_line.list_of_string content in
-            [ Md.Block.Html_block (block_lines, Md.meta) ]
-        | another_lang ->
-            (* TODO: Is this correct? *)
-            let msg =
-              "Markdown only supports html blocks. There's a raw with "
-              ^ another_lang
-            in
-            failwith msg)
-    | Audio (_target, _alt) ->
-        (* TODO: Raise a decent error here? Maybe warnings, I only saw assert false *)
-        failwith "Audio isn't supported in markdown"
-    | Video (_target, _alt) ->
-        (* TODO: Raise a decent error here? Maybe warnings, I only saw assert false *)
-        failwith "Video isn't supported in markdown"
+            let html_block_lines = Renderer.block_line_of_string content in
+            [ Renderer.Block.Html_block html_block_lines ]
+        | _ -> (* Markdown only supports html blocks *) [])
     | Image (target, alt) ->
-        let dest =
+        let url =
           match (target : Types.Target.t) with
-          | External url -> (url, Md.meta)
-          | Internal (Resolved uri) ->
-              let url = Link.href ~config ~resolve uri in
-              (url, Md.meta)
-          | Internal Unresolved ->
-              (* TODO: What's unresolved? A non-existing page/link? *)
-              ("", Md.meta)
+          | External url -> Some url
+          | Internal (Resolved uri) -> Some (Link.href ~config ~resolve uri)
+          | Internal Unresolved -> None
         in
-        let image =
-          Md.Inline.Link.make
-            (Md.Inline.Text (alt, Md.meta))
-            (`Inline (Md.Link_definition.make ~dest (), Md.meta))
+        let image : Renderer.Inline.link =
+          { text = Renderer.Inline.Text alt; url }
         in
         [
-          Md.Block.Paragraph
-            ( Md.Block.Paragraph.make
-                (Md.Inline.Inlines
-                   ([ Md.Inline.Image (image, Md.meta) ], Md.meta)),
-              Md.meta );
+          Renderer.Block.Paragraph
+            (Renderer.Inline.Inlines [ Renderer.Inline.Image image ]);
         ]
+    | Audio (_target, _alt) | Video (_target, _alt) ->
+        (* Audio and video aren't supported in markdown *)
+        []
   in
   List.concat_map one l
 
-and block_table t =
-  let rows_data : (string * [ `Data | `Header ]) list list =
-    match t.data with
-    | [] -> []
-    | rows ->
-        List.map
-          (fun (row : (Types.Block.t * [ `Data | `Header ]) list) ->
-            List.map
-              (fun (content, cell_type) ->
-                let cell_text =
-                  String.concat ~sep:" " (block_text_only content)
-                in
-                (cell_text, cell_type))
-              row)
-          rows
+and block_table ~config ~resolve t =
+  let alignment = function
+    | Types.Table.Left -> Some `Left
+    | Types.Table.Center -> Some `Center
+    | Types.Table.Right -> Some `Right
+    | Types.Table.Default -> None
   in
 
-  if rows_data = [] then
-    [
-      Md.Block.Paragraph
-        (Md.Block.Paragraph.make (Md.Inline.Inlines ([], Md.meta)), Md.meta);
-    ]
-  else
-    let max_columns =
-      List.fold_left
-        (fun max_cols row ->
-          let row_cols = List.length row in
-          if row_cols > max_cols then row_cols else max_cols)
-        0 rows_data
-    in
+  let convert_cell content =
+    match content with
+    | [ { Types.Block.desc = Paragraph p; _ } ]
+    | [ { Types.Block.desc = Inline p; _ } ] ->
+        inline ~config ~resolve p
+    | blocks ->
+        let text = String.concat ~sep:" " (block_text_only blocks) in
+        [ Renderer.Inline.Text text ]
+  in
 
-    let has_header_row =
-      match rows_data with
-      | first_row :: _ ->
-          List.exists (fun (_, cell_type) -> cell_type = `Header) first_row
-      | [] -> false
-    in
-
-    let rec make_list n v = if n <= 0 then [] else v :: make_list (n - 1) v in
-
-    let header_cells, content_rows =
-      match rows_data with
-      | first_row :: rest when has_header_row ->
-          (* Pad header cells to match max_columns *)
-          let padded_header =
-            let cells = List.map fst first_row in
-            let missing = max_columns - List.length cells in
-            if missing > 0 then cells @ make_list missing "" else cells
-          in
-          (padded_header, rest)
-      | _ ->
-          (* No header - create an empty header matching the max columns *)
-          (make_list max_columns "", rows_data)
-    in
-
-    let pad_row row =
-      let cells = List.map fst row in
-      let missing = max_columns - List.length cells in
-      if missing > 0 then cells @ make_list missing "" else cells
-    in
-
-    let header_inline =
-      let header_text = "| " ^ String.concat ~sep:" | " header_cells ^ " |" in
-      let header_md = Md.Inline.Text (header_text, Md.meta) in
-      Md.Inline.Inlines ([ header_md ], Md.meta)
-    in
-
-    (* Create the separator row (based on column alignment) *)
-    let separator_inline =
-      let alignments =
-        if List.length t.align >= max_columns then
-          (* Take only the first max_columns elements *)
-          let rec take n lst =
-            if n <= 0 then []
-            else match lst with [] -> [] | h :: t -> h :: take (n - 1) t
-          in
-          take max_columns t.align
-        else
-          t.align
-          @ make_list (max_columns - List.length t.align) Types.Table.Default
-      in
-
-      let separator_cells =
-        List.map
-          (fun align ->
-            match (align : Types.Table.alignment) with
-            | Left -> ":---"
-            | Center -> ":---:"
-            | Right -> "---:"
-            | Default -> "---")
-          alignments
-      in
-      let sep_text = "| " ^ String.concat ~sep:" | " separator_cells ^ " |" in
-      let sep_md = Md.Inline.Text (sep_text, Md.meta) in
-      Md.Inline.Inlines ([ sep_md ], Md.meta)
-    in
-
-    let content_inlines =
+  let convert_row (row : (Types.Block.t * [ `Data | `Header ]) list) =
+    let cells =
       List.map
-        (fun row ->
-          let cells = pad_row row in
-          let row_text = "| " ^ String.concat ~sep:" | " cells ^ " |" in
-          let row_md = Md.Inline.Text (row_text, Md.meta) in
-          Md.Inline.Inlines ([ row_md ], Md.meta))
-        content_rows
+        (fun (content, _) -> Renderer.Inline.Inlines (convert_cell content))
+        row
     in
-    List.map
-      (fun inline ->
-        Md.Block.Paragraph (Md.Block.Paragraph.make inline, Md.meta))
-      ([ header_inline; separator_inline ] @ content_inlines)
+    match row with (_, `Header) :: _ -> `Header cells | _ -> `Data cells
+  in
 
-and items ~config ~resolve l : Md.Block.t list =
+  match t.data with
+  | [] -> [ Renderer.Block.Paragraph (Renderer.Inline.Inlines []) ]
+  | rows ->
+      let table_rows = List.map convert_row rows in
+      let separator = `Sep (List.map alignment t.align) in
+      let rec insert_separator acc = function
+        | [] -> List.rev acc
+        | (`Header _ as h) :: (`Data _ :: _ as rest) ->
+            List.rev (h :: acc) @ [ separator ] @ rest
+        | (`Header _ as h) :: rest -> insert_separator (h :: acc) rest
+        | rows -> List.rev acc @ [ separator ] @ rows
+      in
+
+      let final_rows = insert_separator [] table_rows in
+      let table = Renderer.Block.Table.make final_rows in
+      [ Renderer.Block.Table table ]
+
+and items ~config ~resolve l : Renderer.Block.t list =
   let rec walk_items acc (t : Types.Item.t list) =
     let continue_with rest elts =
       (walk_items [@tailcall]) (List.rev_append elts acc) rest
@@ -361,11 +242,13 @@ and items ~config ~resolve l : Md.Block.t list =
         (continue_with [@tailcall]) rest content
     | Heading h :: rest ->
         (* Markdown headings are rendered as a blank line before and after the heading, otherwise it treats it as an inline paragraph *)
-        let break = Md.Block.Blank_line ("", Md.meta) in
+        let break = Renderer.Block.Blank_line in
         let inlines = inline ~config ~resolve h.title in
-        let content = Md.Inline.Inlines (inlines, Md.meta) in
-        let block = Md.Block.Heading.make ~level:(h.level + 1) content in
-        let heading_block = Md.Block.Heading (block, Md.meta) in
+        let content = Renderer.Inline.Inlines inlines in
+        let block : Renderer.Block.heading =
+          { level = h.level + 1; inline = content; id = None }
+        in
+        let heading_block = Renderer.Block.Heading block in
         (continue_with [@tailcall]) rest [ break; heading_block; break ]
     | Include
         {
@@ -411,22 +294,17 @@ and documentedSrc ~config ~resolve t =
           Accum [ { attrs; anchor; code = `N code; doc; markers } ]
       | _ -> Stop_and_keep)
   in
-  let rec to_markdown t : Md.Block.t list =
+  let rec to_markdown t : Renderer.Block.t list =
     match t with
     | [] -> []
     | (Code _ | Alternative _) :: _ ->
         let code, header, rest = take_code t in
         let info_string =
-          match header with
-          | Some header -> Some (header, Md.meta)
-          | None -> None
+          match header with Some header -> Some header | None -> None
         in
         let inline_source = source inline_text_only code in
-        let code_block = [ (String.concat ~sep:"" inline_source, Md.meta) ] in
-        let block =
-          Md.Block.Code_block
-            (Md.Block.Code_block.make ?info_string code_block, Md.meta)
-        in
+        let code = [ String.concat ~sep:"" inline_source ] in
+        let block = Renderer.Block.Code_block { info_string; code } in
         [ block ] @ to_markdown rest
     | Subpage subp :: _ -> subpage ~config ~resolve subp
     | (Documented _ | Nested _) :: _ ->
@@ -436,10 +314,8 @@ and documentedSrc ~config ~resolve t =
             match code with
             | `D code ->
                 let inline_source = inline ~config ~resolve code in
-                let inlines = Md.Inline.Inlines (inline_source, Md.meta) in
-                let block =
-                  Md.Block.Paragraph (Md.Block.Paragraph.make inlines, Md.meta)
-                in
+                let inlines = Renderer.Inline.Inlines inline_source in
+                let block = Renderer.Block.Paragraph inlines in
                 [ block ]
             | `N n -> to_markdown n
           in
@@ -466,8 +342,7 @@ module Page = struct
 
   and subpages ~config subpages = List.map (include_ ~config) subpages
 
-  and page ~config p : Odoc_document.Renderer.page =
-    (* TODO: disambiguate the page? *)
+  and page ~config p =
     let subpages = subpages ~config @@ Doctree.Subpages.compute p in
     let resolve = Link.Current p.url in
     let i = Doctree.Shift.compute ~on_sub p.items in
@@ -477,55 +352,32 @@ module Page = struct
     let header = items ~config ~resolve header in
     let preamble = items ~config ~resolve preamble in
     let content = items ~config ~resolve i in
-    let root_block = Md.Block.Blocks (header @ preamble @ content, Md.meta) in
-    let doc = Md.Doc.make root_block in
+    let root_block = Renderer.Block.Blocks (header @ preamble @ content) in
+    let doc = root_block in
     Markdown_page.make ~config ~url:p.url doc subpages
 
   and source_page ~config sp =
-    (* TODO: source_page isn't tested in markdown2 *)
     let { Types.Source_page.url; contents; _ } = sp in
     let resolve = Link.Current sp.url in
     let title = url.Url.Path.name in
     let header =
       items ~config ~resolve (Doctree.PageTitle.render_src_title sp)
     in
-    let markdown_of_doc ~config ~resolve docs =
-      let rec doc_to_markdown doc =
-        match doc with
-        | Types.Source_page.Plain_code s ->
-            let plain_code =
-              Md.Block.Code_block
-                (Md.Block.Code_block.make [ (s, Md.meta) ], Md.meta)
-            in
-            [ plain_code ]
-        | Tagged_code (info, docs) -> (
-            let childrens = List.concat_map doc_to_markdown docs in
-            match info with
-            | Syntax tok ->
-                let syntax =
-                  Md.Block.Code_block
-                    (Md.Block.Code_block.make [ (tok, Md.meta) ], Md.meta)
-                in
-                [ syntax; Md.Block.Blocks (childrens, Md.meta) ]
-            | Link { documentation = _; implementation = None } -> childrens
-            | Link { documentation = _; implementation = Some anchor } ->
-                let name = anchor.page.name in
-                let inline_name = Md.Inline.Text (name, Md.meta) in
-                let href = Link.href ~config ~resolve anchor in
-                let link_definition =
-                  Md.Link_definition.make ~dest:(href, Md.meta) ()
-                in
-                let link_reference = `Inline (link_definition, Md.meta) in
-                let inline_link =
-                  Md.Inline.Link.make inline_name link_reference
-                in
-                let _ = [ Md.Inline.Link (inline_link, Md.meta) ] in
-                childrens
-            | Anchor _lbl -> childrens)
+    let extract_source_text docs =
+      let rec doc_to_text span =
+        match (span : Types.Source_page.span) with
+        | Plain_code s -> s
+        | Tagged_code (_, docs) ->
+            String.concat ~sep:"" (List.map doc_to_text docs)
       in
-      List.concat_map doc_to_markdown docs
+
+      docs |> List.map doc_to_text |> String.concat ~sep:"" |> String.trim
     in
-    let doc = header @ markdown_of_doc ~config ~resolve contents in
+    let source_block =
+      Renderer.Block.Code_block
+        { info_string = Some "ocaml"; code = [ extract_source_text contents ] }
+    in
+    let doc = header @ [ source_block ] in
     Markdown_page.make_src ~config ~url title doc
 end
 

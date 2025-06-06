@@ -9,10 +9,10 @@ val items :
   config:Config.t ->
   resolve:Link.resolve ->
   Odoc_document.Types.Item.t list ->
-  Cmarkit.Block.t list
+  Renderer.Block.t list
 
 val inline :
   config:Config.t ->
   xref_base_uri:string ->
   Odoc_document.Types.Inline.t ->
-  Cmarkit.Inline.t list
+  Renderer.Inline.t list

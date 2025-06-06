@@ -1,13 +1,4 @@
 (library
  (name odoc_markdown)
  (public_name odoc.markdown)
- (libraries odoc_model odoc_document cmarkit)
- (preprocess
-  (action
-   (run
-    %{bin:cppo}
-    -I
-    "%{env:CPPO_FLAGS=}"
-    -V
-    OCAML:%{ocaml_version}
-    %{input-file}))))
+ (libraries odoc_model odoc_document))
