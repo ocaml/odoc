@@ -30,8 +30,15 @@ let read_libraries_from_pkg_defs ~library_name pkg_defs =
         with _ -> None)
     in
 
-    let deps_str = Fl_metascanner.lookup "requires" [] pkg_defs in
-    let deps = Astring.String.fields ~empty:false deps_str in
+    let deps =
+      try
+        let deps_str = Fl_metascanner.lookup "requires" [] pkg_defs in
+        (* The deps_str is a string of space-separated package names, e.g. "a b c" *)
+        (* We use Astring to split the string into a list of package names *)
+        Astring.String.fields ~empty:false deps_str
+      with _ -> []
+    in
+
     let dir =
       List.find_opt (fun d -> d.Fl_metascanner.def_var = "directory") pkg_defs
     in
