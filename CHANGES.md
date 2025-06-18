@@ -35,6 +35,7 @@
   (@jonludlam, #1306)
 - Fix bug in `odoc classify` when there are archives that can't be co-linked
   (@jonludlam, #1310)
+- Fix bug in parsing META files when there are no dependencies (@jonludlam, #1352)
 
 # 3.0.0~beta1
 
