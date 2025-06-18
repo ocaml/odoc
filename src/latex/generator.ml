@@ -3,6 +3,12 @@ open Types
 module Doctree = Odoc_document.Doctree
 module Url = Odoc_document.Url
 
+type config = {
+  with_children : bool;
+  shorten_beyond_depth : int option;
+  remove_functor_arg_link : bool;
+}
+
 module Link = struct
   let rec flatten_path ppf (x : Odoc_document.Url.Path.t) =
     let pp_parent ppf = function
@@ -14,24 +20,20 @@ module Link = struct
 
   let page p = Format.asprintf "%a" flatten_path p
 
+  let anchor p a = Format.asprintf "%a--%s" flatten_path p a
+
   let label (x : Odoc_document.Url.t) =
-    match x.anchor with
-    | "" -> page x.page
-    | anchor -> Format.asprintf "%a-%s" flatten_path x.page anchor
+    match x.anchor with "" -> page x.page | a -> anchor x.page a
 
-  let rec is_class_or_module_path (url : Odoc_document.Url.Path.t) =
-    match url.kind with
-    | `Module | `LeafPage | `Class | `Page -> (
-        match url.parent with
-        | None -> true
-        | Some url -> is_class_or_module_path url)
-    | _ -> false
+  let rec is_inside_param (x : Odoc_document.Url.Path.t) =
+    match (x.kind, x.parent) with
+    | `Parameter _, _ -> true
+    | _, None -> false
+    | _, Some p -> is_inside_param p
 
-  let should_inline status url =
-    match status with
-    | `Inline | `Open -> true
-    | `Closed -> false
-    | `Default -> not @@ is_class_or_module_path url
+  let ref config (x : Odoc_document.Url.t) =
+    if config.remove_functor_arg_link && is_inside_param x.page then ""
+    else label x
 
   let get_dir_and_file url =
     let open Odoc_document in
@@ -46,6 +48,30 @@ module Link = struct
     let dir, file = get_dir_and_file url in
     let file = Fpath.(v (String.concat dir_sep (dir @ [ file ]))) in
     if add_ext then Fpath.add_ext "tex" file else file
+end
+
+module Expansion = struct
+  let is_class_or_module (url : Odoc_document.Url.Path.t) =
+    match url.kind with
+    | `Module | `LeafPage | `Class | `Page -> true
+    | _ -> false
+
+  let shortened config status url =
+    let depth x = List.length Odoc_document.Url.(Path.to_list x) in
+    match (config.shorten_beyond_depth, status) with
+    | None, _ | _, (`Inline | `Open | `Closed) -> false
+    | Some d, `Default -> depth url >= d
+
+  let should_inline status url =
+    match status with
+    | `Inline | `Open -> true
+    | `Closed -> false
+    | `Default ->
+        (* we don't inline contents that should appear in their own page.*)
+        not (is_class_or_module url)
+
+  let remove_subpage config status url =
+    shortened config status url || should_inline status url
 end
 
 let style = function
@@ -67,10 +93,7 @@ let gen_hyperref pp r ppf =
       in
       Raw.hyperref s pp ppf content
 
-let label = function
-  | None -> []
-  | Some x (* {Odoc_document.Url.Anchor.anchor ; page;  _ }*) ->
-      [ Label (Link.label x) ]
+let label = function None -> [] | Some x -> [ Label (Link.label x) ]
 
 let level_macro = function
   | 0 -> Raw.section
@@ -220,29 +243,34 @@ let source k (t : Source.t) =
   and tokens t = Odoc_utils.List.concat_map token t in
   tokens t
 
-let rec internalref ~verbatim ~in_source (t : Target.internal) (c : Inline.t) =
+let rec internalref ~config ~verbatim ~in_source (t : Target.internal)
+    (c : Inline.t) =
   let target =
     match t with
-    | Target.Resolved uri -> Link.label uri
+    | Target.Resolved uri -> Link.ref config uri
     | Unresolved -> "xref-unresolved"
   in
-  let text = Some (inline ~verbatim ~in_source c) in
+  let text = inline ~config ~verbatim ~in_source c in
   let short = in_source in
-  Internal_ref { short; target; text }
+  Internal_ref { short; target; text = Some text }
 
-and inline ~in_source ~verbatim (l : Inline.t) =
+and inline ~config ~in_source ~verbatim (l : Inline.t) =
   let one (t : Inline.one) =
     match t.desc with
     | Text _s -> assert false
     | Linebreak -> [ Break Line ]
-    | Styled (style, c) -> [ Style (style, inline ~verbatim ~in_source c) ]
+    | Styled (style, c) ->
+        [ Style (style, inline ~config ~verbatim ~in_source c) ]
     | Link { target = External ext; content = c; _ } ->
-        let content = inline ~verbatim:false ~in_source:false c in
+        let content = inline ~config ~verbatim:false ~in_source:false c in
         [ External_ref (ext, Some content) ]
     | Link { target = Internal ref_; content = c; _ } ->
-        [ internalref ~in_source ~verbatim ref_ c ]
+        [ internalref ~config ~in_source ~verbatim ref_ c ]
     | Source c ->
-        [ Inlined_code (source (inline ~verbatim:false ~in_source:true) c) ]
+        [
+          Inlined_code
+            (source (inline ~config ~verbatim:false ~in_source:true) c);
+        ]
     | Math s -> [ Raw (Format.asprintf "%a" Raw.math s) ]
     | Raw_markup r -> raw_markup r
     | Entity s -> [ entity ~in_source ~verbatim s ]
@@ -264,18 +292,22 @@ and inline ~in_source ~verbatim (l : Inline.t) =
   in
   prettify l
 
-let heading (h : Heading.t) =
-  let content = inline ~in_source:false ~verbatim:false h.title in
-  [ Section { label = h.label; level = h.level; content }; Break Aesthetic ]
+let heading ~config p (h : Heading.t) =
+  let content = inline ~config ~in_source:false ~verbatim:false h.title in
+  [
+    Section
+      { label = Option.map (Link.anchor p) h.label; level = h.level; content };
+    Break Aesthetic;
+  ]
 
-let non_empty_block_code c =
-  let s = source (inline ~verbatim:true ~in_source:true) c in
+let non_empty_block_code ~config c =
+  let s = source (inline ~config ~verbatim:true ~in_source:true) c in
   match s with
   | [] -> []
   | _ :: _ as l -> [ Break Separation; Code_block l; Break Separation ]
 
-let non_empty_code_fragment c =
-  let s = source (inline ~verbatim:false ~in_source:true) c in
+let non_empty_code_fragment ~config c =
+  let s = source (inline ~config ~verbatim:false ~in_source:true) c in
   match s with [] -> [] | _ :: _ as l -> [ Code_fragment l ]
 
 let alt_text ~in_source (target : Target.t) alt =
@@ -295,30 +327,30 @@ let image ~in_source (internal_url : Url.t) alt =
       [ Image fpath ]
   | _ -> alt_text ~in_source (Internal (Resolved internal_url)) alt
 
-let rec block ~in_source (l : Block.t) =
+let rec block ~config ~in_source (l : Block.t) =
   let one (t : Block.one) =
     match t.desc with
-    | Inline i -> inline ~verbatim:false ~in_source:false i
+    | Inline i -> inline ~config ~verbatim:false ~in_source:false i
     | Image (Internal (Resolved x), alt) -> image ~in_source x alt
     | Image (t, alt) | Audio (t, alt) | Video (t, alt) ->
         alt_text ~in_source t alt
     | Paragraph i ->
-        inline ~in_source:false ~verbatim:false i
+        inline ~config ~in_source:false ~verbatim:false i
         @ if in_source then [] else [ Break Paragraph ]
     | List (typ, l) ->
-        [ List { typ; items = List.map (block ~in_source:false) l } ]
-    | Table t -> table_block t
+        [ List { typ; items = List.map (block ~config ~in_source:false) l } ]
+    | Table t -> table_block ~config t
     | Description l ->
         [
           (let item i =
-             ( inline ~in_source ~verbatim:false i.Description.key,
-               block ~in_source i.Description.definition )
+             ( inline ~config ~in_source ~verbatim:false i.Description.key,
+               block ~config ~in_source i.Description.definition )
            in
            Description (List.map item l));
         ]
     | Raw_markup r -> raw_markup r
     | Verbatim s -> [ Verbatim s ]
-    | Source (_, c) -> non_empty_block_code c
+    | Source (_, c) -> non_empty_block_code ~config c
     | Math s ->
         [
           Break Paragraph;
@@ -328,11 +360,11 @@ let rec block ~in_source (l : Block.t) =
   in
   Odoc_utils.List.concat_map one l
 
-and table_block { Table.data; align } =
+and table_block ~config { Table.data; align } =
   let data =
     List.map
       (List.map (fun (cell, cell_type) ->
-           let content = block ~in_source:false cell in
+           let content = block ~config ~in_source:false cell in
            match cell_type with
            | `Header -> [ Style (`Bold, content) ]
            | `Data -> content))
@@ -348,7 +380,7 @@ let rec is_only_text l =
   in
   List.for_all is_text l
 
-let rec documentedSrc (t : DocumentedSrc.t) =
+let rec documentedSrc ~config (t : DocumentedSrc.t) =
   let open DocumentedSrc in
   let rec to_latex t =
     match t with
@@ -360,13 +392,23 @@ let rec documentedSrc (t : DocumentedSrc.t) =
             | _ -> Stop_and_keep)
         in
         let code, _, rest = take_code t in
-        non_empty_code_fragment code @ to_latex rest
+        non_empty_code_fragment ~config code @ to_latex rest
     | Alternative (Expansion e) :: rest ->
-        (if Link.should_inline e.status e.url then to_latex e.expansion
-         else non_empty_code_fragment e.summary)
-        @ to_latex rest
+        let elt =
+          (* In the [should_inline] or [shortened], we are replacing the
+           independent page by the inlined contents, thus we need to redirect
+           the links to the missing page to the inlined contents.
+           redirect the *)
+          if Expansion.should_inline e.status e.url then
+            Label (Link.page e.url) :: to_latex e.expansion
+          else if Expansion.shortened config e.status e.url then
+            Label (Link.page e.url) :: non_empty_code_fragment ~config e.summary
+          else non_empty_code_fragment ~config e.summary
+        in
+        elt @ to_latex rest
     | Subpage subp :: rest ->
-        Indented (items subp.content.items) :: to_latex rest
+        Indented (items ~config subp.content.url subp.content.items)
+        :: to_latex rest
     | (Documented _ | Nested _) :: _ ->
         let take_descr l =
           Doctree.Take.until l ~classify:(function
@@ -398,20 +440,20 @@ let rec documentedSrc (t : DocumentedSrc.t) =
         let one dsrc =
           let content =
             match dsrc.code with
-            | `D code -> inline ~verbatim:false ~in_source:true code
+            | `D code -> inline ~config ~verbatim:false ~in_source:true code
             | `N n -> to_latex n
           in
-          let doc = [ block ~in_source:true dsrc.doc ] in
+          let doc = [ block ~config ~in_source:true dsrc.doc ] in
           (content @ label dsrc.anchor) :: doc
         in
         layout_table (List.map one l) @ to_latex rest
   in
   to_latex t
 
-and items l =
-  let rec walk_items ~only_text acc (t : Item.t list) =
+and items ~config page_url l =
+  let rec walk_items ~page_url ~only_text acc (t : Item.t list) =
     let continue_with rest elts =
-      walk_items ~only_text (List.rev_append elts acc) rest
+      walk_items ~page_url ~only_text (List.rev_append elts acc) rest
     in
     match t with
     | [] -> List.rev acc
@@ -421,10 +463,10 @@ and items l =
             | Item.Text text -> Accum text
             | _ -> Stop_and_keep)
         in
-        let content = block ~in_source:false text in
+        let content = block ~config ~in_source:false text in
         let elts = content in
         elts |> continue_with rest
-    | Heading h :: rest -> heading h |> continue_with rest
+    | Heading h :: rest -> heading ~config page_url h |> continue_with rest
     | Include
         {
           attr = _;
@@ -434,24 +476,31 @@ and items l =
           content = { summary; status = _; content };
         }
       :: rest ->
-        let included = items content in
-        let docs = block ~in_source:true doc in
-        let summary = source (inline ~verbatim:false ~in_source:true) summary in
+        let included = items page_url content in
+        let docs = block ~config ~in_source:true doc in
+        let summary =
+          source (inline ~config ~verbatim:false ~in_source:true) summary
+        in
         let content = included in
         label anchor @ docs @ summary @ content |> continue_with rest
     | Declaration { Item.attr = _; source_anchor = _; anchor; content; doc }
       :: rest ->
-        let content = label anchor @ documentedSrc content in
+        let content = label anchor @ documentedSrc ~config content in
         let elts =
           match doc with
           | [] -> content @ [ Break Line ]
           | docs ->
               content
-              @ [ Indented (block ~in_source:true docs); Break Separation ]
+              @ [
+                  Indented (block ~config ~in_source:true docs);
+                  Break Separation;
+                ]
         in
         continue_with rest elts
-  and items l = walk_items ~only_text:(is_only_text l) [] l in
-  items l
+  and items page_url l =
+    walk_items ~page_url ~only_text:(is_only_text l) [] l
+  in
+  items page_url l
 
 module Doc = struct
   let link_children ppf children =
@@ -460,7 +509,7 @@ module Doc = struct
     in
     Fmt.list input_child ppf children
 
-  let make ~with_children url content children =
+  let make ~config url content children =
     let filename = Link.filename url in
     let label = Label (Link.page url) in
     let content =
@@ -470,7 +519,7 @@ module Doc = struct
       | q -> label :: q
     in
     let children_input ppf =
-      if with_children then link_children ppf children else ()
+      if config.with_children then link_children ppf children else ()
     in
     let content ppf = Fmt.pf ppf "@[<v>%a@,%t@]@." pp content children_input in
     { Odoc_document.Renderer.filename; content; children; path = url }
@@ -479,27 +528,27 @@ end
 module Page = struct
   let on_sub = function `Page _ -> Some 1 | `Include _ -> None
 
-  let rec subpage ~with_children (p : Subpage.t) =
-    if Link.should_inline p.status p.content.url then []
-    else [ page ~with_children p.content ]
+  let rec subpage ~config (p : Subpage.t) =
+    if Expansion.remove_subpage config p.status p.content.url then []
+    else [ page ~config p.content ]
 
-  and subpages ~with_children subpages =
-    List.flatten @@ List.map (subpage ~with_children) subpages
+  and subpages ~config subpages =
+    List.flatten @@ List.map (subpage ~config) subpages
 
-  and page ~with_children p =
+  and page ~config p =
     let { Page.items = i; url; _ } =
       Doctree.Labels.disambiguate_page ~enter_subpages:true p
-    and subpages = subpages ~with_children @@ Doctree.Subpages.compute p in
+    and subpages = subpages ~config @@ Doctree.Subpages.compute p in
     let i = Doctree.Shift.compute ~on_sub i in
     let header, preamble = Doctree.PageTitle.render_title p in
-    let header = items (header @ preamble) in
-    let content = items i in
-    let page = Doc.make ~with_children url (header @ content) subpages in
+    let header = items ~config url (header @ preamble) in
+    let content = items ~config url i in
+    let page = Doc.make ~config url (header @ content) subpages in
     page
 end
 
-let render ~with_children = function
-  | Document.Page page -> [ Page.page ~with_children page ]
+let render ~config = function
+  | Document.Page page -> [ Page.page ~config page ]
   | Source_page _ -> []
 
 let filepath url = Link.filename ~add_ext:false url
