@@ -1,0 +1,126 @@
+{0 The title}
+
+Quick reference for the odoc language rendering markdown
+
+{1 Title}
+{2 Subtitle}
+{3:my_id Referenceable title}
+
+See {!my_id}.
+
+{3:styled Styled}
+
+{b bold} text, {i italic} text, {e emphasized} text
+
+H{_ 2}O and 1{^ st}
+
+{3 Link}
+
+Here is a link: {:https://www.example.com}.
+
+You can also click {{:https://www.example.com}here}.
+
+{3 References}
+
+See an empty reference {{!test.v}}.
+
+See {{!test.v}this function from another library}.
+
+See {{!./test.mli}this page from another package}.
+
+See {{!styled}this section} for the syntax of references.
+
+{4 Subpages}
+
+There's a subpage here {{!test}} and another one {{!test2}}
+
+{3 Lists}
+
+- First item
+- Second item
+
++ First ordered item
++ Second numbered item
+
+{ul
+  {- First item}
+  {- Second item}
+  {li can also be used}}
+
+{ol
+  {- First numbered item}
+  {- Second numbered item}
+  {li can also be used}}
+
+{3 Code blocks}
+
+Inline [code].
+
+{[
+let _ = "Block code"
+]}
+
+{foo@text[
+Code block with {[inner code block syntax]}
+]foo}
+
+{@python[
+[i+1 for i in xrange(2)]
+]}
+
+{3 Verbatim}
+
+{v verbatim text v}
+
+{3 Math}
+
+For inline math: {m \sqrt 2}.
+
+For display math:
+
+{math \sqrt 2}
+
+{3 Images}
+
+{image!odoc_logo_placeholder.jpg}
+{image:https://picsum.photos/200/100}
+
+{3 Table}
+
+{4 Explicit syntax}
+
+{table
+  {tr
+    {th Header 1}
+    {th Header 2}}
+  {tr
+    {td Cell 1}
+    {td Cell 2}}
+  {tr
+    {td Cell 3}
+    {td Cell 4}}}]}
+
+{4 Light syntax}
+
+{t | Header 1 | Header 2 |
+   |----------|----------|
+   | Cell 1   | Cell 2   |
+   | Cell 3   | Cell 4   |}
+
+{3 HTML}
+
+This is a strong tag: {%html: <strong> Odoc language lack support for quotation! </strong>
+%}
+
+{%html:
+  <div>
+    <blockquote>
+      Odoc language lack support for quotation!
+    </blockquote>
+  </div>
+%}
+
+{3 Tags}
+
+@since 4.08
+Tags are explained in this section.
