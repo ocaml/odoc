@@ -6,7 +6,7 @@ end
 
 include B1
 
-module type B2 = sig
+module type B2 := sig
   module A : sig
     include module type of struct include A end
     type u
@@ -15,7 +15,7 @@ end
 
 include B2
 
-module type B3 = sig
+module type B3 := sig
   module A : sig
     include module type of struct include A end
     type v
