@@ -143,3 +143,7 @@ a : int;
  ]
 .br 
 \f[CB]end\fR
+.sp 
+\f[CB]type\fR +-'a phantom
+.sp 
+\f[CB]val\fR f : (\f[CB]x\fR:int * \f[CB]y\fR:int) phantom \f[CB]\->\fR unit
