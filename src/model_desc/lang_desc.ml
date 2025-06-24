@@ -336,7 +336,8 @@ and typedecl_representation =
 
 and typedecl_variance =
   let open Lang.TypeDecl in
-  Variant (function Pos -> C0 "Pos" | Neg -> C0 "Neg")
+  Variant
+    (function Pos -> C0 "Pos" | Neg -> C0 "Neg" | Bivariant -> C0 "Bivariant")
 
 and typedecl_param_desc =
   let open Lang.TypeDecl in
@@ -628,7 +629,7 @@ and typeexpr_t =
           ( "Arrow",
             (x1, x2, x3),
             Triple (Option typeexpr_label, typeexpr_t, typeexpr_t) )
-    | Tuple x -> C ("Tuple", x, List typeexpr_t)
+    | Tuple x -> C ("Tuple", x, List (Pair (Option string, typeexpr_t)))
     | Constr (x1, x2) ->
         C ("Constr", ((x1 :> Paths.Path.t), x2), Pair (path, List typeexpr_t))
     | Polymorphic_variant x ->
