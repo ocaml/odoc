@@ -214,7 +214,9 @@ can use explicitly-delimited lists\.
 .in 
 .sp 
 .fi 
-The parser supports any ASCII-compatible encoding, in particuλar UTF-8\.
+The parser supports any ASCII-compatible encoding\.
+.sp 
+In particuλar UTF-8\.
 .nf 
 .sp 
 .in 3

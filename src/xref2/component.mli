@@ -117,7 +117,7 @@ and TypeExpr : sig
     | Any
     | Alias of t * string
     | Arrow of label option * t * t
-    | Tuple of t list
+    | Tuple of (string option * t) list
     | Constr of Cpath.type_ * t list
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t

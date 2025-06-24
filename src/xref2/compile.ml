@@ -903,7 +903,9 @@ and type_expression : Env.t -> Id.LabelParent.t -> _ -> _ =
   | Var _ | Any -> texpr
   | Alias (t, str) -> Alias (type_expression env parent t, str)
   | Arrow (lbl, t1, t2) -> handle_arrow env parent lbl t1 t2
-  | Tuple ts -> Tuple (List.map (type_expression env parent) ts)
+  | Tuple ts ->
+      Tuple
+        (List.map (fun (lbl, ty) -> (lbl, type_expression env parent ty)) ts)
   | Constr (path, ts') -> (
       let cp = Component.Of_Lang.(type_path (empty ()) path) in
       let ts = List.map (type_expression env parent) ts' in

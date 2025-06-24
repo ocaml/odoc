@@ -33,7 +33,9 @@ module Analysis = struct
               match maybe_localvalue id loc.loc with
               | Some x -> poses := x :: !poses
               | None -> ())
-#if OCAML_VERSION >= (5, 2, 0)
+#if OCAML_VERSION >= (5, 4, 0)
+          | Tpat_alias (_, id, loc, _uid, _ty) -> (
+#elif OCAML_VERSION >= (5, 2, 0)
           | Tpat_alias (_, id, loc, _uid) -> (
 #else
           | Tpat_alias (_, id, loc) -> (

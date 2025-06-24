@@ -448,7 +448,13 @@ module Make (Syntax : SYNTAX) = struct
           let res =
             O.box_hv_no_indent
               (O.list lst ~sep:Syntax.Type.Tuple.element_separator
-                 ~f:(type_expr ~needs_parentheses:true))
+                 ~f:(fun (lbl, ty) ->
+                   match lbl with
+                   | None -> type_expr ~needs_parentheses:true ty
+                   | Some lbl ->
+                       tag "label" (O.txt lbl)
+                       ++ O.txt ":" ++ O.cut
+                       ++ type_expr ~needs_parentheses:true ty))
           in
           if Syntax.Type.Tuple.always_parenthesize || needs_parentheses then
             enclose ~l:"(" res ~r:")"
@@ -772,6 +778,7 @@ module Make (Syntax : SYNTAX) = struct
           | None -> desc
           | Some Odoc_model.Lang.TypeDecl.Pos -> "+" :: desc
           | Some Odoc_model.Lang.TypeDecl.Neg -> "-" :: desc
+          | Some Odoc_model.Lang.TypeDecl.Bivariant -> "+" :: "-" :: desc
         in
         let final = if injectivity then "!" :: var_desc else var_desc in
         String.concat ~sep:"" final

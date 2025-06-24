@@ -140,7 +140,9 @@ v}
 
     {1 Unicode}
 
-    The parser supports any ASCII-compatible encoding, in particuλar UTF-8.
+    The parser supports any ASCII-compatible encoding.
+
+    In particuλar UTF-8.
 
 
     {1 Raw HTML}

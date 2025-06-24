@@ -122,7 +122,7 @@ and TypeExpr : sig
     | Any
     | Alias of t * string
     | Arrow of label option * t * t
-    | Tuple of t list
+    | Tuple of (string option * t) list
     | Constr of Cpath.type_ * t list
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
@@ -1010,7 +1010,7 @@ module Fmt = struct
   and type_decl_constructor_arg c ppf =
     let open TypeDecl.Constructor in
     function
-    | Tuple ts -> type_tuple c ppf ts
+    | Tuple ts -> type_constructor_params c ppf ts
     | Record fs -> type_decl_fields c ppf fs
 
   and type_decl_field c ppf t =
@@ -1021,13 +1021,18 @@ module Fmt = struct
   and type_decl_fields c ppf fs =
     fpp_list "; " "{ %a }" (type_decl_field c) ppf fs
 
-  and type_tuple c ppf ts = fpp_list " * " "%a" (type_expr c) ppf ts
+  and type_constructor_params c ppf ts =
+    fpp_list " * " "%a" (type_expr c) ppf ts
 
   and type_param ppf t =
     let desc =
       match t.Odoc_model.Lang.TypeDecl.desc with Any -> "_" | Var n -> n
     and variance =
-      match t.variance with Some Pos -> "+" | Some Neg -> "-" | None -> ""
+      match t.variance with
+      | Some Pos -> "+"
+      | Some Neg -> "-"
+      | Some Bivariant -> "+-"
+      | None -> ""
     and injectivity = if t.injectivity then "!" else "" in
     Format.fprintf ppf "%s%s%s" variance injectivity desc
 
@@ -1086,6 +1091,18 @@ module Fmt = struct
         Format.fprintf ppf "%a * %a" (type_expr c) t (type_expr_list c) ts
     | [] -> ()
 
+  and type_labeled_tuple c ppf l =
+    match l with
+    | [ t ] -> with_label c ppf t
+    | t :: ts ->
+        Format.fprintf ppf "%a * %a" (with_label c) t (type_labeled_tuple c) ts
+    | [] -> ()
+
+  and with_label c ppf (l, ty) =
+    match l with
+    | None -> type_expr c ppf ty
+    | Some lbl -> Format.fprintf ppf "%s:%a" lbl (type_expr c) ty
+
   and type_object _c ppf _o = Format.fprintf ppf "(object)"
 
   and type_class c ppf (x, ys) =
@@ -1121,7 +1138,7 @@ module Fmt = struct
     | Arrow (l, t1, t2) ->
         Format.fprintf ppf "%a(%a) -> %a" type_expr_label l (type_expr c) t1
           (type_expr c) t2
-    | Tuple ts -> Format.fprintf ppf "(%a)" (type_expr_list c) ts
+    | Tuple ts -> Format.fprintf ppf "(%a)" (type_labeled_tuple c) ts
     | Constr (p, args) -> (
         match args with
         | [] -> Format.fprintf ppf "%a" (type_path c) p
@@ -2244,7 +2261,9 @@ module Of_Lang = struct
         Constr (type_path ident_map p, List.map (type_expression ident_map) xs)
     | Arrow (lbl, t1, t2) ->
         Arrow (lbl, type_expression ident_map t1, type_expression ident_map t2)
-    | Tuple ts -> Tuple (List.map (type_expression ident_map) ts)
+    | Tuple ts ->
+        Tuple
+          (List.map (fun (lbl, ty) -> (lbl, type_expression ident_map ty)) ts)
     | Polymorphic_variant v ->
         Polymorphic_variant (type_expr_polyvar ident_map v)
     | Poly (s, ts) -> Poly (s, type_expression ident_map ts)

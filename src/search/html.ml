@@ -35,7 +35,8 @@ let display_constructor_args args =
   match args with
   | TypeDecl.Constructor.Tuple args ->
       (match args with
-      | _ :: _ :: _ -> Some TypeExpr.(Tuple args)
+      | _ :: _ :: _ ->
+          Some TypeExpr.(Tuple (List.map (fun x -> (None, x)) args))
       | [ arg ] -> Some arg
       | _ -> None)
       |> map_option Text.of_type
@@ -63,6 +64,7 @@ let typedecl_params ?(delim = `parens) params =
       | None -> desc
       | Some TypeDecl.Pos -> "+" :: desc
       | Some TypeDecl.Neg -> "-" :: desc
+      | Some TypeDecl.Bivariant -> "+" :: "-" :: desc
     in
     let final = if injectivity then "!" :: var_desc else var_desc in
     String.concat "" final

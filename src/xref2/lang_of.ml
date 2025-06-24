@@ -990,7 +990,8 @@ and type_expr map (parent : Identifier.LabelParent.t) (t : Component.TypeExpr.t)
     | Alias (t, str) -> Alias (type_expr map parent t, str)
     | Arrow (lbl, t1, t2) ->
         Arrow (lbl, type_expr map parent t1, type_expr map parent t2)
-    | Tuple ts -> Tuple (List.map (type_expr map parent) ts)
+    | Tuple ts ->
+        Tuple (List.map (fun (lbl, ty) -> (lbl, type_expr map parent ty)) ts)
     | Constr (path, ts) ->
         Constr
           ( (Path.type_ map path :> Paths.Path.Type.t),
