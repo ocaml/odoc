@@ -467,7 +467,7 @@ let rec read_type_expr env typ =
           let res = read_type_expr env res in
             Arrow(lbl, arg, res)
       | Ttuple typs ->
-          let typs = List.map (read_type_expr env) typs in
+          let typs = List.map (fun x -> None, read_type_expr env x) typs in
             Tuple typs
       | Tconstr(p, params, _) ->
           let p = Env.Path.read_type env.ident_env p in

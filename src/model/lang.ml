@@ -231,7 +231,7 @@ and TypeDecl : sig
       | Extensible
   end
 
-  type variance = Pos | Neg
+  type variance = Pos | Neg | Bivariant
 
   type param_desc = Any | Var of string
 
@@ -439,7 +439,7 @@ and TypeExpr : sig
     | Any
     | Alias of t * string
     | Arrow of label option * t * t
-    | Tuple of t list
+    | Tuple of (string option * t) list
     | Constr of Path.Type.t * t list
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
