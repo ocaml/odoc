@@ -308,8 +308,10 @@ let rec read_pattern hide_item pat =
     [`Value(id, hide_item, Some loc.loc)]
 #if OCAML_VERSION < (5,2,0)
   | Tpat_alias(pat, id, loc) ->
-#else
+#elif OCAML_VERSION < (5,4,0)
   | Tpat_alias(pat, id, loc, _) ->
+#else
+  | Tpat_alias(pat, id, loc, _, _) ->
 #endif
     `Value(id, hide_item, Some loc.loc) :: read_pattern hide_item pat
   | Tpat_record(pats, _) -> 
@@ -319,8 +321,19 @@ let rec read_pattern hide_item pat =
 #else
   | Tpat_construct(_, _, pats, _)
 #endif
-  | Tpat_array pats
-  | Tpat_tuple pats -> List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
+#if OCAML_VERSION < (5,4,0)
+  | Tpat_array pats ->
+    List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
+#else
+  | Tpat_array (_,pats) ->
+    List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
+#endif
+  | Tpat_tuple pats ->
+#if OCAML_VERSION < (5,4,0)
+     List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
+#else
+     List.concat (List.map (fun (_lbl,pat) -> read_pattern hide_item pat) pats)
+#endif
   | Tpat_or(pat, _, _)
   | Tpat_variant(_, Some pat, _)
   | Tpat_lazy pat -> read_pattern hide_item pat
@@ -782,19 +795,22 @@ end
 
 module Fragment = struct
 
-  let rec read_module : Longident.t -> Paths.Fragment.Module.t = function
-    | Longident.Lident s -> `Dot(`Root, s)
-    | Longident.Ldot(p, s) -> `Dot((read_module p :> Paths.Fragment.Signature.t), s)
-    | Longident.Lapply _ -> assert false
+  let lmap read_module = function
+    | Longident.Lident s -> `Dot (`Root, s)
+#if OCAML_VERSION >= (5,4,0)
+    | Longident.Ldot (p,s) -> `Dot (read_module p.txt, s.txt)
+#else
+    | Longident.Ldot (p,s) -> `Dot (read_module p, s)
+#endif
+    | _ -> assert false
 
-  let read_module_type : Longident.t -> Paths.Fragment.ModuleType.t = function
-    | Longident.Lident s -> `Dot(`Root, s)
-    | Longident.Ldot(p, s) -> `Dot((read_module p :> Paths.Fragment.Signature.t), s)
-    | Longident.Lapply _ -> assert false
 
-  let read_type = function
-    | Longident.Lident s -> `Dot(`Root, s)
-    | Longident.Ldot(p, s) -> `Dot((read_module p :> Paths.Fragment.Signature.t), s)
-    | Longident.Lapply _ -> assert false
+  let rec read_module : Longident.t -> Paths.Fragment.Module.t =
+    fun l -> lmap (fun p -> (read_module p :> Paths.Fragment.Signature.t)) l
+
+  let read_module_type : Longident.t -> Paths.Fragment.ModuleType.t =
+    lmap (fun p -> (read_module p:>Paths.Fragment.Signature.t ))
+
+  let read_type = lmap (fun p -> (read_module p:> Paths.Fragment.Signature.t))
 
 end

@@ -52,8 +52,10 @@ let rec read_pattern env parent doc pat =
           [Value {id; source_loc; doc; type_; value}]
 #if OCAML_VERSION < (5,2, 0)
     | Tpat_alias(pat, id, _) ->
-#else
+#elif OCAML_VERSION < (5,4,0)
     | Tpat_alias(pat, id, _,_) ->
+#else
+    | Tpat_alias(pat, id,_,_,_) ->
 #endif
         let open Value in
         let id = Env.find_value_identifier env.ident_env id in
@@ -63,7 +65,10 @@ let rec read_pattern env parent doc pat =
           Value {id; source_loc; doc; type_; value} :: read_pattern env parent doc pat
     | Tpat_constant _ -> []
     | Tpat_tuple pats ->
-        List.concat (List.map (read_pattern env parent doc) pats)
+#if OCAML_VERSION >= (5, 4, 0)
+      let pats = List.map snd pats (* remove labels *) in
+#endif
+      List.concat (List.map (read_pattern env parent doc) pats)
 #if OCAML_VERSION < (4, 13, 0)
     | Tpat_construct(_, _, pats) ->
 #else
@@ -78,7 +83,11 @@ let rec read_pattern env parent doc pat =
           (List.map
              (fun (_, _, pat) -> read_pattern env parent doc pat)
           pats)
+#if OCAML_VERSION < (5, 4, 0)
     | Tpat_array pats ->
+#else
+    | Tpat_array (_, pats) ->
+#endif
         List.concat (List.map (read_pattern env parent doc) pats)
     | Tpat_or(pat, _, _) ->
         read_pattern env parent doc pat
