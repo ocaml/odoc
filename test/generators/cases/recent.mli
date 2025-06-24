@@ -58,3 +58,6 @@ module type PolyS = sig
   type t = [ a | `B ]
 end
 with type a := [ `A ]
+
+type +-'a phantom
+val f: (x:int * y:int) phantom -> unit
