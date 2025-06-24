@@ -49,7 +49,7 @@ let constraints =
     ("stop_dead_link_doc.mli", Min "4.04");
     ("bugs_post_406.mli", Min "4.06");
     ("ocamlary.mli", Min "4.14");
-    ("recent.mli", Min "4.09");
+    ("recent.mli", Min "5.4");
     ("labels.mli", Min "4.09");
     ("recent_impl.ml", Min "4.09");
     ("bugs_pre_410.ml", Max "4.09");
