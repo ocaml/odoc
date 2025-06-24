@@ -38,7 +38,6 @@
  (applies_to
   github_issue_587
   shadow
-  shadow2
   shadow4
   shadow5
   js_stack_overflow
@@ -47,6 +46,13 @@
   include_module_type_of_preamble)
  (enabled_if
   (>= %{ocaml_version} 4.08.0)))
+
+; 4.09.0 and above
+
+(cram
+ (applies_to shadow2)
+ (enabled_if
+  (>= %{ocaml_version} 4.13.0)))
 
 ; 4.13.0 and above
 
