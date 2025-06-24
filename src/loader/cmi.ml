@@ -60,7 +60,11 @@ module Compat = struct
   let concr_mem = Types.Meths.mem
   let csig_concr x = x.Types.csig_meths
   let eq_type = Types.eq_type
+#if OCAML_VERSION >= (5,4,0)
+  let invisible_wrap ty = newty2 ~level:Btype.generic_level (Ttuple [None,ty])
+#else
   let invisible_wrap ty = newty2 ~level:Btype.generic_level (Ttuple [ty])
+#endif
 #else
   type repr_type_node = Types.type_expr
   let repr = Btype.repr
@@ -234,7 +238,11 @@ let mark_type ty =
       | Tarrow(_, ty1, ty2, _) ->
           loop visited ty1;
           loop visited ty2
+#if OCAML_VERSION >= (5,4,0)
+      | Ttuple tyl -> List.iter (fun (_lbl,x) -> loop visited x) tyl
+#else
       | Ttuple tyl -> List.iter (loop visited) tyl
+#endif
       | Tconstr(_, tyl, _) ->
           List.iter (loop visited) tyl
       | Tvariant row ->
@@ -272,7 +280,10 @@ let mark_type ty =
           List.iter (fun t -> add_alias t) tyl;
           loop visited ty
       | Tunivar name -> reserve_name name
-#if OCAML_VERSION>=(4,13,0)
+#if OCAML_VERSION>=(5,4,0)
+      | Tpackage p ->
+          List.iter (fun (_,x) -> loop visited x) p.pack_cstrs
+#elif OCAML_VERSION>=(4,13,0)
       | Tpackage(_,tyl) ->
           List.iter (fun (_,x) -> loop visited x) tyl
 #else
@@ -467,8 +478,12 @@ let rec read_type_expr env typ =
           let res = read_type_expr env res in
             Arrow(lbl, arg, res)
       | Ttuple typs ->
+#if OCAML_VERSION >= (5,4,0)
+          let typs = List.map (fun (lbl,x) -> lbl, read_type_expr env x) typs in
+#else
           let typs = List.map (fun x -> None, read_type_expr env x) typs in
-            Tuple typs
+#endif
+          Tuple typs
       | Tconstr(p, params, _) ->
           let p = Env.Path.read_type env.ident_env p in
           let params = List.map (read_type_expr env) params in
@@ -484,7 +499,10 @@ let rec read_type_expr env typ =
             remove_names tyl;
             Poly(vars, typ)
       | Tunivar _ -> Var (name_of_type typ)
-#if OCAML_VERSION>=(4,13,0)
+#if OCAML_VERSION>=(5,4,0)
+      | Tpackage {pack_path=p; pack_cstrs } ->
+        let eqs = List.filter_map (fun (l,ty) -> Option.map (fun x -> x, ty) (Longident.unflatten l)) pack_cstrs in
+#elif OCAML_VERSION>=(4,13,0)
       | Tpackage(p,eqs) ->
 #else
       | Tpackage(p, frags, tyl) ->

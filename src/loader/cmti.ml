@@ -64,8 +64,12 @@ let rec read_core_type env container ctyp =
         let res = read_core_type env container res in
           Arrow(lbl, arg, res)
     | Ttyp_tuple typs ->
+#if OCAML_VERSION >= (5,4,0)
+        let typs = List.map (fun (lbl,x) -> lbl, read_core_type env container x) typs in
+#else
         let typs = List.map (fun x -> None, read_core_type env container x) typs in
-          Tuple typs
+#endif
+        Tuple typs
     | Ttyp_constr(p, _, params) ->
         let p = Env.Path.read_type env.ident_env p in
         let params = List.map (read_core_type env container) params in
@@ -139,7 +143,11 @@ let rec read_core_type env container ctyp =
           Polymorphic_variant {kind; elements}
     | Ttyp_poly([], typ) -> read_core_type env container typ
     | Ttyp_poly(vars, typ) -> Poly(vars, read_core_type env container typ)
+#if OCAML_VERSION >= (5,4,0)
+    | Ttyp_package {tpt_path = pack_path; tpt_cstrs=pack_fields; _} ->
+#else
     | Ttyp_package {pack_path; pack_fields; _} ->
+#endif
         let open TypeExpr.Package in
         let path = Env.Path.read_module_type env.ident_env pack_path in
         let substitutions =
@@ -194,6 +202,9 @@ let read_type_parameter (ctyp, var_and_injectivity)  =
       match fst var_and_injectivity with
       | Covariant -> Some Pos
       | Contravariant -> Some Neg
+#if OCAML_VERSION >= (5,4,0)
+      | Bivariant -> Some Bivariant
+#endif
       | NoVariance -> None in
     let injectivity = match snd var_and_injectivity with
       | Injective -> true
