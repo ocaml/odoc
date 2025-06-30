@@ -2,6 +2,7 @@
 
 ### Added
 - Exposed sherlodoc libraries for use in other projects (@jonludlam, #1349)
+- OCaml 5.4.0 support (@Octachron, #1355)
 
 ### Changed
 - Remove cmdliner compatibility layer, no longer needed (@dbuenzli, #1328)
@@ -11,8 +12,6 @@
 
 ### Fixed
 - Fix bug in parsing META files when there are no dependencies (@jonludlam, #1352)
-- OCaml 5.4.0 support
-  (@Octachron, #???)
 
 # 3.0.0
 
