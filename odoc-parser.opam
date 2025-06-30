@@ -15,7 +15,7 @@ doc: "https://ocaml.github.io/odoc/odoc_parser"
 flags: [ avoid-version ]
 depends: [
   "dune" {>= "3.7"}
-  "ocaml" {>= "4.08.0" & < "5.4"}
+  "ocaml" {>= "4.08.0" & < "5.5"}
   "astring"
   "camlp-streams"
   "ppx_expect" {with-test}
