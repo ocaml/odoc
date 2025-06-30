@@ -243,7 +243,7 @@ let image_to_inline_element ~locator defs i m (is, warns) =
             alt;
             {|" title="|};
             title;
-            {|" >"|};
+            {|" >|};
           ]
       in
       (Loc.at loc (`Raw_markup (Some "html", img)) :: is, warns)
