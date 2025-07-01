@@ -1412,9 +1412,10 @@
      <code>
       <span><span class="keyword">type</span> <span>'a poly_fun</span></span>
       <span> = 
-       <span><span>[&gt; <span>`ConstrB of int</span> ]</span> 
-        <span class="keyword">as</span> 'a 
-        <span class="arrow">&#45;&gt;</span>
+       <span>
+        <span>(<span>[&gt; <span>`ConstrB of int</span> ]</span> 
+         <span class="keyword">as</span> 'a)
+        </span> <span class="arrow">&#45;&gt;</span>
        </span> <span class="type-var">'a</span>
       </span>
      </code>
@@ -1746,9 +1747,10 @@
      <a href="#type-oof" class="anchor"></a>
      <code><span><span class="keyword">type</span> <span>'a oof</span></span>
       <span> = 
-       <span><span>&lt; a : unit.. &gt;</span> 
-        <span class="keyword">as</span> 'a 
-        <span class="arrow">&#45;&gt;</span>
+       <span>
+        <span>(<span>&lt; a : unit.. &gt;</span> 
+         <span class="keyword">as</span> 'a)
+        </span> <span class="arrow">&#45;&gt;</span>
        </span> <span class="type-var">'a</span>
       </span>
      </code>

@@ -497,7 +497,7 @@ After exception title.
 \label{Ocamlary-type-open_poly_variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a open\_\allowbreak{}poly\_\allowbreak{}variant = [> `TagA ] \ocamltag{keyword}{as} 'a}\\
 \label{Ocamlary-type-open_poly_variant2}\ocamlcodefragment{\ocamltag{keyword}{type} 'a open\_\allowbreak{}poly\_\allowbreak{}variant2 = [> `ConstrB of int ] \ocamltag{keyword}{as} 'a}\\
 \label{Ocamlary-type-open_poly_variant_alias}\ocamlcodefragment{\ocamltag{keyword}{type} 'a open\_\allowbreak{}poly\_\allowbreak{}variant\_\allowbreak{}alias = \ocamltag{type-var}{'a} \hyperref[Ocamlary-type-open_poly_variant]{\ocamlinlinecode{open\_\allowbreak{}poly\_\allowbreak{}variant}} \hyperref[Ocamlary-type-open_poly_variant2]{\ocamlinlinecode{open\_\allowbreak{}poly\_\allowbreak{}variant2}}}\\
-\label{Ocamlary-type-poly_fun}\ocamlcodefragment{\ocamltag{keyword}{type} 'a poly\_\allowbreak{}fun = [> `ConstrB of int ] \ocamltag{keyword}{as} 'a \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\\
+\label{Ocamlary-type-poly_fun}\ocamlcodefragment{\ocamltag{keyword}{type} 'a poly\_\allowbreak{}fun = ([> `ConstrB of int ] \ocamltag{keyword}{as} 'a) \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\\
 \label{Ocamlary-type-poly_fun_constraint}\ocamlcodefragment{\ocamltag{keyword}{type} 'a poly\_\allowbreak{}fun\_\allowbreak{}constraint = \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = [> `TagA ]}\\
 \label{Ocamlary-type-closed_poly_variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a closed\_\allowbreak{}poly\_\allowbreak{}variant = [< `One | `Two ] \ocamltag{keyword}{as} 'a}\\
 \label{Ocamlary-type-clopen_poly_variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a clopen\_\allowbreak{}poly\_\allowbreak{}variant = [< `One | `Two of int | `Three Two Three ] \ocamltag{keyword}{as} 'a}\\
@@ -544,7 +544,7 @@ After exception title.
 \medbreak
 \label{Ocamlary-type-rec_obj}\ocamlcodefragment{\ocamltag{keyword}{type} rec\_\allowbreak{}obj = < f : int ;\allowbreak{} g : unit \ocamltag{arrow}{$\rightarrow$} unit ;\allowbreak{} h : \hyperref[Ocamlary-type-rec_obj]{\ocamlinlinecode{rec\_\allowbreak{}obj}} >}\\
 \label{Ocamlary-type-open_obj}\ocamlcodefragment{\ocamltag{keyword}{type} 'a open\_\allowbreak{}obj = < f : int ;\allowbreak{} g : unit \ocamltag{arrow}{$\rightarrow$} unit.\allowbreak{}.\allowbreak{} > \ocamltag{keyword}{as} 'a}\\
-\label{Ocamlary-type-oof}\ocamlcodefragment{\ocamltag{keyword}{type} 'a oof = < a : unit.\allowbreak{}.\allowbreak{} > \ocamltag{keyword}{as} 'a \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\\
+\label{Ocamlary-type-oof}\ocamlcodefragment{\ocamltag{keyword}{type} 'a oof = (< a : unit.\allowbreak{}.\allowbreak{} > \ocamltag{keyword}{as} 'a) \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\\
 \label{Ocamlary-type-any_obj}\ocamlcodefragment{\ocamltag{keyword}{type} 'a any\_\allowbreak{}obj = < .\allowbreak{}.\allowbreak{} > \ocamltag{keyword}{as} 'a}\\
 \label{Ocamlary-type-empty_obj}\ocamlcodefragment{\ocamltag{keyword}{type} empty\_\allowbreak{}obj = <  >}\\
 \label{Ocamlary-type-one_meth}\ocamlcodefragment{\ocamltag{keyword}{type} one\_\allowbreak{}meth = < meth : unit >}\\
