@@ -409,12 +409,16 @@ module Make (Syntax : SYNTAX) = struct
 
     and type_expr ?(needs_parentheses = false) (t : Odoc_model.Lang.TypeExpr.t)
         =
+      let enclose_parens_if_needed res =
+        if needs_parentheses then enclose ~l:"(" res ~r:")" else res
+      in
       match t with
       | Var s -> type_var (Syntax.Type.var_prefix ^ s)
       | Any -> type_var Syntax.Type.any
       | Alias (te, alias) ->
-          type_expr ~needs_parentheses:true te
-          ++ O.txt " " ++ O.keyword "as" ++ O.txt " '" ++ O.txt alias
+          enclose_parens_if_needed
+            (type_expr ~needs_parentheses:true te
+            ++ O.txt " " ++ O.keyword "as" ++ O.txt " '" ++ O.txt alias)
       | Arrow (None, src, dst) ->
           let res =
             O.span

@@ -232,7 +232,7 @@ e : 'a\. \f[CB]'a\fR;
 .sp 
 \f[CB]type\fR ('a, 'b) double_constrained = \f[CB]'a\fR * \f[CB]'b\fR \f[CB]constraint\fR \f[CB]'a\fR = int \f[CB]constraint\fR \f[CB]'b\fR = unit
 .sp 
-\f[CB]type\fR as_ = int \f[CB]as\fR 'a * \f[CB]'a\fR
+\f[CB]type\fR as_ = (int \f[CB]as\fR 'a) * \f[CB]'a\fR
 .sp 
 \f[CB]type\fR extensible = \.\.
 .sp 
@@ -265,4 +265,4 @@ e : 'a\. \f[CB]'a\fR;
 .sp 
 \f[CB]exception\fR \f[CB]Foo\fR \f[CB]of\fR int * int
 .sp 
-\f[CB]type\fR 'a t = [ `A ] \f[CB]as\fR 'a option
+\f[CB]type\fR 'a t = ([ `A ] \f[CB]as\fR 'a) option
