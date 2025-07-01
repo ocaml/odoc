@@ -264,3 +264,5 @@ e : 'a\. \f[CB]'a\fR;
 .br 
 .sp 
 \f[CB]exception\fR \f[CB]Foo\fR \f[CB]of\fR int * int
+.sp 
+\f[CB]type\fR 'a t = [ `A ] \f[CB]as\fR 'a option

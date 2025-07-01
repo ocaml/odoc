@@ -136,3 +136,5 @@ and recursive = B of mutually
 
 (* Not a type, but analogous to extensions. *)
 exception Foo of int * int
+
+type 'a t = ([ `A ] as 'a) option
