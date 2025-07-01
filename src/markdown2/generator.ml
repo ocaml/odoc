@@ -256,11 +256,13 @@ and items ~config ~resolve l : Renderer.Block.t list =
           anchor = _anchor;
           source_anchor = _source_anchor;
           doc;
-          content = { summary = _summary; status = _status; content = _content };
+          content = { summary = _summary; status = _status; content };
         }
       :: rest ->
-        let content = block ~config ~resolve doc in
-        (continue_with [@tailcall]) rest content
+        let doc_content = block ~config ~resolve doc in
+        let included_content = walk_items [] content in
+        let all_content = doc_content @ included_content in
+        (continue_with [@tailcall]) rest all_content
     | Declaration
         {
           attr = _attr;
