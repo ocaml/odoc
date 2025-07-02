@@ -13,3 +13,11 @@ module List : sig
   val head : 'a t -> 'a option
   val headExn : 'a t -> 'a
 end
+
+module type X = sig
+  type t = int
+end
+
+module type T = sig
+  include X
+end

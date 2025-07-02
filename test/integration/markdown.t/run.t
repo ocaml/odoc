@@ -53,6 +53,12 @@
   ```
   module List : sig ... end
   ```
+  ```
+  module type X = sig ... end
+  ```
+  ```
+  module type T = sig ... end
+  ```
 
   $ cat markdown/test/Test-List.md
   
