@@ -60,6 +60,18 @@
   module type T = sig ... end
   ```
 
+  $ cat markdown/test/Test-module-type-X.md
+  
+  # Module type `Test.X`
+  
+  ```
+  type t = int
+  ```
+
+  $ cat markdown/test/Test-module-type-T.md
+  
+  # Module type `Test.T`
+
   $ cat markdown/test/Test-List.md
   
   # Module `Test.List`
