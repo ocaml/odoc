@@ -1,0 +1,2 @@
+
+# Module type `Recent.S`
