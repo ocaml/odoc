@@ -71,6 +71,10 @@
   $ cat markdown/test/Test-module-type-T.md
   
   # Module type `Test.T`
+  
+  ```
+  type t = int
+  ```
 
   $ cat markdown/test/Test-List.md
   
