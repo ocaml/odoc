@@ -9,6 +9,7 @@
 - Drop support for OCaml < 4.08 (@jonludlam, #1300)
 - Allow referencing libraries from package added in `odoc-config.sexp`
   (@panglesd, #1343)
+- Use full path in heading labels in LaTeX backend (@octachron, #1332)
 
 ### Fixed
 - Fix bug in parsing META files when there are no dependencies (@jonludlam, #1352)
