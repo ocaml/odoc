@@ -3,6 +3,8 @@
 ### Added
 - Exposed sherlodoc libraries for use in other projects (@jonludlam, #1349)
 - OCaml 5.4.0 support (@Octachron, #1355)
+- New arguments to LaTeX generator, --shorten-beyond-depth and
+  --remove-functor-arg-link (@Octachron, #1337)
 
 ### Changed
 - Remove cmdliner compatibility layer, no longer needed (@dbuenzli, #1328)
@@ -10,6 +12,8 @@
 - Allow referencing libraries from package added in `odoc-config.sexp`
   (@panglesd, #1343)
 - Use full path in heading labels in LaTeX backend (@octachron, #1332)
+- Separate page from anchor in LaTeX labels to prevent collisions (@Octachron,
+  #1337)
 
 ### Fixed
 - Fix bug in parsing META files when there are no dependencies (@jonludlam, #1352)
