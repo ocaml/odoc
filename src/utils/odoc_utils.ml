@@ -68,4 +68,9 @@ module Io_utils = struct
   let unmarshal fname = with_open_in_bin fname Marshal.from_channel
 end
 
+module Int = struct
+  include Int
+  let max x y : t = if x >= y then x else y
+end
+
 include Astring

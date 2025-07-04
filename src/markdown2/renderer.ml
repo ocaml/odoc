@@ -49,6 +49,8 @@ module Inline = struct
 end
 
 module Block = struct
+  open Odoc_utils (* For Int.max *)
+
   type code_block = { info_string : string option; code : string list }
   type list_type = Unordered | Ordered
 
