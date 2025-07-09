@@ -20,6 +20,7 @@
 - Fix bug in parsing META files when there are no dependencies (@jonludlam, #1352)
 - Fix #1335 - incorrect rendering when on medium screen size with no global
   sidebar (@lukemaurer, #1361)
+- Fixed generation of occurrences for docs CI (@jonludlam, #1362)
 
 # 3.0.0
 
