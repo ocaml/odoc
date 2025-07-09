@@ -7,6 +7,9 @@ module X : sig ... end
 Comment about X that should not appear when including X below.
 
 ```
+type t = int
+```
+```
 module Y : sig ... end
 ```
 Top-comment of Y.

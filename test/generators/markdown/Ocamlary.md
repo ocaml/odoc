@@ -320,6 +320,12 @@ This comment is for `IncludeModuleType`.
 ```
 module type ToInclude = sig ... end
 ```
+```
+module IncludedA : sig ... end
+```
+```
+module type IncludedB = sig ... end
+```
 
 #### Advanced Type Stuff
 
@@ -888,13 +894,31 @@ module type With11 = With7(With10).T with module M = With9 and type N.t = int
 module type NestedInclude1 = sig ... end
 ```
 ```
+module type NestedInclude2 = sig ... end
+```
+```
+type nested_include = int
+```
+```
 module DoubleInclude1 : sig ... end
 ```
 ```
 module DoubleInclude3 : sig ... end
 ```
 ```
+type double_include
+```
+```
 module IncludeInclude1 : sig ... end
+```
+```
+module type IncludeInclude2 = sig ... end
+```
+```
+module IncludeInclude2_M : sig ... end
+```
+```
+type include_include
 ```
 
 ## Trying the {!modules: ...} command.

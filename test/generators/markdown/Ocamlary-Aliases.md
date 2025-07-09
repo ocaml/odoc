@@ -36,6 +36,21 @@ type stde = Std.E.t
 Just for giggle, let's see what happens when we include [`Foo`](./Ocamlary-Aliases-Foo.md).
 
 ```
+module A = Foo.A
+```
+```
+module B = Foo.B
+```
+```
+module C = Foo.C
+```
+```
+module D = Foo.D
+```
+```
+module E : sig ... end
+```
+```
 type testa = A.t
 ```
 And also, let's refer to [`A.t`](./Ocamlary-Aliases-Foo-A.md#type-t) and [`Foo.B.id`](./Ocamlary-Aliases-Foo-B.md#val-id)
