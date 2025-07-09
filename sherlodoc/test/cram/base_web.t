@@ -1,4 +1,4 @@
-  $ ODOCLS=$(find ../docs/odoc/base/ -name '*.odocl' | grep -v "__" | sort)
+  $ ODOCLS=$(find ../docs/odoc/tyxml/ -name '*.odocl' | grep -v "__" | sort)
   $ cat $ODOCLS > megaodocl
 $ du -sh megaodocl
 13M	megaodocl
@@ -37,4 +37,4 @@ $ du -sh html/sherlodoc.js
   sherlodoc.js
 indent to see results
 $ cp -r html /tmp
-$ firefox /tmp/html/base/index.html
+$ firefox /tmp/html/tyxml/index.html
