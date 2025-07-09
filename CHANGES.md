@@ -5,6 +5,7 @@
 - OCaml 5.4.0 support (@Octachron, #1355)
 - New arguments to LaTeX generator, --shorten-beyond-depth and
   --remove-functor-arg-link (@Octachron, #1337)
+- New experimental markdown generator (@davesnx, #1341)
 
 ### Changed
 - Remove cmdliner compatibility layer, no longer needed (@dbuenzli, #1328)
