@@ -25,7 +25,6 @@ depends: [
   "tyxml" {>= "4.6.0"}
   "result" {>= "1.5"}
   "odig" {with-test}
-  "base" {with-test & = "v0.16.3"}
   "alcotest" {with-test}
 ]
 depopts: [

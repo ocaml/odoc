@@ -1,4 +1,4 @@
-  $ export ODOCLS=$(find ../docs/odoc/base/ -name '*.odocl')
+  $ export ODOCLS=$(find ../docs/odoc/tyxml/ -name '*.odocl')
   $ cat $ODOCLS > megaodocl
 $ du -sh megaodocl
 5.4M	megaodocl
@@ -33,4 +33,4 @@ a previous run. .js files built by dune are read only.
   sherlodoc.js
 indent to see results
 $ cp -r html /tmp
-$ firefox /tmp/html/base/index.html
+$ firefox /tmp/html/tyxml/index.html
