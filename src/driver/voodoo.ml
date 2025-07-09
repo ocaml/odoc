@@ -258,8 +258,7 @@ let find_pkg pkg_name ~blessed =
       in
       let packages = List.filter_map (fun x -> x) (last :: packages) in
       match packages with
-      | [ package ] ->
-          Some package
+      | [ package ] -> Some package
       | [] ->
           Logs.err (fun m -> m "No package found for %s" pkg_name);
           None
