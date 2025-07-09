@@ -67,7 +67,7 @@ let metas_of_pkg pkg =
       filename = "META")
     pkg.files
 
-let process_package pkg =
+let of_voodoo pkg =
   let metas = metas_of_pkg pkg in
 
   let pkg_path =
@@ -221,7 +221,7 @@ let pp ppf v =
 
 let () = ignore pp
 
-let of_voodoo pkg_name ~blessed =
+let find_pkg pkg_name ~blessed =
   let contents =
     Bos.OS.Dir.fold_contents ~dotfiles:true
       (fun p acc -> p :: acc)
@@ -229,7 +229,7 @@ let of_voodoo pkg_name ~blessed =
       Fpath.(v !prep_path)
   in
   match contents with
-  | Error _ -> []
+  | Error _ -> None
   | Ok c -> (
       let sorted = List.sort (fun p1 p2 -> Fpath.compare p1 p2) c in
       let last, packages =
@@ -259,14 +259,17 @@ let of_voodoo pkg_name ~blessed =
       let packages = List.filter_map (fun x -> x) (last :: packages) in
       match packages with
       | [ package ] ->
-          let package = process_package package in
-          [ package ]
+          Some package
       | [] ->
           Logs.err (fun m -> m "No package found for %s" pkg_name);
-          []
+          None
       | _ ->
           Logs.err (fun m -> m "Multiple packages found for %s" pkg_name);
-          [])
+          None)
+
+let occurrence_file_of_pkg pkg =
+  let top_dir = top_dir pkg in
+  Fpath.(top_dir / "occurrences-all.odoc-occurrences")
 
 type extra_paths = {
   pkgs : Fpath.t Util.StringMap.t;
