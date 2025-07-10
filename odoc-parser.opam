@@ -12,7 +12,6 @@ homepage: "https://github.com/ocaml/odoc"
 bug-reports: "https://github.com/ocaml/odoc/issues"
 dev-repo: "git+https://github.com/ocaml/odoc.git"
 doc: "https://ocaml.github.io/odoc/odoc_parser"
-flags: [ avoid-version ]
 depends: [
   "dune" {>= "3.18"}
   "ocaml" {>= "4.08.0" & < "5.5"}
