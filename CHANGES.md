@@ -1,4 +1,4 @@
-# Unreleased
+# 3.1.0
 
 ### Added
 - Exposed sherlodoc libraries for use in other projects (@jonludlam, #1349)
