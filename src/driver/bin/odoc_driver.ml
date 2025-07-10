@@ -74,11 +74,28 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
         let linked =
           Compile.link ~warnings_tags:packages ~custom_layout:false compiled
         in
+        let odoc_dirs =
+          List.fold_left
+            (fun acc pkg ->
+              let lib_dirs =
+                List.map
+                  (fun l -> Fpath.(odocl_dir // Odoc_unit.lib_dir pkg l))
+                  pkg.libraries
+              in
+              Fpath.Set.union acc (Fpath.Set.of_list lib_dirs))
+            Fpath.Set.empty all
+        in
+
+        Logs.debug (fun m ->
+            m "odoc_dirs: %a" (Fmt.Dump.list Fpath.pp)
+              (Fpath.Set.to_list odoc_dirs));
         let occurrence_file =
           let output =
-            Fpath.( / ) odoc_dir "occurrences-all.odoc-occurrences"
+            Fpath.( / ) odocl_dir "occurrences-all.odoc-occurrences"
           in
-          let () = Odoc.count_occurrences ~input:[ odoc_dir ] ~output in
+          let () =
+            Odoc.count_occurrences ~input:(Fpath.Set.to_list odoc_dirs) ~output
+          in
           output
         in
         let () =

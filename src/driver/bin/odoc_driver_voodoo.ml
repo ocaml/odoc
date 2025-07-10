@@ -54,18 +54,24 @@ let run package_name blessed actions odoc_dir odocl_dir
   Logs.set_reporter (Logs_fmt.reporter ());
   Stats.init_nprocs nb_workers;
   let () = Worker_pool.start_workers env sw nb_workers in
+  let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
 
-  let all, extra_paths, actions, generate_json, occurrence_file =
+  let all, extra_paths, actions, generate_json, occurrence_file, odocl_dirs =
     let pkg =
       let pkg_opt = Voodoo.find_pkg package_name ~blessed in
       match pkg_opt with Some pkg -> pkg | None -> exit 1
     in
     let all = Voodoo.of_voodoo pkg in
+    let odocl_dirs =
+      List.map
+        (fun l -> Fpath.(odocl_dir // Odoc_unit.lib_dir all l))
+        all.libraries
+    in
     let occurrence_file =
-      Fpath.(odoc_dir // Voodoo.occurrence_file_of_pkg pkg)
+      Fpath.(odocl_dir // Voodoo.occurrence_file_of_pkg pkg)
     in
     let extra_paths = Voodoo.extra_paths odoc_dir in
-    (all, extra_paths, actions, true, occurrence_file)
+    (all, extra_paths, actions, true, occurrence_file, odocl_dirs)
   in
 
   let all = Packages.remap_virtual [ all ] in
@@ -78,10 +84,7 @@ let run package_name blessed actions odoc_dir odocl_dir
     | _ -> failwith "Error, expecting singleton library in voodoo mode"
   in
   let units =
-    let dirs =
-      let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
-      { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir }
-    in
+    let dirs = { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir } in
     Odoc_units_of.packages ~dirs ~indices_style:Voodoo ~extra_paths ~remap:false
       all
   in
@@ -101,7 +104,7 @@ let run package_name blessed actions odoc_dir odocl_dir
             compiled
         in
         let () =
-          Odoc.count_occurrences ~input:[ odoc_dir ] ~output:occurrence_file
+          Odoc.count_occurrences ~input:odocl_dirs ~output:occurrence_file
         in
         let () =
           Compile.html_generate ~occurrence_file ~remaps:[] ~generate_json
