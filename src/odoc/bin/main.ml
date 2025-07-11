@@ -1626,7 +1626,7 @@ module Occurrences = struct
       Cmd.info "count-occurrences" ~docs ~doc
   end
   module Aggregate = struct
-    let index dst files file_list warnings_options =
+    let index dst files file_list strip_path warnings_options =
       match (files, file_list) with
       | [], [] ->
           Error
@@ -1635,7 +1635,8 @@ module Occurrences = struct
                 to odoc aggregate-occurrences")
       | _ ->
           dst_of_string dst >>= fun dst ->
-          Occurrences.aggregate ~dst ~warnings_options files file_list
+          Occurrences.aggregate ~dst ~warnings_options ~strip_path files
+            file_list
 
     let cmd =
       let dst =
@@ -1658,9 +1659,14 @@ module Occurrences = struct
         let doc = "file created with count-occurrences" in
         Arg.(value & pos_all convert_fpath [] & info ~doc ~docv:"FILE" [])
       in
+      let strip_path =
+        let doc = "Strip package/version information from paths" in
+        Arg.(value & flag & info ~doc [ "strip-path" ])
+      in
       Term.(
         const handle_error
-        $ (const index $ dst $ inputs $ inputs_in_file $ warnings_options))
+        $ (const index $ dst $ inputs $ inputs_in_file $ strip_path
+         $ warnings_options))
 
     let info ~docs =
       let doc = "Aggregate hashtables created with odoc count-occurrences." in
