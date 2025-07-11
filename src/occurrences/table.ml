@@ -92,3 +92,78 @@ let rec iter f tbl =
       let v = internal_to_item v in
       f id v)
     tbl
+
+module Strip = struct
+  open Odoc_model.Paths.Identifier
+  let rec strip_sig_path : Signature.t -> Signature.t =
+   fun x ->
+    match x.iv with
+    | `Root (_, name) -> Mk.root (None, name)
+    | `Module (p, name) -> Mk.module_ (strip_sig_path p, name)
+    | `Parameter (p, name) -> Mk.parameter (strip_sig_path p, name)
+    | `Result p -> Mk.result (strip_sig_path p)
+    | `ModuleType (p, name) -> Mk.module_type (strip_sig_path p, name)
+
+  and strip_class_sig_path : ClassSignature.t -> ClassSignature.t =
+   fun x ->
+    match x.iv with
+    | `Class (p, name) -> Mk.class_ (strip_sig_path p, name)
+    | `ClassType (p, name) -> Mk.class_type (strip_sig_path p, name)
+
+  and strip_datatype_path : DataType.t -> DataType.t =
+   fun x ->
+    match x.iv with `Type (p, name) -> Mk.type_ (strip_sig_path p, name)
+
+  and strip_field_parent_path : FieldParent.t -> FieldParent.t =
+   fun x ->
+    match x with
+    | { iv = #Signature.t_pv; _ } as v -> (strip_sig_path v :> FieldParent.t)
+    | { iv = #DataType.t_pv; _ } as v ->
+        (strip_datatype_path v :> FieldParent.t)
+
+  and strip_label_parent_path : LabelParent.t -> LabelParent.t =
+   fun x ->
+    match x with
+    | { iv = #Signature.t_pv; _ } as v -> (strip_sig_path v :> LabelParent.t)
+    | { iv = #DataType.t_pv; _ } as v ->
+        (strip_datatype_path v :> LabelParent.t)
+    | { iv = #ClassSignature.t_pv; _ } as v ->
+        (strip_class_sig_path v :> LabelParent.t)
+    | { iv = `Page _ | `LeafPage _; _ } -> x
+
+  and strip : t -> t =
+   fun x ->
+    match x with
+    | { iv = #Signature.t_pv; _ } as v -> (strip_sig_path v :> t)
+    | { iv = #ClassSignature.t_pv; _ } as v -> (strip_class_sig_path v :> t)
+    | { iv = #DataType.t_pv; _ } as v -> (strip_datatype_path v :> t)
+    | { iv = `InstanceVariable (p, name); _ } ->
+        Mk.instance_variable (strip_class_sig_path p, name)
+    | { iv = `Method (p, name); _ } -> Mk.method_ (strip_class_sig_path p, name)
+    | { iv = `Field (p, name); _ } -> Mk.field (strip_field_parent_path p, name)
+    | { iv = `Label (p, name); _ } -> Mk.label (strip_label_parent_path p, name)
+    | { iv = `Exception (p, name); _ } -> Mk.exception_ (strip_sig_path p, name)
+    | { iv = `Extension (p, name); _ } -> Mk.extension (strip_sig_path p, name)
+    | { iv = `Value (p, name); _ } -> Mk.value (strip_sig_path p, name)
+    | { iv = `ExtensionDecl (p, name, args); _ } ->
+        Mk.extension_decl (strip_sig_path p, (name, args))
+    | { iv = `Constructor (p, name); _ } ->
+        Mk.constructor (strip_datatype_path p, name)
+    | {
+     iv =
+       ( `AssetFile (_, _)
+       | `SourceLocationMod _ | `SourceLocation _ | `Page _ | `LeafPage _
+       | `SourcePage _ | `SourceLocationInternal _ );
+     _;
+    } ->
+        x
+
+  let rec strip_table tbl =
+    let t2 = v () in
+    H.iter
+      (fun key v -> H.add t2 (strip key) { v with sub = strip_table v.sub })
+      tbl;
+    t2
+end
+
+let strip_table = Strip.strip_table

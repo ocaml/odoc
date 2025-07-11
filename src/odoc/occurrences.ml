@@ -53,7 +53,7 @@ let parse_input_files input =
 let read_occurrences file : Odoc_occurrences.Table.t =
   Io_utils.unmarshal (Fpath.to_string file)
 
-let aggregate files file_list ~warnings_options:_ ~dst =
+let aggregate files file_list ~strip_path ~warnings_options:_ ~dst =
   try
     parse_input_files file_list >>= fun new_files ->
     let files = files @ new_files in
@@ -61,10 +61,15 @@ let aggregate files file_list ~warnings_options:_ ~dst =
       match files with
       | [] -> Odoc_occurrences.Table.v ()
       | file :: files ->
-          let acc = read_occurrences file in
+          let strip =
+            if strip_path then Odoc_occurrences.Table.strip_table else Fun.id
+          in
+          let acc = read_occurrences file |> strip in
+
           List.iter
             (fun file ->
-              Odoc_occurrences.aggregate ~tbl:acc ~data:(read_occurrences file))
+              Odoc_occurrences.aggregate ~tbl:acc
+                ~data:(read_occurrences file |> strip))
             files;
           acc
     in
