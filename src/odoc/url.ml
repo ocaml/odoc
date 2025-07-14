@@ -28,16 +28,19 @@ let resolve url_to_string directories reference =
               Odoc_xref2.Errors.Tools_error.pp_reference_lookup_error e
           in
           Error (`Msg error)
-      | Ok (resolved_reference, _) ->
-          let identifier =
+      | Ok (resolved_reference, _) -> (
+          match
             Odoc_model.Paths.Reference.Resolved.identifier resolved_reference
-          in
-          let url =
-            Odoc_document.Url.from_identifier ~stop_before:false identifier
-          in
-          let href = url_to_string url in
-          print_endline href;
-          Ok ())
+          with
+          | Some identifier ->
+              (* We have a valid identifier, we can create the URL *)
+              let url =
+                Odoc_document.Url.from_identifier ~stop_before:false identifier
+              in
+              let href = url_to_string url in
+              print_endline href;
+              Ok ()
+          | None -> Error (`Msg "Hidden reference")))
 
 let reference_to_url_html { Html_page.html_config = config; _ } root_url =
   let url_to_string url =

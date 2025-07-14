@@ -188,8 +188,11 @@ module Make (Syntax : SYNTAX) = struct
       let open Fragment in
       let id = Resolved.identifier (fragment :> Resolved.t) in
       let txt = render_resolved_fragment (fragment :> Resolved.t) in
-      let href = Url.from_identifier ~stop_before:false id in
-      resolved href [ inline @@ Text txt ]
+      match id with
+      | Some id ->
+          let href = Url.from_identifier ~stop_before:false id in
+          resolved href [ inline @@ Text txt ]
+      | None -> unresolved [ inline @@ Text txt ]
 
     let from_fragment : Fragment.leaf -> text = function
       | `Resolved r
