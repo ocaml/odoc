@@ -450,7 +450,7 @@ module Fragment : sig
 
     type t = Paths_types.Resolved_fragment.any
 
-    val identifier : t -> Identifier.t
+    val identifier : t -> Identifier.t option
 
     val is_hidden : t -> bool
   end
@@ -567,7 +567,7 @@ module rec Reference : sig
 
     type t = Paths_types.Resolved_reference.any
 
-    val identifier : t -> Identifier.t
+    val identifier : t -> Identifier.t option
   end
 
   module Signature : sig

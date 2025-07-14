@@ -715,11 +715,13 @@ module Path = struct
     type t = Paths_types.Resolved_path.any
 
     let rec parent_module_type_identifier :
-        Paths_types.Resolved_path.module_type -> Identifier.ModuleType.t =
-      function
-      | `Identifier id -> (id : Identifier.ModuleType.t)
-      | `ModuleType (m, n) ->
-          Identifier.Mk.module_type (parent_module_identifier m, n)
+        Paths_types.Resolved_path.module_type -> Identifier.ModuleType.t option
+        = function
+      | `Identifier id -> Some (id : Identifier.ModuleType.t)
+      | `ModuleType (m, n) -> (
+          match parent_module_identifier m with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.module_type (p, n)))
       | `SubstT (m, _n) -> parent_module_type_identifier m
       | `CanonicalModuleType (_, `Resolved p) -> parent_module_type_identifier p
       | `CanonicalModuleType (p, _) -> parent_module_type_identifier p
@@ -731,13 +733,17 @@ module Path = struct
           else parent_module_type_identifier sub
 
     and parent_module_identifier :
-        Paths_types.Resolved_path.module_ -> Identifier.Signature.t = function
+        Paths_types.Resolved_path.module_ -> Identifier.Signature.t option =
+      function
       | `Identifier id ->
-          (id : Identifier.Path.Module.t :> Identifier.Signature.t)
+          Some (id : Identifier.Path.Module.t :> Identifier.Signature.t)
       | `Subst (sub, _) ->
-          (parent_module_type_identifier sub :> Identifier.Signature.t)
-      | `Hidden p -> parent_module_identifier p
-      | `Module (m, n) -> Identifier.Mk.module_ (parent_module_identifier m, n)
+          (parent_module_type_identifier sub :> Identifier.Signature.t option)
+      | `Hidden _ -> None
+      | `Module (m, n) -> (
+          match parent_module_identifier m with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.module_ (p, n)))
       | `Canonical (_, `Resolved p) -> parent_module_identifier p
       | `Canonical (p, _) -> parent_module_identifier p
       | `Apply (m, _) -> parent_module_identifier m
@@ -759,7 +765,7 @@ module Path = struct
     module ModuleType = struct
       type t = Paths_types.Resolved_path.module_type
 
-      let identifier : t -> Identifier.ModuleType.t =
+      let identifier : t -> Identifier.ModuleType.t option =
         parent_module_type_identifier
     end
 
@@ -775,26 +781,27 @@ module Path = struct
       type t = Paths_types.Resolved_path.class_type
     end
 
-    let rec identifier : t -> Identifier.t option = function
+    let rec identifier : t -> Identifier.t option =
+      let parent p f =
+        match parent_module_identifier p with
+        | None -> None
+        | Some id -> Some (f id :> Identifier.t)
+      in
+      function
       | `Identifier id -> Some id
       | `CoreType _ -> None
       | `Subst (sub, _) -> identifier (sub :> t)
-      | `Hidden p -> identifier (p :> t)
-      | `Module (m, n) ->
-          Some (Identifier.Mk.module_ (parent_module_identifier m, n))
+      | `Hidden _p -> None
+      | `Module (m, n) -> parent m (fun p -> Identifier.Mk.module_ (p, n))
       | `Canonical (_, `Resolved p) -> identifier (p :> t)
       | `Canonical (p, _) -> identifier (p :> t)
       | `Apply (m, _) -> identifier (m :> t)
-      | `Type (m, n) ->
-          Some (Identifier.Mk.type_ (parent_module_identifier m, n))
-      | `Value (m, n) ->
-          Some (Identifier.Mk.value (parent_module_identifier m, n))
+      | `Type (m, n) -> parent m (fun p -> Identifier.Mk.type_ (p, n))
+      | `Value (m, n) -> parent m (fun p -> Identifier.Mk.value (p, n))
       | `ModuleType (m, n) ->
-          Some (Identifier.Mk.module_type (parent_module_identifier m, n))
-      | `Class (m, n) ->
-          Some (Identifier.Mk.class_ (parent_module_identifier m, n))
-      | `ClassType (m, n) ->
-          Some (Identifier.Mk.class_type (parent_module_identifier m, n))
+          parent m (fun p -> Identifier.Mk.module_type (p, n))
+      | `Class (m, n) -> parent m (fun p -> Identifier.Mk.class_ (p, n))
+      | `ClassType (m, n) -> parent m (fun p -> Identifier.Mk.class_type (p, n))
       | `Alias (dest, `Resolved src) ->
           if is_resolved_hidden ~weak_canonical_test:false (dest :> t) then
             identifier (src :> t)
@@ -851,16 +858,19 @@ module Fragment = struct
     module Signature = struct
       type t = Paths_types.Resolved_fragment.signature
 
-      let rec sgidentifier : t -> Identifier.Signature.t = function
+      let rec sgidentifier : t -> Identifier.Signature.t option = function
         | `Root (`ModuleType i) ->
             (Path.Resolved.parent_module_type_identifier i
-              :> Identifier.Signature.t)
+              :> Identifier.Signature.t option)
         | `Root (`Module i) -> Path.Resolved.parent_module_identifier i
         | `Subst (s, _) ->
             (Path.Resolved.parent_module_type_identifier s
-              :> Identifier.Signature.t)
+              :> Identifier.Signature.t option)
         | `Alias (i, _) -> Path.Resolved.parent_module_identifier i
-        | `Module (m, n) -> Identifier.Mk.module_ (sgidentifier m, n)
+        | `Module (m, n) -> (
+            match sgidentifier m with
+            | None -> None
+            | Some p -> Some (Identifier.Mk.module_ (p, n)))
         | `OpaqueModule m -> sgidentifier (m :> t)
     end
 
@@ -878,19 +888,33 @@ module Fragment = struct
 
     type leaf = Paths_types.Resolved_fragment.leaf
 
-    let rec identifier : t -> Identifier.t = function
+    let rec identifier : t -> Identifier.t option = function
       | `Root (`ModuleType _r) -> assert false
       | `Root (`Module _r) -> assert false
-      | `Subst (s, _) -> (Path.Resolved.ModuleType.identifier s :> Identifier.t)
+      | `Subst (s, _) ->
+          (Path.Resolved.ModuleType.identifier s :> Identifier.t option)
       | `Alias (p, _) ->
-          (Path.Resolved.parent_module_identifier p :> Identifier.t)
-      | `Module (m, n) -> Identifier.Mk.module_ (Signature.sgidentifier m, n)
-      | `Module_type (m, n) ->
-          Identifier.Mk.module_type (Signature.sgidentifier m, n)
-      | `Type (m, n) -> Identifier.Mk.type_ (Signature.sgidentifier m, n)
-      | `Class (m, n) -> Identifier.Mk.class_ (Signature.sgidentifier m, n)
-      | `ClassType (m, n) ->
-          Identifier.Mk.class_type (Signature.sgidentifier m, n)
+          (Path.Resolved.parent_module_identifier p :> Identifier.t option)
+      | `Module (m, n) -> (
+          match Signature.sgidentifier m with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.module_ (p, n)))
+      | `Module_type (m, n) -> (
+          match Signature.sgidentifier m with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.module_type (p, n)))
+      | `Type (m, n) -> (
+          match Signature.sgidentifier m with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.type_ (p, n)))
+      | `Class (m, n) -> (
+          match Signature.sgidentifier m with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.class_ (p, n)))
+      | `ClassType (m, n) -> (
+          match Signature.sgidentifier m with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.class_type (p, n)))
       | `OpaqueModule m -> identifier (m :> t)
 
     let rec is_hidden : t -> bool = function
@@ -934,83 +958,117 @@ module Reference = struct
 
     type t = Paths_types.Resolved_reference.any
 
-    let rec parent_signature_identifier : signature -> Identifier.Signature.t =
-      function
-      | `Identifier id -> id
-      | `Hidden s -> parent_signature_identifier (s :> signature)
+    let rec parent_signature_identifier :
+        signature -> Identifier.Signature.t option = function
+      | `Identifier id -> Some id
+      | `Hidden _s -> None
       | `Alias (sub, orig) ->
           if Path.Resolved.(is_hidden (sub :> t)) then
             parent_signature_identifier (orig :> signature)
           else
             (Path.Resolved.parent_module_identifier sub
-              :> Identifier.Signature.t)
+              :> Identifier.Signature.t option)
       | `AliasModuleType (sub, orig) ->
           if Path.Resolved.(is_hidden (sub :> t)) then
             parent_signature_identifier (orig :> signature)
           else
             (Path.Resolved.parent_module_type_identifier sub
-              :> Identifier.Signature.t)
-      | `Module (m, n) ->
-          Identifier.Mk.module_ (parent_signature_identifier m, n)
-      | `ModuleType (m, s) ->
-          Identifier.Mk.module_type (parent_signature_identifier m, s)
+              :> Identifier.Signature.t option)
+      | `Module (m, n) -> (
+          match parent_signature_identifier m with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.module_ (p, n)))
+      | `ModuleType (m, n) -> (
+          match parent_signature_identifier m with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.module_type (p, n)))
 
-    and parent_type_identifier : datatype -> Identifier.DataType.t = function
-      | `Identifier id -> id
-      | `Type (sg, s) -> Identifier.Mk.type_ (parent_signature_identifier sg, s)
+    and parent_type_identifier : datatype -> Identifier.DataType.t option =
+      function
+      | `Identifier id -> Some id
+      | `Type (sg, s) -> (
+          match parent_signature_identifier sg with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.type_ (p, s)))
 
     and parent_class_signature_identifier :
-        class_signature -> Identifier.ClassSignature.t = function
-      | `Identifier id -> id
-      | `Class (sg, s) ->
-          Identifier.Mk.class_ (parent_signature_identifier sg, s)
-      | `ClassType (sg, s) ->
-          Identifier.Mk.class_type (parent_signature_identifier sg, s)
+        class_signature -> Identifier.ClassSignature.t option = function
+      | `Identifier id -> Some id
+      | `Class (sg, s) -> (
+          match parent_signature_identifier sg with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.class_ (p, s)))
+      | `ClassType (sg, s) -> (
+          match parent_signature_identifier sg with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.class_type (p, s)))
 
-    and field_parent_identifier : field_parent -> Identifier.FieldParent.t =
-      function
-      | `Identifier id -> id
+    and field_parent_identifier :
+        field_parent -> Identifier.FieldParent.t option = function
+      | `Identifier id -> Some id
       | (`Hidden _ | `Alias _ | `AliasModuleType _ | `Module _ | `ModuleType _)
         as sg ->
-          (parent_signature_identifier sg :> Identifier.FieldParent.t)
-      | `Type _ as t -> (parent_type_identifier t :> Identifier.FieldParent.t)
+          (parent_signature_identifier sg :> Identifier.FieldParent.t option)
+      | `Type _ as t ->
+          (parent_type_identifier t :> Identifier.FieldParent.t option)
 
-    and label_parent_identifier : label_parent -> Identifier.LabelParent.t =
-      function
-      | `Identifier id -> id
+    and label_parent_identifier :
+        label_parent -> Identifier.LabelParent.t option = function
+      | `Identifier id -> Some id
       | (`Class _ | `ClassType _) as c ->
-          (parent_class_signature_identifier c :> Identifier.LabelParent.t)
+          (parent_class_signature_identifier c
+            :> Identifier.LabelParent.t option)
       | ( `Hidden _ | `Alias _ | `AliasModuleType _ | `Module _ | `ModuleType _
         | `Type _ ) as r ->
-          (field_parent_identifier r :> Identifier.LabelParent.t)
+          (field_parent_identifier r :> Identifier.LabelParent.t option)
 
-    and identifier : t -> Identifier.t = function
-      | `Identifier id -> id
+    and identifier : t -> Identifier.t option = function
+      | `Identifier id -> Some id
       | ( `Alias _ | `AliasModuleType _ | `Module _ | `Hidden _ | `Type _
         | `Class _ | `ClassType _ | `ModuleType _ ) as r ->
-          (label_parent_identifier r :> Identifier.t)
-      | `Field (p, n) -> Identifier.Mk.field (field_parent_identifier p, n)
-      | `PolyConstructor (s, n) ->
+          (label_parent_identifier r :> Identifier.t option)
+      | `Field (p, n) -> (
+          match field_parent_identifier p with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.field (p, n)))
+      | `PolyConstructor (s, n) -> (
           (* Uses an identifier for constructor even though it is not
              one. Document must make the links correspond. *)
-          Identifier.Mk.constructor
-            ((parent_type_identifier s :> Identifier.DataType.t), n)
-      | `Constructor (s, n) ->
-          Identifier.Mk.constructor
-            ((parent_type_identifier s :> Identifier.DataType.t), n)
-      | `Extension (p, q) ->
-          Identifier.Mk.extension (parent_signature_identifier p, q)
-      | `ExtensionDecl (p, q, r) ->
-          Identifier.Mk.extension_decl (parent_signature_identifier p, (q, r))
-      | `Exception (p, q) ->
-          Identifier.Mk.exception_ (parent_signature_identifier p, q)
-      | `Value (p, q) -> Identifier.Mk.value (parent_signature_identifier p, q)
-      | `Method (p, q) ->
-          Identifier.Mk.method_ (parent_class_signature_identifier p, q)
-      | `InstanceVariable (p, q) ->
-          Identifier.Mk.instance_variable
-            (parent_class_signature_identifier p, q)
-      | `Label (p, q) -> Identifier.Mk.label (label_parent_identifier p, q)
+          match parent_type_identifier s with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.constructor (p, n)))
+      | `Constructor (s, n) -> (
+          match parent_type_identifier s with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.constructor (p, n)))
+      | `Extension (p, q) -> (
+          match parent_signature_identifier p with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.extension (p, q)))
+      | `ExtensionDecl (p, q, r) -> (
+          match parent_signature_identifier p with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.extension_decl (p, (q, r))))
+      | `Exception (p, q) -> (
+          match parent_signature_identifier p with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.exception_ (p, q)))
+      | `Value (p, q) -> (
+          match parent_signature_identifier p with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.value (p, q)))
+      | `Method (p, q) -> (
+          match parent_class_signature_identifier p with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.method_ (p, q)))
+      | `InstanceVariable (p, q) -> (
+          match parent_class_signature_identifier p with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.instance_variable (p, q)))
+      | `Label (p, q) -> (
+          match label_parent_identifier p with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.label (p, q)))
 
     module Signature = struct
       type t = Paths_types.Resolved_reference.signature

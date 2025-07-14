@@ -122,8 +122,13 @@ module Reference = struct
           | None -> None
           | Some _ -> Some rendered
         in
-        let url = Url.from_identifier ~stop_before:false id in
-        let target = Target.Internal (Resolved url) in
+        let target =
+          match id with
+          | Some id ->
+              let url = Url.from_identifier ~stop_before:false id in
+              Target.Internal (Resolved url)
+          | None -> Internal Unresolved
+        in
         let link = { Link.target; content; tooltip } in
         [ inline @@ Inline.Link link ]
     | _ -> (
