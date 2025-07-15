@@ -125,9 +125,6 @@ We can also include hidden ids:
   Main.A.M was used directly 2 times and indirectly 0 times
   Main.A.t was used directly 1 times and indirectly 0 times
   Main.A.x was used directly 1 times and indirectly 0 times
-  Main__ was used directly 0 times and indirectly 2 times
-  Main__.C was used directly 1 times and indirectly 1 times
-  Main__.C.y was used directly 1 times and indirectly 0 times
 
   $ odoc count-occurrences . -o all.odoc-occurrences --include-hidden
   $ occurrences_print all.odoc-occurrences | sort
@@ -138,12 +135,6 @@ We can also include hidden ids:
   Main.A.t was used directly 1 times and indirectly 0 times
   Main.A.x was used directly 2 times and indirectly 0 times
   Main.B was used directly 1 times and indirectly 0 times
-  Main__ was used directly 0 times and indirectly 2 times
-  Main__.C was used directly 1 times and indirectly 1 times
-  Main__.C.y was used directly 1 times and indirectly 0 times
-  Main__A was used directly 1 times and indirectly 0 times
-  Main__B was used directly 1 times and indirectly 0 times
-  Main__C was used directly 1 times and indirectly 0 times
 
 We can use the generated table when generating the json output:
 
