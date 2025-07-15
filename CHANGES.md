@@ -21,6 +21,8 @@
 - Fix #1335 - incorrect rendering when on medium screen size with no global
   sidebar (@lukemaurer, #1361)
 - Fixed generation of occurrences for docs CI (@jonludlam, #1362)
+- Partial fix for #1369 - ensure that we never create a link to a hidden page
+  (@jonludlam, #1370)
 
 # 3.0.0
 
