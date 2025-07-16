@@ -756,6 +756,60 @@ and child =
     | { Location_.value = Dir s; _ } -> C ("Dir", s, string)
     | { Location_.value = Module s; _ } -> C ("Module", s, string))
 
+(** {3 Source_info} *)
+
+and source_location_t : Paths.Identifier.SourceLocation.t t =
+  Indirect ((fun sl -> (sl :> Paths.Identifier.t)), identifier)
+
+and jump_to_impl_t =
+  let open Lang.Source_info in
+  Variant
+    (function
+    | Unresolved x -> C ("Unresolved", x, path)
+    | Resolved i -> C ("Resolved", i, source_location_t))
+
+and jump_to_t =
+  let open Lang.Source_info in
+  Record
+    [
+      F ("documentation", (fun t -> t.documentation), Option path);
+      F ("implementation", (fun t -> t.implementation), Option jump_to_impl_t);
+    ]
+
+and source_info_annotation_t =
+  let open Lang.Source_info in
+  Variant
+    (function
+    | Definition i -> C ("Definition", i, source_location_t)
+    | Value j -> C ("Value", (j :> Paths.Path.t jump_to), jump_to_t)
+    | Module j -> C ("Module", (j :> Paths.Path.t jump_to), jump_to_t)
+    | ModuleType j -> C ("ModuleType", (j :> Paths.Path.t jump_to), jump_to_t)
+    | Type j -> C ("Type", (j :> Paths.Path.t jump_to), jump_to_t))
+
+and source_info_point_in_file_t : Lang.Source_info.point_in_file t =
+  let open Lang.Source_info in
+  Record
+    [
+      F ("pos_lnum", (fun t -> t.pos_lnum), int);
+      F ("pos_cnum", (fun t -> t.pos_cnum), int);
+    ]
+
+and source_info_location_in_file_t : Lang.Source_info.location_in_file t =
+  let open Lang.Source_info in
+  Record
+    [
+      F ("loc_start", (fun t -> t.loc_start), source_info_point_in_file_t);
+      F ("loc_end", (fun t -> t.loc_end), source_info_point_in_file_t);
+    ]
+
+and source_info_annotation_with_pos_t : Lang.Source_info.annotation Lang.Source_info.with_pos t =
+  Pair (source_info_annotation_t, source_info_location_in_file_t)
+
+and source_info_t : Lang.Source_info.t t =
+  List source_info_annotation_with_pos_t
+
+(** {3 Implementation} *)
+
 and implementation_t =
   let open Lang.Implementation in
   Record
@@ -763,6 +817,7 @@ and implementation_t =
       F ("id", (fun t -> t.id), Option identifier);
       F ("digest", (fun t -> t.digest), Digest.t);
       F ("root", (fun t -> t.root), root);
+      F ("source_info", (fun t -> t.source_info), source_info_t);
     ]
 
 and asset_t =
