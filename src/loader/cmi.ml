@@ -109,9 +109,10 @@ let read_label lbl =
       | _ -> Some (Label lbl)
 #else
   match lbl with
-  | Asttypes.Nolabel -> None
-  | Asttypes.Labelled s -> Some (Label s)
-  | Asttypes.Optional s -> Some (Optional s)
+  | Types.Nolabel -> None
+  | Types.Labelled s -> Some (Label s)
+  | Types.Optional s -> Some (Optional s)
+  | Types.Position s -> (* FIXME: do better? *) Some (Label s)
 #endif
 
 (* Handle type variable names *)

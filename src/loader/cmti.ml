@@ -165,6 +165,7 @@ let rec read_core_type env container ctyp =
       (* TODO: adjust model *)
       read_core_type env container t
 #endif
+    | Ttyp_call_pos -> Constr(Env.Path.read_type env.ident_env Predef.path_lexing_position, [])
     | Ttyp_of_kind _ -> assert false
 
 let read_value_description env parent vd =
