@@ -112,7 +112,7 @@ let read_cmti ~make_root ~parent ~filename ~warnings_tag () =
             try Odoc_model.Names.set_unique_ident (Digest.to_hex digest)
             with _ -> ()
           in
-          let name = cmt_info.cmt_modname in
+          let name = cmt_info.cmt_modname |> Compilation_unit.name_as_string in
           let sourcefile =
             ( cmt_info.cmt_sourcefile,
               cmt_info.cmt_source_digest,
@@ -121,7 +121,12 @@ let read_cmti ~make_root ~parent ~filename ~warnings_tag () =
           let id, sg, canonical =
             Cmti.read_interface parent name ~warnings_tag intf
           in
-          compilation_unit_of_sig ~make_root ~imports:cmt_info.cmt_imports
+          let imports =
+            cmt_info.cmt_imports
+            |> List.map (fun (name, info_opt) ->
+              name |> Compilation_unit.Name.to_string, Option.map snd info_opt)
+          in
+          compilation_unit_of_sig ~make_root ~imports
             ~interface ~sourcefile ~name ~id ?canonical sg)
   | _ -> raise Not_an_interface
 
@@ -130,7 +135,7 @@ let read_cmt ~make_root ~parent ~filename ~warnings_tag () =
   | exception Cmi_format.Error (Not_an_interface _) ->
       raise Not_an_implementation
   | cmt_info -> (
-      let name = cmt_info.cmt_modname in
+      let name = cmt_info.cmt_modname |> Compilation_unit.name_as_string in
       let sourcefile =
         ( cmt_info.cmt_sourcefile,
           cmt_info.cmt_source_digest,
@@ -147,7 +152,12 @@ let read_cmt ~make_root ~parent ~filename ~warnings_tag () =
       | Some digest -> (
           try Odoc_model.Names.set_unique_ident (Digest.to_hex digest)
           with _ -> ()));
-      let imports = cmt_info.cmt_imports in
+      let imports =
+        cmt_info.cmt_imports
+        |> List.map (fun (name, info_opt) ->
+             name |> Compilation_unit.Name.to_string,
+             Option.map snd info_opt)
+      in
       match cmt_info.cmt_annots with
       | Packed (_, files) ->
           let id =
@@ -187,11 +197,20 @@ let read_cmt ~make_root ~parent ~filename ~warnings_tag () =
 let read_cmi ~make_root ~parent ~filename ~warnings_tag () =
   let cmi_info = Cmi_format.read_cmi filename in
   match cmi_info.cmi_crcs with
-  | (name, (Some _ as interface)) :: imports when name = cmi_info.cmi_name ->
+  | (name, (Some _ as interface)) :: imports
+    when name = cmi_info.cmi_name ->
+      let name = name |> Compilation_unit.Name.to_string in
       let id, sg =
         Cmi.read_interface parent name ~warnings_tag
           (Odoc_model.Compat.signature cmi_info.cmi_sign)
       in
+      let imports =
+        imports
+        |> List.map (fun (name, info_opt) ->
+             name |> Compilation_unit.Name.to_string,
+             Option.map snd info_opt)
+      in
+      let interface = interface |> Option.map snd in
       compilation_unit_of_sig ~make_root ~imports ~interface ~name ~id sg
   | _ -> raise Corrupted
 
