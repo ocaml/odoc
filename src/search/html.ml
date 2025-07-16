@@ -34,8 +34,9 @@ let display_constructor_args args =
   let open Odoc_model.Lang in
   match args with
   | TypeDecl.Constructor.Tuple args ->
+      let no_label arg = None, arg in
       (match args with
-      | _ :: _ :: _ -> Some TypeExpr.(Tuple args)
+      | _ :: _ :: _ -> Some TypeExpr.(Tuple (List.map no_label args))
       | [ arg ] -> Some arg
       | _ -> None)
       |> map_option Text.of_type

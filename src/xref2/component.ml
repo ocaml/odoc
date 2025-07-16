@@ -122,7 +122,7 @@ and TypeExpr : sig
     | Any
     | Alias of t * string
     | Arrow of label option * t * t
-    | Tuple of t list
+    | Tuple of (string option * t) list
     | Constr of Cpath.type_ * t list
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
@@ -1100,6 +1100,19 @@ module Fmt = struct
         Format.fprintf ppf "%a * %a" (type_expr c) t (type_expr_list c) ts
     | [] -> ()
 
+  and labeled_type_expr_list c ppf l =
+    let label ppf lbl =
+      match lbl with
+        None -> ()
+      | Some lbl -> Format.fprintf ppf "%s:" lbl
+    in
+    match l with
+    | [ lbl, t ] -> Format.fprintf ppf "%a%a" label lbl (type_expr c) t
+    | (lbl, t) :: ts ->
+      Format.fprintf ppf "%a%a * %a"
+        label lbl (type_expr c) t (labeled_type_expr_list c) ts
+    | [] -> ()
+
   and type_object _c ppf _o = Format.fprintf ppf "(object)"
 
   and type_class c ppf (x, ys) =
@@ -1135,7 +1148,7 @@ module Fmt = struct
     | Arrow (l, t1, t2) ->
         Format.fprintf ppf "%a(%a) -> %a" type_expr_label l (type_expr c) t1
           (type_expr c) t2
-    | Tuple ts -> Format.fprintf ppf "(%a)" (type_expr_list c) ts
+    | Tuple ts -> Format.fprintf ppf "(%a)" (labeled_type_expr_list c) ts
     | Constr (p, args) -> (
         match args with
         | [] -> Format.fprintf ppf "%a" (type_path c) p
@@ -2258,7 +2271,7 @@ module Of_Lang = struct
         Constr (type_path ident_map p, List.map (type_expression ident_map) xs)
     | Arrow (lbl, t1, t2) ->
         Arrow (lbl, type_expression ident_map t1, type_expression ident_map t2)
-    | Tuple ts -> Tuple (List.map (type_expression ident_map) ts)
+    | Tuple ts -> Tuple (List.map (fun (l, t) -> l, type_expression ident_map t) ts)
     | Polymorphic_variant v ->
         Polymorphic_variant (type_expr_polyvar ident_map v)
     | Poly (s, ts) -> Poly (s, type_expression ident_map ts)

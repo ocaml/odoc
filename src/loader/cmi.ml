@@ -60,7 +60,7 @@ module Compat = struct
   let concr_mem = Types.Meths.mem
   let csig_concr x = x.Types.csig_meths
   let eq_type = Types.eq_type
-  let invisible_wrap ty = newty2 ~level:Btype.generic_level (Ttuple [ty])
+  let invisible_wrap ty = newty2 ~level:Btype.generic_level (Ttuple [None, ty])
 #else
   type repr_type_node = Types.type_expr
   let repr = Btype.repr
@@ -82,7 +82,7 @@ module Compat = struct
   (** Create a new node pointing to [ty] that is printed in the same way as
       [ty]*)
   let invisible_wrap ty =
-    Btype.(newty2 generic_level (Ttuple [ty]))
+    Btype.(newty2 generic_level (Ttuple [None, ty]))
 #endif
 end
 
@@ -234,7 +234,7 @@ let mark_type ty =
       | Tarrow(_, ty1, ty2, _) ->
           loop visited ty1;
           loop visited ty2
-      | Ttuple tyl -> List.iter (loop visited) tyl
+      | Ttuple tyl -> List.iter (fun (_, ty) -> loop visited ty) tyl
       | Tconstr(_, tyl, _) ->
           List.iter (loop visited) tyl
       | Tvariant row ->
@@ -477,7 +477,7 @@ let rec read_type_expr env typ =
           let res = read_type_expr env res in
             Arrow(lbl, arg, res)
       | Ttuple typs ->
-          let typs = List.map (read_type_expr env) typs in
+          let typs = List.map (fun (l,t) -> l, read_type_expr env t) typs in
             Tuple typs
       | Tconstr(p, params, _) ->
           let p = Env.Path.read_type env.ident_env p in

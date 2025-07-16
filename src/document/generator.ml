@@ -444,10 +444,15 @@ module Make (Syntax : SYNTAX) = struct
           in
           if not needs_parentheses then res else enclose ~l:"(" res ~r:")"
       | Tuple lst ->
+          let opt_label = function
+            None -> O.noop
+          | Some lbl -> O.txt lbl ++ O.txt ":" ++ O.cut
+          in
           let res =
             O.box_hv_no_indent
               (O.list lst ~sep:Syntax.Type.Tuple.element_separator
-                 ~f:(type_expr ~needs_parentheses:true))
+                 ~f:(fun (lbl, typ) ->
+                   opt_label lbl ++ type_expr ~needs_parentheses:true typ))
           in
           if Syntax.Type.Tuple.always_parenthesize || needs_parentheses then
             enclose ~l:"(" res ~r:")"

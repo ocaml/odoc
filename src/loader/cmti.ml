@@ -66,7 +66,7 @@ let rec read_core_type env container ctyp =
         let res = read_core_type env container res in
           Arrow(lbl, arg, res)
     | Ttyp_tuple typs ->
-        let typs = List.map (read_core_type env container) typs in
+        let typs = List.map (fun (l, t) -> l, read_core_type env container t) typs in
           Tuple typs
     | Ttyp_constr(p, _, params) ->
         let p = Env.Path.read_type env.ident_env p in
