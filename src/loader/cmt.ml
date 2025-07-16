@@ -67,7 +67,7 @@ let rec read_pattern env parent doc pat =
           Value {id; source_loc; doc; type_; value} :: read_pattern env parent doc pat
     | Tpat_constant _ -> []
     | Tpat_tuple pats ->
-#if OCAML_VERSION >= (5, 4, 0)
+#if OCAML_VERSION >= (5, 4, 0) || OCAML_VERSION = (5, 2, 0)
       let pats = List.map snd pats (* remove labels *) in
 #endif
       List.concat (List.map (read_pattern env parent doc) pats)

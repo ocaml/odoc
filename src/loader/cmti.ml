@@ -66,7 +66,7 @@ let rec read_core_type env container ctyp =
         let res = read_core_type env container res in
           Arrow(lbl, arg, res)
     | Ttyp_tuple typs ->
-#if OCAML_VERSION >= (5,4,0)
+#if OCAML_VERSION >= (5,4,0) || OCAML_VERSION = (5,2,0)
         let typs = List.map (fun (lbl,x) -> lbl, read_core_type env container x) typs in
 #else
         let typs = List.map (fun x -> None, read_core_type env container x) typs in
