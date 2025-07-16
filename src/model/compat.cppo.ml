@@ -273,15 +273,21 @@ let shape_info_of_cmt_infos : Cmt_format.cmt_infos -> (shape * uid_to_loc) optio
 
 #endif
 
-#if OCAML_VERSION >= (5,2,0)
+#if defined OXCAML
+
 let compunit_name : Compilation_unit.t -> string = Compilation_unit.name_as_string
+
+let required_compunit_names x = List.map compunit_name x.Cmo_format.cu_required_compunits
+
+#elif OCAML_VERSION >= (5,2,0)
+
+let compunit_name : Cmo_format.compunit -> string = function | Compunit x -> x
 
 let required_compunit_names x = List.map compunit_name x.Cmo_format.cu_required_compunits
 
 #elif OCAML_VERSION >= (4,04,0)
 
 let compunit_name x = x
-
 let required_compunit_names x = List.map Ident.name x.Cmo_format.cu_required_globals
 
 #else
