@@ -42,8 +42,10 @@ let read_label = Cmi.read_label
 let rec read_core_type env container ctyp =
   let open TypeExpr in
     match ctyp.ctyp_desc with
-    | Ttyp_any -> Any
-    | Ttyp_var s -> Var s
+    (* TODO: presumably we want the layout in these first two cases,
+       eventually *)
+    | Ttyp_var (None, _layout) -> Any
+    | Ttyp_var (Some s, _layout) -> Var s
     | Ttyp_arrow(lbl, arg, res) ->
         let lbl = read_label lbl in
 #if OCAML_VERSION < (4,3,0)
@@ -101,13 +103,18 @@ let rec read_core_type env container ctyp =
         let p = Env.Path.read_class_type env.ident_env p in
         let params = List.map (read_core_type env container) params in
           Class(p, params)
-    | Ttyp_alias(typ, var) ->
+    | Ttyp_alias(typ, var, _layout) ->
+      (* TODO: presumably we want the layout, eventually *)
         let typ = read_core_type env container typ in
+        begin match var with
+        | None -> typ
+        | Some var ->
 #if OCAML_VERSION >= (5,2,0)
-        Alias(typ, var.txt)
+          Alias(typ, var.txt)
 #else
-        Alias(typ, var)
+          Alias(typ, var)
 #endif
+        end
     | Ttyp_variant(fields, closed, present) ->
         let open TypeExpr.Polymorphic_variant in
         let elements =
@@ -138,7 +145,9 @@ let rec read_core_type env container ctyp =
         in
           Polymorphic_variant {kind; elements}
     | Ttyp_poly([], typ) -> read_core_type env container typ
-    | Ttyp_poly(vars, typ) -> Poly(vars, read_core_type env container typ)
+    | Ttyp_poly(vars, typ) ->
+      (* TODO: presumably want the layouts, eventually *)
+      Poly(List.map fst vars, read_core_type env container typ)
     | Ttyp_package {pack_path; pack_fields; _} ->
         let open TypeExpr.Package in
         let path = Env.Path.read_module_type env.ident_env pack_path in
@@ -177,9 +186,10 @@ let read_value_description env parent vd =
 let read_type_parameter (ctyp, var_and_injectivity)  =
   let open TypeDecl in
   let desc =
+    (* TODO: presumably we want the layouts below, eventually *)
     match ctyp.ctyp_desc with
-    | Ttyp_any -> Any
-    | Ttyp_var s -> Var s
+    | Ttyp_var (None, _layout) -> Any
+    | Ttyp_var (Some s, _layout) -> Var s
     | _ -> assert false
   in
   let variance, injectivity =
@@ -391,8 +401,9 @@ let rec read_class_type_field env parent ctf =
       | Some doc -> Some (Comment doc)
 
 and read_self_type env container typ =
-  if typ.ctyp_desc = Ttyp_any then None
-  else Some (read_core_type env container typ)
+  match typ.ctyp_desc with
+  | Ttyp_var (None, _) -> None
+  | _ -> Some (read_core_type env container typ)
 
 and read_class_signature env parent label_parent cltyp =
   let open ClassType in
