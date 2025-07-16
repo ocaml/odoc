@@ -569,8 +569,16 @@ and read_include env parent incl =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, status = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_status container incl.incl_attributes in
   let decl_modty =
+#if defined OXCAML
+    match unwrap_module_expr_desc incl.incl_mod.mod_desc, incl.incl_kind with
+    | _, (Tincl_functor _ | Tincl_gen_functor _) ->
+      (* TODO: Handle [include functor] *)
+      None
+    | Tmod_ident(p, _), Tincl_structure ->
+#else
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
     | Tmod_ident(p, _) ->
+#endif
       let p = Env.Path.read_module env.ident_env p in
       Some (ModuleType.U.TypeOf (ModuleType.StructInclude p, p))
     | _ ->

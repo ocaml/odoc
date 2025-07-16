@@ -786,11 +786,17 @@ and read_include env parent incl =
   let expr = read_module_type env include_parent include_container incl.incl_mod in
   let umty = Odoc_model.Lang.umty_of_mty expr in 
   let expansion = { content; shadowed; } in
+#if defined OXCAML
+  match umty, incl.incl_kind with
+  | Some uexpr, Tincl_structure ->
+#else
   match umty with
   | Some uexpr ->
+#endif
     let decl = Include.ModuleType uexpr in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
   | _ ->
+    (* TODO: Handle [include functor] *)
     content.items
 
 and read_open env parent o =
