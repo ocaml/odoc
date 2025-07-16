@@ -86,7 +86,7 @@ let rec read_pattern env parent doc pat =
              (fun (_, _, pat) -> read_pattern env parent doc pat)
           pats)
 #if OCAML_VERSION = (5, 2, 0)
-    | Tpat_array (_, pats) ->
+    | Tpat_array (_, _, pats) ->
 #elif OCAML_VERSION < (5, 4, 0)
     | Tpat_array pats ->
 #else

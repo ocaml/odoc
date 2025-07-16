@@ -324,7 +324,7 @@ let rec read_pattern hide_item pat =
   | Tpat_construct(_, _, pats, _)
 #endif
 #if OCAML_VERSION = (5,2,0)
-  | Tpat_array (_, pats) ->
+  | Tpat_array (_, _, pats) ->
      List.concat (List.map (fun (_lbl,pat) -> read_pattern hide_item pat) pats)
 #elif OCAML_VERSION < (5,4,0)
   | Tpat_array pats ->
