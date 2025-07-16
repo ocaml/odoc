@@ -864,11 +864,11 @@ td.def-doc *:first-child {
   line-height: 1.2;
 }
 
-.odoc-toc.odoc-local-toc:before {
+.odoc-toc.odoc-local-toc:has(~ .odoc-global-toc):before {
   content: "Local content";
 
 }
-.odoc-toc.odoc-global-toc:before {
+.odoc-toc.odoc-global-toc:has(~ .odoc-local-toc):before {
   content: "Global content";
 }
 
@@ -1304,6 +1304,14 @@ body.odoc:has( .odoc-search) .odoc-toc {
       "sidebar    preamble"
       "sidebar    content";
   }
+  /* FIXME: This will probably get a better fix upstream */
+  body.odoc:not(:has(> .odoc-tocs .odoc-global-toc)) {
+    grid-template-areas:
+    "search-bar nav"
+    "sidebar    preamble"
+    "sidebar    content";
+    grid-template-columns: min-content 1fr;
+  }
 }
 
 @media only screen and (max-width: 110ex) {
@@ -1322,6 +1330,17 @@ body.odoc:has( .odoc-search) .odoc-toc {
   body.odoc:has(> .odoc-search:focus-within) {
     /* This is the same as when there is no focus on the search bar, this is
     just to prevent the default "wide layout" rule from changing anything. */
+    grid-template-areas:
+      "search-bar"
+      "nav"
+      "preamble"
+      "toc-local"
+      "content"
+      "toc-global";
+    grid-template-columns: 1fr;
+  }
+  /* FIXME: This will probably get a better fix upstream */
+  body.odoc:not(:has(> .odoc-tocs .odoc-global-toc)) {
     grid-template-areas:
       "search-bar"
       "nav"
