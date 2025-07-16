@@ -634,6 +634,16 @@ and read_module_type env parent label_parent mty =
           in
         decl
     | Tmty_alias _ -> assert false
+#if defined OXCAML
+    | Tmty_strengthen (mty, path, _) ->
+      let mty = read_module_type env parent label_parent mty in
+      let s_path = Env.Path.read_module env.ident_env path in
+      match Odoc_model.Lang.umty_of_mty mty with
+      | Some s_expr ->
+          (* We always strengthen with aliases *)
+          Strengthen {s_expr; s_path; s_aliasable = true; s_expansion = None}
+      | None -> failwith "invalid Tmty_strengthen"
+#endif
 
 (** Like [read_module_type] but handle the canonical tag in the top-comment. If
     [canonical] is [Some _], no tag is expected in the top-comment. *)
@@ -761,7 +771,11 @@ and read_signature_item env parent item =
         [
           Open (read_open env parent o)
         ]
+#if defined OXCAML
     | Tsig_include (incl, _) ->
+#else
+    | Tsig_include incl ->
+#endif
         read_include env parent incl
     | Tsig_class cls ->
         read_class_descriptions env parent cls
