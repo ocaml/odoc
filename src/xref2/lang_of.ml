@@ -799,6 +799,10 @@ and u_module_type_expr map identifier = function
       TypeOf (ModPath (Path.module_ map p), Path.module_ map original_path)
   | TypeOf (StructInclude p, original_path) ->
       TypeOf (StructInclude (Path.module_ map p), Path.module_ map original_path)
+  | Strengthen (expr, path, aliasable) ->
+      let expr = u_module_type_expr map identifier expr in
+      let path = Path.module_ map path in
+      Strengthen (expr, path, aliasable)
 
 and module_type_expr map identifier = function
   | Component.ModuleType.Path { p_path; p_expansion } ->
@@ -848,6 +852,14 @@ and module_type_expr map identifier = function
           t_desc = StructInclude (Path.module_ map p);
           t_original_path = Path.module_ map t_original_path;
           t_expansion = Opt.map (simple_expansion map identifier) t_expansion;
+        }
+  | Strengthen { s_expr; s_path; s_aliasable; s_expansion } ->
+      Strengthen
+        {
+          s_expr = u_module_type_expr map identifier s_expr;
+          s_path = Path.module_ map s_path;
+          s_aliasable;
+          s_expansion = Opt.map (simple_expansion map identifier) s_expansion
         }
 
 and module_type :

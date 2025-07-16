@@ -1401,11 +1401,13 @@ module Make (Syntax : SYNTAX) = struct
         match t with
         | Path { p_expansion = None; _ }
         | TypeOf { t_expansion = None; _ }
-        | With { w_expansion = None; _ } ->
+        | With { w_expansion = None; _ }
+        | Strengthen { s_expansion = None; _ } ->
             None
         | Path { p_expansion = Some e; _ }
         | TypeOf { t_expansion = Some e; _ }
-        | With { w_expansion = Some e; _ } ->
+        | With { w_expansion = Some e; _ }
+        | Strengthen { s_expansion = Some e; _ } ->
             Some e
         | Signature sg -> Some (Signature sg)
         | Functor (f_parameter, e) -> (
@@ -1544,6 +1546,8 @@ module Make (Syntax : SYNTAX) = struct
       | TypeOf (ModPath m, _) | TypeOf (StructInclude m, _) ->
           Paths.Path.(is_hidden (m :> t))
       | Signature _ -> false
+      | Strengthen (expr, p, _) ->
+          umty_hidden expr || Paths.Path.(is_hidden (p :> t))
 
     and mty_hidden : Odoc_model.Lang.ModuleType.expr -> bool = function
       | Path { p_path = mty_path; _ } -> Paths.Path.(is_hidden (mty_path :> t))
@@ -1559,6 +1563,10 @@ module Make (Syntax : SYNTAX) = struct
            ~sep:(O.cut ++ O.txt " " ++ O.keyword "and" ++ O.txt " ")
            ~f:(fun x -> O.span (substitution x))
            subs
+
+    and mty_strengthen expr path =
+      umty expr ++ O.sp ++ O.keyword "with" ++ O.txt " "
+      ++ Link.from_path (path :> Paths.Path.t)
 
     and mty_typeof t_desc =
       match t_desc with
@@ -1579,6 +1587,7 @@ module Make (Syntax : SYNTAX) = struct
       | Signature _ -> true
       | With (_, expr) -> is_elidable_with_u expr
       | TypeOf _ -> false
+      | Strengthen (expr,_,_) -> is_elidable_with_u expr
 
     and umty : Odoc_model.Lang.ModuleType.U.expr -> text =
      fun m ->
@@ -1590,6 +1599,9 @@ module Make (Syntax : SYNTAX) = struct
           Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       | With (subs, expr) -> mty_with subs expr
       | TypeOf (t_desc, _) -> mty_typeof t_desc
+      | Strengthen (expr, _, _) when is_elidable_with_u expr ->
+          Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
+      | Strengthen (expr, p, _) -> mty_strengthen expr (p :> Paths.Path.t)
 
     and mty : Odoc_model.Lang.ModuleType.expr -> text =
      fun m ->
@@ -1628,12 +1640,15 @@ module Make (Syntax : SYNTAX) = struct
         | TypeOf { t_desc; _ } -> mty_typeof t_desc
         | Signature _ ->
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
-
+        | Strengthen { s_expr; _ } when is_elidable_with_u s_expr ->
+            Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
+        | Strengthen { s_expr; s_path; _ } ->
+            O.box_hv @@ mty_strengthen s_expr (s_path :> Paths.Path.t)
     and mty_in_decl :
         Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
         =
      fun base -> function
-      | (Path _ | Signature _ | With _ | TypeOf _) as m ->
+      | (Path _ | Signature _ | With _ | TypeOf _ | Strengthen _) as m ->
           O.txt Syntax.Type.annotation_separator ++ O.cut ++ mty m
       | Functor _ as m when not Syntax.Mod.functor_contraction ->
           O.txt Syntax.Type.annotation_separator ++ O.cut ++ mty m

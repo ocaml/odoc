@@ -892,6 +892,9 @@ and u_module_type_expr :
       TypeOf (StructInclude (module_path env p), original_path)
   | TypeOf (ModPath p, original_path) ->
       TypeOf (ModPath (module_path env p), original_path)
+  | Strengthen (expr, path, aliasable) ->
+      let expr = u_module_type_expr env id expr in
+      Strengthen (expr, module_path env path, aliasable)
 
 and module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
@@ -955,6 +958,14 @@ and module_type_expr :
           t_desc = ModPath (module_path env p);
           t_expansion = do_expn t_expansion None;
           t_original_path;
+        }
+  | Strengthen { s_expr; s_path; s_aliasable; s_expansion } ->
+      Strengthen
+        {
+          s_expr = u_module_type_expr env id s_expr;
+          s_path = module_path env s_path;
+          s_aliasable;
+          s_expansion = do_expn s_expansion None;
         }
 
 and type_decl_representation :

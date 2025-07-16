@@ -1008,6 +1008,17 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
         let t_original_path = Env.Path.read_module env.ident_env p in
         let t_desc = ModPath t_original_path in
         TypeOf { t_desc; t_expansion = None; t_original_path }
+    | Mty_strengthen (mty, p, a) ->
+        let mty = read_module_type env parent mty in
+        let s_path = Env.Path.read_module env.ident_env p in
+        let s_aliasable = match a with
+          | Aliasable -> true
+          | Not_aliasable -> false
+        in
+        match Odoc_model.Lang.umty_of_mty mty with
+        | Some s_expr ->
+            Strengthen {s_expr; s_path; s_aliasable; s_expansion = None}
+        | None -> failwith "invalid Mty_strengthen"
 
 and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_declaration) =
   let open ModuleType in

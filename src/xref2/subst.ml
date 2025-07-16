@@ -612,13 +612,18 @@ and u_module_type_expr s t =
           | With w -> With (w.w_substitutions, w.w_expr)
           | Functor _ ->
               (* non functor cannot be substituted away to a functor *)
-              assert false))
+              assert false
+          | Strengthen s -> Strengthen (s.s_expr, s.s_path, s.s_aliasable)))
   | Signature sg -> Signature (signature s sg)
   | With (subs, e) ->
       With
         (List.map (with_module_type_substitution s) subs, u_module_type_expr s e)
   | TypeOf (t_desc, t_original_path) ->
       TypeOf (module_type_type_of_desc s t_desc, t_original_path)
+  | Strengthen (expr, path, aliasable) ->
+      let expr = u_module_type_expr s expr in
+      let path = module_path s path in
+      Strengthen (expr, path, aliasable)
 
 and module_type_expr s t =
   let open Component.ModuleType in
@@ -645,6 +650,14 @@ and module_type_expr s t =
           t with
           t_desc = module_type_type_of_desc s t.t_desc;
           t_expansion = option_ simple_expansion s t.t_expansion;
+        }
+  | Strengthen { s_expr; s_path; s_aliasable; s_expansion } ->
+      Strengthen
+        {
+          s_expr = u_module_type_expr s s_expr;
+          s_path = module_path s s_path;
+          s_aliasable;
+          s_expansion = option_ simple_expansion s s_expansion
         }
 
 and with_module_type_substitution s sub =

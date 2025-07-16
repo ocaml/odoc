@@ -145,6 +145,16 @@ and moduletype_typeof_t =
       F ("t_expansion", (fun t -> t.t_expansion), Option simple_expansion);
     ]
 
+and moduletype_strengthen_t : Lang.ModuleType.strengthen_t t =
+  let open Lang.ModuleType in
+  Record
+    [
+      F ("s_expansion", (fun t -> t.s_expansion), Option simple_expansion);
+      F ("s_expr", (fun t -> t.s_expr), moduletype_u_expr);
+      F ("s_path", (fun t -> (t.s_path :> Paths.Path.t)), path);
+      F ("s_aliasable", (fun t -> t.s_aliasable), bool);
+    ]
+
 and moduletype_expr =
   let open Lang.ModuleType in
   Variant
@@ -154,7 +164,8 @@ and moduletype_expr =
     | Functor (x1, x2) ->
         C ("Functor", (x1, x2), Pair (functorparameter_t, moduletype_expr))
     | With t -> C ("With", t, moduletype_with_t)
-    | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t))
+    | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t)
+    | Strengthen x -> C ("Strengthen", x, moduletype_strengthen_t))
 
 and moduletype_u_expr =
   let open Lang.ModuleType.U in
@@ -171,7 +182,12 @@ and moduletype_u_expr =
         C
           ( "TypeOf",
             (t, (o :> Paths.Path.t)),
-            Pair (moduletype_type_of_desc, path) ))
+            Pair (moduletype_type_of_desc, path) )
+    | Strengthen (e, x, a) ->
+      C
+        ( "Strengthen",
+          (e, (x :> Paths.Path.t), a),
+          Triple (moduletype_u_expr, path, bool) ))
 
 and moduletype_t =
   let open Lang.ModuleType in
@@ -628,7 +644,7 @@ and typeexpr_t =
           ( "Arrow",
             (x1, x2, x3),
             Triple (Option typeexpr_label, typeexpr_t, typeexpr_t) )
-    | Tuple x -> C ("Tuple", x, List typeexpr_t)
+    | Tuple x -> C ("Tuple", x, List (Pair (Option string, typeexpr_t)))
     | Constr (x1, x2) ->
         C ("Constr", ((x1 :> Paths.Path.t), x2), Pair (path, List typeexpr_t))
     | Polymorphic_variant x ->

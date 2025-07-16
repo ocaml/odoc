@@ -70,6 +70,7 @@ module Env = struct
     | Tmty_signature sg -> signature env (parent : Identifier.Signature.t) sg
     | Tmty_with (mty, _) -> module_type env parent mty
     | Tmty_functor (_, t) -> module_type env parent t
+    | Tmty_strengthen (t, _, _) -> module_type env parent t
     | Tmty_ident _ | Tmty_alias _ | Tmty_typeof _ -> ()
 
   and module_bindings env parent mbs = List.iter (module_binding env parent) mbs

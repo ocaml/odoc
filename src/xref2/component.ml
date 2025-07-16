@@ -199,6 +199,7 @@ and ModuleType : sig
       | Signature of Signature.t
       | With of substitution list * expr
       | TypeOf of type_of_desc * Cpath.module_
+      | Strengthen of expr * Cpath.module_ * bool
   end
 
   type path_t = {
@@ -212,12 +213,20 @@ and ModuleType : sig
     w_expr : U.expr;
   }
 
+  type strengthen_t = {
+    s_expansion : simple_expansion option;
+    s_expr : U.expr;
+    s_path : Cpath.module_;
+    s_aliasable : bool
+  }
+
   type expr =
     | Path of path_t
     | Signature of Signature.t
     | With of with_t
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
+    | Strengthen of strengthen_t
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
@@ -943,6 +952,8 @@ module Fmt = struct
         Format.fprintf ppf "%a with [%a]" (u_module_type_expr c) e
           (substitution_list c) subs
     | TypeOf (t_desc, _) -> module_type_type_of_desc c ppf t_desc
+    | Strengthen (e, p, _) ->
+        Format.fprintf ppf "%a with %a" (u_module_type_expr c) e (module_path c) p
 
   and module_type_expr c ppf mt =
     let open ModuleType in
@@ -961,6 +972,9 @@ module Fmt = struct
     | TypeOf { t_desc = StructInclude p; _ } ->
         Format.fprintf ppf "module type of struct include %a end"
           (module_path c) p
+    | Strengthen { s_expr; s_path; _ } ->
+        Format.fprintf ppf "%a with %a" (u_module_type_expr c) s_expr
+          (module_path c) s_path
 
   and module_type_expansion c ppf mt =
     let open ModuleType in
@@ -2390,6 +2404,10 @@ module Of_Lang = struct
         (* see comment in module_type_expr below *)
         let t_original_path = module_path (empty ()) t_original_path in
         TypeOf (t_desc, t_original_path)
+    | Strengthen (e, p, a) ->
+        let e = u_module_type_expr ident_map e in
+        let p = module_path ident_map p in
+        Strengthen (e, p, a)
 
   and module_type_expr ident_map m =
     let open Odoc_model in
@@ -2450,6 +2468,16 @@ module Of_Lang = struct
            _create_ a `TypeOf` expression as part of fragmap *)
         let t_original_path = module_path (empty ()) t_original_path in
         ModuleType.(TypeOf { t_desc; t_original_path; t_expansion })
+    | Lang.ModuleType.Strengthen s ->
+        let s' =
+          ModuleType.
+            { s_expr = u_module_type_expr ident_map s.s_expr;
+              s_path = module_path ident_map s.s_path;
+              s_aliasable = s.s_aliasable;
+              s_expansion = option simple_expansion ident_map s.s_expansion
+            }
+        in
+        ModuleType.Strengthen s'
 
   and module_type ident_map m =
     let expr =

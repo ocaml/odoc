@@ -1639,6 +1639,9 @@ and signature_of_u_module_type_expr :
       handle_signature_with_subs env sg subs
   | TypeOf (desc, original_path) ->
       signature_of_module_type_of env desc ~original_path >>= assert_not_functor
+  | Strengthen (expr, path, _aliasable) ->
+      signature_of_u_module_type_expr env expr >>= fun sg ->
+      Ok (Strengthen.signature path sg)
 
 and expansion_of_simple_expansion :
     Component.ModuleType.simple_expansion -> expansion =
@@ -1681,6 +1684,10 @@ and expansion_of_module_type_expr :
         | StructInclude p -> (p, true)
       in
       expansion_of_module_path env ~strengthen p
+  | Component.ModuleType.Strengthen { s_expr; s_path; _ } ->
+      signature_of_u_module_type_expr env s_expr >>= fun sg ->
+      let sg = Strengthen.signature s_path sg in
+      Ok (Signature sg)
 
 and expansion_of_module_type :
     Env.t ->
@@ -1768,6 +1775,8 @@ and umty_of_mty : Component.ModuleType.expr -> Component.ModuleType.U.expr =
   | TypeOf { t_desc; t_original_path; _ } -> TypeOf (t_desc, t_original_path)
   | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
   | Functor _ -> assert false
+  | Strengthen { s_expr; s_path; s_aliasable; _ } ->
+      Strengthen (s_expr, s_path, s_aliasable)
 
 and fragmap :
     Env.t ->

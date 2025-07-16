@@ -599,6 +599,14 @@ and read_module_type env parent label_parent mty =
           in
         decl
     | Tmty_alias _ -> assert false
+    | Tmty_strengthen (mty, path, _) ->
+      let mty = read_module_type env parent label_parent mty in
+      let s_path = Env.Path.read_module env.ident_env path in
+      match Odoc_model.Lang.umty_of_mty mty with
+      | Some s_expr ->
+          (* We always strengthen with aliases *)
+          Strengthen {s_expr; s_path; s_aliasable = true; s_expansion = None}
+      | None -> failwith "invalid Tmty_strengthen"
 
 (** Like [read_module_type] but handle the canonical tag in the top-comment. If
     [canonical] is [Some _], no tag is expected in the top-comment. *)

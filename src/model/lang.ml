@@ -83,6 +83,7 @@ and ModuleType : sig
       | Signature of Signature.t
       | With of substitution list * expr
       | TypeOf of type_of_desc * Path.Module.t
+      | Strengthen of expr * Path.Module.t * bool
   end
 
   type path_t = {
@@ -96,12 +97,20 @@ and ModuleType : sig
     w_expr : U.expr;
   }
 
+  type strengthen_t = {
+    s_expansion : simple_expansion option;
+    s_expr : U.expr;
+    s_path : Path.Module.t;
+    s_aliasable : bool
+  }
+
   type expr =
     | Path of path_t
     | Signature of Signature.t
     | Functor of FunctorParameter.t * expr
     | With of with_t
     | TypeOf of typeof_t
+    | Strengthen of strengthen_t
 
   type t = {
     id : Identifier.ModuleType.t;
@@ -552,6 +561,8 @@ let umty_of_mty : ModuleType.expr -> ModuleType.U.expr option = function
   | TypeOf { t_desc; t_original_path; _ } ->
       Some (TypeOf (t_desc, t_original_path))
   | With { w_substitutions; w_expr; _ } -> Some (With (w_substitutions, w_expr))
+  | Strengthen { s_expr; s_path; s_aliasable; _ } ->
+      Some (Strengthen (s_expr, s_path, s_aliasable))
 
 (** Query the top-comment of a signature. This is [s.doc] most of the time with
     an exception for signature starting with an inline includes. *)
@@ -560,7 +571,8 @@ let extract_signature_doc (s : Signature.t) =
     | ModuleType.U.Path p -> Path.is_hidden (p :> Path.t)
     | Signature _ ->
         true (* Hidden in some sense, we certainly want its top comment *)
-    | With (_, e) -> uexpr_considered_hidden e
+    | With (_, e)
+    | Strengthen (e, _, _) -> uexpr_considered_hidden e
     | TypeOf (ModPath p, _) | TypeOf (StructInclude p, _) ->
         Path.is_hidden (p :> Path.t)
   in

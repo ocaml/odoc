@@ -190,6 +190,7 @@ and ModuleType : sig
       | Signature of Signature.t
       | With of substitution list * expr
       | TypeOf of type_of_desc * Cpath.module_
+      | Strengthen of expr * Cpath.module_ * bool
   end
 
   type path_t = {
@@ -203,12 +204,20 @@ and ModuleType : sig
     w_expr : U.expr;
   }
 
+  type strengthen_t = {
+    s_expansion : simple_expansion option;
+    s_expr : U.expr;
+    s_path : Cpath.module_;
+    s_aliasable : bool
+  }
+
   type expr =
     | Path of path_t
     | Signature of Signature.t
     | With of with_t
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
+    | Strengthen of strengthen_t
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
