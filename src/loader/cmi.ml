@@ -62,6 +62,8 @@ module Compat = struct
   let eq_type = Types.eq_type
 #if OCAML_VERSION >= (5,4,0)
   let invisible_wrap ty = newty2 ~level:Btype.generic_level (Ttuple [None,ty])
+#elif OCAML_VERSION = (5,2,0)
+  let invisible_wrap ty = newty2 ~level:Btype.generic_level (Ttuple [None, ty])
 #else
   let invisible_wrap ty = newty2 ~level:Btype.generic_level (Ttuple [ty])
 #endif
@@ -86,7 +88,7 @@ module Compat = struct
   (** Create a new node pointing to [ty] that is printed in the same way as
       [ty]*)
   let invisible_wrap ty =
-    Btype.(newty2 generic_level (Ttuple [ty]))
+    Btype.(newty2 generic_level (Ttuple [None, ty]))
 #endif
 end
 
@@ -252,7 +254,7 @@ let mark_type ty =
 #endif
           reserve_name name
           loop visited ty2
-#if OCAML_VERSION >= (5,4,0)
+#if OCAML_VERSION >= (5,4,0) || OCAML_VERSION = (5,2,0)
       | Ttuple tyl -> List.iter (fun (_lbl,x) -> loop visited x) tyl
 #else
       | Ttuple tyl -> List.iter (loop visited) tyl
@@ -503,7 +505,7 @@ let rec read_type_expr env typ =
           let res = read_type_expr env res in
             Arrow(lbl, arg, res)
       | Ttuple typs ->
-#if OCAML_VERSION >= (5,4,0)
+#if OCAML_VERSION >= (5,4,0) || OCAML_VERSION = (5,2,0)
           let typs = List.map (fun (lbl,x) -> lbl, read_type_expr env x) typs in
 #else
           let typs = List.map (fun x -> None, read_type_expr env x) typs in
