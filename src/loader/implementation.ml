@@ -1,7 +1,7 @@
 #if OCAML_VERSION >= (4, 14, 0)
 
 let rec is_persistent : Path.t -> bool = function
-  | Path.Pident id -> Ident.persistent id
+  | Path.Pident id -> Ident.is_global_or_predef id
   | Path.Pdot(p, _) -> is_persistent p
   | Path.Papply(p, _) -> is_persistent p
 #if OCAML_VERSION >= (5,1,0)

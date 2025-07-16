@@ -670,7 +670,7 @@ let is_shadowed
 module Path = struct
 
   let read_module_ident env id =
-    if Ident.persistent id then `Root (ModuleName.of_ident id)
+    if Ident.is_global_or_predef id then `Root (ModuleName.of_ident id)
     else
       try find_module env id
       with Not_found -> assert false
