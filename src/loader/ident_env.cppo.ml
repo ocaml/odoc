@@ -118,11 +118,11 @@ and extract_signature_type_items_extract vis ~hidden item rest =
 #else
           | Types.Type_abstract _ -> []
 #endif
-          | Type_record (_, _) -> []
+          | Type_record (_, _, _) -> []
 #if OCAML_VERSION < (4,13,0)
           | Type_variant cstrs ->
 #else
-          | Type_variant (cstrs, _) ->
+          | Type_variant (cstrs, _, _) ->
 #endif
             List.map (fun c -> `Constructor (c.Types.cd_id, id, Some c.cd_loc)) cstrs
           | Type_open -> [] in
@@ -249,7 +249,7 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
       [`Value (val_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest 
   | { sig_desc = Tsig_modtype mtd; sig_loc; _} :: rest ->
       [`ModuleType (mtd.mtd_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
-  | {sig_desc = Tsig_include incl; _ } :: rest ->
+  | {sig_desc = Tsig_include (incl, _); _ } :: rest ->
       [`Include (extract_signature_type_items Exported (Compat.signature incl.incl_type))] @ extract_signature_tree_items hide_item rest
   | {sig_desc = Tsig_attribute attr; _ } :: rest ->
       let hide_item = if Doc_attr.is_stop_comment attr then not hide_item else hide_item in
@@ -301,15 +301,15 @@ let rec read_pattern hide_item pat =
   let open Typedtree in
   match pat.pat_desc with
 #if OCAML_VERSION < (5,2,0)
-  | Tpat_var(id, loc) ->
+  | Tpat_var(id, loc, _, _) ->
 #else
-  | Tpat_var(id, loc, _) ->
+  | Tpat_var(id, loc, _, _) ->
 #endif
     [`Value(id, hide_item, Some loc.loc)]
 #if OCAML_VERSION < (5,2,0)
-  | Tpat_alias(pat, id, loc) ->
+  | Tpat_alias(pat, id, loc, _, _) ->
 #else
-  | Tpat_alias(pat, id, loc, _) ->
+  | Tpat_alias(pat, id, loc, _, _, _) ->
 #endif
     `Value(id, hide_item, Some loc.loc) :: read_pattern hide_item pat
   | Tpat_record(pats, _) -> 
@@ -319,7 +319,7 @@ let rec read_pattern hide_item pat =
 #else
   | Tpat_construct(_, _, pats, _)
 #endif
-  | Tpat_array pats
+  | Tpat_array (_, pats)
   | Tpat_tuple pats -> List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
   | Tpat_or(pat, _, _)
   | Tpat_variant(_, Some pat, _)

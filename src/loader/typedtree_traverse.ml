@@ -13,7 +13,7 @@ module Analysis = struct
     if exp_loc.loc_ghost then ()
     else
       match expr.exp_desc with
-      | Texp_ident (p, _, _) -> poses := (Value p, exp_loc) :: !poses
+      | Texp_ident (p, _, _, _, _) -> poses := (Value p, exp_loc) :: !poses
       | _ -> ()
 
   let pat env (type a) poses : a Typedtree.general_pattern -> unit = function
@@ -26,17 +26,17 @@ module Analysis = struct
         let () =
           match pat_desc with
 #if OCAML_VERSION >= (5, 2, 0)
-          | Tpat_var (id, loc, _uid) -> (
+          | Tpat_var (id, loc, _uid, _) -> (
 #else
-          | Tpat_var (id, loc) -> (
+          | Tpat_var (id, loc, _, _) -> (
 #endif
               match maybe_localvalue id loc.loc with
               | Some x -> poses := x :: !poses
               | None -> ())
 #if OCAML_VERSION >= (5, 2, 0)
-          | Tpat_alias (_, id, loc, _uid) -> (
+          | Tpat_alias (_, id, loc, _uid, _, _) -> (
 #else
-          | Tpat_alias (_, id, loc) -> (
+          | Tpat_alias (_, id, loc, _, _) -> (
 #endif
               match maybe_localvalue id loc.loc with
               | Some x -> poses := x :: !poses

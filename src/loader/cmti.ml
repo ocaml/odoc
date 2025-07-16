@@ -156,6 +156,7 @@ let rec read_core_type env container ctyp =
       (* TODO: adjust model *)
       read_core_type env container t
 #endif
+    | Ttyp_of_kind _ -> assert false
 
 let read_value_description env parent vd =
   let open Signature in
@@ -209,7 +210,7 @@ let read_label_declaration env parent label_parent ld =
   let name = Ident.name ld.ld_id in
   let id = Identifier.Mk.field(parent, FieldName.make_std name) in
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent ld.ld_attributes in
-  let mutable_ = (ld.ld_mutable = Mutable) in
+  let mutable_ = Types.is_mutable ld.ld_mutable in
   let type_ = read_core_type env label_parent ld.ld_type in
     {id; doc; mutable_; type_}
 
@@ -220,7 +221,8 @@ let read_constructor_declaration_arguments env parent label_parent arg =
   Tuple (List.map (read_core_type env label_parent) arg)
 #else
   match arg with
-  | Cstr_tuple args -> Tuple (List.map (read_core_type env label_parent) args)
+  | Cstr_tuple args ->
+      Tuple (List.map (fun arg -> read_core_type env label_parent arg.ca_type) args)
   | Cstr_record lds ->
       Record (List.map (read_label_declaration env parent label_parent) lds)
 #endif
@@ -713,7 +715,7 @@ and read_signature_item env parent item =
         [
           Open (read_open env parent o)
         ]
-    | Tsig_include incl ->
+    | Tsig_include (incl, _) ->
         read_include env parent incl
     | Tsig_class cls ->
         read_class_descriptions env parent cls

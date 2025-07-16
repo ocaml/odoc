@@ -285,6 +285,7 @@ let mark_type ty =
       | Tsubst (ty,_) -> loop visited ty
 #endif
       | Tlink _ -> assert false
+      | Tof_kind _ -> ()
   in
   loop [] ty
 
@@ -348,7 +349,7 @@ let mark_constructor_args =
   List.iter mark_type
 #else
   function
-   | Cstr_tuple args -> List.iter mark_type args
+   | Cstr_tuple args -> List.iter (fun carg -> mark_type carg.ca_type) args
    | Cstr_record lds -> List.iter (fun ld -> mark_type ld.ld_type) lds
 #endif
 
@@ -359,7 +360,7 @@ let mark_type_kind = function
   | Type_abstract -> ()
 #endif
 #if OCAML_VERSION >= (4,13,0)
-  | Type_variant (cds,_) ->
+  | Type_variant (cds,_,_) ->
 #else
   | Type_variant cds ->
 #endif
@@ -368,7 +369,7 @@ let mark_type_kind = function
            mark_constructor_args cd.cd_args;
            opt_iter mark_type cd.cd_res)
         cds
-  | Type_record(lds, _) ->
+  | Type_record(lds, _, _) ->
       List.iter (fun ld -> mark_type ld.ld_type) lds
   | Type_open -> ()
 
@@ -451,7 +452,7 @@ let rec read_type_expr env typ =
           let name = name_of_type typ in
             if name = "_" then Any
             else Var name
-      | Tarrow(lbl, arg, res, _) ->
+      | Tarrow((lbl,_,_), arg, res, _) ->
           let lbl = read_label lbl in
           let lbl,arg =
             match lbl with
@@ -515,6 +516,7 @@ let rec read_type_expr env typ =
       | Tsubst (typ,_) -> read_type_expr env typ
 #endif
       | Tlink _ -> assert false
+      | Tof_kind _ -> assert false
     in
       match alias with
       | None -> typ
@@ -658,7 +660,7 @@ let read_label_declaration env parent ld =
     Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag
       (parent :> Identifier.LabelParent.t) ld.ld_attributes
   in
-  let mutable_ = (ld.ld_mutable = Mutable) in
+  let mutable_ = is_mutable ld.ld_mutable in
   let type_ = read_type_expr env ld.ld_type in
     {id; doc; mutable_; type_}
 
@@ -671,7 +673,7 @@ let read_constructor_declaration_arguments env parent arg =
 #else
   let open TypeDecl.Constructor in
     match arg with
-    | Cstr_tuple args -> Tuple (List.map (read_type_expr env) args)
+    | Cstr_tuple args -> Tuple (List.map (fun arg -> read_type_expr env arg.ca_type) args)
     | Cstr_record lds ->
         Record (List.map (read_label_declaration env parent) lds)
 #endif
@@ -697,7 +699,7 @@ let read_type_kind env parent =
 #endif
     None
 #if OCAML_VERSION >= (4,13,0)
-  | Type_variant (cstrs,_) ->
+  | Type_variant (cstrs,_,_) ->
 #else
   | Type_variant cstrs ->
 #endif
@@ -705,7 +707,7 @@ let read_type_kind env parent =
           List.map (read_constructor_declaration env parent) cstrs
         in
           Some (Variant cstrs)
-    | Type_record(lbls, _) ->
+    | Type_record(lbls, _, _) ->
         let lbls =
           List.map
             (read_label_declaration env (parent :> Identifier.FieldParent.t))
@@ -781,7 +783,7 @@ let read_type_declaration env parent id decl =
     | Type_record _ ->
         decl.type_private = Private
 #if OCAML_VERSION >= (4,13,0)
-  | Type_variant (tll,_) ->
+  | Type_variant (tll,_,_) ->
 #else
   | Type_variant tll ->
 #endif
@@ -857,7 +859,7 @@ let read_instance_variable env parent (name, mutable_, virtual_, typ) =
   let open InstanceVariable in
   let id = Identifier.Mk.instance_variable(parent, Odoc_model.Names.InstanceVariableName.make_std name) in
   let doc = Doc_attr.empty env.warnings_tag in
-  let mutable_ = (mutable_ = Mutable) in
+  let mutable_ = (mutable_ = Asttypes.Mutable) in
   let virtual_ = (virtual_ = Virtual) in
   let type_ = read_type_expr env typ in
     ClassSignature.InstanceVariable {id; doc; mutable_; virtual_; type_}
