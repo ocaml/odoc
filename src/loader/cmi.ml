@@ -456,11 +456,18 @@ let rec read_type_expr env typ =
           let lbl,arg =
             match lbl with
             | Some (Optional s) -> (
+              let read_as_wrapped () =
+               (Some (RawOptional s), read_type_expr env arg)
+              in
               match Compat.get_desc arg with
-              | Tconstr(_option, [arg], _) ->
-                lbl, read_type_expr env arg (* Unwrap option if possible *)
+              | Tpoly(arg, []) -> begin
+                  match Compat.get_desc arg with
+                  | Tconstr(_option, [arg], _) ->
+                    lbl, read_type_expr env arg (* Unwrap option if possible *)
+                  | _ -> read_as_wrapped ()
+                end
               | _ ->
-                (Some (RawOptional s), read_type_expr env arg)) (* If not, mark is as wrapped *)
+                read_as_wrapped ()) (* If not, mark is as wrapped *)
             | _ ->
               lbl, read_type_expr env arg
           in
