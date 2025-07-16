@@ -161,7 +161,7 @@ let name_of_type_repr (ty : Compat.repr_type_node) =
   with Not_found ->
     let base =
       match ty.desc with
-      | Tvar (Some name) | Tunivar (Some name) -> name
+      | Tvar { name = Some name; _ } | Tunivar { name = Some name; _ } -> name
       | _ -> next_name ()
     in
     let name = fresh_name base in
@@ -191,7 +191,7 @@ let add_alias_proxy px =
   if not (List.memq px !aliased) then begin
     aliased := px :: !aliased;
     match px.desc with
-    | Tvar name | Tunivar name -> reserve_name name
+    | Tvar { name; _ } | Tunivar { name; _ } -> reserve_name name
     | _ -> ()
   end
 
@@ -234,7 +234,7 @@ let mark_type ty =
     if List.memq px visited && aliasable ty then add_alias_proxy px else
       let visited = px :: visited in
       match Compat.get_desc ty with
-      | Tvar name -> reserve_name name
+      | Tvar { name; _ } -> reserve_name name
       | Tarrow(_, ty1, ty2, _) ->
           loop visited ty1;
           loop visited ty2
@@ -279,7 +279,11 @@ let mark_type ty =
       | Tpoly (ty, tyl) ->
           List.iter (fun t -> add_alias t) tyl;
           loop visited ty
+#if OCAML_VERSION = (5,2,0)
+      | Tunivar { name; _ } -> reserve_name name
+#else
       | Tunivar name -> reserve_name name
+#endif
 #if OCAML_VERSION>=(5,4,0)
       | Tpackage p ->
           List.iter (fun (_,x) -> loop visited x) p.pack_cstrs
@@ -324,7 +328,8 @@ let tvar_none ty = ty.desc <- Tvar None
 #elif OCAML_VERSION < (4,14,0)
 let tvar_none ty = Types.Private_type_expr.set_desc ty (Tvar None)
 #else
-let tvar_none ty = Types.Transient_expr.(set_desc (coerce ty) (Tvar None))
+let tvar_none ty jkind =
+  Types.Transient_expr.(set_desc (coerce ty) (Tvar { name = None; jkind }))
 #endif
 
 let wrap_constrained_params tyl =
@@ -347,7 +352,8 @@ let prepare_type_parameters params manifest =
         let vars = Ctype.free_variables ty in
           List.iter
             (fun ty -> match Compat.get_desc ty with
-              | Tvar (Some "_") -> if List.memq ty vars then tvar_none ty
+              | Tvar { name = Some "_"; jkind } ->
+                if List.memq ty vars then tvar_none ty jkind
               | _ -> ())
             params
     | None -> ()
