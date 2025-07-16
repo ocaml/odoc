@@ -28,11 +28,16 @@ type visibility =
   | Exported
   | Hidden
 
+module Aliasability = struct
+  type t = Not_aliasable | Aliasable
+end
+
 type module_type =
     Mty_ident of Path.t
   | Mty_signature of signature
   | Mty_functor of functor_parameter * module_type
   | Mty_alias of Path.t
+  | Mty_strengthen of module_type * Path.t * Aliasability.t
 
 and functor_parameter =
   | Unit
@@ -88,11 +93,17 @@ and visibility : Types.visibility -> visibility = function
   | Types.Hidden -> Hidden
   | Types.Exported -> Exported
 
+and aliasability : Types.Aliasability.t -> Aliasability.t = function
+  | Types.Aliasability.Not_aliasable -> Aliasability.Not_aliasable
+  | Types.Aliasability.Aliasable -> Aliasability.Aliasable
+
 and module_type : Types.module_type -> module_type = function
   | Types.Mty_ident p -> Mty_ident p
   | Types.Mty_signature s -> Mty_signature (signature s)
   | Types.Mty_functor (a, b) -> Mty_functor(functor_parameter a, module_type b)
   | Types.Mty_alias p -> Mty_alias p
+  | Types.Mty_strengthen (mty,p,a) ->
+      Mty_strengthen (module_type mty, p, aliasability a)
 
 and functor_parameter : Types.functor_parameter -> functor_parameter = function
   | Types.Unit -> Unit

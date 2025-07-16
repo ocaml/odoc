@@ -282,9 +282,11 @@ and module_type_expr id mte =
   | With { w_expansion = Some sg; _ } -> simple_expansion id sg
   | TypeOf { t_expansion = Some sg; _ } -> simple_expansion id sg
   | Path { p_expansion = Some sg; _ } -> simple_expansion id sg
+  | Strengthen { s_expansion = Some sg; _ } -> simple_expansion id sg
   | Path { p_expansion = None; _ } -> []
   | With { w_expansion = None; _ } -> []
   | TypeOf { t_expansion = None; _ } -> []
+  | Strengthen { s_expansion = None; _ } -> []
 
 and class_signature id ct_expr =
   let items = filter_class_signature ct_expr.items in
