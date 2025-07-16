@@ -319,7 +319,7 @@ let rec read_pattern hide_item pat =
 #else
   | Tpat_construct(_, _, pats, _)
 #endif
-  | Tpat_array (_, pats)
+  | Tpat_array (_, _, pats)
   | Tpat_tuple pats -> List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
   | Tpat_or(pat, _, _)
   | Tpat_variant(_, Some pat, _)

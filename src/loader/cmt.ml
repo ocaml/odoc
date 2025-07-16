@@ -78,7 +78,7 @@ let rec read_pattern env parent doc pat =
           (List.map
              (fun (_, _, pat) -> read_pattern env parent doc pat)
           pats)
-    | Tpat_array (_, pats) ->
+    | Tpat_array (_, _, pats) ->
         List.concat (List.map (read_pattern env parent doc) pats)
     | Tpat_or(pat, _, _) ->
         read_pattern env parent doc pat
