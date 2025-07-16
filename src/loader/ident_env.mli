@@ -67,6 +67,8 @@ val find_type_identifier : t -> Ident.t -> Paths.Identifier.Type.t
 
 val find_class_identifier : t -> Ident.t -> Paths.Identifier.Class.t
 
+val ident_is_global_or_predef : Ident.t -> bool
+
 val is_shadowed : t -> Ident.t -> bool
 
 val find_class_type_identifier : t -> Ident.t -> Paths.Identifier.ClassType.t
