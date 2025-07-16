@@ -280,9 +280,9 @@ let required_compunit_names x = List.map compunit_name x.Cmo_format.cu_required_
 
 #elif OCAML_VERSION >= (4,04,0)
 
-let compunit_name x = x
+let compunit_name x = Compilation_unit.name_as_string x
 
-let required_compunit_names x = List.map Ident.name x.Cmo_format.cu_required_globals
+let required_compunit_names x = List.map compunit_name x.Cmo_format.cu_required_globals
 
 #else
 

@@ -123,8 +123,10 @@ let read_cmti ~make_root ~parent ~filename ~warnings_tag () =
           in
           let imports =
             cmt_info.cmt_imports
-            |> List.map (fun (name, info_opt) ->
-              name |> Compilation_unit.Name.to_string, Option.map snd info_opt)
+            |> Array.map (fun import ->
+              Import_info.name import |> Compilation_unit.Name.to_string,
+              Import_info.crc import)
+            |> Array.to_list
           in
           compilation_unit_of_sig ~make_root ~imports
             ~interface ~sourcefile ~name ~id ?canonical sg)
@@ -154,9 +156,10 @@ let read_cmt ~make_root ~parent ~filename ~warnings_tag () =
           with _ -> ()));
       let imports =
         cmt_info.cmt_imports
-        |> List.map (fun (name, info_opt) ->
-             name |> Compilation_unit.Name.to_string,
-             Option.map snd info_opt)
+        |> Array.map (fun import ->
+             Import_info.name import |> Compilation_unit.Name.to_string,
+             Import_info.crc import)
+        |> Array.to_list
       in
       match cmt_info.cmt_annots with
       | Packed (_, files) ->
@@ -194,9 +197,20 @@ let read_cmt ~make_root ~parent ~filename ~warnings_tag () =
             ~name ~id ?canonical sg
       | _ -> raise Not_an_implementation)
 
+let compilation_unit_of_import_info (info : Import_info.Intf.Nonalias.t option) =
+  match info with
+  | None -> None
+  | Some (Parameter, _) -> None
+  | Some (Normal cu, _) -> Some (cu |> Compilation_unit.full_path_as_string)
+
 let read_cmi ~make_root ~parent ~filename ~warnings_tag () =
   let cmi_info = Cmi_format.read_cmi filename in
-  match cmi_info.cmi_crcs with
+  let cmi_crcs =
+    List.map (fun import ->
+        Import_info.name import, Import_info.Intf.info import)
+      (Array.to_list cmi_info.cmi_crcs)
+  in
+  match cmi_crcs with
   | (name, (Some _ as interface)) :: imports
     when name = cmi_info.cmi_name ->
       let name = name |> Compilation_unit.Name.to_string in
@@ -208,7 +222,7 @@ let read_cmi ~make_root ~parent ~filename ~warnings_tag () =
         imports
         |> List.map (fun (name, info_opt) ->
              name |> Compilation_unit.Name.to_string,
-             Option.map snd info_opt)
+             compilation_unit_of_import_info info_opt)
       in
       let interface = interface |> Option.map snd in
       compilation_unit_of_sig ~make_root ~imports ~interface ~name ~id sg
@@ -219,14 +233,20 @@ let read_impl ~make_root ~filename ~source_id () =
   | exception Cmi_format.Error (Not_an_interface _) ->
       raise Not_an_implementation
   | cmt_info -> (
-      let name = cmt_info.cmt_modname in
+      let name = cmt_info.cmt_modname |> Compilation_unit.name_as_string in
       let _sourcefile =
         ( cmt_info.cmt_sourcefile,
           cmt_info.cmt_source_digest,
           cmt_info.cmt_builddir )
       in
       let interface = cmt_info.cmt_interface_digest in
-      let imports = cmt_info.cmt_imports in
+      let imports =
+        cmt_info.cmt_imports
+        |> Array.map (fun import ->
+          Import_info.name import |> Compilation_unit.Name.to_string,
+          Import_info.crc import)
+        |> Array.to_list
+      in
       match cmt_info.cmt_annots with
       | Implementation _impl ->
           let digest =
