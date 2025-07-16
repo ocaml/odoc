@@ -35,25 +35,20 @@ end
 
 module Compile_set = Set.Make (Compile)
 
-let add_dep0 acc (unit_name, crc_with_unit) =
-  match unit_name, crc_with_unit with
-  | _, None -> acc (* drop module aliases *)
-  | unit_name, Some (_unit, digest) ->
-    let unit_name = unit_name |> Compilation_unit.Name.to_string in
-    Compile_set.add { Compile.unit_name; digest } acc
-
 let add_dep acc import =
-  let unit_name = Import_info.name import in
-  let crc_with_unit = Import_info.Intf.info import in
-  add_dep0 acc (unit_name, crc_with_unit)
+  let unit_name = Classify.name_of_import import in
+  let crc_with_unit = Classify.intf_info import in
+  match (unit_name, crc_with_unit) with
+  | _, None -> acc
+  | unit_name, Some digest -> Compile_set.add { Compile.unit_name; digest } acc
 
 let for_compile_step_cmt acc file =
   let cmt_infos = Cmt_format.read_cmt (Fs.File.to_string file) in
-  Array.fold_left ~f:add_dep ~init:acc cmt_infos.Cmt_format.cmt_imports
+  List.fold_left ~f:add_dep ~init:acc (Classify.cmt_imports cmt_infos)
 
 let for_compile_step_cmi_or_cmti acc file =
   let cmi_infos = Cmi_format.read_cmi (Fs.File.to_string file) in
-  Array.fold_left ~f:add_dep ~init:acc cmi_infos.Cmi_format.cmi_crcs
+  List.fold_left ~f:add_dep ~init:acc (Classify.cmi_crcs cmi_infos)
 
 let for_compile_step files =
   let set =
