@@ -36,7 +36,9 @@ module Compile_set = Set.Make (Compile)
 
 let add_dep acc = function
   | _, None -> acc (* drop module aliases *)
-  | unit_name, Some digest -> Compile_set.add { Compile.unit_name; digest } acc
+  | unit_name, Some (_unit, digest) ->
+    let unit_name = unit_name |> Compilation_unit.Name.to_string in
+    Compile_set.add { Compile.unit_name; digest } acc
 
 let for_compile_step_cmt acc file =
   let cmt_infos = Cmt_format.read_cmt (Fs.File.to_string file) in
