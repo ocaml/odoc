@@ -161,9 +161,13 @@ let name_of_type_repr (ty : Compat.repr_type_node) =
   with Not_found ->
     let base =
       match ty.desc with
-      | Tvar (Some name) | Tunivar (Some name) -> name
+      | Tvar { name = Some name; _ } | Tunivar { name = Some name; _ } -> name
       | _ -> next_name ()
+#if defined OXCAML
     in
+#else
+      | Tvar (Some name) | Tunivar (Some name) -> name
+#endif
     let name = fresh_name base in
     if name <> "_" then used_names := (ty, name) :: !used_names;
     name
@@ -191,9 +195,14 @@ let add_alias_proxy px =
   if not (List.memq px !aliased) then begin
     aliased := px :: !aliased;
     match px.desc with
-    | Tvar name | Tunivar name -> reserve_name name
+    | Tvar { name; _ } | Tunivar { name; _ } -> reserve_name name
     | _ -> ()
-  end
+#if defined OXCAML
+    | Tvar { name; _ } | Tunivar { name; _ } ->
+#else
+    | Tvar name | Tunivar name ->
+#endif
+        reserve_name name
 
 let add_alias ty = add_alias_proxy (proxy ty)
 
@@ -234,9 +243,14 @@ let mark_type ty =
     if List.memq px visited && aliasable ty then add_alias_proxy px else
       let visited = px :: visited in
       match Compat.get_desc ty with
-      | Tvar name -> reserve_name name
+      | Tvar { name; _ } -> reserve_name name
       | Tarrow(_, ty1, ty2, _) ->
-          loop visited ty1;
+#if defined OXCAML
+      | Tvar { name; _ } | Tunivar { name; _ } ->
+#else
+      | Tvar name | Tunivar name ->
+#endif
+          reserve_name name
           loop visited ty2
 #if OCAML_VERSION >= (5,4,0)
       | Ttuple tyl -> List.iter (fun (_lbl,x) -> loop visited x) tyl
@@ -279,9 +293,8 @@ let mark_type ty =
       | Tpoly (ty, tyl) ->
           List.iter (fun t -> add_alias t) tyl;
           loop visited ty
-      | Tunivar name -> reserve_name name
-#if OCAML_VERSION>=(5,4,0)
-      | Tpackage p ->
+#if OCAML_VERSION = (5,2,0)
+      | Tunivar { name; _ } -> reserve_name name
           List.iter (fun (_,x) -> loop visited x) p.pack_cstrs
 #elif OCAML_VERSION>=(4,13,0)
       | Tpackage(_,tyl) ->
@@ -326,9 +339,12 @@ let tvar_none ty = ty.desc <- Tvar None
 #elif OCAML_VERSION < (4,14,0)
 let tvar_none ty = Types.Private_type_expr.set_desc ty (Tvar None)
 #else
-let tvar_none ty = Types.Transient_expr.(set_desc (coerce ty) (Tvar None))
+let tvar_none ty jkind =
+#elif defined OXCAML
 #endif
 
+#else
+let tvar_none ty = Types.Transient_expr.(set_desc (coerce ty) (Tvar None))
 let wrap_constrained_params tyl =
   let params =
     List.fold_left
@@ -349,9 +365,15 @@ let prepare_type_parameters params manifest =
         let vars = Ctype.free_variables ty in
           List.iter
             (fun ty -> match Compat.get_desc ty with
-              | Tvar (Some "_") -> if List.memq ty vars then tvar_none ty
+              | Tvar { name = Some "_"; jkind } ->
+                if List.memq ty vars then tvar_none ty jkind
+#if defined OXCAML
               | _ -> ())
             params
+#else
+              | Tvar (Some "_") ->
+                if List.memq ty vars then tvar_none ty
+#endif
     | None -> ()
   end;
   params

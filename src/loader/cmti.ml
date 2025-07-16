@@ -42,8 +42,15 @@ let read_label = Cmi.read_label
 let rec read_core_type env container ctyp =
   let open TypeExpr in
     match ctyp.ctyp_desc with
+#if defined OXCAML
+    (* TODO: presumably we want the layout in these first two cases,
+       eventually *)
+    | Ttyp_var (None, _layout) -> Any
+    | Ttyp_var (Some s, _layout) -> Var s
+#else
     | Ttyp_any -> Any
     | Ttyp_var s -> Var s
+#endif
     | Ttyp_arrow(lbl, arg, res) ->
         let lbl = read_label lbl in
 #if OCAML_VERSION < (4,3,0)
@@ -105,13 +112,24 @@ let rec read_core_type env container ctyp =
         let p = Env.Path.read_class_type env.ident_env p in
         let params = List.map (read_core_type env container) params in
           Class(p, params)
-    | Ttyp_alias(typ, var) ->
-        let typ = read_core_type env container typ in
-#if OCAML_VERSION >= (5,2,0)
-        Alias(typ, var.txt)
+#if defined OXCAML
+    | Ttyp_alias(typ, var, _layout) -> (
+      (* TODO: presumably we want the layout, eventually *)
 #else
-        Alias(typ, var)
+    | Ttyp_alias(typ, var) -> (
 #endif
+        let typ = read_core_type env container typ in
+#if defined OXCAML
+        match var with
+        | None -> typ
+        | Some var ->
+#endif
+#if OCAML_VERSION >= (5,2,0)
+          Alias(typ, var.txt)
+#else
+          Alias(typ, var)
+#endif
+        )
     | Ttyp_variant(fields, closed, present) ->
         let open TypeExpr.Polymorphic_variant in
         let elements =
@@ -142,7 +160,13 @@ let rec read_core_type env container ctyp =
         in
           Polymorphic_variant {kind; elements}
     | Ttyp_poly([], typ) -> read_core_type env container typ
+#if defined OXCAML
+    | Ttyp_poly(vars, typ) ->
+      (* TODO: presumably want the layouts, eventually *)
+      Poly(List.map fst vars, read_core_type env container typ)
+#else
     | Ttyp_poly(vars, typ) -> Poly(vars, read_core_type env container typ)
+#endif
 #if OCAML_VERSION >= (5,4,0)
     | Ttyp_package {tpt_path = pack_path; tpt_cstrs=pack_fields; _} ->
 #else
@@ -186,8 +210,14 @@ let read_type_parameter (ctyp, var_and_injectivity)  =
   let open TypeDecl in
   let desc =
     match ctyp.ctyp_desc with
+#if defined OXCAML
+    (* TODO: presumably we want the layouts below, eventually *)
+    | Ttyp_var (None, _layout) -> Any
+    | Ttyp_var (Some s, _layout) -> Var s
+#else
     | Ttyp_any -> Any
     | Ttyp_var s -> Var s
+#endif
     | _ -> assert false
   in
   let variance, injectivity =
@@ -402,13 +432,18 @@ let rec read_class_type_field env parent ctf =
       | Some doc -> Some (Comment doc)
 
 and read_self_type env container typ =
-  if typ.ctyp_desc = Ttyp_any then None
-  else Some (read_core_type env container typ)
+  match typ.ctyp_desc with
+  | Ttyp_var (None, _) -> None
+  | _ -> Some (read_core_type env container typ)
 
 and read_class_signature env parent label_parent cltyp =
   let open ClassType in
     match cltyp.cltyp_desc with
+#if defined OXCAML
     | Tcty_constr(p, _, params) ->
+#else
+  | Ttyp_any -> None
+#endif
         let p = Env.Path.read_class_type env.ident_env p in
       let params = List.map (read_core_type env label_parent) params in
           Constr(p, params)
