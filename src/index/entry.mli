@@ -62,10 +62,12 @@ type t = {
   id : Odoc_model.Paths.Identifier.Any.t;
   doc : Odoc_model.Comment.elements;
   kind : kind;
+  source_loc : Odoc_model.Lang.Source_loc_jane.t option;
 }
 
 val entry :
   id:[< Odoc_model.Paths.Identifier.Any.t_pv ] Odoc_model.Paths.Identifier.id ->
   doc:Odoc_model.Comment.elements ->
   kind:kind ->
+  source_loc:Odoc_model.Lang.Source_loc_jane.t option ->
   t

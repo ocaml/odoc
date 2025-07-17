@@ -16,6 +16,15 @@
 
 open Paths
 
+module Source_loc_jane = struct
+  type t = { filename: string ; line_number: int }
+
+  let of_location (build_dir : string) (loc: Location.t) =
+    let { Location.loc_start ; _ } = loc in
+    let { pos_fname ; pos_lnum ; _ } = loc_start in
+    { filename = build_dir ^ "/" ^ pos_fname ; line_number = pos_lnum }
+end
+
 (** {3 Modules} *)
 
 module rec Module : sig
@@ -28,6 +37,7 @@ module rec Module : sig
     source_loc : Identifier.SourceLocation.t option;
         (** Identifier.SourceLocation might not be set when the module is
             artificially constructed from a functor argument. *)
+    source_loc_jane : Source_loc_jane.t option;
     doc : Comment.docs;
     type_ : decl;
     canonical : Path.Module.t option;
@@ -116,6 +126,7 @@ and ModuleType : sig
     id : Identifier.ModuleType.t;
     source_loc : Identifier.SourceLocation.t option;
         (** Can be [None] for module types created by a type substitution. *)
+    source_loc_jane : Source_loc_jane.t option;
     doc : Comment.docs;
     canonical : Path.ModuleType.t option;
     expr : expr option;
@@ -262,6 +273,7 @@ and TypeDecl : sig
   type t = {
     id : Identifier.Type.t;
     source_loc : Identifier.SourceLocation.t option;
+    source_loc_jane : Source_loc_jane.t option;
     doc : Comment.docs;
     canonical : Path.Type.t option;
     equation : Equation.t;
@@ -299,6 +311,7 @@ and Exception : sig
   type t = {
     id : Identifier.Exception.t;
     source_loc : Identifier.SourceLocation.t option;
+    source_loc_jane : Source_loc_jane.t option;
     doc : Comment.docs;
     args : TypeDecl.Constructor.argument;
     res : TypeExpr.t option;
@@ -314,6 +327,7 @@ and Value : sig
   type t = {
     id : Identifier.Value.t;
     source_loc : Identifier.SourceLocation.t option;
+    source_loc_jane : Source_loc_jane.t option;
     value : value;
     doc : Comment.docs;
     type_ : TypeExpr.t;
@@ -331,6 +345,7 @@ and Class : sig
   type t = {
     id : Identifier.Class.t;
     source_loc : Identifier.SourceLocation.t option;
+    source_loc_jane : Source_loc_jane.t option;
     doc : Comment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -350,6 +365,7 @@ and ClassType : sig
   type t = {
     id : Identifier.ClassType.t;
     source_loc : Identifier.SourceLocation.t option;
+    source_loc_jane : Source_loc_jane.t option;
     doc : Comment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -491,12 +507,19 @@ module rec Compilation_unit : sig
     expansion : Signature.t option;
     linked : bool;  (** Whether this unit has been linked. *)
     source_loc : Identifier.SourceLocation.t option;
+    source_loc_jane : Source_loc_jane.t option;
     canonical : Path.Module.t option;
   }
 end =
   Compilation_unit
 
 module rec Source_info : sig
+  type point_in_file = {
+    pos_lnum : int;
+    pos_cnum : int;
+  }
+  type location_in_file = {loc_start : point_in_file ; loc_end: point_in_file}
+
   type 'a jump_to_impl =
     | Unresolved of 'a
     | Resolved of Identifier.SourceLocation.t
@@ -513,7 +536,7 @@ module rec Source_info : sig
     | ModuleType of Path.ModuleType.t jump_to
     | Type of Path.Type.t jump_to
 
-  type 'a with_pos = 'a * (int * int)
+  type 'a with_pos = 'a * location_in_file
 
   type t = annotation with_pos list
 end =

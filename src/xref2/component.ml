@@ -65,6 +65,7 @@ module rec Module : sig
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     type_ : decl;
     canonical : Odoc_model.Paths.Path.Module.t option;
@@ -156,6 +157,7 @@ end =
 and Exception : sig
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     args : TypeDecl.Constructor.argument;
     res : TypeExpr.t option;
@@ -230,6 +232,7 @@ and ModuleType : sig
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     canonical : Odoc_model.Paths.Path.ModuleType.t option;
     expr : expr option;
@@ -278,6 +281,7 @@ and TypeDecl : sig
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     canonical : Odoc_model.Paths.Path.Type.t option;
     equation : Equation.t;
@@ -291,6 +295,7 @@ and Value : sig
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     type_ : TypeExpr.t;
     value : value;
@@ -362,6 +367,7 @@ and Class : sig
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -378,6 +384,7 @@ and ClassType : sig
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -2163,6 +2170,7 @@ module Of_Lang = struct
     let open Odoc_model.Lang.TypeDecl in
     {
       TypeDecl.source_loc = ty.source_loc;
+      source_loc_jane = ty.source_loc_jane;
       doc = docs ident_map ty.doc;
       canonical = ty.canonical;
       equation = type_equation ident_map ty.equation;
@@ -2331,6 +2339,7 @@ module Of_Lang = struct
     let canonical = m.Odoc_model.Lang.Module.canonical in
     {
       Module.source_loc = m.source_loc;
+      source_loc_jane = m.source_loc_jane;
       doc = docs ident_map m.doc;
       type_;
       canonical;
@@ -2397,6 +2406,7 @@ module Of_Lang = struct
     let res = Opt.map (type_expression ident_map) e.res in
     {
       Exception.source_loc = e.source_loc;
+      source_loc_jane = e.source_loc_jane;
       doc = docs ident_map e.doc;
       args;
       res;
@@ -2504,6 +2514,7 @@ module Of_Lang = struct
     in
     {
       ModuleType.source_loc = m.source_loc;
+      source_loc_jane = m.source_loc_jane;
       doc = docs ident_map m.doc;
       canonical = m.canonical;
       expr;
@@ -2516,6 +2527,7 @@ module Of_Lang = struct
       doc = docs ident_map v.doc;
       value = v.value;
       source_loc = v.source_loc;
+      source_loc_jane = v.source_loc_jane
     }
 
   and include_ ident_map i =
@@ -2537,6 +2549,7 @@ module Of_Lang = struct
     let expansion = Opt.map (class_signature ident_map) c.expansion in
     {
       Class.source_loc = c.source_loc;
+      source_loc_jane = c.source_loc_jane;
       doc = docs ident_map c.doc;
       virtual_ = c.virtual_;
       params = c.params;
@@ -2564,6 +2577,7 @@ module Of_Lang = struct
     let expansion = Opt.map (class_signature ident_map) t.expansion in
     {
       ClassType.source_loc = t.source_loc;
+      source_loc_jane = t.source_loc_jane;
       doc = docs ident_map t.doc;
       virtual_ = t.virtual_;
       params = t.params;
@@ -2643,6 +2657,7 @@ module Of_Lang = struct
     let manifest = module_path ident_map t.manifest in
     {
       Module.source_loc = None;
+      source_loc_jane = None;
       doc = docs ident_map t.doc;
       type_ = Alias (manifest, None);
       canonical = None;
@@ -2764,6 +2779,7 @@ end
 let module_of_functor_argument (arg : FunctorParameter.parameter) =
   {
     Module.source_loc = None;
+    source_loc_jane = None;
     doc = { elements = []; warnings_tag = None };
     type_ = ModuleType arg.expr;
     canonical = None;
