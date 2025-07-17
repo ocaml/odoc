@@ -31,6 +31,8 @@ type env = Cmi.env = {
 }
 
 
+let cmt_builddir : string ref = ref ""
+
 let read_core_type env ctyp =
   Cmi.read_type_expr env ctyp.ctyp_type
 
