@@ -38,7 +38,9 @@ type polymorphic_constructor =
 
 type field = [ `FField of TypeDecl.Field.t ]
 
-type any_in_type = [ constructor | field | polymorphic_constructor ]
+type unboxed_field = [ `FUnboxedField of TypeDecl.UnboxedField.t ]
+
+type any_in_type = [ constructor | field | unboxed_field | polymorphic_constructor ]
 
 type any_in_type_in_sig =
   [ `In_type of Odoc_model.Names.TypeName.t * TypeDecl.t * any_in_type ]
@@ -206,6 +208,12 @@ let any_in_type (typ : TypeDecl.t) name =
     | _ :: tl -> find_field tl
     | [] -> None
   in
+  let rec find_unboxed_field = function
+    | ({ TypeDecl.UnboxedField.name = name'; _ } as field) :: _ when name' = name ->
+        Some (`FUnboxedField field)
+    | _ :: tl -> find_unboxed_field tl
+    | [] -> None
+  in
   let rec find_poly = function
     | TypeExpr.Polymorphic_variant.Constructor
         ({ TypeExpr.Polymorphic_variant.Constructor.name = name'; _ } as cons)
@@ -218,6 +226,7 @@ let any_in_type (typ : TypeDecl.t) name =
   match typ.representation with
   | Some (Variant cons) -> find_cons cons
   | Some (Record fields) -> find_field fields
+  | Some (Record_unboxed_product fields) -> find_unboxed_field fields
   | Some Extensible -> None
   | None -> (
       match typ.equation.manifest with

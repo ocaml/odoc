@@ -73,6 +73,10 @@ let rec read_pattern env parent doc pat =
       let pats = List.map snd pats (* remove labels *) in
 #endif
       List.concat (List.map (read_pattern env parent doc) pats)
+#if OCAML_VERSION = (5, 2, 0)
+    | Tpat_unboxed_tuple pats ->
+        List.concat (List.map (fun (_, p, _) -> read_pattern env parent doc p) pats)
+#endif
 #if OCAML_VERSION < (4, 13, 0)
     | Tpat_construct(_, _, pats) ->
 #else
@@ -88,6 +92,11 @@ let rec read_pattern env parent doc pat =
              (fun (_, _, pat) -> read_pattern env parent doc pat)
           pats)
 #if OCAML_VERSION = (5, 2, 0)
+    | Tpat_record_unboxed_product(pats, _) ->
+        List.concat
+          (List.map
+             (fun (_, _, pat) -> read_pattern env parent doc pat)
+          pats)
     | Tpat_array (_, _, pats) ->
 #elif OCAML_VERSION < (5, 4, 0)
     | Tpat_array pats ->

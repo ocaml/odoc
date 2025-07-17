@@ -246,6 +246,9 @@ let mark_type ty =
 #else
       | Ttuple tyl -> List.iter (loop visited) tyl
 #endif
+#if OCAML_VERSION = (5,2,0)
+      | Tunboxed_tuple tyl -> List.iter (fun (_, ty) -> loop visited ty) tyl
+#endif
       | Tconstr(_, tyl, _) ->
           List.iter (loop visited) tyl
       | Tvariant row ->
@@ -391,6 +394,8 @@ let mark_type_kind = function
         cds
   | Type_record(lds, _, _) ->
       List.iter (fun ld -> mark_type ld.ld_type) lds
+  | Type_record_unboxed_product(lds, _, _) ->
+      List.iter (fun ld -> mark_type ld.ld_type) lds
   | Type_open -> ()
 
 let mark_type_declaration decl =
@@ -501,6 +506,11 @@ let rec read_type_expr env typ =
           let typs = List.map (fun x -> None, read_type_expr env x) typs in
 #endif
           Tuple typs
+#if OCAML_VERSION = (5,2,0)
+      | Tunboxed_tuple typs ->
+          let typs = List.map (fun (l,t) -> l, read_type_expr env t) typs in
+            Unboxed_tuple typs
+#endif
       | Tconstr(p, params, _) ->
           let p = Env.Path.read_type env.ident_env p in
           let params = List.map (read_type_expr env) params in
@@ -743,6 +753,13 @@ let read_type_kind env parent =
             lbls
         in
           Some (Record lbls)
+    | Type_record_unboxed_product(lbls, _, _) ->
+        let lbls =
+          List.map
+            (read_label_declaration env (parent :> Identifier.FieldParent.t))
+            lbls
+        in
+          Some (Record lbls)
     | Type_open ->  Some Extensible
 
 let read_injectivity var =
@@ -810,6 +827,8 @@ let read_type_declaration env parent id decl =
 #endif
         decl.type_manifest = None || decl.type_private = Private
     | Type_record _ ->
+        decl.type_private = Private
+    | Type_record_unboxed_product _ ->
         decl.type_private = Private
 #if OCAML_VERSION >= (4,13,0)
   | Type_variant (tll,_,_) ->

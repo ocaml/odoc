@@ -38,6 +38,7 @@ let add ?(quantity = 1) tbl id =
     | `ModuleType (parent, _) -> do_ parent
     | `Method (parent, _) -> do_ parent
     | `Field (parent, _) -> do_ parent
+    | `UnboxedField (parent, _) -> do_ parent
     | `Extension (parent, _) -> do_ parent
     | `Type (parent, _) -> do_ parent
     | `Constructor (parent, _) -> do_ parent
@@ -68,6 +69,7 @@ let rec get t id =
   | `ModuleType (parent, _) -> do_ parent
   | `Method (parent, _) -> do_ parent
   | `Field (parent, _) -> do_ parent
+  | `UnboxedField (parent, _) -> do_ parent
   | `Extension (parent, _) -> do_ parent
   | `ExtensionDecl (parent, _, _) -> do_ parent
   | `Type (parent, _) -> do_ parent
@@ -121,6 +123,12 @@ module Strip = struct
     | { iv = #DataType.t_pv; _ } as v ->
         (strip_datatype_path v :> FieldParent.t)
 
+  and strip_unboxed_field_parent_path : UnboxedFieldParent.t -> UnboxedFieldParent.t =
+   fun x ->
+    match x with
+    | { iv = #DataType.t_pv; _ } as v ->
+        (strip_datatype_path v :> UnboxedFieldParent.t)
+
   and strip_label_parent_path : LabelParent.t -> LabelParent.t =
    fun x ->
     match x with
@@ -141,6 +149,8 @@ module Strip = struct
         Mk.instance_variable (strip_class_sig_path p, name)
     | { iv = `Method (p, name); _ } -> Mk.method_ (strip_class_sig_path p, name)
     | { iv = `Field (p, name); _ } -> Mk.field (strip_field_parent_path p, name)
+    | { iv = `UnboxedField (p, name); _ } ->
+        Mk.unboxed_field (strip_unboxed_field_parent_path p, name)
     | { iv = `Label (p, name); _ } -> Mk.label (strip_label_parent_path p, name)
     | { iv = `Exception (p, name); _ } -> Mk.exception_ (strip_sig_path p, name)
     | { iv = `Extension (p, name); _ } -> Mk.extension (strip_sig_path p, name)

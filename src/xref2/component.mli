@@ -119,6 +119,7 @@ and TypeExpr : sig
     | Alias of t * string
     | Arrow of label option * t * t
     | Tuple of (string option * t) list
+    | Unboxed_tuple of (string option * t) list
     | Constr of Cpath.type_ * t list
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
@@ -240,6 +241,15 @@ and TypeDecl : sig
     }
   end
 
+  module UnboxedField : sig
+    type t = {
+      name : string;
+      doc : CComment.docs;
+      mutable_ : bool;
+      type_ : TypeExpr.t;
+    }
+  end
+
   module Constructor : sig
     type argument = Tuple of TypeExpr.t list | Record of Field.t list
 
@@ -255,6 +265,7 @@ and TypeDecl : sig
     type t =
       | Variant of Constructor.t list
       | Record of Field.t list
+      | Record_unboxed_product of UnboxedField.t list
       | Extensible
   end
 
@@ -502,6 +513,9 @@ module Element : sig
 
   type field = [ `Field of Identifier.Field.t * TypeDecl.Field.t ]
 
+  type unboxed_field =
+    [ `UnboxedField of Identifier.UnboxedField.t * TypeDecl.UnboxedField.t ]
+
   (* No component for pages yet *)
   type page = [ `Page of Identifier.Page.t * Odoc_model.Lang.Page.t ]
 
@@ -521,6 +535,7 @@ module Element : sig
     | extension
     | extension_decl
     | field
+    | unboxed_field
     | page ]
 
   val identifier : [< any ] -> Identifier.t
