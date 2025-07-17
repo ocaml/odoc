@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+val cmt_builddir : string ref
+
 val read_implementation :
   Odoc_model.Paths.Identifier.ContainerPage.t option ->
   string ->

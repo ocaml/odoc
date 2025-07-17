@@ -31,6 +31,7 @@ type env = Cmi.env = {
   warnings_tag : string option;
 }
 
+let cmti_builddir : string ref = ref ""
 let read_module_expr : (env -> Identifier.Signature.t -> Identifier.LabelParent.t -> Typedtree.module_expr -> ModuleType.expr) ref = ref (fun _ _ _ _ -> failwith "unset")
 
 let opt_map f = function
