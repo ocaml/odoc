@@ -135,7 +135,7 @@ let of_doc (doc : Odoc_model.Comment.elements) =
   let txt = Text.of_doc doc in
   `String txt
 
-let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
+let of_entry ({ Entry.id; doc; kind ; source_loc = _} as entry) html occurrences =
   let j_id = of_id id in
   let doc = of_doc doc in
   let kind =

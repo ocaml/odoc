@@ -653,7 +653,9 @@ let read_value_description ({ident_env ; warnings_tag} as env) parent id vd =
         External primitives
     | _ -> assert false
   in
-  Value { Value.id; source_loc; doc; type_; value }
+  (* Source location is not trustworthy since it's a cmi so left as None *)
+  let source_loc_jane = None in
+  Value { Value.id; source_loc; doc; type_; value ; source_loc_jane }
 
 let read_label_declaration env parent ld =
   let open TypeDecl.Field in
@@ -800,7 +802,9 @@ let read_type_declaration env parent id decl =
   in
   let private_ = (decl.type_private = Private) in
   let equation = Equation.{params; manifest; constraints; private_} in
-  {id; source_loc; doc; canonical; equation; representation}
+  (* Source location is not trustworthy since it's a cmi so left as None *)
+  let source_loc_jane = None in
+  {id; source_loc; doc; canonical; equation; representation; source_loc_jane }
 
 let read_extension_constructor env parent id ext =
   let open Extension.Constructor in
@@ -847,7 +851,9 @@ let read_exception env parent id ext =
         (parent : Identifier.Signature.t :> Identifier.FieldParent.t) ext.ext_args
     in
     let res = opt_map (read_type_expr env) ext.ext_ret_type in
-    {id; source_loc; doc; args; res}
+    (* Source location is not trustworthy since it's a cmi so left as None *)
+    let source_loc_jane = None in
+    {id; source_loc; doc; args; res; source_loc_jane}
 
 let read_method env parent concrete (name, kind, typ) =
   let open Method in
@@ -945,7 +951,9 @@ let read_class_type_declaration env parent id cltd =
       read_class_signature env (id :> Identifier.ClassSignature.t) cltd.clty_params cltd.clty_type
     in
     let virtual_ = read_virtual cltd.clty_type in
-    { id; source_loc; doc; virtual_; params; expr; expansion = None }
+    (* Source location is not trustworthy since it's a cmi so left as None *)
+    let source_loc_jane = None in
+    { id; source_loc; doc; virtual_; params; expr; expansion = None ; source_loc_jane}
 
 let rec read_class_type env parent params =
   let open Class in function
@@ -983,7 +991,9 @@ let read_class_declaration env parent id cld =
       read_class_type env (id :> Identifier.ClassSignature.t) cld.cty_params cld.cty_type
     in
     let virtual_ = cld.cty_new = None in
-    { id; source_loc; doc; virtual_; params; type_; expansion = None }
+    (* Source location is not trustworthy since it's a cmi so left as None *)
+    let source_loc_jane = None in
+    { id; source_loc; doc; virtual_; params; type_; expansion = None ; source_loc_jane}
 
 let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
   let open ModuleType in
@@ -1029,7 +1039,9 @@ and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_
   let doc, canonical = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_canonical container mtd.mtd_attributes in
   let canonical = match canonical with | None -> None | Some s -> Doc_attr.conv_canonical_module_type s in
   let expr = opt_map (read_module_type env (id :> Identifier.Signature.t)) mtd.mtd_type in
-  {id; source_loc; doc; canonical; expr }
+  (* Source location is not trustworthy since it's a cmi so left as None *)
+  let source_loc_jane = None in
+  {id; source_loc; doc; canonical; expr ; source_loc_jane}
 
 and read_module_declaration env parent ident (md : Odoc_model.Compat.module_declaration) =
   let open Module in
@@ -1048,7 +1060,9 @@ and read_module_declaration env parent ident (md : Odoc_model.Compat.module_decl
     | Some _ -> false
     | None -> Odoc_model.Names.contains_double_underscore (Ident.name ident)
   in
-  {id; source_loc; doc; type_; canonical; hidden }
+  (* Source location is not trustworthy since it's a cmi so left as None *)
+  let source_loc_jane = None in
+  {id; source_loc; doc; type_; canonical; hidden ; source_loc_jane}
 
 and read_type_rec_status rec_status =
   let open Signature in

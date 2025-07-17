@@ -489,6 +489,7 @@ and class_ map parent id c =
   {
     id = identifier;
     source_loc = c.source_loc;
+    source_loc_jane = c.source_loc_jane;
     doc = docs (parent :> Identifier.LabelParent.t) c.doc;
     virtual_ = c.virtual_;
     params = c.params;
@@ -527,6 +528,7 @@ and class_type map parent id c =
   {
     Odoc_model.Lang.ClassType.id = identifier;
     source_loc = c.source_loc;
+    source_loc_jane = c.source_loc_jane;
     doc = docs (parent :> Identifier.LabelParent.t) c.doc;
     virtual_ = c.virtual_;
     params = c.params;
@@ -687,6 +689,7 @@ and value_ map parent id v =
   {
     id = identifier;
     source_loc = v.source_loc;
+    source_loc_jane = v.source_loc_jane;
     doc = docs (parent :> Identifier.LabelParent.t) v.doc;
     type_ = type_expr map (parent :> Identifier.LabelParent.t) v.type_;
     value = v.value;
@@ -730,6 +733,7 @@ and module_ map parent id m =
     {
       Odoc_model.Lang.Module.id;
       source_loc = m.source_loc;
+      source_loc_jane = m.source_loc_jane;
       doc = docs (parent :> Identifier.LabelParent.t) m.doc;
       type_ = module_decl map identifier m.type_;
       canonical = m.canonical;
@@ -876,6 +880,7 @@ and module_type :
   {
     Odoc_model.Lang.ModuleType.id = identifier;
     source_loc = mty.source_loc;
+    source_loc_jane = mty.source_loc_jane;
     doc = docs (parent :> Identifier.LabelParent.t) mty.doc;
     canonical = mty.canonical;
     expr = Opt.map (module_type_expr map sig_id) mty.expr;
@@ -944,6 +949,7 @@ and type_decl map parent id (t : Component.TypeDecl.t) :
   {
     id = identifier;
     source_loc = t.source_loc;
+    source_loc_jane = t.source_loc_jane;
     equation =
       type_decl_equation map (parent :> Identifier.FieldParent.t) t.equation;
     doc = docs (parent :> Identifier.LabelParent.t) t.doc;
@@ -1072,6 +1078,7 @@ and exception_ map parent id (e : Component.Exception.t) :
   {
     id = identifier;
     source_loc = e.source_loc;
+    source_loc_jane = e.source_loc_jane;
     doc = docs (parent :> Identifier.LabelParent.t) e.doc;
     args =
       type_decl_constructor_argument map

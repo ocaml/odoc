@@ -579,7 +579,7 @@ and module_type s t =
   let expr =
     match t.expr with Some m -> Some (module_type_expr s m) | None -> None
   in
-  { expr; source_loc = t.source_loc; doc = t.doc; canonical = t.canonical }
+  { expr; source_loc = t.source_loc; source_loc_jane = t.source_loc_jane ; doc = t.doc; canonical = t.canonical }
 
 and module_type_substitution s t =
   let open Component.ModuleTypeSubstitution in

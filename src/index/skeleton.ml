@@ -14,12 +14,14 @@ module Entry = struct
       match u.content with Pack _ -> [] | Module m -> m.doc.elements
     in
     Entry.entry ~id:u.id ~doc ~kind:(Module { has_expansion })
+      ~source_loc:u.source_loc_jane
 
   let of_module (m : Module.t) =
     let has_expansion =
       match m.type_ with Alias (_, None) -> false | _ -> true
     in
     Entry.entry ~id:m.id ~doc:m.doc.elements ~kind:(Module { has_expansion })
+      ~source_loc:m.source_loc_jane
 
   let of_module_type (mt : ModuleType.t) =
     let has_expansion =
@@ -35,7 +37,7 @@ module Entry = struct
       | _ -> true
     in
     Entry.entry ~id:mt.id ~doc:mt.doc.elements
-      ~kind:(ModuleType { has_expansion })
+      ~kind:(ModuleType { has_expansion }) ~source_loc:mt.source_loc_jane
 
   let of_type_decl (td : TypeDecl.t) =
     let kind =
@@ -47,6 +49,7 @@ module Entry = struct
         }
     in
     Entry.entry ~id:td.id ~doc:td.doc.elements ~kind
+      ~source_loc:td.source_loc_jane
 
   let varify_params =
     List.mapi (fun i param ->
@@ -54,7 +57,7 @@ module Entry = struct
         | Var name -> TypeExpr.Var name
         | Any -> Var (Printf.sprintf "tv_%i" i))
 
-  let of_constructor id_parent params (c : TypeDecl.Constructor.t) =
+  let of_constructor id_parent params source_loc (c : TypeDecl.Constructor.t) =
     let args = c.args in
     let res =
       match c.res with
@@ -67,9 +70,9 @@ module Entry = struct
               params )
     in
     let kind = Entry.Constructor { args; res } in
-    Entry.entry ~id:c.id ~doc:c.doc.elements ~kind
+    Entry.entry ~id:c.id ~doc:c.doc.elements ~kind ~source_loc
 
-  let of_field id_parent params (field : TypeDecl.Field.t) =
+  let of_field id_parent params source_loc (field : TypeDecl.Field.t) =
     let params = varify_params params in
     let parent_type =
       TypeExpr.Constr
@@ -81,7 +84,7 @@ module Entry = struct
       Entry.Field
         { mutable_ = field.mutable_; type_ = field.type_; parent_type }
     in
-    Entry.entry ~id:field.id ~doc:field.doc.elements ~kind
+    Entry.entry ~id:field.id ~doc:field.doc.elements ~kind ~source_loc
 
   let of_exception (exc : Exception.t) =
     let res =
@@ -94,10 +97,11 @@ module Entry = struct
     in
     let kind = Entry.Exception { args = exc.args; res } in
     Entry.entry ~id:exc.id ~doc:exc.doc.elements ~kind
+      ~source_loc:exc.source_loc_jane
 
   let of_value (v : Value.t) =
     let kind = Entry.Value { value = v.value; type_ = v.type_ } in
-    Entry.entry ~id:v.id ~doc:v.doc.elements ~kind
+    Entry.entry ~id:v.id ~doc:v.doc.elements ~kind ~source_loc:v.source_loc_jane
 
   let of_extension_constructor type_path params (v : Extension.Constructor.t) =
     let res =
@@ -108,26 +112,29 @@ module Entry = struct
           TypeExpr.Constr (type_path, params)
     in
     let kind = Entry.ExtensionConstructor { args = v.args; res } in
-    Entry.entry ~id:v.id ~doc:v.doc.elements ~kind
+    Entry.entry ~id:v.id ~doc:v.doc.elements ~kind ~source_loc:None
 
   let of_class (cl : Class.t) =
     let kind = Entry.Class { virtual_ = cl.virtual_; params = cl.params } in
     Entry.entry ~id:cl.id ~doc:cl.doc.elements ~kind
+      ~source_loc:cl.source_loc_jane
 
   let of_class_type (ct : ClassType.t) =
     let kind =
       Entry.Class_type { virtual_ = ct.virtual_; params = ct.params }
     in
     Entry.entry ~id:ct.id ~doc:ct.doc.elements ~kind
+      ~source_loc:ct.source_loc_jane
 
   let of_method (m : Method.t) =
     let kind =
       Entry.Method
         { virtual_ = m.virtual_; private_ = m.private_; type_ = m.type_ }
     in
-    Entry.entry ~id:m.id ~doc:m.doc.elements ~kind
+    Entry.entry ~id:m.id ~doc:m.doc.elements ~kind ~source_loc:None
 
-  let of_docs id doc = Entry.entry ~id ~doc:doc.elements ~kind:Doc
+  let of_docs id source_loc doc =
+    Entry.entry ~id ~doc:doc.elements ~kind:Doc ~source_loc
 end
 
 let if_non_hidden id f =
@@ -215,18 +222,18 @@ and type_decl td =
     match td.representation with
     | None -> []
     | Some (Variant cl) ->
-        List.concat_map (constructor td.id td.equation.params) cl
-    | Some (Record fl) -> List.concat_map (field td.id td.equation.params) fl
+        List.concat_map (constructor td.id td.equation.params td.source_loc_jane) cl
+    | Some (Record fl) -> List.concat_map (field td.id td.equation.params td.source_loc_jane) fl
     | Some Extensible -> []
   in
   [ { Tree.node = entry; children } ]
 
-and constructor type_id params c =
-  let entry = Entry.of_constructor type_id params c in
+and constructor type_id params source_loc c =
+  let entry = Entry.of_constructor type_id params source_loc c in
   [ Tree.leaf entry ]
 
-and field type_id params f =
-  let entry = Entry.of_field type_id params f in
+and field type_id params source_loc f =
+  let entry = Entry.of_field type_id params source_loc f in
   [ Tree.leaf entry ]
 
 and exception_ exc =
@@ -263,7 +270,7 @@ and docs id d =
   match d with
   | `Stop -> []
   | `Docs d ->
-      let entry = Entry.of_docs id d in
+      let entry = Entry.of_docs id None d in
       [ Tree.leaf entry ]
 
 and simple_expansion id s_e =
@@ -312,5 +319,5 @@ let from_unit u = unit u
 let from_page (p : Page.t) =
   match p with
   | { name; content; _ } ->
-      let entry = Entry.of_docs name content in
+      let entry = Entry.of_docs name None content in
       Tree.leaf entry

@@ -4,7 +4,7 @@ open Odoc_model
 open Lang
 open Odoc_index
 
-let url { Entry.id; kind; doc = _ } =
+let url { Entry.id; kind; doc = _ ; source_loc = _} =
   let open Entry in
   let stop_before =
     (* Some module/module types/... might not have an expansion, so we need to
@@ -221,7 +221,7 @@ let html_string_of_doc doc =
   doc |> of_doc |> Format.asprintf "%a" (Tyxml.Html.pp_elt ())
 
 let of_entry (entry : Entry.t) =
-  let ({ id; doc; kind } : Entry.t) = entry in
+  let ({ id; doc; kind ; source_loc=_} : Entry.t) = entry in
   let rhs = rhs_of_kind kind in
   let prefix_name, name = names_of_id id in
   let prefix_name = Some prefix_name and name = Some name in

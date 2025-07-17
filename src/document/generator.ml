@@ -285,8 +285,8 @@ module Make (Syntax : SYNTAX) = struct
 
     let source id syntax_info infos source_code =
       let url = path id in
-      let mapper (info, loc) =
-        match info_of_info info with Some x -> Some (x, loc) | None -> None
+      let mapper (info, (loc : Lang.Source_info.location_in_file)) =
+        match info_of_info info with Some x -> Some (x, (loc.loc_start.pos_cnum, loc.loc_end.pos_cnum)) | None -> None
       in
       let infos = Odoc_utils.List.filter_map mapper infos in
       let syntax_info =
