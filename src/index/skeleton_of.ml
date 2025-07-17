@@ -43,11 +43,11 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
     let kind = Entry.Page page.Lang.Page.frontmatter in
     let doc = page.content.elements in
     let id = page.name in
-    Entry.entry ~kind ~doc ~id
+    Entry.entry ~kind ~doc ~id ~source_loc:None
   in
   let entry_of_impl id =
     let kind = Entry.Impl in
-    Entry.entry ~kind ~doc:[] ~id
+    Entry.entry ~kind ~doc:[] ~id ~source_loc:None
   in
   let children_order, index =
     match In_progress.index dir with
@@ -60,14 +60,14 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
           match In_progress.root_dir dir with
           | Some id ->
               let kind = Entry.Dir in
-              Entry.entry ~kind ~doc:[] ~id
+              Entry.entry ~kind ~doc:[] ~id ~source_loc:None
           | None ->
               let id =
                 (* root dir must have an index page *)
                 Id.Mk.leaf_page (None, Names.PageName.make_std "index")
               in
               let kind = Entry.Dir in
-              Entry.entry ~kind ~doc:[] ~id
+              Entry.entry ~kind ~doc:[] ~id ~source_loc:None
         in
         (None, entry)
   in

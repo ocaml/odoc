@@ -126,7 +126,7 @@ let wrapper_module (dummy_id, _dummy_path) ~hidden items =
   let items = wrapper_items dummy_id items in
   let sig_ : Signature.t = { items; compiled = true; removed = []; doc = no_doc } in
   let type_ : Module.decl = ModuleType (Signature sig_) in
-  let module_ : Module.t = {id=dummy_id; source_loc=None; doc=no_doc; type_; canonical=None; hidden} in
+  let module_ : Module.t = {id=dummy_id; source_loc=None; source_loc_jane=None; doc=no_doc; type_; canonical=None; hidden} in
   Signature.Module (Ordinary, module_)
 
 let read_label = Cmi.read_label
@@ -311,7 +311,8 @@ let read_value_description env parent vd =
   in
   let ext_attrs = Doc_attr.attrs_of_value_description vd.val_val in
   let modalities = Cmi.read_value_descr_modalities vd.val_val in
-  Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities }
+  let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmti_builddir vd.val_loc) in
+  Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities; source_loc_jane }
 
 #if OCAML_VERSION >= (5,6,0)
 (* Since 5.6 (RFC 44) [external] declarations have their own Typedtree node,
@@ -355,7 +356,8 @@ let read_primitive_description env parent pd =
   in
   let ext_attrs = Doc_attr.attrs_of_value_description pd.prim_val in
   let modalities = Cmi.read_value_descr_modalities pd.prim_val in
-  Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities }
+  let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmti_builddir pd.prim_val.val_loc) in
+  Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities; source_loc_jane }
 #endif
 
 let read_type_parameter (ctyp, var_and_injectivity)  =
@@ -543,7 +545,8 @@ let read_type_declaration env parent decl =
   let canonical = match canonical with | None -> None | Some s -> Doc_attr.conv_canonical_type s in
   let equation = read_type_equation env container decl in
   let representation = read_type_kind env id decl.typ_kind in
-  {id; source_loc; doc; canonical; equation; representation}
+  let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmti_builddir decl.typ_loc) in
+  {id; source_loc; doc; canonical; equation; representation; source_loc_jane}
 
 let read_type_declarations env parent rec_flag decls =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -620,7 +623,8 @@ let read_exception env parent (ext : extension_constructor) =
         env container label_container args
     in
     let res = opt_map (read_core_type env label_container) res in
-    {id; source_loc; doc; args; res}
+  let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmti_builddir ext.ext_loc) in
+  {id; source_loc; doc; args; res; source_loc_jane}
 
 let rec read_class_type_field env parent ctf =
   let open ClassSignature in
@@ -701,7 +705,8 @@ let read_class_type_declaration env parent cltd =
   let virtual_ = (cltd.ci_virt = Virtual) in
   let params = List.map read_type_parameter cltd.ci_params in
   let expr = read_class_signature env (id :> Identifier.ClassSignature.t) container cltd.ci_expr in
-  { id; source_loc; doc; virtual_; params; expr; expansion = None }
+  let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmti_builddir cltd.ci_loc) in
+  { id; source_loc; doc; virtual_; params; expr; expansion = None ; source_loc_jane }
 
 let read_class_type_declarations env parent cltds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -736,7 +741,8 @@ let read_class_description env parent cld =
   let virtual_ = (cld.ci_virt = Virtual) in
   let params = List.map read_type_parameter cld.ci_params in
   let type_ = read_class_type env (id :> Identifier.ClassSignature.t) container cld.ci_expr in
-  { id; source_loc; doc; virtual_; params; type_; expansion = None }
+  let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmti_builddir cld.ci_loc) in
+  { id; source_loc; doc; virtual_; params; type_; expansion = None ; source_loc_jane}
 
 let read_class_descriptions env parent clds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -916,7 +922,8 @@ and read_module_type_declaration env parent mtd =
     | None -> (None, canonical)
   in
   let canonical = match canonical with | None -> None | Some s -> Doc_attr.conv_canonical_module_type s in
-  { id; source_loc; doc; canonical; expr }
+  let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmti_builddir mtd.mtd_loc) in
+  { id; source_loc; doc; canonical; expr ; source_loc_jane}
 
 and read_module_declaration env parent md =
   let open Module in
@@ -955,7 +962,8 @@ and read_module_declaration env parent md =
     | _ -> false
 #endif
   in
-  Some {id; source_loc; doc; type_; canonical; hidden}
+  let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmti_builddir md.md_loc) in
+  Some {id; source_loc; doc; type_; canonical; hidden; source_loc_jane}
 
 and read_module_declarations env parent mds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -1097,7 +1105,7 @@ and read_include_functor env parent wrapper incl =
   let expansion = { content; shadowed; authoritative = false } in
   let hidden = true in
   let id, functor_path = generate_wrapper_module parent ~prefix:"INCLUDE" ~hidden in
-  let functor_ : Module.t = {id; source_loc=None; doc; type_=ModuleType expr; canonical=None; hidden} in
+  let functor_ : Module.t = {id; source_loc=None; source_loc_jane=None; doc; type_=ModuleType expr; canonical=None; hidden} in
   let decl = Functor {target = Path (`Apply (functor_path, wrapper)); original_ref = ModuleType expr} in
   [ Signature.Module (Ordinary, functor_);
     Include {parent; doc; decl; expansion; status; strengthened=None; loc } ]
