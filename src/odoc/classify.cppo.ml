@@ -197,7 +197,7 @@ let read_library ic init =
   let open Magic_number in
   match read_current_info ~expected_kind:None ic with
   | Ok { kind = Cma; version = _ } -> read_cma ic init
-  | Ok { kind = Cmxa _; version = _ } -> read_cmxa ic init
+  | Ok { kind = Cmxa; version = _ } -> read_cmxa ic init
   | Ok { kind = _; version = _ } -> Error (`Msg "Not a valid library")
   | Error _ -> Error (`Msg "Not a valid file")
 #else
