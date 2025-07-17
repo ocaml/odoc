@@ -66,9 +66,9 @@ Uses of B.Z are not counted since they go to a hidden module.
 Uses of values Y.x and Z.y (in b.ml) are not counted since they come from a "local" module.
 
   $ occurrences_print main.odoc-occurrences | sort
-  Main was used directly 0 times and indirectly 2 times
-  Main.A was used directly 1 times and indirectly 0 times
-  Main.B was used directly 1 times and indirectly 0 times
+  m_A.r_Main was used directly 1 times and indirectly 0 times
+  m_B.r_Main was used directly 1 times and indirectly 0 times
+  r_Main was used directly 0 times and indirectly 2 times
 
   $ occurrences_print main__.odoc-occurrences | sort
 
@@ -77,18 +77,18 @@ A only uses "persistent" values: one it defines itself.
 
 "Aliased" values are not counted since they become persistent
   $ occurrences_print main__B.odoc-occurrences | sort
-  Main was used directly 0 times and indirectly 7 times
-  Main.A was used directly 2 times and indirectly 5 times
-  Main.A.(||>) was used directly 1 times and indirectly 0 times
-  Main.A.M was used directly 2 times and indirectly 0 times
-  Main.A.t was used directly 1 times and indirectly 0 times
-  Main.A.x was used directly 1 times and indirectly 0 times
+  m_A.r_Main was used directly 2 times and indirectly 5 times
+  mt_M.m_A.r_Main was used directly 2 times and indirectly 0 times
+  r_Main was used directly 0 times and indirectly 7 times
+  t_t.m_A.r_Main was used directly 1 times and indirectly 0 times
+  v_(||>).m_A.r_Main was used directly 1 times and indirectly 0 times
+  v_x.m_A.r_Main was used directly 1 times and indirectly 0 times
 
 "Aliased" values are not counted since they become persistent
   $ occurrences_print main__C.odoc-occurrences | sort
-  Main was used directly 0 times and indirectly 2 times
-  Main.A was used directly 1 times and indirectly 1 times
-  Main.A.x was used directly 1 times and indirectly 0 times
+  m_A.r_Main was used directly 1 times and indirectly 1 times
+  r_Main was used directly 0 times and indirectly 2 times
+  v_x.m_A.r_Main was used directly 1 times and indirectly 0 times
 
 Now we can merge all tables
 
@@ -101,13 +101,13 @@ Now we can merge all tables
 
   $ occurrences_print aggregated.odoc-occurrences | sort > all_merged
   $ cat all_merged
-  Main was used directly 0 times and indirectly 11 times
-  Main.A was used directly 4 times and indirectly 6 times
-  Main.A.(||>) was used directly 1 times and indirectly 0 times
-  Main.A.M was used directly 2 times and indirectly 0 times
-  Main.A.t was used directly 1 times and indirectly 0 times
-  Main.A.x was used directly 2 times and indirectly 0 times
-  Main.B was used directly 1 times and indirectly 0 times
+  m_A.r_Main was used directly 4 times and indirectly 6 times
+  m_B.r_Main was used directly 1 times and indirectly 0 times
+  mt_M.m_A.r_Main was used directly 2 times and indirectly 0 times
+  r_Main was used directly 0 times and indirectly 11 times
+  t_t.m_A.r_Main was used directly 1 times and indirectly 0 times
+  v_(||>).m_A.r_Main was used directly 1 times and indirectly 0 times
+  v_x.m_A.r_Main was used directly 2 times and indirectly 0 times
 
 Compare with the one created directly with all occurrences:
 
@@ -119,31 +119,31 @@ We can also include hidden ids:
 
   $ odoc count-occurrences main__B -o b.odoc-occurrences --include-hidden
   $ occurrences_print b.odoc-occurrences | sort
-  Main was used directly 0 times and indirectly 7 times
-  Main.A was used directly 2 times and indirectly 5 times
-  Main.A.(||>) was used directly 1 times and indirectly 0 times
-  Main.A.M was used directly 2 times and indirectly 0 times
-  Main.A.t was used directly 1 times and indirectly 0 times
-  Main.A.x was used directly 1 times and indirectly 0 times
-  Main__ was used directly 0 times and indirectly 2 times
-  Main__.C was used directly 1 times and indirectly 1 times
-  Main__.C.y was used directly 1 times and indirectly 0 times
+  m_A.r_Main was used directly 2 times and indirectly 5 times
+  m_C.r_Main__ was used directly 1 times and indirectly 1 times
+  mt_M.m_A.r_Main was used directly 2 times and indirectly 0 times
+  r_Main was used directly 0 times and indirectly 7 times
+  r_Main__ was used directly 0 times and indirectly 2 times
+  t_t.m_A.r_Main was used directly 1 times and indirectly 0 times
+  v_(||>).m_A.r_Main was used directly 1 times and indirectly 0 times
+  v_x.m_A.r_Main was used directly 1 times and indirectly 0 times
+  v_y.m_C.r_Main__ was used directly 1 times and indirectly 0 times
 
   $ odoc count-occurrences . -o all.odoc-occurrences --include-hidden
   $ occurrences_print all.odoc-occurrences | sort
-  Main was used directly 0 times and indirectly 11 times
-  Main.A was used directly 4 times and indirectly 6 times
-  Main.A.(||>) was used directly 1 times and indirectly 0 times
-  Main.A.M was used directly 2 times and indirectly 0 times
-  Main.A.t was used directly 1 times and indirectly 0 times
-  Main.A.x was used directly 2 times and indirectly 0 times
-  Main.B was used directly 1 times and indirectly 0 times
-  Main__ was used directly 0 times and indirectly 2 times
-  Main__.C was used directly 1 times and indirectly 1 times
-  Main__.C.y was used directly 1 times and indirectly 0 times
-  Main__A was used directly 1 times and indirectly 0 times
-  Main__B was used directly 1 times and indirectly 0 times
-  Main__C was used directly 1 times and indirectly 0 times
+  m_A.r_Main was used directly 4 times and indirectly 6 times
+  m_B.r_Main was used directly 1 times and indirectly 0 times
+  m_C.r_Main__ was used directly 1 times and indirectly 1 times
+  mt_M.m_A.r_Main was used directly 2 times and indirectly 0 times
+  r_Main was used directly 0 times and indirectly 11 times
+  r_Main__ was used directly 0 times and indirectly 2 times
+  r_Main__A was used directly 1 times and indirectly 0 times
+  r_Main__B was used directly 1 times and indirectly 0 times
+  r_Main__C was used directly 1 times and indirectly 0 times
+  t_t.m_A.r_Main was used directly 1 times and indirectly 0 times
+  v_(||>).m_A.r_Main was used directly 1 times and indirectly 0 times
+  v_x.m_A.r_Main was used directly 2 times and indirectly 0 times
+  v_y.m_C.r_Main__ was used directly 1 times and indirectly 0 times
 
 We can use the generated table when generating the json output:
 

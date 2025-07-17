@@ -1568,9 +1568,9 @@ module Occurrences = struct
     else Ok f
 
   module Count = struct
-    let count directories dst warnings_options include_hidden =
+    let count directories dst revision warnings_options include_hidden =
       dst_of_string dst >>= fun dst ->
-      Occurrences.count ~dst ~warnings_options directories include_hidden
+      Occurrences.count ~dst ~warnings_options ~revision directories include_hidden
 
     let cmd =
       let dst =
@@ -1579,6 +1579,13 @@ module Occurrences = struct
           required
           & opt (some string) None
           & info ~docs ~docv:"PATH" ~doc [ "o" ])
+      in
+      let revision =
+        let doc = "Current hg revision id" in
+        Arg.(
+          value & opt (some string) None
+          & info ~docs ~doc ["revision"]
+        )
       in
       let include_hidden =
         let doc = "Include hidden identifiers in the table" in
@@ -1596,7 +1603,7 @@ module Occurrences = struct
       in
       Term.(
         const handle_error
-        $ (const count $ input $ dst $ warnings_options $ include_hidden))
+        $ (const count $ input $ dst $ revision $ warnings_options $ include_hidden))
 
     let info ~docs =
       let doc =

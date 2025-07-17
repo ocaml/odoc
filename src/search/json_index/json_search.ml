@@ -228,7 +228,7 @@ let of_entry ({ Entry.id; doc; kind ; source_loc = _} as entry) html occurrences
   in
   let occurrences =
     match occurrences with
-    | Some { Odoc_occurrences.Table.direct; indirect } ->
+    | Some { Odoc_occurrences.Table.direct; indirect; impl_src = _ } ->
         [
           ( "occurrences",
             `Object
@@ -271,7 +271,7 @@ let of_entry ~simplified ?occurrences entry =
     | Some occurrences -> (
         match Odoc_occurrences.Table.get occurrences id with
         | Some x -> Some x
-        | None -> Some { direct = 0; indirect = 0 })
+        | None -> Some { direct = 0; indirect = 0; impl_src = None })
   in
   let entry, html, occurrences =
     let occ = get_occ entry.Entry.id in
