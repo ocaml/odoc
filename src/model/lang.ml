@@ -581,6 +581,9 @@ end =
   Compilation_unit
 
 module rec Source_info : sig
+  type point_in_file = { pos_lnum : int; pos_cnum : int }
+  type location_in_file = { loc_start : point_in_file; loc_end : point_in_file }
+
   type 'a jump_to_impl =
     | Unresolved of 'a
     | Resolved of Identifier.SourceLocation.t
@@ -597,7 +600,7 @@ module rec Source_info : sig
     | ModuleType of Path.ModuleType.t jump_to
     | Type of Path.Type.t jump_to
 
-  type 'a with_pos = 'a * (int * int)
+  type 'a with_pos = 'a * location_in_file
 
   type t = annotation with_pos list
 end =
