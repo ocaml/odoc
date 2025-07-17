@@ -16,6 +16,7 @@
 
 module Paths = Odoc_model.Paths
 
+val cmti_builddir : string ref
 val read_module_expr :
   (Cmi.env ->
   Paths.Identifier.Signature.t ->
