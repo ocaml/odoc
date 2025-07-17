@@ -125,6 +125,7 @@ let read_cmti ~make_root ~parent ~filename ~warnings_tag () =
               cmt_info.cmt_source_digest,
               cmt_info.cmt_builddir )
           in
+          Cmti.cmti_builddir := cmt_info.cmt_builddir;
           let id, sg, canonical =
             Cmti.read_interface parent name ~warnings_tag intf
           in
@@ -197,6 +198,8 @@ let read_cmt ~make_root ~parent ~filename ~warnings_tag () =
           make_compilation_unit ~make_root ~imports ~interface ~sourcefile ~name
             ~id content
       | Implementation impl ->
+          Cmt.cmt_builddir := cmt_info.cmt_builddir;
+          Cmti.cmti_builddir := cmt_info.cmt_builddir;
           let id, sg, canonical =
             Cmt.read_implementation parent name ~warnings_tag impl
           in
