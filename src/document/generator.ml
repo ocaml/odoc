@@ -406,6 +406,22 @@ module Make (Syntax : SYNTAX) = struct
           in
           Syntax.Type.handle_constructor_params path (O.box_hv params)
 
+    and tuple ?(needs_parentheses = false) ~boxed lst =
+      let opt_label = function
+          None -> O.noop
+        | Some lbl -> O.txt lbl ++ O.txt ":" ++ O.cut
+      in
+      let res =
+        O.box_hv_no_indent
+          (O.list lst ~sep:Syntax.Type.Tuple.element_separator
+             ~f:(fun (lbl, typ) ->
+               opt_label lbl ++ type_expr ~needs_parentheses:true typ))
+      in
+      let lparen = if boxed then "(" else "#(" in
+      if Syntax.Type.Tuple.always_parenthesize || needs_parentheses || not boxed then
+        enclose ~l:lparen res ~r:")"
+      else res
+
     and type_expr ?(needs_parentheses = false) (t : Odoc_model.Lang.TypeExpr.t)
         =
       match t with
@@ -443,20 +459,8 @@ module Make (Syntax : SYNTAX) = struct
             ++ O.sp ++ type_expr dst
           in
           if not needs_parentheses then res else enclose ~l:"(" res ~r:")"
-      | Tuple lst ->
-          let opt_label = function
-            None -> O.noop
-          | Some lbl -> O.txt lbl ++ O.txt ":" ++ O.cut
-          in
-          let res =
-            O.box_hv_no_indent
-              (O.list lst ~sep:Syntax.Type.Tuple.element_separator
-                 ~f:(fun (lbl, typ) ->
-                   opt_label lbl ++ type_expr ~needs_parentheses:true typ))
-          in
-          if Syntax.Type.Tuple.always_parenthesize || needs_parentheses then
-            enclose ~l:"(" res ~r:")"
-          else res
+      | Tuple lst -> tuple ~needs_parentheses ~boxed:true lst
+      | Unboxed_tuple lst -> tuple ~needs_parentheses ~boxed:false lst
       | Constr (path, args) ->
           let link = Link.from_path (path :> Paths.Path.t) in
           format_type_path ~delim:`parens args link
@@ -506,6 +510,8 @@ module Make (Syntax : SYNTAX) = struct
 
     val record : Lang.TypeDecl.Field.t list -> DocumentedSrc.one list
 
+    val unboxed_record : Lang.TypeDecl.UnboxedField.t list -> DocumentedSrc.one list
+
     val exn : Lang.Exception.t -> Item.t
 
     val format_params :
@@ -554,6 +560,46 @@ module Make (Syntax : SYNTAX) = struct
       in
       let content =
         O.documentedSrc (O.txt "{") @ rows @ O.documentedSrc (O.txt "}")
+      in
+      content
+
+    let unboxed_record fields =
+      let field mutable_ id typ =
+        let url = Url.from_identifier ~stop_before:true id in
+        let name = Paths.Identifier.name id in
+        let attrs =
+          [ "def"; "record"; Url.Anchor.string_of_kind url.kind ]
+        in
+        let cell =
+          (* O.td ~a:[ O.a_class ["def"; kind ] ]
+           *   [O.a ~a:[O.a_href ("#" ^ anchor); O.a_class ["anchor"]] []
+           *   ; *)
+          O.code
+            ((if mutable_ then O.keyword "mutable" ++ O.txt " " else O.noop)
+            ++ O.txt name
+            ++ O.txt Syntax.Type.annotation_separator
+            ++ type_expr typ
+            ++ O.txt Syntax.Type.Record.field_separator)
+          (* ] *)
+        in
+        (url, attrs, cell)
+      in
+      let rows =
+        fields
+        |> List.map (fun fld ->
+               let open Odoc_model.Lang.TypeDecl.UnboxedField in
+               let url, attrs, code =
+                 field fld.mutable_ (fld.id :> Paths.Identifier.t) fld.type_
+               in
+               let anchor = Some url in
+               let doc = fld.doc.elements in
+               let rhs = Comment.to_ir doc in
+               let doc = if not (Comment.has_doc doc) then [] else rhs in
+               let markers = Syntax.Comment.markers in
+               DocumentedSrc.Documented { anchor; attrs; code; doc; markers })
+      in
+      let content =
+        O.documentedSrc (O.txt "#{") @ rows @ O.documentedSrc (O.txt "}")
       in
       content
 
@@ -876,6 +922,7 @@ module Make (Syntax : SYNTAX) = struct
               | Extensible -> O.documentedSrc (O.txt "..")
               | Variant cstrs -> variant cstrs
               | Record fields -> record fields
+              | Record_unboxed_product fields -> unboxed_record fields
             in
             if List.length content > 0 then
               O.documentedSrc
@@ -1835,4 +1882,6 @@ module Make (Syntax : SYNTAX) = struct
   let type_expr = type_expr
 
   let record = record
+
+  let unboxed_record = unboxed_record
 end

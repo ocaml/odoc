@@ -79,6 +79,7 @@ let ref_kind_of_element = function
   | `Extension _ -> "extension"
   | `ExtensionDecl _ -> "extension-decl"
   | `Field _ -> "field"
+  | `UnboxedField _ -> "unboxed-field"
   | `Page _ -> "page"
 
 let ref_kind_of_find = function
@@ -95,6 +96,7 @@ let ref_kind_of_find = function
   | `FExt _ -> "extension"
   | `FExtDecl _ -> "extension-decl"
   | `FField _ | `In_type (_, _, `FField _) -> "field"
+  | `FUnboxedField _ | `In_type (_, _, `FUnboxedField _) -> "unboxed-field"
   | `FMethod _ -> "method"
   | `FInstance_variable _ -> "instance-variable"
 
@@ -520,8 +522,8 @@ module CS = struct
     env_lookup_by_name Env.s_constructor name env
     >>= fun (`Constructor (id, _)) -> Ok (`Identifier id :> t)
 
-  let got_a_field name =
-    (* Let's pretend we didn't see the field and say we didn't find anything. *)
+  let not_a_constructor name =
+    (* Let's pretend we didn't see the field/unboxed field and say we didn't find anything. *)
     Error (`Find_by_name (`Cons, name))
 
   let in_parent _env (parent : fragment_type_parent_lookup_result) name =
@@ -529,8 +531,15 @@ module CS = struct
     match parent with
     | `S (parent', parent_cp, sg) -> (
         let sg = Tools.prefix_signature (parent_cp, sg) in
-        find_ambiguous Find.any_in_type_in_sig sg name_s >>= function
-        | `In_type (_, _, `FField _) -> got_a_field name_s
+        let find_ambiguous =
+        (find_ambiguous : ?kind:([> `Any ] as 'a) ->
+         (Component.Signature.t -> string -> Find.any_in_type_in_sig list)
+         ->
+         Component.Signature.t -> string -> (Find.any_in_type_in_sig, [> `Find_by_name of 'a * string ]) result)
+        in
+        find_ambiguous Find.any_in_type_in_sig  sg name_s >>= function
+        | `In_type (_, _, `FField _) -> not_a_constructor name_s
+        | `In_type (_, _, `FUnboxedField _) -> not_a_constructor name_s
         | `In_type (typ_name, _, `FPoly cs) ->
             Ok
               (`PolyConstructor
@@ -539,7 +548,8 @@ module CS = struct
             Ok (`Constructor (`Type (parent', typ_name), name)))
     | `T (parent', t) -> (
         find Find.any_in_type t (fun x -> x) name_s >>= function
-        | `FField _ -> got_a_field name_s
+        | `FField _ -> not_a_constructor name_s
+        | `FUnboxedField _ -> not_a_constructor name_s
         | `FPoly cs ->
             Ok
               (`PolyConstructor
@@ -568,8 +578,8 @@ module F = struct
     env_lookup_by_name Env.s_field name env >>= fun (`Field (id, _)) ->
     Ok (`Identifier id :> t)
 
-  let got_a_constructor name =
-    (* Let's pretend we didn't see the constructor and say we didn't find anything. *)
+  let not_a_field name =
+    (* Let's pretend we didn't see the constructor/unboxed field and say we didn't find anything. *)
     Error (`Find_by_name (`Field, name))
 
   let in_parent _env (parent : fragment_type_parent_lookup_result) name =
@@ -578,16 +588,18 @@ module F = struct
     | `S (parent', parent_cp, sg) -> (
         let sg = Tools.prefix_signature (parent_cp, sg) in
         find_ambiguous Find.any_in_type_in_sig sg name_s >>= function
-        | `In_type (_, _, `FConstructor _) -> got_a_constructor name_s
-        | `In_type (_, _, `FPoly _) -> got_a_constructor name_s
+        | `In_type (_, _, `FConstructor _) -> not_a_field name_s
+        | `In_type (_, _, `FPoly _) -> not_a_field name_s
+        | `In_type (_, _, `FUnboxedField _) -> not_a_field name_s
         | `In_type (typ_name, _, `FField _) ->
             Ok
               (`Field
                  ((`Type (parent', typ_name) :> Resolved.FieldParent.t), name)))
     | `T (parent', t) -> (
         find Find.any_in_type t (fun x -> x) name_s >>= function
-        | `FConstructor _ -> got_a_constructor name_s
-        | `FPoly _ -> got_a_constructor name_s
+        | `FConstructor _ -> not_a_field name_s
+        | `FPoly _ -> not_a_field name_s
+        | `FUnboxedField _ -> not_a_field name_s
         | `FField _ -> Ok (`Field ((parent' :> Resolved.FieldParent.t), name)))
 
   let of_component _env parent name =
@@ -595,6 +607,46 @@ module F = struct
       (`Field
          ( (parent : Resolved.DataType.t :> Resolved.FieldParent.t),
            FieldName.make_std name ))
+end
+
+module UF = struct
+  (** Unboxed field *)
+
+  type t = Resolved.UnboxedField.t
+
+  let in_env env name =
+    env_lookup_by_name Env.s_unboxed_field name env >>= fun (`UnboxedField (id, _)) ->
+    Ok (`Identifier id :> t)
+
+  let not_an_unboxed_field name =
+    (* Let's pretend we didn't see the constructor/field and say we didn't find anything. *)
+    Error (`Find_by_name (`UnboxedField, name))
+
+  let in_parent _env (parent : fragment_type_parent_lookup_result) name =
+    let name_s = UnboxedFieldName.to_string name in
+    match parent with
+    | `S (parent', parent_cp, sg) -> (
+        let sg = Tools.prefix_signature (parent_cp, sg) in
+        find_ambiguous Find.any_in_type_in_sig sg name_s >>= function
+        | `In_type (_, _, `FConstructor _) -> not_an_unboxed_field name_s
+        | `In_type (_, _, `FPoly _) -> not_an_unboxed_field name_s
+        | `In_type (_, _, `FField _) -> not_an_unboxed_field name_s
+        | `In_type (typ_name, _, `FUnboxedField _) ->
+            Ok
+              (`UnboxedField
+                ((`Type (parent', typ_name) :> Resolved.UnboxedFieldParent.t), name)))
+    | `T (parent', t) -> (
+        find Find.any_in_type t (fun x -> x) name_s >>= function
+        | `FConstructor _ -> not_an_unboxed_field name_s
+        | `FPoly _ -> not_an_unboxed_field name_s
+        | `FField _ -> not_an_unboxed_field name_s
+        | `FUnboxedField _ -> Ok (`UnboxedField ((parent' :> Resolved.UnboxedFieldParent.t), name)))
+
+  let of_component _env parent name =
+    Ok
+      (`UnboxedField
+        ( (parent : Resolved.DataType.t :> Resolved.UnboxedFieldParent.t),
+          UnboxedFieldName.make_std name ))
 end
 
 module MM = struct
@@ -873,7 +925,8 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
       match r with
       | `FConstructor _ -> CS.of_component env parent name >>= resolved1
       | `FPoly p -> CS.poly_of_component env parent p.name >>= resolved1
-      | `FField _ -> F.of_component env parent name >>= resolved1)
+      | `FField _ -> F.of_component env parent name >>= resolved1
+      | `FUnboxedField _ -> UF.of_component env parent name >>= resolved1)
   | `FModule_subst _ | `FType_subst _ | `FModuleType_subst _ ->
       Error (`Find_by_name (`Any, name))
 
@@ -885,6 +938,7 @@ let resolve_reference_dot_type env ~parent_ref t name =
   | `FConstructor _ -> CS.of_component env parent_ref name >>= resolved1
   | `FPoly p -> CS.poly_of_component env parent_ref p.name >>= resolved1
   | `FField _ -> F.of_component env parent_ref name >>= resolved1
+  | `FUnboxedField _ -> UF.of_component env parent_ref name >>= resolved1
 
 let resolve_reference_dot_class env p name =
   type_lookup_to_class_signature_lookup env p >>= fun (parent_ref, cs) ->
@@ -932,6 +986,7 @@ let resolve_reference :
         | `Extension (id, _, _) -> identifier id
         | `ExtensionDecl (id, _) -> identifier id
         | `Field (id, _) -> identifier id
+        | `UnboxedField (id, _) -> identifier id
         | `Page (id, _) -> identifier id)
     | `Resolved r -> Ok (r, None)
     | `Root (name, (`TModule | `TChildModule)) -> M.in_env env name >>= resolved
@@ -986,6 +1041,10 @@ let resolve_reference :
     | `Field (parent, name) ->
         resolve_fragment_type_parent_reference env parent >>= fun p ->
         F.in_parent env p name >>= resolved1
+    | `Root (name, `TUnboxedField) -> UF.in_env env name >>= resolved1
+    | `UnboxedField (parent, name) ->
+        resolve_fragment_type_parent_reference env parent >>= fun p ->
+        UF.in_parent env p name >>= resolved1
     | `Root (name, `TMethod) -> MM.in_env env name >>= resolved1
     | `Method (parent, name) ->
         resolve_class_signature_reference env parent >>= fun p ->

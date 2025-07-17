@@ -97,3 +97,7 @@ let of_doc doc = Of_comments.string_of_doc doc
 let of_record fields =
   let te_text = Odoc_document.ML.record fields in
   Of_document.documented_src te_text
+
+let of_unboxed_record fields =
+  let te_text = Odoc_document.ML.unboxed_record fields in
+  Of_document.documented_src te_text

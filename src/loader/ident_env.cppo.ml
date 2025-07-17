@@ -119,6 +119,7 @@ and extract_signature_type_items_extract vis ~hidden item rest =
           | Types.Type_abstract _ -> []
 #endif
           | Type_record (_, _, _) -> []
+          | Type_record_unboxed_product (_, _, _) -> []
 #if OCAML_VERSION < (4,13,0)
           | Type_variant cstrs ->
 #else
@@ -210,6 +211,7 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
           Ttype_abstract -> []
         | Ttype_variant constrs -> List.map (fun c -> `Constructor (c.cd_id, decl.typ_id, Some c.cd_loc)) constrs
         | Ttype_record _ -> []
+        | Ttype_record_unboxed_product _ -> []
         | Ttype_open -> []
           )
       decls @ extract_signature_tree_items hide_item rest
@@ -314,6 +316,8 @@ let rec read_pattern hide_item pat =
     `Value(id, hide_item, Some loc.loc) :: read_pattern hide_item pat
   | Tpat_record(pats, _) -> 
       List.concat (List.map (fun (_, _, pat) -> read_pattern hide_item pat) pats)
+  | Tpat_record_unboxed_product(pats, _) ->
+      List.concat (List.map (fun (_, _, pat) -> read_pattern hide_item pat) pats)
 #if OCAML_VERSION < (4,13,0)
   | Tpat_construct(_, _, pats)
 #else
@@ -323,6 +327,8 @@ let rec read_pattern hide_item pat =
       List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
   | Tpat_tuple pats ->
       List.concat (List.map (fun (_, pat) -> read_pattern hide_item pat) pats)
+  | Tpat_unboxed_tuple pats ->
+      List.concat (List.map (fun (_, pat, _) -> read_pattern hide_item pat) pats)
   | Tpat_or(pat, _, _)
   | Tpat_variant(_, Some pat, _)
   | Tpat_lazy pat -> read_pattern hide_item pat
@@ -345,6 +351,7 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
           Ttype_abstract -> []
         | Ttype_variant constrs -> List.map (fun c -> `Constructor (c.cd_id, decl.typ_id, Some c.cd_loc)) constrs
         | Ttype_record _ -> []
+        | Ttype_record_unboxed_product _ -> []
         | Ttype_open -> []
           ))
            decls @ extract_structure_tree_items hide_item rest

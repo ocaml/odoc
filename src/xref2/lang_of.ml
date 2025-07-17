@@ -929,6 +929,20 @@ and type_decl_field :
     type_ = type_expr map (parent :> Identifier.LabelParent.t) f.type_;
   }
 
+and type_decl_unboxed_field :
+    maps ->
+    Identifier.UnboxedFieldParent.t ->
+    Component.TypeDecl.UnboxedField.t ->
+    Odoc_model.Lang.TypeDecl.UnboxedField.t =
+ fun map parent f ->
+  let identifier = Identifier.Mk.unboxed_field (parent, UnboxedFieldName.make_std f.name) in
+  {
+    id = identifier;
+    doc = docs (parent :> Identifier.LabelParent.t) f.doc;
+    mutable_ = f.mutable_;
+    type_ = type_expr map (parent :> Identifier.LabelParent.t) f.type_;
+  }
+
 and type_decl_equation map (parent : Identifier.FieldParent.t)
     (eqn : Component.TypeDecl.Equation.t) : Odoc_model.Lang.TypeDecl.Equation.t
     =
@@ -968,6 +982,12 @@ and type_decl_representation map id (t : Component.TypeDecl.Representation.t) :
         (List.map
            (type_decl_field map
               (id :> Odoc_model.Paths.Identifier.FieldParent.t))
+           fs)
+  | Record_unboxed_product fs ->
+      Record_unboxed_product
+        (List.map
+           (type_decl_unboxed_field map
+              (id :> Odoc_model.Paths.Identifier.UnboxedFieldParent.t))
            fs)
 
 and type_decl_constructor :
@@ -1009,6 +1029,8 @@ and type_expr map (parent : Identifier.LabelParent.t) (t : Component.TypeExpr.t)
     | Arrow (lbl, t1, t2) ->
         Arrow (lbl, type_expr map parent t1, type_expr map parent t2)
     | Tuple ts -> Tuple (List.map (fun (l, t) -> l, type_expr map parent t) ts)
+    | Unboxed_tuple ts ->
+      Unboxed_tuple (List.map (fun (l, t) -> l, type_expr map parent t) ts)
     | Constr (path, ts) ->
         Constr
           ( (Path.type_ map path :> Paths.Path.Type.t),

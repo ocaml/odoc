@@ -68,6 +68,9 @@ let rec read_core_type env container ctyp =
     | Ttyp_tuple typs ->
         let typs = List.map (fun (l, t) -> l, read_core_type env container t) typs in
           Tuple typs
+    | Ttyp_unboxed_tuple typs ->
+        let typs = List.map (fun (l, t) -> l, read_core_type env container t) typs in
+          Unboxed_tuple typs
     | Ttyp_constr(p, _, params) ->
         let p = Env.Path.read_type env.ident_env p in
         let params = List.map (read_core_type env container) params in
@@ -226,6 +229,16 @@ let read_label_declaration env parent label_parent ld =
   let type_ = read_core_type env label_parent ld.ld_type in
     {id; doc; mutable_; type_}
 
+let read_unboxed_label_declaration env parent label_parent ld =
+  let open TypeDecl.UnboxedField in
+  let open Odoc_model.Names in
+  let name = Ident.name ld.ld_id in
+  let id = Identifier.Mk.unboxed_field(parent, UnboxedFieldName.make_std name) in
+  let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent ld.ld_attributes in
+  let mutable_ = Types.is_mutable ld.ld_mutable in
+  let type_ = read_core_type env label_parent ld.ld_type in
+    {id; doc; mutable_; type_}
+
 let read_constructor_declaration_arguments env parent label_parent arg =
   let open TypeDecl.Constructor in
 #if OCAML_VERSION < (4,3,0)
@@ -264,6 +277,12 @@ let read_type_kind env parent =
       let lbls =
         List.map (read_label_declaration env parent label_parent) lbls in
           Some (Record lbls)
+    | Ttype_record_unboxed_product lbls ->
+      let parent = (parent :> Identifier.UnboxedFieldParent.t) in
+      let label_parent = (parent :> Identifier.LabelParent.t) in
+      let lbls =
+        List.map (read_unboxed_label_declaration env parent label_parent) lbls in
+          Some (Record_unboxed_product lbls)
     | Ttype_open -> Some Extensible
 
 let read_type_equation env container decl =

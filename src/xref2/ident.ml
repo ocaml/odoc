@@ -14,6 +14,8 @@ type constructor = [ `LConstructor of ConstructorName.t * int ]
 
 type field = [ `LField of FieldName.t * int ]
 
+type unboxed_field = [ `LUnboxedField of UnboxedFieldName.t * int ]
+
 type extension = [ `LExtension of ExtensionName.t * int ]
 
 type exception_ = [ `LException of ExceptionName.t * int ]
@@ -34,6 +36,7 @@ type any =
   | type_
   | constructor
   | field
+  | unboxed_field
   | extension
   | exception_
   | value
@@ -56,6 +59,7 @@ let int_of_any : any -> int = function
   | `LValue (_, i)
   | `LInstanceVariable (_, i)
   | `LField (_, i)
+  | `LUnboxedField (_, i)
   | `LLabel (_, i)
   | `LModuleType (_, i)
   | `LPage (_, i)
@@ -193,6 +197,7 @@ let fmt_aux (id : any) : string * int =
   | `LType (n, i) -> (TypeName.to_string n, i)
   | `LConstructor (n, i) -> (ConstructorName.to_string n, i)
   | `LField (n, i) -> (FieldName.to_string n, i)
+  | `LUnboxedField (n, i) -> (UnboxedFieldName.to_string n, i)
   | `LExtension (n, i) -> (ExtensionName.to_string n, i)
   | `LException (n, i) -> (ExceptionName.to_string n, i)
   | `LValue (n, i) -> (ValueName.to_string n, i)

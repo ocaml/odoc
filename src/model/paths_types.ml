@@ -92,6 +92,12 @@ module Identifier = struct
   and field_parent = field_parent_pv id
   (** @canonical Odoc_model.Paths.Identifier.FieldParent.t *)
 
+  type unboxed_field_parent_pv = datatype_pv
+  (** @canonical Odoc_model.Paths.Identifier.UnboxedFieldParent.t_pv *)
+
+  and unboxed_field_parent = unboxed_field_parent_pv id
+  (** @canonical Odoc_model.Paths.Identifier.UnboxedFieldParent.t *)
+
   type label_parent_pv = [ field_parent_pv | page_pv | class_signature_pv ]
   (** @canonical Odoc_model.Paths.Identifier.LabelParent.t_pv *)
 
@@ -148,6 +154,12 @@ module Identifier = struct
 
   and field = field_pv id
   (** @canonical Odoc_model.Paths.Identifier.Field.t *)
+
+  type unboxed_field_pv = [ `UnboxedField of unboxed_field_parent * UnboxedFieldName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.UnboxedField.t_pv *)
+
+  and unboxed_field = unboxed_field_pv id
+  (** @canonical Odoc_model.Paths.Identifier.UnboxedField.t *)
 
   type extension_pv = [ `Extension of signature * ExtensionName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Extension.t_pv *)
@@ -210,6 +222,7 @@ module Identifier = struct
     | class_signature_pv
     | datatype_pv
     | field_parent_pv
+    | unboxed_field_parent_pv
     | label_parent_pv
     | module_pv
     | functor_parameter_pv
@@ -218,6 +231,7 @@ module Identifier = struct
     | type_pv
     | constructor_pv
     | field_pv
+    | unboxed_field_pv
     | extension_pv
     | extension_decl_pv
     | exception_pv
@@ -286,6 +300,8 @@ module Identifier = struct
     [ constructor_pv | extension_pv | exception_pv ] id
 
   type reference_field = field
+
+  type reference_unboxed_field = unboxed_field
 
   type reference_extension = [ extension_pv | exception_pv ] id
 
@@ -526,6 +542,8 @@ module rec Reference : sig
 
   type tag_only_field = [ `TField ]
 
+  type tag_only_unboxed_field = [ `TUnboxedField ]
+
   type tag_only_extension = [ `TExtension ]
 
   type tag_only_exception = [ `TException ]
@@ -562,6 +580,7 @@ module rec Reference : sig
     | `TType
     | `TConstructor
     | `TField
+    | `TUnboxedField
     | `TExtension
     | `TExtensionDecl
     | `TException
@@ -692,6 +711,13 @@ module rec Reference : sig
     | `Field of fragment_type_parent * FieldName.t ]
   (** @canonical Odoc_model.Paths.Reference.Field.t *)
 
+  type unboxed_field =
+    [ `Resolved of Resolved_reference.unboxed_field
+    | `Root of string * [ `TField | `TUnknown ]
+    | `Dot of label_parent * string
+    | `UnboxedField of fragment_type_parent * UnboxedFieldName.t ]
+  (** @canonical Odoc_model.Paths.Reference.UnboxedField.t *)
+
   type extension =
     [ `Resolved of Resolved_reference.extension
     | `Root of string * [ `TExtension | `TException | `TUnknown ]
@@ -776,6 +802,7 @@ module rec Reference : sig
     | `Type of signature * TypeName.t
     | `Constructor of fragment_type_parent * ConstructorName.t
     | `Field of fragment_type_parent * FieldName.t
+    | `UnboxedField of fragment_type_parent * UnboxedFieldName.t
     | `Extension of signature * ExtensionName.t
     | `ExtensionDecl of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t
@@ -836,6 +863,11 @@ and Resolved_reference : sig
     | `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.FragmentTypeParent.t *)
 
+  and unboxed_field_parent =
+    [ `Identifier of Identifier.unboxed_field_parent
+    | `Type of signature * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Reference.Resolved.FragmentTypeParent.t *)
+
   (* The only difference between parent and label_parent
      is that the Identifier allows more types *)
   and label_parent =
@@ -874,6 +906,11 @@ and Resolved_reference : sig
     [ `Identifier of Identifier.reference_field
     | `Field of field_parent * FieldName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Field.t *)
+
+  type unboxed_field =
+    [ `Identifier of Identifier.reference_unboxed_field
+    | `UnboxedField of unboxed_field_parent * UnboxedFieldName.t ]
+  (** @canonical Odoc_model.Paths.Reference.Resolved.UnboxedField.t *)
 
   type extension =
     [ `Identifier of Identifier.reference_extension
@@ -944,6 +981,7 @@ and Resolved_reference : sig
     | `Constructor of datatype * ConstructorName.t
     | `PolyConstructor of datatype * ConstructorName.t
     | `Field of field_parent * FieldName.t
+    | `UnboxedField of unboxed_field_parent * UnboxedFieldName.t
     | `Extension of signature * ExtensionName.t
     | `ExtensionDecl of signature * ExtensionName.t * ExtensionName.t
     | `Exception of signature * ExceptionName.t

@@ -80,6 +80,10 @@ module Identifier : sig
     type t = Id.field_parent
     type t_pv = Id.field_parent_pv
   end
+  module UnboxedFieldParent : sig
+    type t = Id.unboxed_field_parent
+    type t_pv = Id.unboxed_field_parent_pv
+  end
 
   module FunctorResult : sig
     type t = Id.functor_result
@@ -94,6 +98,11 @@ module Identifier : sig
   module Field : sig
     type t = Id.field
     type t_pv = Id.field_pv
+  end
+
+  module UnboxedField : sig
+    type t = Id.unboxed_field
+    type t_pv = Id.unboxed_field_pv
   end
 
   module Extension : sig
@@ -302,6 +311,10 @@ module Identifier : sig
       FieldParent.t * FieldName.t ->
       [> `Field of FieldParent.t * FieldName.t ] id
 
+    val unboxed_field :
+      UnboxedFieldParent.t * UnboxedFieldName.t ->
+      [> `UnboxedField of UnboxedFieldParent.t * UnboxedFieldName.t ] id
+
     val extension :
       Signature.t * ExtensionName.t ->
       [> `Extension of Signature.t * ExtensionName.t ] id
@@ -495,6 +508,10 @@ module rec Reference : sig
       type t = Paths_types.Resolved_reference.field_parent
     end
 
+    module UnboxedFieldParent : sig
+      type t = Paths_types.Resolved_reference.unboxed_field_parent
+    end
+
     module LabelParent : sig
       type t = Paths_types.Resolved_reference.label_parent
     end
@@ -517,6 +534,10 @@ module rec Reference : sig
 
     module Field : sig
       type t = Paths_types.Resolved_reference.field
+    end
+
+    module UnboxedField : sig
+      type t = Paths_types.Resolved_reference.unboxed_field
     end
 
     module Extension : sig
@@ -608,6 +629,10 @@ module rec Reference : sig
 
   module Field : sig
     type t = Paths_types.Reference.field
+  end
+
+  module UnboxedField : sig
+    type t = Paths_types.Reference.unboxed_field
   end
 
   module Extension : sig

@@ -58,6 +58,7 @@ let rec type_expr map t =
       if List.mem_assoc s map then raise Clash else Alias (type_expr map t, s)
   | Arrow (l, t1, t2) -> Arrow (l, type_expr map t1, type_expr map t2)
   | Tuple ts -> Tuple (List.map (fun (l, t) -> l, type_expr map t) ts)
+  | Unboxed_tuple ts -> Unboxed_tuple (List.map (fun (l, t) -> l, type_expr map t) ts)
   | Constr (p, ts) -> Constr (p, List.map (type_expr map) ts)
   | Polymorphic_variant pv -> Polymorphic_variant (polymorphic_variant map pv)
   | Object o -> Object (object_ map o)

@@ -325,6 +325,16 @@ and typedecl_field =
       F ("type_", (fun t -> t.type_), typeexpr_t);
     ]
 
+and typedecl_unboxed_field =
+  let open Lang.TypeDecl.UnboxedField in
+  Unboxed_record
+    [
+      UF ("id", (fun t -> t.id), identifier);
+      UF ("doc", (fun t -> t.doc), docs);
+      UF ("mutable_", (fun t -> t.mutable_), bool);
+      UF ("type_", (fun t -> t.type_), typeexpr_t);
+    ]
+
 and typedecl_constructor_argument =
   let open Lang.TypeDecl.Constructor in
   T.Variant
@@ -348,6 +358,7 @@ and typedecl_representation =
     (function
     | Variant x -> C ("Variant", x, List typedecl_constructor)
     | Record x -> C ("Record", x, List typedecl_field)
+    | Record_unboxed_product x -> C ("Record_unboxed_product", x, List typedecl_unboxed_field)
     | Extensible -> C0 "Extensible")
 
 and typedecl_variance =
@@ -645,6 +656,7 @@ and typeexpr_t =
             (x1, x2, x3),
             Triple (Option typeexpr_label, typeexpr_t, typeexpr_t) )
     | Tuple x -> C ("Tuple", x, List (Pair (Option string, typeexpr_t)))
+    | Unboxed_tuple x -> C ("Unboxed_tuple", x, List (Pair (Option string, typeexpr_t)))
     | Constr (x1, x2) ->
         C ("Constr", ((x1 :> Paths.Path.t), x2), Pair (path, List typeexpr_t))
     | Polymorphic_variant x ->

@@ -103,6 +103,7 @@ let typedecl_repr ~private_ (repr : TypeDecl.Representation.t) =
              constructor ~id ~args ~res)
       |> String.concat " | "
   | Record record -> Text.of_record record
+  | Record_unboxed_product record -> Text.of_unboxed_record record
 
 let typedecl_rhs ({ equation; representation; _ } : Entry.type_decl_entry) =
   let ({ private_; manifest; constraints; _ } : TypeDecl.Equation.t) =
@@ -154,6 +155,8 @@ let kind_constructor = "cons"
 
 let kind_field = "field"
 
+let kind_unboxed_field = "unboxed field"
+
 let kind_value = "val"
 
 let kind_extension = "ext"
@@ -163,6 +166,7 @@ let string_of_kind =
   function
   | Constructor _ -> kind_constructor
   | Field _ -> kind_field
+  | UnboxedField _ -> kind_unboxed_field
   | ExtensionConstructor _ -> kind_extension_constructor
   | TypeDecl _ -> kind_typedecl
   | Module _ -> kind_module
@@ -193,6 +197,7 @@ let rhs_of_kind (entry : Entry.kind) =
   | Constructor t | ExtensionConstructor t | Exception t ->
       Some (constructor_rhs t)
   | Field f -> Some (field_rhs f)
+  | UnboxedField f -> Some (field_rhs f)
   | Module _ | Class_type _ | Method _ | Class _ | TypeExtension _
   | ModuleType _ | Doc | Page _ | Impl | Dir ->
       None

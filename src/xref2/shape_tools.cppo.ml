@@ -49,7 +49,7 @@ let rec shape_of_id env :
     | `ClassType (parent, name) ->
         proj parent Kind.Class_type (TypeName.to_string_unsafe name)
     | `Page _ | `LeafPage _ | `Label _
-    | `Constructor _ | `Field _ | `Method _ | `InstanceVariable _ | `Parameter _
+    | `Constructor _ | `Field _ | `UnboxedField _ | `Method _ | `InstanceVariable _ | `Parameter _
       ->
         (* Not represented in shapes. *)
         None
@@ -118,6 +118,7 @@ let unit_of_uid uid =
   | Item { comp_unit; _ } -> Some comp_unit
   | Predef _ -> None
   | Internal -> None
+  | Unboxed_version _ -> None
 
 #if OCAML_VERSION >= (5,2,0)
 let rec traverse_aliases = function

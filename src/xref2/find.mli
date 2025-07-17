@@ -37,7 +37,9 @@ type polymorphic_constructor =
 
 type field = [ `FField of TypeDecl.Field.t ]
 
-type any_in_type = [ constructor | field | polymorphic_constructor ]
+type unboxed_field = [ `FUnboxedField of TypeDecl.UnboxedField.t ]
+
+type any_in_type = [ constructor | field | unboxed_field | polymorphic_constructor ]
 
 type any_in_type_in_sig = [ `In_type of TypeName.t * TypeDecl.t * any_in_type ]
 

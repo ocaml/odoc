@@ -43,6 +43,7 @@ module Reference = struct
     | `PolyConstructor (r, s) ->
         render_resolved (r :> t) ^ ".`" ^ ConstructorName.to_string s
     | `Field (r, s) -> render_resolved (r :> t) ^ "." ^ FieldName.to_string s
+    | `UnboxedField (r, s) -> render_resolved (r :> t) ^ "." ^ UnboxedFieldName.to_string s
     | `Extension (r, s) ->
         render_resolved (r :> t) ^ "." ^ ExtensionName.to_string s
     | `ExtensionDecl (r, _, s) ->
@@ -87,6 +88,7 @@ module Reference = struct
     | `Constructor (p, f) ->
         render_unresolved (p :> t) ^ "." ^ ConstructorName.to_string f
     | `Field (p, f) -> render_unresolved (p :> t) ^ "." ^ FieldName.to_string f
+    | `UnboxedField (p, f) -> render_unresolved (p :> t) ^ "." ^ UnboxedFieldName.to_string f
     | `Extension (p, f) ->
         render_unresolved (p :> t) ^ "." ^ ExtensionName.to_string f
     | `ExtensionDecl (p, f) ->

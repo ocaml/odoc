@@ -164,6 +164,7 @@ module ModuleTypeName = Name
 module TypeName = Name
 module ConstructorName = SimpleName
 module FieldName = SimpleName
+module UnboxedFieldName = SimpleName
 module ExtensionName = SimpleName
 module ExceptionName = SimpleName
 module ValueName = Name

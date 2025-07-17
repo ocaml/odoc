@@ -124,6 +124,7 @@ and TypeExpr : sig
     | Alias of t * string
     | Arrow of label option * t * t
     | Tuple of (string option * t) list
+    | Unboxed_tuple of (string option * t) list
     | Constr of Cpath.type_ * t list
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
@@ -250,6 +251,15 @@ and TypeDecl : sig
     }
   end
 
+  module UnboxedField : sig
+    type t = {
+      name : string;
+      doc : CComment.docs;
+      mutable_ : bool;
+      type_ : TypeExpr.t;
+    }
+  end
+
   module Constructor : sig
     type argument = Tuple of TypeExpr.t list | Record of Field.t list
 
@@ -265,6 +275,7 @@ and TypeDecl : sig
     type t =
       | Variant of Constructor.t list
       | Record of Field.t list
+      | Record_unboxed_product of UnboxedField.t list
       | Extensible
   end
 
@@ -526,6 +537,9 @@ module Element = struct
 
   type field = [ `Field of Identifier.Field.t * TypeDecl.Field.t ]
 
+  type unboxed_field =
+    [ `UnboxedField of Identifier.UnboxedField.t * TypeDecl.UnboxedField.t ]
+
   (* No component for pages yet *)
   type page = [ `Page of Identifier.Page.t * Odoc_model.Lang.Page.t ]
 
@@ -545,6 +559,7 @@ module Element = struct
     | extension
     | extension_decl
     | field
+    | unboxed_field
     | page ]
 
   let identifier : [< any ] -> Odoc_model.Paths.Identifier.t =
@@ -560,6 +575,7 @@ module Element = struct
     | `Constructor (id, _) -> (id :> t)
     | `Exception (id, _) -> (id :> t)
     | `Field (id, _) -> (id :> t)
+    | `UnboxedField (id, _) -> (id :> t)
     | `Extension (id, _, _) -> (id :> t)
     | `ExtensionDecl (id, _) -> (id :> t)
     | `Page (id, _) -> (id :> t)
@@ -713,6 +729,10 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (ty :> id)
           (FieldName.to_string name)
+    | `UnboxedField (ty, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (ty :> id)
+          (UnboxedFieldName.to_string name)
     | `Exception (p, name) ->
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (p :> id)
@@ -1017,6 +1037,7 @@ module Fmt = struct
     function
     | Variant cs -> fpp_list " | " "%a" (type_decl_constructor c) ppf cs
     | Record fs -> type_decl_fields c ppf fs
+    | Record_unboxed_product fs -> type_decl_unboxed_fields c ppf fs
     | Extensible -> Format.fprintf ppf ".."
 
   and type_decl_constructor c ppf t =
@@ -1039,8 +1060,16 @@ module Fmt = struct
     let mutable_ = if t.mutable_ then "mutable " else "" in
     fpf ppf "%s%s : %a" mutable_ t.name (type_expr c) t.type_
 
+  and type_decl_unboxed_field c ppf t =
+    let open TypeDecl.UnboxedField in
+    let mutable_ = if t.mutable_ then "mutable " else "" in
+    fpf ppf "%s%s : %a" mutable_ t.name (type_expr c) t.type_
+
   and type_decl_fields c ppf fs =
-    fpp_list "; " "{ %a }" (type_decl_field c) ppf fs
+    fpf ppf "{ %a }" (fpp_list "; " "%a" (type_decl_field c)) fs
+
+  and type_decl_unboxed_fields c ppf fs =
+    fpf ppf "#{ %a }" (fpp_list "; " "%a" (type_decl_unboxed_field c)) fs
 
   and type_tuple c ppf ts = fpp_list " * " "%a" (type_expr c) ppf ts
 
@@ -1156,6 +1185,7 @@ module Fmt = struct
         Format.fprintf ppf "%a(%a) -> %a" type_expr_label l (type_expr c) t1
           (type_expr c) t2
     | Tuple ts -> Format.fprintf ppf "(%a)" (labeled_type_expr_list c) ts
+    | Unboxed_tuple ts -> Format.fprintf ppf "#(%a)" (labeled_type_expr_list c) ts
     | Constr (p, args) -> (
         match args with
         | [] -> Format.fprintf ppf "%a" (type_path c) p
@@ -1635,6 +1665,11 @@ module Fmt = struct
           (model_resolved_reference c)
           (parent :> t)
           (FieldName.to_string name)
+    | `UnboxedField (parent, name) ->
+        Format.fprintf ppf "%a.#%s"
+          (model_resolved_reference c)
+          (parent :> t)
+          (UnboxedFieldName.to_string name)
     | `Extension (parent, name) ->
         Format.fprintf ppf "%a.%s"
           (model_resolved_reference c)
@@ -1731,6 +1766,10 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (FieldName.to_string name)
+    | `UnboxedField (parent, name) ->
+        Format.fprintf ppf "%a.%s" (model_reference c)
+          (parent :> t)
+          (UnboxedFieldName.to_string name)
     | `Extension (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
@@ -2181,6 +2220,8 @@ module Of_Lang = struct
         TypeDecl.Representation.Variant
           (List.map (type_decl_constructor ident_map) cs)
     | Record fs -> Record (List.map (type_decl_field ident_map) fs)
+    | Record_unboxed_product fs ->
+      Record_unboxed_product (List.map (type_decl_unboxed_field ident_map) fs)
     | Extensible -> Extensible
 
   and type_decl_constructor ident_map t =
@@ -2206,6 +2247,15 @@ module Of_Lang = struct
     let type_ = type_expression ident_map f.type_ in
     {
       TypeDecl.Field.name = Paths.Identifier.name f.id;
+      doc = docs ident_map f.doc;
+      mutable_ = f.mutable_;
+      type_;
+    }
+
+  and type_decl_unboxed_field ident_map f =
+    let type_ = type_expression ident_map f.type_ in
+    {
+      TypeDecl.UnboxedField.name = Paths.Identifier.name f.id;
       doc = docs ident_map f.doc;
       mutable_ = f.mutable_;
       type_;
@@ -2280,6 +2330,8 @@ module Of_Lang = struct
     | Arrow (lbl, t1, t2) ->
         Arrow (lbl, type_expression ident_map t1, type_expression ident_map t2)
     | Tuple ts -> Tuple (List.map (fun (l, t) -> l, type_expression ident_map t) ts)
+    | Unboxed_tuple ts ->
+        Unboxed_tuple (List.map (fun (l, t) -> l, type_expression ident_map t) ts)
     | Polymorphic_variant v ->
         Polymorphic_variant (type_expr_polyvar ident_map v)
     | Poly (s, ts) -> Poly (s, type_expression ident_map ts)

@@ -41,6 +41,7 @@ module Identifier = struct
     | `Type (_, name) -> TypeName.to_string name
     | `Constructor (_, name) -> ConstructorName.to_string name
     | `Field (_, name) -> FieldName.to_string name
+    | `UnboxedField (_, name) -> UnboxedFieldName.to_string name
     | `Extension (_, name) -> ExtensionName.to_string name
     | `ExtensionDecl (_, _, name) -> ExtensionName.to_string name
     | `Exception (_, name) -> ExceptionName.to_string name
@@ -71,6 +72,7 @@ module Identifier = struct
     | `Type (_, name) -> TypeName.is_hidden name
     | `Constructor (parent, _) -> is_hidden (parent :> t)
     | `Field (parent, _) -> is_hidden (parent :> t)
+    | `UnboxedField (parent, _) -> is_hidden (parent :> t)
     | `Extension (parent, _) -> is_hidden (parent :> t)
     | `ExtensionDecl (parent, _, _) -> is_hidden (parent :> t)
     | `Exception (parent, _) -> is_hidden (parent :> t)
@@ -109,6 +111,8 @@ module Identifier = struct
         ConstructorName.to_string name :: full_name_aux (parent :> t)
     | `Field (parent, name) ->
         FieldName.to_string name :: full_name_aux (parent :> t)
+    | `UnboxedField (parent, name) ->
+        UnboxedFieldName.to_string name :: full_name_aux (parent :> t)
     | `Extension (parent, name) ->
         ExtensionName.to_string name :: full_name_aux (parent :> t)
     | `ExtensionDecl (parent, _, name) ->
@@ -165,6 +169,7 @@ module Identifier = struct
           (p : class_signature :> label_parent)
       | { iv = `Constructor (p, _); _ } -> (p : datatype :> label_parent)
       | { iv = `Field (p, _); _ } -> (p : field_parent :> label_parent)
+      | { iv = `UnboxedField (p, _); _ } -> (p : unboxed_field_parent :> label_parent)
 
   let label_parent n = label_parent_aux (n :> Id.non_src)
 
@@ -218,6 +223,11 @@ module Identifier = struct
   module FieldParent = struct
     type t = Paths_types.Identifier.field_parent
     type t_pv = Paths_types.Identifier.field_parent_pv
+  end
+
+  module UnboxedFieldParent = struct
+    type t = Paths_types.Identifier.unboxed_field_parent
+    type t_pv = Paths_types.Identifier.unboxed_field_parent_pv
   end
 
   module LabelParent = struct
@@ -288,6 +298,11 @@ module Identifier = struct
   module Field = struct
     type t = Id.field
     type t_pv = Id.field_pv
+  end
+
+  module UnboxedField = struct
+    type t = Id.unboxed_field
+    type t_pv = Id.unboxed_field_pv
   end
 
   module Extension = struct
@@ -561,6 +576,11 @@ module Identifier = struct
         FieldParent.t * FieldName.t ->
         [> `Field of FieldParent.t * FieldName.t ] id =
       mk_parent FieldName.to_string "fld" (fun (p, n) -> `Field (p, n))
+
+    let unboxed_field :
+        UnboxedFieldParent.t * UnboxedFieldName.t ->
+        [> `UnboxedField of UnboxedFieldParent.t * UnboxedFieldName.t ] id =
+      mk_parent UnboxedFieldName.to_string "unboxedfld" (fun (p, n) -> `UnboxedField (p, n))
 
     let extension :
         Signature.t * ExtensionName.t ->
@@ -974,6 +994,11 @@ module Reference = struct
         as sg ->
           (parent_signature_identifier sg :> Identifier.FieldParent.t)
       | `Type _ as t -> (parent_type_identifier t :> Identifier.FieldParent.t)
+    and unboxed_field_parent_identifier : unboxed_field_parent -> Identifier.UnboxedFieldParent.t =
+      function
+      | `Identifier id -> id
+      | `Type _ as t -> (parent_type_identifier t :> Identifier.UnboxedFieldParent.t)
+
 
     and label_parent_identifier : label_parent -> Identifier.LabelParent.t =
       function
@@ -990,6 +1015,8 @@ module Reference = struct
         | `Class _ | `ClassType _ | `ModuleType _ ) as r ->
           (label_parent_identifier r :> Identifier.t)
       | `Field (p, n) -> Identifier.Mk.field (field_parent_identifier p, n)
+      | `UnboxedField (p, n) ->
+        Identifier.Mk.unboxed_field (unboxed_field_parent_identifier p, n)
       | `PolyConstructor (s, n) ->
           (* Uses an identifier for constructor even though it is not
              one. Document must make the links correspond. *)
@@ -1028,6 +1055,10 @@ module Reference = struct
       type t = Paths_types.Resolved_reference.field_parent
     end
 
+    module UnboxedFieldParent = struct
+      type t = Paths_types.Resolved_reference.unboxed_field_parent
+    end
+
     module LabelParent = struct
       type t = Paths_types.Resolved_reference.label_parent
     end
@@ -1050,6 +1081,10 @@ module Reference = struct
 
     module Field = struct
       type t = Paths_types.Resolved_reference.field
+    end
+
+    module UnboxedField = struct
+      type t = Paths_types.Resolved_reference.unboxed_field
     end
 
     module Extension = struct
@@ -1142,6 +1177,10 @@ module Reference = struct
 
   module Field = struct
     type t = Paths_types.Reference.field
+  end
+
+  module UnboxedField = struct
+    type t = Paths_types.Reference.unboxed_field
   end
 
   module Extension = struct

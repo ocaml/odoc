@@ -65,7 +65,7 @@ val add_module_type :
 
 val add_value : Identifier.Value.t -> Component.Value.t -> t -> t
 
-val add_label : Identifier.Label.t -> Component.Label.t -> t -> t
+val add_label : Identifier.Label.t -> Component.Label.t -> t -> unboxed:bool -> t
 
 val add_class : Identifier.Class.t -> Component.Class.t -> t -> t
 
@@ -154,6 +154,8 @@ val s_exception : Component.Element.exception_ scope
 val s_extension : Component.Element.extension scope
 
 val s_field : Component.Element.field scope
+
+val s_unboxed_field : Component.Element.unboxed_field scope
 
 val s_label_parent : Component.Element.label_parent scope
 

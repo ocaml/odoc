@@ -218,6 +218,9 @@ let anchor_of_identifier id =
     | `Field (parent, name) ->
         let anchor = anchor `Field (FieldName.to_string name) in
         continue anchor parent
+    | `UnboxedField (parent, name) ->
+        let anchor = anchor `UnboxedField (UnboxedFieldName.to_string name) in
+        continue anchor parent
     | `SourceLocationMod _ -> assert false
     | `Result parent -> anchor_of_identifier acc (parent :> Identifier.t)
     | `SourceLocationInternal _ -> assert false

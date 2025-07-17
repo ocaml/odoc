@@ -83,6 +83,8 @@ module ConstructorName : SimpleName
 
 module FieldName : SimpleName
 
+module UnboxedFieldName : SimpleName
+
 module ExtensionName : SimpleName
 
 module ExceptionName : SimpleName

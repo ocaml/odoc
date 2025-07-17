@@ -91,6 +91,7 @@ type kind =
   | Kind_Exception
   | Kind_Extension
   | Kind_Field
+  | Kind_UnboxedField
 
 module ElementsByName : sig
   type t
@@ -167,6 +168,7 @@ type t = {
   ids : ElementsById.t;
       (** Elements mapped by their identifier. Queried with {!find_by_id}. *)
   ambiguous_labels : Component.Element.label amb_err Identifier.Maps.Label.t;
+  ambiguous_unboxed_labels : Component.Element.label amb_err Identifier.Maps.Label.t;
   resolver : resolver option;
   recorder : recorder option;
   warnings_tags : string list;
@@ -212,6 +214,7 @@ let empty =
     resolver = None;
     recorder = None;
     ambiguous_labels = Identifier.Maps.Label.empty;
+    ambiguous_unboxed_labels = Identifier.Maps.Label.empty;
     warnings_tags = [];
     fragmentroot = None;
   }
@@ -242,8 +245,10 @@ let add_to_elts kind identifier component env =
     ids = ElementsById.add identifier component env.ids;
   }
 
-let add_label identifier heading env =
+let add_label identifier heading env ~unboxed =
   assert env.linking;
+  (* TODO: implement proper behavior for unboxed labels *)
+  assert (not unboxed);
   let comp = `Label (identifier, heading) in
   let name = Identifier.name identifier in
   let ambiguous_labels =
@@ -279,7 +284,7 @@ let add_docs (docs : Comment.docs) env =
     (fun env -> function
       | { Location_.value = `Heading (attrs, id, text); location } ->
           let label = Ident.Of_Identifier.label id in
-          add_label id { Component.Label.attrs; label; text; location } env
+          add_label id { Component.Label.attrs; label; text; location } env ~unboxed:false
       | _ -> env)
     env docs.elements
 
@@ -295,7 +300,7 @@ let add_cdocs p (docs : Component.CComment.docs) env =
           let label =
             Paths.Identifier.Mk.label (Paths.Identifier.label_parent p, name)
           in
-          add_label label h env
+          add_label label h env ~unboxed:false
       | _ -> env)
     env docs.elements
 
@@ -320,6 +325,13 @@ let add_type (identifier : Identifier.Type.t) t env =
             FieldName.make_std field.name )
       in
       add_to_elts Kind_Field ident (`Field (ident, field)) env
+    and add_unboxed_field env (field : TypeDecl.UnboxedField.t) =
+      let ident =
+        Paths.Identifier.Mk.unboxed_field
+          ( (identifier :> Paths.Identifier.UnboxedFieldParent.t),
+            UnboxedFieldName.make_std field.name )
+      in
+      add_to_elts Kind_UnboxedField ident (`UnboxedField (ident, field)) env
     in
     let open TypeDecl in
     match t.representation with
@@ -329,6 +341,9 @@ let add_type (identifier : Identifier.Type.t) t env =
     | Some (Record fields) ->
         ( List.fold_left add_field cs fields,
           List.map (fun t -> t.Field.doc) fields )
+    | Some (Record_unboxed_product fields) ->
+        ( List.fold_left add_unboxed_field cs fields,
+          List.map (fun t -> t.UnboxedField.doc) fields )
     | Some Extensible | None -> (cs, [])
   in
   let env, docs = if env.linking then open_typedecl env else (env, []) in
@@ -628,6 +643,9 @@ let s_extension : Component.Element.extension scope =
 
 let s_field : Component.Element.field scope =
   make_scope (function #Component.Element.field as r -> Some r | _ -> None)
+
+let s_unboxed_field : Component.Element.unboxed_field scope =
+  make_scope (function #Component.Element.unboxed_field as r -> Some r | _ -> None)
 
 let s_label_parent : Component.Element.label_parent scope =
   make_scope ~root:lookup_page_or_root_module_fallback (function

@@ -233,6 +233,15 @@ and TypeDecl : sig
     }
   end
 
+  module UnboxedField : sig
+    type t = {
+      id : Identifier.UnboxedField.t;
+      doc : Comment.docs;
+      mutable_ : bool;
+      type_ : TypeExpr.t;
+    }
+  end
+
   module Constructor : sig
     type argument = Tuple of TypeExpr.t list | Record of Field.t list
 
@@ -248,6 +257,7 @@ and TypeDecl : sig
     type t =
       | Variant of Constructor.t list
       | Record of Field.t list
+      | Record_unboxed_product of UnboxedField.t list
       | Extensible
   end
 
@@ -465,6 +475,7 @@ and TypeExpr : sig
     | Alias of t * string
     | Arrow of label option * t * t
     | Tuple of (string option * t) list
+    | Unboxed_tuple of (string option * t) list
     | Constr of Path.Type.t * t list
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t

@@ -3,6 +3,7 @@
     deserialize. *)
 type 'a t =
   | Record : 'a field list -> 'a t
+  | Unboxed_record : 'a unboxed_field list -> 'a t
   | Variant : ('a -> case) -> 'a t
   | Pair : 'a t * 'b t -> ('a * 'b) t
   | Triple : 'a t * 'b t * 'c t -> ('a * 'b * 'c) t
@@ -12,6 +13,8 @@ type 'a t =
   | Indirect : ('a -> 'b) * 'b t -> 'a t
 
 and 'a field = F : string * ('a -> 'b) * 'b t -> 'a field
+
+and 'a unboxed_field = UF : string * ('a -> 'b) * 'b t -> 'a unboxed_field
 
 and case = C : string * 'b * 'b t -> case | C0 : string -> case
 

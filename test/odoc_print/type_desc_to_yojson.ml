@@ -10,6 +10,9 @@ let rec to_yojson : type a. a t -> a -> yojson =
   | Record fields ->
       let field_to_yojson (F (name, get, t)) = (name, to_yojson t (get a)) in
       `Assoc (List.map field_to_yojson fields)
+  | Unboxed_record fields ->
+      let field_to_yojson (UF (name, get, t)) = (name, to_yojson t (get a)) in
+      `Assoc (List.map field_to_yojson fields)
   | Variant get -> (
       match get a with
       | C0 name -> `String name

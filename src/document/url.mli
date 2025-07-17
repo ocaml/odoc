@@ -68,6 +68,7 @@ module Anchor : sig
     | `Val
     | `Constructor
     | `Field
+    | `UnboxedField
     | `SourceAnchor ]
 
   val pp_kind : Format.formatter -> kind -> unit

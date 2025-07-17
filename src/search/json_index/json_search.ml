@@ -55,6 +55,8 @@ let rec of_id x =
       ret "Constructor" (ConstructorName.to_string name) :: of_id (parent :> t)
   | `Field (parent, name) ->
       ret "Field" (FieldName.to_string name) :: of_id (parent :> t)
+  | `UnboxedField (parent, name) ->
+      ret "UnboxedField" (UnboxedFieldName.to_string name) :: of_id (parent :> t)
   | `Extension (parent, name) ->
       ret "Extension" (ExtensionName.to_string name) :: of_id (parent :> t)
   | `ExtensionDecl (parent, _, name) ->
@@ -107,6 +109,8 @@ let rec prefix_name_kind_of_id (n : Odoc_model.Paths.Identifier.t) =
       (prefix_of_parent parent, ConstructorName.to_string name, "constructor")
   | `Field (parent, name) ->
       (prefix_of_parent parent, FieldName.to_string name, "field")
+  | `UnboxedField (parent, name) ->
+      (prefix_of_parent parent, UnboxedFieldName.to_string name, "unboxed_field")
   | `Extension (parent, name) ->
       (prefix_of_parent parent, ExtensionName.to_string name, "extension")
   | `ExtensionDecl (parent, _, name) ->
@@ -206,6 +210,13 @@ let of_entry ({ Entry.id; doc; kind ; source_loc = _} as entry) html occurrences
         return "Constructor" [ ("args", args); ("res", res) ]
     | Field { mutable_; type_; parent_type } ->
         return "Field"
+          [
+            ("mutable", `Bool mutable_);
+            ("type", `String (Text.of_type type_));
+            ("parent_type", `String (Text.of_type parent_type));
+          ]
+    | UnboxedField { mutable_; type_; parent_type } ->
+        return "UnboxedField"
           [
             ("mutable", `Bool mutable_);
             ("type", `String (Text.of_type type_));

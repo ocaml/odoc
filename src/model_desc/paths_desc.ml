@@ -22,6 +22,8 @@ module Names = struct
 
   let fieldname = To_string FieldName.to_string
 
+  let unboxedfieldname = To_string UnboxedFieldName.to_string
+
   let exceptionname = To_string ExceptionName.to_string
 
   let extensionname = To_string ExtensionName.to_string
@@ -129,6 +131,11 @@ module General_paths = struct
               ( "`Field",
                 ((parent :> id_t), name),
                 Pair (identifier, Names.fieldname) )
+        | `UnboxedField (parent, name) ->
+            C
+              ( "`UnboxedField",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.unboxedfieldname) )
         | `Extension (parent, name) ->
             C
               ( "`Extension",
@@ -192,6 +199,7 @@ module General_paths = struct
       | `TExtension -> C0 "`TExtension"
       | `TExtensionDecl -> C0 "`TExtensionDecl"
       | `TField -> C0 "`TField"
+      | `TUnboxedField -> C0 "`TUnboxedField"
       | `TInstanceVariable -> C0 "`TInstanceVariable"
       | `TLabel -> C0 "`TLabel"
       | `TMethod -> C0 "`TMethod"
@@ -329,6 +337,8 @@ module General_paths = struct
               Pair (reference, Names.constructorname) )
       | `Field (x1, x2) ->
           C ("`Field", ((x1 :> r), x2), Pair (reference, Names.fieldname))
+      | `UnboxedField (x1, x2) ->
+          C ("`UnboxedField", ((x1 :> r), x2), Pair (reference, Names.unboxedfieldname))
       | `Extension (x1, x2) ->
           C
             ( "`Extension",
@@ -408,6 +418,11 @@ module General_paths = struct
             ( "`Field",
               ((x1 :> rr), x2),
               Pair (resolved_reference, Names.fieldname) )
+      | `UnboxedField (x1, x2) ->
+          C
+            ( "`UnboxedField",
+              ((x1 :> rr), x2),
+              Pair (resolved_reference, Names.unboxedfieldname) )
       | `Hidden x -> C ("`Hidden", (x :> rr), resolved_reference)
       | `Identifier x -> C ("`Identifier", (x :> id_t), identifier)
       | `InstanceVariable (x1, x2) ->
