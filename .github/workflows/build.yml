@@ -42,7 +42,7 @@ jobs:
           git config --global core.eol lf
 
       - name: Checkout tree
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set-up OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v3
