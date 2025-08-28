@@ -58,7 +58,7 @@ let pkg_contents { name; _ } =
           OpamFile.Changes.read_from_string ~filename
           @@
           (* Field [opam-version] is invalid in [*.changes] files, displaying a warning. *)
-          if OpamStd.String.starts_with ~prefix:"opam-version" str then
+          if String.starts_with ~prefix:"opam-version" str then
             match OpamStd.String.cut_at str '\n' with
             | Some (_, str) -> str
             | None -> assert false
