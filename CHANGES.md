@@ -6,6 +6,8 @@
 - New arguments to LaTeX generator, --shorten-beyond-depth and
   --remove-functor-arg-link (@Octachron, #1337)
 - New experimental markdown generator (@davesnx, #1341)
+- `markdown-generate` command now accepts multiple `.odocl` files in a single
+  invocation, eliminating the need for shell scripting (@davesnx)
 
 ### Changed
 - Remove cmdliner compatibility layer, no longer needed (@dbuenzli, #1328)
