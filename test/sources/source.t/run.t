@@ -406,7 +406,7 @@ Html generation for implementation and mld/interface uses different commands
   [2]
   $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
   odoc: unknown option '--source'.
-  Usage: odoc html-generate [OPTION]… FILE.odocl
+  Usage: odoc html-generate [OPTION]… FILE.odocl…
   Try 'odoc html-generate --help' or 'odoc --help' for more information.
   [2]
 
