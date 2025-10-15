@@ -864,6 +864,10 @@ end = struct
     let doc = "Input file." in
     Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE.odocl" [])
 
+  let input_odocl_list =
+    let doc = "Input file(s)." in
+    Arg.(non_empty & pos_all file [] & info ~doc ~docv:"FILE.odocl" [])
+
   module Process = struct
     let process extra _hidden directories output_dir syntax input_file
         warnings_options =
@@ -902,11 +906,16 @@ end = struct
   let process ~docs = Process.(cmd, info ~docs)
 
   module Generate = struct
-    let generate extra _hidden output_dir syntax extra_suffix input_file
+    let generate extra _hidden output_dir syntax extra_suffix input_files
         warnings_options sidebar =
-      let file = Fs.File.of_string input_file in
-      Rendering.generate_odoc ~renderer:R.renderer ~warnings_options ~syntax
-        ~output:output_dir ~extra_suffix ~sidebar extra file
+      let process_file input_file =
+        let file = Fs.File.of_string input_file in
+        Rendering.generate_odoc ~renderer:R.renderer ~warnings_options ~syntax
+          ~output:output_dir ~extra_suffix ~sidebar extra file
+      in
+      List.fold_left
+        ~f:(fun acc input_file -> acc >>= fun () -> process_file input_file)
+        ~init:(Ok ()) input_files
 
     let sidebar =
       let doc = "A .odoc-index file, used eg to generate the sidebar." in
@@ -927,11 +936,12 @@ end = struct
       Term.(
         const handle_error
         $ (const generate $ R.extra_args $ hidden $ dst ~create:true () $ syntax
-         $ extra_suffix $ input_odocl $ warnings_options $ sidebar))
+         $ extra_suffix $ input_odocl_list $ warnings_options $ sidebar))
 
     let info ~docs =
       let doc =
-        Format.sprintf "Generate %s files from a $(i,.odocl)." R.renderer.name
+        Format.sprintf "Generate %s files from one or more $(i,.odocl) files."
+          R.renderer.name
       in
       Cmd.info ~docs ~doc (R.renderer.name ^ "-generate")
   end
