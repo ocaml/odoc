@@ -202,6 +202,7 @@ let search_urls = %s;
               (Html.cdata_script
                  {|
           document.addEventListener("DOMContentLoaded", function () {
+            var macros = {};
             var elements = Array.from(document.getElementsByClassName("odoc-katex-math"));
             for (var i = 0; i < elements.length; i++) {
               var el = elements[i];
@@ -209,7 +210,7 @@ let search_urls = %s;
               var new_el = document.createElement("span");
               new_el.setAttribute("class", "odoc-katex-math-rendered");
               var display = el.classList.contains("display");
-              katex.render(content, new_el, { throwOnError: false, displayMode: display });
+              katex.render(content, new_el, { throwOnError: false, displayMode: display, macros });
               el.replaceWith(new_el);
             }
           });
