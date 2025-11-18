@@ -8,6 +8,7 @@
 - New experimental markdown generator (@davesnx, #1341)
 - `markdown-generate` command now accepts multiple `.odocl` files in a single
   invocation, eliminating the need for shell scripting (@davesnx)
+- Allow persistent latex macros in HTML/KaTeX backend (@dlesbre, #1391)
 
 ### Changed
 - Remove cmdliner compatibility layer, no longer needed (@dbuenzli, #1328)
@@ -183,7 +184,7 @@
 ### Fixed
 
 - Fix issues #1066 and #1095 with extended opens (@jonludlam, #1082, #1100)
- 
+
 # 2.4.1
 
 ### Fixed
