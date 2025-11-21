@@ -4,6 +4,7 @@
   driver
   dune
   features
+  index
   interface
   ocamldoc_differences
   odoc_for_authors
