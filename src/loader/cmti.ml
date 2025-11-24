@@ -165,6 +165,18 @@ let rec read_core_type env container ctyp =
       read_core_type env container t
 #endif
 
+let read_params env container ctyp =
+  let rec aux ctyp acc =
+    match ctyp.ctyp_desc with
+    | Ttyp_arrow (_, _, return_type) ->
+       let param_doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container
+                         ctyp.ctyp_attributes
+       in
+       aux return_type ( param_doc.elements :: acc)
+    | _ -> List.rev acc
+  in
+  aux ctyp []
+
 let read_value_description env parent vd =
   let open Signature in
   let id = Env.find_value_identifier env.ident_env vd.val_id in
@@ -174,12 +186,20 @@ let read_value_description env parent vd =
   in
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container vd.val_attributes in
   let type_ = read_core_type env container vd.val_desc in
+  let params_docs = read_params env container vd.val_desc in
   let value =
     match vd.val_prim with
     | [] -> Value.Abstract
     | primitives -> External primitives
   in
-  Value { Value.id; source_loc; doc; type_; value }
+  Value
+    {
+      Value.id;
+      source_loc;
+      doc = { doc with elements = List.flatten (doc.elements :: params_docs) };
+      type_;
+      value
+    }
 
 let read_type_parameter (ctyp, var_and_injectivity)  =
   let open TypeDecl in
