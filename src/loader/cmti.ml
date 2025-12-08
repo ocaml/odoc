@@ -183,6 +183,10 @@ let rec read_core_type env container ctyp =
       (* TODO: adjust model *)
       read_core_type env container t
 #endif
+#if OCAML_VERSION = (5,2,0)
+    | Ttyp_quote typ -> read_core_type env container typ
+    | Ttyp_splice typ -> read_core_type env container typ
+#endif
     | Ttyp_call_pos -> Constr(Env.Path.read_type env.ident_env Predef.path_lexing_position, [])
     | Ttyp_of_kind _ -> assert false
 

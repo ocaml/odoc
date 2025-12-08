@@ -44,7 +44,7 @@ let rec read_pattern env parent doc pat =
 #if OCAML_VERSION < (5,2,0)
     | Tpat_var(id, _, _, _) ->
 #else
-    | Tpat_var(id,_,_uid, _) ->
+    | Tpat_var(id, _, _uid, _, _) ->
 #endif
         let open Value in
         let id = Env.find_value_identifier env.ident_env id in
@@ -56,7 +56,7 @@ let rec read_pattern env parent doc pat =
 #if OCAML_VERSION < (5,2, 0)
     | Tpat_alias(pat, id, _) ->
 #elif OCAML_VERSION = (5,2, 0)
-    | Tpat_alias(pat, id, _,_, _, _) ->
+    | Tpat_alias(pat, id, _, _, _, _, _) ->
 #elif OCAML_VERSION < (5,4,0)
     | Tpat_alias(pat, id, _,_) ->
 #else

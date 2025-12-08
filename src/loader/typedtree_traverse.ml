@@ -26,7 +26,7 @@ module Analysis = struct
         let () =
           match pat_desc with
 #if OCAML_VERSION >= (5, 2, 0)
-          | Tpat_var (id, loc, _uid, _) -> (
+          | Tpat_var (id, loc, _uid, _, _) -> (
 #else
           | Tpat_var (id, loc, _, _) -> (
 #endif
@@ -36,7 +36,7 @@ module Analysis = struct
 #if OCAML_VERSION >= (5, 4, 0)
           | Tpat_alias (_, id, loc, _uid, _ty) -> (
 #elif OCAML_VERSION = (5, 2, 0)
-          | Tpat_alias (_, id, loc, _uid, _, _) -> (
+          | Tpat_alias (_, id, loc, _uid, _, _, _) -> (
 #elif OCAML_VERSION >= (5, 2, 0)
           | Tpat_alias (_, id, loc, _uid) -> (
 #else

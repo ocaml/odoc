@@ -305,13 +305,13 @@ let rec read_pattern hide_item pat =
 #if OCAML_VERSION < (5,2,0)
   | Tpat_var(id, loc, _, _) ->
 #else
-  | Tpat_var(id, loc, _, _) ->
+  | Tpat_var(id, loc, _, _, _) ->
 #endif
     [`Value(id, hide_item, Some loc.loc)]
 #if OCAML_VERSION < (5,2,0)
   | Tpat_alias(pat, id, loc) ->
 #elif OCAML_VERSION = (5,2,0)
-  | Tpat_alias(pat, id, loc, _, _, _) ->
+  | Tpat_alias(pat, id, loc, _, _, _, _) ->
 #elif OCAML_VERSION < (5,4,0)
   | Tpat_alias(pat, id, loc, _) ->
 #else

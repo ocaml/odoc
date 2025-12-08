@@ -305,6 +305,10 @@ let mark_type ty =
 #else
       | Tsubst (ty,_) -> loop visited ty
 #endif
+#if OCAML_VERSION = (5,2,0)
+      | Tquote typ -> loop visited typ
+      | Tsplice typ -> loop visited typ
+#endif
       | Tlink _ -> assert false
       | Tof_kind _ -> ()
   in
@@ -551,6 +555,10 @@ let rec read_type_expr env typ =
       | Tsubst typ -> read_type_expr env typ
 #else
       | Tsubst (typ,_) -> read_type_expr env typ
+#endif
+#if OCAML_VERSION = (5,2,0)
+      | Tquote typ -> read_type_expr env typ
+      | Tsplice typ -> read_type_expr env typ
 #endif
       | Tlink _ -> assert false
       | Tof_kind _ -> assert false

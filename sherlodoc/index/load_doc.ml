@@ -116,7 +116,8 @@ let convert_kind ~db (Odoc_index.Entry.{ kind; _ } as entry) =
       let typ = searchable_type_of_constructor args res in
       let typ = Db_writer.type_of_odoc ~db typ in
       Entry.Kind.Exception typ
-  | Field { mutable_ = _; parent_type; type_ } ->
+  | Field { mutable_ = _; parent_type; type_ }
+  | UnboxedField { mutable_ = _; parent_type; type_ } ->
       let typ = searchable_type_of_record parent_type type_ in
       let typ = Db_writer.type_of_odoc ~db typ in
       Entry.Kind.Field typ
@@ -149,7 +150,7 @@ let rec categorize id =
   | `Parameter _ -> `ignore (* redundant with indexed signature *)
   | ( `InstanceVariable _ | `Method _ | `Field _ | `Result _ | `Label _ | `Type _
     | `Exception _ | `Class _ | `ClassType _ | `Value _ | `Constructor _ | `Extension _
-    | `ExtensionDecl _ | `Module _ ) as x ->
+    | `ExtensionDecl _ | `Module _ | `UnboxedField _ ) as x ->
       let parent = Identifier.label_parent { id with iv = x } in
       categorize (parent :> Identifier.Any.t)
   | `AssetFile _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
@@ -173,7 +174,7 @@ let register_entry
       ~favoured_prefixes
       ~pkg
       ~cat
-      (Odoc_index.Entry.{ id; doc; kind } as entry)
+      (Odoc_index.Entry.{ id; doc; kind; source_loc = _ } as entry)
   =
   let module Sherlodoc_entry = Entry in
   let open Odoc_search in

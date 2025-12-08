@@ -156,6 +156,14 @@ let lookup_shape : Env.t -> Shape.t -> Identifier.SourceLocation.t option =
           | Some (shape, _) -> Some shape
           | None -> None)
        | _ -> None
+#if OCAML_VERSION = (5,2,0)
+    let fuel () = Misc.Maybe_bounded.of_int fuel
+    let projection_rules_for_merlin_enabled = false
+    let fuel_for_compilation_units = fuel
+    let max_shape_reduce_steps_per_variable = fuel
+    let max_compilation_unit_depth = fuel
+    let read_unit_shape ~diagnostics:_ ~unit_name = read_unit_shape ~unit_name
+#endif
   end) in
   let result = try Some (Reduce.reduce_for_uid Ocaml_env.empty query) with Not_found -> None in
   result >>= traverse_aliases >>= fun uid ->
