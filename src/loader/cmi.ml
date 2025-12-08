@@ -557,8 +557,8 @@ let rec read_type_expr env typ =
       | Tsubst (typ,_) -> read_type_expr env typ
 #endif
 #if OCAML_VERSION = (5,2,0)
-      | Tquote typ -> read_type_expr env typ
-      | Tsplice typ -> read_type_expr env typ
+      | Tquote typ -> Quote (read_type_expr env typ)
+      | Tsplice typ -> Splice (read_type_expr env typ)
 #endif
       | Tlink _ -> assert false
       | Tof_kind _ -> assert false

@@ -666,6 +666,8 @@ and typeexpr_t =
     | Class (x1, x2) ->
         C ("Class", ((x1 :> Paths.Path.t), x2), Pair (path, List typeexpr_t))
     | Poly (x1, x2) -> C ("Poly", (x1, x2), Pair (List string, typeexpr_t))
+    | Quote x -> C ("Quote", x, typeexpr_t)
+    | Splice x -> C ("Splice", x, typeexpr_t)
     | Package x -> C ("Package", x, typeexpr_package))
 
 (** {3 Compilation_unit} *)

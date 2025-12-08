@@ -65,6 +65,8 @@ let rec type_expr map t =
   | Class (path, ts) -> Class (path, List.map (type_expr map) ts)
   | Poly (s, t) -> Poly (s, type_expr map t)
   | Package p -> Package (package map p)
+  | Quote t -> Quote (type_expr map t)
+  | Splice t -> Splice (type_expr map t)
 
 and polymorphic_variant map pv =
   let open Lang.TypeExpr.Polymorphic_variant in

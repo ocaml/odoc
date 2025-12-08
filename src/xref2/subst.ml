@@ -133,6 +133,8 @@ let rec substitute_vars vars t =
   | Object o -> Object (substitute_vars_type_object vars o)
   | Class (p, ts) -> Class (p, List.map (substitute_vars vars) ts)
   | Poly (strs, ts) -> Poly (strs, substitute_vars vars ts)
+  | Quote t -> Quote (substitute_vars vars t)
+  | Splice t -> Splice (substitute_vars vars t)
   | Package p -> Package (substitute_vars_package vars p)
 
 and substitute_vars_package vars p =
@@ -568,6 +570,8 @@ and type_expr s t =
   | Object o -> Object (type_object s o)
   | Class (p, ts) -> Class (class_type_path s p, List.map (type_expr s) ts)
   | Poly (strs, ts) -> Poly (strs, type_expr s ts)
+  | Quote t -> Quote (type_expr s t)
+  | Splice t -> Splice (type_expr s t)
   | Package p -> Package (type_package s p)
 
 and simple_expansion :

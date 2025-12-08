@@ -125,6 +125,8 @@ and TypeExpr : sig
     | Object of TypeExpr.Object.t
     | Class of Cpath.class_type * t list
     | Poly of string list * t
+    | Quote of t
+    | Splice of t
     | Package of TypeExpr.Package.t
 end
 
