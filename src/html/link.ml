@@ -11,11 +11,11 @@ module Path = struct
 
   let is_leaf_page url = url.Url.Path.kind = `LeafPage
 
-  let remap config f =
-    let l = String.concat "/" f in
+  let remap config dir file =
+    let path = String.concat "/" dir ^ "/" ^ file in
     let remaps =
       List.filter
-        (fun (prefix, _replacement) -> Astring.String.is_prefix ~affix:prefix l)
+        (fun (prefix, _) -> Astring.String.is_prefix ~affix:prefix path)
         (Config.remap config)
     in
     let remaps =
@@ -26,9 +26,11 @@ module Path = struct
     match remaps with
     | [] -> None
     | (prefix, replacement) :: _ ->
-        let len = String.length prefix in
-        let l = String.sub l len (String.length l - len) in
-        Some (replacement ^ l)
+        let remainder =
+          String.sub path (String.length prefix)
+            (String.length path - String.length prefix)
+        in
+        Some (replacement ^ remainder)
 
   let get_dir_and_file ~config url =
     let l = Url.Path.to_list url in
@@ -52,9 +54,9 @@ module Path = struct
 
   let for_linking ~config url =
     let dir, file = get_dir_and_file ~config url in
-    match remap config dir with
+    match remap config dir file with
     | None -> Relative (dir, file)
-    | Some x -> Absolute (x ^ "/" ^ file)
+    | Some url -> Absolute url
 
   let as_filename ~config (url : Url.Path.t) =
     let dir, file = get_dir_and_file ~config url in
