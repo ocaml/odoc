@@ -15,9 +15,18 @@ type t = {
   home_breadcrumb : string option;
 }
 
+let ensure_trailing_slash s =
+  if Astring.String.is_suffix ~affix:"/" s then s else s ^ "/"
+
 let v ?(search_result = false) ?theme_uri ?support_uri ?(search_uris = [])
     ~semantic_uris ~indent ~flat ~open_details ~as_json ~remap ?home_breadcrumb
     () =
+  let remap =
+    List.map
+      (fun (prefix, replacement) ->
+        (ensure_trailing_slash prefix, ensure_trailing_slash replacement))
+      remap
+  in
   {
     semantic_uris;
     indent;
