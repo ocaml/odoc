@@ -685,7 +685,11 @@ let read_value_description ({ident_env ; warnings_tag} as env) parent id vd =
   let type_ = read_type_expr env vd.val_type in
   let value =
     match vd.val_kind with
+#if OCAML_VERSION = (5,2,0)
+    | Val_reg _ -> Value.Abstract
+#else
     | Val_reg -> Value.Abstract
+#endif
     | Val_prim desc ->
         let primitives =
           let open Primitive in
