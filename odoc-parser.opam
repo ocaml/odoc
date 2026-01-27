@@ -13,7 +13,7 @@ bug-reports: "https://github.com/ocaml/odoc/issues"
 dev-repo: "git+https://github.com/ocaml/odoc.git"
 doc: "https://ocaml.github.io/odoc/odoc_parser"
 depends: [
-  "dune" {>= "3.18"}
+  "dune" {>= "3.21"}
   "ocaml" {>= "4.08.0" & < "5.5"}
   "astring"
   "camlp-streams"
