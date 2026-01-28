@@ -303,14 +303,16 @@ let rec read_pattern hide_item pat =
   let open Typedtree in
   match pat.pat_desc with
 #if OCAML_VERSION < (5,2,0)
-  | Tpat_var(id, loc, _, _) ->
-#else
+  | Tpat_var(id, loc) ->
+#elif defined OXCAML
   | Tpat_var(id, loc, _, _, _) ->
+#else
+  | Tpat_var(id, loc, _, _) ->
 #endif
     [`Value(id, hide_item, Some loc.loc)]
 #if OCAML_VERSION < (5,2,0)
   | Tpat_alias(pat, id, loc) ->
-#elif OCAML_VERSION = (5,2,0)
+#elif defined OXCAML
   | Tpat_alias(pat, id, loc, _, _, _, _) ->
 #elif OCAML_VERSION < (5,4,0)
   | Tpat_alias(pat, id, loc, _) ->
@@ -327,7 +329,7 @@ let rec read_pattern hide_item pat =
 #else
   | Tpat_construct(_, _, pats, _)
 #endif
-#if OCAML_VERSION = (5,2,0)
+#if defined OXCAML
   | Tpat_array (_, _, pats) ->
       List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
 #elif OCAML_VERSION < (5,4,0)
@@ -338,12 +340,12 @@ let rec read_pattern hide_item pat =
     List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
 #endif
   | Tpat_tuple pats ->
-#if OCAML_VERSION >= (5,4,0) || OCAML_VERSION = (5,2,0)
+#if OCAML_VERSION >= (5,4,0) || defined OXCAML
      List.concat (List.map (fun (_lbl,pat) -> read_pattern hide_item pat) pats)
 #else
      List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
 #endif
-#if OCAML_VERSION = (5,2,0)
+#if defined OXCAML
   | Tpat_unboxed_tuple pats ->
       List.concat (List.map (fun (_, pat, _) -> read_pattern hide_item pat) pats)
 #endif

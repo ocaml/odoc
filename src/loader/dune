@@ -1,9 +1,26 @@
 (library
  (name odoc_loader)
  (public_name odoc.loader)
+ (enabled_if
+  (not %{ocaml-config:ox}))
  (preprocess
   (action
    (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
+ (libraries
+  odoc_model
+  odoc-parser
+  syntax_highlighter
+  odoc_document
+  odoc_utils
+  compiler-libs.optcomp))
+
+(library
+ (name odoc_loader)
+ (public_name odoc.loader)
+ (enabled_if %{ocaml-config:ox})
+ (preprocess
+  (action
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} -D "OXCAML" %{input-file})))
  (libraries
   odoc_model
   odoc-parser

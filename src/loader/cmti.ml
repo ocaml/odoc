@@ -67,13 +67,13 @@ let rec read_core_type env container ctyp =
         let res = read_core_type env container res in
           Arrow(lbl, arg, res)
     | Ttyp_tuple typs ->
-#if OCAML_VERSION >= (5,4,0) || OCAML_VERSION = (5,2,0)
+#if OCAML_VERSION >= (5,4,0) || defined OXCAML
         let typs = List.map (fun (lbl,x) -> lbl, read_core_type env container x) typs in
 #else
         let typs = List.map (fun x -> None, read_core_type env container x) typs in
 #endif
         Tuple typs
-#if OCAML_VERSION = (5,2,0)
+#if defined OXCAML
     | Ttyp_unboxed_tuple typs ->
         let typs = List.map (fun (l, t) -> l, read_core_type env container t) typs in
         Unboxed_tuple typs
@@ -155,7 +155,7 @@ let rec read_core_type env container ctyp =
         in
           Polymorphic_variant {kind; elements}
     | Ttyp_poly([], typ) -> read_core_type env container typ
-#if OCAML_VERSION = (5,2,0)
+#if defined OXCAML
     | Ttyp_poly(vars, typ) ->
       (* TODO: presumably want the layouts, eventually *)
       Poly(List.map fst vars, read_core_type env container typ)
@@ -183,7 +183,7 @@ let rec read_core_type env container ctyp =
       (* TODO: adjust model *)
       read_core_type env container t
 #endif
-#if OCAML_VERSION = (5,2,0)
+#if defined OXCAML
     | Ttyp_quote typ -> Quote (read_core_type env container typ)
     | Ttyp_splice typ -> Splice (read_core_type env container typ)
 #endif

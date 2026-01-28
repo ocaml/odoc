@@ -60,10 +60,8 @@ module Compat = struct
   let concr_mem = Types.Meths.mem
   let csig_concr x = x.Types.csig_meths
   let eq_type = Types.eq_type
-#if OCAML_VERSION >= (5,4,0)
+#if OCAML_VERSION >= (5,4,0) || defined OXCAML
   let invisible_wrap ty = newty2 ~level:Btype.generic_level (Ttuple [None,ty])
-#elif OCAML_VERSION = (5,2,0)
-  let invisible_wrap ty = newty2 ~level:Btype.generic_level (Ttuple [None, ty])
 #else
   let invisible_wrap ty = newty2 ~level:Btype.generic_level (Ttuple [ty])
 #endif
@@ -241,12 +239,12 @@ let mark_type ty =
       | Tarrow(_, ty1, ty2, _) ->
           loop visited ty1;
           loop visited ty2
-#if OCAML_VERSION >= (5,4,0) || OCAML_VERSION = (5,2,0)
+#if OCAML_VERSION >= (5,4,0) || defined OXCAML
       | Ttuple tyl -> List.iter (fun (_lbl,x) -> loop visited x) tyl
 #else
       | Ttuple tyl -> List.iter (loop visited) tyl
 #endif
-#if OCAML_VERSION = (5,2,0)
+#if defined OXCAML
       | Tunboxed_tuple tyl -> List.iter (fun (_, ty) -> loop visited ty) tyl
 #endif
       | Tconstr(_, tyl, _) ->
@@ -285,7 +283,7 @@ let mark_type ty =
       | Tpoly (ty, tyl) ->
           List.iter (fun t -> add_alias t) tyl;
           loop visited ty
-#if OCAML_VERSION = (5,2,0)
+#if defined OXCAML
       | Tunivar { name; _ } -> reserve_name name
 #else
       | Tunivar name -> reserve_name name
@@ -305,7 +303,7 @@ let mark_type ty =
 #else
       | Tsubst (ty,_) -> loop visited ty
 #endif
-#if OCAML_VERSION = (5,2,0)
+#if defined OXCAML
       | Tquote typ -> loop visited typ
       | Tsplice typ -> loop visited typ
 #endif
@@ -504,13 +502,13 @@ let rec read_type_expr env typ =
           let res = read_type_expr env res in
             Arrow(lbl, arg, res)
       | Ttuple typs ->
-#if OCAML_VERSION >= (5,4,0) || OCAML_VERSION = (5,2,0)
+#if OCAML_VERSION >= (5,4,0) || defined OXCAML
           let typs = List.map (fun (lbl,x) -> lbl, read_type_expr env x) typs in
 #else
           let typs = List.map (fun x -> None, read_type_expr env x) typs in
 #endif
           Tuple typs
-#if OCAML_VERSION = (5,2,0)
+#if defined OXCAML
       | Tunboxed_tuple typs ->
           let typs = List.map (fun (l,t) -> l, read_type_expr env t) typs in
             Unboxed_tuple typs
@@ -556,7 +554,7 @@ let rec read_type_expr env typ =
 #else
       | Tsubst (typ,_) -> read_type_expr env typ
 #endif
-#if OCAML_VERSION = (5,2,0)
+#if defined OXCAML
       | Tquote typ -> Quote (read_type_expr env typ)
       | Tsplice typ -> Splice (read_type_expr env typ)
 #endif
@@ -685,7 +683,7 @@ let read_value_description ({ident_env ; warnings_tag} as env) parent id vd =
   let type_ = read_type_expr env vd.val_type in
   let value =
     match vd.val_kind with
-#if OCAML_VERSION = (5,2,0)
+#if defined OXCAML
     | Val_reg _ -> Value.Abstract
 #else
     | Val_reg -> Value.Abstract

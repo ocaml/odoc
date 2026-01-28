@@ -165,8 +165,7 @@ let tag_of_token (tok : Parser.token) =
   | ANDOP _ -> "ANDOP"
   | LETOP _ -> "LETOP"
 #endif
-#if OCAML_VERSION = (5,2,0)
-  (* oxcaml *)
+#if defined OXCAML
   | RBRACKETGREATER -> "RBRACKETGREATER"
   | LESSLBRACKET -> "LESSLBRACKET"
   | DOLLAR -> "DOLLAR"

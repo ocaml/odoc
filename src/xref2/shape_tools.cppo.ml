@@ -156,7 +156,7 @@ let lookup_shape : Env.t -> Shape.t -> Identifier.SourceLocation.t option =
           | Some (shape, _) -> Some shape
           | None -> None)
        | _ -> None
-#if OCAML_VERSION = (5,2,0)
+#if defined OXCAML
     let fuel () = Misc.Maybe_bounded.of_int fuel
     let projection_rules_for_merlin_enabled = false
     let fuel_for_compilation_units = fuel
