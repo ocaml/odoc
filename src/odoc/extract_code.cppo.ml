@@ -88,7 +88,12 @@ let iterator line_directives oc names =
   let signature_item sub sig_ =
     match sig_.Typedtree.sig_desc with
     | Tsig_attribute attr -> attribute sub attr
-    | Tsig_include (incl, _) -> attributes sub incl.incl_attributes
+#if defined OXCAML
+    | Tsig_include (incl, _) ->
+#else
+    | Tsig_include incl ->
+#endif
+        attributes sub incl.incl_attributes
     | Tsig_open o -> attributes sub o.open_attributes
     | _ -> default_iterator.signature_item sub sig_
   in

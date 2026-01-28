@@ -93,17 +93,19 @@ and visibility : Types.visibility -> visibility = function
   | Types.Hidden -> Hidden
   | Types.Exported -> Exported
 
-and aliasability : Types.Aliasability.t -> Aliasability.t = function
-  | Types.Aliasability.Not_aliasable -> Aliasability.Not_aliasable
-  | Types.Aliasability.Aliasable -> Aliasability.Aliasable
-
 and module_type : Types.module_type -> module_type = function
   | Types.Mty_ident p -> Mty_ident p
   | Types.Mty_signature s -> Mty_signature (signature s)
   | Types.Mty_functor (a, b) -> Mty_functor(functor_parameter a, module_type b)
   | Types.Mty_alias p -> Mty_alias p
+#if defined OXCAML
   | Types.Mty_strengthen (mty,p,a) ->
       Mty_strengthen (module_type mty, p, aliasability a)
+
+and aliasability : Types.Aliasability.t -> Aliasability.t = function
+  | Types.Aliasability.Not_aliasable -> Aliasability.Not_aliasable
+  | Types.Aliasability.Aliasable -> Aliasability.Aliasable
+#endif
 
 and functor_parameter : Types.functor_parameter -> functor_parameter = function
   | Types.Unit -> Unit
@@ -298,9 +300,8 @@ let required_compunit_names x = List.map compunit_name x.Cmo_format.cu_required_
 
 #elif OCAML_VERSION >= (4,04,0)
 
-let compunit_name x = Compilation_unit.name_as_string x
-
-let required_compunit_names x = List.map compunit_name x.Cmo_format.cu_required_globals
+let compunit_name x = x
+let required_compunit_names x = List.map Ident.name x.Cmo_format.cu_required_globals
 
 #else
 

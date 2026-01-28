@@ -1,7 +1,7 @@
 #if OCAML_VERSION >= (4, 14, 0)
 
 let rec is_persistent : Path.t -> bool = function
-  | Path.Pident id -> Ident.is_global_or_predef id
+  | Path.Pident id -> Ident_env.ident_is_global_or_predef id
   | Path.Pdot(p, _) -> is_persistent p
   | Path.Papply(p, _) -> is_persistent p
 #if OCAML_VERSION >= (5,1,0)
@@ -79,7 +79,9 @@ module Env = struct
     | Tmty_signature sg -> signature env (parent : Identifier.Signature.t) sg
     | Tmty_with (mty, _) -> module_type env parent mty
     | Tmty_functor (_, t) -> module_type env parent t
+#if defined OXCAML
     | Tmty_strengthen (t, _, _) -> module_type env parent t
+#endif
     | Tmty_ident _ | Tmty_alias _ | Tmty_typeof _ -> ()
 
   and module_bindings env parent mbs = List.iter (module_binding env parent) mbs

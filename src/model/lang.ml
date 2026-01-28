@@ -21,7 +21,7 @@ module Source_loc_jane = struct
 
   let of_location (build_dir : string) (loc: Location.t) =
     let { Location.loc_start ; _ } = loc in
-    let { pos_fname ; pos_lnum ; _ } = loc_start in
+    let { Lexing.pos_fname ; pos_lnum ; _ } = loc_start in
     { filename = build_dir ^ "/" ^ pos_fname ; line_number = pos_lnum }
 end
 

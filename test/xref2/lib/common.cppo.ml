@@ -18,8 +18,10 @@ utop # Resolve.signature Env.empty sg
 
 let _ = Toploop.set_paths ()
 
+#if defined OXCAML
 let dummy_compilation_unit = Compilation_unit.of_string ""
 let dummy_unit_info = Unit_info.make_dummy ~input_name:"" dummy_compilation_unit
+#endif
 
 let cmti_of_string s =
     Odoc_xref2.Tools.reset_caches ();
@@ -29,19 +31,24 @@ let cmti_of_string s =
     Typemod.type_interface
 #if OCAML_VERSION >= (4,4,0) && OCAML_VERSION < (4,9,0)
     ""
-#endif
+#elif defined OXCAML
     ~sourcefile:""
     dummy_compilation_unit
+#endif
     env p;;
 
 let cmt_of_string s =
     let env = Compmisc.initial_env () in
     let l = Lexing.from_string s in
     let p = Parse.implementation l in
-#if OCAML_VERSION < (5,2,0)
-    Typemod.type_implementation "" "" "" env p
-#else
+#if defined OXCAML
     Typemod.type_implementation dummy_unit_info dummy_compilation_unit env p
+#elif OCAML_VERSION < (5,2,0)
+    Typemod.type_implementation "" "" "" env p
+#elif OCAML_VERSION < (5,3,0)
+    Typemod.type_implementation (Unit_info.make ~source_file:"" "") env p
+#else
+    Typemod.type_implementation Unit_info.(make ~source_file:"" Impl "") env p
 #endif
 
 let parent = Odoc_model.Paths.Identifier.Mk.page (None, PageName.make_std "None")
