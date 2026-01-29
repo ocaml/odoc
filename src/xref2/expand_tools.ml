@@ -50,9 +50,10 @@ let rec type_expr map t =
   match t with
   | Var v -> (
       try List.assoc v map
-      with _ ->
-        Format.eprintf "Failed to list assoc %s\n%!" v;
-        failwith "bah")
+      with Not_found ->
+        Format.eprintf "Type variable '%s' not found in map [%s]@." v
+          (String.concat ", " (List.map fst map));
+        assert false)
   | Any -> Any
   | Alias (t, s) ->
       if List.mem_assoc s map then raise Clash else Alias (type_expr map t, s)

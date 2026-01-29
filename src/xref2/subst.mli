@@ -3,6 +3,8 @@ open Component
 
 type t = Component.Substitution.t
 
+val pp : Format.formatter -> t -> unit
+
 val identity : t
 
 val unresolve_opaque_paths : t -> t

@@ -386,7 +386,16 @@ and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
  fun env id decl ->
   let open Include in
   match decl with
-  | ModuleType expr -> ModuleType (u_module_type_expr env id expr)
+  | ModuleType expr ->
+      let rec is_elidable_with_u : Odoc_model.Lang.ModuleType.U.expr -> bool =
+        function
+        | Path _ -> false
+        | Signature _ -> true
+        | With (_, expr) -> is_elidable_with_u expr
+        | TypeOf _ -> false
+      in
+      if is_elidable_with_u expr then ModuleType expr
+      else ModuleType (u_module_type_expr env id expr)
   | Alias p -> Alias (module_path env p)
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
@@ -425,8 +434,8 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
               Strengthen.signature cp sg
           | None -> sg
         in
-        let e = Lang_of.(simple_expansion map i.parent (Signature sg')) in
-
+        let sg'' = Tools.apply_inner_substs env sg' in
+        let e = Lang_of.(simple_expansion map i.parent (Signature sg'')) in
         let expansion_sg =
           match e with
           | ModuleType.Signature sg -> sg
@@ -435,7 +444,9 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
         in
         { i.expansion with content = expansion_sg }
   in
-  let expansion = get_expansion () in
+  let expansion =
+    if i.expansion.content.compiled then i.expansion else get_expansion ()
+  in
   let items, env' = signature_items env i.parent expansion.content.items in
   let expansion =
     {

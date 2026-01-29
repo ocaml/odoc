@@ -33,7 +33,7 @@ type `t`, but in the subsequent include, the type `t` within the signature _isn'
       type t = int
       val y : t
       include sigtype t = t
-                   val z : tend with [t = t] (sig : val z : t end)
+                   val z : tend with [t(params ) = t] (sig : val z : t end)
     end
   module type Z = 
     sig
@@ -41,8 +41,10 @@ type `t`, but in the subsequent include, the type `t` within the signature _isn'
         (sig :
           type {t}1/shadowed/(AAAA) = int
           val y : int
-          include sigtype t = t
-                       val z : tend with [t = int] (sig : val z : int end)
+          include sig
+            type t = t
+              val z : tend with [t(params ) = {t}1/shadowed/(AAAA)]
+            (sig : val z : int end)
          end)
       type t = int
     end
@@ -76,14 +78,18 @@ For comparison, another test case that didn't have the bug:
   $ odoc_print b.odocl --short --show-include-expansions
   module type X = sig type t val z : t end
   module type Y = 
-    sig type t = int val y : t include X with [t = t] (sig : val z : t end) end
+    sig
+      type t = int
+      val y : t
+      include X with [t(params ) = t] (sig : val z : t end)
+    end
   module type Z = 
     sig
       include Y
         (sig :
           type {t}1/shadowed/(BBBB) = int
           val y : int
-          include X with [t = int] (sig : val z : int end)
+          include X with [t(params ) = int] (sig : val z : int end)
          end)
       type t = int
     end

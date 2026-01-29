@@ -337,3 +337,5 @@ val reset_caches : unit -> unit
 
 val disable_all_caches : unit -> unit
 (** Disable the caches completely *)
+
+val apply_inner_substs : Env.t -> Component.Signature.t -> Component.Signature.t
