@@ -18,46 +18,32 @@ Module `C` then includes them both, causing further shadowing.
       module type {B}1/shadowed/(CCCC) = A.B
       include {B}1/shadowed/(CCCC)
         (sig : module {A}1/shadowed/(AAAA) = A.A end)
-      module type B1 := 
-        sig
-          module A : 
-            sig
-              include module type of struct include {A}1/shadowed/(AAAA) end
-                (sig :
-                  include module type of struct include A.{A}1/shadowed/(AAAA) end
-                    (sig : type t = {A}1/shadowed/(AAAA).t end)
-                  type a = A.A.a
-                 end)
-              type a
-            end
-        end
-      include B1 (sig : module {A}2/shadowed/(CCCC) = A.A end)
+      include sig
+        module A : 
+          sig
+            include module type of struct include {A}1/shadowed/(AAAA) end
+              (sig : type t end)
+            type a
+          endend (sig : module {A}2/shadowed/(CCCC) = A.A end)
      end)
   include module type of struct include B end
     (sig :
       module type B = B.B
       include B (sig : module {A}1/shadowed/(BBBB) = B.A end)
-      module type B1 := 
-        sig
-          module A : 
-            sig
-              include module type of struct include {A}1/shadowed/(BBBB) end
-                (sig :
-                  include module type of struct include B.{A}1/shadowed/(BBBB) end
-                    (sig : type t = {A}1/shadowed/(BBBB).t end)
-                  type b = B.A.b
-                 end)
-              type b
-            end
-        end
-      include B1 (sig : module {A}3/shadowed/(CCCC) = B.A end)
+      include sig
+        module A : 
+          sig
+            include module type of struct include {A}1/shadowed/(BBBB) end
+              (sig : type t end)
+            type b
+          endend (sig : module {A}3/shadowed/(CCCC) = B.A end)
      end)
   module A : 
     sig
       include module type of struct include {A}3/shadowed/(CCCC) end
         (sig :
           include module type of struct include B.{A}1/shadowed/(BBBB) end
-            (sig : type t = {A}3/shadowed/(CCCC).t end)
+            (sig : type t = B.A.t end)
           type b = B.A.b
          end)
     end

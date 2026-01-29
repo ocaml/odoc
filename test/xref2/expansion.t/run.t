@@ -20,7 +20,8 @@ In addition, the expansion for the alias Test after the link phase should be the
   module S : 
     sig
       module type X = sig module M : sig type t end end
-      module X : X with M.t = int (sig : module M : sig type t = int end end)
+      module X : X with M.t(params ) = int
+        (sig : module M : sig type t = int end end)
       module Y : sig type t end
       module Z : module type of Y (sig : type t end)
       module A : X (sig : module M : sig type t end end)
@@ -33,7 +34,8 @@ In addition, the expansion for the alias Test after the link phase should be the
   module S : 
     sig
       module type X = sig module M : sig type t end end
-      module X : X with M.t = int (sig : module M : sig type t = int end end)
+      module X : X with M.t(params ) = int
+        (sig : module M : sig type t = int end end)
       module Y : sig type t end
       module Z : module type of Y (sig : type t end)
       module A : X (sig : module M : sig type t end end)
@@ -42,7 +44,8 @@ In addition, the expansion for the alias Test after the link phase should be the
   module Test = S
     (sig :
       module type X = sig module M : sig type t end end
-      module X : X with M.t = int (sig : module M : sig type t = int end end)
+      module X : X with M.t(params ) = int
+        (sig : module M : sig type t = int end end)
       module Y : sig type t end
       module Z : module type of Y (sig : type t end)
       module A : X (sig : module M : sig type t end end)

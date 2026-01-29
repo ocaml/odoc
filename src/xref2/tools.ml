@@ -2341,3 +2341,68 @@ let resolve_value_path env p = resolve_value env p >>= fun (p, _) -> Ok p
 
 let resolve_class_type_path env p =
   resolve_class_type env p >>= fun (p, _) -> Ok p
+
+let apply_inner_substs env (sg : Component.Signature.t) : Component.Signature.t
+    =
+  let rec inner (items : Component.Signature.item list) :
+      Component.Signature.item list =
+    match items with
+    | Component.Signature.TypeSubstitution (id, typedecl) :: rest -> (
+        let subst =
+          Component.ModuleType.TypeSubst
+            (`Dot (`Root, Ident.Name.type_ id), typedecl.equation)
+        in
+        let rest =
+          Component.Signature.Type
+            (id, Ordinary, Component.Delayed.put (fun () -> typedecl))
+          :: inner rest
+        in
+        match fragmap env subst { sg with items = rest } with
+        | Ok sg' -> sg'.items
+        | Error _ -> failwith "error")
+    | Component.Signature.ModuleSubstitution (id, modsubst) :: rest -> (
+        let subst =
+          Component.ModuleType.ModuleSubst
+            (`Dot (`Root, Ident.Name.module_ id), modsubst.manifest)
+        in
+        let rest =
+          Component.Signature.Module
+            ( id,
+              Ordinary,
+              Component.Delayed.put (fun () ->
+                  {
+                    Component.Module.source_loc = None;
+                    doc = modsubst.doc;
+                    type_ = Alias (modsubst.manifest, None);
+                    canonical = None;
+                    hidden = false;
+                  }) )
+          :: inner rest
+        in
+        match fragmap env subst { sg with items = rest } with
+        | Ok sg' -> sg'.items
+        | Error _ -> failwith "error")
+    | Component.Signature.ModuleTypeSubstitution (id, modtypesubst) :: rest -> (
+        let subst =
+          Component.ModuleType.ModuleTypeSubst
+            (`Dot (`Root, Ident.Name.module_type id), modtypesubst.manifest)
+        in
+        let rest =
+          Component.Signature.ModuleType
+            ( id,
+              Component.Delayed.put (fun () ->
+                  {
+                    Component.ModuleType.source_loc = None;
+                    doc = modtypesubst.doc;
+                    expr = Some modtypesubst.manifest;
+                    canonical = None;
+                  }) )
+          :: inner rest
+        in
+        match fragmap env subst { sg with items = rest } with
+        | Ok sg' -> sg'.items
+        | Error _ -> failwith "error")
+    | x :: rest -> x :: inner rest
+    | [] -> []
+  in
+  { sg with items = inner sg.items }
