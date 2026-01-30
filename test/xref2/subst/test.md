@@ -131,7 +131,7 @@ module type Monad/21 =
 module SomeMonad/20 :
   sig
     type t/25
-    include r(Monad/21) with [resolved(root(Monad/21).t) = [a] resolved(t/25)]
+    include r(Monad/21) with [resolved(root(Monad/21).t)(params (a)) = [a] resolved(t/25)]
       (sig :
         val map/26 : ([a] resolved(t/25)) -> ((a) -> b) -> [b] resolved(t/25)
         val join/27 : ([[a] resolved(t/25)] resolved(t/25)) -> [a] resolved(t/25)
@@ -141,7 +141,7 @@ module SomeMonad/20 :
 module ComplexTypeExpr/19 :
   sig
     type t/28
-    include r(Monad/21) with [resolved(root(Monad/21).t) = ([resolved(int) * a] resolved(t/28) * [a * resolved(int)] resolved(t/28))]
+    include r(Monad/21) with [resolved(root(Monad/21).t)(params (a)) = ([resolved(int) * a] resolved(t/28) * [a * resolved(int)] resolved(t/28))]
       (sig :
         val map/29 : (([resolved(int) * a] resolved(t/28) * [a * resolved(int)] resolved(t/28))) -> ((a) -> b) -> ([resolved(int) * b] resolved(t/28) * [b * resolved(int)] resolved(t/28))
         val join/30 : (([resolved(int) * ([resolved(int) * a] resolved(t/28) * [a * resolved(int)] resolved(t/28))] resolved(t/28) * [([resolved(int) * a] resolved(t/28) * [a * resolved(int)] resolved(t/28)) * resolved(int)] resolved(t/28))) -> ([resolved(int) * a] resolved(t/28) * [a * resolved(int)] resolved(t/28))
@@ -150,7 +150,7 @@ module ComplexTypeExpr/19 :
   end (canonical=None)
 module Erase/18 :
   sig
-    include r(Monad/21) with [resolved(root(Monad/21).t) = a]
+    include r(Monad/21) with [resolved(root(Monad/21).t)(params (a)) = a]
       (sig :
         val map/31 : (a) -> ((a) -> b) -> b
         val join/32 : (a) -> a
@@ -186,7 +186,7 @@ module type Monad_2/45 =
 module SwappedVars/44 :
   sig
     type t/50
-    include r(Monad_2/45) with [resolved(root(Monad_2/45).t) = [b * a] resolved(t/50)]
+    include r(Monad_2/45) with [resolved(root(Monad_2/45).t)(params (a, b)) = [b * a] resolved(t/50)]
       (sig :
         val map/51 : ([err * a] resolved(t/50)) -> f:((a) -> b) -> [err * b] resolved(t/50)
         val join/52 : ([e * [e * a] resolved(t/50)] resolved(t/50)) -> [e * a] resolved(t/50)
@@ -219,7 +219,7 @@ module type S/60 =
 module M/59 :
   sig
     type t/63
-    include r(S/60) with [resolved(root(S/60).t) = [(alias (poly_var [ `A of (a * b) ]) b)] resolved(t/63)]
+    include r(S/60) with [resolved(root(S/60).t)(params (a)) = [(alias (poly_var [ `A of (a * b) ]) b)] resolved(t/63)]
       (sig :
         val map/64 : ([(alias (poly_var [ `A of (a * b) ]) b)] resolved(t/63)) -> ((a) -> b) -> [(alias (poly_var [ `A of (b * b) ]) b)] resolved(t/63)
         (removed=type (a) t = ([(alias (poly_var [ `A of (a * b) ]) b)] local(t/63,false)))
