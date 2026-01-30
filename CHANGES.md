@@ -1,6 +1,12 @@
 # Unreleased
 
+### Added
+- Allow persistent latex macros in HTML/KaTeX backend (@dlesbre, #1391)
+- `markdown-generate` command now accepts multiple `.odocl` files in a single
+  invocation, eliminating the need for shell scripting (@davesnx, #1387)
+
 ### Fixed
+- Fix compile-time crashing bugs #930 and #1385 (@jonludlam, #1400)
 - Markdown backend assumes ocaml as langId on declarations
 - Markdown backend collects all code snippets and render a single code block with comments, rather than split the variants/records per constructor/field
 - Fix URL remapping for page references (@jonludlam, #1395)
@@ -13,9 +19,6 @@
 - New arguments to LaTeX generator, --shorten-beyond-depth and
   --remove-functor-arg-link (@Octachron, #1337)
 - New experimental markdown generator (@davesnx, #1341)
-- `markdown-generate` command now accepts multiple `.odocl` files in a single
-  invocation, eliminating the need for shell scripting (@davesnx)
-- Allow persistent latex macros in HTML/KaTeX backend (@dlesbre, #1391)
 
 ### Changed
 - Remove cmdliner compatibility layer, no longer needed (@dbuenzli, #1328)
