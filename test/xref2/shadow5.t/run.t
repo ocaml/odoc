@@ -42,7 +42,7 @@ type `t`, but in the subsequent include, the type `t` within the signature _isn'
           type {t}1/shadowed/(AAAA) = int
           val y : int
           include sig
-            type t = t
+            type t = {t}1/shadowed/(AAAA)
               val z : tend with [t(params ) = {t}1/shadowed/(AAAA)]
             (sig : val z : int end)
          end)
