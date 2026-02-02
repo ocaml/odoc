@@ -60,9 +60,8 @@ In this test, the functor expansion contains the right link.
        <a href="../../src/a.ml.html#module-F.val-y" class="source_link">Source
        </a>
 
-  $ cat html/root/source/a.ml.html | grep L3
-  cat: html/root/source/a.ml.html: No such file or directory
-  [1]
+  $ cat html/src/a.ml.html | grep L3
+  <a id="L3" class="source_line" href="#L3">3</a>
 
 However, on functor results, there is a link to source in the file:
 
