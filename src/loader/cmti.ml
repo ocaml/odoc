@@ -33,19 +33,6 @@ type env = Cmi.env = {
 
 let read_module_expr : (env -> Identifier.Signature.t -> Identifier.LabelParent.t -> Typedtree.module_expr -> ModuleType.expr) ref = ref (fun _ _ _ _ -> failwith "unset")
 
-(* Counter for generating unique synthetic parents for include expressions.
-   Items inside an include's module type expression need a different parent
-   to avoid identifier conflicts with items in the enclosing signature. *)
-let include_parent_counter = ref 0
-
-(* Create a synthetic parent identifier for items inside an include's module
-   type expression. Uses a lowercase module name (illegal in normal OCaml)
-   to ensure no clashes with real identifiers. *)
-let make_include_parent (parent : Identifier.Signature.t) : Identifier.Signature.t =
-  incr include_parent_counter;
-  let name = Printf.sprintf "include%d_" !include_parent_counter in
-  (Identifier.Mk.module_ (parent, Odoc_model.Names.ModuleName.make_std name) :> Identifier.Signature.t)
-
 let opt_map f = function
   | None -> None
   | Some x -> Some (f x)
@@ -794,7 +781,7 @@ and read_include env parent incl =
      identifier conflicts with items in the enclosing signature. Items inside
      the include expression (like TypeSubstitutions) will get identifiers under
      this synthetic parent, which won't clash with the real parent's items. *)
-  let include_parent = make_include_parent parent in
+  let include_parent = Identifier.fresh_include_parent parent in
   let include_container = (include_parent :> Identifier.LabelParent.t) in
   let expr = read_module_type env include_parent include_container incl.incl_mod in
   let umty = Odoc_model.Lang.umty_of_mty expr in 

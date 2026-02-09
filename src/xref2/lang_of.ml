@@ -649,7 +649,9 @@ and include_decl :
   (* Don't start shadowing within any signatures *)
   match d with
   | Alias p -> Alias (Path.module_ map p)
-  | ModuleType mty -> ModuleType (u_module_type_expr map identifier mty)
+  | ModuleType mty ->
+      let include_parent = Identifier.fresh_include_parent identifier in
+      ModuleType (u_module_type_expr map include_parent mty)
 
 and include_ parent map i =
   let open Component.Include in
