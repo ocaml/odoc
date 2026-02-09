@@ -624,6 +624,19 @@ module Identifier = struct
           `SourceLocationInternal (p, n))
   end
 
+  (* Counter for generating unique synthetic parents for include expressions.
+     Items inside an include's module type expression need a different parent
+     to avoid identifier conflicts with items in the enclosing signature. *)
+  let include_parent_counter = ref 0
+
+  (* Create a synthetic parent identifier for items inside an include's module
+     type expression. Uses a lowercase module name (illegal in normal OCaml)
+     to ensure no clashes with real identifiers. *)
+  let fresh_include_parent (parent : Signature.t) : Signature.t =
+    incr include_parent_counter;
+    let name = Printf.sprintf "include%d_" !include_parent_counter in
+    (Mk.module_ (parent, ModuleName.make_std name) :> Signature.t)
+
   module Hashtbl = struct
     module Any = Hashtbl.Make (Any)
     module ContainerPage = Hashtbl.Make (ContainerPage)
