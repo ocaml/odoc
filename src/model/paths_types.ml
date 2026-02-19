@@ -155,7 +155,8 @@ module Identifier = struct
   and field = field_pv id
   (** @canonical Odoc_model.Paths.Identifier.Field.t *)
 
-  type unboxed_field_pv = [ `UnboxedField of unboxed_field_parent * UnboxedFieldName.t ]
+  type unboxed_field_pv =
+    [ `UnboxedField of unboxed_field_parent * UnboxedFieldName.t ]
   (** @canonical Odoc_model.Paths.Identifier.UnboxedField.t_pv *)
 
   and unboxed_field = unboxed_field_pv id

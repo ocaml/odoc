@@ -480,7 +480,8 @@ let parse whole_reference_location s :
           | `TField ->
               `Field (parent next_token tokens, FieldName.make_std identifier)
           | `TUnboxedField ->
-              `UnboxedField (parent next_token tokens, UnboxedFieldName.make_std identifier)
+              `UnboxedField
+                (parent next_token tokens, UnboxedFieldName.make_std identifier)
           | `TExtension ->
               `Extension
                 (signature next_token tokens, ExtensionName.make_std identifier)

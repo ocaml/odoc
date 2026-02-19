@@ -31,4 +31,5 @@ val type_expr : ?needs_parentheses:bool -> Lang.TypeExpr.t -> Codefmt.t
 
 val record : Lang.TypeDecl.Field.t list -> Types.DocumentedSrc.one list
 
-val unboxed_record : Lang.TypeDecl.UnboxedField.t list -> Types.DocumentedSrc.one list
+val unboxed_record :
+  Lang.TypeDecl.UnboxedField.t list -> Types.DocumentedSrc.one list

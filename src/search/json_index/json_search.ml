@@ -56,7 +56,8 @@ let rec of_id x =
   | `Field (parent, name) ->
       ret "Field" (FieldName.to_string name) :: of_id (parent :> t)
   | `UnboxedField (parent, name) ->
-      ret "UnboxedField" (UnboxedFieldName.to_string name) :: of_id (parent :> t)
+      ret "UnboxedField" (UnboxedFieldName.to_string name)
+      :: of_id (parent :> t)
   | `Extension (parent, name) ->
       ret "Extension" (ExtensionName.to_string name) :: of_id (parent :> t)
   | `ExtensionDecl (parent, _, name) ->

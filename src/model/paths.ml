@@ -169,7 +169,8 @@ module Identifier = struct
           (p : class_signature :> label_parent)
       | { iv = `Constructor (p, _); _ } -> (p : datatype :> label_parent)
       | { iv = `Field (p, _); _ } -> (p : field_parent :> label_parent)
-      | { iv = `UnboxedField (p, _); _ } -> (p : unboxed_field_parent :> label_parent)
+      | { iv = `UnboxedField (p, _); _ } ->
+          (p : unboxed_field_parent :> label_parent)
 
   let label_parent n = label_parent_aux (n :> Id.non_src)
 
@@ -580,7 +581,8 @@ module Identifier = struct
     let unboxed_field :
         UnboxedFieldParent.t * UnboxedFieldName.t ->
         [> `UnboxedField of UnboxedFieldParent.t * UnboxedFieldName.t ] id =
-      mk_parent UnboxedFieldName.to_string "unboxedfld" (fun (p, n) -> `UnboxedField (p, n))
+      mk_parent UnboxedFieldName.to_string "unboxedfld" (fun (p, n) ->
+          `UnboxedField (p, n))
 
     let extension :
         Signature.t * ExtensionName.t ->
@@ -1032,10 +1034,12 @@ module Reference = struct
       | `Type _ as t ->
           (parent_type_identifier t :> Identifier.FieldParent.t option)
 
-    and unboxed_field_parent_identifier : unboxed_field_parent -> Identifier.UnboxedFieldParent.t option =
+    and unboxed_field_parent_identifier :
+        unboxed_field_parent -> Identifier.UnboxedFieldParent.t option =
       function
       | `Identifier id -> Some id
-      | `Type _ as t -> (parent_type_identifier t :> Identifier.UnboxedFieldParent.t option)
+      | `Type _ as t ->
+          (parent_type_identifier t :> Identifier.UnboxedFieldParent.t option)
 
     and label_parent_identifier :
         label_parent -> Identifier.LabelParent.t option = function

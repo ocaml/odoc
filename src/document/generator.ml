@@ -412,7 +412,7 @@ module Make (Syntax : SYNTAX) = struct
 
     and tuple ?(needs_parentheses = false) ~boxed lst =
       let opt_label = function
-          None -> O.noop
+        | None -> O.noop
         | Some lbl -> tag "label" (O.txt lbl) ++ O.txt ":" ++ O.cut
       in
       let res =
@@ -422,8 +422,8 @@ module Make (Syntax : SYNTAX) = struct
                opt_label lbl ++ type_expr ~needs_parentheses:true typ))
       in
       let lparen = if boxed then "(" else "#(" in
-      if Syntax.Type.Tuple.always_parenthesize || needs_parentheses || not boxed then
-        enclose ~l:lparen res ~r:")"
+      if Syntax.Type.Tuple.always_parenthesize || needs_parentheses || not boxed
+      then enclose ~l:lparen res ~r:")"
       else res
 
     and type_expr ?(needs_parentheses = false) (t : Odoc_model.Lang.TypeExpr.t)
@@ -479,10 +479,8 @@ module Make (Syntax : SYNTAX) = struct
             (Link.from_path (path :> Paths.Path.t))
       | Poly (polyvars, t) ->
           O.txt ("'" ^ String.concat ~sep:" '" polyvars ^ ". ") ++ type_expr t
-      | Quote t ->
-          O.span (O.txt "<[ " ++ O.box_hv (type_expr t) ++ O.txt " ]>")
-      | Splice t ->
-          O.span (O.txt "$" ++ type_expr ~needs_parentheses:true t)
+      | Quote t -> O.span (O.txt "<[ " ++ O.box_hv (type_expr t) ++ O.txt " ]>")
+      | Splice t -> O.span (O.txt "$" ++ type_expr ~needs_parentheses:true t)
       | Package pkg ->
           enclose ~l:"(" ~r:")"
             (O.keyword "module" ++ O.txt " "
@@ -522,7 +520,8 @@ module Make (Syntax : SYNTAX) = struct
 
     val record : Lang.TypeDecl.Field.t list -> DocumentedSrc.one list
 
-    val unboxed_record : Lang.TypeDecl.UnboxedField.t list -> DocumentedSrc.one list
+    val unboxed_record :
+      Lang.TypeDecl.UnboxedField.t list -> DocumentedSrc.one list
 
     val exn : Lang.Exception.t -> Item.t
 
@@ -579,9 +578,7 @@ module Make (Syntax : SYNTAX) = struct
       let field mutable_ id typ =
         let url = Url.from_identifier ~stop_before:true id in
         let name = Paths.Identifier.name id in
-        let attrs =
-          [ "def"; "record"; Url.Anchor.string_of_kind url.kind ]
-        in
+        let attrs = [ "def"; "record"; Url.Anchor.string_of_kind url.kind ] in
         let cell =
           (* O.td ~a:[ O.a_class ["def"; kind ] ]
            *   [O.a ~a:[O.a_href ("#" ^ anchor); O.a_class ["anchor"]] []
@@ -1653,7 +1650,7 @@ module Make (Syntax : SYNTAX) = struct
       | Signature _ -> true
       | With (_, expr) -> is_elidable_with_u expr
       | TypeOf _ -> false
-      | Strengthen (expr,_,_) -> is_elidable_with_u expr
+      | Strengthen (expr, _, _) -> is_elidable_with_u expr
 
     and umty : Odoc_model.Lang.ModuleType.U.expr -> text =
      fun m ->
@@ -1710,6 +1707,7 @@ module Make (Syntax : SYNTAX) = struct
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
         | Strengthen { s_expr; s_path; _ } ->
             O.box_hv @@ mty_strengthen s_expr (s_path :> Paths.Path.t)
+
     and mty_in_decl :
         Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
         =

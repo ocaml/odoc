@@ -784,7 +784,7 @@ and type_decl_representation :
   | Variant cs -> Variant (List.map (type_decl_constructor env parent) cs)
   | Record fs -> Record (List.map (type_decl_field env parent) fs)
   | Record_unboxed_product fs ->
-    Record_unboxed_product (List.map (type_decl_unboxed_field env parent) fs)
+      Record_unboxed_product (List.map (type_decl_unboxed_field env parent) fs)
   | Extensible -> Extensible
 
 and type_decl_field env parent f =
@@ -921,7 +921,8 @@ and type_expression : Env.t -> Id.LabelParent.t -> _ -> _ =
       Tuple
         (List.map (fun (lbl, ty) -> (lbl, type_expression env parent ty)) ts)
   | Unboxed_tuple ts ->
-    Unboxed_tuple (List.map (fun (l, t) -> l, type_expression env parent t) ts)
+      Unboxed_tuple
+        (List.map (fun (l, t) -> (l, type_expression env parent t)) ts)
   | Constr (path, ts') -> (
       let cp = Component.Of_Lang.(type_path (empty ()) path) in
       let ts = List.map (type_expression env parent) ts' in

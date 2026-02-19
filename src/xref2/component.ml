@@ -220,7 +220,7 @@ and ModuleType : sig
     s_expansion : simple_expansion option;
     s_expr : U.expr;
     s_path : Cpath.module_;
-    s_aliasable : bool
+    s_aliasable : bool;
   }
 
   type expr =
@@ -975,7 +975,8 @@ module Fmt = struct
           (substitution_list c) subs
     | TypeOf (t_desc, _) -> module_type_type_of_desc c ppf t_desc
     | Strengthen (e, p, _) ->
-        Format.fprintf ppf "%a with %a" (u_module_type_expr c) e (module_path c) p
+        Format.fprintf ppf "%a with %a" (u_module_type_expr c) e (module_path c)
+          p
 
   and module_type_expr c ppf mt =
     let open ModuleType in
@@ -2221,7 +2222,7 @@ module Of_Lang = struct
           (List.map (type_decl_constructor ident_map) cs)
     | Record fs -> Record (List.map (type_decl_field ident_map) fs)
     | Record_unboxed_product fs ->
-      Record_unboxed_product (List.map (type_decl_unboxed_field ident_map) fs)
+        Record_unboxed_product (List.map (type_decl_unboxed_field ident_map) fs)
     | Extensible -> Extensible
 
   and type_decl_constructor ident_map t =
@@ -2333,7 +2334,8 @@ module Of_Lang = struct
         Tuple
           (List.map (fun (lbl, ty) -> (lbl, type_expression ident_map ty)) ts)
     | Unboxed_tuple ts ->
-        Unboxed_tuple (List.map (fun (l, t) -> l, type_expression ident_map t) ts)
+        Unboxed_tuple
+          (List.map (fun (l, t) -> (l, type_expression ident_map t)) ts)
     | Polymorphic_variant v ->
         Polymorphic_variant (type_expr_polyvar ident_map v)
     | Poly (s, ts) -> Poly (s, type_expression ident_map ts)
@@ -2548,10 +2550,11 @@ module Of_Lang = struct
     | Lang.ModuleType.Strengthen s ->
         let s' =
           ModuleType.
-            { s_expr = u_module_type_expr ident_map s.s_expr;
+            {
+              s_expr = u_module_type_expr ident_map s.s_expr;
               s_path = module_path ident_map s.s_path;
               s_aliasable = s.s_aliasable;
-              s_expansion = option simple_expansion ident_map s.s_expansion
+              s_expansion = option simple_expansion ident_map s.s_expansion;
             }
         in
         ModuleType.Strengthen s'

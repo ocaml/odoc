@@ -115,5 +115,6 @@ module type GENERATOR = sig
 
   val record : Lang.TypeDecl.Field.t list -> DocumentedSrc.one list
 
-  val unboxed_record : Lang.TypeDecl.UnboxedField.t list -> DocumentedSrc.one list
+  val unboxed_record :
+    Lang.TypeDecl.UnboxedField.t list -> DocumentedSrc.one list
 end

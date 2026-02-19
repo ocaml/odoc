@@ -64,7 +64,8 @@ val add_module_type :
 
 val add_value : Identifier.Value.t -> Component.Value.t -> t -> t
 
-val add_label : Identifier.Label.t -> Component.Label.t -> t -> unboxed:bool -> t
+val add_label :
+  Identifier.Label.t -> Component.Label.t -> t -> unboxed:bool -> t
 
 val add_class : Identifier.Class.t -> Component.Class.t -> t -> t
 

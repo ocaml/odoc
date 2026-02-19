@@ -859,7 +859,7 @@ and module_type_expr map identifier = function
           s_expr = u_module_type_expr map identifier s_expr;
           s_path = Path.module_ map s_path;
           s_aliasable;
-          s_expansion = Opt.map (simple_expansion map identifier) s_expansion
+          s_expansion = Opt.map (simple_expansion map identifier) s_expansion;
         }
 
 and module_type :
@@ -930,7 +930,9 @@ and type_decl_unboxed_field :
     Component.TypeDecl.UnboxedField.t ->
     Odoc_model.Lang.TypeDecl.UnboxedField.t =
  fun map parent f ->
-  let identifier = Identifier.Mk.unboxed_field (parent, UnboxedFieldName.make_std f.name) in
+  let identifier =
+    Identifier.Mk.unboxed_field (parent, UnboxedFieldName.make_std f.name)
+  in
   {
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) f.doc;
@@ -1025,7 +1027,7 @@ and type_expr map (parent : Identifier.LabelParent.t) (t : Component.TypeExpr.t)
     | Tuple ts ->
         Tuple (List.map (fun (lbl, ty) -> (lbl, type_expr map parent ty)) ts)
     | Unboxed_tuple ts ->
-      Unboxed_tuple (List.map (fun (l, t) -> l, type_expr map parent t) ts)
+        Unboxed_tuple (List.map (fun (l, t) -> (l, type_expr map parent t)) ts)
     | Constr (path, ts) ->
         Constr
           ( (Path.type_ map path :> Paths.Path.Type.t),

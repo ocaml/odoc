@@ -101,7 +101,7 @@ and ModuleType : sig
     s_expansion : simple_expansion option;
     s_expr : U.expr;
     s_path : Path.Module.t;
-    s_aliasable : bool
+    s_aliasable : bool;
   }
 
   type expr =
@@ -584,8 +584,7 @@ let extract_signature_doc (s : Signature.t) =
     | ModuleType.U.Path p -> Path.is_hidden (p :> Path.t)
     | Signature _ ->
         true (* Hidden in some sense, we certainly want its top comment *)
-    | With (_, e)
-    | Strengthen (e, _, _) -> uexpr_considered_hidden e
+    | With (_, e) | Strengthen (e, _, _) -> uexpr_considered_hidden e
     | TypeOf (ModPath p, _) | TypeOf (StructInclude p, _) ->
         Path.is_hidden (p :> Path.t)
   in

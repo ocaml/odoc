@@ -338,7 +338,10 @@ module General_paths = struct
       | `Field (x1, x2) ->
           C ("`Field", ((x1 :> r), x2), Pair (reference, Names.fieldname))
       | `UnboxedField (x1, x2) ->
-          C ("`UnboxedField", ((x1 :> r), x2), Pair (reference, Names.unboxedfieldname))
+          C
+            ( "`UnboxedField",
+              ((x1 :> r), x2),
+              Pair (reference, Names.unboxedfieldname) )
       | `Extension (x1, x2) ->
           C
             ( "`Extension",

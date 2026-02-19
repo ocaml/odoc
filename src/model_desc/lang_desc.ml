@@ -184,10 +184,10 @@ and moduletype_u_expr =
             (t, (o :> Paths.Path.t)),
             Pair (moduletype_type_of_desc, path) )
     | Strengthen (e, x, a) ->
-      C
-        ( "Strengthen",
-          (e, (x :> Paths.Path.t), a),
-          Triple (moduletype_u_expr, path, bool) ))
+        C
+          ( "Strengthen",
+            (e, (x :> Paths.Path.t), a),
+            Triple (moduletype_u_expr, path, bool) ))
 
 and moduletype_t =
   let open Lang.ModuleType in
@@ -358,7 +358,8 @@ and typedecl_representation =
     (function
     | Variant x -> C ("Variant", x, List typedecl_constructor)
     | Record x -> C ("Record", x, List typedecl_field)
-    | Record_unboxed_product x -> C ("Record_unboxed_product", x, List typedecl_unboxed_field)
+    | Record_unboxed_product x ->
+        C ("Record_unboxed_product", x, List typedecl_unboxed_field)
     | Extensible -> C0 "Extensible")
 
 and typedecl_variance =
@@ -657,7 +658,8 @@ and typeexpr_t =
             (x1, x2, x3),
             Triple (Option typeexpr_label, typeexpr_t, typeexpr_t) )
     | Tuple x -> C ("Tuple", x, List (Pair (Option string, typeexpr_t)))
-    | Unboxed_tuple x -> C ("Unboxed_tuple", x, List (Pair (Option string, typeexpr_t)))
+    | Unboxed_tuple x ->
+        C ("Unboxed_tuple", x, List (Pair (Option string, typeexpr_t)))
     | Constr (x1, x2) ->
         C ("Constr", ((x1 :> Paths.Path.t), x2), Pair (path, List typeexpr_t))
     | Polymorphic_variant x ->

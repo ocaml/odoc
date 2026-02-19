@@ -211,7 +211,7 @@ and ModuleType : sig
     s_expansion : simple_expansion option;
     s_expr : U.expr;
     s_path : Cpath.module_;
-    s_aliasable : bool
+    s_aliasable : bool;
   }
 
   type expr =

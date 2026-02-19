@@ -40,7 +40,8 @@ type field = [ `FField of TypeDecl.Field.t ]
 
 type unboxed_field = [ `FUnboxedField of TypeDecl.UnboxedField.t ]
 
-type any_in_type = [ constructor | field | unboxed_field | polymorphic_constructor ]
+type any_in_type =
+  [ constructor | field | unboxed_field | polymorphic_constructor ]
 
 type any_in_type_in_sig =
   [ `In_type of Odoc_model.Names.TypeName.t * TypeDecl.t * any_in_type ]
@@ -209,7 +210,8 @@ let any_in_type (typ : TypeDecl.t) name =
     | [] -> None
   in
   let rec find_unboxed_field = function
-    | ({ TypeDecl.UnboxedField.name = name'; _ } as field) :: _ when name' = name ->
+    | ({ TypeDecl.UnboxedField.name = name'; _ } as field) :: _
+      when name' = name ->
         Some (`FUnboxedField field)
     | _ :: tl -> find_unboxed_field tl
     | [] -> None

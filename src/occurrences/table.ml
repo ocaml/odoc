@@ -123,7 +123,8 @@ module Strip = struct
     | { iv = #DataType.t_pv; _ } as v ->
         (strip_datatype_path v :> FieldParent.t)
 
-  and strip_unboxed_field_parent_path : UnboxedFieldParent.t -> UnboxedFieldParent.t =
+  and strip_unboxed_field_parent_path :
+      UnboxedFieldParent.t -> UnboxedFieldParent.t =
    fun x ->
     match x with
     | { iv = #DataType.t_pv; _ } as v ->
