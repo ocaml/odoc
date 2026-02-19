@@ -174,7 +174,7 @@ let register_entry
       ~favoured_prefixes
       ~pkg
       ~cat
-      (Odoc_index.Entry.{ id; doc; kind; source_loc = _ } as entry)
+      (Odoc_index.Entry.{ id; doc; kind } as entry)
   =
   let module Sherlodoc_entry = Entry in
   let open Odoc_search in

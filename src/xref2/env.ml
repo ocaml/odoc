@@ -400,7 +400,6 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
           {
             id;
             source_loc = None;
-            source_loc_jane = unit.source_loc_jane;
             doc = { elements = []; warnings_tag = None };
             type_ = ModuleType (Signature s);
             canonical = unit.canonical;
@@ -415,7 +414,6 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
           {
             id;
             source_loc = None;
-            source_loc_jane = unit.source_loc_jane;
             doc = { elements = []; warnings_tag = None };
             type_ =
               ModuleType
@@ -682,7 +680,6 @@ let mk_functor_parameter module_type =
   Component.Module.
     {
       source_loc = None;
-      source_loc_jane = None;
       doc = { elements = []; warnings_tag = None };
       type_;
       canonical = None;
@@ -857,7 +854,6 @@ let open_module_type_substitution : Lang.ModuleTypeSubstitution.t -> t -> t =
       {
         id = t.id;
         source_loc = None;
-        source_loc_jane = None;
         doc = t.doc;
         expr = Some t.manifest;
         canonical = None;

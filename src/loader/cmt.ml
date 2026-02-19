@@ -53,8 +53,7 @@ let rec read_pattern env parent doc pat =
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmt_builddir pat.pat_loc) in
-          [Value {id; source_loc; doc; type_; value ; source_loc_jane }]
+          [Value {id; source_loc; doc; type_; value}]
 #if OCAML_VERSION < (5,2, 0)
     | Tpat_alias(pat, id, _) ->
 #elif defined OXCAML
@@ -69,8 +68,7 @@ let rec read_pattern env parent doc pat =
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmt_builddir pat.pat_loc) in
-          Value {id; source_loc; doc; type_; value ; source_loc_jane } :: read_pattern env parent doc pat
+          Value {id; source_loc; doc; type_; value} :: read_pattern env parent doc pat
     | Tpat_constant _ -> []
     | Tpat_tuple pats ->
 #if OCAML_VERSION >= (5, 4, 0) || defined OXCAML
@@ -380,8 +378,7 @@ let read_class_declaration env parent cld =
         clparams
     in
     let type_ = read_class_expr env (id :> Identifier.ClassSignature.t) clparams cld.ci_expr in
-    let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmt_builddir cld.ci_loc) in
-    { id; source_loc; doc; virtual_; params; type_; expansion = None ; source_loc_jane}
+    { id; source_loc; doc; virtual_; params; type_; expansion = None }
 
 let read_class_declarations env parent clds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -501,8 +498,7 @@ and read_module_binding env parent mb =
     | Some _, _ -> false
 #endif
   in
-  let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmt_builddir mb.mb_loc) in
-  Some {id; source_loc; doc; type_; canonical; hidden; source_loc_jane}
+  Some {id; source_loc; doc; type_; canonical; hidden; }
 
 and read_module_bindings env parent mbs =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t)

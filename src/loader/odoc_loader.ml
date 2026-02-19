@@ -80,12 +80,6 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
         Some { Source.file; digest; build_dir }
     | _ -> None
   in
-  let source_loc_jane =
-    match sourcefile with
-    | Some (Some file, _, build_dir) ->
-      Some {Odoc_model.Lang.Source_loc_jane.filename = build_dir ^ "/" ^ file ; line_number = 1}
-    | _ -> None
-  in
   {
     id;
     root;
@@ -99,7 +93,6 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     linked = false;
     canonical;
     source_loc = None;
-    source_loc_jane
   }
 
 let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
