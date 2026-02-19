@@ -413,7 +413,7 @@ module Make (Syntax : SYNTAX) = struct
     and tuple ?(needs_parentheses = false) ~boxed lst =
       let opt_label = function
           None -> O.noop
-        | Some lbl -> O.txt lbl ++ O.txt ":" ++ O.cut
+        | Some lbl -> tag "label" (O.txt lbl) ++ O.txt ":" ++ O.cut
       in
       let res =
         O.box_hv_no_indent
