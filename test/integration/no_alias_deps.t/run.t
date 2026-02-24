@@ -26,14 +26,12 @@ Compile both with odoc. B's .odoc is present in the include path.
   $ odoc compile --pkg test -I . b.cmti
   $ odoc compile --pkg test -I . a.cmt
 
-BUG: B gets spuriously resolved in A's imports despite having no digest.
-This can cause stale artifact digests to be associated with the import,
-breaking incremental rebuilds.
+B should remain unresolved in A's imports, since it had no digest:
 
-  $ odoc_print a.odoc | grep 'Resolved.*"B"'
-      { "Resolved": [ "<root>", "B" ] },
+  $ odoc_print a.odoc | grep 'Unresolved.*"B"'
+      { "Unresolved": [ "B", "None" ] },
 
-link-deps reports B as a dependency with a potentially stale digest:
+link-deps should not report B as a dependency:
 
-  $ odoc link-deps . | cut -d ' ' -f 1-2
-  test B
+  $ odoc link-deps . | grep B
+  [1]
