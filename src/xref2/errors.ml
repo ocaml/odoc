@@ -336,10 +336,10 @@ let report ~(what : what) ?tools_error action =
     | None -> ()
   in
   let open Component.Fmt in
-  let report_internal_error () =
+  let report_error () =
     let r subject pp_a a =
-      Lookup_failures.report_internal "Failed to %s %s %a%a" action subject pp_a
-        a pp_tools_error tools_error
+      Lookup_failures.report_warning "Failed to %s %s %a%a" action subject
+        pp_a a pp_tools_error tools_error
     in
     let c = default in
     let fmt_id fmt id = model_identifier c fmt (id :> Paths.Identifier.t) in
@@ -374,5 +374,4 @@ let report ~(what : what) ?tools_error action =
   in
   match kind_of_error ~what tools_error with
   | Some (`Root name) -> Lookup_failures.report_root ~name
-  | Some `OpaqueModule -> report_internal_error ()
-  | None -> report_internal_error ()
+  | Some `OpaqueModule | None -> report_error ()
