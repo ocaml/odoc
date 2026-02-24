@@ -32,6 +32,13 @@ A contains linking errors:
   File "a.mli", line 6, characters 47-65:
   Warning: Failed to resolve reference unresolvedroot(B).doesn't_exist Couldn't find "doesn't_exist"
 
+BUG: --warn-error should make unresolved references fatal, but the warning
+is still non-fatal:
+
+  $ odoc link a.odoc --warn-error --enable-missing-root-warning
+  File "a.mli", line 6, characters 47-65:
+  Warning: Failed to resolve reference unresolvedroot(B).doesn't_exist Couldn't find "doesn't_exist"
+
   $ odoc errors a.odocl
   File "a.mli", line 8, characters 20-23:
   Open bracket '{!' is never closed.
