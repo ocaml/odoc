@@ -159,11 +159,11 @@ let lookup_shape : Env.t -> Shape.t -> Identifier.SourceLocation.t option =
           | None -> None)
        | _ -> None
 #if defined OXCAML
-    let fuel () = Misc.Maybe_bounded.of_int fuel
-    let projection_rules_for_merlin_enabled = false
-    let fuel_for_compilation_units = fuel
-    let max_shape_reduce_steps_per_variable = fuel
-    let max_compilation_unit_depth = fuel
+    let fuel () = Misc.Maybe_bounded.of_int 10
+    let fuel_for_compilation_units () = Misc.Maybe_bounded.Unbounded
+    let max_shape_reduce_steps_per_variable () = Misc.Maybe_bounded.Unbounded
+    let max_compilation_unit_depth () = Misc.Maybe_bounded.Unbounded
+    let projection_rules_for_merlin_enabled = true
     let read_unit_shape ~diagnostics:_ ~unit_name = read_unit_shape ~unit_name
 #endif
   end) in
