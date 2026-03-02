@@ -129,6 +129,8 @@ and TypeExpr : sig
     | Object of TypeExpr.Object.t
     | Class of Cpath.class_type * t list
     | Poly of string list * t
+    | Quote of t
+    | Splice of t
     | Package of TypeExpr.Package.t
 end =
   TypeExpr
@@ -1206,6 +1208,8 @@ module Fmt = struct
     | Object x -> type_object c ppf x
     | Class (x, y) -> type_class c ppf (x, y)
     | Poly (_ss, _t) -> Format.fprintf ppf "(poly)"
+    | Quote t -> Format.fprintf ppf "(quote %a)" (type_expr c) t
+    | Splice t -> Format.fprintf ppf "(splice %a)" (type_expr c) t
     | Package x -> type_package c ppf x
 
   and resolved_module_path :
@@ -2349,6 +2353,8 @@ module Of_Lang = struct
         Class
           (class_type_path ident_map p, List.map (type_expression ident_map) ts)
     | Object o -> Object (type_object ident_map o)
+    | Quote t -> Quote (type_expression ident_map t)
+    | Splice t -> Splice (type_expression ident_map t)
     | Package p -> Package (type_package ident_map p)
 
   and module_decl ident_map m =

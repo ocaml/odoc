@@ -960,6 +960,8 @@ and type_expression : Env.t -> Id.LabelParent.t -> _ -> _ =
           Class (`Resolved p, ts')
       | _ -> Class (path, ts'))
   | Poly (strs, t) -> Poly (strs, type_expression env parent t)
+  | Quote t -> Quote (type_expression env parent t)
+  | Splice t -> Splice (type_expression env parent t)
   | Package p -> Package (type_expression_package env parent p)
 
 let compile ~filename env compilation_unit =
