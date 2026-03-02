@@ -1,7 +1,18 @@
 (library
  (name syntax_highlighter)
  (public_name odoc.syntax_highlighter)
+ (enabled_if
+  (not %{ocaml-config:ox}))
  (preprocess
   (action
    (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
+ (libraries compiler-libs.common))
+
+(library
+ (name syntax_highlighter)
+ (public_name odoc.syntax_highlighter)
+ (enabled_if %{ocaml-config:ox})
+ (preprocess
+  (action
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} -D OXCAML %{input-file})))
  (libraries compiler-libs.common))

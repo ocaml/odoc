@@ -8,9 +8,25 @@
  (libraries odoc_model odoc_utils))
 
 (rule
- (with-stdout-to
-  shape_tools.ml
-  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{dep:shape_tools.cppo.ml})))
+ (enabled_if
+  (not %{ocaml-config:ox}))
+ (action
+  (with-stdout-to
+   shape_tools.ml
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{dep:shape_tools.cppo.ml}))))
+
+(rule
+ (enabled_if %{ocaml-config:ox})
+ (action
+  (with-stdout-to
+   shape_tools.ml
+   (run
+    %{bin:cppo}
+    -V
+    OCAML:%{ocaml_version}
+    -D
+    OXCAML
+    %{dep:shape_tools.cppo.ml}))))
 
 (rule
  (with-stdout-to
