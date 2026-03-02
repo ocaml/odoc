@@ -317,6 +317,8 @@ let mark_type ty =
 #endif
       | Tlink _ -> assert false
 #if defined OXCAML
+      | Tquote typ -> loop visited typ
+      | Tsplice typ -> loop visited typ
       | Tof_kind _ -> ()
 #endif
   in
@@ -580,6 +582,8 @@ let rec read_type_expr env typ =
 #endif
       | Tlink _ -> assert false
 #if defined OXCAML
+      | Tquote typ -> Quote (read_type_expr env typ)
+      | Tsplice typ -> Splice (read_type_expr env typ)
       | Tof_kind _ -> assert false
 #endif
     in

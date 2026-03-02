@@ -1040,6 +1040,8 @@ and type_expr map (parent : Identifier.LabelParent.t) (t : Component.TypeExpr.t)
     | Class (p, ts) ->
         Class (Path.class_type map p, List.map (type_expr map parent) ts)
     | Poly (strs, t) -> Poly (strs, type_expr map parent t)
+    | Quote t -> Quote (type_expr map parent t)
+    | Splice t -> Splice (type_expr map parent t)
     | Package p -> Package (type_expr_package map parent p)
   with e ->
     let bt = Printexc.get_backtrace () in
