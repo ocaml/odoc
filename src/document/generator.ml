@@ -479,6 +479,8 @@ module Make (Syntax : SYNTAX) = struct
             (Link.from_path (path :> Paths.Path.t))
       | Poly (polyvars, t) ->
           O.txt ("'" ^ String.concat ~sep:" '" polyvars ^ ". ") ++ type_expr t
+      | Quote t -> O.span (O.txt "<[ " ++ O.box_hv (type_expr t) ++ O.txt " ]>")
+      | Splice t -> O.span (O.txt "$" ++ type_expr ~needs_parentheses:true t)
       | Package pkg ->
           enclose ~l:"(" ~r:")"
             (O.keyword "module" ++ O.txt " "

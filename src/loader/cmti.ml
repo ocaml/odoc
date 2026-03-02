@@ -195,6 +195,8 @@ let rec read_core_type env container ctyp =
       read_core_type env container t
 #endif
 #if defined OXCAML
+    | Ttyp_quote typ -> Quote (read_core_type env container typ)
+    | Ttyp_splice typ -> Splice (read_core_type env container typ)
     | Ttyp_call_pos -> Constr(Env.Path.read_type env.ident_env Predef.path_lexing_position, [])
     | Ttyp_of_kind _ -> assert false
 #endif

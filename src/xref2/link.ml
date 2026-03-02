@@ -1211,6 +1211,8 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
             Class (`Resolved p, ts)
         | _ -> Class (path', ts))
   | Poly (strs, t) -> Poly (strs, type_expression env parent visited t)
+  | Quote t -> Quote (type_expression env parent visited t)
+  | Splice t -> Splice (type_expression env parent visited t)
   | Package p -> Package (type_expression_package env parent visited p)
 
 let link ~filename x y =
