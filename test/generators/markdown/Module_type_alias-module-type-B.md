@@ -4,12 +4,12 @@
 
 ## Parameters
 
-```
+```ocaml
 module C : sig ... end
 ```
 
 ## Signature
 
-```
+```ocaml
 type b
 ```

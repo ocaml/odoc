@@ -8,10 +8,10 @@ Some additional comments.
 
 ## Parameters
 
-```
+```ocaml
 module Arg1 : Y
 ```
-```
+```ocaml
 module Arg2 : sig ... end
 ```
 
@@ -20,7 +20,7 @@ module Arg2 : sig ... end
 
 ## Type
 
-```
+```ocaml
 type t = Arg1.t * Arg2.t
 ```
 Some type.

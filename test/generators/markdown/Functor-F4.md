@@ -4,12 +4,12 @@
 
 ## Parameters
 
-```
+```ocaml
 module Arg : S
 ```
 
 ## Signature
 
-```
+```ocaml
 type t
 ```

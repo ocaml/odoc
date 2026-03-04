@@ -1,7 +1,7 @@
 
 # Module `Include_sections`
 
-```
+```ocaml
 module type Something = sig ... end
 ```
 A module type.
@@ -59,7 +59,7 @@ Some text.
 
 And let's include it again, but without inlining it this time: the ToC shouldn't grow.
 
-```
+```ocaml
 val something : unit
 ```
 
@@ -67,13 +67,13 @@ val something : unit
 
 foo
 
-```
+```ocaml
 val foo : unit
 ```
 
 ### Something 2
 
-```
+```ocaml
 val bar : unit
 ```
 foo bar

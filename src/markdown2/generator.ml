@@ -361,17 +361,17 @@ and documentedSrc ~config ~resolve t =
           collect_code ~lines:[] ~current:"" ~had_items:false t
         in
         let all_lines = lines @ [ current ] in
-        (* Remove trailing empty lines *)
         let rec trim_trailing = function
           | [] -> []
           | [ s ] when String.trim s = "" -> []
           | x :: rest -> x :: trim_trailing rest
         in
+        (* Remove trailing empty lines *)
         let trimmed = trim_trailing all_lines in
         let code_str = String.concat ~sep:"\n" trimmed in
         let code = [ code_str ] in
         let block =
-          Renderer.Block.Code_block { info_string = None; code }
+          Renderer.Block.Code_block { info_string = Some "ocaml"; code }
         in
         [ block ] @ to_markdown rest
   in

@@ -3,6 +3,6 @@
 
 The `include Y` below should have the synopsis from `Y`'s top-comment attached to it.
 
-```
+```ocaml
 type t = Y.t
 ```

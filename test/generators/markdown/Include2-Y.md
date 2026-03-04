@@ -3,6 +3,6 @@
 
 Top-comment of Y.
 
-```
+```ocaml
 type t
 ```

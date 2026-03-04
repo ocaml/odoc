@@ -7,62 +7,62 @@
 
 ## Attached to nothing
 
-```
+```ocaml
 module A : sig ... end
 ```
-```
+```ocaml
 type t
 ```
 Attached to type
 
-```
+```ocaml
 val f : t
 ```
 Attached to value
 
-```
+```ocaml
 val e : unit -> t
 ```
 Attached to external
 
-```
+```ocaml
 module type S = sig ... end
 ```
-```
+```ocaml
 class c : object ... end
 ```
-```
+```ocaml
 class type  cs = object ... end
 ```
-```
+```ocaml
 exception E
 ```
 Attached to exception
 
-```
+```ocaml
 type x = ..
 ```
-```
+```ocaml
 type x += 
   | X
 ```
 Attached to extension
 
-```
+```ocaml
 module S := A
 ```
 Attached to module subst
 
-```
+```ocaml
 type s := t
 ```
 Attached to type subst
 
-```
+```ocaml
 type u = 
   | A' (* Attached to constructor *)
 ```
-```
+```ocaml
 type v = {
   f : t; (* Attached to field *)
 }

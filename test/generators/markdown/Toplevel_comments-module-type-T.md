@@ -5,6 +5,6 @@ Doc of `T`, part 1\.
 
 Doc of `T`, part 2\.
 
-```
+```ocaml
 type t
 ```

@@ -1,7 +1,7 @@
 
 # Module `Toplevel_comments.Comments_on_open`
 
-```
+```ocaml
 module M : sig ... end
 ```
 

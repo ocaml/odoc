@@ -7,6 +7,6 @@ Doc of `Include_inline_T'`, part 2\.
 
 part 3
 
-```
+```ocaml
 type t
 ```

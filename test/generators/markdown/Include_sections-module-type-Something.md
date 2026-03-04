@@ -3,7 +3,7 @@
 
 A module type.
 
-```
+```ocaml
 val something : unit
 ```
 
@@ -11,13 +11,13 @@ val something : unit
 
 foo
 
-```
+```ocaml
 val foo : unit
 ```
 
 ### Something 2
 
-```
+```ocaml
 val bar : unit
 ```
 foo bar
