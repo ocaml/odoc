@@ -5,10 +5,8 @@
   $ export SHERLODOC_FORMAT=marshal
   $ sherlodoc index $(find . -name '*.odocl')
   $ sherlodoc search --print-docstring "foo"
-  Usage: sherlodoc search [--help] [OPTION]… [QUERY]
-  sherlodoc: unknown option --print-docstring
-  [124]
+  val A.foo : int
+  <div><p>This is a docstring with a <span>link</span></p></div>
   $ sherlodoc search --print-docstring "bar"
-  Usage: sherlodoc search [--help] [OPTION]… [QUERY]
-  sherlodoc: unknown option --print-docstring
-  [124]
+  val A.bar : int
+  <div><p>This is a docstring with a ref to <span><code>foo</code></span></p></div>

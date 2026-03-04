@@ -387,23 +387,27 @@ Ids generated in the source code:
 Html generation for implementation and mld/interface uses different commands
 
   $ odoc html-generate-source --indent -o html a.odocl
-  Usage: odoc html-generate-source [--help] [OPTION]… FILE.ml
   odoc: required option --impl is missing
+  Usage: odoc html-generate-source [OPTION]… FILE.ml
+  Try 'odoc html-generate-source --help' or 'odoc --help' for more information.
   [2]
   $ odoc html-generate-source --indent -o html --impl a.odocl a.ml
   ERROR: Expected an implementation unit
   [1]
   $ odoc html-generate-source --indent -o html --impl impl-a.odocl
-  Usage: odoc html-generate-source [--help] [OPTION]… FILE.ml
   odoc: required argument FILE.ml is missing
+  Usage: odoc html-generate-source [OPTION]… FILE.ml
+  Try 'odoc html-generate-source --help' or 'odoc --help' for more information.
   [2]
   $ odoc html-generate-source --indent -o html a.ml
-  Usage: odoc html-generate-source [--help] [OPTION]… FILE.ml
   odoc: required option --impl is missing
+  Usage: odoc html-generate-source [OPTION]… FILE.ml
+  Try 'odoc html-generate-source --help' or 'odoc --help' for more information.
   [2]
   $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
-  Usage: odoc html-generate [--help] [OPTION]… FILE.odocl…
-  odoc: unknown option --source
+  odoc: unknown option '--source'.
+  Usage: odoc html-generate [OPTION]… FILE.odocl…
+  Try 'odoc html-generate --help' or 'odoc --help' for more information.
   [2]
 
 Compiling without --source-id makes it impossible to generate the source:

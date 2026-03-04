@@ -6,9 +6,9 @@ Compile the modules:
   $ odoc compile -I . a.cmti
 
   $ odoc link -I . src-a.odoc
-  Usage: odoc link [--help] [--custom-layout] [--open=MODULE] [OPTION]…
-         FILE.odoc
-  odoc: FILE.odoc argument: no src-a.odoc file or directory
+  odoc: FILE.odoc argument: no 'src-a.odoc' file or directory
+  Usage: odoc link [--custom-layout] [--open=MODULE] [OPTION]… FILE.odoc
+  Try 'odoc link --help' or 'odoc --help' for more information.
   [2]
   $ odoc link -I . a.odoc
 

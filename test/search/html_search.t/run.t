@@ -216,8 +216,9 @@ Passing an inexistent file:
 
   $ odoc compile-index --root babar
   $ odoc compile-index --file-list babar
-  Usage: odoc compile-index [--help] [OPTION]… [FILE]…
-  odoc: option --file-list: no babar file or directory
+  odoc: option '--file-list': no 'babar' file or directory
+  Usage: odoc compile-index [OPTION]… [FILE]…
+  Try 'odoc compile-index --help' or 'odoc --help' for more information.
   [2]
 
 Passing an empty folder is allowed:
