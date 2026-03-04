@@ -44,12 +44,7 @@ type x = ..
 ```
 ```
 type x += 
-```
-```
-| X
-```
-```
-
+  | X
 ```
 Attached to extension
 
@@ -65,22 +60,11 @@ Attached to type subst
 
 ```
 type u = 
-```
-```
-| A'
-```
-Attached to constructor
-
-```
-
+  | A' (* Attached to constructor *)
 ```
 ```
 type v = {
-```
-`f : t;`
-Attached to field
-
-```
+  f : t; (* Attached to field *)
 }
 ```
 Testing that labels can be referenced

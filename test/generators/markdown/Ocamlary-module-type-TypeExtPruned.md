@@ -3,12 +3,7 @@
 
 ```
 type new_t += 
-```
-```
-| C
-```
-```
-
+  | C
 ```
 ```
 val f : new_t -> unit
