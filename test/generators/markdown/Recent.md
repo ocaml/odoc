@@ -9,74 +9,28 @@ module type S1 = functor (_ : S) -> S
 ```
 ```
 type variant = 
-```
-```
-| A
-```
-```
-| B of int
-```
-```
-| C
-```
-foo
-
-```
-| D
-```
-*bar*
-
-```
-| E of {
-```
-`a : int;`
-```
-}
-```
-```
-
+  | A
+  | B of int
+  | C (* foo *)
+  | D (* bar *)
+  | E of {
+    a : int;
+  }
 ```
 ```
 type _ gadt = 
-```
-```
-| A : int gadt
-```
-```
-| B : int -> string gadt
-```
-foo
-
-```
-| C : {
-```
-`a : int;`
-```
-} -> unit gadt
-```
-```
-
+  | A : int gadt
+  | B : int -> string gadt (* foo *)
+  | C : {
+    a : int;
+  } -> unit gadt
 ```
 ```
 type polymorphic_variant = [ 
-```
-```
-| `A
-```
-```
-| `B of int
-```
-```
-| `C
-```
-foo
-
-```
-| `D
-```
-bar
-
-```
+  | `A
+  | `B of int
+  | `C (* foo *)
+  | `D (* bar *)
  ]
 ```
 ```
@@ -87,21 +41,11 @@ type nonrec nonrec_ = int
 ```
 ```
 type empty_conj = 
-```
-```
-| X : [< `X of & 'a & int * float ] -> empty_conj
-```
-```
-
+  | X : [< `X of & 'a & int * float ] -> empty_conj
 ```
 ```
 type conj = 
-```
-```
-| X : [< `X of int & [< `B of int & float ] ] -> conj
-```
-```
-
+  | X : [< `X of int & [< `B of int & float ] ] -> conj
 ```
 ```
 val empty_conj : [< `X of & 'a & int * float ]

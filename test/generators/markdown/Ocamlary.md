@@ -331,14 +331,8 @@ module type IncludedB = sig ... end
 
 ```
 type record = {
-```
-`field1 : int;`
-This comment is for `field1`.
-
-`field2 : int;`
-This comment is for `field2`.
-
-```
+  field1 : int; (* This comment is for field1. *)
+  field2 : int; (* This comment is for field2. *)
 }
 ```
 This comment is for `record`.
@@ -347,51 +341,22 @@ This comment is also for `record`.
 
 ```
 type mutable_record = {
-```
-`mutable a : int;`
-`a` is first and mutable
-
-`b : unit;`
-`b` is second and immutable
-
-`mutable c : int;`
-`c` is third and mutable
-
-```
+  mutable a : int; (* a is first and mutable *)
+  b : unit; (* b is second and immutable *)
+  mutable c : int; (* c is third and mutable *)
 }
 ```
 ```
 type universe_record = {
-```
-`nihilate : 'a. 'a -> unit;`
-```
+  nihilate : 'a. 'a -> unit;
 }
 ```
 ```
 type variant = 
-```
-```
-| TagA
-```
-This comment is for `TagA`.
-
-```
-| ConstrB of int
-```
-This comment is for `ConstrB`.
-
-```
-| ConstrC of int * int
-```
-This comment is for binary `ConstrC`.
-
-```
-| ConstrD of int * int
-```
-This comment is for unary `ConstrD` of binary tuple.
-
-```
-
+  | TagA (* This comment is for TagA. *)
+  | ConstrB of int (* This comment is for ConstrB. *)
+  | ConstrC of int * int (* This comment is for binary ConstrC. *)
+  | ConstrD of int * int (* This comment is for unary ConstrD of binary tuple. *)
 ```
 This comment is for `variant`.
 
@@ -399,14 +364,8 @@ This comment is also for `variant`.
 
 ```
 type poly_variant = [ 
-```
-```
-| `TagA
-```
-```
-| `ConstrB of int
-```
-```
+  | `TagA
+  | `ConstrB of int
  ]
 ```
 This comment is for `poly_variant`.
@@ -415,21 +374,10 @@ Wow\! It was a polymorphic variant\!
 
 ```
 type (_, _) full_gadt = 
-```
-```
-| Tag : (unit, unit) full_gadt
-```
-```
-| First : 'a -> ('a, unit) full_gadt
-```
-```
-| Second : 'a -> (unit, 'a) full_gadt
-```
-```
-| Exist : 'a * 'b -> ('b, unit) full_gadt
-```
-```
-
+  | Tag : (unit, unit) full_gadt
+  | First : 'a -> ('a, unit) full_gadt
+  | Second : 'a -> (unit, 'a) full_gadt
+  | Exist : 'a * 'b -> ('b, unit) full_gadt
 ```
 This comment is for `full_gadt`.
 
@@ -437,18 +385,9 @@ Wow\! It was a GADT\!
 
 ```
 type 'a partial_gadt = 
-```
-```
-| AscribeTag : 'a partial_gadt
-```
-```
-| OfTag of 'a partial_gadt
-```
-```
-| ExistGadtTag : ('a -> 'b) -> 'a partial_gadt
-```
-```
-
+  | AscribeTag : 'a partial_gadt
+  | OfTag of 'a partial_gadt
+  | ExistGadtTag : ('a -> 'b) -> 'a partial_gadt
 ```
 This comment is for `partial_gadt`.
 
@@ -466,67 +405,38 @@ This comment is for `tuple`.
 
 ```
 type variant_alias = variant = 
-```
-```
-| TagA
-```
-```
-| ConstrB of int
-```
-```
-| ConstrC of int * int
-```
-```
-| ConstrD of int * int
-```
-```
-
+  | TagA
+  | ConstrB of int
+  | ConstrC of int * int
+  | ConstrD of int * int
 ```
 This comment is for `variant_alias`.
 
 ```
 type record_alias = record = {
-```
-`field1 : int;`
-`field2 : int;`
-```
+  field1 : int;
+  field2 : int;
 }
 ```
 This comment is for `record_alias`.
 
 ```
 type poly_variant_union = [ 
-```
-```
-| poly_variant
-```
-```
-| `TagC
-```
-```
+  | poly_variant
+  | `TagC
  ]
 ```
 This comment is for `poly_variant_union`.
 
 ```
 type 'a poly_poly_variant = [ 
-```
-```
-| `TagA of 'a
-```
-```
+  | `TagA of 'a
  ]
 ```
 ```
 type ('a, 'b) bin_poly_poly_variant = [ 
-```
-```
-| `TagA of 'a
-```
-```
-| `ConstrB of 'b
-```
-```
+  | `TagA of 'a
+  | `ConstrB of 'b
  ]
 ```
 ```
@@ -552,56 +462,26 @@ type 'a clopen_poly_variant = [< `One | `Two of int | `Three Two Three ] as 'a
 ```
 ```
 type nested_poly_variant = [ 
-```
-```
-| `A
-```
-```
-| `B of [ `B1 | `B2 ]
-```
-```
-| `C
-```
-```
-| `D of [ `D1 of [ `D1a ] ]
-```
-```
+  | `A
+  | `B of [ `B1 | `B2 ]
+  | `C
+  | `D of [ `D1 of [ `D1a ] ]
  ]
 ```
 ```
 type ('a, 'b) full_gadt_alias = ('a, 'b) full_gadt = 
-```
-```
-| Tag : (unit, unit) full_gadt_alias
-```
-```
-| First : 'a -> ('a, unit) full_gadt_alias
-```
-```
-| Second : 'a -> (unit, 'a) full_gadt_alias
-```
-```
-| Exist : 'a * 'b -> ('b, unit) full_gadt_alias
-```
-```
-
+  | Tag : (unit, unit) full_gadt_alias
+  | First : 'a -> ('a, unit) full_gadt_alias
+  | Second : 'a -> (unit, 'a) full_gadt_alias
+  | Exist : 'a * 'b -> ('b, unit) full_gadt_alias
 ```
 This comment is for `full_gadt_alias`.
 
 ```
 type 'a partial_gadt_alias = 'a partial_gadt = 
-```
-```
-| AscribeTag : 'a partial_gadt_alias
-```
-```
-| OfTag of 'a partial_gadt_alias
-```
-```
-| ExistGadtTag : ('a -> 'b) -> 'a partial_gadt_alias
-```
-```
-
+  | AscribeTag : 'a partial_gadt_alias
+  | OfTag of 'a partial_gadt_alias
+  | ExistGadtTag : ('a -> 'b) -> 'a partial_gadt_alias
 ```
 This comment is for `partial_gadt_alias`.
 
@@ -612,33 +492,15 @@ This comment is for [`Exn_arrow`](./#exception-Exn_arrow).
 
 ```
 type mutual_constr_a = 
-```
-```
-| A
-```
-```
-| B_ish of mutual_constr_b
-```
-This comment is between [`mutual_constr_a`](./#type-mutual_constr_a) and [`mutual_constr_b`](./#type-mutual_constr_b).
-
-```
-
+  | A
+  | B_ish of mutual_constr_b (* This comment is between mutual_constr_a and mutual_constr_b. *)
 ```
 This comment is for [`mutual_constr_a`](./#type-mutual_constr_a) then [`mutual_constr_b`](./#type-mutual_constr_b).
 
 ```
 and mutual_constr_b = 
-```
-```
-| B
-```
-```
-| A_ish of mutual_constr_a
-```
-This comment must be here for the next to associate correctly.
-
-```
-
+  | B
+  | A_ish of mutual_constr_a (* This comment must be here for the next to associate correctly. *)
 ```
 This comment is for [`mutual_constr_b`](./#type-mutual_constr_b) then [`mutual_constr_a`](./#type-mutual_constr_a).
 
@@ -667,51 +529,24 @@ A mystery wrapped in an ellipsis
 
 ```
 type ext += 
-```
-```
-| ExtA
-```
-```
-
+  | ExtA
 ```
 ```
 type ext += 
-```
-```
-| ExtB
-```
-```
-
+  | ExtB
 ```
 ```
 type ext += 
-```
-```
-| ExtC of unit
-```
-```
-| ExtD of ext
-```
-```
-
+  | ExtC of unit
+  | ExtD of ext
 ```
 ```
 type ext += 
-```
-```
-| ExtE
-```
-```
-
+  | ExtE
 ```
 ```
 type ext += private 
-```
-```
-| ExtF
-```
-```
-
+  | ExtF
 ```
 ```
 type 'a poly_ext = ..
@@ -720,53 +555,23 @@ type 'a poly_ext = ..
 
 ```
 type poly_ext += 
-```
-```
-| Foo of 'b
-```
-```
-| Bar of 'b * 'b
-```
-'b poly\_ext
-
-```
-
+  | Foo of 'b
+  | Bar of 'b * 'b (* 'b poly_ext *)
 ```
 ```
 type poly_ext += 
-```
-```
-| Quux of 'c
-```
-'c poly\_ext
-
-```
-
+  | Quux of 'c (* 'c poly_ext *)
 ```
 ```
 module ExtMod : sig ... end
 ```
 ```
 type ExtMod.t += 
-```
-```
-| ZzzTop0
-```
-It's got the rock
-
-```
-
+  | ZzzTop0 (* It's got the rock *)
 ```
 ```
 type ExtMod.t += 
-```
-```
-| ZzzTop of unit
-```
-and it packs a unit.
-
-```
-
+  | ZzzTop of unit (* and it packs a unit. *)
 ```
 ```
 val launch_missiles : unit -> unit
@@ -996,12 +801,7 @@ type new_t = ..
 ```
 ```
 type new_t += 
-```
-```
-| C
-```
-```
-
+  | C
 ```
 ```
 module type TypeExtPruned = TypeExt with type t := new_t

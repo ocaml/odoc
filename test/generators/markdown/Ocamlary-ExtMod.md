@@ -6,10 +6,5 @@ type t = ..
 ```
 ```
 type t += 
-```
-```
-| Leisureforce
-```
-```
-
+  | Leisureforce
 ```

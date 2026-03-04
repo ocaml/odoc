@@ -61,137 +61,67 @@ type long =
 ```
 ```
 type variant_e = {
-```
-`a : int;`
-```
+  a : int;
 }
 ```
 ```
 type variant = 
-```
-```
-| A
-```
-```
-| B of int
-```
-```
-| C
-```
-foo
-
-```
-| D
-```
-*bar*
-
-```
-| E of variant_e
-```
-```
-
+  | A
+  | B of int
+  | C (* foo *)
+  | D (* bar *)
+  | E of variant_e
 ```
 ```
 type variant_c = {
-```
-`a : int;`
-```
+  a : int;
 }
 ```
 ```
 type _ gadt = 
-```
-```
-| A : int gadt
-```
-```
-| B : int -> string gadt
-```
-```
-| C : variant_c -> unit gadt
-```
-```
-
+  | A : int gadt
+  | B : int -> string gadt
+  | C : variant_c -> unit gadt
 ```
 ```
 type degenerate_gadt = 
-```
-```
-| A : degenerate_gadt
-```
-```
-
+  | A : degenerate_gadt
 ```
 ```
 type private_variant = private 
-```
-```
-| A
-```
-```
-
+  | A
 ```
 ```
 type record = {
-```
-`a : int;`
-`mutable b : int;`
-`c : int;`
-foo
-
-`d : int;`
-*bar*
-
-`e : 'a. 'a;`
-```
+  a : int;
+  mutable b : int;
+  c : int; (* foo *)
+  d : int; (* bar *)
+  e : 'a. 'a;
 }
 ```
 ```
 type polymorphic_variant = [ 
-```
-```
-| `A
-```
-```
-| `B of int
-```
-```
-| `C of int * unit
-```
-```
-| `D
-```
-```
+  | `A
+  | `B of int
+  | `C of int * unit
+  | `D
  ]
 ```
 ```
 type polymorphic_variant_extension = [ 
-```
-```
-| polymorphic_variant
-```
-```
-| `E
-```
-```
+  | polymorphic_variant
+  | `E
  ]
 ```
 ```
 type nested_polymorphic_variant = [ 
-```
-```
-| `A of [ `B | `C ]
-```
-```
+  | `A of [ `B | `C ]
  ]
 ```
 ```
 type private_extenion = private [> 
-```
-```
-| polymorphic_variant
-```
-```
+  | polymorphic_variant
  ]
 ```
 ```
@@ -262,37 +192,16 @@ type extensible = ..
 ```
 ```
 type extensible += 
-```
-```
-| Extension
-```
-Documentation for [`Extension`](./#extension-Extension).
-
-```
-| Another_extension
-```
-Documentation for [`Another_extension`](./#extension-Another_extension).
-
-```
-
+  | Extension (* Documentation for Extension. *)
+  | Another_extension (* Documentation for Another_extension. *)
 ```
 ```
 type mutually = 
-```
-```
-| A of recursive
-```
-```
-
+  | A of recursive
 ```
 ```
 and recursive = 
-```
-```
-| B of mutually
-```
-```
-
+  | B of mutually
 ```
 ```
 exception Foo of int * int

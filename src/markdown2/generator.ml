@@ -288,44 +288,92 @@ and documentedSrc ~config ~resolve t =
         | Alternative (Expansion { summary; _ }) -> Accum summary
         | _ -> Stop_and_keep)
   in
-  let take_descr l =
-    Doctree.Take.until l ~classify:(function
-      | Documented { attrs; anchor; code; doc; markers } ->
-          Accum [ { attrs; anchor; code = `D code; doc; markers } ]
-      | Nested { attrs; anchor; code; doc; markers } ->
-          Accum [ { attrs; anchor; code = `N code; doc; markers } ]
-      | _ -> Stop_and_keep)
+  (* Convert doc blocks to a plain-text comment string *)
+  let doc_comment doc =
+    let text = String.concat ~sep:"" (block_text_only doc) in
+    if String.length text = 0 then None else Some ("(* " ^ text ^ " *)")
+  in
+  let indent_str = "  " in
+  (* Indent a multi-line string by [prefix] *)
+  let indent_multiline prefix s =
+    let lines = Stdlib.String.split_on_char '\n' s in
+    match lines with
+    | [] -> prefix
+    | first :: rest ->
+        let indented =
+          (prefix ^ first)
+          :: List.map (fun l -> prefix ^ l) rest
+        in
+        String.concat ~sep:"\n" indented
+  in
+  (* Collect all consecutive Code/Documented/Nested items into a list
+     of lines forming a single code block. *)
+  let rec collect_code ~lines ~current ~had_items (t : one list) :
+      string list * string * one list =
+    match t with
+    | (Code _ | Alternative _) :: _ ->
+        let code, _header, rest = take_code t in
+        let inline_source = source inline_text_only code in
+        let text = String.concat ~sep:"" inline_source in
+        if had_items then
+          (* After items, Code chunks go on a new line *)
+          let lines = lines @ [ current ] in
+          collect_code ~lines ~current:text ~had_items rest
+        else collect_code ~lines ~current:(current ^ text) ~had_items rest
+    | Documented { code; doc; _ } :: rest ->
+        let code_str =
+          String.concat ~sep:"" (inline_text_only code)
+        in
+        let line =
+          match doc_comment doc with
+          | Some comment -> indent_str ^ code_str ^ " " ^ comment
+          | None -> indent_str ^ code_str
+        in
+        (* Flush current line and add this item as a new line *)
+        let lines = lines @ [ current ] in
+        collect_code ~lines ~current:line ~had_items:true rest
+    | Nested { code; doc; _ } :: rest ->
+        (* Nested items contain a DocumentedSrc.t for their code,
+           e.g. variant constructors possibly containing inline records *)
+        let nested_lines, nested_current, _nested_rest =
+          collect_code ~lines:[] ~current:"" ~had_items:false code
+        in
+        let nested_all = nested_lines @ [ nested_current ] in
+        let nested_str = String.concat ~sep:"\n" nested_all in
+        let nested_with_doc =
+          match doc_comment doc with
+          | Some comment -> nested_str ^ " " ^ comment
+          | None -> nested_str
+        in
+        (* Indent the entire nested content *)
+        let indented = indent_multiline indent_str nested_with_doc in
+        (* Flush current line and add nested content as a new line *)
+        let lines = lines @ [ current ] in
+        collect_code ~lines ~current:indented ~had_items:true rest
+    | _ -> (lines, current, t)
   in
   let rec to_markdown t : Renderer.Block.t list =
     match t with
     | [] -> []
-    | (Code _ | Alternative _) :: _ ->
-        let code, header, rest = take_code t in
-        let info_string =
-          match header with Some header -> Some header | None -> None
-        in
-        let inline_source = source inline_text_only code in
-        let code = [ String.concat ~sep:"" inline_source ] in
-        let block = Renderer.Block.Code_block { info_string; code } in
-        [ block ] @ to_markdown rest
     | Subpage subp :: _ -> subpage ~config ~resolve subp
-    | (Documented _ | Nested _) :: _ ->
-        let l, _, rest = take_descr t in
-        let one { attrs = _; anchor = _; code; doc; markers = _ } =
-          let content =
-            match code with
-            | `D code ->
-                let inline_source = inline ~config ~resolve code in
-                let inlines = Renderer.Inline.Inlines inline_source in
-                let block = Renderer.Block.Paragraph inlines in
-                [ block ]
-            | `N n -> to_markdown n
-          in
-          let block_doc = block ~config ~resolve doc in
-          List.append content block_doc
+    | (Code _ | Alternative _ | Documented _ | Nested _) :: _ ->
+        let lines, current, rest =
+          collect_code ~lines:[] ~current:"" ~had_items:false t
         in
-        let all_blocks = List.concat_map one l in
-        all_blocks @ to_markdown rest
+        let all_lines = lines @ [ current ] in
+        (* Remove trailing empty lines *)
+        let rec trim_trailing = function
+          | [] -> []
+          | [ s ] when String.trim s = "" -> []
+          | x :: rest -> x :: trim_trailing rest
+        in
+        let trimmed = trim_trailing all_lines in
+        let code_str = String.concat ~sep:"\n" trimmed in
+        let code = [ code_str ] in
+        let block =
+          Renderer.Block.Code_block { info_string = None; code }
+        in
+        [ block ] @ to_markdown rest
   in
   to_markdown t
 
