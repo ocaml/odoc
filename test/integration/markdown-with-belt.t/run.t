@@ -82,7 +82,7 @@
   
   Currently, both *Belt\_Set* and *Belt.Set* are accessible to users for some technical reasons, we **strongly recommend** users stick to qualified import, *Belt.Set*, we may hide the internal, *i.e*, *Belt\_Set* in the future
   
-  ```
+  ```ocaml
   module Id = Belt_Id
   ```
   [`Belt.Id`](./Belt_Id.md)

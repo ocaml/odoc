@@ -5,6 +5,6 @@
 
 This reference should resolve in the context of this module, even when used as a synopsis.
 
-```
+```ocaml
 type t
 ```

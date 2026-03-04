@@ -3,6 +3,6 @@
 
 Doc attached to `include Y`. `Y`'s top-comment shouldn't appear here.
 
-```
+```ocaml
 type t = Y.t
 ```

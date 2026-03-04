@@ -7,6 +7,6 @@
 
 ## Signature
 
-```
+```ocaml
 type t
 ```

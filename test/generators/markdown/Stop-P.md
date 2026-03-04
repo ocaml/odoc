@@ -3,6 +3,6 @@
 
 Doc.
 
-```
+```ocaml
 val bar : int
 ```

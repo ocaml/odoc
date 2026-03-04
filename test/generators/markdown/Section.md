@@ -19,7 +19,7 @@ Foo bar.
 
 ## Value only
 
-```
+```ocaml
 val foo : unit
 ```
 

@@ -4,7 +4,7 @@
 
 ## Type
 
-```
+```ocaml
 type t
 ```
 Some type.

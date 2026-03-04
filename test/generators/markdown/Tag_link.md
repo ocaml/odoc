@@ -1,7 +1,7 @@
 
 # Module `Tag_link`
 
-```
+```ocaml
 val foo : unit
 ```
 deprecated foo

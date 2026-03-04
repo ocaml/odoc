@@ -37,7 +37,7 @@
   
   ## Section 1
   
-  ```
+  ```ocaml
   type t = int
   ```
   A very important type
@@ -45,18 +45,18 @@
   
   ### Section 2
   
-  ```
+  ```ocaml
   val v : t
   ```
   A very important value
   
-  ```
+  ```ocaml
   module List : sig ... end
   ```
-  ```
+  ```ocaml
   module type X = sig ... end
   ```
-  ```
+  ```ocaml
   module type T = sig ... end
   ```
 
@@ -64,7 +64,7 @@
   
   # Module type `Test.X`
   
-  ```
+  ```ocaml
   type t = int
   ```
 
@@ -72,7 +72,7 @@
   
   # Module type `Test.T`
   
-  ```
+  ```ocaml
   type t = int
   ```
 
@@ -80,13 +80,13 @@
   
   # Module `Test.List`
   
-  ```
+  ```ocaml
   type 'a t = 'a list
   ```
-  ```
+  ```ocaml
   val head : 'a t -> 'a option
   ```
-  ```
+  ```ocaml
   val headExn : 'a t -> 'a
   ```
 
