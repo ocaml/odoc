@@ -301,8 +301,7 @@ and documentedSrc ~config ~resolve t =
     | [] -> prefix
     | first :: rest ->
         let indented =
-          (prefix ^ first)
-          :: List.map (fun l -> prefix ^ l) rest
+          (prefix ^ first) :: List.map (fun l -> prefix ^ l) rest
         in
         String.concat ~sep:"\n" indented
   in
@@ -321,9 +320,7 @@ and documentedSrc ~config ~resolve t =
           collect_code ~lines ~current:text ~had_items rest
         else collect_code ~lines ~current:(current ^ text) ~had_items rest
     | Documented { code; doc; _ } :: rest ->
-        let code_str =
-          String.concat ~sep:"" (inline_text_only code)
-        in
+        let code_str = String.concat ~sep:"" (inline_text_only code) in
         let line =
           match doc_comment doc with
           | Some comment -> indent_str ^ code_str ^ " " ^ comment
