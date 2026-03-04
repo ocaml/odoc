@@ -1,3 +1,9 @@
+# Unreleased
+
+### Fixed
+- Markdown backend assumes ocaml as langId on declarations
+- Markdown backend collects all code snippets and render a single code block with comments, rather than split the variants/records per constructor/field
+
 # 3.1.0
 
 ### Added
