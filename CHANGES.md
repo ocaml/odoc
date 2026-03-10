@@ -10,6 +10,8 @@
 - Markdown backend assumes ocaml as langId on declarations
 - Markdown backend collects all code snippets and render a single code block with comments, rather than split the variants/records per constructor/field
 - Fix URL remapping for page references (@jonludlam, #1395)
+- Fix #1396, which broke incrememntal builds (@jonludlam, #1402)
+- Ensure all warnings turn into errors with --warn-error (@jonludlam, #1402)
 
 # 3.1.0
 
