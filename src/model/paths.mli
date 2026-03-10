@@ -346,11 +346,11 @@ module Identifier : sig
       [> `SourceLocationInternal of SourcePage.t * LocalName.t ] id
   end
 
-  (** Create a synthetic parent identifier for items inside an include's
-      module type expression. Uses a lowercase module name (illegal in normal
-      OCaml) to ensure no clashes with real identifiers. Each call returns a
-      fresh identifier. *)
   val fresh_include_parent : Signature.t -> Signature.t
+  (** Create a synthetic parent identifier for items inside an include's module
+      type expression. Uses a lowercase module name (illegal in normal OCaml) to
+      ensure no clashes with real identifiers. Each call returns a fresh
+      identifier. *)
 end
 
 (** Normal OCaml paths (i.e. the ones present in types) *)
