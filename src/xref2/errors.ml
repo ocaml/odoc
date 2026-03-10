@@ -338,8 +338,8 @@ let report ~(what : what) ?tools_error action =
   let open Component.Fmt in
   let report_error () =
     let r subject pp_a a =
-      Lookup_failures.report_warning "Failed to %s %s %a%a" action subject
-        pp_a a pp_tools_error tools_error
+      Lookup_failures.report_warning "Failed to %s %s %a%a" action subject pp_a
+        a pp_tools_error tools_error
     in
     let c = default in
     let fmt_id fmt id = model_identifier c fmt (id :> Paths.Identifier.t) in
