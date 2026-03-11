@@ -462,6 +462,11 @@ let warn_on_hidden_representation (id : Id.Type.t)
     internal_typ_exp t.type_
   in
 
+  let internal_unboxed_field t =
+    let open Lang.TypeDecl.UnboxedField in
+    internal_typ_exp t.type_
+  in
+
   let fmt_cfg = Component.Fmt.{ default with short_paths = true } in
   match r with
   | Variant constructors ->
@@ -472,6 +477,12 @@ let warn_on_hidden_representation (id : Id.Type.t)
   | Record fields ->
       if List.exists internal_field fields then
         Lookup_failures.report_warning "@[<2>Hidden fields in type '%a'@]"
+          Component.Fmt.(model_identifier fmt_cfg)
+          (id :> Id.any)
+  | Record_unboxed_product fields ->
+      if List.exists internal_unboxed_field fields then
+        Lookup_failures.report_warning
+          "@[<2>Hidden unboxed fields in type '%a'@]"
           Component.Fmt.(model_identifier fmt_cfg)
           (id :> Id.any)
   | Extensible -> ()
@@ -901,6 +912,9 @@ and u_module_type_expr :
       TypeOf (StructInclude (module_path env p), original_path)
   | TypeOf (ModPath p, original_path) ->
       TypeOf (ModPath (module_path env p), original_path)
+  | Strengthen (expr, path, aliasable) ->
+      let expr = u_module_type_expr env id expr in
+      Strengthen (expr, module_path env path, aliasable)
 
 and module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
@@ -965,6 +979,14 @@ and module_type_expr :
           t_expansion = do_expn t_expansion None;
           t_original_path;
         }
+  | Strengthen { s_expr; s_path; s_aliasable; s_expansion } ->
+      Strengthen
+        {
+          s_expr = u_module_type_expr env id s_expr;
+          s_path = module_path env s_path;
+          s_aliasable;
+          s_expansion = do_expn s_expansion None;
+        }
 
 and type_decl_representation :
     Env.t ->
@@ -976,6 +998,8 @@ and type_decl_representation :
   match r with
   | Variant cs -> Variant (List.map (type_decl_constructor env parent) cs)
   | Record fs -> Record (List.map (type_decl_field env parent) fs)
+  | Record_unboxed_product fs ->
+      Record_unboxed_product (List.map (type_decl_unboxed_field env parent) fs)
   | Extensible -> Extensible
 
 and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
@@ -1035,6 +1059,11 @@ and type_decl_equation env parent t =
 
 and type_decl_field env parent f =
   let open TypeDecl.Field in
+  let doc = comment_docs env parent f.doc in
+  { f with type_ = type_expression env parent [] f.type_; doc }
+
+and type_decl_unboxed_field env parent f =
+  let open TypeDecl.UnboxedField in
   let doc = comment_docs env parent f.doc in
   { f with type_ = type_expression env parent [] f.type_; doc }
 
@@ -1117,6 +1146,9 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
         (List.map
            (fun (lbl, ty) -> (lbl, type_expression env parent visited ty))
            ts)
+  | Unboxed_tuple ts ->
+      Unboxed_tuple
+        (List.map (fun (l, t) -> (l, type_expression env parent visited t)) ts)
   | Constr (path', ts') -> (
       let path = type_path env path' in
       let ts = List.map (type_expression env parent visited) ts' in
@@ -1179,6 +1211,8 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
             Class (`Resolved p, ts)
         | _ -> Class (path', ts))
   | Poly (strs, t) -> Poly (strs, type_expression env parent visited t)
+  | Quote t -> Quote (type_expression env parent visited t)
+  | Splice t -> Splice (type_expression env parent visited t)
   | Package p -> Package (type_expression_package env parent visited p)
 
 let link ~filename x y =

@@ -25,6 +25,29 @@
  (targets classify.ml)
  (deps
   (:x classify.cppo.ml))
+ (enabled_if
+  (not %{ocaml-config:ox}))
+ (action
+  (chdir
+   %{workspace_root}
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x} -o %{targets}))))
+
+(rule
+ (targets classify.ml)
+ (deps
+  (:x classify.cppo.ml))
+ (enabled_if %{ocaml-config:ox})
+ (action
+  (chdir
+   %{workspace_root}
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} -D OXCAML %{x} -o %{targets}))))
+
+(rule
+ (targets extract_code.ml)
+ (deps
+  (:x extract_code.cppo.ml))
+ (enabled_if
+  (not %{ocaml-config:ox}))
  (action
   (chdir
    %{workspace_root}
@@ -34,10 +57,11 @@
  (targets extract_code.ml)
  (deps
   (:x extract_code.cppo.ml))
+ (enabled_if %{ocaml-config:ox})
  (action
   (chdir
    %{workspace_root}
-   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x} -o %{targets}))))
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} -D OXCAML %{x} -o %{targets}))))
 
 (documentation
  (package odoc))

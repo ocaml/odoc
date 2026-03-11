@@ -7,3 +7,5 @@ val of_type : Odoc_model.Lang.TypeExpr.t -> string
 val of_doc : Odoc_model.Comment.elements -> string
 
 val of_record : Odoc_model.Lang.TypeDecl.Field.t list -> string
+
+val of_unboxed_record : Odoc_model.Lang.TypeDecl.UnboxedField.t list -> string
