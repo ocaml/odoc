@@ -300,7 +300,11 @@ let mark_type ty =
       | Tpoly (ty, tyl) ->
           List.iter (fun t -> add_alias t) tyl;
           loop visited ty
-#if OCAML_VERSION>=(5,4,0)
+#if OCAML_VERSION>=(5,5,0)
+      | Tpackage p ->
+          List.iter (fun (_,x) -> loop visited x) p.pack_constraints
+      | Tfunctor _ -> ()
+#elif OCAML_VERSION>=(5,4,0)
       | Tpackage p ->
           List.iter (fun (_,x) -> loop visited x) p.pack_cstrs
 #elif OCAML_VERSION>=(4,13,0)
@@ -428,6 +432,9 @@ let mark_type_kind = function
 #endif
       List.iter (fun ld -> mark_type ld.ld_type) lds
   | Type_open -> ()
+#if OCAML_VERSION >= (5,5,0)
+  | Type_external _ -> ()
+#endif
 
 let mark_type_declaration decl =
   let params = prepare_type_parameters decl.type_params decl.type_manifest in
@@ -554,7 +561,10 @@ let rec read_type_expr env typ =
             remove_names tyl;
             Poly(vars, typ)
       | Tunivar _ -> Var (name_of_type typ)
-#if OCAML_VERSION>=(5,4,0)
+#if OCAML_VERSION>=(5,5,0)
+      | Tpackage {pack_path=p; pack_constraints } ->
+        let eqs = List.filter_map (fun (l,ty) -> Option.map (fun x -> x, ty) (Longident.unflatten l)) pack_constraints in
+#elif OCAML_VERSION>=(5,4,0)
       | Tpackage {pack_path=p; pack_cstrs } ->
         let eqs = List.filter_map (fun (l,ty) -> Option.map (fun x -> x, ty) (Longident.unflatten l)) pack_cstrs in
 #elif OCAML_VERSION>=(4,13,0)
@@ -579,6 +589,9 @@ let rec read_type_expr env typ =
       | Tsubst typ -> read_type_expr env typ
 #else
       | Tsubst (typ,_) -> read_type_expr env typ
+#endif
+#if OCAML_VERSION >= (5,5,0)
+      | Tfunctor _ -> Any
 #endif
       | Tlink _ -> assert false
 #if defined OXCAML
@@ -811,6 +824,9 @@ let read_type_kind env parent =
         in
           Some (Record lbls)
     | Type_open ->  Some Extensible
+#if OCAML_VERSION >= (5,5,0)
+    | Type_external _ -> None
+#endif
 
 let read_injectivity var =
 #if OCAML_VERSION < (5, 1, 0)
@@ -893,6 +909,10 @@ let read_type_declaration env parent id decl =
         List.exists (fun cd -> cd.cd_res <> None) tll
     | Type_open ->
         decl.type_manifest = None
+#if OCAML_VERSION >= (5,5,0)
+    | Type_external _ ->
+        decl.type_manifest = None || decl.type_private = Private
+#endif
   in
   let params =
     List.map2 (read_type_parameter abstr) decl.type_variance params
