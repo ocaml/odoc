@@ -120,6 +120,8 @@ let unit_of_uid uid =
   | Internal -> None
 #if defined OXCAML
   | Unboxed_version _ -> None
+#elif OCAML_VERSION >= (5,5,0)
+  | Local_opaque_item _ -> None
 #endif
 
 #if OCAML_VERSION >= (5,2,0)
