@@ -96,4 +96,3 @@ val read_extension_constructor : env ->
 val read_exception : env ->
   Paths.Identifier.Signature.t -> Ident.t ->
   Types.extension_constructor -> Odoc_model.Lang.Exception.t
- 

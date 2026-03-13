@@ -16,6 +16,7 @@ module Tools_error = struct
     | `Page
     | `Cons
     | `Field
+    | `UnboxedField
     | `Label
     | `Page_path
     | `Module_path
@@ -129,6 +130,7 @@ module Tools_error = struct
       | `Page -> "page"
       | `Cons -> "constructor"
       | `Field -> "field"
+      | `UnboxedField -> "unboxed field"
       | `Label -> "label"
       | `Page_path -> "path to a page"
       | `Module_path -> "path to a module"

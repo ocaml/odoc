@@ -31,6 +31,7 @@ type env = Cmi.env = {
   warnings_tag : string option;
 }
 
+let cmti_builddir : string ref = ref ""
 let read_module_expr : (env -> Identifier.Signature.t -> Identifier.LabelParent.t -> Typedtree.module_expr -> ModuleType.expr) ref = ref (fun _ _ _ _ -> failwith "unset")
 
 let opt_map f = function
@@ -71,12 +72,17 @@ let rec read_core_type env container ctyp =
         let res = read_core_type env container res in
           Arrow(lbl, arg, res)
     | Ttyp_tuple typs ->
-#if OCAML_VERSION >= (5,4,0) || OCAML_VERSION = (5,2,0)
+#if OCAML_VERSION >= (5,4,0) || defined OXCAML
         let typs = List.map (fun (lbl,x) -> lbl, read_core_type env container x) typs in
 #else
         let typs = List.map (fun x -> None, read_core_type env container x) typs in
 #endif
         Tuple typs
+#if defined OXCAML
+    | Ttyp_unboxed_tuple typs ->
+        let typs = List.map (fun (l, t) -> l, read_core_type env container t) typs in
+        Unboxed_tuple typs
+#endif
     | Ttyp_constr(p, _, params) ->
         let p = Env.Path.read_type env.ident_env p in
         let params = List.map (read_core_type env container) params in
@@ -248,13 +254,29 @@ let read_type_parameter (ctyp, var_and_injectivity)  =
   in
     {desc; variance; injectivity}
 
+#if defined OXCAML
+let is_mutable = Types.is_mutable
+#else
+let is_mutable ld = ld = Mutable
+#endif
+
 let read_label_declaration env parent label_parent ld =
   let open TypeDecl.Field in
   let open Odoc_model.Names in
   let name = Ident.name ld.ld_id in
   let id = Identifier.Mk.field(parent, FieldName.make_std name) in
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent ld.ld_attributes in
-  let mutable_ = Types.is_mutable ld.ld_mutable in
+  let mutable_ = is_mutable ld.ld_mutable in
+  let type_ = read_core_type env label_parent ld.ld_type in
+    {id; doc; mutable_; type_}
+
+let read_unboxed_label_declaration env parent label_parent ld =
+  let open TypeDecl.UnboxedField in
+  let open Odoc_model.Names in
+  let name = Ident.name ld.ld_id in
+  let id = Identifier.Mk.unboxed_field(parent, UnboxedFieldName.make_std name) in
+  let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent ld.ld_attributes in
+  let mutable_ = is_mutable ld.ld_mutable in
   let type_ = read_core_type env label_parent ld.ld_type in
     {id; doc; mutable_; type_}
 
@@ -266,7 +288,11 @@ let read_constructor_declaration_arguments env parent label_parent arg =
 #else
   match arg with
   | Cstr_tuple args ->
+#if defined OXCAML
       Tuple (List.map (fun arg -> read_core_type env label_parent arg.ca_type) args)
+#else
+      Tuple (List.map (fun arg -> read_core_type env label_parent arg) args)
+#endif
   | Cstr_record lds ->
       Record (List.map (read_label_declaration env parent label_parent) lds)
 #endif
@@ -296,6 +322,14 @@ let read_type_kind env parent =
       let lbls =
         List.map (read_label_declaration env parent label_parent) lbls in
           Some (Record lbls)
+#if defined OXCAML
+    | Ttype_record_unboxed_product lbls ->
+      let parent = (parent :> Identifier.UnboxedFieldParent.t) in
+      let label_parent = (parent :> Identifier.LabelParent.t) in
+      let lbls =
+        List.map (read_unboxed_label_declaration env parent label_parent) lbls in
+          Some (Record_unboxed_product lbls)
+#endif
     | Ttype_open -> Some Extensible
 
 let read_type_equation env container decl =
@@ -436,17 +470,17 @@ let rec read_class_type_field env parent ctf =
 
 and read_self_type env container typ =
   match typ.ctyp_desc with
+#if defined OXCAML
   | Ttyp_var (None, _) -> None
+#else
+  | Ttyp_any -> None
+#endif
   | _ -> Some (read_core_type env container typ)
 
 and read_class_signature env parent label_parent cltyp =
   let open ClassType in
     match cltyp.cltyp_desc with
-#if defined OXCAML
     | Tcty_constr(p, _, params) ->
-#else
-  | Ttyp_any -> None
-#endif
         let p = Env.Path.read_class_type env.ident_env p in
       let params = List.map (read_core_type env label_parent) params in
           Constr(p, params)

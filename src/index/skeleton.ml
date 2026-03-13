@@ -83,6 +83,20 @@ module Entry = struct
     in
     Entry.entry ~id:field.id ~doc:field.doc.elements ~kind
 
+  let of_unboxed_field id_parent params (field : TypeDecl.UnboxedField.t) =
+    let params = varify_params params in
+    let parent_type =
+      TypeExpr.Constr
+        ( `Identifier
+            ((id_parent :> Odoc_model.Paths.Identifier.Path.Type.t), false),
+          params )
+    in
+    let kind =
+      Entry.UnboxedField
+        { mutable_ = field.mutable_; type_ = field.type_; parent_type }
+    in
+    Entry.entry ~id:field.id ~doc:field.doc.elements ~kind
+
   let of_exception (exc : Exception.t) =
     let res =
       match exc.res with
@@ -217,6 +231,8 @@ and type_decl td =
     | Some (Variant cl) ->
         List.concat_map (constructor td.id td.equation.params) cl
     | Some (Record fl) -> List.concat_map (field td.id td.equation.params) fl
+    | Some (Record_unboxed_product fl) ->
+        List.concat_map (unboxed_field td.id td.equation.params) fl
     | Some Extensible -> []
   in
   [ { Tree.node = entry; children } ]
@@ -227,6 +243,10 @@ and constructor type_id params c =
 
 and field type_id params f =
   let entry = Entry.of_field type_id params f in
+  [ Tree.leaf entry ]
+
+and unboxed_field type_id params f =
+  let entry = Entry.of_unboxed_field type_id params f in
   [ Tree.leaf entry ]
 
 and exception_ exc =
