@@ -168,6 +168,8 @@ let rec substitute_vars vars t =
       Arrow (lbl, substitute_vars vars t1, substitute_vars vars t2)
   | Tuple ts ->
       Tuple (List.map (fun (lbl, ty) -> (lbl, substitute_vars vars ty)) ts)
+  | Unboxed_tuple ts ->
+      Unboxed_tuple (List.map (fun (l, t) -> (l, substitute_vars vars t)) ts)
   | Constr (p, ts) -> Constr (p, List.map (substitute_vars vars) ts)
   | Polymorphic_variant v ->
       Polymorphic_variant (substitute_vars_poly_variant vars v)
@@ -532,6 +534,8 @@ and type_decl_representation s t =
   match t with
   | Variant cs -> Variant (List.map (type_decl_constructor s) cs)
   | Record fs -> Record (List.map (type_decl_field s) fs)
+  | Record_unboxed_product fs ->
+      Record_unboxed_product (List.map (type_decl_unboxed_field s) fs)
   | Extensible -> t
 
 and type_decl_constructor s t =
@@ -591,6 +595,8 @@ and type_expr s t =
   | Alias (t, str) -> Alias (type_expr s t, str)
   | Arrow (lbl, t1, t2) -> Arrow (lbl, type_expr s t1, type_expr s t2)
   | Tuple ts -> Tuple (List.map (fun (lbl, ty) -> (lbl, type_expr s ty)) ts)
+  | Unboxed_tuple ts ->
+      Unboxed_tuple (List.map (fun (l, t) -> (l, type_expr s t)) ts)
   | Constr (p, ts) -> (
       match type_path s p with
       | Replaced (t, eq) ->
@@ -744,6 +750,10 @@ and module_substitution s m =
 
 and type_decl_field s f =
   let open Component.TypeDecl.Field in
+  { f with type_ = type_expr s f.type_ }
+
+and type_decl_unboxed_field s f =
+  let open Component.TypeDecl.UnboxedField in
   { f with type_ = type_expr s f.type_ }
 
 and type_decl_constructor_arg s a =
