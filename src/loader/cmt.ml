@@ -40,9 +40,11 @@ let rec read_pattern env parent doc pat =
     match pat.pat_desc with
     | Tpat_any -> []
 #if OCAML_VERSION < (5,2,0)
-    | Tpat_var(id, _, _, _) ->
+    | Tpat_var(id, _) ->
+#elif defined OXCAML
+    | Tpat_var(id, _, _uid, _, _) ->
 #else
-    | Tpat_var(id,_,_uid, _) ->
+    | Tpat_var(id, _, _uid) ->
 #endif
         let open Value in
         let id = Env.find_value_identifier env.ident_env id in
@@ -52,8 +54,8 @@ let rec read_pattern env parent doc pat =
           [Value {id; source_loc; doc; type_; value}]
 #if OCAML_VERSION < (5,2, 0)
     | Tpat_alias(pat, id, _) ->
-#elif OCAML_VERSION = (5,2, 0)
-    | Tpat_alias(pat, id, _,_, _, _) ->
+#elif defined OXCAML
+    | Tpat_alias(pat, id, _, _, _, _, _) ->
 #elif OCAML_VERSION < (5,4,0)
     | Tpat_alias(pat, id, _,_) ->
 #else
@@ -67,10 +69,14 @@ let rec read_pattern env parent doc pat =
           Value {id; source_loc; doc; type_; value} :: read_pattern env parent doc pat
     | Tpat_constant _ -> []
     | Tpat_tuple pats ->
-#if OCAML_VERSION >= (5, 4, 0)
+#if OCAML_VERSION >= (5, 4, 0) || defined OXCAML
       let pats = List.map snd pats (* remove labels *) in
 #endif
       List.concat (List.map (read_pattern env parent doc) pats)
+#if defined OXCAML
+    | Tpat_unboxed_tuple pats ->
+        List.concat (List.map (fun (_, p, _) -> read_pattern env parent doc p) pats)
+#endif
 #if OCAML_VERSION < (4, 13, 0)
     | Tpat_construct(_, _, pats) ->
 #else
@@ -85,7 +91,14 @@ let rec read_pattern env parent doc pat =
           (List.map
              (fun (_, _, pat) -> read_pattern env parent doc pat)
           pats)
-#if OCAML_VERSION < (5, 4, 0)
+#if defined OXCAML
+    | Tpat_record_unboxed_product(pats, _) ->
+        List.concat
+          (List.map
+             (fun (_, _, pat) -> read_pattern env parent doc pat)
+          pats)
+    | Tpat_array (_, _, pats) ->
+#elif OCAML_VERSION < (5, 4, 0)
     | Tpat_array pats ->
 #else
     | Tpat_array (_, pats) ->
