@@ -1,0 +1,70 @@
+name: Build for OxCaml
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        ocaml-compiler:
+          - "ocaml-variants.5.2.0+ox"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Set git to use LF
+        if: runner.os == 'Windows'
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - name: Checkout tree
+        uses: actions/checkout@v6
+
+      - name: Set-up OxCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          # Do not pin odoc to not break Mdx installation
+          opam-pin: ${{ matrix.run-mdx != true }}
+          opam-repositories: |
+            oxcaml: "git+https://github.com/oxcaml/opam-repository.git"
+            default: "git+https://github.com/ocaml/opam-repository.git"
+
+      - name: Install dependencies
+        run: |
+          opam install --deps-only --with-test ./odoc.opam ./odoc-parser.opam \
+            ${{ matrix.test-sherlodoc && './sherlodoc.opam' }}
+
+      - name: dune runtest
+        if: matrix.test-sherlodoc == true
+        # Run all tests
+        run: opam exec -- dune runtest
+
+      - name: dune runtest
+        if: matrix.test-sherlodoc != true
+        # Run the tests for odoc and odoc-parser only
+        run: opam exec -- dune runtest -p odoc,odoc-parser
+
+      - name: Mdx tests
+        if: matrix.run-mdx == true
+        run: |
+          opam install mdx
+          opam exec -- dune build @runmdx
+
+      - name: Send coverage stats to Coveralls
+        if: matrix.send-coverage == true
+        run: |
+          opam install bisect_ppx
+          mkdir -p $BISECT_FILE
+          opam exec -- dune runtest --instrument-with bisect_ppx --force
+          opam exec -- bisect-ppx-report send-to Coveralls --coverage-path /tmp/coverage
+        env:
+          BISECT_FILE: /tmp/coverage/bisect
+          COVERALLS_REPO_TOKEN: ${{ github.token }}
+          PULL_REQUEST_NUMBER: ${{ github.event.number }}
