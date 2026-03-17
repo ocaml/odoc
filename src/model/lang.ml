@@ -599,3 +599,10 @@ let extract_signature_doc (s : Signature.t) =
   | { elements = []; _ }, Include inc :: _ when should_take_top inc ->
       inc.expansion.content.doc
   | doc, _ -> doc
+
+let rec is_elidable_with_module_type_u : ModuleType.U.expr -> bool = function
+  | Path _ -> false
+  | Signature _ -> true
+  | With (_, expr) -> is_elidable_with_module_type_u expr
+  | TypeOf _ -> false
+  | Strengthen _ -> false
