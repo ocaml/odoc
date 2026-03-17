@@ -387,14 +387,7 @@ and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
   let open Include in
   match decl with
   | ModuleType expr ->
-      let rec is_elidable_with_u : Odoc_model.Lang.ModuleType.U.expr -> bool =
-        function
-        | Path _ -> false
-        | Signature _ -> true
-        | With (_, expr) -> is_elidable_with_u expr
-        | TypeOf _ -> false
-      in
-      if is_elidable_with_u expr then ModuleType expr
+      if is_elidable_with_module_type_u expr then ModuleType expr
       else ModuleType (u_module_type_expr env id expr)
   | Alias p -> Alias (module_path env p)
 

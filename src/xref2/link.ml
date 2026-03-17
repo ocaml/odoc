@@ -701,15 +701,8 @@ and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
 and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
  fun env id decl ->
   let open Include in
-  let rec is_elidable_with_u : Odoc_model.Lang.ModuleType.U.expr -> bool =
-    function
-    | Path _ -> false
-    | Signature _ -> true
-    | With (_, expr) -> is_elidable_with_u expr
-    | TypeOf _ -> false
-  in
   match decl with
-  | ModuleType expr when is_elidable_with_u expr -> ModuleType expr
+  | ModuleType expr when is_elidable_with_module_type_u expr -> ModuleType expr
   | ModuleType expr -> ModuleType (u_module_type_expr env id expr)
   | Alias p -> Alias (module_path env p)
 
