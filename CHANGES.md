@@ -4,6 +4,7 @@
 - Allow persistent latex macros in HTML/KaTeX backend (@dlesbre, #1391)
 - `markdown-generate` command now accepts multiple `.odocl` files in a single
   invocation, eliminating the need for shell scripting (@davesnx, #1387)
+- Support for OxCaml (@lukemaurer, @art-w, #1399)
 
 ### Fixed
 - Fix compile-time crashing bugs #930 and #1385 (@jonludlam, #1400)
