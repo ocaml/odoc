@@ -38,6 +38,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sed -i '/bisect_ppx/d' odoc.opam
           opam install --deps-only --with-test ./odoc.opam ./odoc-parser.opam \
             ${{ matrix.test-sherlodoc && './sherlodoc.opam' }}
 
@@ -56,15 +57,3 @@ jobs:
         run: |
           opam install mdx
           opam exec -- dune build @runmdx
-
-      - name: Send coverage stats to Coveralls
-        if: matrix.send-coverage == true
-        run: |
-          opam install bisect_ppx
-          mkdir -p $BISECT_FILE
-          opam exec -- dune runtest --instrument-with bisect_ppx --force
-          opam exec -- bisect-ppx-report send-to Coveralls --coverage-path /tmp/coverage
-        env:
-          BISECT_FILE: /tmp/coverage/bisect
-          COVERALLS_REPO_TOKEN: ${{ github.token }}
-          PULL_REQUEST_NUMBER: ${{ github.event.number }}
