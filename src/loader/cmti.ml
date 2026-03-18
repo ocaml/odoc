@@ -31,6 +31,7 @@ type env = Cmi.env = {
   warnings_tag : string option;
 }
 
+let cmti_builddir : string ref = ref ""
 let read_module_expr : (env -> Identifier.Signature.t -> Identifier.LabelParent.t -> Typedtree.module_expr -> ModuleType.expr) ref = ref (fun _ _ _ _ -> failwith "unset")
 
 let opt_map f = function
@@ -42,8 +43,15 @@ let read_label = Cmi.read_label
 let rec read_core_type env container ctyp =
   let open TypeExpr in
     match ctyp.ctyp_desc with
+#if defined OXCAML
+    (* TODO: presumably we want the layout in these first two cases,
+       eventually *)
+    | Ttyp_var (None, _layout) -> Any
+    | Ttyp_var (Some s, _layout) -> Var s
+#else
     | Ttyp_any -> Any
     | Ttyp_var s -> Var s
+#endif
     | Ttyp_arrow(lbl, arg, res) ->
         let lbl = read_label lbl in
 #if OCAML_VERSION < (4,3,0)
@@ -64,12 +72,17 @@ let rec read_core_type env container ctyp =
         let res = read_core_type env container res in
           Arrow(lbl, arg, res)
     | Ttyp_tuple typs ->
-#if OCAML_VERSION >= (5,4,0)
+#if OCAML_VERSION >= (5,4,0) || defined OXCAML
         let typs = List.map (fun (lbl,x) -> lbl, read_core_type env container x) typs in
 #else
         let typs = List.map (fun x -> None, read_core_type env container x) typs in
 #endif
         Tuple typs
+#if defined OXCAML
+    | Ttyp_unboxed_tuple typs ->
+        let typs = List.map (fun (l, t) -> l, read_core_type env container t) typs in
+        Unboxed_tuple typs
+#endif
     | Ttyp_constr(p, _, params) ->
         let p = Env.Path.read_type env.ident_env p in
         let params = List.map (read_core_type env container) params in
@@ -105,13 +118,24 @@ let rec read_core_type env container ctyp =
         let p = Env.Path.read_class_type env.ident_env p in
         let params = List.map (read_core_type env container) params in
           Class(p, params)
-    | Ttyp_alias(typ, var) ->
-        let typ = read_core_type env container typ in
-#if OCAML_VERSION >= (5,2,0)
-        Alias(typ, var.txt)
+#if defined OXCAML
+    | Ttyp_alias(typ, var, _layout) -> (
+      (* TODO: presumably we want the layout, eventually *)
 #else
-        Alias(typ, var)
+    | Ttyp_alias(typ, var) -> (
 #endif
+        let typ = read_core_type env container typ in
+#if defined OXCAML
+        match var with
+        | None -> typ
+        | Some var ->
+#endif
+#if OCAML_VERSION >= (5,2,0)
+          Alias(typ, var.txt)
+#else
+          Alias(typ, var)
+#endif
+        )
     | Ttyp_variant(fields, closed, present) ->
         let open TypeExpr.Polymorphic_variant in
         let elements =
@@ -142,7 +166,13 @@ let rec read_core_type env container ctyp =
         in
           Polymorphic_variant {kind; elements}
     | Ttyp_poly([], typ) -> read_core_type env container typ
+#if defined OXCAML
+    | Ttyp_poly(vars, typ) ->
+      (* TODO: presumably want the layouts, eventually *)
+      Poly(List.map fst vars, read_core_type env container typ)
+#else
     | Ttyp_poly(vars, typ) -> Poly(vars, read_core_type env container typ)
+#endif
 #if OCAML_VERSION >= (5,4,0)
     | Ttyp_package {tpt_path = pack_path; tpt_cstrs=pack_fields; _} ->
 #else
@@ -163,6 +193,12 @@ let rec read_core_type env container ctyp =
     | Ttyp_open (_p,_l,t) ->
       (* TODO: adjust model *)
       read_core_type env container t
+#endif
+#if defined OXCAML
+    | Ttyp_quote typ -> Quote (read_core_type env container typ)
+    | Ttyp_splice typ -> Splice (read_core_type env container typ)
+    | Ttyp_call_pos -> Constr(Env.Path.read_type env.ident_env Predef.path_lexing_position, [])
+    | Ttyp_of_kind _ -> assert false
 #endif
 
 let read_value_description env parent vd =
@@ -185,8 +221,14 @@ let read_type_parameter (ctyp, var_and_injectivity)  =
   let open TypeDecl in
   let desc =
     match ctyp.ctyp_desc with
+#if defined OXCAML
+    (* TODO: presumably we want the layouts below, eventually *)
+    | Ttyp_var (None, _layout) -> Any
+    | Ttyp_var (Some s, _layout) -> Var s
+#else
     | Ttyp_any -> Any
     | Ttyp_var s -> Var s
+#endif
     | _ -> assert false
   in
   let variance, injectivity =
@@ -214,13 +256,29 @@ let read_type_parameter (ctyp, var_and_injectivity)  =
   in
     {desc; variance; injectivity}
 
+#if defined OXCAML
+let is_mutable = Types.is_mutable
+#else
+let is_mutable ld = ld = Mutable
+#endif
+
 let read_label_declaration env parent label_parent ld =
   let open TypeDecl.Field in
   let open Odoc_model.Names in
   let name = Ident.name ld.ld_id in
   let id = Identifier.Mk.field(parent, FieldName.make_std name) in
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent ld.ld_attributes in
-  let mutable_ = (ld.ld_mutable = Mutable) in
+  let mutable_ = is_mutable ld.ld_mutable in
+  let type_ = read_core_type env label_parent ld.ld_type in
+    {id; doc; mutable_; type_}
+
+let read_unboxed_label_declaration env parent label_parent ld =
+  let open TypeDecl.UnboxedField in
+  let open Odoc_model.Names in
+  let name = Ident.name ld.ld_id in
+  let id = Identifier.Mk.unboxed_field(parent, UnboxedFieldName.make_std name) in
+  let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent ld.ld_attributes in
+  let mutable_ = is_mutable ld.ld_mutable in
   let type_ = read_core_type env label_parent ld.ld_type in
     {id; doc; mutable_; type_}
 
@@ -231,7 +289,12 @@ let read_constructor_declaration_arguments env parent label_parent arg =
   Tuple (List.map (read_core_type env label_parent) arg)
 #else
   match arg with
-  | Cstr_tuple args -> Tuple (List.map (read_core_type env label_parent) args)
+  | Cstr_tuple args ->
+#if defined OXCAML
+      Tuple (List.map (fun arg -> read_core_type env label_parent arg.ca_type) args)
+#else
+      Tuple (List.map (fun arg -> read_core_type env label_parent arg) args)
+#endif
   | Cstr_record lds ->
       Record (List.map (read_label_declaration env parent label_parent) lds)
 #endif
@@ -261,6 +324,14 @@ let read_type_kind env parent =
       let lbls =
         List.map (read_label_declaration env parent label_parent) lbls in
           Some (Record lbls)
+#if defined OXCAML
+    | Ttype_record_unboxed_product lbls ->
+      let parent = (parent :> Identifier.UnboxedFieldParent.t) in
+      let label_parent = (parent :> Identifier.LabelParent.t) in
+      let lbls =
+        List.map (read_unboxed_label_declaration env parent label_parent) lbls in
+          Some (Record_unboxed_product lbls)
+#endif
     | Ttype_open -> Some Extensible
 
 let read_type_equation env container decl =
@@ -400,8 +471,13 @@ let rec read_class_type_field env parent ctf =
       | Some doc -> Some (Comment doc)
 
 and read_self_type env container typ =
-  if typ.ctyp_desc = Ttyp_any then None
-  else Some (read_core_type env container typ)
+  match typ.ctyp_desc with
+#if defined OXCAML
+  | Ttyp_var (None, _) -> None
+#else
+  | Ttyp_any -> None
+#endif
+  | _ -> Some (read_core_type env container typ)
 
 and read_class_signature env parent label_parent cltyp =
   let open ClassType in
@@ -597,6 +673,16 @@ and read_module_type env parent label_parent mty =
           in
         decl
     | Tmty_alias _ -> assert false
+#if defined OXCAML
+    | Tmty_strengthen (mty, path, _) ->
+      let mty = read_module_type env parent label_parent mty in
+      let s_path = Env.Path.read_module env.ident_env path in
+      match Odoc_model.Lang.umty_of_mty mty with
+      | Some s_expr ->
+          (* We always strengthen with aliases *)
+          Strengthen {s_expr; s_path; s_aliasable = true; s_expansion = None}
+      | None -> failwith "invalid Tmty_strengthen"
+#endif
 
 (** Like [read_module_type] but handle the canonical tag in the top-comment. If
     [canonical] is [Some _], no tag is expected in the top-comment. *)
@@ -724,7 +810,11 @@ and read_signature_item env parent item =
         [
           Open (read_open env parent o)
         ]
+#if defined OXCAML
+    | Tsig_include (incl, _) ->
+#else
     | Tsig_include incl ->
+#endif
         read_include env parent incl
     | Tsig_class cls ->
         read_class_descriptions env parent cls
@@ -786,11 +876,17 @@ and read_include env parent incl =
   let expr = read_module_type env include_parent include_container incl.incl_mod in
   let umty = Odoc_model.Lang.umty_of_mty expr in 
   let expansion = { content; shadowed; } in
+#if defined OXCAML
+  match umty, incl.incl_kind with
+  | Some uexpr, Tincl_structure ->
+#else
   match umty with
   | Some uexpr ->
+#endif
     let decl = Include.ModuleType uexpr in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
   | _ ->
+    (* TODO: Handle [include functor] *)
     content.items
 
 and read_open env parent o =

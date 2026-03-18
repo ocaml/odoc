@@ -145,6 +145,16 @@ and moduletype_typeof_t =
       F ("t_expansion", (fun t -> t.t_expansion), Option simple_expansion);
     ]
 
+and moduletype_strengthen_t : Lang.ModuleType.strengthen_t t =
+  let open Lang.ModuleType in
+  Record
+    [
+      F ("s_expansion", (fun t -> t.s_expansion), Option simple_expansion);
+      F ("s_expr", (fun t -> t.s_expr), moduletype_u_expr);
+      F ("s_path", (fun t -> (t.s_path :> Paths.Path.t)), path);
+      F ("s_aliasable", (fun t -> t.s_aliasable), bool);
+    ]
+
 and moduletype_expr =
   let open Lang.ModuleType in
   Variant
@@ -154,7 +164,8 @@ and moduletype_expr =
     | Functor (x1, x2) ->
         C ("Functor", (x1, x2), Pair (functorparameter_t, moduletype_expr))
     | With t -> C ("With", t, moduletype_with_t)
-    | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t))
+    | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t)
+    | Strengthen x -> C ("Strengthen", x, moduletype_strengthen_t))
 
 and moduletype_u_expr =
   let open Lang.ModuleType.U in
@@ -171,7 +182,12 @@ and moduletype_u_expr =
         C
           ( "TypeOf",
             (t, (o :> Paths.Path.t)),
-            Pair (moduletype_type_of_desc, path) ))
+            Pair (moduletype_type_of_desc, path) )
+    | Strengthen (e, x, a) ->
+        C
+          ( "Strengthen",
+            (e, (x :> Paths.Path.t), a),
+            Triple (moduletype_u_expr, path, bool) ))
 
 and moduletype_t =
   let open Lang.ModuleType in
@@ -309,6 +325,16 @@ and typedecl_field =
       F ("type_", (fun t -> t.type_), typeexpr_t);
     ]
 
+and typedecl_unboxed_field =
+  let open Lang.TypeDecl.UnboxedField in
+  Unboxed_record
+    [
+      UF ("id", (fun t -> t.id), identifier);
+      UF ("doc", (fun t -> t.doc), docs);
+      UF ("mutable_", (fun t -> t.mutable_), bool);
+      UF ("type_", (fun t -> t.type_), typeexpr_t);
+    ]
+
 and typedecl_constructor_argument =
   let open Lang.TypeDecl.Constructor in
   T.Variant
@@ -332,6 +358,8 @@ and typedecl_representation =
     (function
     | Variant x -> C ("Variant", x, List typedecl_constructor)
     | Record x -> C ("Record", x, List typedecl_field)
+    | Record_unboxed_product x ->
+        C ("Record_unboxed_product", x, List typedecl_unboxed_field)
     | Extensible -> C0 "Extensible")
 
 and typedecl_variance =
@@ -630,6 +658,8 @@ and typeexpr_t =
             (x1, x2, x3),
             Triple (Option typeexpr_label, typeexpr_t, typeexpr_t) )
     | Tuple x -> C ("Tuple", x, List (Pair (Option string, typeexpr_t)))
+    | Unboxed_tuple x ->
+        C ("Unboxed_tuple", x, List (Pair (Option string, typeexpr_t)))
     | Constr (x1, x2) ->
         C ("Constr", ((x1 :> Paths.Path.t), x2), Pair (path, List typeexpr_t))
     | Polymorphic_variant x ->
@@ -638,6 +668,8 @@ and typeexpr_t =
     | Class (x1, x2) ->
         C ("Class", ((x1 :> Paths.Path.t), x2), Pair (path, List typeexpr_t))
     | Poly (x1, x2) -> C ("Poly", (x1, x2), Pair (List string, typeexpr_t))
+    | Quote x -> C ("Quote", x, typeexpr_t)
+    | Splice x -> C ("Splice", x, typeexpr_t)
     | Package x -> C ("Package", x, typeexpr_package))
 
 (** {3 Compilation_unit} *)

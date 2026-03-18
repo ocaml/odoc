@@ -231,6 +231,7 @@ module Anchor = struct
     | `Val
     | `Constructor
     | `Field
+    | `UnboxedField
     | `SourceAnchor ]
 
   let string_of_kind : kind -> string = function
@@ -244,6 +245,7 @@ module Anchor = struct
     | `Val -> "val"
     | `Constructor -> "constructor"
     | `Field -> "field"
+    | `UnboxedField -> "unboxed-field"
     | `SourceAnchor -> "source-anchor"
 
   let pp_kind fmt kind = Format.fprintf fmt "%s" (string_of_kind kind)
@@ -357,6 +359,11 @@ module Anchor = struct
         let page = from_identifier (parent :> Identifier.t) in
         let kind = `Field in
         let suffix = FieldName.to_string name in
+        add_suffix ~kind page suffix
+    | { iv = `UnboxedField (parent, name); _ } ->
+        let page = from_identifier (parent :> Identifier.t) in
+        let kind = `UnboxedField in
+        let suffix = UnboxedFieldName.to_string name in
         add_suffix ~kind page suffix
     | { iv = `Label (parent, anchor); _ } -> (
         let str_name = LabelName.to_string anchor in

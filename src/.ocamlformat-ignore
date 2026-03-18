@@ -1,14 +1,15 @@
 document/*.cppo.ml
-loader/*.cppo.ml
 loader/cmi.ml
 loader/cmi.mli
 loader/cmt.ml
 loader/cmti.ml
 loader/doc_attr.ml
+loader/ident_env.ml
 loader/implementation.ml
-loader/typedtree_traverse.ml
 loader/lookup_def.ml
 loader/lookup_def.mli
+loader/odoc_loader.ml
+loader/typedtree_traverse.ml
 syntax_highlighter/syntax_highlighter.ml
 model/*.cppo.ml
 odoc/*.cppo.ml

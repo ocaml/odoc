@@ -49,7 +49,7 @@ let rec shape_of_id env :
     | `ClassType (parent, name) ->
         proj parent Kind.Class_type (TypeName.to_string_unsafe name)
     | `Page _ | `LeafPage _ | `Label _
-    | `Constructor _ | `Field _ | `Method _ | `InstanceVariable _ | `Parameter _
+    | `Constructor _ | `Field _ | `UnboxedField _ | `Method _ | `InstanceVariable _ | `Parameter _
       ->
         (* Not represented in shapes. *)
         None
@@ -118,6 +118,9 @@ let unit_of_uid uid =
   | Item { comp_unit; _ } -> Some comp_unit
   | Predef _ -> None
   | Internal -> None
+#if defined OXCAML
+  | Unboxed_version _ -> None
+#endif
 
 #if OCAML_VERSION >= (5,2,0)
 let rec traverse_aliases = function
@@ -155,6 +158,14 @@ let lookup_shape : Env.t -> Shape.t -> Identifier.SourceLocation.t option =
           | Some (shape, _) -> Some shape
           | None -> None)
        | _ -> None
+#if defined OXCAML
+    let fuel () = Misc.Maybe_bounded.of_int 10
+    let fuel_for_compilation_units () = Misc.Maybe_bounded.Unbounded
+    let max_shape_reduce_steps_per_variable () = Misc.Maybe_bounded.Unbounded
+    let max_compilation_unit_depth () = Misc.Maybe_bounded.Unbounded
+    let projection_rules_for_merlin_enabled = true
+    let read_unit_shape ~diagnostics:_ ~unit_name = read_unit_shape ~unit_name
+#endif
   end) in
   let result = try Some (Reduce.reduce_for_uid Ocaml_env.empty query) with Not_found -> None in
   result >>= traverse_aliases >>= fun uid ->
