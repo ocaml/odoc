@@ -13,6 +13,7 @@
 - Fix URL remapping for page references (@jonludlam, #1395)
 - Fix #1396, which broke incrememntal builds (@jonludlam, #1402)
 - Ensure all warnings turn into errors with --warn-error (@jonludlam, #1402)
+- Fix missing parentheses for polymorphic arguments (@art-w, #1404)
 
 # 3.1.0
 
