@@ -2,7 +2,11 @@ open Odoc_utils
 
 type sexp = Sexplib0.Sexp.t = Atom of string | List of sexp list
 
-type enabledif = Min of string | Max of string | MinMax of string * string
+type enabledif =
+  | Min of string
+  | Max of string
+  | MinMax of string * string
+  | OxCaml
 
 type test_case = {
   input : Fpath.t;
@@ -49,6 +53,7 @@ module Dune = struct
                 ];
             ];
         ]
+    | Some OxCaml -> [ List [ Atom "enabled_if"; Atom "%{ocaml-config:ox}" ] ]
     | None -> []
 
   let run cmd = List (Atom "run" :: arg_list cmd)
