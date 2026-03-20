@@ -446,7 +446,7 @@ module Make (Syntax : SYNTAX) = struct
             ++ O.sp ++ type_expr dst
             (* ++ O.end_hv *)
           in
-          if not needs_parentheses then res else enclose ~l:"(" res ~r:")"
+          enclose_parens_if_needed res
       | Arrow (Some (RawOptional _ as lbl), _src, dst) ->
           let res =
             O.span
@@ -456,7 +456,7 @@ module Make (Syntax : SYNTAX) = struct
                  ++ O.txt " " ++ Syntax.Type.arrow)
             ++ O.sp ++ type_expr dst
           in
-          if not needs_parentheses then res else enclose ~l:"(" res ~r:")"
+          enclose_parens_if_needed res
       | Arrow (Some lbl, src, dst) ->
           let res =
             O.span
@@ -466,7 +466,7 @@ module Make (Syntax : SYNTAX) = struct
               ++ O.txt " " ++ Syntax.Type.arrow)
             ++ O.sp ++ type_expr dst
           in
-          if not needs_parentheses then res else enclose ~l:"(" res ~r:")"
+          enclose_parens_if_needed res
       | Tuple lst -> tuple ~needs_parentheses ~boxed:true lst
       | Unboxed_tuple lst -> tuple ~needs_parentheses ~boxed:false lst
       | Constr (path, args) ->
@@ -478,7 +478,9 @@ module Make (Syntax : SYNTAX) = struct
           format_type_path ~delim:`brackets args
             (Link.from_path (path :> Paths.Path.t))
       | Poly (polyvars, t) ->
-          O.txt ("'" ^ String.concat ~sep:" '" polyvars ^ ". ") ++ type_expr t
+          enclose_parens_if_needed
+          @@ O.txt ("'" ^ String.concat ~sep:" '" polyvars ^ ". ")
+             ++ type_expr t
       | Quote t -> O.span (O.txt "<[ " ++ O.box_hv (type_expr t) ++ O.txt " ]>")
       | Splice t -> O.span (O.txt "$" ++ type_expr ~needs_parentheses:true t)
       | Package pkg ->
