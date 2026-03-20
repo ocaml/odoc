@@ -11,7 +11,7 @@ Oxcaml
 .SH Documentation
 .sp 
 .nf 
-\f[CB]val\fR f : int \f[CB]\->\fR 'a\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR \f[CB]\->\fR unit
+\f[CB]val\fR f : int \f[CB]\->\fR ('a\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR) \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
