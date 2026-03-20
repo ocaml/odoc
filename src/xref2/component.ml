@@ -123,11 +123,14 @@ and TypeExpr : sig
     | Alias of t * string
     | Arrow of label option * t * t
     | Tuple of (string option * t) list
+    | Unboxed_tuple of (string option * t) list
     | Constr of Cpath.type_ * t list
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
     | Class of Cpath.class_type * t list
     | Poly of string list * t
+    | Quote of t
+    | Splice of t
     | Package of TypeExpr.Package.t
 end =
   TypeExpr
@@ -199,6 +202,7 @@ and ModuleType : sig
       | Signature of Signature.t
       | With of substitution list * expr
       | TypeOf of type_of_desc * Cpath.module_
+      | Strengthen of expr * Cpath.module_ * bool
   end
 
   type path_t = {
@@ -212,12 +216,20 @@ and ModuleType : sig
     w_expr : U.expr;
   }
 
+  type strengthen_t = {
+    s_expansion : simple_expansion option;
+    s_expr : U.expr;
+    s_path : Cpath.module_;
+    s_aliasable : bool;
+  }
+
   type expr =
     | Path of path_t
     | Signature of Signature.t
     | With of with_t
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
+    | Strengthen of strengthen_t
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
@@ -230,6 +242,15 @@ end =
 
 and TypeDecl : sig
   module Field : sig
+    type t = {
+      name : string;
+      doc : CComment.docs;
+      mutable_ : bool;
+      type_ : TypeExpr.t;
+    }
+  end
+
+  module UnboxedField : sig
     type t = {
       name : string;
       doc : CComment.docs;
@@ -253,6 +274,7 @@ and TypeDecl : sig
     type t =
       | Variant of Constructor.t list
       | Record of Field.t list
+      | Record_unboxed_product of UnboxedField.t list
       | Extensible
   end
 
@@ -510,6 +532,9 @@ module Element = struct
 
   type field = [ `Field of Identifier.Field.t * TypeDecl.Field.t ]
 
+  type unboxed_field =
+    [ `UnboxedField of Identifier.UnboxedField.t * TypeDecl.UnboxedField.t ]
+
   (* No component for pages yet *)
   type page = [ `Page of Identifier.Page.t * Odoc_model.Lang.Page.t ]
 
@@ -529,6 +554,7 @@ module Element = struct
     | extension
     | extension_decl
     | field
+    | unboxed_field
     | page ]
 
   let identifier : [< any ] -> Odoc_model.Paths.Identifier.t =
@@ -544,6 +570,7 @@ module Element = struct
     | `Constructor (id, _) -> (id :> t)
     | `Exception (id, _) -> (id :> t)
     | `Field (id, _) -> (id :> t)
+    | `UnboxedField (id, _) -> (id :> t)
     | `Extension (id, _, _) -> (id :> t)
     | `ExtensionDecl (id, _) -> (id :> t)
     | `Page (id, _) -> (id :> t)
@@ -697,6 +724,10 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (ty :> id)
           (FieldName.to_string name)
+    | `UnboxedField (ty, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (ty :> id)
+          (UnboxedFieldName.to_string name)
     | `Exception (p, name) ->
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (p :> id)
@@ -943,6 +974,9 @@ module Fmt = struct
         Format.fprintf ppf "%a with [%a]" (u_module_type_expr c) e
           (substitution_list c) subs
     | TypeOf (t_desc, _) -> module_type_type_of_desc c ppf t_desc
+    | Strengthen (e, p, _) ->
+        Format.fprintf ppf "%a with %a" (u_module_type_expr c) e (module_path c)
+          p
 
   and module_type_expr c ppf mt =
     let open ModuleType in
@@ -961,6 +995,9 @@ module Fmt = struct
     | TypeOf { t_desc = StructInclude p; _ } ->
         Format.fprintf ppf "module type of struct include %a end"
           (module_path c) p
+    | Strengthen { s_expr; s_path; _ } ->
+        Format.fprintf ppf "%a with %a" (u_module_type_expr c) s_expr
+          (module_path c) s_path
 
   and module_type_expansion c ppf mt =
     let open ModuleType in
@@ -996,6 +1033,7 @@ module Fmt = struct
     function
     | Variant cs -> fpp_list " | " "%a" (type_decl_constructor c) ppf cs
     | Record fs -> type_decl_fields c ppf fs
+    | Record_unboxed_product fs -> type_decl_unboxed_fields c ppf fs
     | Extensible -> Format.fprintf ppf ".."
 
   and type_decl_constructor c ppf t =
@@ -1018,8 +1056,16 @@ module Fmt = struct
     let mutable_ = if t.mutable_ then "mutable " else "" in
     fpf ppf "%s%s : %a" mutable_ t.name (type_expr c) t.type_
 
+  and type_decl_unboxed_field c ppf t =
+    let open TypeDecl.UnboxedField in
+    let mutable_ = if t.mutable_ then "mutable " else "" in
+    fpf ppf "%s%s : %a" mutable_ t.name (type_expr c) t.type_
+
   and type_decl_fields c ppf fs =
-    fpp_list "; " "{ %a }" (type_decl_field c) ppf fs
+    fpf ppf "{ %a }" (fpp_list "; " "%a" (type_decl_field c)) fs
+
+  and type_decl_unboxed_fields c ppf fs =
+    fpf ppf "#{ %a }" (fpp_list "; " "%a" (type_decl_unboxed_field c)) fs
 
   and type_constructor_params c ppf ts =
     fpp_list " * " "%a" (type_expr c) ppf ts
@@ -1148,6 +1194,7 @@ module Fmt = struct
         Format.fprintf ppf "%a(%a) -> %a" type_expr_label l (type_expr c) t1
           (type_expr c) t2
     | Tuple ts -> Format.fprintf ppf "(%a)" (type_labeled_tuple c) ts
+    | Unboxed_tuple ts -> Format.fprintf ppf "#(%a)" (type_labeled_tuple c) ts
     | Constr (p, args) -> (
         match args with
         | [] -> Format.fprintf ppf "%a" (type_path c) p
@@ -1161,6 +1208,8 @@ module Fmt = struct
     | Object x -> type_object c ppf x
     | Class (x, y) -> type_class c ppf (x, y)
     | Poly (_ss, _t) -> Format.fprintf ppf "(poly)"
+    | Quote t -> Format.fprintf ppf "(quote %a)" (type_expr c) t
+    | Splice t -> Format.fprintf ppf "(splice %a)" (type_expr c) t
     | Package x -> type_package c ppf x
 
   and resolved_module_path :
@@ -1627,6 +1676,11 @@ module Fmt = struct
           (model_resolved_reference c)
           (parent :> t)
           (FieldName.to_string name)
+    | `UnboxedField (parent, name) ->
+        Format.fprintf ppf "%a.#%s"
+          (model_resolved_reference c)
+          (parent :> t)
+          (UnboxedFieldName.to_string name)
     | `Extension (parent, name) ->
         Format.fprintf ppf "%a.%s"
           (model_resolved_reference c)
@@ -1723,6 +1777,10 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (FieldName.to_string name)
+    | `UnboxedField (parent, name) ->
+        Format.fprintf ppf "%a.%s" (model_reference c)
+          (parent :> t)
+          (UnboxedFieldName.to_string name)
     | `Extension (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
@@ -2172,6 +2230,8 @@ module Of_Lang = struct
         TypeDecl.Representation.Variant
           (List.map (type_decl_constructor ident_map) cs)
     | Record fs -> Record (List.map (type_decl_field ident_map) fs)
+    | Record_unboxed_product fs ->
+        Record_unboxed_product (List.map (type_decl_unboxed_field ident_map) fs)
     | Extensible -> Extensible
 
   and type_decl_constructor ident_map t =
@@ -2197,6 +2257,15 @@ module Of_Lang = struct
     let type_ = type_expression ident_map f.type_ in
     {
       TypeDecl.Field.name = Paths.Identifier.name f.id;
+      doc = docs ident_map f.doc;
+      mutable_ = f.mutable_;
+      type_;
+    }
+
+  and type_decl_unboxed_field ident_map f =
+    let type_ = type_expression ident_map f.type_ in
+    {
+      TypeDecl.UnboxedField.name = Paths.Identifier.name f.id;
       doc = docs ident_map f.doc;
       mutable_ = f.mutable_;
       type_;
@@ -2273,6 +2342,9 @@ module Of_Lang = struct
     | Tuple ts ->
         Tuple
           (List.map (fun (lbl, ty) -> (lbl, type_expression ident_map ty)) ts)
+    | Unboxed_tuple ts ->
+        Unboxed_tuple
+          (List.map (fun (l, t) -> (l, type_expression ident_map t)) ts)
     | Polymorphic_variant v ->
         Polymorphic_variant (type_expr_polyvar ident_map v)
     | Poly (s, ts) -> Poly (s, type_expression ident_map ts)
@@ -2281,6 +2353,8 @@ module Of_Lang = struct
         Class
           (class_type_path ident_map p, List.map (type_expression ident_map) ts)
     | Object o -> Object (type_object ident_map o)
+    | Quote t -> Quote (type_expression ident_map t)
+    | Splice t -> Splice (type_expression ident_map t)
     | Package p -> Package (type_package ident_map p)
 
   and module_decl ident_map m =
@@ -2418,6 +2492,10 @@ module Of_Lang = struct
         (* see comment in module_type_expr below *)
         let t_original_path = module_path (empty ()) t_original_path in
         TypeOf (t_desc, t_original_path)
+    | Strengthen (e, p, a) ->
+        let e = u_module_type_expr ident_map e in
+        let p = module_path ident_map p in
+        Strengthen (e, p, a)
 
   and module_type_expr ident_map m =
     let open Odoc_model in
@@ -2478,6 +2556,17 @@ module Of_Lang = struct
            _create_ a `TypeOf` expression as part of fragmap *)
         let t_original_path = module_path (empty ()) t_original_path in
         ModuleType.(TypeOf { t_desc; t_original_path; t_expansion })
+    | Lang.ModuleType.Strengthen s ->
+        let s' =
+          ModuleType.
+            {
+              s_expr = u_module_type_expr ident_map s.s_expr;
+              s_path = module_path ident_map s.s_path;
+              s_aliasable = s.s_aliasable;
+              s_expansion = option simple_expansion ident_map s.s_expansion;
+            }
+        in
+        ModuleType.Strengthen s'
 
   and module_type ident_map m =
     let expr =

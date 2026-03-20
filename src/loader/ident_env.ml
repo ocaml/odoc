@@ -118,9 +118,16 @@ and extract_signature_type_items_extract vis ~hidden item rest =
 #else
           | Types.Type_abstract _ -> []
 #endif
+#if defined OXCAML
+          | Type_record (_, _, _) -> []
+          | Type_record_unboxed_product (_, _, _) -> []
+#else
           | Type_record (_, _) -> []
+#endif
 #if OCAML_VERSION < (4,13,0)
           | Type_variant cstrs ->
+#elif defined OXCAML
+          | Type_variant (cstrs, _, _) ->
 #else
           | Type_variant (cstrs, _) ->
 #endif
@@ -210,6 +217,9 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
           Ttype_abstract -> []
         | Ttype_variant constrs -> List.map (fun c -> `Constructor (c.cd_id, decl.typ_id, Some c.cd_loc)) constrs
         | Ttype_record _ -> []
+#if defined OXCAML
+        | Ttype_record_unboxed_product _ -> []
+#endif
         | Ttype_open -> []
           )
       decls @ extract_signature_tree_items hide_item rest
@@ -249,7 +259,11 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
       [`Value (val_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest 
   | { sig_desc = Tsig_modtype mtd; sig_loc; _} :: rest ->
       [`ModuleType (mtd.mtd_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
+#if defined OXCAML
+  | {sig_desc = Tsig_include (incl, _); _ } :: rest ->
+#else
   | {sig_desc = Tsig_include incl; _ } :: rest ->
+#endif
       [`Include (extract_signature_type_items Exported (Compat.signature incl.incl_type))] @ extract_signature_tree_items hide_item rest
   | {sig_desc = Tsig_attribute attr; _ } :: rest ->
       let hide_item = if Doc_attr.is_stop_comment attr then not hide_item else hide_item in
@@ -302,12 +316,16 @@ let rec read_pattern hide_item pat =
   match pat.pat_desc with
 #if OCAML_VERSION < (5,2,0)
   | Tpat_var(id, loc) ->
+#elif defined OXCAML
+  | Tpat_var(id, loc, _, _, _) ->
 #else
   | Tpat_var(id, loc, _) ->
 #endif
     [`Value(id, hide_item, Some loc.loc)]
 #if OCAML_VERSION < (5,2,0)
   | Tpat_alias(pat, id, loc) ->
+#elif defined OXCAML
+  | Tpat_alias(pat, id, loc, _, _, _, _) ->
 #elif OCAML_VERSION < (5,4,0)
   | Tpat_alias(pat, id, loc, _) ->
 #else
@@ -316,12 +334,19 @@ let rec read_pattern hide_item pat =
     `Value(id, hide_item, Some loc.loc) :: read_pattern hide_item pat
   | Tpat_record(pats, _) -> 
       List.concat (List.map (fun (_, _, pat) -> read_pattern hide_item pat) pats)
+#if defined OXCAML
+  | Tpat_record_unboxed_product(pats, _) ->
+      List.concat (List.map (fun (_, _, pat) -> read_pattern hide_item pat) pats)
+#endif
 #if OCAML_VERSION < (4,13,0)
   | Tpat_construct(_, _, pats)
 #else
   | Tpat_construct(_, _, pats, _)
 #endif
-#if OCAML_VERSION < (5,4,0)
+#if defined OXCAML
+  | Tpat_array (_, _, pats) ->
+      List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
+#elif OCAML_VERSION < (5,4,0)
   | Tpat_array pats ->
     List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
 #else
@@ -329,10 +354,14 @@ let rec read_pattern hide_item pat =
     List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
 #endif
   | Tpat_tuple pats ->
-#if OCAML_VERSION < (5,4,0)
-     List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
-#else
+#if OCAML_VERSION >= (5,4,0) || defined OXCAML
      List.concat (List.map (fun (_lbl,pat) -> read_pattern hide_item pat) pats)
+#else
+     List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
+#endif
+#if defined OXCAML
+  | Tpat_unboxed_tuple pats ->
+      List.concat (List.map (fun (_, pat, _) -> read_pattern hide_item pat) pats)
 #endif
   | Tpat_or(pat, _, _)
   | Tpat_variant(_, Some pat, _)
@@ -356,6 +385,9 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
           Ttype_abstract -> []
         | Ttype_variant constrs -> List.map (fun c -> `Constructor (c.cd_id, decl.typ_id, Some c.cd_loc)) constrs
         | Ttype_record _ -> []
+#if defined OXCAML
+        | Ttype_record_unboxed_product _ -> []
+#endif
         | Ttype_open -> []
           ))
            decls @ extract_structure_tree_items hide_item rest
@@ -677,13 +709,20 @@ let find_class_identifier env id =
 let find_class_type_identifier env id =
   Ident.find_same id env.class_types
 
+let ident_is_global_or_predef id =
+#if defined OXCAML
+  Ident.is_global_or_predef id
+#else
+  Ident.persistent id
+#endif
+
 let is_shadowed
  env id =
     List.mem id env.shadowed
 module Path = struct
 
   let read_module_ident env id =
-    if Ident.persistent id then `Root (ModuleName.of_ident id)
+    if ident_is_global_or_predef id then `Root (ModuleName.of_ident id)
     else
       try find_module env id
       with Not_found -> assert false

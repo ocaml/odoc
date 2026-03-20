@@ -168,12 +168,16 @@ let rec substitute_vars vars t =
       Arrow (lbl, substitute_vars vars t1, substitute_vars vars t2)
   | Tuple ts ->
       Tuple (List.map (fun (lbl, ty) -> (lbl, substitute_vars vars ty)) ts)
+  | Unboxed_tuple ts ->
+      Unboxed_tuple (List.map (fun (l, t) -> (l, substitute_vars vars t)) ts)
   | Constr (p, ts) -> Constr (p, List.map (substitute_vars vars) ts)
   | Polymorphic_variant v ->
       Polymorphic_variant (substitute_vars_poly_variant vars v)
   | Object o -> Object (substitute_vars_type_object vars o)
   | Class (p, ts) -> Class (p, List.map (substitute_vars vars) ts)
   | Poly (strs, ts) -> Poly (strs, substitute_vars vars ts)
+  | Quote t -> Quote (substitute_vars vars t)
+  | Splice t -> Splice (substitute_vars vars t)
   | Package p -> Package (substitute_vars_package vars p)
 
 and substitute_vars_package vars p =
@@ -532,6 +536,8 @@ and type_decl_representation s t =
   match t with
   | Variant cs -> Variant (List.map (type_decl_constructor s) cs)
   | Record fs -> Record (List.map (type_decl_field s) fs)
+  | Record_unboxed_product fs ->
+      Record_unboxed_product (List.map (type_decl_unboxed_field s) fs)
   | Extensible -> t
 
 and type_decl_constructor s t =
@@ -591,6 +597,8 @@ and type_expr s t =
   | Alias (t, str) -> Alias (type_expr s t, str)
   | Arrow (lbl, t1, t2) -> Arrow (lbl, type_expr s t1, type_expr s t2)
   | Tuple ts -> Tuple (List.map (fun (lbl, ty) -> (lbl, type_expr s ty)) ts)
+  | Unboxed_tuple ts ->
+      Unboxed_tuple (List.map (fun (l, t) -> (l, type_expr s t)) ts)
   | Constr (p, ts) -> (
       match type_path s p with
       | Replaced (t, eq) ->
@@ -611,6 +619,8 @@ and type_expr s t =
   | Object o -> Object (type_object s o)
   | Class (p, ts) -> Class (class_type_path s p, List.map (type_expr s) ts)
   | Poly (strs, ts) -> Poly (strs, type_expr s ts)
+  | Quote t -> Quote (type_expr s t)
+  | Splice t -> Splice (type_expr s t)
   | Package p -> Package (type_package s p)
 
 and simple_expansion :
@@ -661,13 +671,18 @@ and u_module_type_expr s t =
           | With w -> With (w.w_substitutions, w.w_expr)
           | Functor _ ->
               (* non functor cannot be substituted away to a functor *)
-              assert false))
+              assert false
+          | Strengthen s -> Strengthen (s.s_expr, s.s_path, s.s_aliasable)))
   | Signature sg -> Signature (signature s sg)
   | With (subs, e) ->
       With
         (List.map (with_module_type_substitution s) subs, u_module_type_expr s e)
   | TypeOf (t_desc, t_original_path) ->
       TypeOf (module_type_type_of_desc s t_desc, t_original_path)
+  | Strengthen (expr, path, aliasable) ->
+      let expr = u_module_type_expr s expr in
+      let path = module_path s path in
+      Strengthen (expr, path, aliasable)
 
 and module_type_expr s t =
   let open Component.ModuleType in
@@ -694,6 +709,14 @@ and module_type_expr s t =
           t with
           t_desc = module_type_type_of_desc s t.t_desc;
           t_expansion = option_ simple_expansion s t.t_expansion;
+        }
+  | Strengthen { s_expr; s_path; s_aliasable; s_expansion } ->
+      Strengthen
+        {
+          s_expr = u_module_type_expr s s_expr;
+          s_path = module_path s s_path;
+          s_aliasable;
+          s_expansion = option_ simple_expansion s s_expansion;
         }
 
 and with_module_type_substitution s sub =
@@ -731,6 +754,10 @@ and module_substitution s m =
 
 and type_decl_field s f =
   let open Component.TypeDecl.Field in
+  { f with type_ = type_expr s f.type_ }
+
+and type_decl_unboxed_field s f =
+  let open Component.TypeDecl.UnboxedField in
   { f with type_ = type_expr s f.type_ }
 
 and type_decl_constructor_arg s a =

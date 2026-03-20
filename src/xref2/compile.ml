@@ -387,14 +387,7 @@ and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
   let open Include in
   match decl with
   | ModuleType expr ->
-      let rec is_elidable_with_u : Odoc_model.Lang.ModuleType.U.expr -> bool =
-        function
-        | Path _ -> false
-        | Signature _ -> true
-        | With (_, expr) -> is_elidable_with_u expr
-        | TypeOf _ -> false
-      in
-      if is_elidable_with_u expr then ModuleType expr
+      if is_elidable_with_module_type_u expr then ModuleType expr
       else ModuleType (u_module_type_expr env id expr)
   | Alias p -> Alias (module_path env p)
 
@@ -641,6 +634,7 @@ and module_type_map_subs env id cexpr subs =
       ->
         Some (`Module p)
     | TypeOf _ -> None
+    | Strengthen (e, _, _) -> find_parent e
   in
   match find_parent cexpr with
   | None -> None
@@ -685,6 +679,8 @@ and u_module_type_expr :
           | StructInclude p -> StructInclude (module_path env p)
         in
         TypeOf (t_desc, t_original_path)
+    | Strengthen (expr, path, aliasable) ->
+        Strengthen (inner expr, module_path env path, aliasable)
   in
   inner expr
 
@@ -751,6 +747,11 @@ and module_type_expr :
         | StructInclude p -> StructInclude (module_path env p)
       in
       TypeOf { t_desc; t_original_path; t_expansion }
+  | Strengthen { s_expr; s_path; s_aliasable; s_expansion } as e ->
+      let s_expansion = get_expansion s_expansion e in
+      let s_expr = u_module_type_expr env id s_expr in
+      let s_path = module_path env s_path in
+      Strengthen { s_expr; s_path; s_aliasable; s_expansion }
 
 and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->
@@ -787,10 +788,16 @@ and type_decl_representation :
   match r with
   | Variant cs -> Variant (List.map (type_decl_constructor env parent) cs)
   | Record fs -> Record (List.map (type_decl_field env parent) fs)
+  | Record_unboxed_product fs ->
+      Record_unboxed_product (List.map (type_decl_unboxed_field env parent) fs)
   | Extensible -> Extensible
 
 and type_decl_field env parent f =
   let open TypeDecl.Field in
+  { f with type_ = type_expression env parent f.type_ }
+
+and type_decl_unboxed_field env parent f =
+  let open TypeDecl.UnboxedField in
   { f with type_ = type_expression env parent f.type_ }
 
 and type_decl_constructor_argument env parent c =
@@ -918,6 +925,9 @@ and type_expression : Env.t -> Id.LabelParent.t -> _ -> _ =
   | Tuple ts ->
       Tuple
         (List.map (fun (lbl, ty) -> (lbl, type_expression env parent ty)) ts)
+  | Unboxed_tuple ts ->
+      Unboxed_tuple
+        (List.map (fun (l, t) -> (l, type_expression env parent t)) ts)
   | Constr (path, ts') -> (
       let cp = Component.Of_Lang.(type_path (empty ()) path) in
       let ts = List.map (type_expression env parent) ts' in
@@ -943,6 +953,8 @@ and type_expression : Env.t -> Id.LabelParent.t -> _ -> _ =
           Class (`Resolved p, ts')
       | _ -> Class (path, ts'))
   | Poly (strs, t) -> Poly (strs, type_expression env parent t)
+  | Quote t -> Quote (type_expression env parent t)
+  | Splice t -> Splice (type_expression env parent t)
   | Package p -> Package (type_expression_package env parent p)
 
 let compile ~filename env compilation_unit =

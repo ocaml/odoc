@@ -118,11 +118,14 @@ and TypeExpr : sig
     | Alias of t * string
     | Arrow of label option * t * t
     | Tuple of (string option * t) list
+    | Unboxed_tuple of (string option * t) list
     | Constr of Cpath.type_ * t list
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
     | Class of Cpath.class_type * t list
     | Poly of string list * t
+    | Quote of t
+    | Splice of t
     | Package of TypeExpr.Package.t
 end
 
@@ -190,6 +193,7 @@ and ModuleType : sig
       | Signature of Signature.t
       | With of substitution list * expr
       | TypeOf of type_of_desc * Cpath.module_
+      | Strengthen of expr * Cpath.module_ * bool
   end
 
   type path_t = {
@@ -203,12 +207,20 @@ and ModuleType : sig
     w_expr : U.expr;
   }
 
+  type strengthen_t = {
+    s_expansion : simple_expansion option;
+    s_expr : U.expr;
+    s_path : Cpath.module_;
+    s_aliasable : bool;
+  }
+
   type expr =
     | Path of path_t
     | Signature of Signature.t
     | With of with_t
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
+    | Strengthen of strengthen_t
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
@@ -220,6 +232,15 @@ end
 
 and TypeDecl : sig
   module Field : sig
+    type t = {
+      name : string;
+      doc : CComment.docs;
+      mutable_ : bool;
+      type_ : TypeExpr.t;
+    }
+  end
+
+  module UnboxedField : sig
     type t = {
       name : string;
       doc : CComment.docs;
@@ -243,6 +264,7 @@ and TypeDecl : sig
     type t =
       | Variant of Constructor.t list
       | Record of Field.t list
+      | Record_unboxed_product of UnboxedField.t list
       | Extensible
   end
 
@@ -486,6 +508,9 @@ module Element : sig
 
   type field = [ `Field of Identifier.Field.t * TypeDecl.Field.t ]
 
+  type unboxed_field =
+    [ `UnboxedField of Identifier.UnboxedField.t * TypeDecl.UnboxedField.t ]
+
   (* No component for pages yet *)
   type page = [ `Page of Identifier.Page.t * Odoc_model.Lang.Page.t ]
 
@@ -505,6 +530,7 @@ module Element : sig
     | extension
     | extension_decl
     | field
+    | unboxed_field
     | page ]
 
   val identifier : [< any ] -> Identifier.t

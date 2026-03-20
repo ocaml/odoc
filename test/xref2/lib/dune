@@ -2,10 +2,22 @@
  (targets common.ml)
  (deps
   (:x common.cppo.ml))
+ (enabled_if
+  (not %{ocaml-config:ox}))
  (action
   (chdir
    %{workspace_root}
    (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x} -o %{targets}))))
+
+(rule
+ (targets common.ml)
+ (deps
+  (:x common.cppo.ml))
+ (enabled_if %{ocaml-config:ox})
+ (action
+  (chdir
+   %{workspace_root}
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} -D "OXCAML" %{x} -o %{targets}))))
 
 (library
  (name odoc_xref_test)

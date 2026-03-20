@@ -1,0 +1,20 @@
+
+.TH Oxcaml 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR f : int \f[CB]\->\fR ('a\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR) \f[CB]\->\fR unit
+.fi 
+.br 
+.ti +2
+Polymorphic arguments require parenthesis
+.nf 
+
