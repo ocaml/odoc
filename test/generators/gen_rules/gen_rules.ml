@@ -67,6 +67,7 @@ let constraints =
     ("module_type_subst.mli", Min "4.13");
     ("class_comments.mli", Min "4.08");
     ("functor_ml.ml", Min "4.14");
+    ("oxcaml.mli", OxCaml);
   ]
 
 let test_cases_dir = Fpath.v "cases"
