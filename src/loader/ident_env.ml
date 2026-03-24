@@ -670,6 +670,13 @@ let add_parameter parent id name env =
   let parameters = Ident.add id oid env.parameters in
   { env with module_paths; modules; parameters }
 
+let add_module_arg parent id name env =
+  let oid = Odoc_model.Paths.Identifier.Mk.(parameter (parent, name)) in
+  let path = `Identifier (oid, false) in
+  let module_paths = Ident.add id path env.module_paths in
+  let modules = Ident.add id oid env.modules in
+  { env with module_paths; modules }, oid
+
 let find_module env id =
   Ident.find_same id env.module_paths
 

@@ -14,7 +14,7 @@ dev-repo: "git+https://github.com/ocaml/odoc.git"
 doc: "https://ocaml.github.io/odoc/odoc_parser"
 depends: [
   "dune" {>= "3.21"}
-  "ocaml" {>= "4.08.0" & < "5.5"}
+  "ocaml" {>= "4.08.0" & <= "5.5.1"}
   "astring"
   "camlp-streams"
   "ppx_expect" {with-test}

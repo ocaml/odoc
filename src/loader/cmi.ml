@@ -303,7 +303,9 @@ let mark_type ty =
 #if OCAML_VERSION>=(5,5,0)
       | Tpackage p ->
           List.iter (fun (_,x) -> loop visited x) p.pack_constraints
-      | Tfunctor _ -> ()
+      | Tfunctor (_lbl, _id, pkg, ret_type) ->
+          List.iter (fun (_,x) -> loop visited x) pkg.pack_constraints;
+          loop visited ret_type
 #elif OCAML_VERSION>=(5,4,0)
       | Tpackage p ->
           List.iter (fun (_,x) -> loop visited x) p.pack_cstrs
@@ -573,25 +575,30 @@ let rec read_type_expr env typ =
       | Tpackage(p, frags, tyl) ->
         let eqs = List.combine frags tyl in
 #endif
-          let open TypeExpr.Package in
-          let path = Env.Path.read_module_type env.ident_env p in
-          let substitutions =
-            List.map
-              (fun (frag,typ) ->
-                 let frag = Env.Fragment.read_type frag in
-                 let typ = read_type_expr env typ in
-                   (frag, typ))
-              eqs
-          in
-
-          Package {path; substitutions}
+        let package = read_package env eqs p in
+        Package package
 #if OCAML_VERSION<(4,13,0)
       | Tsubst typ -> read_type_expr env typ
 #else
       | Tsubst (typ,_) -> read_type_expr env typ
 #endif
 #if OCAML_VERSION >= (5,5,0)
-      | Tfunctor _ -> Any
+  | Tfunctor (lbl, id, pkg, ret_type) ->
+    let lbl = read_label lbl in
+    let parent = Identifier.fresh_module_arg_parent () in
+    let id = Ocaml_ident.of_unscoped id in
+    let e', id =
+      Env.add_module_arg parent id (ModuleName.hidden_of_ident id)
+        env.ident_env
+    in
+    let env = {env with ident_env = e'} in
+    let ret = read_type_expr env ret_type in
+    let eqs =
+      List.filter_map (fun (l,ty) -> Option.map (fun x -> x, ty) (Longident.unflatten l)) pkg.pack_constraints
+    in
+    let package = read_package env eqs pkg.pack_path in
+    Arrow_functor(lbl, {id ; package}, ret)
+
 #endif
       | Tlink _ -> assert false
 #if defined OXCAML
@@ -604,6 +611,20 @@ let rec read_type_expr env typ =
       | None -> typ
       | Some name -> Alias(typ, name)
   end
+
+and read_package env eqs p =
+  let open TypeExpr in
+  let open TypeExpr.Package in
+  let path = Env.Path.read_module_type env.ident_env p in
+  let substitutions =
+    List.map
+      (fun (frag,typ) ->
+         let frag = Env.Fragment.read_type frag in
+         let typ = read_type_expr env typ in
+         (frag, typ))
+      eqs
+  in
+  {path; substitutions}
 
 and read_row env _px row =
   let open TypeExpr in

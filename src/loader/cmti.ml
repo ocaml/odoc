@@ -180,17 +180,8 @@ let rec read_core_type env container ctyp =
 #else
     | Ttyp_package {pack_path; pack_fields; _} ->
 #endif
-        let open TypeExpr.Package in
-        let path = Env.Path.read_module_type env.ident_env pack_path in
-        let substitutions =
-          List.map
-            (fun (frag, typ) ->
-               let frag = Env.Fragment.read_type frag.Location.txt in
-               let typ = read_core_type env container typ in
-               (frag, typ))
-            pack_fields
-        in
-          Package {path; substitutions}
+        let pkg = read_package env container pack_path pack_fields in
+        Package pkg
 #if OCAML_VERSION >= (5,2,0)
     | Ttyp_open (_p,_l,t) ->
       (* TODO: adjust model *)
@@ -202,10 +193,31 @@ let rec read_core_type env container ctyp =
     | Ttyp_call_pos -> Constr(Env.Path.read_type env.ident_env Predef.path_lexing_position, [])
     | Ttyp_of_kind _ -> assert false
 #elif OCAML_VERSION >= (5,5,0)
-    | Ttyp_functor _ ->
-      (* TODO: adjust model *)
-      Any
+  | Ttyp_functor (lbl, id, pkg, ret_type) ->
+    let lbl = read_label lbl in
+    let parent = Identifier.fresh_module_arg_parent () in
+    let e', id =
+      Env.add_module_arg parent id.txt (ModuleName.hidden_of_ident id.txt)
+        env.ident_env
+    in
+      let env = {env with ident_env = e'} in
+      let ret = read_core_type env container ret_type in
+      let package = read_package env container pkg.tpt_path pkg.tpt_constraints in
+    Arrow_functor(lbl, {id ; package}, ret)
 #endif
+
+and read_package env container pack_path pack_fields =
+  let open TypeExpr.Package in
+  let path = Env.Path.read_module_type env.ident_env pack_path in
+  let substitutions =
+    List.map
+      (fun (frag, typ) ->
+         let frag = Env.Fragment.read_type frag.Location.txt in
+         let typ = read_core_type env container typ in
+         (frag, typ))
+      pack_fields
+  in
+  {path; substitutions}
 
 let read_value_description env parent vd =
   let open Signature in

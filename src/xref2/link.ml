@@ -1106,6 +1106,11 @@ and type_expression_object env parent visited o =
   in
   { o with fields = List.map field o.fields }
 
+and type_expression_module_arg env parent visited m_arg =
+  let open TypeExpr.Module in
+  let package = type_expression_package env parent visited m_arg.package in
+  { m_arg with package }
+
 and type_expression_package env parent visited p =
   let open TypeExpr.Package in
   let substitution (frag, t) =
@@ -1207,6 +1212,12 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
   | Quote t -> Quote (type_expression env parent visited t)
   | Splice t -> Splice (type_expression env parent visited t)
   | Package p -> Package (type_expression_package env parent visited p)
+  | Arrow_functor (lbl, m_arg, t) ->
+      let new_env = Env.add_module_arg m_arg env in
+      Arrow_functor
+        ( lbl,
+          type_expression_module_arg env parent visited m_arg,
+          type_expression new_env parent visited t )
 
 let link ~filename x y =
   Lookup_failures.catch_failures ~filename (fun () ->

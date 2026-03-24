@@ -179,6 +179,13 @@ let rec substitute_vars vars t =
   | Quote t -> Quote (substitute_vars vars t)
   | Splice t -> Splice (substitute_vars vars t)
   | Package p -> Package (substitute_vars_package vars p)
+  | Arrow_functor (lbl, m_arg, t) ->
+      Arrow_functor
+        (lbl, substitute_vars_module_arg vars m_arg, substitute_vars vars t)
+
+and substitute_vars_module_arg vars m_arg =
+  let package = substitute_vars_package vars m_arg.package in
+  { m_arg with package }
 
 and substitute_vars_package vars p =
   let open TypeExpr.Package in
@@ -622,6 +629,12 @@ and type_expr s t =
   | Quote t -> Quote (type_expr s t)
   | Splice t -> Splice (type_expr s t)
   | Package p -> Package (type_package s p)
+  | Arrow_functor (lbl, m_arg, t) ->
+      Arrow_functor (lbl, type_module_arg s m_arg, type_expr s t)
+
+and type_module_arg s m_arg =
+  let package = type_package s m_arg.package in
+  { m_arg with package }
 
 and simple_expansion :
     t ->

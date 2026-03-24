@@ -23,6 +23,13 @@ val empty : unit -> t
 val add_parameter :
   Paths.Identifier.Signature.t -> Ident.t -> Names.ModuleName.t -> t -> t
 
+val add_module_arg :
+  Paths.Identifier.Signature.t ->
+  Ident.t ->
+  Names.ModuleName.t ->
+  t ->
+  t * Odoc_model.Paths.Identifier.FunctorParameter.t
+
 val handle_signature_type_items :
   Paths.Identifier.Signature.t -> Compat.signature -> t -> t
 

@@ -1017,6 +1017,11 @@ and type_expr_package map (parent : Identifier.LabelParent.t) t =
         t.substitutions;
   }
 
+and type_expr_module_arg map (parent : Identifier.LabelParent.t)
+    (t : Component.TypeExpr.Module.t) =
+  let id = List.assoc t.id map.functor_parameter in
+  { Lang.TypeExpr.Module.id; package = type_expr_package map parent t.package }
+
 and type_expr map (parent : Identifier.LabelParent.t) (t : Component.TypeExpr.t)
     : Odoc_model.Lang.TypeExpr.t =
   try
@@ -1043,6 +1048,9 @@ and type_expr map (parent : Identifier.LabelParent.t) (t : Component.TypeExpr.t)
     | Quote t -> Quote (type_expr map parent t)
     | Splice t -> Splice (type_expr map parent t)
     | Package p -> Package (type_expr_package map parent p)
+    | Arrow_functor (lbl, m_arg, t) ->
+        Arrow_functor
+          (lbl, type_expr_module_arg map parent m_arg, type_expr map parent t)
   with e ->
     let bt = Printexc.get_backtrace () in
     Format.fprintf Format.err_formatter

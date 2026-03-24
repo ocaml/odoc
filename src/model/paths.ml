@@ -659,6 +659,16 @@ module Identifier = struct
     let name = Printf.sprintf "include%d_" !include_parent_counter in
     (Mk.module_ (parent, ModuleName.make_std name) :> Signature.t)
 
+  let module_arg_parent_counter = ref 0
+
+  (* Create a synthetic parent identifier for module arguments, which can't have
+     unique identifier, as they can be introduced multiple times with the same
+     name in a single type expression . *)
+  let fresh_module_arg_parent () : Signature.t =
+    incr module_arg_parent_counter;
+    let name = Printf.sprintf "module_arg_%d_" !module_arg_parent_counter in
+    (Mk.root (None, ModuleName.hidden_of_string name) :> Signature.t)
+
   module Hashtbl = struct
     module Any = Hashtbl.Make (Any)
     module ContainerPage = Hashtbl.Make (ContainerPage)
@@ -684,7 +694,7 @@ module Path = struct
       | `Identifier { iv = `Module (_, m); _ } when Names.ModuleName.is_hidden m
         ->
           true
-      | `Identifier _ -> false
+      | `Identifier id -> Identifier.is_hidden id
       | `Canonical (_, `Resolved _) -> false
       | `Canonical (x, _) ->
           (not weak_canonical_test) && inner (x : module_ :> any)
@@ -727,7 +737,7 @@ module Path = struct
     let open Paths_types.Path in
     function
     | `Resolved r -> is_resolved_hidden ~weak_canonical_test:false r
-    | `Identifier (_, hidden) -> hidden
+    | `Identifier (id, hidden) -> hidden || Identifier.is_hidden id
     | `Substituted r -> is_path_hidden (r :> any)
     | `SubstitutedMT r -> is_path_hidden (r :> any)
     | `SubstitutedT r -> is_path_hidden (r :> any)

@@ -543,6 +543,30 @@
   (>= %{ocaml_version} 4.04)))
 
 (rule
+ (target ocaml_55.cmti)
+ (package odoc)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/ocaml_55.mli}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
+ (target ocaml_55.odoc)
+ (package odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:ocaml_55.cmti}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
+ (target ocaml_55.odocl)
+ (package odoc)
+ (action
+  (run odoc link -o %{target} %{dep:ocaml_55.odoc}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
  (target ocamlary.cmti)
  (package odoc)
  (action
@@ -7377,6 +7401,200 @@
   (package odoc)
   (action
    (diff nested.targets nested.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ html
+ (rule
+  (targets
+   Ocaml_55.html.gen
+   Ocaml_55-module-type-X.html.gen
+   Ocaml_55-module-type-Y.html.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../ocaml_55.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_55.html Ocaml_55.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_55-module-type-X.html Ocaml_55-module-type-X.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_55-module-type-Y.html Ocaml_55-module-type-Y.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ html
+ (rule
+  (target ocaml_55.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    ocaml_55.targets.gen
+    (run odoc html-targets -o . %{dep:../ocaml_55.odocl} --flat)))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff ocaml_55.targets ocaml_55.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ latex
+ (rule
+  (targets Ocaml_55.tex.gen)
+  (package odoc)
+  (action
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../ocaml_55.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_55.tex Ocaml_55.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ latex
+ (rule
+  (target ocaml_55.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    ocaml_55.targets.gen
+    (run odoc latex-targets -o . %{dep:../ocaml_55.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff ocaml_55.targets ocaml_55.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ man
+ (rule
+  (targets Ocaml_55.3o.gen)
+  (package odoc)
+  (action
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../ocaml_55.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_55.3o Ocaml_55.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ man
+ (rule
+  (target ocaml_55.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    ocaml_55.targets.gen
+    (run odoc man-targets -o . %{dep:../ocaml_55.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff ocaml_55.targets ocaml_55.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ markdown
+ (rule
+  (targets
+   Ocaml_55.md.gen
+   Ocaml_55-module-type-X.md.gen
+   Ocaml_55-module-type-Y.md.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../ocaml_55.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_55.md Ocaml_55.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_55-module-type-X.md Ocaml_55-module-type-X.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_55-module-type-Y.md Ocaml_55-module-type-Y.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ markdown
+ (rule
+  (target ocaml_55.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    ocaml_55.targets.gen
+    (run odoc markdown-targets -o . %{dep:../ocaml_55.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff ocaml_55.targets ocaml_55.targets.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04))))
 

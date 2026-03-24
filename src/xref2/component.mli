@@ -110,6 +110,10 @@ and TypeExpr : sig
     type t = { path : Cpath.module_type; substitutions : substitution list }
   end
 
+  module Module : sig
+    type t = { package : Package.t; id : Ident.module_ }
+  end
+
   type label = Odoc_model.Lang.TypeExpr.label
 
   type t =
@@ -127,6 +131,7 @@ and TypeExpr : sig
     | Quote of t
     | Splice of t
     | Package of TypeExpr.Package.t
+    | Arrow_functor of label option * Module.t * t
 end
 
 and Extension : sig

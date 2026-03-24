@@ -364,6 +364,11 @@ module Identifier : sig
       type expression. Uses a lowercase module name (illegal in normal OCaml) to
       ensure no clashes with real identifiers. Each call returns a fresh
       identifier. *)
+
+  val fresh_module_arg_parent : unit -> Signature.t
+  (** Create a synthetic parent identifier for module arguments, which can't
+      have unique identifier, as they can be introduced multiple times with the
+      same name in a single type expression . *)
 end
 
 (** Normal OCaml paths (i.e. the ones present in types) *)
