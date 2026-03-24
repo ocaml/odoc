@@ -701,6 +701,21 @@ let add_functor_parameter : Lang.FunctorParameter.t -> t -> t =
         { elements = []; warnings_tag = None }
         t
 
+let add_module_arg : Lang.TypeExpr.Module.t -> t -> t =
+ fun p t ->
+  let id = (p.id :> Paths.Identifier.Path.Module.t) in
+  let m =
+    let expr =
+      Lang.ModuleType.Path { p_path = p.package.path; p_expansion = None }
+    in
+    let open Component.Of_Lang in
+    mk_functor_parameter (module_type_expr (empty ()) expr)
+  in
+  add_module id
+    (Component.Delayed.put_val m)
+    { elements = []; warnings_tag = None }
+    t
+
 let add_functor_args' :
     Paths.Identifier.Signature.t -> Component.ModuleType.expr -> t -> t =
   let open Component in

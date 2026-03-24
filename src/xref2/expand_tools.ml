@@ -69,6 +69,9 @@ let rec type_expr map t =
   | Package p -> Package (package map p)
   | Quote t -> Quote (type_expr map t)
   | Splice t -> Splice (type_expr map t)
+  | Arrow_functor (l, m_arg, t) ->
+      let m_arg = module_arg map m_arg in
+      Arrow_functor (l, m_arg, type_expr map t)
 
 and polymorphic_variant map pv =
   let open Lang.TypeExpr.Polymorphic_variant in
@@ -97,6 +100,10 @@ and package map p =
   let open Lang.TypeExpr.Package in
   let subst (frag, t) = (frag, type_expr map t) in
   { p with substitutions = List.map subst p.substitutions }
+
+and module_arg map m =
+  let open Lang.TypeExpr.Module in
+  { m with package = package map m.package }
 
 let collapse_eqns eqn1 eqn2 params =
   let open Lang.TypeDecl in

@@ -838,6 +838,10 @@ and type_expression_object env parent o =
   in
   { o with fields = List.map field o.fields }
 
+and type_expression_module_arg env parent m_arg =
+  let open TypeExpr.Module in
+  { m_arg with package = type_expression_package env parent m_arg.package }
+
 and type_expression_package env parent p =
   let open TypeExpr.Package in
   let cp = Component.Of_Lang.(module_type_path (empty ()) p.path) in
@@ -956,6 +960,12 @@ and type_expression : Env.t -> Id.LabelParent.t -> _ -> _ =
   | Quote t -> Quote (type_expression env parent t)
   | Splice t -> Splice (type_expression env parent t)
   | Package p -> Package (type_expression_package env parent p)
+  | Arrow_functor (lbl, m_arg, t) ->
+      let new_env = Env.add_module_arg m_arg env in
+      Arrow_functor
+        ( lbl,
+          type_expression_module_arg env parent m_arg,
+          type_expression new_env parent t )
 
 let compile ~filename env compilation_unit =
   Lookup_failures.catch_failures ~filename (fun () -> unit env compilation_unit)

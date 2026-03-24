@@ -485,19 +485,36 @@ module Make (Syntax : SYNTAX) = struct
       | Splice t -> O.span (O.txt "$" ++ type_expr ~needs_parentheses:true t)
       | Package pkg ->
           enclose ~l:"(" ~r:")"
-            (O.keyword "module" ++ O.txt " "
-            ++ Link.from_path (pkg.path :> Paths.Path.t)
-            ++
-            match pkg.substitutions with
-            | [] -> O.noop
-            | fst :: lst ->
-                O.sp
-                ++ O.box_hv (O.keyword "with" ++ O.txt " " ++ package_subst fst)
-                ++ O.list lst ~f:(fun s ->
-                       O.cut
-                       ++ (O.box_hv
-                          @@ O.txt " " ++ O.keyword "and" ++ O.txt " "
-                             ++ package_subst s)))
+            (O.keyword "module" ++ O.txt " " ++ package_path pkg)
+      | Arrow_functor (lbl, m_arg, dst) ->
+          let lbl =
+            match lbl with None -> O.noop | Some lbl -> label lbl ++ O.txt ":"
+          in
+          let name =
+            match m_arg.id.iv with
+            | `Parameter (_, name) -> ModuleName.to_string name
+          in
+          let dst = type_expr dst in
+          let pkg =
+            enclose ~l:"(" ~r:")"
+            @@ O.keyword "module" ++ O.txt " " ++ O.txt name ++ O.txt " : "
+               ++ package_path m_arg.package
+          in
+          lbl ++ pkg ++ O.sp ++ Syntax.Type.arrow ++ O.sp ++ dst
+
+    and package_path pkg =
+      Link.from_path (pkg.path :> Paths.Path.t)
+      ++
+      match pkg.substitutions with
+      | [] -> O.noop
+      | fst :: lst ->
+          O.sp
+          ++ O.box_hv (O.keyword "with" ++ O.txt " " ++ package_subst fst)
+          ++ O.list lst ~f:(fun s ->
+                 O.cut
+                 ++ (O.box_hv
+                    @@ O.txt " " ++ O.keyword "and" ++ O.txt " "
+                       ++ package_subst s))
 
     and package_subst
         ((frag_typ, te) : Paths.Fragment.Type.t * Odoc_model.Lang.TypeExpr.t) :

@@ -166,6 +166,8 @@ val s_fragment_type_parent : Component.Element.fragment_type_parent scope
 
 val add_functor_parameter : Lang.FunctorParameter.t -> t -> t
 
+val add_module_arg : Lang.TypeExpr.Module.t -> t -> t
+
 val open_class_signature : Lang.ClassSignature.t -> t -> t
 
 val open_signature : Lang.Signature.t -> t -> t

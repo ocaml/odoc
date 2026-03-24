@@ -637,6 +637,14 @@ and typeexpr_package =
           List typeexpr_package_substitution );
     ]
 
+and typeexpr_module_arg =
+  let open Lang.TypeExpr.Module in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("package", (fun t -> t.package), typeexpr_package);
+    ]
+
 and typeexpr_label =
   let open Lang.TypeExpr in
   Variant
@@ -670,7 +678,12 @@ and typeexpr_t =
     | Poly (x1, x2) -> C ("Poly", (x1, x2), Pair (List string, typeexpr_t))
     | Quote x -> C ("Quote", x, typeexpr_t)
     | Splice x -> C ("Splice", x, typeexpr_t)
-    | Package x -> C ("Package", x, typeexpr_package))
+    | Package x -> C ("Package", x, typeexpr_package)
+    | Arrow_functor (lbl, m_arg, t) ->
+        C
+          ( "Arrow_functor",
+            (lbl, m_arg, t),
+            Triple (Option typeexpr_label, typeexpr_module_arg, typeexpr_t) ))
 
 (** {3 Compilation_unit} *)
 

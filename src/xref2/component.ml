@@ -115,6 +115,10 @@ and TypeExpr : sig
     type t = { path : Cpath.module_type; substitutions : substitution list }
   end
 
+  module Module : sig
+    type t = { package : Package.t; id : Ident.module_ }
+  end
+
   type label = Odoc_model.Lang.TypeExpr.label
 
   type t =
@@ -132,6 +136,7 @@ and TypeExpr : sig
     | Quote of t
     | Splice of t
     | Package of TypeExpr.Package.t
+    | Arrow_functor of label option * Module.t * t
 end =
   TypeExpr
 
@@ -1211,6 +1216,11 @@ module Fmt = struct
     | Quote t -> Format.fprintf ppf "(quote %a)" (type_expr c) t
     | Splice t -> Format.fprintf ppf "(splice %a)" (type_expr c) t
     | Package x -> type_package c ppf x
+    | Arrow_functor (l, m_arg, t) ->
+        Format.fprintf ppf "%a(%a) -> %a" type_expr_label l (type_module_arg c)
+          m_arg (type_expr c) t
+
+  and type_module_arg _c ppf _m = Format.fprintf ppf "(module_arg)"
 
   and resolved_module_path :
       config -> Format.formatter -> Cpath.Resolved.module_ -> unit =
@@ -2356,6 +2366,14 @@ module Of_Lang = struct
     | Quote t -> Quote (type_expression ident_map t)
     | Splice t -> Splice (type_expression ident_map t)
     | Package p -> Package (type_package ident_map p)
+    | Arrow_functor (lbl, m_arg, t) ->
+        Arrow_functor
+          (lbl, type_module_arg ident_map m_arg, type_expression ident_map t)
+
+  and type_module_arg ident_map { package; id } =
+    let id = Ident.Of_Identifier.functor_parameter id in
+    let package = type_package ident_map package in
+    { package; id }
 
   and module_decl ident_map m =
     match m with
