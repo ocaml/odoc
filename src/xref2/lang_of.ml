@@ -103,6 +103,7 @@ module Path = struct
     | `Identifier
         (({ iv = #Odoc_model.Paths.Identifier.Path.Type.t_pv; _ } as y), b) ->
         `Identifier (y, b)
+    | `Unbox x -> `Unbox (type_ map x)
     | `Local (id, b) -> `Identifier (Component.TypeMap.find id map.path_type, b)
     | `Resolved x -> `Resolved (resolved_type map x)
     | `DotT (p, n) -> `DotT (module_ map p, n)
@@ -186,6 +187,7 @@ module Path = struct
     | `Class (p, name) -> `Class (resolved_parent map p, name)
     | `ClassType (p, name) -> `ClassType (resolved_parent map p, name)
     | `Substituted s -> `SubstitutedT (resolved_type map s)
+    | `Unbox t -> `Unbox (resolved_type map t)
 
   and resolved_value map (p : Cpath.Resolved.value) :
       Odoc_model.Paths.Path.Resolved.Value.t =

@@ -1307,6 +1307,7 @@ module Fmt = struct
     | `Local id -> ident_fmt c ppf id
     | `Gpath p -> model_resolved_path c ppf (p :> rpath)
     | `Substituted x -> wrap c "substituted" resolved_type_path ppf x
+    | `Unbox x -> wrap c "unbox" resolved_type_path ppf x
     | `CanonicalType (t1, t2) ->
         wrap2 c "canonicaltype" resolved_type_path model_path ppf t1
           (t2 :> path)
@@ -1358,6 +1359,7 @@ module Fmt = struct
     | `Type (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
           (TypeName.to_string t)
+    | `Unbox t -> Format.fprintf ppf "%a#" (type_path c) t
 
   and value_path : config -> Format.formatter -> Cpath.value -> unit =
    fun c ppf p ->
@@ -1433,6 +1435,7 @@ module Fmt = struct
         wrap c "substitutedt" model_path ppf (m :> Odoc_model.Paths.Path.t)
     | `SubstitutedCT m ->
         wrap c "substitutedct" model_path ppf (m :> Odoc_model.Paths.Path.t)
+    | `Unbox t -> wrap c "unbox" model_path ppf (t :> Odoc_model.Paths.Path.t)
 
   and model_resolved_path (c : config) ppf (p : rpath) =
     let open Odoc_model.Paths.Path.Resolved in
@@ -1506,6 +1509,7 @@ module Fmt = struct
     | `SubstitutedT m -> wrap c "substitutedt" model_resolved_path ppf (m :> t)
     | `SubstitutedCT m ->
         wrap c "substitutedct" model_resolved_path ppf (m :> t)
+    | `Unbox t -> wrap c "unbox" model_resolved_path ppf (t :> t)
 
   and model_fragment c ppf (f : Odoc_model.Paths.Fragment.t) =
     match f with
@@ -2061,6 +2065,7 @@ module Of_Lang = struct
     | `SubstitutedCT m ->
         `Substituted
           (resolved_class_type_path ident_map m :> Cpath.Resolved.type_)
+    | `Unbox m -> `Unbox (resolved_type_path ident_map m)
 
   and resolved_value_path :
       _ -> Odoc_model.Paths.Path.Resolved.Value.t -> Cpath.Resolved.value =
@@ -2125,6 +2130,7 @@ module Of_Lang = struct
         | `Identifier i -> `Identifier (i, b)
         | `Local i -> `Local (i, b))
     | `DotT (path', x) -> `DotT (module_path ident_map path', x)
+    | `Unbox t -> `Unbox (type_path ident_map t)
 
   and value_path : _ -> Odoc_model.Paths.Path.Value.t -> Cpath.value =
    fun ident_map p ->

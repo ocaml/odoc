@@ -28,16 +28,16 @@ Unboxed types have a trailing hash '#'
 x : int;
 .br 
 .ti +2
-y : float32;
+y : float32#;
 .br 
 }
 .sp 
 \f[CB]type\fR segment = {
 .br 
 .ti +2
-start : pt;
+start : pt#;
 .br 
 .ti +2
-stop : pt;
+stop : pt#;
 .br 
 }

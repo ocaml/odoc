@@ -761,6 +761,7 @@ and lookup_type_gpath :
     | `Type (p, id) -> do_type p id
     | `Class (p, id) -> do_type p id
     | `ClassType (p, id) -> do_type p id
+    | `Unbox t -> lookup_type_gpath env t
     | `SubstitutedT t -> lookup_type_gpath env t
     | `SubstitutedCT t ->
         lookup_type_gpath env (t :> Odoc_model.Paths.Path.Resolved.Type.t)
@@ -851,6 +852,7 @@ and lookup_type :
     | `Gpath p -> lookup_type_gpath env p
     | `CanonicalType (t1, _) -> lookup_type env t1
     | `Substituted s -> lookup_type env s
+    | `Unbox t -> lookup_type env t
     | `Type (p, id) -> do_type p id
     | `Class (p, id) -> do_type p id
     | `ClassType (p, id) -> do_type p id
@@ -1061,6 +1063,7 @@ and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
     | `Local (l, _) -> Error (`LocalType (env, l))
     | `Substituted s ->
         resolve_type env s >>= fun (p, m) -> Ok (`Substituted p, m)
+    | `Unbox s -> resolve_type env s >>= fun (p, m) -> Ok (`Unbox p, m)
   in
   result >>= fun (p, t) ->
   match t with
@@ -1479,6 +1482,7 @@ and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
     match path with
     | `Gpath _ | `Local _ | `CoreType _ -> path
     | `Substituted s -> `Substituted (reresolve_type env s)
+    | `Unbox t -> `Unbox (reresolve_type env t)
     | `CanonicalType (p1, p2) ->
         `CanonicalType (reresolve_type env p1, handle_canonical_type env p2)
     | `Type (p, n) -> `Type (reresolve_parent env p, n)
