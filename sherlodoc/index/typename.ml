@@ -36,5 +36,6 @@ let rec show_type_name_verbose h : Path.Type.t -> _ = function
         (Odoc_document.Url.render_path (mdl :> Path.t))
         (Odoc_model.Names.TypeName.to_string x)
   | `SubstitutedT x -> show_type_name_verbose h x
+  | `Unbox x -> Format.fprintf h "%a#" show_type_name_verbose x
 
 let to_string t = Format.asprintf "%a" show_type_name_verbose t

@@ -836,11 +836,16 @@ module Path = struct
 #endif
     | Path.Pident id -> read_type_ident env id
 #if OCAML_VERSION >= (4,8,0)
-    | Path.Pdot(p, s) -> `DotT(read_module env p, TypeName.make_std (strip_hash s))
+    | Path.Pdot(p, s) ->
 #else
-    | Path.Pdot(p, s, _) -> `DotT(read_module env p, TypeName.make_std (strip_hash s))
+    | Path.Pdot(p, s, _) ->
 #endif
+        `DotT(read_module env p, TypeName.make_std (strip_hash s))
     | Path.Papply(_, _)-> assert false
+#if defined OXCAML
+    | Path.Pextra_ty (p, Punboxed_ty) ->
+        `Unbox (read_type env p)
+#endif
 #if OCAML_VERSION >= (5,1,0)
     | Path.Pextra_ty (p,_) -> read_type env p
 #endif

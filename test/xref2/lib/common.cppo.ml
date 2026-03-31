@@ -565,6 +565,7 @@ module LangUtils = struct
             | `CoreType _
             | `Substituted _
             | `SubstitutedCT _
+            | `Unbox _
             | `Canonical _ -> Format.fprintf ppf "unimplemented resolved_path"
 
         and path : Format.formatter -> Odoc_model.Paths.Path.t -> unit =
@@ -579,7 +580,7 @@ module LangUtils = struct
             | `DotT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) TypeName.fmt s
             | `DotV (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ValueName.fmt s
             | `Apply (func,arg) -> Format.fprintf ppf "%a(%a)" path (func :> Odoc_model.Paths.Path.t) path (arg :> Odoc_model.Paths.Path.t)
-            | `SubstitutedT _|`SubstitutedMT _|`Substituted _|`SubstitutedCT _  -> Format.fprintf ppf "Unimplemented path"
+            | `SubstitutedT _|`SubstitutedMT _|`Substituted _|`SubstitutedCT _|`Unbox _  -> Format.fprintf ppf "Unimplemented path"
 
         and model_fragment ppf (f : Odoc_model.Paths.Fragment.t) =
             match f with

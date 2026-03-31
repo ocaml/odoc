@@ -128,6 +128,7 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
   | `ModuleType (p, _)
   | `Module (p, _) ->
       should_reresolve (p :> t)
+  | `Unbox x -> should_reresolve (x :> t)
   | `OpaqueModule m -> should_reresolve (m :> t)
   | `OpaqueModuleType m -> should_reresolve (m :> t)
   | `Substituted m -> should_reresolve (m :> t)

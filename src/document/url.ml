@@ -44,6 +44,7 @@ let render_path : Path.t -> string =
     | `Value (p, s) -> render_resolved (p :> t) ^ "." ^ ValueName.to_string s
     | `Class (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
     | `ClassType (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
+    | `Unbox p -> render_resolved (p :> t) ^ "#"
   and dot p s = render_path (p : Path.Module.t :> Path.t) ^ "." ^ s
   and render_path : Path.t -> string =
    fun x ->
@@ -62,6 +63,7 @@ let render_path : Path.t -> string =
     | `SubstitutedMT m -> render_path (m :> Path.t)
     | `SubstitutedT m -> render_path (m :> Path.t)
     | `SubstitutedCT m -> render_path (m :> Path.t)
+    | `Unbox t -> render_path (t :> Path.t)
   in
 
   render_path
@@ -298,12 +300,8 @@ module Anchor = struct
     | { iv = `Type (parent, type_name); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Type in
-        {
-          page;
-          anchor =
-            Format.asprintf "%a-%s" pp_kind kind (TypeName.to_string type_name);
-          kind;
-        }
+        let name = TypeName.to_string type_name in
+        { page; anchor = Format.asprintf "%a-%s" pp_kind kind name; kind }
     | { iv = `Extension (parent, name); _ } ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Extension in

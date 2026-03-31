@@ -108,6 +108,7 @@ module Make (Syntax : SYNTAX) = struct
       | `SubstitutedMT m -> from_path (m :> Path.t)
       | `SubstitutedT m -> from_path (m :> Path.t)
       | `SubstitutedCT m -> from_path (m :> Path.t)
+      | `Unbox t -> from_path (t :> Path.t)
       | `Root root -> unresolved [ inline @@ Text (ModuleName.to_string root) ]
       | `Forward root -> unresolved [ inline @@ Text root ] (* FIXME *)
       | `Dot (prefix, suffix) ->
