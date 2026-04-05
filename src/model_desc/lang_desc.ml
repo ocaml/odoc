@@ -43,6 +43,7 @@ and module_t =
           (fun t -> (t.canonical :> Paths.Path.t option)),
           Option path );
       F ("hidden", (fun t -> t.hidden), bool);
+      F ("inline", (fun t -> t.inline), bool);
     ]
 
 (** {3 FunctorParameter} *)

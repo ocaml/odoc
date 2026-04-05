@@ -1,0 +1,17 @@
+
+.TH Inner 3 "" "Odoc" "OCaml Library"
+.SH Name
+Module_inline\.Outer\.Inner
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Outer\.Inner\fR
+.in 
+.sp 
+.fi 
+Nested module without \\@inline — separate page\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR u

@@ -69,6 +69,8 @@ module rec Module : sig
     type_ : decl;
     canonical : Odoc_model.Paths.Path.Module.t option;
     hidden : bool;
+    inline : bool;
+        (** Mirrors [Lang.Module.t.inline]: true when [\@inline] was present. *)
   }
 end =
   Module
@@ -2330,6 +2332,7 @@ module Of_Lang = struct
       type_;
       canonical;
       hidden = m.hidden;
+      inline = m.inline;
     }
 
   and with_module_type_substitution ident_map m =
@@ -2628,6 +2631,7 @@ module Of_Lang = struct
       type_ = Alias (manifest, None);
       canonical = None;
       hidden = false;
+      inline = false;
     }
 
   and signature : _ -> Odoc_model.Lang.Signature.t -> Signature.t =
@@ -2749,6 +2753,7 @@ let module_of_functor_argument (arg : FunctorParameter.parameter) =
     type_ = ModuleType arg.expr;
     canonical = None;
     hidden = false;
+    inline = false;
   }
 
 (** This is equivalent to {!Lang.extract_signature_doc}. *)

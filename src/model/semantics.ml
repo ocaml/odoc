@@ -17,6 +17,12 @@ type _ handle_internal_tags =
   | Expect_canonical : Reference.path option handle_internal_tags
   | Expect_none : unit handle_internal_tags
   | Expect_page_tags : Frontmatter.t handle_internal_tags
+  | Expect_module_tags :
+      ([ `Default | `Inline | `Open | `Closed ] * Reference.path option)
+      handle_internal_tags
+      (** Combined handler for module declarations: accepts both the display
+          status tags ([\@inline], [\@open], [\@closed]) and [\@canonical]. *)
+
 
 let describe_internal_tag = function
   | `Canonical _ -> "@canonical"
@@ -598,6 +604,40 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
       (* Will raise warnings. *)
       ignore (find_tag ~filter:(fun _ -> None) tags);
       ()
+  | Expect_module_tags ->
+      (* Process module declaration tags in a single pass so that neither
+         @inline/@open/@closed nor @canonical triggers spurious "unexpected tag"
+         warnings for the other. *)
+      let matched =
+        find_tags []
+          ~filter:(function
+            | (`Inline | `Open | `Closed) as s -> Some (`Status s)
+            | `Canonical p -> Some (`Canonical p)
+            | _ -> None)
+          tags
+      in
+      let status =
+        match
+          List.find_opt
+            (fun (t, _) -> match t with `Status _ -> true | _ -> false)
+            matched
+        with
+        | Some (`Status s, _) -> s
+        | _ -> `Default
+      in
+      let canonical =
+        match
+          List.find_opt
+            (fun (t, _) -> match t with `Canonical _ -> true | _ -> false)
+            matched
+        with
+        | Some (`Canonical (`Root _), loc) ->
+            warn_root_canonical loc;
+            None
+        | Some (`Canonical (`Dot _ as p), _) -> Some p
+        | _ -> None
+      in
+      (status, canonical)
 
 let ast_to_comment ~internal_tags ~tags_allowed ~parent_of_sections
     (ast : Ast.t) alerts =

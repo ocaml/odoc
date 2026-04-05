@@ -736,6 +736,7 @@ and module_ map parent id m =
       type_ = module_decl map identifier m.type_;
       canonical = m.canonical;
       hidden = m.hidden;
+      inline = m.inline;
     }
   with e ->
     let bt = Printexc.get_backtrace () in

@@ -2376,6 +2376,7 @@ let apply_inner_substs env (sg : Component.Signature.t) : Component.Signature.t
                     type_ = Alias (modsubst.manifest, None);
                     canonical = None;
                     hidden = false;
+                    inline = false;
                   }) )
           :: inner rest
         in

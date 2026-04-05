@@ -1,0 +1,21 @@
+\section{Module \ocamlinlinecode{Module\_\allowbreak{}inline}}\label{Module_inline}%
+Tests for the \ocamlinlinecode{\textbackslash{}@inline} attribute on module declarations.
+
+When a module declaration carries \ocamlinlinecode{\textbackslash{}@inline} in its doc comment, its contents are rendered directly on the parent page rather than on a separate sub-page. This mirrors how \ocamlinlinecode{include … (**\textbackslash{}@inline*)} works.
+
+\label{Module_inline--module-Normal}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Module_inline-Normal]{\ocamlinlinecode{Normal}}}\label{Module_inline-Normal}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Module_inline-Normal--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\label{Module_inline-Normal--val-create}\ocamlcodefragment{\ocamltag{keyword}{val} create : unit \ocamltag{arrow}{$\rightarrow$} \hyperref[Module_inline-Normal--type-t]{\ocamlinlinecode{t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}A normal module — contents appear on a separate page (default behaviour).\end{ocamlindent}%
+\medbreak
+\label{Module_inline--module-Inlined}An inlined module — contents appear directly on this page.\ocamltag{keyword}{module} Inlined : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}\label{Module_inline-Inlined--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\label{Module_inline-Inlined--val-create}\ocamlcodefragment{\ocamltag{keyword}{val} create : unit \ocamltag{arrow}{$\rightarrow$} \hyperref[Module_inline-Inlined--type-t]{\ocamlinlinecode{t}}}\\
+\label{Module_inline--module-Alias}\ocamlcodefragment{\ocamltag{keyword}{module} Alias = \hyperref[Module_inline-Normal]{\ocamlinlinecode{Normal}}}\begin{ocamlindent}A module without an inline signature is unaffected by \ocamlinlinecode{\textbackslash{}@inline}.\end{ocamlindent}%
+\medbreak
+\label{Module_inline--module-Outer}Nested: the outer module is inlined; inner sub-modules still get their own pages unless they are also marked \ocamlinlinecode{\textbackslash{}@inline}.\ocamltag{keyword}{module} Outer : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}\label{Module_inline-Outer--module-Inner}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Module_inline-Outer-Inner]{\ocamlinlinecode{Inner}}}\label{Module_inline-Outer-Inner}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Module_inline-Outer-Inner--type-u}\ocamlcodefragment{\ocamltag{keyword}{type} u}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}Nested module without \ocamlinlinecode{\textbackslash{}@inline} — separate page.\end{ocamlindent}%
+\medbreak
+\label{Module_inline-Outer--val-x}\ocamlcodefragment{\ocamltag{keyword}{val} x : int}\\
+
+

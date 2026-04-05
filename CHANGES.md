@@ -1,6 +1,10 @@
 # Unreleased
 
 ### Added
+- Support `[@inline]` tag on module declarations. When a module declaration's
+  doc comment includes `@inline`, its contents are rendered directly on the
+  parent page rather than on a separate sub-page — matching the behaviour of
+  `include … (** @inline *)`. (#564)
 - Allow persistent latex macros in HTML/KaTeX backend (@dlesbre, #1391)
 - `markdown-generate` command now accepts multiple `.odocl` files in a single
   invocation, eliminating the need for shell scripting (@davesnx, #1387)

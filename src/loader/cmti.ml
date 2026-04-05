@@ -642,7 +642,9 @@ and read_module_declaration env parent md =
   let id = (mid :> Identifier.Module.t) in
   let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, canonical = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_canonical container md.md_attributes in
+  let doc, (inline_status, canonical_raw) = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_module_tags container md.md_attributes in
+  let inline = (inline_status = `Inline) in
+  let canonical = canonical_raw in
   let type_, canonical =
     match md.md_type.mty_desc with
     | Tmty_alias (p, _) -> (Alias (Env.Path.read_module env.ident_env p, None), canonical)
@@ -666,7 +668,7 @@ and read_module_declaration env parent md =
     | _ -> false
 #endif
   in
-  Some {id; source_loc; doc; type_; canonical; hidden}
+  Some {id; source_loc; doc; type_; canonical; hidden; inline}
 
 and read_module_declarations env parent mds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in

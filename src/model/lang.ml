@@ -32,6 +32,10 @@ module rec Module : sig
     type_ : decl;
     canonical : Path.Module.t option;
     hidden : bool;
+    inline : bool;
+        (** [true] when the module's doc comment carries [\@inline], requesting
+            that its contents be rendered on the parent page rather than on a
+            separate sub-page. *)
   }
 
   module Equation : sig

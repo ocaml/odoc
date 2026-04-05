@@ -1,0 +1,46 @@
+
+.TH Module_inline 3 "" "Odoc" "OCaml Library"
+.SH Name
+Module_inline
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Module_inline\fR
+.in 
+.sp 
+.fi 
+Tests for the \\@inline attribute on module declarations\.
+.nf 
+.sp 
+.fi 
+When a module declaration carries \\@inline in its doc comment, its contents are rendered directly on the parent page rather than on a separate sub-page\. This mirrors how include … (**\\@inline*) works\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR Normal : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+A normal module — contents appear on a separate page (default behaviour)\.
+.nf 
+.sp 
+\f[CB]type\fR t
+.sp 
+\f[CB]val\fR create : unit \f[CB]\->\fR t
+.sp 
+\f[CB]module\fR Alias = Normal
+.fi 
+.br 
+.ti +2
+A module without an inline signature is unaffected by \\@inline\.
+.nf 
+.sp 
+\f[CB]module\fR Inner : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+Nested module without \\@inline — separate page\.
+.nf 
+.sp 
+\f[CB]val\fR x : int

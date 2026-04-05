@@ -447,6 +447,30 @@
   (>= %{ocaml_version} 4.04)))
 
 (rule
+ (target module_inline.cmti)
+ (package odoc)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/module_inline.mli}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
+ (target module_inline.odoc)
+ (package odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:module_inline.cmti}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
+ (target module_inline.odocl)
+ (package odoc)
+ (action
+  (run odoc link -o %{target} %{dep:module_inline.odoc}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
  (target module_type_alias.cmti)
  (package odoc)
  (action
@@ -5429,6 +5453,231 @@
   (package odoc)
   (action
    (diff module.targets module.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ html
+ (rule
+  (targets
+   Module_inline.html.gen
+   Module_inline-Normal.html.gen
+   Module_inline-Outer-Inner.html.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../module_inline.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Module_inline.html Module_inline.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Module_inline-Normal.html Module_inline-Normal.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Module_inline-Outer-Inner.html Module_inline-Outer-Inner.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ html
+ (rule
+  (target module_inline.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    module_inline.targets.gen
+    (run odoc html-targets -o . %{dep:../module_inline.odocl} --flat)))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff module_inline.targets module_inline.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ latex
+ (rule
+  (targets Module_inline.tex.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    latex-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../module_inline.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Module_inline.tex Module_inline.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ latex
+ (rule
+  (target module_inline.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    module_inline.targets.gen
+    (run odoc latex-targets -o . %{dep:../module_inline.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff module_inline.targets module_inline.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ man
+ (rule
+  (targets
+   Module_inline.3o.gen
+   Module_inline.Normal.3o.gen
+   Module_inline.Outer.Inner.3o.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    man-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../module_inline.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Module_inline.3o Module_inline.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Module_inline.Normal.3o Module_inline.Normal.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Module_inline.Outer.Inner.3o Module_inline.Outer.Inner.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ man
+ (rule
+  (target module_inline.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    module_inline.targets.gen
+    (run odoc man-targets -o . %{dep:../module_inline.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff module_inline.targets module_inline.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ markdown
+ (rule
+  (targets
+   Module_inline.md.gen
+   Module_inline-Normal.md.gen
+   Module_inline-Outer-Inner.md.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../module_inline.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Module_inline.md Module_inline.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Module_inline-Normal.md Module_inline-Normal.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Module_inline-Outer-Inner.md Module_inline-Outer-Inner.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ markdown
+ (rule
+  (target module_inline.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    module_inline.targets.gen
+    (run odoc markdown-targets -o . %{dep:../module_inline.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff module_inline.targets module_inline.targets.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04))))
 

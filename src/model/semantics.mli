@@ -5,6 +5,12 @@ type _ handle_internal_tags =
   | Expect_canonical : Reference.path option handle_internal_tags
   | Expect_none : unit handle_internal_tags
   | Expect_page_tags : Frontmatter.t handle_internal_tags
+  | Expect_module_tags :
+      ([ `Default | `Inline | `Open | `Closed ] * Reference.path option)
+      handle_internal_tags
+      (** Combined handler for module declarations: accepts both display-status
+          tags ([\@inline], [\@open], [\@closed]) and [\@canonical] in a single
+          pass so neither triggers a spurious "unexpected tag" warning. *)
 
 type sections_allowed = [ `All | `No_titles | `None ]
 

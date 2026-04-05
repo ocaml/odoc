@@ -1443,40 +1443,59 @@ module Make (Syntax : SYNTAX) = struct
         | ModuleType e -> expansion_of_module_type_expr e
       in
       let source_anchor = source_anchor t.source_loc in
-      let modname, status, expansion, expansion_doc =
-        match expansion with
-        | None -> (O.txt modname, `Default, None, None)
-        | Some (expansion_doc, items) ->
-            let status =
-              match t.type_ with
-              | ModuleType (Signature _) -> `Inline
-              | _ -> `Default
-            in
-            let url = Url.Path.from_identifier t.id in
-            let link = path url [ inline @@ Text modname ] in
-            let page =
-              make_expansion_page ~source_anchor url
-                [ t.doc.elements; expansion_doc ]
-                items
-            in
-            (link, status, Some page, Some expansion_doc)
-      in
-      let intro = O.keyword "module" ++ O.txt " " ++ modname in
-      let summary = O.ignore intro ++ mdexpr_in_decl t.id t.type_ in
-      let modexpr =
-        attach_expansion ~status
-          (Syntax.Type.annotation_separator, "sig", "end")
-          expansion summary
-      in
-      let content =
-        O.documentedSrc intro @ modexpr
-        @ O.documentedSrc
-            (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop)
-      in
-      let attr = [ "module" ] in
-      let anchor = path_to_id t.id in
-      let doc = Comment.synopsis ~decl_doc:t.doc.elements ~expansion_doc in
-      Item.Declaration { attr; anchor; doc; content; source_anchor }
+      (* When [@inline] is requested and an expansion is available, render the
+         module's items directly on the parent page instead of on a sub-page.
+         This mirrors how [include … (**@inline*)] works: no separate page is
+         generated, and the full documentation is shown here (not just the
+         synopsis, since there is no sub-page to fall back to). *)
+      match t.inline, expansion with
+      | true, Some (_expansion_doc, items) ->
+          let summary =
+            O.render
+              (O.keyword "module" ++ O.txt " " ++ O.txt modname
+              ++ O.txt Syntax.Type.annotation_separator
+              ++ O.keyword "sig" ++ O.txt " ... " ++ O.keyword "end")
+          in
+          let content = { Include.status = `Inline; content = items; summary } in
+          let attr = [ "module" ] in
+          let anchor = path_to_id t.id in
+          let doc = Comment.to_ir t.doc.elements in
+          Item.Include { attr; anchor; content; doc; source_anchor }
+      | _ ->
+          let modname, status, expansion, expansion_doc =
+            match expansion with
+            | None -> (O.txt modname, `Default, None, None)
+            | Some (expansion_doc, items) ->
+                let status =
+                  match t.type_ with
+                  | ModuleType (Signature _) -> `Inline
+                  | _ -> `Default
+                in
+                let url = Url.Path.from_identifier t.id in
+                let link = path url [ inline @@ Text modname ] in
+                let page =
+                  make_expansion_page ~source_anchor url
+                    [ t.doc.elements; expansion_doc ]
+                    items
+                in
+                (link, status, Some page, Some expansion_doc)
+          in
+          let intro = O.keyword "module" ++ O.txt " " ++ modname in
+          let summary = O.ignore intro ++ mdexpr_in_decl t.id t.type_ in
+          let modexpr =
+            attach_expansion ~status
+              (Syntax.Type.annotation_separator, "sig", "end")
+              expansion summary
+          in
+          let content =
+            O.documentedSrc intro @ modexpr
+            @ O.documentedSrc
+                (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop)
+          in
+          let attr = [ "module" ] in
+          let anchor = path_to_id t.id in
+          let doc = Comment.synopsis ~decl_doc:t.doc.elements ~expansion_doc in
+          Item.Declaration { attr; anchor; doc; content; source_anchor }
 
     and simple_expansion_in_decl (base : Paths.Identifier.Module.t) se =
       let rec ty_of_se :

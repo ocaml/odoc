@@ -67,6 +67,7 @@ module rec Module : sig
     type_ : decl;
     canonical : Odoc_model.Paths.Path.Module.t option;
     hidden : bool;
+    inline : bool;
   }
 end
 

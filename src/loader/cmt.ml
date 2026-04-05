@@ -458,7 +458,9 @@ and read_module_binding env parent mb =
   let id = (mid :> Identifier.Module.t) in
   let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, canonical = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_canonical container mb.mb_attributes in
+  let doc, (inline_status, canonical_raw) = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_module_tags container mb.mb_attributes in
+  let inline = (inline_status = `Inline) in
+  let canonical = canonical_raw in
   let type_, canonical =
     match unwrap_module_expr_desc mb.mb_expr.mod_desc with
     | Tmod_ident (p, _) -> (Alias (Env.Path.read_module env.ident_env p, None), canonical)
@@ -481,7 +483,7 @@ and read_module_binding env parent mb =
     | Some _, _ -> false
 #endif
   in
-  Some {id; source_loc; doc; type_; canonical; hidden; }
+  Some {id; source_loc; doc; type_; canonical; hidden; inline}
 
 and read_module_bindings env parent mbs =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t)

@@ -1031,8 +1031,9 @@ and read_module_declaration env parent ident (md : Odoc_model.Compat.module_decl
   let id = (Env.find_module_identifier env.ident_env ident :> Identifier.Module.t) in
   let source_loc = None in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, canonical = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_canonical container md.md_attributes in
-  let canonical = match canonical with | None -> None | Some s -> Some (Doc_attr.conv_canonical_module s) in
+  let doc, (inline_status, canonical_raw) = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_module_tags container md.md_attributes in
+  let inline = (inline_status = `Inline) in
+  let canonical = match canonical_raw with | None -> None | Some s -> Some (Doc_attr.conv_canonical_module s) in
   let type_ =
     match md.md_type with
     | Mty_alias p -> Alias (Env.Path.read_module env.ident_env p, None)
@@ -1043,7 +1044,7 @@ and read_module_declaration env parent ident (md : Odoc_model.Compat.module_decl
     | Some _ -> false
     | None -> Odoc_model.Names.contains_double_underscore (Ident.name ident)
   in
-  {id; source_loc; doc; type_; canonical; hidden }
+  {id; source_loc; doc; type_; canonical; hidden; inline}
 
 and read_type_rec_status rec_status =
   let open Signature in

@@ -385,6 +385,7 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
             type_ = ModuleType (Signature s);
             canonical = unit.canonical;
             hidden = unit.hidden;
+            inline = false;
           }
       in
       let ty = Component.Of_Lang.(module_ (empty ()) m) in
@@ -407,6 +408,7 @@ let module_of_unit : Lang.Compilation_unit.t -> Component.Module.t =
                    });
             canonical = unit.canonical;
             hidden = unit.hidden;
+            inline = false;
           }
       in
       let ty = Component.Of_Lang.(module_ (empty ()) m) in
@@ -660,6 +662,7 @@ let mk_functor_parameter module_type =
       type_;
       canonical = None;
       hidden = false;
+      inline = false;
     }
 
 let add_functor_parameter : Lang.FunctorParameter.t -> t -> t =
