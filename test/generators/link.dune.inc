@@ -548,7 +548,7 @@
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/ocaml_55.mli}))
  (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (>= %{ocaml_version} 5.5)))
 
 (rule
  (target ocaml_55.odoc)
@@ -556,7 +556,7 @@
  (action
   (run odoc compile -o %{target} %{dep:ocaml_55.cmti}))
  (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (>= %{ocaml_version} 5.5)))
 
 (rule
  (target ocaml_55.odocl)
@@ -564,7 +564,7 @@
  (action
   (run odoc link -o %{target} %{dep:ocaml_55.odoc}))
  (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (>= %{ocaml_version} 5.5)))
 
 (rule
  (target ocamlary.cmti)
@@ -7424,28 +7424,28 @@
     .
     %{dep:../ocaml_55.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (>= %{ocaml_version} 5.5)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Ocaml_55.html Ocaml_55.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (>= %{ocaml_version} 5.5)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Ocaml_55-module-type-X.html Ocaml_55-module-type-X.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (>= %{ocaml_version} 5.5)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Ocaml_55-module-type-Y.html Ocaml_55-module-type-Y.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (>= %{ocaml_version} 5.5))))
 
 (subdir
  html
@@ -7457,14 +7457,14 @@
     ocaml_55.targets.gen
     (run odoc html-targets -o . %{dep:../ocaml_55.odocl} --flat)))
   (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (>= %{ocaml_version} 5.5)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff ocaml_55.targets ocaml_55.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (>= %{ocaml_version} 5.5))))
 
 (subdir
  latex
@@ -7474,14 +7474,14 @@
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../ocaml_55.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (>= %{ocaml_version} 5.5)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Ocaml_55.tex Ocaml_55.tex.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (>= %{ocaml_version} 5.5))))
 
 (subdir
  latex
@@ -7493,14 +7493,14 @@
     ocaml_55.targets.gen
     (run odoc latex-targets -o . %{dep:../ocaml_55.odocl})))
   (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (>= %{ocaml_version} 5.5)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff ocaml_55.targets ocaml_55.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (>= %{ocaml_version} 5.5))))
 
 (subdir
  man
@@ -7510,14 +7510,14 @@
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../ocaml_55.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (>= %{ocaml_version} 5.5)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Ocaml_55.3o Ocaml_55.3o.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (>= %{ocaml_version} 5.5))))
 
 (subdir
  man
@@ -7529,14 +7529,14 @@
     ocaml_55.targets.gen
     (run odoc man-targets -o . %{dep:../ocaml_55.odocl})))
   (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (>= %{ocaml_version} 5.5)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff ocaml_55.targets ocaml_55.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (>= %{ocaml_version} 5.5))))
 
 (subdir
  markdown
@@ -7556,28 +7556,28 @@
     gen
     %{dep:../ocaml_55.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (>= %{ocaml_version} 5.5)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Ocaml_55.md Ocaml_55.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (>= %{ocaml_version} 5.5)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Ocaml_55-module-type-X.md Ocaml_55-module-type-X.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (>= %{ocaml_version} 5.5)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Ocaml_55-module-type-Y.md Ocaml_55-module-type-Y.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (>= %{ocaml_version} 5.5))))
 
 (subdir
  markdown
@@ -7589,14 +7589,14 @@
     ocaml_55.targets.gen
     (run odoc markdown-targets -o . %{dep:../ocaml_55.odocl})))
   (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (>= %{ocaml_version} 5.5)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff ocaml_55.targets ocaml_55.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (>= %{ocaml_version} 5.5))))
 
 (subdir
  html
