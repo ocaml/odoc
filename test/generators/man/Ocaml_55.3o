@@ -1,0 +1,48 @@
+
+.TH Ocaml_55 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocaml_55
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocaml_55\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR X = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.sp 
+.ti +2
+\f[CB]val\fR x : int
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]type\fR m = (\f[CB]module\fR X)
+.sp 
+\f[CB]val\fR f0 : m \f[CB]\->\fR unit
+.sp 
+\f[CB]val\fR f55 : (module M : X) \f[CB]\->\fR M\.t
+.sp 
+\f[CB]val\fR f' : (module M : X \f[CB]with\fR \f[CB]type\fR t = int) \f[CB]\->\fR int
+.sp 
+\f[CB]val\fR f'' : (\f[CB]module\fR X \f[CB]with\fR \f[CB]type\fR t = int) \f[CB]\->\fR int
+.sp 
+\f[CB]module\fR \f[CB]type\fR Y = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR 'a t
+.sp 
+.ti +2
+\f[CB]val\fR return : \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR t
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]val\fR g : (module M : Y) \f[CB]\->\fR int M\.t
+.sp 
+\f[CB]val\fR g' : (module M : Y) \f[CB]\->\fR int
+.sp 
+\f[CB]val\fR g'' : (\f[CB]module\fR Y) \f[CB]\->\fR int
