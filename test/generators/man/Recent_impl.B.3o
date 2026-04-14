@@ -11,7 +11,7 @@ Recent_impl\.B
 .SH Documentation
 .sp 
 .nf 
-\f[CB]type\fR t = 
+\f[CB]type\fR t : immediate = 
 .br 
 .ti +2
 | \f[CB]B\fR

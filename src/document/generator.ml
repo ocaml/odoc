@@ -306,6 +306,11 @@ module Make (Syntax : SYNTAX) = struct
 
     val format_type_path :
       delim:[ `parens | `brackets ] -> Lang.TypeExpr.t list -> text -> text
+
+    val kind_annotation : Odoc_model.Lang.KindAnnotation.t -> text
+
+    val with_kind_annotation :
+      Odoc_model.Lang.KindAnnotation.t -> text -> text
   end = struct
     let rec te_variant (t : Odoc_model.Lang.TypeExpr.Polymorphic_variant.t) =
       let style_arguments ~constant arguments =
@@ -426,6 +431,31 @@ module Make (Syntax : SYNTAX) = struct
       then enclose ~l:lparen res ~r:")"
       else res
 
+    and kind_annotation (k : Odoc_model.Lang.KindAnnotation.t) =
+      match k with
+      | Default -> O.noop
+      | Abbreviation s -> O.txt s
+      | Mod (base, modes) ->
+          kind_annotation base ++ O.txt " " ++ O.keyword "mod"
+          ++ O.txt (" " ^ String.concat ~sep:" " modes)
+      | With (base, ty, modalities) -> (
+          kind_annotation base ++ O.txt " " ++ O.keyword "with" ++ O.txt " "
+          ++ type_expr ty
+          ++
+          match modalities with
+          | [] -> O.noop
+          | mods ->
+              O.txt " " ++ O.keyword "mod"
+              ++ O.txt (" " ^ String.concat ~sep:" " mods))
+      | Kind_of ty -> O.keyword "kind_of_" ++ O.txt " " ++ type_expr ty
+      | Product ks -> O.list ks ~sep:(O.txt " & ") ~f:kind_annotation
+
+    and with_kind_annotation kind base =
+      match kind with
+      | Odoc_model.Lang.KindAnnotation.Default -> base
+      | k ->
+          O.txt "(" ++ base ++ O.txt " : " ++ kind_annotation k ++ O.txt ")"
+
     and type_expr ?(needs_parentheses = false) (t : Odoc_model.Lang.TypeExpr.t)
         =
       let enclose_parens_if_needed res =
@@ -478,9 +508,11 @@ module Make (Syntax : SYNTAX) = struct
           format_type_path ~delim:`brackets args
             (Link.from_path (path :> Paths.Path.t))
       | Poly (polyvars, t) ->
-          enclose_parens_if_needed
-          @@ O.txt ("'" ^ String.concat ~sep:" '" polyvars ^ ". ")
-             ++ type_expr t
+          let format_poly_var (name, kind) =
+            with_kind_annotation kind (O.txt ("'" ^ name))
+          in
+          let vars = O.list polyvars ~sep:(O.txt " ") ~f:format_poly_var in
+          enclose_parens_if_needed @@ (vars ++ O.txt ". " ++ type_expr t)
       | Quote t -> O.span (O.txt "<[ " ++ O.box_hv (type_expr t) ++ O.txt " ]>")
       | Splice t -> O.span (O.txt "$" ++ type_expr ~needs_parentheses:true t)
       | Package pkg ->
@@ -821,8 +853,8 @@ module Make (Syntax : SYNTAX) = struct
         Odoc_model.Lang.TypeDecl.param list ->
         text =
      fun ?(delim = `parens) params ->
-      let format_param { Odoc_model.Lang.TypeDecl.desc; variance; injectivity }
-          =
+      let format_param_str
+          { Odoc_model.Lang.TypeDecl.desc; variance; injectivity; kind = _ } =
         let desc =
           match desc with
           | Odoc_model.Lang.TypeDecl.Any -> [ "_" ]
@@ -838,15 +870,19 @@ module Make (Syntax : SYNTAX) = struct
         let final = if injectivity then "!" :: var_desc else var_desc in
         String.concat ~sep:"" final
       in
-      O.txt
-        (match params with
-        | [] -> ""
-        | [ x ] -> format_param x |> Syntax.Type.handle_format_params
-        | lst -> (
-            let params = String.concat ~sep:", " (List.map format_param lst) in
-            (match delim with `parens -> "(" | `brackets -> "[")
-            ^ params
-            ^ match delim with `parens -> ")" | `brackets -> "]"))
+      let format_param p =
+        Type_expression.with_kind_annotation p.Odoc_model.Lang.TypeDecl.kind
+          (O.txt (format_param_str p))
+      in
+      match params with
+      | [] -> O.noop
+      | [ x ] ->
+          let base = format_param_str x |> Syntax.Type.handle_format_params in
+          Type_expression.with_kind_annotation x.kind (O.txt base)
+      | lst ->
+          let l = match delim with `parens -> "(" | `brackets -> "[" in
+          let r = match delim with `parens -> ")" | `brackets -> "]" in
+          O.txt l ++ O.list lst ~sep:(O.txt ", ") ~f:format_param ++ O.txt r
 
     let format_constraints constraints =
       O.list constraints ~f:(fun (t1, t2) ->
@@ -896,7 +932,12 @@ module Make (Syntax : SYNTAX) = struct
             let params = format_params l in
             Syntax.Type.handle_constructor_params (O.txt tyname) params
       in
-      let intro = keyword' ++ O.txt " " ++ tconstr in
+      let kind_annot =
+        match t.equation.kind with
+        | Default -> O.noop
+        | k -> O.txt " : " ++ Type_expression.kind_annotation k
+      in
+      let intro = keyword' ++ O.txt " " ++ tconstr ++ kind_annot in
       let constraints = format_constraints t.equation.constraints in
       let manifest, need_private, long_prefix =
         match t.equation.manifest with

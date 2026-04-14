@@ -22,110 +22,106 @@ Polymorphic arguments require parentheses
 \fB1 Kind annotations on abstract types\fR
 .in 
 .sp 
-.fi 
-These type declarations have kind annotations that constrain their layout\. Currently, odoc does not render the kind annotations\.
-.nf 
-.sp 
-\f[CB]type\fR t_immediate
+\f[CB]type\fR t_immediate : immediate
 .fi 
 .br 
 .ti +2
-Should be type t_immediate : immediate
+Kind annotation on abstract type\.
 .nf 
 .sp 
 \f[CB]type\fR t_value
 .fi 
 .br 
 .ti +2
-Should be type t_value : value
+value is the default kind, so the annotation is not rendered\.
 .nf 
 .sp 
-\f[CB]type\fR t_any
+\f[CB]type\fR t_any : any
 .fi 
 .br 
 .ti +2
-Should be type t_any : any
+A type with the any kind\.
 .nf 
 .sp 
-\f[CB]type\fR t_float64
+\f[CB]type\fR t_float64 : float64
 .fi 
 .br 
 .ti +2
-Should be type t_float64 : float64
+A type with the float64 kind\.
 .nf 
 .sp 
-\f[CB]type\fR t_bits32
+\f[CB]type\fR t_bits32 : bits32
 .fi 
 .br 
 .ti +2
-Should be type t_bits32 : bits32
+A type with the bits32 kind\.
 .nf 
 .sp 
-\f[CB]type\fR t_bits64
+\f[CB]type\fR t_bits64 : bits64
 .fi 
 .br 
 .ti +2
-Should be type t_bits64 : bits64
+A type with the bits64 kind\.
 .nf 
 .sp 
-\f[CB]type\fR t_word
+\f[CB]type\fR t_word : word
 .fi 
 .br 
 .ti +2
-Should be type t_word : word
+A type with the word kind\.
 .nf 
 .sp 
-\f[CB]type\fR t_void
+\f[CB]type\fR t_void : void
 .fi 
 .br 
 .ti +2
-Should be type t_void : void
+A type with the void kind\.
 .nf 
 .sp 
 .in 3
 \fB2 Kind annotations with modalities\fR
 .in 
 .sp 
-\f[CB]type\fR t_portable
+\f[CB]type\fR t_portable : value \f[CB]mod\fR portable
 .fi 
 .br 
 .ti +2
-Should be type t_portable : value mod portable
+Kind annotation with a modality\.
 .nf 
 .sp 
-\f[CB]type\fR t_contended
+\f[CB]type\fR t_contended : value \f[CB]mod\fR contended
 .fi 
 .br 
 .ti +2
-Should be type t_contended : value mod contended
+Kind annotation with a different modality\.
 .nf 
 .sp 
-\f[CB]type\fR t_multi_mod
+\f[CB]type\fR t_multi_mod : value \f[CB]mod\fR portable contended
 .fi 
 .br 
 .ti +2
-Should be type t_multi_mod : value mod portable contended
+Kind annotation with multiple modalities\.
 .nf 
 .sp 
 .in 3
 \fB3 Kind annotations on parameterized types\fR
 .in 
 .sp 
-\f[CB]type\fR 'a imm_param
+\f[CB]type\fR ('a : immediate) imm_param
 .fi 
 .br 
 .ti +2
-The kind constraint on 'a is not rendered\.
+A type parameter with a kind constraint\.
 .nf 
 .sp 
-\f[CB]type\fR 'a float_param
+\f[CB]type\fR ('a : float64) float_param
 .fi 
 .br 
 .ti +2
-The kind constraint on 'a is not rendered\.
+A type parameter with a different kind constraint\.
 .nf 
 .sp 
-\f[CB]type\fR ('a, 'b) multi_kind
+\f[CB]type\fR (('a : immediate), ('b : float64)) multi_kind
 .fi 
 .br 
 .ti +2
@@ -136,18 +132,18 @@ Multiple kind-constrained parameters\.
 \fB4 Kind annotations with with constraints\fR
 .in 
 .sp 
-\f[CB]type\fR 'a t_with
+\f[CB]type\fR 'a t_with : immediate \f[CB]with\fR \f[CB]'a\fR
 .fi 
 .br 
 .ti +2
-Should be type 'a t_with : immediate with 'a
+Kind annotation with a with constraint\.
 .nf 
 .sp 
 .in 3
 \fB5 Kind annotations on type aliases\fR
 .in 
 .sp 
-\f[CB]type\fR t_alias = int
+\f[CB]type\fR t_alias : immediate = int
 .fi 
 .br 
 .ti +2
@@ -158,17 +154,17 @@ Has both a kind annotation and a manifest\.
 \fB6 Kind-constrained polymorphism in values\fR
 .in 
 .sp 
-\f[CB]val\fR poly_immediate : 'a\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR
+\f[CB]val\fR poly_immediate : ('a : immediate)\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR
 .fi 
 .br 
 .ti +2
-The kind constraint on 'a is not rendered\.
+Kind constraint on a polymorphic type variable\.
 .nf 
 .sp 
-\f[CB]val\fR poly_float64 : 'a\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR
+\f[CB]val\fR poly_float64 : ('a : float64)\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR
 .fi 
 .br 
 .ti +2
-The kind constraint on 'a is not rendered\.
+Kind constraint on a polymorphic type variable with a different kind\.
 .nf 
 

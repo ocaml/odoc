@@ -295,7 +295,8 @@ unresolved in the paths though:
                         "params": [],
                         "private_": "false",
                         "manifest": "None",
-                        "constraints": []
+                        "constraints": [],
+                        "kind": "Default"
                       },
                       "representation": "None"
                     }

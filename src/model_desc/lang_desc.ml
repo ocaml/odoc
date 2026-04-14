@@ -367,6 +367,21 @@ and typedecl_variance =
   Variant
     (function Pos -> C0 "Pos" | Neg -> C0 "Neg" | Bivariant -> C0 "Bivariant")
 
+and kind_annotation =
+  let open Lang.KindAnnotation in
+  Variant
+    (function
+    | Default -> C0 "Default"
+    | Abbreviation x -> C ("Abbreviation", x, string)
+    | Mod (x1, x2) -> C ("Mod", (x1, x2), Pair (kind_annotation, List string))
+    | With (x1, x2, x3) ->
+        C
+          ( "With",
+            (x1, x2, x3),
+            Triple (kind_annotation, typeexpr_t, List string) )
+    | Kind_of x -> C ("Kind_of", x, typeexpr_t)
+    | Product x -> C ("Product", x, List kind_annotation))
+
 and typedecl_param_desc =
   let open Lang.TypeDecl in
   Variant (function Any -> C0 "Any" | Var x -> C ("Var", x, string))
@@ -378,6 +393,7 @@ and typedecl_param =
       F ("desc", (fun t -> t.desc), typedecl_param_desc);
       F ("variance", (fun t -> t.variance), Option typedecl_variance);
       F ("injectivity", (fun t -> t.injectivity), bool);
+      F ("kind", (fun t -> t.kind), kind_annotation);
     ]
 
 and typedecl_equation =
@@ -391,6 +407,7 @@ and typedecl_equation =
         ( "constraints",
           (fun t -> t.constraints),
           List (Pair (typeexpr_t, typeexpr_t)) );
+      F ("kind", (fun t -> t.kind), kind_annotation);
     ]
 
 and typedecl_t =
@@ -667,7 +684,11 @@ and typeexpr_t =
     | Object x -> C ("Object", x, typeexpr_object)
     | Class (x1, x2) ->
         C ("Class", ((x1 :> Paths.Path.t), x2), Pair (path, List typeexpr_t))
-    | Poly (x1, x2) -> C ("Poly", (x1, x2), Pair (List string, typeexpr_t))
+    | Poly (x1, x2) ->
+        C
+          ( "Poly",
+            (x1, x2),
+            Pair (List (Pair (string, kind_annotation)), typeexpr_t) )
     | Quote x -> C ("Quote", x, typeexpr_t)
     | Splice x -> C ("Splice", x, typeexpr_t)
     | Package x -> C ("Package", x, typeexpr_package))

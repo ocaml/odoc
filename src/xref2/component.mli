@@ -123,7 +123,7 @@ and TypeExpr : sig
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
     | Class of Cpath.class_type * t list
-    | Poly of string list * t
+    | Poly of (string * Odoc_model.Lang.KindAnnotation.t) list * t
     | Quote of t
     | Splice of t
     | Package of TypeExpr.Package.t
@@ -276,6 +276,7 @@ and TypeDecl : sig
       private_ : bool;
       manifest : TypeExpr.t option;
       constraints : (TypeExpr.t * TypeExpr.t) list;
+      kind : Odoc_model.Lang.KindAnnotation.t;
     }
   end
 

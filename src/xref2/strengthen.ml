@@ -112,6 +112,7 @@ and type_decl : Cpath.type_ -> TypeDecl.t -> TypeDecl.t =
       private_ = e.private_;
       manifest;
       constraints = e.constraints;
+      kind = e.kind;
     }
   in
   { t with equation }

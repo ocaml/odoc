@@ -2,6 +2,6 @@
 # Module `Recent_impl.B`
 
 ```ocaml
-type t = 
+type t : immediate = 
   | B
 ```
