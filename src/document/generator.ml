@@ -309,8 +309,7 @@ module Make (Syntax : SYNTAX) = struct
 
     val kind_annotation : Odoc_model.Lang.KindAnnotation.t -> text
 
-    val with_kind_annotation :
-      Odoc_model.Lang.KindAnnotation.t -> text -> text
+    val with_kind_annotation : Odoc_model.Lang.KindAnnotation.t -> text -> text
   end = struct
     let rec te_variant (t : Odoc_model.Lang.TypeExpr.Polymorphic_variant.t) =
       let style_arguments ~constant arguments =
@@ -453,8 +452,7 @@ module Make (Syntax : SYNTAX) = struct
     and with_kind_annotation kind base =
       match kind with
       | Odoc_model.Lang.KindAnnotation.Default -> base
-      | k ->
-          O.txt "(" ++ base ++ O.txt " : " ++ kind_annotation k ++ O.txt ")"
+      | k -> O.txt "(" ++ base ++ O.txt " : " ++ kind_annotation k ++ O.txt ")"
 
     and type_expr ?(needs_parentheses = false) (t : Odoc_model.Lang.TypeExpr.t)
         =
@@ -880,9 +878,12 @@ module Make (Syntax : SYNTAX) = struct
           let base = format_param_str x |> Syntax.Type.handle_format_params in
           Type_expression.with_kind_annotation x.kind (O.txt base)
       | lst ->
-          let l = match delim with `parens -> "(" | `brackets -> "[" in
-          let r = match delim with `parens -> ")" | `brackets -> "]" in
-          O.txt l ++ O.list lst ~sep:(O.txt ", ") ~f:format_param ++ O.txt r
+          let left, right =
+            match delim with `parens -> ("(", ")") | `brackets -> ("[", "]")
+          in
+          O.txt left
+          ++ O.list lst ~sep:(O.txt ", ") ~f:format_param
+          ++ O.txt right
 
     let format_constraints constraints =
       O.list constraints ~f:(fun (t1, t2) ->

@@ -7,12 +7,55 @@ val f : int -> ('a. 'a -> 'a) -> unit
 Polymorphic arguments require parentheses
 
 
-## Kind annotations on abstract types
+## Layouts
 
 ```ocaml
-type t_immediate : immediate
+type t_any : any
 ```
-Kind annotation on abstract type.
+Layout `any`.
+
+```ocaml
+type t_value_or_null : value_or_null
+```
+Layout `value_or_null`.
+
+```ocaml
+type t_float64 : float64
+```
+Layout `float64`.
+
+```ocaml
+type t_float32 : float32
+```
+Layout `float32`.
+
+```ocaml
+type t_word : word
+```
+Layout `word`.
+
+```ocaml
+type t_bits64 : bits64
+```
+Layout `bits64`.
+
+```ocaml
+type t_bits32 : bits32
+```
+Layout `bits32`.
+
+```ocaml
+type t_vec128 : vec128
+```
+Layout `vec128`.
+
+```ocaml
+type t_void : void
+```
+Layout `void`.
+
+
+## Kind abbreviations
 
 ```ocaml
 type t_value
@@ -20,34 +63,29 @@ type t_value
 `value` is the default kind, so the annotation is not rendered.
 
 ```ocaml
-type t_any : any
+type t_immediate : immediate
 ```
-A type with the `any` kind.
+Kind abbreviation `immediate`.
 
 ```ocaml
-type t_float64 : float64
+type t_immediate64 : immediate64
 ```
-A type with the `float64` kind.
+Kind abbreviation `immediate64`.
 
 ```ocaml
-type t_bits32 : bits32
+type t_immutable_data : immutable_data
 ```
-A type with the `bits32` kind.
+Kind abbreviation `immutable_data`.
 
 ```ocaml
-type t_bits64 : bits64
+type t_sync_data : sync_data
 ```
-A type with the `bits64` kind.
+Kind abbreviation `sync_data`.
 
 ```ocaml
-type t_word : word
+type t_mutable_data : mutable_data
 ```
-A type with the `word` kind.
-
-```ocaml
-type t_void : void
-```
-A type with the `void` kind.
+Kind abbreviation `mutable_data`.
 
 
 ## Kind annotations with modalities
@@ -66,6 +104,11 @@ Kind annotation with a different modality.
 type t_multi_mod : value mod portable contended
 ```
 Kind annotation with multiple modalities.
+
+```ocaml
+type t_everything : float64 mod everything
+```
+The `everything` bounds abbreviation.
 
 
 ## Kind annotations on parameterized types

@@ -19,15 +19,75 @@ Polymorphic arguments require parentheses
 .nf 
 .sp 
 .in 3
-\fB1 Kind annotations on abstract types\fR
+\fB1 Layouts\fR
 .in 
 .sp 
-\f[CB]type\fR t_immediate : immediate
+\f[CB]type\fR t_any : any
 .fi 
 .br 
 .ti +2
-Kind annotation on abstract type\.
+Layout any\.
 .nf 
+.sp 
+\f[CB]type\fR t_value_or_null : value_or_null
+.fi 
+.br 
+.ti +2
+Layout value_or_null\.
+.nf 
+.sp 
+\f[CB]type\fR t_float64 : float64
+.fi 
+.br 
+.ti +2
+Layout float64\.
+.nf 
+.sp 
+\f[CB]type\fR t_float32 : float32
+.fi 
+.br 
+.ti +2
+Layout float32\.
+.nf 
+.sp 
+\f[CB]type\fR t_word : word
+.fi 
+.br 
+.ti +2
+Layout word\.
+.nf 
+.sp 
+\f[CB]type\fR t_bits64 : bits64
+.fi 
+.br 
+.ti +2
+Layout bits64\.
+.nf 
+.sp 
+\f[CB]type\fR t_bits32 : bits32
+.fi 
+.br 
+.ti +2
+Layout bits32\.
+.nf 
+.sp 
+\f[CB]type\fR t_vec128 : vec128
+.fi 
+.br 
+.ti +2
+Layout vec128\.
+.nf 
+.sp 
+\f[CB]type\fR t_void : void
+.fi 
+.br 
+.ti +2
+Layout void\.
+.nf 
+.sp 
+.in 3
+\fB2 Kind abbreviations\fR
+.in 
 .sp 
 \f[CB]type\fR t_value
 .fi 
@@ -36,50 +96,43 @@ Kind annotation on abstract type\.
 value is the default kind, so the annotation is not rendered\.
 .nf 
 .sp 
-\f[CB]type\fR t_any : any
+\f[CB]type\fR t_immediate : immediate
 .fi 
 .br 
 .ti +2
-A type with the any kind\.
+Kind abbreviation immediate\.
 .nf 
 .sp 
-\f[CB]type\fR t_float64 : float64
+\f[CB]type\fR t_immediate64 : immediate64
 .fi 
 .br 
 .ti +2
-A type with the float64 kind\.
+Kind abbreviation immediate64\.
 .nf 
 .sp 
-\f[CB]type\fR t_bits32 : bits32
+\f[CB]type\fR t_immutable_data : immutable_data
 .fi 
 .br 
 .ti +2
-A type with the bits32 kind\.
+Kind abbreviation immutable_data\.
 .nf 
 .sp 
-\f[CB]type\fR t_bits64 : bits64
+\f[CB]type\fR t_sync_data : sync_data
 .fi 
 .br 
 .ti +2
-A type with the bits64 kind\.
+Kind abbreviation sync_data\.
 .nf 
 .sp 
-\f[CB]type\fR t_word : word
+\f[CB]type\fR t_mutable_data : mutable_data
 .fi 
 .br 
 .ti +2
-A type with the word kind\.
-.nf 
-.sp 
-\f[CB]type\fR t_void : void
-.fi 
-.br 
-.ti +2
-A type with the void kind\.
+Kind abbreviation mutable_data\.
 .nf 
 .sp 
 .in 3
-\fB2 Kind annotations with modalities\fR
+\fB3 Kind annotations with modalities\fR
 .in 
 .sp 
 \f[CB]type\fR t_portable : value \f[CB]mod\fR portable
@@ -103,8 +156,15 @@ Kind annotation with a different modality\.
 Kind annotation with multiple modalities\.
 .nf 
 .sp 
+\f[CB]type\fR t_everything : float64 \f[CB]mod\fR everything
+.fi 
+.br 
+.ti +2
+The everything bounds abbreviation\.
+.nf 
+.sp 
 .in 3
-\fB3 Kind annotations on parameterized types\fR
+\fB4 Kind annotations on parameterized types\fR
 .in 
 .sp 
 \f[CB]type\fR ('a : immediate) imm_param
@@ -129,7 +189,7 @@ Multiple kind-constrained parameters\.
 .nf 
 .sp 
 .in 3
-\fB4 Kind annotations with with constraints\fR
+\fB5 Kind annotations with with constraints\fR
 .in 
 .sp 
 \f[CB]type\fR 'a t_with : immediate \f[CB]with\fR \f[CB]'a\fR
@@ -140,7 +200,7 @@ Kind annotation with a with constraint\.
 .nf 
 .sp 
 .in 3
-\fB5 Kind annotations on type aliases\fR
+\fB6 Kind annotations on type aliases\fR
 .in 
 .sp 
 \f[CB]type\fR t_alias : immediate = int
@@ -151,7 +211,7 @@ Has both a kind annotation and a manifest\.
 .nf 
 .sp 
 .in 3
-\fB6 Kind-constrained polymorphism in values\fR
+\fB7 Kind-constrained polymorphism in values\fR
 .in 
 .sp 
 \f[CB]val\fR poly_immediate : ('a : immediate)\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR

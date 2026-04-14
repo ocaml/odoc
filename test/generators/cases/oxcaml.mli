@@ -1,31 +1,54 @@
 val f : int -> ('a . 'a -> 'a) -> unit
 (** Polymorphic arguments require parentheses *)
 
-(** {1 Kind annotations on abstract types} *)
+(** {1 Layouts} *)
 
-type t_immediate : immediate
-(** Kind annotation on abstract type. *)
+type t_any : any
+(** Layout [any]. *)
+
+type t_value_or_null : value_or_null
+(** Layout [value_or_null]. *)
+
+type t_float64 : float64
+(** Layout [float64]. *)
+
+type t_float32 : float32
+(** Layout [float32]. *)
+
+type t_word : word
+(** Layout [word]. *)
+
+type t_bits64 : bits64
+(** Layout [bits64]. *)
+
+type t_bits32 : bits32
+(** Layout [bits32]. *)
+
+type t_vec128 : vec128
+(** Layout [vec128]. *)
+
+type t_void : void
+(** Layout [void]. *)
+
+(** {1 Kind abbreviations} *)
 
 type t_value : value
 (** [value] is the default kind, so the annotation is not rendered. *)
 
-type t_any : any
-(** A type with the [any] kind. *)
+type t_immediate : immediate
+(** Kind abbreviation [immediate]. *)
 
-type t_float64 : float64
-(** A type with the [float64] kind. *)
+type t_immediate64 : immediate64
+(** Kind abbreviation [immediate64]. *)
 
-type t_bits32 : bits32
-(** A type with the [bits32] kind. *)
+type t_immutable_data : immutable_data
+(** Kind abbreviation [immutable_data]. *)
 
-type t_bits64 : bits64
-(** A type with the [bits64] kind. *)
+type t_sync_data : sync_data
+(** Kind abbreviation [sync_data]. *)
 
-type t_word : word
-(** A type with the [word] kind. *)
-
-type t_void : void
-(** A type with the [void] kind. *)
+type t_mutable_data : mutable_data
+(** Kind abbreviation [mutable_data]. *)
 
 (** {1 Kind annotations with modalities} *)
 
@@ -37,6 +60,9 @@ type t_contended : value mod contended
 
 type t_multi_mod : value mod portable contended
 (** Kind annotation with multiple modalities. *)
+
+type t_everything : float64 mod everything
+(** The [everything] bounds abbreviation. *)
 
 (** {1 Kind annotations on parameterized types} *)
 
