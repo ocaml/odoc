@@ -17,4 +17,158 @@ Oxcaml
 .ti +2
 Polymorphic arguments require parentheses
 .nf 
+.sp 
+.in 3
+\fB1 Kind annotations on abstract types\fR
+.in 
+.sp 
+.fi 
+These type declarations have kind annotations that constrain their layout\. Currently, odoc does not render the kind annotations\.
+.nf 
+.sp 
+\f[CB]type\fR t_immediate
+.fi 
+.br 
+.ti +2
+Should be type t_immediate : immediate
+.nf 
+.sp 
+\f[CB]type\fR t_value
+.fi 
+.br 
+.ti +2
+Should be type t_value : value
+.nf 
+.sp 
+\f[CB]type\fR t_any
+.fi 
+.br 
+.ti +2
+Should be type t_any : any
+.nf 
+.sp 
+\f[CB]type\fR t_float64
+.fi 
+.br 
+.ti +2
+Should be type t_float64 : float64
+.nf 
+.sp 
+\f[CB]type\fR t_bits32
+.fi 
+.br 
+.ti +2
+Should be type t_bits32 : bits32
+.nf 
+.sp 
+\f[CB]type\fR t_bits64
+.fi 
+.br 
+.ti +2
+Should be type t_bits64 : bits64
+.nf 
+.sp 
+\f[CB]type\fR t_word
+.fi 
+.br 
+.ti +2
+Should be type t_word : word
+.nf 
+.sp 
+\f[CB]type\fR t_void
+.fi 
+.br 
+.ti +2
+Should be type t_void : void
+.nf 
+.sp 
+.in 3
+\fB2 Kind annotations with modalities\fR
+.in 
+.sp 
+\f[CB]type\fR t_portable
+.fi 
+.br 
+.ti +2
+Should be type t_portable : value mod portable
+.nf 
+.sp 
+\f[CB]type\fR t_contended
+.fi 
+.br 
+.ti +2
+Should be type t_contended : value mod contended
+.nf 
+.sp 
+\f[CB]type\fR t_multi_mod
+.fi 
+.br 
+.ti +2
+Should be type t_multi_mod : value mod portable contended
+.nf 
+.sp 
+.in 3
+\fB3 Kind annotations on parameterized types\fR
+.in 
+.sp 
+\f[CB]type\fR 'a imm_param
+.fi 
+.br 
+.ti +2
+The kind constraint on 'a is not rendered\.
+.nf 
+.sp 
+\f[CB]type\fR 'a float_param
+.fi 
+.br 
+.ti +2
+The kind constraint on 'a is not rendered\.
+.nf 
+.sp 
+\f[CB]type\fR ('a, 'b) multi_kind
+.fi 
+.br 
+.ti +2
+Multiple kind-constrained parameters\.
+.nf 
+.sp 
+.in 3
+\fB4 Kind annotations with with constraints\fR
+.in 
+.sp 
+\f[CB]type\fR 'a t_with
+.fi 
+.br 
+.ti +2
+Should be type 'a t_with : immediate with 'a
+.nf 
+.sp 
+.in 3
+\fB5 Kind annotations on type aliases\fR
+.in 
+.sp 
+\f[CB]type\fR t_alias = int
+.fi 
+.br 
+.ti +2
+Has both a kind annotation and a manifest\.
+.nf 
+.sp 
+.in 3
+\fB6 Kind-constrained polymorphism in values\fR
+.in 
+.sp 
+\f[CB]val\fR poly_immediate : 'a\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR
+.fi 
+.br 
+.ti +2
+The kind constraint on 'a is not rendered\.
+.nf 
+.sp 
+\f[CB]val\fR poly_float64 : 'a\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR
+.fi 
+.br 
+.ti +2
+The kind constraint on 'a is not rendered\.
+.nf 
 

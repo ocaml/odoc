@@ -1,5 +1,49 @@
 \section{Module \ocamlinlinecode{Oxcaml}}\label{Oxcaml}%
 \label{Oxcaml--val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : int \ocamltag{arrow}{$\rightarrow$} ('a.\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}) \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Polymorphic arguments require parentheses\end{ocamlindent}%
 \medbreak
+\subsection{Kind annotations on abstract types\label{Oxcaml--kind-annotations-on-abstract-types}}%
+These type declarations have kind annotations that constrain their layout. Currently, odoc does not render the kind annotations.
+
+\label{Oxcaml--type-t_immediate}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}immediate}\begin{ocamlindent}Should be \ocamlinlinecode{type t\_\allowbreak{}immediate : immediate}\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_value}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}value}\begin{ocamlindent}Should be \ocamlinlinecode{type t\_\allowbreak{}value : value}\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_any}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}any}\begin{ocamlindent}Should be \ocamlinlinecode{type t\_\allowbreak{}any : any}\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_float64}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}float64}\begin{ocamlindent}Should be \ocamlinlinecode{type t\_\allowbreak{}float64 : float64}\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_bits32}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}bits32}\begin{ocamlindent}Should be \ocamlinlinecode{type t\_\allowbreak{}bits32 : bits32}\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_bits64}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}bits64}\begin{ocamlindent}Should be \ocamlinlinecode{type t\_\allowbreak{}bits64 : bits64}\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_word}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}word}\begin{ocamlindent}Should be \ocamlinlinecode{type t\_\allowbreak{}word : word}\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_void}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}void}\begin{ocamlindent}Should be \ocamlinlinecode{type t\_\allowbreak{}void : void}\end{ocamlindent}%
+\medbreak
+\subsection{Kind annotations with modalities\label{Oxcaml--kind-annotations-with-modalities}}%
+\label{Oxcaml--type-t_portable}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}portable}\begin{ocamlindent}Should be \ocamlinlinecode{type t\_\allowbreak{}portable : value mod portable}\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_contended}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}contended}\begin{ocamlindent}Should be \ocamlinlinecode{type t\_\allowbreak{}contended : value mod contended}\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_multi_mod}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}multi\_\allowbreak{}mod}\begin{ocamlindent}Should be \ocamlinlinecode{type t\_\allowbreak{}multi\_\allowbreak{}mod : value mod portable contended}\end{ocamlindent}%
+\medbreak
+\subsection{Kind annotations on parameterized types\label{Oxcaml--kind-annotations-on-parameterized-types}}%
+\label{Oxcaml--type-imm_param}\ocamlcodefragment{\ocamltag{keyword}{type} 'a imm\_\allowbreak{}param}\begin{ocamlindent}The kind constraint on \ocamlinlinecode{'a} is not rendered.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-float_param}\ocamlcodefragment{\ocamltag{keyword}{type} 'a float\_\allowbreak{}param}\begin{ocamlindent}The kind constraint on \ocamlinlinecode{'a} is not rendered.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-multi_kind}\ocamlcodefragment{\ocamltag{keyword}{type} ('a,\allowbreak{} 'b) multi\_\allowbreak{}kind}\begin{ocamlindent}Multiple kind-constrained parameters.\end{ocamlindent}%
+\medbreak
+\subsection{Kind annotations with \ocamlinlinecode{with} constraints\label{Oxcaml--kind-annotations-with-with-constraints}}%
+\label{Oxcaml--type-t_with}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t\_\allowbreak{}with}\begin{ocamlindent}Should be \ocamlinlinecode{type 'a t\_\allowbreak{}with : immediate with 'a}\end{ocamlindent}%
+\medbreak
+\subsection{Kind annotations on type aliases\label{Oxcaml--kind-annotations-on-type-aliases}}%
+\label{Oxcaml--type-t_alias}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}alias = int}\begin{ocamlindent}Has both a kind annotation and a manifest.\end{ocamlindent}%
+\medbreak
+\subsection{Kind-constrained polymorphism in values\label{Oxcaml--kind-constrained-polymorphism-in-values}}%
+\label{Oxcaml--val-poly_immediate}\ocamlcodefragment{\ocamltag{keyword}{val} poly\_\allowbreak{}immediate : 'a.\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\begin{ocamlindent}The kind constraint on \ocamlinlinecode{'a} is not rendered.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--val-poly_float64}\ocamlcodefragment{\ocamltag{keyword}{val} poly\_\allowbreak{}float64 : 'a.\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\begin{ocamlindent}The kind constraint on \ocamlinlinecode{'a} is not rendered.\end{ocamlindent}%
+\medbreak
 
 
