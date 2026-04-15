@@ -11946,7 +11946,12 @@
 (subdir
  html
  (rule
-  (targets Oxcaml.html.gen)
+  (targets
+   Oxcaml.html.gen
+   Oxcaml-module-type-S.html.gen
+   Oxcaml-M1.html.gen
+   Oxcaml-M2.html.gen
+   Oxcaml-M3.html.gen)
   (package odoc)
   (action
    (run
@@ -11965,6 +11970,30 @@
   (package odoc)
   (action
    (diff Oxcaml.html Oxcaml.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-module-type-S.html Oxcaml-module-type-S.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M1.html Oxcaml-M1.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M2.html Oxcaml-M2.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M3.html Oxcaml-M3.html.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -11987,7 +12016,7 @@
 (subdir
  latex
  (rule
-  (targets Oxcaml.tex.gen)
+  (targets Oxcaml.tex.gen Oxcaml.M1.tex.gen Oxcaml.M2.tex.gen)
   (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../oxcaml.odocl}))
@@ -11997,6 +12026,18 @@
   (package odoc)
   (action
    (diff Oxcaml.tex Oxcaml.tex.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.M1.tex Oxcaml.M1.tex.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.M2.tex Oxcaml.M2.tex.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -12019,7 +12060,7 @@
 (subdir
  man
  (rule
-  (targets Oxcaml.3o.gen)
+  (targets Oxcaml.3o.gen Oxcaml.M1.3o.gen Oxcaml.M2.3o.gen Oxcaml.M3.3o.gen)
   (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../oxcaml.odocl}))
@@ -12029,6 +12070,24 @@
   (package odoc)
   (action
    (diff Oxcaml.3o Oxcaml.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.M1.3o Oxcaml.M1.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.M2.3o Oxcaml.M2.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.M3.3o Oxcaml.M3.3o.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -12051,7 +12110,12 @@
 (subdir
  markdown
  (rule
-  (targets Oxcaml.md.gen)
+  (targets
+   Oxcaml.md.gen
+   Oxcaml-module-type-S.md.gen
+   Oxcaml-M1.md.gen
+   Oxcaml-M2.md.gen
+   Oxcaml-M3.md.gen)
   (package odoc)
   (action
    (run
@@ -12068,6 +12132,30 @@
   (package odoc)
   (action
    (diff Oxcaml.md Oxcaml.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-module-type-S.md Oxcaml-module-type-S.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M1.md Oxcaml-M1.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M2.md Oxcaml-M2.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M3.md Oxcaml-M3.md.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir

@@ -1,0 +1,26 @@
+
+.TH M2 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.M2
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml\.M2\fR
+.in 
+.sp 
+.fi 
+Module with portable modality\. The modality is applied to all value members of M2\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR x : int
+.sp 
+\f[CB]val\fR f : string \f[CB]\->\fR bool
+.sp 
+\f[CB]type\fR s = {
+.br 
+.ti +2
+a : int;
+.br 
+}
