@@ -14,6 +14,38 @@
   <header class="odoc-preamble">
    <h1>Module <code><span>Oxcaml</span></code></h1>
   </header>
+  <div class="odoc-tocs">
+   <nav class="odoc-toc odoc-local-toc">
+    <ul><li><a href="#layouts">Layouts</a></li>
+     <li><a href="#kind-abbreviations">Kind abbreviations</a></li>
+     <li>
+      <a href="#kind-annotations-with-modalities">Kind annotations with
+        modalities
+      </a>
+     </li>
+     <li>
+      <a href="#kind-annotations-on-parameterized-types">Kind annotations
+        on parameterized types
+      </a>
+     </li>
+     <li>
+      <a href="#kind-annotations-with-with-constraints">Kind annotations
+        with <code>with</code> constraints
+      </a>
+     </li>
+     <li>
+      <a href="#kind-annotations-on-type-aliases">Kind annotations on
+        type aliases
+      </a>
+     </li>
+     <li>
+      <a href="#kind-constrained-polymorphism-in-values">Kind-constrained
+        polymorphism in values
+      </a>
+     </li>
+    </ul>
+   </nav>
+  </div>
   <div class="odoc-content">
    <div class="odoc-spec">
     <div class="spec value anchored" id="val-f">
@@ -32,6 +64,300 @@
      </code>
     </div>
     <div class="spec-doc"><p>Polymorphic arguments require parentheses</p>
+    </div>
+   </div><h2 id="layouts"><a href="#layouts" class="anchor"></a>Layouts</h2>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_any">
+     <a href="#type-t_any" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t_any : any</span></code>
+    </div><div class="spec-doc"><p>Layout <code>any</code>.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_value_or_null">
+     <a href="#type-t_value_or_null" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_value_or_null : value_or_null
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Layout <code>value_or_null</code>.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_float64">
+     <a href="#type-t_float64" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t_float64 : float64</span>
+     </code>
+    </div><div class="spec-doc"><p>Layout <code>float64</code>.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_float32">
+     <a href="#type-t_float32" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t_float32 : float32</span>
+     </code>
+    </div><div class="spec-doc"><p>Layout <code>float32</code>.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_word">
+     <a href="#type-t_word" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t_word : word</span>
+     </code>
+    </div><div class="spec-doc"><p>Layout <code>word</code>.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_bits64">
+     <a href="#type-t_bits64" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t_bits64 : bits64</span>
+     </code>
+    </div><div class="spec-doc"><p>Layout <code>bits64</code>.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_bits32">
+     <a href="#type-t_bits32" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t_bits32 : bits32</span>
+     </code>
+    </div><div class="spec-doc"><p>Layout <code>bits32</code>.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_vec128">
+     <a href="#type-t_vec128" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t_vec128 : vec128</span>
+     </code>
+    </div><div class="spec-doc"><p>Layout <code>vec128</code>.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_void">
+     <a href="#type-t_void" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t_void : void</span>
+     </code>
+    </div><div class="spec-doc"><p>Layout <code>void</code>.</p></div>
+   </div>
+   <h2 id="kind-abbreviations">
+    <a href="#kind-abbreviations" class="anchor"></a>Kind abbreviations
+   </h2>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_value">
+     <a href="#type-t_value" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t_value</span></code>
+    </div>
+    <div class="spec-doc">
+     <p><code>value</code> is the default kind, so the annotation is 
+      not rendered.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_immediate">
+     <a href="#type-t_immediate" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_immediate : immediate</span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Kind abbreviation <code>immediate</code>.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_immediate64">
+     <a href="#type-t_immediate64" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_immediate64 : immediate64
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Kind abbreviation <code>immediate64</code>.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_immutable_data">
+     <a href="#type-t_immutable_data" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_immutable_data : 
+       immutable_data
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Kind abbreviation <code>immutable_data</code>.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_sync_data">
+     <a href="#type-t_sync_data" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_sync_data : sync_data</span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Kind abbreviation <code>sync_data</code>.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_mutable_data">
+     <a href="#type-t_mutable_data" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_mutable_data : mutable_data
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Kind abbreviation <code>mutable_data</code>.</p>
+    </div>
+   </div>
+   <h2 id="kind-annotations-with-modalities">
+    <a href="#kind-annotations-with-modalities" class="anchor"></a>Kind
+     annotations with modalities
+   </h2>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_portable">
+     <a href="#type-t_portable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_portable : value 
+       <span class="keyword">mod</span> portable
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Kind annotation with a modality.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_contended">
+     <a href="#type-t_contended" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_contended : value 
+       <span class="keyword">mod</span> contended
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Kind annotation with a different modality.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_multi_mod">
+     <a href="#type-t_multi_mod" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_multi_mod : value 
+       <span class="keyword">mod</span> portable contended
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Kind annotation with multiple modalities.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_everything">
+     <a href="#type-t_everything" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_everything : float64 
+       <span class="keyword">mod</span> everything
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>The <code>everything</code> bounds abbreviation.</p>
+    </div>
+   </div>
+   <h2 id="kind-annotations-on-parameterized-types">
+    <a href="#kind-annotations-on-parameterized-types" class="anchor"></a>
+    Kind annotations on parameterized types
+   </h2>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-imm_param">
+     <a href="#type-imm_param" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> 
+       <span>('a : immediate) imm_param</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>A type parameter with a kind constraint.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-float_param">
+     <a href="#type-float_param" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> 
+       <span>('a : float64) float_param</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A type parameter with a different kind constraint.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-multi_kind">
+     <a href="#type-multi_kind" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> 
+       <span>(('a : immediate), ('b : float64)) multi_kind</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Multiple kind-constrained parameters.</p></div>
+   </div>
+   <h2 id="kind-annotations-with-with-constraints">
+    <a href="#kind-annotations-with-with-constraints" class="anchor"></a>
+    Kind annotations with <code>with</code> constraints
+   </h2>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_with">
+     <a href="#type-t_with" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> <span>'a t_with</span> : 
+       immediate <span class="keyword">with</span> 
+       <span class="type-var">'a</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Kind annotation with a <code>with</code> constraint.</p>
+    </div>
+   </div>
+   <h2 id="kind-annotations-on-type-aliases">
+    <a href="#kind-annotations-on-type-aliases" class="anchor"></a>Kind
+     annotations on type aliases
+   </h2>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_alias">
+     <a href="#type-t_alias" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t_alias : immediate</span>
+      <span> = int</span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Has both a kind annotation and a manifest.</p>
+    </div>
+   </div>
+   <h2 id="kind-constrained-polymorphism-in-values">
+    <a href="#kind-constrained-polymorphism-in-values" class="anchor"></a>
+    Kind-constrained polymorphism in values
+   </h2>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-poly_immediate">
+     <a href="#val-poly_immediate" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> poly_immediate : ('a : immediate
+       ). 
+       <span><span class="type-var">'a</span> 
+        <span class="arrow">&#45;&gt;</span>
+       </span> <span class="type-var">'a</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Kind constraint on a polymorphic type variable.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-poly_float64">
+     <a href="#val-poly_float64" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> poly_float64 : ('a : float64
+       ). 
+       <span><span class="type-var">'a</span> 
+        <span class="arrow">&#45;&gt;</span>
+       </span> <span class="type-var">'a</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Kind constraint on a polymorphic type variable with a different kind.
+     </p>
     </div>
    </div>
   </div>

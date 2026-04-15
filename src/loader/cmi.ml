@@ -490,6 +490,51 @@ let mark_class_declaration cld =
   List.iter mark_type_parameter cld.cty_params;
   mark_class_type cld.cty_params cld.cty_type
 
+#if defined OXCAML
+let read_parsetree_core_type (ct : Parsetree.core_type) =
+  let open TypeExpr in
+  match ct.ptyp_desc with
+  | Ptyp_var (s, _) -> Var s
+  | Ptyp_any _ -> Any
+  | _ -> failwith "invalid core type"
+
+let rec read_jkind_annotation (jk : Parsetree.jkind_annotation) =
+  let open KindAnnotation in
+  match jk.pjkind_desc with
+  | Pjk_default -> Default
+  | Pjk_abbreviation s -> Abbreviation s
+  | Pjk_mod (jk', modes) ->
+    let modes = List.map (fun (m : Parsetree.mode Location.loc) ->
+      let (Parsetree.Mode s) = m.txt in s) modes in
+    Mod (read_jkind_annotation jk', modes)
+  | Pjk_with (jk', cty, modalities) ->
+    let ty = read_parsetree_core_type cty in
+    let modalities = List.map (fun (m : Parsetree.modality Location.loc) ->
+      let (Parsetree.Modality s) = m.txt in s) modalities in
+    With (read_jkind_annotation jk', ty, modalities)
+  | Pjk_kind_of cty ->
+    Kind_of (read_parsetree_core_type cty)
+  | Pjk_product jks ->
+    Product (List.map read_jkind_annotation jks)
+
+let read_jkind_annotation = function
+  | None -> KindAnnotation.Default
+  | Some jk ->
+    match read_jkind_annotation jk with
+    | Abbreviation "value" -> Default
+    | k -> k
+
+let jkind_of_type_desc te =
+  match  te with
+  | Tvar { jkind; _ } | Tunivar { jkind; _ } ->
+      read_jkind_annotation jkind.annotation
+  | _ -> KindAnnotation.Default
+#else
+
+let jkind_of_type_desc _te = KindAnnotation.Default
+
+#endif
+
 let rec read_type_expr env typ =
   let open TypeExpr in
   let px = proxy typ in
@@ -549,10 +594,14 @@ let rec read_type_expr env typ =
       | Tpoly (typ, []) -> read_type_expr env typ
       | Tpoly (typ, tyl) ->
           let tyl = List.map Compat.repr tyl in
-          let vars = List.map name_of_type_repr tyl in
+          let vars_with_kinds = List.map (fun ty ->
+            let name = name_of_type_repr ty in
+            let kind = jkind_of_type_desc ty.desc in
+            (name, kind)
+          ) tyl in
           let typ = read_type_expr env typ in
             remove_names tyl;
-            Poly(vars, typ)
+            Poly(vars_with_kinds, typ)
       | Tunivar _ -> Var (name_of_type typ)
 #if OCAML_VERSION>=(5,4,0)
       | Tpackage {pack_path=p; pack_cstrs } ->
@@ -827,6 +876,7 @@ let read_type_parameter abstr var param =
     if name = "_" then Any
     else Var name
   in
+  let kind = jkind_of_type_desc (Compat.get_desc param) in
   let variance =
     if not (abstr || aliasable param) then None
     else begin
@@ -836,7 +886,7 @@ let read_type_parameter abstr var param =
         else None
       end in
   let injectivity = read_injectivity var in
-  {desc; variance; injectivity}
+  {desc; variance; injectivity; kind}
 
 let read_type_constraints env params =
   List.fold_right
@@ -898,7 +948,14 @@ let read_type_declaration env parent id decl =
     List.map2 (read_type_parameter abstr) decl.type_variance params
   in
   let private_ = (decl.type_private = Private) in
-  let equation = Equation.{params; manifest; constraints; private_} in
+  let kind =
+#if defined OXCAML
+    read_jkind_annotation decl.type_jkind.annotation
+#else
+    KindAnnotation.Default
+#endif
+  in
+  let equation = Equation.{params; manifest; constraints; private_; kind} in
   {id; source_loc; doc; canonical; equation; representation}
 
 let read_extension_constructor env parent id ext =

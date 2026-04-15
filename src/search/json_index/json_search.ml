@@ -152,6 +152,7 @@ let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
           private_;
           manifest;
           constraints;
+          kind = _;
         } =
           equation
         in

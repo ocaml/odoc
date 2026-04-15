@@ -211,7 +211,8 @@ and so we simply look up the type in the environment, giving a `Component.Type.t
      canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-       manifest = None; constraints = []};
+       manifest = None; constraints = [];
+       kind = Odoc_model.Lang.KindAnnotation.Default};
      representation = None});
    Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
     {Odoc_model.Lang.TypeDecl.id =
@@ -248,7 +249,7 @@ and so we simply look up the type in the environment, giving a `Component.Type.t
                       x);
                   ihash = 622581103; ikey = "t_x.r_Root.p_None"}),
            []));
-       constraints = []};
+       constraints = []; kind = Odoc_model.Lang.KindAnnotation.Default};
      representation = None})];
  compiled = true; removed = [];
  doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}}
@@ -355,7 +356,8 @@ val module_ : Component.Module.t Component.Delayed.t =
                   canonical = None;
                   equation =
                    {Odoc_xref2.Component.TypeDecl.Equation.params = [];
-                    private_ = false; manifest = None; constraints = []};
+                    private_ = false; manifest = None; constraints = [];
+                    kind = Odoc_model.Lang.KindAnnotation.Default};
                   representation = None};
                get = None})];
            compiled = false; removed = [];
@@ -383,7 +385,8 @@ Odoc_xref2.Tools.Signature
          canonical = None;
          equation =
           {Odoc_xref2.Component.TypeDecl.Equation.params = [];
-           private_ = false; manifest = None; constraints = []};
+           private_ = false; manifest = None; constraints = [];
+           kind = Odoc_model.Lang.KindAnnotation.Default};
          representation = None};
       get = None})];
   compiled = false; removed = [];
@@ -539,7 +542,9 @@ val m : Component.Element.module_type option =
                                  {Odoc_xref2.Component.TypeDecl.Equation.params
                                    = [];
                                   private_ = false; manifest = None;
-                                  constraints = []};
+                                  constraints = [];
+                                  kind =
+                                   Odoc_model.Lang.KindAnnotation.Default};
                                 representation = None};
                              get = None})];
                          compiled = false; removed = [];
@@ -1074,7 +1079,8 @@ Odoc_xref2.Tools.Signature
          canonical = None;
          equation =
           {Odoc_xref2.Component.TypeDecl.Equation.params = [];
-           private_ = false; manifest = None; constraints = []};
+           private_ = false; manifest = None; constraints = [];
+           kind = Odoc_model.Lang.KindAnnotation.Default};
          representation = None};
       get = None})];
   compiled = false; removed = [];
@@ -2631,7 +2637,8 @@ let resolved = Common.compile_signature sg;;
  canonical = None;
  equation =
   {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-   manifest = None; constraints = []};
+   manifest = None; constraints = [];
+   kind = Odoc_model.Lang.KindAnnotation.Default};
  representation = None}
 ```
 
@@ -2700,7 +2707,8 @@ let sg = Common.signature_of_mli_string test_data;;
               canonical = None;
               equation =
                {Odoc_model.Lang.TypeDecl.Equation.params = [];
-                private_ = false; manifest = None; constraints = []};
+                private_ = false; manifest = None; constraints = [];
+                kind = Odoc_model.Lang.KindAnnotation.Default};
               representation = None})];
           compiled = false; removed = [];
           doc = {Odoc_model__.Comment.elements = []; warnings_tag = None}})};
@@ -2722,7 +2730,8 @@ let sg = Common.signature_of_mli_string test_data;;
      canonical = None;
      equation =
       {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-       manifest = None; constraints = []};
+       manifest = None; constraints = [];
+       kind = Odoc_model.Lang.KindAnnotation.Default};
      representation = None});
    Odoc_model.Lang.Signature.ModuleType
     {Odoc_model.Lang.ModuleType.id =
@@ -2765,7 +2774,8 @@ let sg = Common.signature_of_mli_string test_data;;
                              u);
                          ihash = 15973539; ikey = "t_u.r_Root.p_None"}),
                   []));
-              constraints = []})];
+              constraints = [];
+              kind = Odoc_model.Lang.KindAnnotation.Default})];
           w_expansion = None;
           w_expr =
            Odoc_model.Lang.ModuleType.U.Path
@@ -2835,7 +2845,8 @@ Odoc_model.Lang.ModuleType.Path
            canonical = None;
            equation =
             {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-             manifest = None; constraints = []};
+             manifest = None; constraints = [];
+             kind = Odoc_model.Lang.KindAnnotation.Default};
            representation =
             Some
              (Odoc_model.Lang.TypeDecl.Representation.Variant
@@ -3125,7 +3136,7 @@ let sg = Common.signature_of_mli_string test_data;;
                   false),
                t),
            []));
-       constraints = []};
+       constraints = []; kind = Odoc_model.Lang.KindAnnotation.Default};
      representation = None});
    Odoc_model.Lang.Signature.Value
     {Odoc_model.Lang.Value.id =
@@ -3214,7 +3225,7 @@ let sg = Common.signature_of_mli_string test_data;;
                   false),
                t),
            []));
-       constraints = []};
+       constraints = []; kind = Odoc_model.Lang.KindAnnotation.Default};
      representation = None});
    Odoc_model.Lang.Signature.Value
     {Odoc_model.Lang.Value.id =
@@ -3335,7 +3346,7 @@ let sg = Common.signature_of_mli_string test_data;;
                   false),
                t),
            []));
-       constraints = []};
+       constraints = []; kind = Odoc_model.Lang.KindAnnotation.Default};
      representation = None});
    Odoc_model.Lang.Signature.Value
     {Odoc_model.Lang.Value.id =

@@ -1,5 +1,64 @@
 \section{Module \ocamlinlinecode{Oxcaml}}\label{Oxcaml}%
 \label{Oxcaml--val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : int \ocamltag{arrow}{$\rightarrow$} ('a.\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}) \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Polymorphic arguments require parentheses\end{ocamlindent}%
 \medbreak
+\subsection{Layouts\label{Oxcaml--layouts}}%
+\label{Oxcaml--type-t_any}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}any : any}\begin{ocamlindent}Layout \ocamlinlinecode{any}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_value_or_null}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}value\_\allowbreak{}or\_\allowbreak{}null : value\_\allowbreak{}or\_\allowbreak{}null}\begin{ocamlindent}Layout \ocamlinlinecode{value\_\allowbreak{}or\_\allowbreak{}null}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_float64}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}float64 : float64}\begin{ocamlindent}Layout \ocamlinlinecode{float64}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_float32}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}float32 : float32}\begin{ocamlindent}Layout \ocamlinlinecode{float32}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_word}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}word : word}\begin{ocamlindent}Layout \ocamlinlinecode{word}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_bits64}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}bits64 : bits64}\begin{ocamlindent}Layout \ocamlinlinecode{bits64}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_bits32}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}bits32 : bits32}\begin{ocamlindent}Layout \ocamlinlinecode{bits32}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_vec128}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}vec128 : vec128}\begin{ocamlindent}Layout \ocamlinlinecode{vec128}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_void}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}void : void}\begin{ocamlindent}Layout \ocamlinlinecode{void}.\end{ocamlindent}%
+\medbreak
+\subsection{Kind abbreviations\label{Oxcaml--kind-abbreviations}}%
+\label{Oxcaml--type-t_value}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}value}\begin{ocamlindent}\ocamlinlinecode{value} is the default kind, so the annotation is not rendered.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_immediate}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}immediate : immediate}\begin{ocamlindent}Kind abbreviation \ocamlinlinecode{immediate}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_immediate64}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}immediate64 : immediate64}\begin{ocamlindent}Kind abbreviation \ocamlinlinecode{immediate64}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_immutable_data}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}immutable\_\allowbreak{}data : immutable\_\allowbreak{}data}\begin{ocamlindent}Kind abbreviation \ocamlinlinecode{immutable\_\allowbreak{}data}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_sync_data}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}sync\_\allowbreak{}data : sync\_\allowbreak{}data}\begin{ocamlindent}Kind abbreviation \ocamlinlinecode{sync\_\allowbreak{}data}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_mutable_data}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}mutable\_\allowbreak{}data : mutable\_\allowbreak{}data}\begin{ocamlindent}Kind abbreviation \ocamlinlinecode{mutable\_\allowbreak{}data}.\end{ocamlindent}%
+\medbreak
+\subsection{Kind annotations with modalities\label{Oxcaml--kind-annotations-with-modalities}}%
+\label{Oxcaml--type-t_portable}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}portable : value \ocamltag{keyword}{mod} portable}\begin{ocamlindent}Kind annotation with a modality.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_contended}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}contended : value \ocamltag{keyword}{mod} contended}\begin{ocamlindent}Kind annotation with a different modality.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_multi_mod}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}multi\_\allowbreak{}mod : value \ocamltag{keyword}{mod} portable contended}\begin{ocamlindent}Kind annotation with multiple modalities.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_everything}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}everything : float64 \ocamltag{keyword}{mod} everything}\begin{ocamlindent}The \ocamlinlinecode{everything} bounds abbreviation.\end{ocamlindent}%
+\medbreak
+\subsection{Kind annotations on parameterized types\label{Oxcaml--kind-annotations-on-parameterized-types}}%
+\label{Oxcaml--type-imm_param}\ocamlcodefragment{\ocamltag{keyword}{type} ('a : immediate) imm\_\allowbreak{}param}\begin{ocamlindent}A type parameter with a kind constraint.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-float_param}\ocamlcodefragment{\ocamltag{keyword}{type} ('a : float64) float\_\allowbreak{}param}\begin{ocamlindent}A type parameter with a different kind constraint.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-multi_kind}\ocamlcodefragment{\ocamltag{keyword}{type} (('a : immediate),\allowbreak{} ('b : float64)) multi\_\allowbreak{}kind}\begin{ocamlindent}Multiple kind-constrained parameters.\end{ocamlindent}%
+\medbreak
+\subsection{Kind annotations with \ocamlinlinecode{with} constraints\label{Oxcaml--kind-annotations-with-with-constraints}}%
+\label{Oxcaml--type-t_with}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t\_\allowbreak{}with : immediate \ocamltag{keyword}{with} \ocamltag{type-var}{'a}}\begin{ocamlindent}Kind annotation with a \ocamlinlinecode{with} constraint.\end{ocamlindent}%
+\medbreak
+\subsection{Kind annotations on type aliases\label{Oxcaml--kind-annotations-on-type-aliases}}%
+\label{Oxcaml--type-t_alias}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}alias : immediate = int}\begin{ocamlindent}Has both a kind annotation and a manifest.\end{ocamlindent}%
+\medbreak
+\subsection{Kind-constrained polymorphism in values\label{Oxcaml--kind-constrained-polymorphism-in-values}}%
+\label{Oxcaml--val-poly_immediate}\ocamlcodefragment{\ocamltag{keyword}{val} poly\_\allowbreak{}immediate : ('a : immediate).\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\begin{ocamlindent}Kind constraint on a polymorphic type variable.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--val-poly_float64}\ocamlcodefragment{\ocamltag{keyword}{val} poly\_\allowbreak{}float64 : ('a : float64).\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\begin{ocamlindent}Kind constraint on a polymorphic type variable with a different kind.\end{ocamlindent}%
+\medbreak
 
 

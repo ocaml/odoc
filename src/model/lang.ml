@@ -258,6 +258,7 @@ and TypeDecl : sig
     desc : param_desc;
     variance : variance option;
     injectivity : bool;
+    kind : KindAnnotation.t;
   }
 
   module Equation : sig
@@ -266,6 +267,7 @@ and TypeDecl : sig
       private_ : bool;
       manifest : TypeExpr.t option;
       constraints : (TypeExpr.t * TypeExpr.t) list;
+      kind : KindAnnotation.t;
     }
   end
 
@@ -417,6 +419,19 @@ and InstanceVariable : sig
 end =
   InstanceVariable
 
+(** {3 Kind annotations} *)
+
+and KindAnnotation : sig
+  type t =
+    | Default
+    | Abbreviation of string
+    | Mod of t * string list
+    | With of t * TypeExpr.t * string list
+    | Kind_of of TypeExpr.t
+    | Product of t list
+end =
+  KindAnnotation
+
 (** {3 Type expressions} *)
 
 and TypeExpr : sig
@@ -464,7 +479,7 @@ and TypeExpr : sig
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
     | Class of Path.ClassType.t * t list
-    | Poly of string list * t
+    | Poly of (string * KindAnnotation.t) list * t
     | Quote of t
     | Splice of t
     | Package of TypeExpr.Package.t

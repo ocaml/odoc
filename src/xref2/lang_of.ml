@@ -954,6 +954,7 @@ and type_decl_equation map (parent : Identifier.FieldParent.t)
       List.map
         (fun (x, y) -> (type_expr map parent x, type_expr map parent y))
         eqn.constraints;
+    kind = eqn.kind;
   }
 
 and type_decl map parent id (t : Component.TypeDecl.t) :

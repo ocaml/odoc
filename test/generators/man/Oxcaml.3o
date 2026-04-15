@@ -17,4 +17,214 @@ Oxcaml
 .ti +2
 Polymorphic arguments require parentheses
 .nf 
+.sp 
+.in 3
+\fB1 Layouts\fR
+.in 
+.sp 
+\f[CB]type\fR t_any : any
+.fi 
+.br 
+.ti +2
+Layout any\.
+.nf 
+.sp 
+\f[CB]type\fR t_value_or_null : value_or_null
+.fi 
+.br 
+.ti +2
+Layout value_or_null\.
+.nf 
+.sp 
+\f[CB]type\fR t_float64 : float64
+.fi 
+.br 
+.ti +2
+Layout float64\.
+.nf 
+.sp 
+\f[CB]type\fR t_float32 : float32
+.fi 
+.br 
+.ti +2
+Layout float32\.
+.nf 
+.sp 
+\f[CB]type\fR t_word : word
+.fi 
+.br 
+.ti +2
+Layout word\.
+.nf 
+.sp 
+\f[CB]type\fR t_bits64 : bits64
+.fi 
+.br 
+.ti +2
+Layout bits64\.
+.nf 
+.sp 
+\f[CB]type\fR t_bits32 : bits32
+.fi 
+.br 
+.ti +2
+Layout bits32\.
+.nf 
+.sp 
+\f[CB]type\fR t_vec128 : vec128
+.fi 
+.br 
+.ti +2
+Layout vec128\.
+.nf 
+.sp 
+\f[CB]type\fR t_void : void
+.fi 
+.br 
+.ti +2
+Layout void\.
+.nf 
+.sp 
+.in 3
+\fB2 Kind abbreviations\fR
+.in 
+.sp 
+\f[CB]type\fR t_value
+.fi 
+.br 
+.ti +2
+value is the default kind, so the annotation is not rendered\.
+.nf 
+.sp 
+\f[CB]type\fR t_immediate : immediate
+.fi 
+.br 
+.ti +2
+Kind abbreviation immediate\.
+.nf 
+.sp 
+\f[CB]type\fR t_immediate64 : immediate64
+.fi 
+.br 
+.ti +2
+Kind abbreviation immediate64\.
+.nf 
+.sp 
+\f[CB]type\fR t_immutable_data : immutable_data
+.fi 
+.br 
+.ti +2
+Kind abbreviation immutable_data\.
+.nf 
+.sp 
+\f[CB]type\fR t_sync_data : sync_data
+.fi 
+.br 
+.ti +2
+Kind abbreviation sync_data\.
+.nf 
+.sp 
+\f[CB]type\fR t_mutable_data : mutable_data
+.fi 
+.br 
+.ti +2
+Kind abbreviation mutable_data\.
+.nf 
+.sp 
+.in 3
+\fB3 Kind annotations with modalities\fR
+.in 
+.sp 
+\f[CB]type\fR t_portable : value \f[CB]mod\fR portable
+.fi 
+.br 
+.ti +2
+Kind annotation with a modality\.
+.nf 
+.sp 
+\f[CB]type\fR t_contended : value \f[CB]mod\fR contended
+.fi 
+.br 
+.ti +2
+Kind annotation with a different modality\.
+.nf 
+.sp 
+\f[CB]type\fR t_multi_mod : value \f[CB]mod\fR portable contended
+.fi 
+.br 
+.ti +2
+Kind annotation with multiple modalities\.
+.nf 
+.sp 
+\f[CB]type\fR t_everything : float64 \f[CB]mod\fR everything
+.fi 
+.br 
+.ti +2
+The everything bounds abbreviation\.
+.nf 
+.sp 
+.in 3
+\fB4 Kind annotations on parameterized types\fR
+.in 
+.sp 
+\f[CB]type\fR ('a : immediate) imm_param
+.fi 
+.br 
+.ti +2
+A type parameter with a kind constraint\.
+.nf 
+.sp 
+\f[CB]type\fR ('a : float64) float_param
+.fi 
+.br 
+.ti +2
+A type parameter with a different kind constraint\.
+.nf 
+.sp 
+\f[CB]type\fR (('a : immediate), ('b : float64)) multi_kind
+.fi 
+.br 
+.ti +2
+Multiple kind-constrained parameters\.
+.nf 
+.sp 
+.in 3
+\fB5 Kind annotations with with constraints\fR
+.in 
+.sp 
+\f[CB]type\fR 'a t_with : immediate \f[CB]with\fR \f[CB]'a\fR
+.fi 
+.br 
+.ti +2
+Kind annotation with a with constraint\.
+.nf 
+.sp 
+.in 3
+\fB6 Kind annotations on type aliases\fR
+.in 
+.sp 
+\f[CB]type\fR t_alias : immediate = int
+.fi 
+.br 
+.ti +2
+Has both a kind annotation and a manifest\.
+.nf 
+.sp 
+.in 3
+\fB7 Kind-constrained polymorphism in values\fR
+.in 
+.sp 
+\f[CB]val\fR poly_immediate : ('a : immediate)\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR
+.fi 
+.br 
+.ti +2
+Kind constraint on a polymorphic type variable\.
+.nf 
+.sp 
+\f[CB]val\fR poly_float64 : ('a : float64)\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR
+.fi 
+.br 
+.ti +2
+Kind constraint on a polymorphic type variable with a different kind\.
+.nf 
 
