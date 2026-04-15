@@ -202,6 +202,9 @@ type t_abbrev : my_abbrev mod immutable
 ```
 A type with an abbreviated kind.
 
+
+## Zero alloc
+
 ```ocaml
 val add : bool -> int -> int -> int [@@zero_alloc]
 ```
@@ -236,3 +239,93 @@ Alternative syntax for zero alloc annotation
 val curried_zero_alloc : int -> int -> int [@@zero_alloc arity 1]
 ```
 Function that returns a function that is `zero_alloc`.
+
+
+## Modalities
+
+```ocaml
+type opaque
+```
+```ocaml
+type modalities_all = {
+  f_global : opaque; (* Locality modality. *)
+  f_local : opaque; (* Locality modality (identity, not rendered). *)
+  f_unique : opaque; (* Uniqueness modality. *)
+  f_aliased : opaque; (* Uniqueness modality (identity, not rendered). *)
+  f_many : opaque; (* Linearity modality. *)
+  f_once : opaque; (* Linearity modality (identity, not rendered). *)
+  f_portable : opaque; (* Portability modality. *)
+  f_nonportable : opaque; (* Portability modality (identity, not rendered). *)
+  f_uncontended : opaque; (* Contention modality (identity, not rendered). *)
+  f_contended : opaque; (* Contention modality. *)
+  f_unyielding : opaque; (* Yield modality. *)
+  f_yielding : opaque; (* Yield modality (identity, not rendered). *)
+  f_forkable : opaque; (* Fork modality. *)
+  f_unforkable : opaque; (* Fork modality (identity, not rendered). *)
+  f_stateless : opaque; (* Statefulness modality. *)
+  f_stateful : opaque; (* Statefulness modality (identity, not rendered). *)
+  f_immutable : opaque; (* Visibility modality. *)
+  f_read_write : opaque; (* Visibility modality (identity, not rendered). *)
+  f_no_modality : opaque; (* No modality, for reference. *)
+}
+```
+
+## Multiple modalities on a field
+
+```ocaml
+type modalities_multi = {
+  a : opaque; (* Field with global portable modalities. *)
+}
+```
+
+## Modalities on tuple and function fields
+
+```ocaml
+type modalities_tuple = {
+  f : int * string; (* Tuple field with modality. *)
+}
+```
+```ocaml
+type modalities_fn = {
+  g : int -> int; (* Function field with modality. *)
+}
+```
+
+## Modalities on constructor arguments
+
+```ocaml
+type modalities_cstr = 
+  | A of string (* Constructor argument with global modality. *)
+  | B of int -> int (* Function constructor argument with modality. *)
+  | C of int * string (* Tuple constructor argument with modality. *)
+  | D of int * string (* Per-element modalities in a constructor tuple. *)
+  | E (* Constant constructor. *)
+```
+
+## Modalities on values
+
+```ocaml
+val portable_fn : int -> int
+```
+Value with `portable` modality.
+
+
+## Modalities on module declarations
+
+```ocaml
+module type S = sig ... end
+```
+```ocaml
+module M1 : S
+```
+Module without modality.
+
+```ocaml
+module M2 : S
+```
+Module with `portable` modality. The modality is applied to all value members of `M2`.
+
+```ocaml
+module M3 : sig ... end
+```
+`contended` modality applied to all definitions in the module.
