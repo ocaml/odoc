@@ -24,7 +24,8 @@ We should have an 'Optional' argument (as opposed to a 'RawOptional' one)
         }
       ]
     },
-    "value": "Abstract"
+    "value": "Abstract",
+    "modalities": []
   }
 
 Harder case contains a "RawOptional":
@@ -58,5 +59,6 @@ Harder case contains a "RawOptional":
         }
       ]
     },
-    "value": "Abstract"
+    "value": "Abstract",
+    "modalities": []
   }

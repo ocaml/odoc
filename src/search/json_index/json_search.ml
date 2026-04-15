@@ -7,7 +7,9 @@ let json_of_args (args : Odoc_model.Lang.TypeDecl.Constructor.argument) =
       `Object
         [
           ("kind", `String "Tuple");
-          ("vals", `Array (List.map (fun te -> `String (Text.of_type te)) tel));
+          ( "vals",
+            `Array (List.map (fun (te, _mods) -> `String (Text.of_type te)) tel)
+          );
         ]
   | Record fl ->
       `Object
@@ -21,6 +23,7 @@ let json_of_args (args : Odoc_model.Lang.TypeDecl.Constructor.argument) =
                         mutable_;
                         type_;
                         doc = _;
+                        modalities = _;
                       } ->
                    `Object
                      [

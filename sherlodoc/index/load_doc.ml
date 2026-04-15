@@ -82,8 +82,8 @@ let searchable_type_of_constructor args res =
   | TypeDecl.Constructor.Tuple args -> begin
       match args with
       | _ :: _ :: _ ->
-          TypeExpr.(Arrow (None, Tuple (List.map (fun x -> None, x) args), res))
-      | [ arg ] -> TypeExpr.(Arrow (None, arg, res))
+          TypeExpr.Arrow (None, Tuple (List.map (fun (x, _mods) -> None, x) args), res)
+      | [ (arg, _) ] -> TypeExpr.Arrow (None, arg, res)
       | _ -> res
     end
   | TypeDecl.Constructor.Record fields ->
