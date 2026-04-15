@@ -51,7 +51,8 @@ resolve correctly. All of the 'Class' json objects should contain
         []
       ]
     },
-    "value": "Abstract"
+    "value": "Abstract",
+    "modalities": []
   }
   $ odoc_print e.odoc -r g | jq .
   {
@@ -91,7 +92,8 @@ resolve correctly. All of the 'Class' json objects should contain
         []
       ]
     },
-    "value": "Abstract"
+    "value": "Abstract",
+    "modalities": []
   }
   $ odoc_print e.odoc -r d | jq '.expr.Signature.items[1].Method.type_'
   {

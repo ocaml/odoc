@@ -53,7 +53,7 @@ let rec read_pattern env parent doc pat =
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          [Value {id; source_loc; doc; type_; value}]
+          [Value {id; source_loc; doc; type_; value; modalities = []}]
 #if OCAML_VERSION < (5,2, 0)
     | Tpat_alias(pat, id, _) ->
 #elif defined OXCAML
@@ -68,7 +68,7 @@ let rec read_pattern env parent doc pat =
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          Value {id; source_loc; doc; type_; value} :: read_pattern env parent doc pat
+          Value {id; source_loc; doc; type_; value; modalities = []} :: read_pattern env parent doc pat
     | Tpat_constant _ -> []
     | Tpat_tuple pats ->
 #if OCAML_VERSION >= (5, 4, 0) || defined OXCAML

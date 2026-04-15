@@ -237,7 +237,7 @@ Kind constraint on a polymorphic type variable with a different kind\.
 \f[CB]type\fR modalities_all = {
 .br 
 .ti +2
-f_global : opaque;
+f_global : opaque @@ global;
 .br 
 .ti +4
 (* Locality modality\. *)
@@ -255,13 +255,13 @@ f_unique : opaque;
 (* Uniqueness modality\. *)
 .br 
 .ti +2
-f_aliased : opaque;
+f_aliased : opaque @@ aliased;
 .br 
 .ti +4
 (* Uniqueness modality (identity, not rendered)\. *)
 .br 
 .ti +2
-f_many : opaque;
+f_many : opaque @@ many;
 .br 
 .ti +4
 (* Linearity modality\. *)
@@ -273,7 +273,7 @@ f_once : opaque;
 (* Linearity modality (identity, not rendered)\. *)
 .br 
 .ti +2
-f_portable : opaque;
+f_portable : opaque @@ portable;
 .br 
 .ti +4
 (* Portability modality\. *)
@@ -291,13 +291,13 @@ f_uncontended : opaque;
 (* Contention modality (identity, not rendered)\. *)
 .br 
 .ti +2
-f_contended : opaque;
+f_contended : opaque @@ contended;
 .br 
 .ti +4
 (* Contention modality\. *)
 .br 
 .ti +2
-f_unyielding : opaque;
+f_unyielding : opaque @@ unyielding;
 .br 
 .ti +4
 (* Yield modality\. *)
@@ -309,7 +309,7 @@ f_yielding : opaque;
 (* Yield modality (identity, not rendered)\. *)
 .br 
 .ti +2
-f_forkable : opaque;
+f_forkable : opaque @@ forkable;
 .br 
 .ti +4
 (* Fork modality\. *)
@@ -321,7 +321,7 @@ f_unforkable : opaque;
 (* Fork modality (identity, not rendered)\. *)
 .br 
 .ti +2
-f_stateless : opaque;
+f_stateless : opaque @@ stateless;
 .br 
 .ti +4
 (* Statefulness modality\. *)
@@ -333,7 +333,7 @@ f_stateful : opaque;
 (* Statefulness modality (identity, not rendered)\. *)
 .br 
 .ti +2
-f_immutable : opaque;
+f_immutable : opaque @@ immutable;
 .br 
 .ti +4
 (* Visibility modality\. *)
@@ -359,7 +359,7 @@ f_no_modality : opaque;
 \f[CB]type\fR modalities_multi = {
 .br 
 .ti +2
-a : opaque;
+a : opaque @@ global portable;
 .br 
 .ti +4
 (* Field with global portable modalities\. *)
@@ -373,7 +373,7 @@ a : opaque;
 \f[CB]type\fR modalities_tuple = {
 .br 
 .ti +2
-f : int * string;
+f : int * string @@ portable;
 .br 
 .ti +4
 (* Tuple field with modality\. *)
@@ -383,7 +383,7 @@ f : int * string;
 \f[CB]type\fR modalities_fn = {
 .br 
 .ti +2
-g : int \f[CB]\->\fR int;
+g : int \f[CB]\->\fR int @@ portable;
 .br 
 .ti +4
 (* Function field with modality\. *)
@@ -397,25 +397,25 @@ g : int \f[CB]\->\fR int;
 \f[CB]type\fR modalities_cstr = 
 .br 
 .ti +2
-| \f[CB]A\fR \f[CB]of\fR string
+| \f[CB]A\fR \f[CB]of\fR string @@ global
 .br 
 .ti +4
 (* Constructor argument with global modality\. *)
 .br 
 .ti +2
-| \f[CB]B\fR \f[CB]of\fR int \f[CB]\->\fR int
+| \f[CB]B\fR \f[CB]of\fR int \f[CB]\->\fR int @@ portable
 .br 
 .ti +4
 (* Function constructor argument with modality\. *)
 .br 
 .ti +2
-| \f[CB]C\fR \f[CB]of\fR int * string
+| \f[CB]C\fR \f[CB]of\fR int * string @@ portable
 .br 
 .ti +4
 (* Tuple constructor argument with modality\. *)
 .br 
 .ti +2
-| \f[CB]D\fR \f[CB]of\fR int * string
+| \f[CB]D\fR \f[CB]of\fR int @@ portable * string @@ global
 .br 
 .ti +4
 (* Per-element modalities in a constructor tuple\. *)
@@ -431,7 +431,7 @@ g : int \f[CB]\->\fR int;
 \fB12 Modalities on values\fR
 .in 
 .sp 
-\f[CB]val\fR portable_fn : int \f[CB]\->\fR int
+\f[CB]val\fR portable_fn : int \f[CB]\->\fR int @@ portable
 .fi 
 .br 
 .ti +2
@@ -468,7 +468,7 @@ a : int;
 Module without modality\.
 .nf 
 .sp 
-\f[CB]module\fR M2 : S
+\f[CB]module\fR M2 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .fi 
 .br 
 .ti +2

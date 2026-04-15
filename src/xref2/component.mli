@@ -237,6 +237,7 @@ and TypeDecl : sig
       doc : CComment.docs;
       mutable_ : bool;
       type_ : TypeExpr.t;
+      modalities : Odoc_model.Lang.Modalities.t;
     }
   end
 
@@ -250,7 +251,9 @@ and TypeDecl : sig
   end
 
   module Constructor : sig
-    type argument = Tuple of TypeExpr.t list | Record of Field.t list
+    type argument =
+      | Tuple of (TypeExpr.t * Odoc_model.Lang.Modalities.t) list
+      | Record of Field.t list
 
     type t = {
       name : string;
@@ -350,6 +353,7 @@ and Value : sig
     doc : CComment.docs;
     type_ : TypeExpr.t;
     value : value;
+    modalities : Odoc_model.Lang.Modalities.t;
   }
 end
 

@@ -165,23 +165,23 @@ type opaque
 ```
 ```ocaml
 type modalities_all = {
-  f_global : opaque; (* Locality modality. *)
+  f_global : opaque @@ global; (* Locality modality. *)
   f_local : opaque; (* Locality modality (identity, not rendered). *)
   f_unique : opaque; (* Uniqueness modality. *)
-  f_aliased : opaque; (* Uniqueness modality (identity, not rendered). *)
-  f_many : opaque; (* Linearity modality. *)
+  f_aliased : opaque @@ aliased; (* Uniqueness modality (identity, not rendered). *)
+  f_many : opaque @@ many; (* Linearity modality. *)
   f_once : opaque; (* Linearity modality (identity, not rendered). *)
-  f_portable : opaque; (* Portability modality. *)
+  f_portable : opaque @@ portable; (* Portability modality. *)
   f_nonportable : opaque; (* Portability modality (identity, not rendered). *)
   f_uncontended : opaque; (* Contention modality (identity, not rendered). *)
-  f_contended : opaque; (* Contention modality. *)
-  f_unyielding : opaque; (* Yield modality. *)
+  f_contended : opaque @@ contended; (* Contention modality. *)
+  f_unyielding : opaque @@ unyielding; (* Yield modality. *)
   f_yielding : opaque; (* Yield modality (identity, not rendered). *)
-  f_forkable : opaque; (* Fork modality. *)
+  f_forkable : opaque @@ forkable; (* Fork modality. *)
   f_unforkable : opaque; (* Fork modality (identity, not rendered). *)
-  f_stateless : opaque; (* Statefulness modality. *)
+  f_stateless : opaque @@ stateless; (* Statefulness modality. *)
   f_stateful : opaque; (* Statefulness modality (identity, not rendered). *)
-  f_immutable : opaque; (* Visibility modality. *)
+  f_immutable : opaque @@ immutable; (* Visibility modality. *)
   f_read_write : opaque; (* Visibility modality (identity, not rendered). *)
   f_no_modality : opaque; (* No modality, for reference. *)
 }
@@ -191,7 +191,7 @@ type modalities_all = {
 
 ```ocaml
 type modalities_multi = {
-  a : opaque; (* Field with global portable modalities. *)
+  a : opaque @@ global portable; (* Field with global portable modalities. *)
 }
 ```
 
@@ -199,12 +199,12 @@ type modalities_multi = {
 
 ```ocaml
 type modalities_tuple = {
-  f : int * string; (* Tuple field with modality. *)
+  f : int * string @@ portable; (* Tuple field with modality. *)
 }
 ```
 ```ocaml
 type modalities_fn = {
-  g : int -> int; (* Function field with modality. *)
+  g : int -> int @@ portable; (* Function field with modality. *)
 }
 ```
 
@@ -212,17 +212,17 @@ type modalities_fn = {
 
 ```ocaml
 type modalities_cstr = 
-  | A of string (* Constructor argument with global modality. *)
-  | B of int -> int (* Function constructor argument with modality. *)
-  | C of int * string (* Tuple constructor argument with modality. *)
-  | D of int * string (* Per-element modalities in a constructor tuple. *)
+  | A of string @@ global (* Constructor argument with global modality. *)
+  | B of int -> int @@ portable (* Function constructor argument with modality. *)
+  | C of int * string @@ portable (* Tuple constructor argument with modality. *)
+  | D of int @@ portable * string @@ global (* Per-element modalities in a constructor tuple. *)
   | E (* Constant constructor. *)
 ```
 
 ## Modalities on values
 
 ```ocaml
-val portable_fn : int -> int
+val portable_fn : int -> int @@ portable
 ```
 Value with `portable` modality.
 
@@ -238,7 +238,7 @@ module M1 : S
 Module without modality.
 
 ```ocaml
-module M2 : S
+module M2 : sig ... end
 ```
 Module with `portable` modality. The modality is applied to all value members of `M2`.
 

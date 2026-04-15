@@ -4,7 +4,7 @@
 `contended` modality applied to all definitions in the module.
 
 ```ocaml
-val f : string -> bool
+val f : string -> bool @@ contended
 ```
 ```ocaml
 type s

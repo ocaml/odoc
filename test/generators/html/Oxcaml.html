@@ -397,7 +397,8 @@
      <ol>
       <li id="type-modalities_all.f_global" class="def record field anchored">
        <a href="#type-modalities_all.f_global" class="anchor"></a>
-       <code><span>f_global : <a href="#type-opaque">opaque</a>;</span>
+       <code>
+        <span>f_global : <a href="#type-opaque">opaque</a> @@ global;</span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
         <p>Locality modality.</p><span class="comment-delim">*)</span>
@@ -421,7 +422,9 @@
       </li>
       <li id="type-modalities_all.f_aliased" class="def record field
        anchored"><a href="#type-modalities_all.f_aliased" class="anchor"></a>
-       <code><span>f_aliased : <a href="#type-opaque">opaque</a>;</span>
+       <code>
+        <span>f_aliased : <a href="#type-opaque">opaque</a> @@ aliased;
+        </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
         <p>Uniqueness modality (identity, not rendered).</p>
@@ -430,7 +433,8 @@
       </li>
       <li id="type-modalities_all.f_many" class="def record field anchored">
        <a href="#type-modalities_all.f_many" class="anchor"></a>
-       <code><span>f_many : <a href="#type-opaque">opaque</a>;</span></code>
+       <code><span>f_many : <a href="#type-opaque">opaque</a> @@ many;</span>
+       </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
         <p>Linearity modality.</p><span class="comment-delim">*)</span>
        </div>
@@ -446,7 +450,9 @@
       <li id="type-modalities_all.f_portable" class="def record field
        anchored">
        <a href="#type-modalities_all.f_portable" class="anchor"></a>
-       <code><span>f_portable : <a href="#type-opaque">opaque</a>;</span>
+       <code>
+        <span>f_portable : <a href="#type-opaque">opaque</a> @@ portable;
+        </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
         <p>Portability modality.</p><span class="comment-delim">*)</span>
@@ -475,7 +481,9 @@
       <li id="type-modalities_all.f_contended" class="def record field
        anchored">
        <a href="#type-modalities_all.f_contended" class="anchor"></a>
-       <code><span>f_contended : <a href="#type-opaque">opaque</a>;</span>
+       <code>
+        <span>f_contended : <a href="#type-opaque">opaque</a> @@ contended;
+        </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
         <p>Contention modality.</p><span class="comment-delim">*)</span>
@@ -484,7 +492,9 @@
       <li id="type-modalities_all.f_unyielding" class="def record field
        anchored">
        <a href="#type-modalities_all.f_unyielding" class="anchor"></a>
-       <code><span>f_unyielding : <a href="#type-opaque">opaque</a>;</span>
+       <code>
+        <span>f_unyielding : <a href="#type-opaque">opaque</a> @@ unyielding;
+        </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
         <p>Yield modality.</p><span class="comment-delim">*)</span>
@@ -503,7 +513,9 @@
       <li id="type-modalities_all.f_forkable" class="def record field
        anchored">
        <a href="#type-modalities_all.f_forkable" class="anchor"></a>
-       <code><span>f_forkable : <a href="#type-opaque">opaque</a>;</span>
+       <code>
+        <span>f_forkable : <a href="#type-opaque">opaque</a> @@ forkable;
+        </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
         <p>Fork modality.</p><span class="comment-delim">*)</span>
@@ -522,7 +534,9 @@
       <li id="type-modalities_all.f_stateless" class="def record field
        anchored">
        <a href="#type-modalities_all.f_stateless" class="anchor"></a>
-       <code><span>f_stateless : <a href="#type-opaque">opaque</a>;</span>
+       <code>
+        <span>f_stateless : <a href="#type-opaque">opaque</a> @@ stateless;
+        </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
         <p>Statefulness modality.</p><span class="comment-delim">*)</span>
@@ -541,7 +555,9 @@
       <li id="type-modalities_all.f_immutable" class="def record field
        anchored">
        <a href="#type-modalities_all.f_immutable" class="anchor"></a>
-       <code><span>f_immutable : <a href="#type-opaque">opaque</a>;</span>
+       <code>
+        <span>f_immutable : <a href="#type-opaque">opaque</a> @@ immutable;
+        </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
         <p>Visibility modality.</p><span class="comment-delim">*)</span>
@@ -583,7 +599,10 @@
      <ol>
       <li id="type-modalities_multi.a" class="def record field anchored">
        <a href="#type-modalities_multi.a" class="anchor"></a>
-       <code><span>a : <a href="#type-opaque">opaque</a>;</span></code>
+       <code>
+        <span>a : <a href="#type-opaque">opaque</a> @@ global portable;
+        </span>
+       </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
         <p>Field with <code>global portable</code> modalities.</p>
         <span class="comment-delim">*)</span>
@@ -605,7 +624,7 @@
      <ol>
       <li id="type-modalities_tuple.f" class="def record field anchored">
        <a href="#type-modalities_tuple.f" class="anchor"></a>
-       <code><span>f : int * string;</span></code>
+       <code><span>f : int * string @@ portable;</span></code>
        <div class="def-doc"><span class="comment-delim">(*</span>
         <p>Tuple field with modality.</p>
         <span class="comment-delim">*)</span>
@@ -624,7 +643,8 @@
       <li id="type-modalities_fn.g" class="def record field anchored">
        <a href="#type-modalities_fn.g" class="anchor"></a>
        <code>
-        <span>g : <span>int <span class="arrow">&#45;&gt;</span></span> int;
+        <span>g : <span>int <span class="arrow">&#45;&gt;</span></span>
+          int @@ portable;
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
@@ -650,7 +670,7 @@
        anchored"><a href="#type-modalities_cstr.A" class="anchor"></a>
        <code><span>| </span>
         <span><span class="constructor">A</span> 
-         <span class="keyword">of</span> string
+         <span class="keyword">of</span> string @@ global
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
@@ -663,7 +683,8 @@
        <code><span>| </span>
         <span><span class="constructor">B</span> 
          <span class="keyword">of</span> 
-         <span>int <span class="arrow">&#45;&gt;</span></span> int
+         <span>int <span class="arrow">&#45;&gt;</span></span> int @@
+          portable
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
@@ -675,7 +696,7 @@
        anchored"><a href="#type-modalities_cstr.C" class="anchor"></a>
        <code><span>| </span>
         <span><span class="constructor">C</span> 
-         <span class="keyword">of</span> int * string
+         <span class="keyword">of</span> int * string @@ portable
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
@@ -687,7 +708,8 @@
        anchored"><a href="#type-modalities_cstr.D" class="anchor"></a>
        <code><span>| </span>
         <span><span class="constructor">D</span> 
-         <span class="keyword">of</span> int * string
+         <span class="keyword">of</span> int @@ portable * string @@ 
+         global
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
@@ -715,7 +737,7 @@
      <a href="#val-portable_fn" class="anchor"></a>
      <code>
       <span><span class="keyword">val</span> portable_fn : 
-       <span>int <span class="arrow">&#45;&gt;</span></span> int
+       <span>int <span class="arrow">&#45;&gt;</span></span> int @@ portable
       </span>
      </code>
     </div>
@@ -756,7 +778,10 @@
      <code>
       <span><span class="keyword">module</span> 
        <a href="Oxcaml-M2.html">M2</a>
-      </span><span> : <a href="Oxcaml-module-type-S.html">S</a></span>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
      </code>
     </div>
     <div class="spec-doc">

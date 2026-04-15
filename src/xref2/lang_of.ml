@@ -692,6 +692,7 @@ and value_ map parent id v =
     doc = docs (parent :> Identifier.LabelParent.t) v.doc;
     type_ = type_expr map (parent :> Identifier.LabelParent.t) v.type_;
     value = v.value;
+    modalities = v.modalities;
   }
 
 and typ_ext map parent t =
@@ -907,7 +908,11 @@ and type_decl_constructor_argument :
  fun map parent a ->
   match a with
   | Tuple ls ->
-      Tuple (List.map (type_expr map (parent :> Identifier.LabelParent.t)) ls)
+      Tuple
+        (List.map
+           (fun (te, mods) ->
+             (type_expr map (parent :> Identifier.LabelParent.t) te, mods))
+           ls)
   | Record fs ->
       Record
         (List.map (type_decl_field map (parent :> Identifier.FieldParent.t)) fs)
@@ -924,6 +929,7 @@ and type_decl_field :
     doc = docs (parent :> Identifier.LabelParent.t) f.doc;
     mutable_ = f.mutable_;
     type_ = type_expr map (parent :> Identifier.LabelParent.t) f.type_;
+    modalities = f.modalities;
   }
 
 and type_decl_unboxed_field :

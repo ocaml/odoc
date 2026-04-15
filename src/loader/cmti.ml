@@ -216,7 +216,14 @@ let read_value_description env parent vd =
     | [] -> Value.Abstract
     | primitives -> External primitives
   in
-  Value { Value.id; source_loc; doc; type_; value }
+  let modalities =
+#if defined OXCAML
+    Cmi.read_value_modalities vd.val_val.val_modalities
+#else
+    []
+#endif
+  in
+  Value { Value.id; source_loc; doc; type_; value; modalities }
 
 let read_type_parameter (ctyp, var_and_injectivity)  =
   let open TypeDecl in
@@ -270,7 +277,14 @@ let read_label_declaration env parent label_parent ld =
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent ld.ld_attributes in
   let mutable_ = is_mutable ld.ld_mutable in
   let type_ = read_core_type env label_parent ld.ld_type in
-    {id; doc; mutable_; type_}
+  let modalities =
+#if defined OXCAML
+    Cmi.read_modalities ld.ld_mutable ld.ld_modalities
+#else
+    []
+#endif
+  in
+    {id; doc; mutable_; type_; modalities}
 
 let read_unboxed_label_declaration env parent label_parent ld =
   let open TypeDecl.UnboxedField in
@@ -286,14 +300,21 @@ let read_constructor_declaration_arguments env parent label_parent arg =
   let open TypeDecl.Constructor in
 #if OCAML_VERSION < (4,3,0)
   ignore parent;
-  Tuple (List.map (read_core_type env label_parent) arg)
+  Tuple (List.map (fun x -> read_core_type env label_parent x, []) arg)
 #else
   match arg with
   | Cstr_tuple args ->
 #if defined OXCAML
-      Tuple (List.map (fun arg -> read_core_type env label_parent arg.ca_type) args)
+      let args_with_modalities =
+        List.map
+          (fun arg ->
+            read_core_type env label_parent arg.ca_type,
+            Cmi.read_modalities Immutable arg.ca_modalities)
+          args
+      in
+      Tuple args_with_modalities
 #else
-      Tuple (List.map (fun arg -> read_core_type env label_parent arg) args)
+      Tuple (List.map (fun arg -> read_core_type env label_parent arg, []) args)
 #endif
   | Cstr_record lds ->
       Record (List.map (read_label_declaration env parent label_parent) lds)
@@ -615,7 +636,17 @@ let rec read_with_constraint env global_parent parent (_, frag, constr) =
 and read_module_type env parent label_parent mty =
   let open ModuleType in
     match mty.mty_desc with
-    | Tmty_ident(p, _) -> Path { p_path = Env.Path.read_module_type env.ident_env p; p_expansion = None }
+    | Tmty_ident(p, _) ->
+        (match mty.mty_type with
+#if defined OXCAML
+         | Mty_signature sg ->
+             (* For modules with modalities (e.g. [module M : S @@ portable]),
+                the mty_desc stores only [Tmty_ident S] so we use the mty_type
+                for the expanded signature with modalities applied to each value. *)
+             let mty_type = Odoc_model.Compat.module_type mty.mty_type in
+             Cmi.read_module_type env parent mty_type
+#endif
+         | _ -> Path { p_path = Env.Path.read_module_type env.ident_env p; p_expansion = None })
     | Tmty_signature sg ->
         let sg, () = read_signature Odoc_model.Semantics.Expect_none env parent sg in
         Signature sg

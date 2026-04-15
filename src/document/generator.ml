@@ -567,23 +567,29 @@ module Make (Syntax : SYNTAX) = struct
       text * bool
 
     val format_constraints : (Lang.TypeExpr.t * Lang.TypeExpr.t) list -> text
+
+    val format_modalities : Odoc_model.Lang.Modalities.t -> text
   end = struct
+    let format_modalities modalities =
+      match modalities with
+      | [] -> O.noop
+      | mods ->
+          O.txt " " ++ O.txt "@@" ++ O.txt " "
+          ++ O.txt (String.concat ~sep:" " mods)
+
     let record fields =
-      let field mutable_ id typ =
+      let field mutable_ id typ modalities =
         let url = Url.from_identifier ~stop_before:true id in
         let name = Paths.Identifier.name id in
         let attrs = [ "def"; "record"; Url.Anchor.string_of_kind url.kind ] in
         let cell =
-          (* O.td ~a:[ O.a_class ["def"; kind ] ]
-           *   [O.a ~a:[O.a_href ("#" ^ anchor); O.a_class ["anchor"]] []
-           *   ; *)
           O.code
             ((if mutable_ then O.keyword "mutable" ++ O.txt " " else O.noop)
             ++ O.txt name
             ++ O.txt Syntax.Type.annotation_separator
             ++ type_expr typ
+            ++ format_modalities modalities
             ++ O.txt Syntax.Type.Record.field_separator)
-          (* ] *)
         in
         (url, attrs, cell)
       in
@@ -592,7 +598,9 @@ module Make (Syntax : SYNTAX) = struct
         |> List.map (fun fld ->
                let open Odoc_model.Lang.TypeDecl.Field in
                let url, attrs, code =
-                 field fld.mutable_ (fld.id :> Paths.Identifier.t) fld.type_
+                 field fld.mutable_
+                   (fld.id :> Paths.Identifier.t)
+                   fld.type_ fld.modalities
                in
                let anchor = Some url in
                let doc = fld.doc.elements in
@@ -670,7 +678,9 @@ module Make (Syntax : SYNTAX) = struct
       | Tuple lst ->
           let params =
             O.list lst ~sep:Syntax.Type.Tuple.element_separator
-              ~f:(type_expr ~needs_parentheses:is_gadt)
+              ~f:(fun (te, mods) ->
+                type_expr ~needs_parentheses:is_gadt te
+                ++ format_modalities mods)
           in
           O.documentedSrc
             (cstr
@@ -1020,6 +1030,7 @@ module Make (Syntax : SYNTAX) = struct
              ++ O.txt " " ++ O.txt name
              ++ O.txt Syntax.Type.annotation_separator
              ++ O.cut ++ type_expr t.type_
+             ++ Type_declaration.format_modalities t.modalities
              ++ if semicolon then O.txt ";" else O.noop)
       in
       let attr = [ "value" ] @ extra_attr in

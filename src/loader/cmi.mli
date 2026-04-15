@@ -101,4 +101,13 @@ val read_exception : env ->
 val read_jkind_annotation :
   Parsetree.jkind_annotation option ->
   Odoc_model.Lang.KindAnnotation.t
+
+val read_modalities :
+  Types.mutability ->
+  Mode.Modality.Const.t ->
+  Odoc_model.Lang.Modalities.t
+
+val read_value_modalities :
+  Mode.Modality.t ->
+  Odoc_model.Lang.Modalities.t
 #endif

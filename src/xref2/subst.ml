@@ -763,7 +763,7 @@ and type_decl_unboxed_field s f =
 and type_decl_constructor_arg s a =
   let open Component.TypeDecl.Constructor in
   match a with
-  | Tuple ts -> Tuple (list type_expr s ts)
+  | Tuple ts -> Tuple (List.map (fun (te, mods) -> (type_expr s te, mods)) ts)
   | Record fs -> Record (list type_decl_field s fs)
 
 and type_decl_equation s t =

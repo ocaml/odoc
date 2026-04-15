@@ -212,6 +212,11 @@ end =
 
 (** {3 Type Declarations} *)
 
+and Modalities : sig
+  type t = string list
+end =
+  Modalities
+
 and TypeDecl : sig
   module Field : sig
     type t = {
@@ -219,6 +224,7 @@ and TypeDecl : sig
       doc : Comment.docs;
       mutable_ : bool;
       type_ : TypeExpr.t;
+      modalities : Modalities.t;
     }
   end
 
@@ -232,7 +238,9 @@ and TypeDecl : sig
   end
 
   module Constructor : sig
-    type argument = Tuple of TypeExpr.t list | Record of Field.t list
+    type argument =
+      | Tuple of (TypeExpr.t * Modalities.t) list
+      | Record of Field.t list
 
     type t = {
       id : Identifier.Constructor.t;
@@ -329,6 +337,7 @@ and Value : sig
     value : value;
     doc : Comment.docs;
     type_ : TypeExpr.t;
+    modalities : Modalities.t;
   }
 end =
   Value

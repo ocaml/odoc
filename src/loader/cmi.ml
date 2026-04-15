@@ -529,6 +529,18 @@ let jkind_of_type_desc te =
   | Tvar { jkind; _ } | Tunivar { jkind; _ } ->
       read_jkind_annotation jkind.annotation
   | _ -> KindAnnotation.Default
+
+let read_modalities mut modalities =
+  Typemode.untransl_modalities mut modalities
+  |> List.map (fun (m : Parsetree.modality Location.loc) ->
+    let (Parsetree.Modality s) = m.txt in s)
+
+let read_value_modalities modalities =
+  let const =
+    Ctype.zap_modalities_to_floor_if_modes_enabled_at Alpha modalities
+  in
+  read_modalities Immutable const
+
 #else
 
 let jkind_of_type_desc _te = KindAnnotation.Default
@@ -772,7 +784,14 @@ let read_value_description ({ident_env ; warnings_tag} as env) parent id vd =
         External primitives
     | _ -> assert false
   in
-  Value { Value.id; source_loc; doc; type_; value }
+  let modalities =
+#if defined OXCAML
+    read_value_modalities vd.val_modalities
+#else
+    []
+#endif
+  in
+  Value { Value.id; source_loc; doc; type_; value; modalities }
 
 #if defined OXCAML
 let is_mutable = Types.is_mutable
@@ -790,21 +809,36 @@ let read_label_declaration env parent ld =
   in
   let mutable_ = is_mutable ld.ld_mutable in
   let type_ = read_type_expr env ld.ld_type in
-    {id; doc; mutable_; type_}
+  let modalities =
+#if defined OXCAML
+    read_modalities ld.ld_mutable ld.ld_modalities
+#else
+    []
+#endif
+  in
+    {id; doc; mutable_; type_; modalities}
 
 let read_constructor_declaration_arguments env parent arg =
 #if OCAML_VERSION < (4,3,0)
   (* NOTE(@ostera): constructor with inlined records were introduced post 4.02
      so it's safe to use Tuple here *)
   ignore parent;
-  TypeDecl.Constructor.Tuple(List.map (read_type_expr env) arg)
+  TypeDecl.Constructor.Tuple(List.map (fun x -> read_type_expr env x, []) arg)
 #else
   let open TypeDecl.Constructor in
     match arg with
 #if defined OXCAML
-    | Cstr_tuple args -> Tuple (List.map (fun arg -> read_type_expr env arg.ca_type) args)
+    | Cstr_tuple args ->
+        let args_with_modalities =
+          List.map
+            (fun arg ->
+              read_type_expr env arg.ca_type,
+              read_modalities Immutable arg.ca_modalities)
+            args
+        in
+        Tuple args_with_modalities
 #else
-    | Cstr_tuple args -> Tuple (List.map (read_type_expr env) args)
+    | Cstr_tuple args -> Tuple (List.map (fun arg -> read_type_expr env arg, []) args)
 #endif
     | Cstr_record lds ->
         Record (List.map (read_label_declaration env parent) lds)

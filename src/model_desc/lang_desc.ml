@@ -323,6 +323,7 @@ and typedecl_field =
       F ("doc", (fun t -> t.doc), docs);
       F ("mutable_", (fun t -> t.mutable_), bool);
       F ("type_", (fun t -> t.type_), typeexpr_t);
+      F ("modalities", (fun t -> t.modalities), List string);
     ]
 
 and typedecl_unboxed_field =
@@ -339,7 +340,7 @@ and typedecl_constructor_argument =
   let open Lang.TypeDecl.Constructor in
   T.Variant
     (function
-    | Tuple x -> C ("Tuple", x, List typeexpr_t)
+    | Tuple x -> C ("Tuple", x, List (Pair (typeexpr_t, List string)))
     | Record x -> C ("Record", x, List typedecl_field))
 
 and typedecl_constructor =
@@ -477,6 +478,7 @@ and value_t =
       F ("doc", (fun t -> t.doc), docs);
       F ("type_", (fun t -> t.type_), typeexpr_t);
       F ("value", (fun t -> t.value), value_value_t);
+      F ("modalities", (fun t -> t.modalities), List string);
     ]
 
 (** {3 Class} *)
