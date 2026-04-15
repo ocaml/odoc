@@ -17,3 +17,5 @@ val g : (module M : Y) -> int M.t
 val g' : (module M : Y) -> int
 
 val g'' : (module Y) -> int
+
+val map2: ('a. 'a -> 'a) -> 'a * 'b -> 'a * 'b
