@@ -60,5 +60,96 @@
 \medbreak
 \label{Oxcaml--val-poly_float64}\ocamlcodefragment{\ocamltag{keyword}{val} poly\_\allowbreak{}float64 : ('a : float64).\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\begin{ocamlindent}Kind constraint on a polymorphic type variable with a different kind.\end{ocamlindent}%
 \medbreak
+\subsection{Modalities\label{Oxcaml--modalities}}%
+\label{Oxcaml--type-opaque}\ocamlcodefragment{\ocamltag{keyword}{type} opaque}\\
+\label{Oxcaml--type-modalities_all}\ocamlcodefragment{\ocamltag{keyword}{type} modalities\_\allowbreak{}all = \{}\begin{ocamlindent}\ocamlinlinecode{f\_\allowbreak{}global : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_global}%
+\begin{ocamlindent}Locality modality.\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}local : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_local}%
+\begin{ocamlindent}Locality modality (identity, not rendered).\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}unique : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_unique}%
+\begin{ocamlindent}Uniqueness modality.\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}aliased : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_aliased}%
+\begin{ocamlindent}Uniqueness modality (identity, not rendered).\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}many : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_many}%
+\begin{ocamlindent}Linearity modality.\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}once : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_once}%
+\begin{ocamlindent}Linearity modality (identity, not rendered).\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}portable : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_portable}%
+\begin{ocamlindent}Portability modality.\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}nonportable : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_nonportable}%
+\begin{ocamlindent}Portability modality (identity, not rendered).\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}uncontended : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_uncontended}%
+\begin{ocamlindent}Contention modality (identity, not rendered).\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}contended : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_contended}%
+\begin{ocamlindent}Contention modality.\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}unyielding : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_unyielding}%
+\begin{ocamlindent}Yield modality.\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}yielding : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_yielding}%
+\begin{ocamlindent}Yield modality (identity, not rendered).\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}forkable : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_forkable}%
+\begin{ocamlindent}Fork modality.\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}unforkable : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_unforkable}%
+\begin{ocamlindent}Fork modality (identity, not rendered).\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}stateless : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_stateless}%
+\begin{ocamlindent}Statefulness modality.\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}stateful : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_stateful}%
+\begin{ocamlindent}Statefulness modality (identity, not rendered).\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}immutable : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_immutable}%
+\begin{ocamlindent}Visibility modality.\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}read\_\allowbreak{}write : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_read_write}%
+\begin{ocamlindent}Visibility modality (identity, not rendered).\end{ocamlindent}%
+\ocamlinlinecode{f\_\allowbreak{}no\_\allowbreak{}modality : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_all.f_no_modality}%
+\begin{ocamlindent}No modality, for reference.\end{ocamlindent}%
+\end{ocamlindent}%
+\ocamlcodefragment{\}}\\
+\subsection{Multiple modalities on a field\label{Oxcaml--multiple-modalities-on-a-field}}%
+\label{Oxcaml--type-modalities_multi}\ocamlcodefragment{\ocamltag{keyword}{type} modalities\_\allowbreak{}multi = \{}\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{a : \hyperref[Oxcaml--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml--type-modalities_multi.a}& Field with \ocamlinlinecode{global portable} modalities.\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+\subsection{Modalities on tuple and function fields\label{Oxcaml--modalities-on-tuple-and-function-fields}}%
+\label{Oxcaml--type-modalities_tuple}\ocamlcodefragment{\ocamltag{keyword}{type} modalities\_\allowbreak{}tuple = \{}\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{f : int * string;\allowbreak{}}\label{Oxcaml--type-modalities_tuple.f}& Tuple field with modality.\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+\label{Oxcaml--type-modalities_fn}\ocamlcodefragment{\ocamltag{keyword}{type} modalities\_\allowbreak{}fn = \{}\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{g : int \ocamltag{arrow}{$\rightarrow$} int;\allowbreak{}}\label{Oxcaml--type-modalities_fn.g}& Function field with modality.\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+\subsection{Modalities on constructor arguments\label{Oxcaml--modalities-on-constructor-arguments}}%
+\label{Oxcaml--type-modalities_cstr}\ocamlcodefragment{\ocamltag{keyword}{type} modalities\_\allowbreak{}cstr = }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A} \ocamltag{keyword}{of} string}\label{Oxcaml--type-modalities_cstr.A}& Constructor argument with \ocamlinlinecode{global} modality.\\
+\ocamlcodefragment{| \ocamltag{constructor}{B} \ocamltag{keyword}{of} int \ocamltag{arrow}{$\rightarrow$} int}\label{Oxcaml--type-modalities_cstr.B}& Function constructor argument with modality.\\
+\ocamlcodefragment{| \ocamltag{constructor}{C} \ocamltag{keyword}{of} int * string}\label{Oxcaml--type-modalities_cstr.C}& Tuple constructor argument with modality.\\
+\ocamlcodefragment{| \ocamltag{constructor}{D} \ocamltag{keyword}{of} int * string}\label{Oxcaml--type-modalities_cstr.D}& Per-element modalities in a constructor tuple.\\
+\ocamlcodefragment{| \ocamltag{constructor}{E}}\label{Oxcaml--type-modalities_cstr.E}& Constant constructor.\\
+\end{ocamltabular}%
+\\
+\subsection{Modalities on values\label{Oxcaml--modalities-on-values}}%
+\label{Oxcaml--val-portable_fn}\ocamlcodefragment{\ocamltag{keyword}{val} portable\_\allowbreak{}fn : int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Value with \ocamlinlinecode{portable} modality.\end{ocamlindent}%
+\medbreak
+\subsection{Modalities on module declarations\label{Oxcaml--modalities-on-module-declarations}}%
+\label{Oxcaml--module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[Oxcaml-module-type-S]{\ocamlinlinecode{S}}}\label{Oxcaml-module-type-S}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-module-type-S--val-x}\ocamlcodefragment{\ocamltag{keyword}{val} x : int}\\
+\label{Oxcaml-module-type-S--val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : string \ocamltag{arrow}{$\rightarrow$} bool}\\
+\label{Oxcaml-module-type-S--type-s}\ocamlcodefragment{\ocamltag{keyword}{type} s = \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{Oxcaml-module-type-S--type-s.a}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{Oxcaml--module-M1}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M1]{\ocamlinlinecode{M1}}}\ocamlcodefragment{ : \hyperref[Oxcaml-module-type-S]{\ocamlinlinecode{S}}}\begin{ocamlindent}Module without modality.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--module-M2}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M2]{\ocamlinlinecode{M2}}}\ocamlcodefragment{ : \hyperref[Oxcaml-module-type-S]{\ocamlinlinecode{S}}}\begin{ocamlindent}Module with \ocamlinlinecode{portable} modality. The modality is applied to all value members of \ocamlinlinecode{M2}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--module-M3}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M3]{\ocamlinlinecode{M3}}}\label{Oxcaml-M3}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-M3--val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : string \ocamltag{arrow}{$\rightarrow$} bool}\\
+\label{Oxcaml-M3--type-s}\ocamlcodefragment{\ocamltag{keyword}{type} s}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}\ocamlinlinecode{contended} modality applied to all definitions in the module.\end{ocamlindent}%
+\medbreak
 
-
+\input{Oxcaml.M1.tex}
+\input{Oxcaml.M2.tex}

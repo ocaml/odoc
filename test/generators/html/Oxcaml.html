@@ -42,6 +42,26 @@
       <a href="#kind-constrained-polymorphism-in-values">Kind-constrained
         polymorphism in values
       </a>
+     </li><li><a href="#modalities">Modalities</a></li>
+     <li>
+      <a href="#multiple-modalities-on-a-field">Multiple modalities on
+        a field
+      </a>
+     </li>
+     <li>
+      <a href="#modalities-on-tuple-and-function-fields">Modalities on
+        tuple and function fields
+      </a>
+     </li>
+     <li>
+      <a href="#modalities-on-constructor-arguments">Modalities on 
+       constructor arguments
+      </a>
+     </li><li><a href="#modalities-on-values">Modalities on values</a></li>
+     <li>
+      <a href="#modalities-on-module-declarations">Modalities on module
+        declarations
+      </a>
      </li>
     </ul>
    </nav>
@@ -357,6 +377,409 @@
     </div>
     <div class="spec-doc">
      <p>Kind constraint on a polymorphic type variable with a different kind.
+     </p>
+    </div>
+   </div>
+   <h2 id="modalities"><a href="#modalities" class="anchor"></a>Modalities
+   </h2>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-opaque">
+     <a href="#type-opaque" class="anchor"></a>
+     <code><span><span class="keyword">type</span> opaque</span></code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-modalities_all">
+     <a href="#type-modalities_all" class="anchor"></a>
+     <code><span><span class="keyword">type</span> modalities_all</span>
+      <span> = </span><span>{</span>
+     </code>
+     <ol>
+      <li id="type-modalities_all.f_global" class="def record field anchored">
+       <a href="#type-modalities_all.f_global" class="anchor"></a>
+       <code><span>f_global : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Locality modality.</p><span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_local" class="def record field anchored">
+       <a href="#type-modalities_all.f_local" class="anchor"></a>
+       <code><span>f_local : <a href="#type-opaque">opaque</a>;</span></code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Locality modality (identity, not rendered).</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_unique" class="def record field anchored">
+       <a href="#type-modalities_all.f_unique" class="anchor"></a>
+       <code><span>f_unique : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Uniqueness modality.</p><span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_aliased" class="def record field
+       anchored"><a href="#type-modalities_all.f_aliased" class="anchor"></a>
+       <code><span>f_aliased : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Uniqueness modality (identity, not rendered).</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_many" class="def record field anchored">
+       <a href="#type-modalities_all.f_many" class="anchor"></a>
+       <code><span>f_many : <a href="#type-opaque">opaque</a>;</span></code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Linearity modality.</p><span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_once" class="def record field anchored">
+       <a href="#type-modalities_all.f_once" class="anchor"></a>
+       <code><span>f_once : <a href="#type-opaque">opaque</a>;</span></code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Linearity modality (identity, not rendered).</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_portable" class="def record field
+       anchored">
+       <a href="#type-modalities_all.f_portable" class="anchor"></a>
+       <code><span>f_portable : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Portability modality.</p><span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_nonportable" class="def record field
+       anchored">
+       <a href="#type-modalities_all.f_nonportable" class="anchor"></a>
+       <code><span>f_nonportable : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Portability modality (identity, not rendered).</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_uncontended" class="def record field
+       anchored">
+       <a href="#type-modalities_all.f_uncontended" class="anchor"></a>
+       <code><span>f_uncontended : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Contention modality (identity, not rendered).</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_contended" class="def record field
+       anchored">
+       <a href="#type-modalities_all.f_contended" class="anchor"></a>
+       <code><span>f_contended : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Contention modality.</p><span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_unyielding" class="def record field
+       anchored">
+       <a href="#type-modalities_all.f_unyielding" class="anchor"></a>
+       <code><span>f_unyielding : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Yield modality.</p><span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_yielding" class="def record field
+       anchored">
+       <a href="#type-modalities_all.f_yielding" class="anchor"></a>
+       <code><span>f_yielding : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Yield modality (identity, not rendered).</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_forkable" class="def record field
+       anchored">
+       <a href="#type-modalities_all.f_forkable" class="anchor"></a>
+       <code><span>f_forkable : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Fork modality.</p><span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_unforkable" class="def record field
+       anchored">
+       <a href="#type-modalities_all.f_unforkable" class="anchor"></a>
+       <code><span>f_unforkable : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Fork modality (identity, not rendered).</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_stateless" class="def record field
+       anchored">
+       <a href="#type-modalities_all.f_stateless" class="anchor"></a>
+       <code><span>f_stateless : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Statefulness modality.</p><span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_stateful" class="def record field
+       anchored">
+       <a href="#type-modalities_all.f_stateful" class="anchor"></a>
+       <code><span>f_stateful : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Statefulness modality (identity, not rendered).</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_immutable" class="def record field
+       anchored">
+       <a href="#type-modalities_all.f_immutable" class="anchor"></a>
+       <code><span>f_immutable : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Visibility modality.</p><span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_read_write" class="def record field
+       anchored">
+       <a href="#type-modalities_all.f_read_write" class="anchor"></a>
+       <code><span>f_read_write : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Visibility modality (identity, not rendered).</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_all.f_no_modality" class="def record field
+       anchored">
+       <a href="#type-modalities_all.f_no_modality" class="anchor"></a>
+       <code><span>f_no_modality : <a href="#type-opaque">opaque</a>;</span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>No modality, for reference.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+     </ol><code><span>}</span></code>
+    </div>
+   </div>
+   <h2 id="multiple-modalities-on-a-field">
+    <a href="#multiple-modalities-on-a-field" class="anchor"></a>Multiple
+     modalities on a field
+   </h2>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-modalities_multi">
+     <a href="#type-modalities_multi" class="anchor"></a>
+     <code><span><span class="keyword">type</span> modalities_multi</span>
+      <span> = </span><span>{</span>
+     </code>
+     <ol>
+      <li id="type-modalities_multi.a" class="def record field anchored">
+       <a href="#type-modalities_multi.a" class="anchor"></a>
+       <code><span>a : <a href="#type-opaque">opaque</a>;</span></code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Field with <code>global portable</code> modalities.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+     </ol><code><span>}</span></code>
+    </div>
+   </div>
+   <h2 id="modalities-on-tuple-and-function-fields">
+    <a href="#modalities-on-tuple-and-function-fields" class="anchor"></a>
+    Modalities on tuple and function fields
+   </h2>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-modalities_tuple">
+     <a href="#type-modalities_tuple" class="anchor"></a>
+     <code><span><span class="keyword">type</span> modalities_tuple</span>
+      <span> = </span><span>{</span>
+     </code>
+     <ol>
+      <li id="type-modalities_tuple.f" class="def record field anchored">
+       <a href="#type-modalities_tuple.f" class="anchor"></a>
+       <code><span>f : int * string;</span></code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Tuple field with modality.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+     </ol><code><span>}</span></code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-modalities_fn">
+     <a href="#type-modalities_fn" class="anchor"></a>
+     <code><span><span class="keyword">type</span> modalities_fn</span>
+      <span> = </span><span>{</span>
+     </code>
+     <ol>
+      <li id="type-modalities_fn.g" class="def record field anchored">
+       <a href="#type-modalities_fn.g" class="anchor"></a>
+       <code>
+        <span>g : <span>int <span class="arrow">&#45;&gt;</span></span> int;
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Function field with modality.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+     </ol><code><span>}</span></code>
+    </div>
+   </div>
+   <h2 id="modalities-on-constructor-arguments">
+    <a href="#modalities-on-constructor-arguments" class="anchor"></a>
+    Modalities on constructor arguments
+   </h2>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-modalities_cstr">
+     <a href="#type-modalities_cstr" class="anchor"></a>
+     <code><span><span class="keyword">type</span> modalities_cstr</span>
+      <span> = </span>
+     </code>
+     <ol>
+      <li id="type-modalities_cstr.A" class="def variant constructor
+       anchored"><a href="#type-modalities_cstr.A" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">A</span> 
+         <span class="keyword">of</span> string
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Constructor argument with <code>global</code> modality.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_cstr.B" class="def variant constructor
+       anchored"><a href="#type-modalities_cstr.B" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">B</span> 
+         <span class="keyword">of</span> 
+         <span>int <span class="arrow">&#45;&gt;</span></span> int
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Function constructor argument with modality.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_cstr.C" class="def variant constructor
+       anchored"><a href="#type-modalities_cstr.C" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">C</span> 
+         <span class="keyword">of</span> int * string
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Tuple constructor argument with modality.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_cstr.D" class="def variant constructor
+       anchored"><a href="#type-modalities_cstr.D" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">D</span> 
+         <span class="keyword">of</span> int * string
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Per-element modalities in a constructor tuple.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_cstr.E" class="def variant constructor
+       anchored"><a href="#type-modalities_cstr.E" class="anchor"></a>
+       <code><span>| </span><span><span class="constructor">E</span></span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Constant constructor.</p><span class="comment-delim">*)</span>
+       </div>
+      </li>
+     </ol>
+    </div>
+   </div>
+   <h2 id="modalities-on-values">
+    <a href="#modalities-on-values" class="anchor"></a>Modalities on 
+    values
+   </h2>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-portable_fn">
+     <a href="#val-portable_fn" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> portable_fn : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> int
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Value with <code>portable</code> modality.</p>
+    </div>
+   </div>
+   <h2 id="modalities-on-module-declarations">
+    <a href="#modalities-on-module-declarations" class="anchor"></a>
+    Modalities on module declarations
+   </h2>
+   <div class="odoc-spec">
+    <div class="spec module-type anchored" id="module-type-S">
+     <a href="#module-type-S" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <span class="keyword">type</span> 
+       <a href="Oxcaml-module-type-S.html">S</a>
+      </span>
+      <span> = <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-M1">
+     <a href="#module-M1" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-M1.html">M1</a>
+      </span><span> : <a href="Oxcaml-module-type-S.html">S</a></span>
+     </code>
+    </div><div class="spec-doc"><p>Module without modality.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-M2">
+     <a href="#module-M2" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-M2.html">M2</a>
+      </span><span> : <a href="Oxcaml-module-type-S.html">S</a></span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Module with <code>portable</code> modality. The modality is applied
+       to all value members of <code>M2</code>.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-M3">
+     <a href="#module-M3" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-M3.html">M3</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p><code>contended</code> modality applied to all definitions in
+       the module.
      </p>
     </div>
    </div>

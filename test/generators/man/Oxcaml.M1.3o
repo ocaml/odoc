@@ -1,0 +1,26 @@
+
+.TH M1 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.M1
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml\.M1\fR
+.in 
+.sp 
+.fi 
+Module without modality\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR x : int
+.sp 
+\f[CB]val\fR f : string \f[CB]\->\fR bool
+.sp 
+\f[CB]type\fR s = {
+.br 
+.ti +2
+a : int;
+.br 
+}
