@@ -14,11 +14,11 @@ Module with portable modality\. The modality is applied to all value members of 
 .SH Documentation
 .sp 
 .nf 
-\f[CB]val\fR x : int
+\f[CB]val\fR x : int @@ portable
 .sp 
-\f[CB]val\fR f : string \f[CB]\->\fR bool
+\f[CB]val\fR f : string \f[CB]\->\fR bool @@ portable
 .sp 
-\f[CB]type\fR s = {
+\f[CB]type\fR s : immutable_data = {
 .br 
 .ti +2
 a : int;

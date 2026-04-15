@@ -22,7 +22,8 @@
    <div class="odoc-spec">
     <div class="spec value anchored" id="val-x">
      <a href="#val-x" class="anchor"></a>
-     <code><span><span class="keyword">val</span> x : int</span></code>
+     <code><span><span class="keyword">val</span> x : int @@ portable</span>
+     </code>
     </div>
    </div>
    <div class="odoc-spec">
@@ -30,7 +31,8 @@
      <a href="#val-f" class="anchor"></a>
      <code>
       <span><span class="keyword">val</span> f : 
-       <span>string <span class="arrow">&#45;&gt;</span></span> bool
+       <span>string <span class="arrow">&#45;&gt;</span></span> bool 
+       @@ portable
       </span>
      </code>
     </div>
@@ -38,8 +40,8 @@
    <div class="odoc-spec">
     <div class="spec type anchored" id="type-s">
      <a href="#type-s" class="anchor"></a>
-     <code><span><span class="keyword">type</span> s</span><span> = </span>
-      <span>{</span>
+     <code><span><span class="keyword">type</span> s : immutable_data</span>
+      <span> = </span><span>{</span>
      </code>
      <ol>
       <li id="type-s.a" class="def record field anchored">

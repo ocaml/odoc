@@ -12016,7 +12016,7 @@
 (subdir
  latex
  (rule
-  (targets Oxcaml.tex.gen Oxcaml.M1.tex.gen Oxcaml.M2.tex.gen)
+  (targets Oxcaml.tex.gen Oxcaml.M1.tex.gen)
   (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../oxcaml.odocl}))
@@ -12032,12 +12032,6 @@
   (package odoc)
   (action
    (diff Oxcaml.M1.tex Oxcaml.M1.tex.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff Oxcaml.M2.tex Oxcaml.M2.tex.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir

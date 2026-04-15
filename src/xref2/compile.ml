@@ -803,7 +803,9 @@ and type_decl_unboxed_field env parent f =
 and type_decl_constructor_argument env parent c =
   let open TypeDecl.Constructor in
   match c with
-  | Tuple ts -> Tuple (List.map (type_expression env parent) ts)
+  | Tuple ts ->
+      Tuple
+        (List.map (fun (te, mods) -> (type_expression env parent te, mods)) ts)
   | Record fs -> Record (List.map (type_decl_field env parent) fs)
 
 and type_decl_constructor :

@@ -155,7 +155,8 @@ There should be an expansion on `NotHidden`
         []
       ]
     },
-    "value": "Abstract"
+    "value": "Abstract",
+    "modalities": []
   }
 
 
