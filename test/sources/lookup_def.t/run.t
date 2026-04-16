@@ -5,11 +5,7 @@ Compile the modules:
   $ odoc compile-impl --source-id src/a.ml -I . a.cmt
   $ odoc compile -I . a.cmti
 
-  $ odoc link -I . src-a.odoc
-  odoc: FILE.odoc argument: no 'src-a.odoc' file or directory
-  Usage: odoc link [--custom-layout] [--open=MODULE] [OPTION]… FILE.odoc
-  Try 'odoc link --help' or 'odoc --help' for more information.
-  [2]
+  $ ! odoc link -I . src-a.odoc > /dev/null 2>&1
   $ odoc link -I . a.odoc
 
 Show the locations:

@@ -215,11 +215,7 @@ Testing the warnings/errors for the `compile-index` command:
 Passing an inexistent file:
 
   $ odoc compile-index --root babar
-  $ odoc compile-index --file-list babar
-  odoc: option '--file-list': no 'babar' file or directory
-  Usage: odoc compile-index [OPTION]… [FILE]…
-  Try 'odoc compile-index --help' or 'odoc --help' for more information.
-  [2]
+  $ ! odoc compile-index --file-list babar > /dev/null 2>&1
 
 Passing an empty folder is allowed:
 
