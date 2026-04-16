@@ -31,3 +31,6 @@ val g' : (module M : Y) -> int
 ```ocaml
 val g'' : (module Y) -> int
 ```
+```ocaml
+val map2 : ('a. 'a -> 'a) -> ('a * 'b) -> 'a * 'b
+```
