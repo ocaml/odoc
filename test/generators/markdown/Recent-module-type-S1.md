@@ -4,7 +4,7 @@
 
 ## Parameters
 
-```
+```ocaml
 module _ : S
 ```
 

@@ -46,3 +46,5 @@ Ocaml_55
 \f[CB]val\fR g' : (\f[CB]module\fR M : Y) \f[CB]\->\fR int
 .sp 
 \f[CB]val\fR g'' : (\f[CB]module\fR Y) \f[CB]\->\fR int
+.sp 
+\f[CB]val\fR map2 : ('a\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR) \f[CB]\->\fR (\f[CB]'a\fR * \f[CB]'b\fR) \f[CB]\->\fR \f[CB]'a\fR * \f[CB]'b\fR
