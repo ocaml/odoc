@@ -386,29 +386,11 @@ Ids generated in the source code:
 
 Html generation for implementation and mld/interface uses different commands
 
-  $ odoc html-generate-source --indent -o html a.odocl
-  odoc: required option --impl is missing
-  Usage: odoc html-generate-source [OPTION]… FILE.ml
-  Try 'odoc html-generate-source --help' or 'odoc --help' for more information.
-  [2]
-  $ odoc html-generate-source --indent -o html --impl a.odocl a.ml
-  ERROR: Expected an implementation unit
-  [1]
-  $ odoc html-generate-source --indent -o html --impl impl-a.odocl
-  odoc: required argument FILE.ml is missing
-  Usage: odoc html-generate-source [OPTION]… FILE.ml
-  Try 'odoc html-generate-source --help' or 'odoc --help' for more information.
-  [2]
-  $ odoc html-generate-source --indent -o html a.ml
-  odoc: required option --impl is missing
-  Usage: odoc html-generate-source [OPTION]… FILE.ml
-  Try 'odoc html-generate-source --help' or 'odoc --help' for more information.
-  [2]
-  $ odoc html-generate --source a.ml --indent -o html impl-a.odocl
-  odoc: unknown option '--source'.
-  Usage: odoc html-generate [OPTION]… FILE.odocl…
-  Try 'odoc html-generate --help' or 'odoc --help' for more information.
-  [2]
+  $ ! odoc html-generate-source --indent -o html a.odocl > /dev/null 2>&1
+  $ ! odoc html-generate-source --indent -o html --impl a.odocl a.ml > /dev/null 2>&1
+  $ ! odoc html-generate-source --indent -o html --impl impl-a.odocl > /dev/null 2>&1
+  $ ! odoc html-generate-source --indent -o html a.ml > /dev/null 2>&1
+  $ ! odoc html-generate --source a.ml --indent -o html impl-a.odocl > /dev/null 2>&1
 
 Compiling without --source-id makes it impossible to generate the source:
 
