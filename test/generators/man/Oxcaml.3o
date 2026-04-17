@@ -294,4 +294,11 @@ Should render as float64 & (immediate mod portable)\.
 .ti +2
 A type with an abbreviated kind\.
 .nf 
+.sp 
+\f[CB]val\fR add : bool \f[CB]\->\fR int \f[CB]\->\fR int \f[CB]\->\fR int [@@zero_alloc]
+.fi 
+.br 
+.ti +2
+Zero allocation bindings have an extension attribute attached\. See https://oxcaml\.org/documentation/miscellaneous-extensions/zero_alloc_check/
+.nf 
 
