@@ -90,6 +90,8 @@ type parsed_attribute =
   | `Stop of Location.t (* [(**/**)]. *)
   | `Alert of string * payload option * Location.t
     (* [`Alert (name, payload, loc)] is for [\[@@alert name "payload"\]] attributes. *)
+  | `Zero_alloc (* Does not allocate on heap *)
   ]
 
 val parse_attribute : Parsetree.attribute -> parsed_attribute option
+val known_attribute : Parsetree.attribute -> Lang.Value.attr option

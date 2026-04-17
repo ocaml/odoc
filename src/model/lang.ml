@@ -320,6 +320,7 @@ end =
 
 and Value : sig
   type value = Abstract | External of string list
+  type attr = Zero_alloc
 
   type t = {
     id : Identifier.Value.t;
@@ -327,6 +328,7 @@ and Value : sig
     value : value;
     doc : Comment.docs;
     type_ : TypeExpr.t;
+    ext_attr : attr list;
   }
 end =
   Value
