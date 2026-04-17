@@ -119,3 +119,8 @@ kind_ my_abbrev = value_or_null mod non_null global
 
 type t_abbrev : my_abbrev mod immutable
 (** A type with an abbreviated kind. *)
+
+val add : bool -> int -> int -> int [@@zero_alloc]
+(** Zero allocation bindings have an extension attribute attached.
+    See https://oxcaml.org/documentation/miscellaneous-extensions/zero_alloc_check/
+ *)
