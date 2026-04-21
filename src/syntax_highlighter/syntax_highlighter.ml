@@ -159,7 +159,7 @@ let tag_of_token (tok : Parser.token) =
   | HASH_FLOAT _ -> "HASH_FLOAT"
   | HASH_INT _ -> "HASH_INT"
   | HASH_SUFFIX -> "HASH_SUFFIX"
-  | KIND_ABBREV -> "KIND_ABBREV"
+  | KIND -> "KIND"
   | KIND_OF -> "KIND_OF"
   | LBRACKETCOLON -> "LBRACKETCOLON"
   | LESSLBRACKET -> "LESSLBRACKET"

@@ -96,7 +96,13 @@ and visibility : Types.visibility -> visibility = function
 and module_type : Types.module_type -> module_type = function
   | Types.Mty_ident p -> Mty_ident p
   | Types.Mty_signature s -> Mty_signature (signature s)
+#if defined OXCAML
+  (* oxcaml: [Mty_functor] gained a third [Mode.Alloc.lr] argument;
+     odoc has no use for the mode so we drop it. *)
+  | Types.Mty_functor (a, b, _mode) -> Mty_functor(functor_parameter a, module_type b)
+#else
   | Types.Mty_functor (a, b) -> Mty_functor(functor_parameter a, module_type b)
+#endif
   | Types.Mty_alias p -> Mty_alias p
 #if defined OXCAML
   | Types.Mty_strengthen (mty,p,a) ->
@@ -109,7 +115,12 @@ and aliasability : Types.Aliasability.t -> Aliasability.t = function
 
 and functor_parameter : Types.functor_parameter -> functor_parameter = function
   | Types.Unit -> Unit
-  | Types.Named (a,b) -> Named (a, module_type b)
+#if defined OXCAML
+  (* oxcaml adds a [Mode.Alloc.lr] third argument that odoc ignores. *)
+  | Types.Named (a, b, _mode) -> Named (a, module_type b)
+#else
+  | Types.Named (a, b) -> Named (a, module_type b)
+#endif
 
 and module_presence : Types.module_presence -> module_presence = function
   | Types.Mp_present -> Mp_present

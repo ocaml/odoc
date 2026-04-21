@@ -19,7 +19,7 @@ end = struct
 
   let add_escape_string buf s =
     (* https://discuss.ocaml.org/t/html-encoding-of-string/4289/4 *)
-    let add = Buffer.add_string buf in
+    let add s = Buffer.add_string buf s in
     let len = String.length s in
     let max_idx = len - 1 in
     let flush start i =
