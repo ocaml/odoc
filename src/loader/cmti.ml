@@ -52,7 +52,11 @@ let rec read_core_type env container ctyp =
     | Ttyp_any -> Any
     | Ttyp_var s -> Var s
 #endif
+#if defined OXCAML
+    | Ttyp_arrow(lbl, arg, _, res, _) ->
+#else
     | Ttyp_arrow(lbl, arg, res) ->
+#endif
         let lbl = read_label lbl in
 #if OCAML_VERSION < (4,3,0)
         (* NOTE(@ostera): Unbox the optional value for this optional labelled
@@ -638,11 +642,19 @@ and read_module_type env parent label_parent mty =
         let sg, () = read_signature Odoc_model.Semantics.Expect_none env parent sg in
         Signature sg
 #if OCAML_VERSION >= (4,10,0)
+#if defined OXCAML
+    | Tmty_functor(parameter, res, _) ->
+#else
     | Tmty_functor(parameter, res) ->
+#endif
         let f_parameter, env =
           match parameter with
           | Unit -> FunctorParameter.Unit, env
+#if defined OXCAML
+          | Named (id_opt, _, arg, _) ->
+#else
           | Named (id_opt, _, arg) ->
+#endif
             let id, env =
               match id_opt with
               | None -> Identifier.Mk.parameter (parent, ModuleName.make_std "_"), env

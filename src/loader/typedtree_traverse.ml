@@ -14,7 +14,7 @@ module Analysis = struct
     else
       match expr.exp_desc with
 #if defined OXCAML
-      | Texp_ident (p, _, _, _, _) ->
+      | Texp_ident (p, _, _, _, _, _) ->
 #else
       | Texp_ident (p, _, _) ->
 #endif
