@@ -326,6 +326,7 @@ let mark_type ty =
       | Tquote typ -> loop visited typ
       | Tsplice typ -> loop visited typ
       | Tof_kind _ -> ()
+      | Trepr _ -> ()
 #endif
   in
   loop [] ty
@@ -605,6 +606,7 @@ let rec read_type_expr env typ =
       | Tquote typ -> Quote (read_type_expr env typ)
       | Tsplice typ -> Splice (read_type_expr env typ)
       | Tof_kind _ -> assert false
+      | Trepr _ -> Any  (* oxcaml: representation annotations are ignored *)
 #endif
     in
       match alias with

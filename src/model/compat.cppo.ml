@@ -78,7 +78,14 @@ let opt conv = function | None -> None | Some x -> Some (conv x)
 
 #if OCAML_VERSION >= (4,10,0)
 
-let rec signature : Types.signature -> signature = fun x -> List.map signature_item x
+let rec signature : Types.signature -> signature = fun x ->
+#if defined OXCAML
+  List.filter_map (function
+    | Types.Sig_jkind _ -> None
+    | si -> Some (signature_item si)) x
+#else
+  List.map signature_item x
+#endif
 
 and signature_item : Types.signature_item -> signature_item = function
   | Types.Sig_value (a,b,c) -> Sig_value (a,b,visibility c)
@@ -88,6 +95,9 @@ and signature_item : Types.signature_item -> signature_item = function
   | Types.Sig_modtype (a,b,c) -> Sig_modtype (a, modtype_declaration b, visibility c)
   | Types.Sig_class (a,b,c,d) -> Sig_class (a,b,c, visibility d)
   | Types.Sig_class_type (a,b,c,d) -> Sig_class_type (a,b,c, visibility d)
+#if defined OXCAML
+  | Types.Sig_jkind _ -> assert false  (* filtered in [signature] *)
+#endif
 
 and visibility : Types.visibility -> visibility = function
   | Types.Hidden -> Hidden
@@ -280,6 +290,9 @@ let shape_info_of_cmt_infos : Cmt_format.cmt_infos -> (shape * uid_to_loc) optio
     | Module_type mt -> mt.mtd_loc
     | Class cd -> cd.ci_id_name.loc
     | Class_type ctd -> ctd.ci_id_name.loc
+#if defined OXCAML
+    | Jkind _ -> Location.none  (* oxcaml: odoc ignores jkind declarations *)
+#endif
   in
   fun x -> Option.map (fun s -> (s, Shape.Uid.Tbl.map x.cmt_uid_to_decl loc_of_declaration)) x.cmt_impl_shape
 #endif

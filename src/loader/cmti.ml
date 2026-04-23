@@ -196,6 +196,7 @@ let rec read_core_type env container ctyp =
     | Ttyp_splice typ -> Splice (read_core_type env container typ)
     | Ttyp_call_pos -> Constr(Env.Path.read_type env.ident_env Predef.path_lexing_position, [])
     | Ttyp_of_kind _ -> assert false
+    | Ttyp_repr _ -> Any  (* oxcaml: representation annotations are ignored *)
 #elif OCAML_VERSION >= (5,5,0)
   | Ttyp_functor (lbl, id, pkg, ret_type) ->
     let lbl = read_label lbl in
@@ -875,6 +876,9 @@ and read_signature_item env parent item =
 #if OCAML_VERSION >= (4,13,0)
     | Tsig_modtypesubst mtst ->
         [ModuleTypeSubstitution (read_module_type_substitution env parent mtst)]
+#endif
+#if defined OXCAML
+    | Tsig_jkind _ -> []
 #endif
 
 
