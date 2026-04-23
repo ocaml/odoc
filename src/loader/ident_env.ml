@@ -316,6 +316,9 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
       [`ModuleType (mtd.mtd_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
 #endif
     | { sig_desc = Tsig_open _;_} :: rest -> extract_signature_tree_items hide_item rest
+#if defined OXCAML
+    | { sig_desc = Tsig_jkind _;_} :: rest -> extract_signature_tree_items hide_item rest
+#endif
     | [] -> []
 
 let rec read_pattern hide_item pat =
@@ -376,6 +379,10 @@ let rec read_pattern hide_item pat =
   | Tpat_any | Tpat_constant _ | Tpat_variant(_, None, _) -> []
 #if OCAML_VERSION >= (4,8,0) && OCAML_VERSION < (4,11,0)
   | Tpat_exception pat -> read_pattern hide_item pat
+#endif
+#if defined OXCAML
+  | Tpat_unboxed_unit -> []
+  | Tpat_unboxed_bool _ -> []
 #endif
 
 let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> items list = fun hide_item items ->
@@ -486,6 +493,9 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
     | { str_desc = Tstr_primitive {val_id; _}; str_loc; _ } :: rest ->
       [`Value (val_id, false, Some str_loc)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_eval _; _} :: rest -> extract_structure_tree_items hide_item rest
+#if defined OXCAML
+    | { str_desc = Tstr_jkind _; _ } :: rest -> extract_structure_tree_items hide_item rest
+#endif
     | [] -> []
 
 

@@ -38,6 +38,9 @@ module Env = struct
     | Tsig_exception _ | Tsig_modsubst _ | Tsig_open _ | Tsig_include _
     | Tsig_class _ | Tsig_class_type _ | Tsig_attribute _ ->
         ()
+#if defined OXCAML
+    | Tsig_jkind _ -> ()
+#endif
 
   and module_declaration env _parent md =
     match md.md_id with
@@ -64,6 +67,9 @@ module Env = struct
     | Tstr_class_type _ | Tstr_include _ | Tstr_attribute _ | Tstr_primitive _
     | Tstr_type _ | Tstr_typext _ | Tstr_exception _ ->
         ()
+#if defined OXCAML
+    | Tstr_jkind _ -> ()
+#endif
 
   and module_type env (parent : Identifier.Signature.t) mty =
     match mty.mty_desc with

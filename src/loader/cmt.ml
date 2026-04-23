@@ -114,6 +114,10 @@ let rec read_pattern env parent doc pat =
     | Tpat_exception pat ->
         read_pattern env parent doc pat
 #endif
+#if defined OXCAML
+    | Tpat_unboxed_unit -> []
+    | Tpat_unboxed_bool _ -> []
+#endif
 
 let read_value_binding env parent vb =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -583,6 +587,9 @@ and read_structure_item env parent item =
     | Tstr_class_type cltyps ->
         let cltyps = List.map (fun (_, _, clty) -> clty) cltyps in
           Cmti.read_class_type_declarations env parent cltyps
+#if defined OXCAML
+    | Tstr_jkind _ -> []
+#endif
     | Tstr_attribute attr ->
       let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
           match Doc_attr.standalone container ~warnings_tag:env.warnings_tag attr with

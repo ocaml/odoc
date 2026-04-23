@@ -177,6 +177,13 @@ let tag_of_token (tok : Parser.token) =
   | METAOCAML_BRACKET_CLOSE -> "METAOCAML_BRACKET_CLOSE"
   | EFFECT -> "EFFECT"
 #endif
+#if defined OXCAML
+  | BORROW -> "BORROW"
+  | HASHTRUE -> "HASHTRUE"
+  | HASHFALSE -> "HASHFALSE"
+  | POLY -> "POLY"
+  | REPR -> "REPR"
+#endif
 
 
 let syntax_highlighting_locs src =
