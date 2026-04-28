@@ -47,7 +47,8 @@ end = struct
       let next = i + 1 in
       loop next next
     in
-    loop 0 0
+    let result = loop 0 0 in
+    result
 
   let to_string t =
     let buf = Buffer.create 16 in
