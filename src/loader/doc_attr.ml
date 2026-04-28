@@ -87,8 +87,7 @@ type parsed_attribute =
   | `Doc of payload  (* Attached comment. *)
   | `Stop of Location.t  (* [(**/**)]. *)
   | `Alert of  string * payload option * Location.t
-    (* [`Alert (name, payload, loc)] is for [\[@@alert name "payload"\]] attributes. *)
-  | `Zero_alloc (* Does not allocate on heap *) ]
+    (* [`Alert (name, payload, loc)] is for [\[@@alert name "payload"\]] attributes. *) ]
 
 (** Recognize an attribute. *)
 let parse_attribute : Parsetree.attribute -> parsed_attribute option =
@@ -112,9 +111,6 @@ let parse_attribute : Parsetree.attribute -> parsed_attribute option =
         Some (name, payload) ->
       Some (`Alert (name, payload, attr_loc))
       | None -> None)
-  | "zero_alloc" ->
-      (* TODO: unclear if this should be detected here *)
-      Some `Zero_alloc
   | _ -> None
 
 let is_stop_comment attr =
@@ -147,9 +143,6 @@ let attached ~warnings_tag internal_tags parent attrs =
         | Some (`Alert (name, p, loc)) ->
             let elt = mk_alert_payload ~loc name p in
             loop acc_docs (elt :: acc_alerts) rest
-        | Some `Zero_alloc ->
-            (* TODO potentially do something useful here *)
-            loop acc_docs acc_alerts rest
         | Some (`Text _ | `Stop _) | None -> loop acc_docs acc_alerts rest)
     | [] -> (List.rev acc_docs, List.rev acc_alerts)
   in
@@ -227,9 +220,6 @@ let extract_top_comment internal_tags ~warnings_tag ~classify parent items =
             let attr_loc = read_location attr_loc in
             `Alert (Location_.at attr_loc (`Tag (`Alert (name, p))))
         | Some (`Stop _) -> `Return (* Stop at stop-comments. *)
-        | Some (`Zero_alloc) ->
-            (* TODO possibly do something here *)
-            `Skip
         | None -> `Skip (* Skip unrecognized attributes. *))
     | Some `Open -> `Skip (* Skip open statements *)
     | None -> `Return
