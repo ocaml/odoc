@@ -75,7 +75,6 @@ let iterator line_directives oc names =
   let attribute _ attr =
     match Odoc_loader.parse_attribute attr with
     | None | Some (`Stop _ | `Alert _) -> ()
-    | Some `Zero_alloc -> ()
     | Some (`Text (doc, loc) | `Doc (doc, loc)) ->
         let ast_docs =
           Odoc_parser.parse_comment ~location:(pad_loc loc) ~text:doc
