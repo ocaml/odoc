@@ -612,6 +612,27 @@
  (enabled_if %{ocaml-config:ox}))
 
 (rule
+ (target oxcaml_impl.cmt)
+ (package odoc)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/oxcaml_impl.ml}))
+ (enabled_if %{ocaml-config:ox}))
+
+(rule
+ (target oxcaml_impl.odoc)
+ (package odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:oxcaml_impl.cmt}))
+ (enabled_if %{ocaml-config:ox}))
+
+(rule
+ (target oxcaml_impl.odocl)
+ (package odoc)
+ (action
+  (run odoc link -o %{target} %{dep:oxcaml_impl.odoc}))
+ (enabled_if %{ocaml-config:ox}))
+
+(rule
  (target recent.cmti)
  (package odoc)
  (action
@@ -12058,6 +12079,164 @@
   (package odoc)
   (action
    (diff oxcaml.targets oxcaml.targets.gen))
+  (enabled_if %{ocaml-config:ox})))
+
+(subdir
+ html
+ (rule
+  (targets Oxcaml_impl.html.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../oxcaml_impl.odocl}))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_impl.html Oxcaml_impl.html.gen))
+  (enabled_if %{ocaml-config:ox})))
+
+(subdir
+ html
+ (rule
+  (target oxcaml_impl.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    oxcaml_impl.targets.gen
+    (run odoc html-targets -o . %{dep:../oxcaml_impl.odocl} --flat)))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff oxcaml_impl.targets oxcaml_impl.targets.gen))
+  (enabled_if %{ocaml-config:ox})))
+
+(subdir
+ latex
+ (rule
+  (targets Oxcaml_impl.tex.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    latex-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../oxcaml_impl.odocl}))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_impl.tex Oxcaml_impl.tex.gen))
+  (enabled_if %{ocaml-config:ox})))
+
+(subdir
+ latex
+ (rule
+  (target oxcaml_impl.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    oxcaml_impl.targets.gen
+    (run odoc latex-targets -o . %{dep:../oxcaml_impl.odocl})))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff oxcaml_impl.targets oxcaml_impl.targets.gen))
+  (enabled_if %{ocaml-config:ox})))
+
+(subdir
+ man
+ (rule
+  (targets Oxcaml_impl.3o.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    man-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../oxcaml_impl.odocl}))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_impl.3o Oxcaml_impl.3o.gen))
+  (enabled_if %{ocaml-config:ox})))
+
+(subdir
+ man
+ (rule
+  (target oxcaml_impl.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    oxcaml_impl.targets.gen
+    (run odoc man-targets -o . %{dep:../oxcaml_impl.odocl})))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff oxcaml_impl.targets oxcaml_impl.targets.gen))
+  (enabled_if %{ocaml-config:ox})))
+
+(subdir
+ markdown
+ (rule
+  (targets Oxcaml_impl.md.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../oxcaml_impl.odocl}))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_impl.md Oxcaml_impl.md.gen))
+  (enabled_if %{ocaml-config:ox})))
+
+(subdir
+ markdown
+ (rule
+  (target oxcaml_impl.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    oxcaml_impl.targets.gen
+    (run odoc markdown-targets -o . %{dep:../oxcaml_impl.odocl})))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff oxcaml_impl.targets oxcaml_impl.targets.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
