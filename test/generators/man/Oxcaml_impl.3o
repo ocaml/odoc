@@ -1,0 +1,14 @@
+
+.TH Oxcaml_impl 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_impl
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml_impl\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR add : bool \f[CB]\->\fR int \f[CB]\->\fR int \f[CB]\->\fR int
