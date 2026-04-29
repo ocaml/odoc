@@ -990,7 +990,7 @@ module Make (Syntax : SYNTAX) = struct
       let name = Paths.Identifier.name t.id in
       let zero_alloc =
         match List.mem Odoc_model.Lang.Value.Zero_alloc t.ext_attr with
-        | true -> O.txt " " ++ O.txt "[@@zero_alloc]"
+        | true -> O.cut ++ O.txt " " ++ O.txt "[@@zero_alloc]"
         | false -> O.noop
       in
       let content =
@@ -1000,7 +1000,7 @@ module Make (Syntax : SYNTAX) = struct
              ++ O.txt " " ++ O.txt name
              ++ O.txt Syntax.Type.annotation_separator
              ++ O.cut ++ type_expr t.type_
-             ++ O.cut ++ zero_alloc
+             ++ zero_alloc
              ++ if semicolon then O.txt ";" else O.noop)
       in
       let attr = [ "value" ] @ extra_attr in
