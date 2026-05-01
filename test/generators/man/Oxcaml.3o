@@ -24,4 +24,18 @@ Polymorphic arguments require parentheses
 .ti +2
 Zero allocation bindings have an extension attribute attached\. See https://oxcaml\.org/documentation/miscellaneous-extensions/zero_alloc_check/
 .nf 
+.sp 
+\f[CB]val\fR add_opt : bool \f[CB]\->\fR int \f[CB]\->\fR int \f[CB]\->\fR int [@@zero_alloc opt]
+.fi 
+.br 
+.ti +2
+Like add but with an opt attribute\.
+.nf 
+.sp 
+\f[CB]val\fR add_strict : bool \f[CB]\->\fR int \f[CB]\->\fR int \f[CB]\->\fR int [@@zero_alloc strict]
+.fi 
+.br 
+.ti +2
+Like add but with a strict attribute\.
+.nf 
 

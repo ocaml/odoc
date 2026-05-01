@@ -320,7 +320,11 @@ end =
 
 and Value : sig
   type value = Abstract | External of string list
-  type attr = Zero_alloc
+
+  module Zero_alloc : sig
+    type t = Assume | Opt | Strict
+  end
+  type attr = Zero_alloc of Zero_alloc.t
 
   type t = {
     id : Identifier.Value.t;
