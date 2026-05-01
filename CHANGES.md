@@ -1,4 +1,4 @@
-# Unreleased
+# 3.2.0
 
 ### Added
 - Allow persistent latex macros in HTML/KaTeX backend (@dlesbre, #1391)
