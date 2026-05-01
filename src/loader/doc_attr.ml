@@ -74,11 +74,41 @@ let attribute_unpack = function
   | { Location.txt = name; loc }, attr_payload -> (name, attr_payload, loc)
 #endif
 
+let ident (pexp_desc : Parsetree.expression_desc) =
+  match pexp_desc with
+  | Pexp_ident {txt=longident; _} -> (
+    match longident with
+    | Lident s -> Some s
+    | _ -> None)
+  | _ -> None
+
+let zero_alloc_structure_arg (pstr_desc: Parsetree.structure_item_desc) =
+  match pstr_desc with
+  | Pstr_eval ({pexp_desc; _}, _) -> (
+    (* check if this is strict or opt *)
+    match ident pexp_desc with
+    | Some "strict" -> Some Lang.Value.Zero_alloc.Strict
+    | Some "opt" -> Some Lang.Value.Zero_alloc.Opt
+    | _ -> None)
+  | _ -> None
+
+let zero_alloc_argument (payload : Parsetree.payload) =
+  match payload with
+  | PStr structure_items -> (
+    match structure_items with
+    | [] -> Some Lang.Value.Zero_alloc.Assume
+    | [{pstr_desc; _}] -> zero_alloc_structure_arg pstr_desc
+    | _ -> None)
+  | _ -> None
+
 let known_attribute attr =
-  let name, _, _ = attribute_unpack attr in
-  match String.equal name "zero_alloc" with
-  | true -> Some Lang.Value.Zero_alloc
-  | false -> None
+  let name, payload, _ = attribute_unpack attr in
+  match name with
+  | "zero_alloc" -> (
+    match zero_alloc_argument payload with
+    | Some zalloc_type -> Some (Lang.Value.Zero_alloc zalloc_type)
+    | None -> None)
+  | _ -> None
 
 type payload = string * Location.t
 
