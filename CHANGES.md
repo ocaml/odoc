@@ -1,3 +1,9 @@
+# Unreleased
+
+### Fixed
+- Fix #1426, which broke docs in packages include `base` in OCaml 5.5.0
+  (@jonludlam, #1427)
+
 # 3.2.0
 
 ### Added
