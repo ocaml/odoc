@@ -1049,6 +1049,18 @@ and type_expr map (parent : Identifier.LabelParent.t) (t : Component.TypeExpr.t)
     | Splice t -> Splice (type_expr map parent t)
     | Package p -> Package (type_expr_package map parent p)
     | Arrow_functor (lbl, m_arg, t) ->
+        let arg_parent = Identifier.fresh_module_arg_parent () in
+        let name = Ident.Name.typed_module m_arg.id in
+        let param_identifier = Identifier.Mk.parameter (arg_parent, name) in
+        let map =
+          {
+            map with
+            functor_parameter =
+              (m_arg.id, param_identifier) :: map.functor_parameter;
+            module_ =
+              Component.ModuleMap.add m_arg.id param_identifier map.module_;
+          }
+        in
         Arrow_functor
           (lbl, type_expr_module_arg map parent m_arg, type_expr map parent t)
   with e ->

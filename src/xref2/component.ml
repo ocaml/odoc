@@ -2367,12 +2367,21 @@ module Of_Lang = struct
     | Splice t -> Splice (type_expression ident_map t)
     | Package p -> Package (type_package ident_map p)
     | Arrow_functor (lbl, m_arg, t) ->
-        Arrow_functor
-          (lbl, type_module_arg ident_map m_arg, type_expression ident_map t)
+        let m_arg' = type_module_arg ident_map m_arg in
+        let ident_map =
+          {
+            ident_map with
+            functor_parameters =
+              Maps.FunctorParameter.add m_arg.Lang.TypeExpr.Module.id
+                m_arg'.TypeExpr.Module.id ident_map.functor_parameters;
+          }
+        in
+        Arrow_functor (lbl, m_arg', type_expression ident_map t)
 
-  and type_module_arg ident_map { package; id } =
-    let id = Ident.Of_Identifier.functor_parameter id in
-    let package = type_package ident_map package in
+  and type_module_arg ident_map (m_arg : Lang.TypeExpr.Module.t) :
+      TypeExpr.Module.t =
+    let id = Ident.Of_Identifier.functor_parameter m_arg.id in
+    let package = type_package ident_map m_arg.package in
     { package; id }
 
   and module_decl ident_map m =
