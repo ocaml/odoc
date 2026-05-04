@@ -11,13 +11,6 @@ Oxcaml
 .SH Documentation
 .sp 
 .nf 
-\f[CB]val\fR f : int \f[CB]\->\fR ('a\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR) \f[CB]\->\fR unit
-.fi 
-.br 
-.ti +2
-Polymorphic arguments require parentheses
-.nf 
-.sp 
 \f[CB]val\fR add : bool \f[CB]\->\fR int \f[CB]\->\fR int \f[CB]\->\fR int [@@zero_alloc]
 .fi 
 .br 
@@ -37,5 +30,12 @@ Like add but with an opt attribute\.
 .br 
 .ti +2
 Like add but with a strict attribute\.
+.nf 
+.sp 
+\f[CB]val\fR f : int \f[CB]\->\fR int [@@zero_alloc]
+.fi 
+.br 
+.ti +2
+Alternative syntax for zero alloc annotation
 .nf 
 

@@ -13,3 +13,6 @@ val add_opt : bool -> int -> int -> int [@@zero_alloc opt]
 val add_strict : bool -> int -> int -> int [@@zero_alloc strict]
 (** Like [add] but with a [strict] attribute.
  *)
+
+val[@zero_alloc] f : int -> int
+(** Alternative syntax for zero alloc annotation *)
