@@ -104,10 +104,12 @@ let zero_alloc_argument (payload : Parsetree.payload) =
 let known_attribute attr =
   let name, payload, _ = attribute_unpack attr in
   match name with
+#if defined OXCAML
   | "zero_alloc" -> (
     match zero_alloc_argument payload with
     | Some zalloc_type -> Some (Lang.Value.Zero_alloc zalloc_type)
     | None -> None)
+#endif
   | _ -> None
 
 type payload = string * Location.t
