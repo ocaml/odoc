@@ -51,26 +51,7 @@
     </ul>
    </nav>
   </div>
-  <div class="odoc-content">
-   <div class="odoc-spec">
-    <div class="spec value anchored" id="val-f">
-     <a href="#val-f" class="anchor"></a>
-     <code>
-      <span><span class="keyword">val</span> f : 
-       <span>int <span class="arrow">&#45;&gt;</span></span> 
-       <span>
-        <span>('a. 
-         <span><span class="type-var">'a</span> 
-          <span class="arrow">&#45;&gt;</span>
-         </span> <span class="type-var">'a</span>)
-        </span> <span class="arrow">&#45;&gt;</span>
-       </span> unit
-      </span>
-     </code>
-    </div>
-    <div class="spec-doc"><p>Polymorphic arguments require parentheses</p>
-    </div>
-   </div><p>Unboxed types have a trailing hash '#'</p>
+  <div class="odoc-content"><p>Unboxed types have a trailing hash '#'</p>
    <div class="odoc-spec">
     <div class="spec type anchored" id="type-pt">
      <a href="#type-pt" class="anchor"></a>
@@ -527,6 +508,19 @@
     </div>
     <div class="spec-doc">
      <p>Like <code>add</code> but with a <code>strict</code> attribute.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-f">
+     <a href="#val-f" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> f : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> int 
+       [@@zero_alloc]
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Alternative syntax for zero alloc annotation</p>
     </div>
    </div>
   </div>

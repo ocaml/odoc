@@ -1,11 +1,6 @@
 
 # Module `Oxcaml`
 
-```ocaml
-val f : int -> ('a. 'a -> 'a) -> unit
-```
-Polymorphic arguments require parentheses
-
 Unboxed types have a trailing hash '\#'
 
 ```ocaml
@@ -216,3 +211,8 @@ Like `add` but with an `opt` attribute.
 val add_strict : bool -> int -> int -> int [@@zero_alloc strict]
 ```
 Like `add` but with a `strict` attribute.
+
+```ocaml
+val f : int -> int [@@zero_alloc]
+```
+Alternative syntax for zero alloc annotation
