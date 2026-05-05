@@ -1,5 +1,11 @@
 \section{Module \ocamlinlinecode{Oxcaml}}\label{Oxcaml}%
-\label{Oxcaml--val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : int \ocamltag{arrow}{$\rightarrow$} ('a.\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}) \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Polymorphic arguments require parentheses\end{ocamlindent}%
+\label{Oxcaml--val-add}\ocamlcodefragment{\ocamltag{keyword}{val} add : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc]}\begin{ocamlindent}Zero allocation bindings have an extension attribute attached. See https://oxcaml.org/documentation/miscellaneous-extensions/zero\_alloc\_check/\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--val-add_opt}\ocamlcodefragment{\ocamltag{keyword}{val} add\_\allowbreak{}opt : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc opt]}\begin{ocamlindent}Like \ocamlinlinecode{add} but with an \ocamlinlinecode{opt} attribute.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--val-add_strict}\ocamlcodefragment{\ocamltag{keyword}{val} add\_\allowbreak{}strict : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc strict]}\begin{ocamlindent}Like \ocamlinlinecode{add} but with a \ocamlinlinecode{strict} attribute.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc]}\begin{ocamlindent}Alternative syntax for zero alloc annotation\end{ocamlindent}%
 \medbreak
 
 

@@ -1,3 +1,5 @@
+(** [extract ~dst ~input ~names ~line_directives ~warnings_options] extracts source code from document blocks.
+    @param dst File path to write to *)
 val extract :
   dst:string option ->
   input:string ->

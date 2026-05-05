@@ -988,13 +988,30 @@ module Make (Syntax : SYNTAX) = struct
         | External _ -> ([ "external" ], Syntax.Type.External.semicolon)
       in
       let name = Paths.Identifier.name t.id in
+      let zero_alloc =
+        match
+          List.find
+            (function Odoc_model.Lang.Value.Zero_alloc _ -> true)
+            t.ext_attr
+        with
+        | Zero_alloc alloc_type ->
+            let alloc_type =
+              match alloc_type with
+              | Assume -> ""
+              | Strict -> " strict"
+              | Opt -> " opt"
+            in
+            O.cut ++ O.txt " "
+            ++ O.txt (Printf.sprintf "[@@zero_alloc%s]" alloc_type)
+        | exception Not_found -> O.noop
+      in
       let content =
         O.documentedSrc
           (O.box_hv
           @@ O.keyword Syntax.Value.variable_keyword
              ++ O.txt " " ++ O.txt name
              ++ O.txt Syntax.Type.annotation_separator
-             ++ O.cut ++ type_expr t.type_
+             ++ O.cut ++ type_expr t.type_ ++ zero_alloc
              ++ if semicolon then O.txt ";" else O.noop)
       in
       let attr = [ "value" ] @ extra_attr in

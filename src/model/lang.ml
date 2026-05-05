@@ -321,12 +321,18 @@ end =
 and Value : sig
   type value = Abstract | External of string list
 
+  module Zero_alloc : sig
+    type t = Assume | Opt | Strict
+  end
+  type attr = Zero_alloc of Zero_alloc.t
+
   type t = {
     id : Identifier.Value.t;
     source_loc : Identifier.SourceLocation.t option;
     value : value;
     doc : Comment.docs;
     type_ : TypeExpr.t;
+    ext_attr : attr list;
   }
 end =
   Value
