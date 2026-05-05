@@ -4,9 +4,9 @@
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=marshal
   $ sherlodoc index $(find . -name '*.odocl')
-  $ sherlodoc search --print-docstring "foo"
+  $ sherlodoc search --print-docstring-html "foo"
   val A.foo : int
   <div><p>This is a docstring with a <span>link</span></p></div>
-  $ sherlodoc search --print-docstring "bar"
+  $ sherlodoc search --print-docstring-html "bar"
   val A.bar : int
   <div><p>This is a docstring with a ref to <span><code>foo</code></span></p></div>
