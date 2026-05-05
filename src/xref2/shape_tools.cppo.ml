@@ -105,6 +105,7 @@ let rec shape_of_kind_path env kind :
     | `SubstitutedCT t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
     | `Identifier (id, _) -> shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
     | `Substituted t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
+    | `Unbox t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
     | `Forward _
     | `Dot _
     | `Root _

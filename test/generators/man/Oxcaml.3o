@@ -17,4 +17,27 @@ Oxcaml
 .ti +2
 Polymorphic arguments require parentheses
 .nf 
-
+.sp 
+.fi 
+Unboxed types have a trailing hash '#'
+.nf 
+.sp 
+\f[CB]type\fR pt = {
+.br 
+.ti +2
+x : int;
+.br 
+.ti +2
+y : float32#;
+.br 
+}
+.sp 
+\f[CB]type\fR segment = {
+.br 
+.ti +2
+start : pt#;
+.br 
+.ti +2
+stop : pt#;
+.br 
+}

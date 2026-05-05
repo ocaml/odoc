@@ -35,7 +35,8 @@ module rec Resolved : sig
     | `CoreType of TypeName.t
     | `Type of parent * TypeName.t
     | `Class of parent * TypeName.t
-    | `ClassType of parent * TypeName.t ]
+    | `ClassType of parent * TypeName.t
+    | `Unbox of type_ ]
 
   and value =
     [ `Value of parent * ValueName.t | `Gpath of Path.Resolved.Value.t ]
@@ -77,7 +78,8 @@ and Cpath : sig
     | `DotT of module_ * TypeName.t
     | `Type of Resolved.parent * TypeName.t
     | `Class of Resolved.parent * TypeName.t
-    | `ClassType of Resolved.parent * TypeName.t ]
+    | `ClassType of Resolved.parent * TypeName.t
+    | `Unbox of type_ ]
 
   and value =
     [ `Resolved of Resolved.value
@@ -127,6 +129,7 @@ and is_resolved_module_type_substituted : Resolved.module_type -> bool =
 and is_resolved_type_substituted : Resolved.type_ -> bool = function
   | `Local _ -> false
   | `CoreType _ -> false
+  | `Unbox _ -> false
   | `Substituted _ -> true
   | `Gpath _ -> false
   | `CanonicalType (t, _) -> is_resolved_type_substituted t
@@ -161,6 +164,7 @@ let is_type_substituted : type_ -> bool = function
   | `Resolved a -> is_resolved_type_substituted a
   | `Identifier _ -> false
   | `Local _ -> false
+  | `Unbox _ -> false
   | `Substituted _ -> true
   | `DotT (a, _) -> is_module_substituted a
   | `Type (a, _) | `Class (a, _) | `ClassType (a, _) ->
@@ -249,6 +253,7 @@ and is_type_hidden : type_ -> bool = function
   | `Local (_, b) -> b
   | `Substituted p -> is_type_hidden (p :> type_)
   | `DotT (p, _) -> is_module_hidden p
+  | `Unbox p -> is_type_hidden p
   | `Type (p, _) | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
 
@@ -259,6 +264,7 @@ and is_resolved_type_hidden : Resolved.type_ -> bool = function
   | `Substituted p -> is_resolved_type_hidden p
   | `CanonicalType (_, `Resolved _) -> false
   | `CanonicalType (p, _) -> is_resolved_type_hidden p
+  | `Unbox p -> is_resolved_type_hidden p
   | `Type (p, _) | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
 
@@ -370,6 +376,7 @@ and unresolve_resolved_type_path : Resolved.type_ -> type_ = function
   | `Type (p, n) -> `DotT (unresolve_resolved_parent_path p, n)
   | `Class (p, n) -> `DotT (unresolve_resolved_parent_path p, n)
   | `ClassType (p, n) -> `DotT (unresolve_resolved_parent_path p, n)
+  | `Unbox p -> `Unbox (unresolve_resolved_type_path p)
 
 and unresolve_resolved_class_type_path : Resolved.class_type -> class_type =
   function

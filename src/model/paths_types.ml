@@ -347,7 +347,8 @@ module rec Path : sig
     [ `Resolved of Resolved_path.type_
     | `SubstitutedT of type_
     | `Identifier of Identifier.path_type * bool
-    | `DotT of module_ * TypeName.t ]
+    | `DotT of module_ * TypeName.t
+    | `Unbox of type_ ]
   (** @canonical Odoc_model.Paths.Path.Type.t *)
 
   type value =
@@ -376,7 +377,8 @@ module rec Path : sig
     | `DotT of module_ * TypeName.t
     | `DotMT of module_ * ModuleTypeName.t
     | `DotV of module_ * ValueName.t
-    | `Apply of module_ * module_ ]
+    | `Apply of module_ * module_
+    | `Unbox of type_ ]
   (** @canonical Odoc_model.Paths.Path.t *)
 end =
   Path
@@ -422,7 +424,8 @@ and Resolved_path : sig
     | `Type of module_ * TypeName.t
     | `Class of module_ * TypeName.t
     | `ClassType of module_ * TypeName.t
-    | `CoreType of TypeName.t ]
+    | `CoreType of TypeName.t
+    | `Unbox of type_ ]
   (** @canonical Odoc_model.Paths.Path.Resolved.Type.t *)
 
   type any =
@@ -450,7 +453,8 @@ and Resolved_path : sig
     | `Class of module_ * TypeName.t
     | `Value of module_ * ValueName.t
     | `ClassType of module_ * TypeName.t
-    | `CoreType of TypeName.t ]
+    | `CoreType of TypeName.t
+    | `Unbox of type_ ]
   (** @canonical Odoc_model.Paths.Path.Resolved.t *)
 end =
   Resolved_path

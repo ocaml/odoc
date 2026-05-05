@@ -382,6 +382,7 @@ and resolved_type_path :
       match resolved_type_path s t1 with
       | Not_replaced t1' -> Not_replaced (`CanonicalType (t1', t2))
       | x -> x)
+  | `Unbox t -> resolved_type_path s t |> map_replaced (fun p -> `Unbox p)
   | `Gpath _ -> Not_replaced p
   | `Substituted p ->
       resolved_type_path s p |> map_replaced (fun p -> `Substituted p)
@@ -398,6 +399,7 @@ and type_path : t -> Cpath.type_ -> Cpath.type_ type_or_replaced =
         let path' = Cpath.unresolve_resolved_type_path r in
         type_path s path')
   | `Substituted p -> type_path s p |> map_replaced (fun r -> `Substituted r)
+  | `Unbox p -> type_path s p |> map_replaced (fun r -> `Unbox r)
   | `Local (id, b) -> (
       if TypeMap.mem id s.type_replacement then
         Replaced (TypeMap.find id s.type_replacement)

@@ -730,6 +730,7 @@ module Path = struct
       | `CanonicalType (x, _) -> inner (x : type_ :> any)
       | `OpaqueModule m -> inner (m :> any)
       | `OpaqueModuleType mt -> inner (mt :> any)
+      | `Unbox mt -> inner (mt :> any)
     in
     inner x
 
@@ -742,6 +743,7 @@ module Path = struct
     | `SubstitutedMT r -> is_path_hidden (r :> any)
     | `SubstitutedT r -> is_path_hidden (r :> any)
     | `SubstitutedCT r -> is_path_hidden (r :> any)
+    | `Unbox r -> is_path_hidden (r :> any)
     | `Root s -> ModuleName.is_hidden s
     | `Forward _ -> false
     | `Dot (p, n) ->
@@ -867,6 +869,7 @@ module Path = struct
       | `SubstitutedMT m -> identifier (m :> t)
       | `SubstitutedCT m -> identifier (m :> t)
       | `SubstitutedT m -> identifier (m :> t)
+      | `Unbox m -> identifier (m :> t)
 
     let is_hidden r = is_resolved_hidden ~weak_canonical_test:false r
   end

@@ -1,5 +1,19 @@
 \section{Module \ocamlinlinecode{Oxcaml}}\label{Oxcaml}%
 \label{Oxcaml--val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : int \ocamltag{arrow}{$\rightarrow$} ('a.\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}) \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Polymorphic arguments require parentheses\end{ocamlindent}%
 \medbreak
+Unboxed types have a trailing hash '\#'
+
+\label{Oxcaml--type-pt}\ocamlcodefragment{\ocamltag{keyword}{type} pt = \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{x : int;\allowbreak{}}\label{Oxcaml--type-pt.x}\\
+\ocamlinlinecode{y : float32\#;\allowbreak{}}\label{Oxcaml--type-pt.y}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+\label{Oxcaml--type-segment}\ocamlcodefragment{\ocamltag{keyword}{type} segment = \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{start : \hyperref[Oxcaml--type-pt]{\ocamlinlinecode{pt\#}};\allowbreak{}}\label{Oxcaml--type-segment.start}\\
+\ocamlinlinecode{stop : \hyperref[Oxcaml--type-pt]{\ocamlinlinecode{pt\#}};\allowbreak{}}\label{Oxcaml--type-segment.stop}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
 
 
