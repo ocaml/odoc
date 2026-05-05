@@ -55,7 +55,6 @@ depends: [
   "conf-jq" {with-test}
   "ppx_expect" {with-test}
   "bos" {with-test}
-  "bisect_ppx" {with-test & > "2.5.0"}
 ]
 
 conflicts: [ "ocaml-option-bytecode-only" ]
