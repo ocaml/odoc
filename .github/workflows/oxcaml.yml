@@ -33,8 +33,9 @@ jobs:
           # Do not pin odoc to not break Mdx installation
           opam-pin: ${{ matrix.run-mdx != true }}
           opam-repositories: |
-            oxcaml: "git+https://github.com/oxcaml/opam-repository.git"
+            oxcaml: "git+https://github.com/art-w/oxcaml-opam-repository#dune322"
             default: "git+https://github.com/ocaml/opam-repository.git"
+          # TODO: use "git+https://github.com/oxcaml/opam-repository.git" once #39 is merged
 
       - name: Install dependencies
         run: |
