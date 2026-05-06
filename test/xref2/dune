@@ -57,7 +57,7 @@
 ; 4.13.0 and above
 
 (cram
- (applies_to github_issue_793)
+ (applies_to github_issue_793 apply_inner_substs_module_type)
  (enabled_if
   (>= %{ocaml_version} 4.13.0)))
 
