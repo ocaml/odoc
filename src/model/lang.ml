@@ -325,14 +325,12 @@ and Value : sig
 
   module Zero_alloc : sig
     type respect = {
-          opt : unit option;
-          strict : unit option;
-          arity : int option;
-          custom_error_message : string option
-        }
-    type t =
-      | Ignore
-      | Respect of respect
+      opt : unit option;
+      strict : unit option;
+      arity : int option;
+      custom_error_message : string option;
+    }
+    type t = Ignore | Respect of respect
   end
   type attr = Zero_alloc of Zero_alloc.t
 
