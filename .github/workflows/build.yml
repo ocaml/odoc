@@ -12,8 +12,7 @@ jobs:
         os:
           - ubuntu-latest
         ocaml-compiler:
-          - "4.08"
-          - "4.10"
+          - "4.11"
           - "4.12"
           - "4.14"
           - "5.0"
@@ -28,7 +27,7 @@ jobs:
             run-mdx: true
             test-sherlodoc: true
           - os: macos-latest
-            ocaml-compiler: "5.3"
+            ocaml-compiler: "5.4"
           # - os: windows-latest
           #   ocaml-compiler: "5.2"
 
