@@ -1057,16 +1057,24 @@ module Make (Syntax : SYNTAX) = struct
             (function Odoc_model.Lang.Value.Zero_alloc _ -> true)
             t.ext_attr
         with
-        | Zero_alloc alloc_type ->
-            let alloc_type =
-              match alloc_type with
-              | Assume -> ""
-              | Strict -> " strict"
-              | Opt -> " opt"
-            in
-            O.cut ++ O.txt " "
-            ++ O.txt (Printf.sprintf "[@@zero_alloc%s]" alloc_type)
         | exception Not_found -> O.noop
+        | Zero_alloc Ignore -> O.noop
+        | Zero_alloc (Respect {opt; strict; arity; custom_error_message}) ->
+            let ext_arg = match opt, strict with
+              | Some (), None -> " opt"
+              | None, Some () -> " strict"
+              | _, _ -> ""
+            in
+            let ext_arg = match arity with
+              | None -> ext_arg
+              | Some n -> ext_arg ^ (Printf.sprintf "arity %d" n)
+            in
+            let ext_arg = match custom_error_message with
+              | None -> ext_arg
+              | Some s -> ext_arg ^ (Printf.sprintf "custom_error_message %S" s)
+            in
+            let ext_attr = Printf.sprintf "[@@zero_alloc%s]" ext_arg in
+            O.cut ++ O.txt " " ++ O.txt ext_attr
       in
       let content =
         O.documentedSrc
