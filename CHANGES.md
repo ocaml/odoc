@@ -1,8 +1,10 @@
 # Unreleased
 
 ### Fixed
-- Fix #1426, which broke docs in packages include `base` in OCaml 5.5.0
+- Fix #1426, which broke docs in packages including `base` in OCaml 5.5.0
   (@jonludlam, #1427)
+- Fix #1429, which broke docs in packages including `merlin-lib` (@jonludlam,
+  #1430)
 
 # 3.2.0
 
