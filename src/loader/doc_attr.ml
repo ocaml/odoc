@@ -85,20 +85,69 @@ let ident (pexp_desc : Parsetree.expression_desc) =
 let zero_alloc_structure_arg (pstr_desc: Parsetree.structure_item_desc) =
   match pstr_desc with
   | Pstr_eval ({pexp_desc; _}, _) -> (
-    (* check if this is strict or opt *)
     match ident pexp_desc with
-    | Some "strict" -> Some Lang.Value.Zero_alloc.Strict
-    | Some "opt" -> Some Lang.Value.Zero_alloc.Opt
+    | (Some "arity")
+    | (Some "custom_error_message")
+    | (Some "ignore")
+    | (Some "strict")
+    | (Some "opt") as v -> v
     | _ -> None)
   | _ -> None
 
-let zero_alloc_argument (payload : Parsetree.payload) =
+let constant_of_expression (pexp_desc : Parsetree.expression_desc) =
+  match pexp_desc with
+  | Pexp_constant (Pconst_integer (i, _))  -> Some (`Integer (int_of_string i))
+  | Pexp_constant (Pconst_string (s, _, _)) -> Some (`String s)
+  | _ -> None
+
+let zero_alloc_argument_arg (pstr_desc : Parsetree.structure_item_desc) =
+  match pstr_desc with
+  | Pstr_eval ({pexp_desc; _}, _) -> constant_of_expression pexp_desc
+  | _ -> None
+
+let rec zero_alloc_structure_item so_far (structure_items : Parsetree.structure) =
+  match structure_items with
+  | [] -> so_far
+  | {pstr_desc; _} :: structure_items ->
+      match so_far with
+      | Lang.Value.Zero_alloc.Ignore -> Ignore
+      | Respect respect ->
+        match zero_alloc_structure_arg pstr_desc with
+        | None -> so_far
+        | Some "ignore" -> Lang.Value.Zero_alloc.Ignore
+        | Some "strict" ->
+            let so_far = Lang.Value.Zero_alloc.Respect {respect with strict = Some ()} in
+            zero_alloc_structure_item so_far structure_items
+        | Some "opt" ->
+            let so_far = Lang.Value.Zero_alloc.Respect {respect with opt = Some ()} in
+            zero_alloc_structure_item so_far structure_items
+        | Some "arity" -> (
+            match structure_items with
+            | [] -> so_far
+            | {pstr_desc; _} :: structure_items -> (
+                match zero_alloc_argument_arg pstr_desc with
+                | Some (`Integer n) ->
+                  let arity = Some n in
+                  let so_far = Lang.Value.Zero_alloc.Respect {respect with arity} in
+                  zero_alloc_structure_item so_far structure_items
+                | _ -> so_far))
+        | Some "custom_error_message" -> (
+            match structure_items with
+            | [] -> so_far
+            | {pstr_desc; _} :: structure_items -> (
+              match zero_alloc_argument_arg pstr_desc with
+              | Some (`String s) ->
+                let custom_error_message = Some s in
+                let so_far = Lang.Value.Zero_alloc.Respect {respect with custom_error_message} in
+                zero_alloc_structure_item so_far structure_items
+              | _ -> so_far))
+        | Some _ -> so_far
+
+let zero_alloc_arguments (payload : Parsetree.payload) =
   match payload with
-  | PStr structure_items -> (
-    match structure_items with
-    | [] -> Some Lang.Value.Zero_alloc.Assume
-    | [{pstr_desc; _}] -> zero_alloc_structure_arg pstr_desc
-    | _ -> None)
+  | PStr structure_items ->
+    let so_far = Lang.Value.Zero_alloc.Respect { opt = None; strict = None; arity = None; custom_error_message = None} in
+    Some (zero_alloc_structure_item so_far structure_items)
   | _ -> None
 
 let known_attribute attr =
@@ -106,8 +155,8 @@ let known_attribute attr =
   match name with
 #if defined OXCAML
   | "zero_alloc" -> (
-    match zero_alloc_argument payload with
-    | Some zalloc_type -> Some (Lang.Value.Zero_alloc zalloc_type)
+    match zero_alloc_arguments payload with
+    | Some zalloc_arg -> Some (Lang.Value.Zero_alloc zalloc_arg)
     | None -> None)
 #endif
   | _ -> None
