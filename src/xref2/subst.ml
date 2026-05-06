@@ -453,7 +453,12 @@ let rec resolved_signature_fragment :
       let p =
         match resolved_module_type_path t p with
         | Not_replaced p -> p
-        | Replaced _ -> assert false
+        | Replaced _ ->
+            (* The resolved root module type of the fragment is being
+               substituted away. The resolved form is no longer valid —
+               unresolve and re-resolve against the post-substitution context
+            *)
+            raise Invalidated
       in
       `Root (`ModuleType p)
   | `Root (`Module p) -> `Root (`Module (resolved_module_path t p))
