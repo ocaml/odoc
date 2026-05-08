@@ -1,0 +1,270 @@
+--- input ---
+{!foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 6))
+    (paragraph (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) foo) ())))))))
+ (warnings ()))
+--- input ---
+{! foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 7))
+    (paragraph
+     (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) " foo") ())))))))
+ (warnings ()))
+--- input ---
+{!foo }
+--- output ---
+((output
+  (((f.ml (1 0) (1 7))
+    (paragraph
+     (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) "foo ") ())))))))
+ (warnings ()))
+--- input ---
+bar{!foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 9))
+    (paragraph
+     (((f.ml (1 0) (1 3)) (word bar))
+      ((f.ml (1 3) (1 9)) (simple ((f.ml (1 5) (1 9)) foo) ())))))))
+ (warnings ()))
+--- input ---
+bar {!foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 10))
+    (paragraph
+     (((f.ml (1 0) (1 3)) (word bar)) ((f.ml (1 3) (1 4)) space)
+      ((f.ml (1 4) (1 10)) (simple ((f.ml (1 6) (1 10)) foo) ())))))))
+ (warnings ()))
+--- input ---
+{!foo}bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 9))
+    (paragraph
+     (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) foo) ()))
+      ((f.ml (1 6) (1 9)) (word bar)))))))
+ (warnings ()))
+--- input ---
+{!foo} bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 10))
+    (paragraph
+     (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) foo) ()))
+      ((f.ml (1 6) (1 7)) space) ((f.ml (1 7) (1 10)) (word bar)))))))
+ (warnings ()))
+--- input ---
+{!val:foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 10))
+    (paragraph
+     (((f.ml (1 0) (1 10)) (simple ((f.ml (1 2) (1 10)) val:foo) ())))))))
+ (warnings ()))
+--- input ---
+{!}
+--- output ---
+((output
+  (((f.ml (1 0) (1 3))
+    (paragraph (((f.ml (1 0) (1 3)) (simple ((f.ml (1 2) (1 3)) "") ())))))))
+ (warnings ()))
+--- input ---
+{! }
+--- output ---
+((output
+  (((f.ml (1 0) (1 4))
+    (paragraph (((f.ml (1 0) (1 4)) (simple ((f.ml (1 2) (1 4)) " ") ())))))))
+ (warnings ()))
+--- input ---
+{!( * )}
+--- output ---
+((output
+  (((f.ml (1 0) (1 8))
+    (paragraph
+     (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "( * )") ())))))))
+ (warnings ()))
+--- input ---
+{!foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 5))
+    (paragraph (((f.ml (1 0) (1 5)) (simple ((f.ml (1 2) (1 5)) foo) ())))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-5:\
+   \nOpen bracket '{!' is never closed.")))
+--- input ---
+{!:foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 7))
+    (paragraph (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) :foo) ())))))))
+ (warnings ()))
+--- input ---
+{! :foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 8))
+    (paragraph
+     (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) " :foo") ())))))))
+ (warnings ()))
+--- input ---
+{!val:}
+--- output ---
+((output
+  (((f.ml (1 0) (1 7))
+    (paragraph (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) val:) ())))))))
+ (warnings ()))
+--- input ---
+{!val: }
+--- output ---
+((output
+  (((f.ml (1 0) (1 8))
+    (paragraph
+     (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "val: ") ())))))))
+ (warnings ()))
+--- input ---
+{! val:foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 11))
+    (paragraph
+     (((f.ml (1 0) (1 11)) (simple ((f.ml (1 2) (1 11)) " val:foo") ())))))))
+ (warnings ()))
+--- input ---
+{!va l:foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 11))
+    (paragraph
+     (((f.ml (1 0) (1 11)) (simple ((f.ml (1 2) (1 11)) "va l:foo") ())))))))
+ (warnings ()))
+--- input ---
+{!val:( * )}
+--- output ---
+((output
+  (((f.ml (1 0) (1 12))
+    (paragraph
+     (((f.ml (1 0) (1 12)) (simple ((f.ml (1 2) (1 12)) "val:( * )") ())))))))
+ (warnings ()))
+--- input ---
+{!val:foo:bar}
+--- output ---
+((output
+  (((f.ml (1 0) (1 14))
+    (paragraph
+     (((f.ml (1 0) (1 14)) (simple ((f.ml (1 2) (1 14)) val:foo:bar) ())))))))
+ (warnings ()))
+--- input ---
+{!val :foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 11))
+    (paragraph
+     (((f.ml (1 0) (1 11)) (simple ((f.ml (1 2) (1 11)) "val :foo") ())))))))
+ (warnings ()))
+--- input ---
+{!val: foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 11))
+    (paragraph
+     (((f.ml (1 0) (1 11)) (simple ((f.ml (1 2) (1 11)) "val: foo") ())))))))
+ (warnings ()))
+--- input ---
+{!val:foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 9))
+    (paragraph
+     (((f.ml (1 0) (1 9)) (simple ((f.ml (1 2) (1 9)) val:foo) ())))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-9:\
+   \nOpen bracket '{!' is never closed.")))
+--- input ---
+{!(>>=)}
+--- output ---
+((output
+  (((f.ml (1 0) (1 8))
+    (paragraph
+     (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(>>=)") ())))))))
+ (warnings ()))
+--- input ---
+{!(@->)}
+--- output ---
+((output
+  (((f.ml (1 0) (1 8))
+    (paragraph
+     (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(@->)") ())))))))
+ (warnings ()))
+--- input ---
+{!(*.)}
+--- output ---
+((output
+  (((f.ml (1 0) (1 7))
+    (paragraph
+     (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) "(*.)") ())))))))
+ (warnings ()))
+--- input ---
+{!(>::)}
+--- output ---
+((output
+  (((f.ml (1 0) (1 8))
+    (paragraph
+     (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(>::)") ())))))))
+ (warnings ()))
+--- input ---
+{!(.*{})}
+--- output ---
+((output
+  (((f.ml (1 0) (1 9))
+    (paragraph
+     (((f.ml (1 0) (1 9)) (simple ((f.ml (1 2) (1 9)) "(.*{})") ())))))))
+ (warnings ()))
+--- input ---
+{!"my-name"}
+--- output ---
+((output
+  (((f.ml (1 0) (1 12))
+    (paragraph
+     (((f.ml (1 0) (1 12)) (simple ((f.ml (1 2) (1 12)) "\"my-name\"") ())))))))
+ (warnings ()))
+--- input ---
+{!"}"}
+--- output ---
+((output
+  (((f.ml (1 0) (1 6))
+    (paragraph
+     (((f.ml (1 0) (1 6)) (simple ((f.ml (1 2) (1 6)) "\"}\"") ())))))))
+ (warnings ()))
+--- input ---
+{!( } )}
+--- output ---
+((output
+  (((f.ml (1 0) (1 8))
+    (paragraph
+     (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "( } )") ())))))))
+ (warnings ()))
+--- input ---
+{!(.*()}
+--- output ---
+((output
+  (((f.ml (1 0) (1 8))
+    (paragraph
+     (((f.ml (1 0) (1 8)) (simple ((f.ml (1 2) (1 8)) "(.*()}") ())))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 2-8:\
+   \nOpen bracket '(' is never closed.")))
+--- input ---
+{!(.*()
+--- output ---
+((output
+  (((f.ml (1 0) (1 7))
+    (paragraph
+     (((f.ml (1 0) (1 7)) (simple ((f.ml (1 2) (1 7)) "(.*()") ())))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 2-7:\
+   \nOpen bracket '(' is never closed.")))

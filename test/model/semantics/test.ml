@@ -33,16 +33,19 @@ let test ?(tags_allowed = true) ?(location = { Location_.line = 1; column = 0 })
     Semantics.parse_comment ~internal_tags:Odoc_model.Semantics.Expect_none
       ~tags_allowed ~containing_definition:dummy_page ~location ~text:str
   in
-  let print_json_desc desc t =
-    let yojson = Type_desc_to_yojson.to_yojson desc t in
-    Format.fprintf Format.std_formatter "%s" (Yojson.Basic.to_string yojson)
-  in
-  print_json_desc parser_output_desc parser_output;
-  Format.pp_print_flush Format.std_formatter ()
+  let buf = Buffer.create 256 in
+  let f = Format.formatter_of_buffer buf in
+  let yojson = Type_desc_to_yojson.to_yojson parser_output_desc parser_output in
+  Format.fprintf f "%s" (Yojson.Basic.to_string yojson);
+  Format.pp_print_flush f ();
+  let body = Buffer.contents buf in
+  print_string body;
+  Expect_test_helper.dump_block ~input:str ~output:body
 
 [@@@ocaml.warning "-32"]
 
 let%expect_test _ =
+  Expect_test_helper.with_group "simple_reference" @@ fun () ->
   let module Simple_reference = struct
     let basic =
       test "{!foo}";
@@ -225,6 +228,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "raw_markup" @@ fun () ->
   let module Raw_markup = struct
     let html_target =
       test "{%html:foo%}";
@@ -355,6 +359,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "section_contexts" @@ fun () ->
   let module Section_contexts = struct
     let titles_allowed =
       test "{0 Foo}";
@@ -449,6 +454,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "heading" @@ fun () ->
   let module Heading = struct
     let basic =
       test "{2 Foo}";
@@ -711,6 +717,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "author" @@ fun () ->
   let module Author = struct
     let basic =
       test "@author Foo Bar";
@@ -964,6 +971,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "reference_component_kind" @@ fun () ->
   let module Reference_component_kind = struct
     let no_kind_with_quotes =
       test "{!\"foo\".\"bar\"}";
@@ -2690,6 +2698,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "reference_path" @@ fun () ->
   let module Reference_path = struct
     (* Absolute references *)
 

@@ -3,6 +3,7 @@ open Test
 [@@@ocaml.warning "-32"]
 
 let%expect_test _ =
+  Expect_test_helper.with_group "heavy" @@ fun () ->
   let module Heavy = struct
     let empty_table_heavy =
       test "{table }";
@@ -192,6 +193,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "light" @@ fun () ->
   let module Light = struct
     let empty_table_light =
       test "{t }";

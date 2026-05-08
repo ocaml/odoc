@@ -1,0 +1,1148 @@
+--- input ---
+{!"foo"."bar"}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Root":["foo","`TUnknown"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TClass"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-type-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TClassType"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!classtype-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TClassType"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-15:\n'classtype' is deprecated, use 'class-type' instead."]}
+--- input ---
+{!constructor-Foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["Foo","`TConstructor"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!const-Foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["Foo","`TConstructor"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\n'const' is deprecated, use 'constructor' instead."]}
+--- input ---
+{!page-"foo-bar"}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo-bar","`TPage"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!page-"foo-bar.v0.0.1"}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo-bar.v0.0.1","`TPage"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!exception-Foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["Foo","`TException"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!exn-Foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["Foo","`TException"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-9:\n'exn' is deprecated, use 'exception' instead."]}
+--- input ---
+{!extension-Foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["Foo","`TExtension"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!field-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TField"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!recfield-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TField"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-14:\n'recfield' is deprecated, use 'field' instead."]}
+--- input ---
+{!section-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TLabel"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!label-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TLabel"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\n'label' is deprecated, use 'section' instead."]}
+--- input ---
+{!instance-variable-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TInstanceVariable"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-type-"Bar".module-"Moo".class-"There"}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Class":[{"`Module":[{"`Root":["Bar","`TModuleType"]},"Moo"]},"There"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!method-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TMethod"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["Foo","`TModule"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-type-Foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["Foo","`TModuleType"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!modtype-Foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["Foo","`TModuleType"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-13:\n'modtype' is deprecated, use 'module-type' instead."]}
+--- input ---
+{!page-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TPage"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!type-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TType"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!val-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TValue"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!value-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TValue"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\n'value' is deprecated, use 'val' instead."]}
+--- input ---
+{!module-Foo.type-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Type":[{"`Root":["Foo","`TModule"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-type-Foo.module-type-Bar.type-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Type":[{"`ModuleType":[{"`Root":["Foo","`TModuleType"]},"Bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":""}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"-foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-6:\nUnknown reference qualifier ''."]}
+--- input ---
+{!val-}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"val-"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-6:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!foo-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-9:\nUnknown reference qualifier 'foo'."]}
+--- input ---
+{!.foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":".foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!Foo.}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo."}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-6:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!Foo.-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-10:\nUnknown reference qualifier ''."]}
+--- input ---
+{!Foo.val-}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.val-"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 10-10:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!module-.foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"module-.foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 9-9:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!foo-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo-bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-9:\nUnknown reference qualifier 'foo'."]}
+--- input ---
+{!foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Root":["foo","`TUnknown"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Root":["Foo","`TModule"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-type-Foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Root":["Foo","`TModuleType"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!type-foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Root":["foo","`TType"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Root":["foo","`TClass"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-type-foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Root":["foo","`TClassType"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!page-foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Root":["foo","`TPage"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!constructor-Foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"constructor-Foo.bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-17:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]}
+--- input ---
+{!exception-Foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"exception-Foo.bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]}
+--- input ---
+{!extension-Foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"extension-Foo.bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]}
+--- input ---
+{!field-foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"field-foo.bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]}
+--- input ---
+{!section-foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"section-foo.bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-13:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]}
+--- input ---
+{!instance-variable-foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"instance-variable-foo.bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-23:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]}
+--- input ---
+{!method-foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"method-foo.bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-12:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]}
+--- input ---
+{!val-foo.bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"val-foo.bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-9:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Dot":[{"`Root":["foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.module-Bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Module":[{"`Root":["Foo","`TUnknown"]},"Bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.module-type-Bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`ModuleType":[{"`Root":["Foo","`TUnknown"]},"Bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.type-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Type":[{"`Root":["Foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.class-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Class":[{"`Root":["Foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo.class-type-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`ClassType":[{"`Root":["foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo.page-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.constructor-Bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.constructor-Bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-21:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.exception-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.exception-bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.extension-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.extension-bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.field-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.field-bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.section-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.section-bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-17:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.instance-variable-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.instance-variable-bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-27:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.method-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.method-bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-16:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.val-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.val-bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-13:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]}
+--- input ---
+{!.module-Foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":".module-Foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!Foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Module":[{"`Root":["Foo","`TUnknown"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Module":[{"`Root":["Foo","`TModule"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-type-Foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Module":[{"`Root":["Foo","`TModuleType"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!class-type-foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-type-foo.module-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-16:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!constructor-Foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"constructor-Foo.module-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-17:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!exception-Foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"exception-Foo.module-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!extension-Foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"extension-Foo.module-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!field-foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"field-foo.module-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!section-foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"section-foo.module-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-13:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!instance-variable-foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"instance-variable-foo.module-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-23:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!method-foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"method-foo.module-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-12:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!page-foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.module-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!type-foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"type-foo.module-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!val-foo.module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"val-foo.module-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-9:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.Bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Module":[{"`Dot":[{"`Root":["Foo","`TUnknown"]},"Bar"]},"Baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.module-Bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Module":[{"`Module":[{"`Root":["Foo","`TUnknown"]},"Bar"]},"Baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.module-type-Bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Module":[{"`ModuleType":[{"`Root":["Foo","`TUnknown"]},"Bar"]},"Baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.class-bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.class-bar.module-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.class-type-bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.class-type-bar.module-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-20:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.constructor-Bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.constructor-Bar.module-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-21:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.exception-Bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.exception-Bar.module-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.extension-Bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.extension-Bar.module-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.field-bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.field-bar.module-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.section-bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.section-bar.module-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-17:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.instance-variable-bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.instance-variable-bar.module-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-27:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.method-bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.method-bar.module-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-16:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.page-bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar.module-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.type-bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.type-bar.module-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.val-bar.module-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.val-bar.module-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-13:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.module-type-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`ModuleType":[{"`Root":["Foo","`TUnknown"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.module-type-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`ModuleType":[{"`Root":["Foo","`TModule"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-type-Foo.module-type-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`ModuleType":[{"`Root":["Foo","`TModuleType"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.module-type-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-type-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!page-foo.module-type-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.module-type-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.type-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Type":[{"`Root":["Foo","`TUnknown"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.type-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Type":[{"`Root":["Foo","`TModule"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-type-Foo.type-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Type":[{"`Root":["Foo","`TModuleType"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.type-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.type-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!page-foo.type-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.type-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!.constructor-Foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":".constructor-Foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Constructor":[{"`Root":["foo","`TUnknown"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!type-foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Constructor":[{"`Root":["foo","`TType"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.constructor-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!class-type-foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-type-foo.constructor-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-16:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!constructor-Foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"constructor-Foo.constructor-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-17:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!exception-Foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"exception-Foo.constructor-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!extension-Foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"extension-Foo.constructor-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!field-foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"field-foo.constructor-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!section-foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"section-foo.constructor-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-13:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!instance-variable-foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"instance-variable-foo.constructor-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-23:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!method-foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"method-foo.constructor-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-12:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!module-Foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Constructor":[{"`Root":["Foo","`TModule"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-type-Foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Constructor":[{"`Root":["Foo","`TModuleType"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!page-foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.constructor-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!val-foo.constructor-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"val-foo.constructor-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-9:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!foo.bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Constructor":[{"`Dot":[{"`Root":["foo","`TUnknown"]},"bar"]},"Baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo.type-bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Constructor":[{"`Type":[{"`Root":["foo","`TUnknown"]},"bar"]},"Baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.class-bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.class-bar.constructor-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!Foo.class-type-bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.class-type-bar.constructor-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-20:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!Foo.constructor-Bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.constructor-Bar.constructor-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-21:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!Foo.exception-Bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.exception-Bar.constructor-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!Foo.extension-Bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.extension-Bar.constructor-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!foo.field-bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.field-bar.constructor-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!foo.section-bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.section-bar.constructor-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-17:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!foo.instance-variable-bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.instance-variable-bar.constructor-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-27:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!foo.method-bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.method-bar.constructor-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-16:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!Foo.module-Bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Constructor":[{"`Module":[{"`Root":["Foo","`TUnknown"]},"Bar"]},"Baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.module-type-Bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Constructor":[{"`ModuleType":[{"`Root":["Foo","`TUnknown"]},"Bar"]},"Baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo.page-bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar.constructor-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!Foo.val-bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.val-bar.constructor-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-13:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!.field-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":".field-foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Field":[{"`Root":["foo","`TUnknown"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Field":[{"`Root":["Foo","`TModule"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-type-Foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Field":[{"`Root":["Foo","`TModuleType"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!type-foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Field":[{"`Root":["foo","`TType"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.field-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!class-type-foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-type-foo.field-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-16:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!constructor-Foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"constructor-Foo.field-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-17:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!exception-Foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"exception-Foo.field-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!extension-Foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"extension-Foo.field-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!field-foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"field-foo.field-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!section-foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"section-foo.field-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-13:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!instance-variable-foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"instance-variable-foo.field-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-23:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!method-foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"method-foo.field-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-12:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!page-foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.field-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!val-foo.field-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"val-foo.field-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-9:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!foo.bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Field":[{"`Dot":[{"`Root":["foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.module-Bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Field":[{"`Module":[{"`Root":["Foo","`TUnknown"]},"Bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.module-type-Bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Field":[{"`ModuleType":[{"`Root":["Foo","`TUnknown"]},"Bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.type-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Field":[{"`Type":[{"`Root":["Foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.class-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.class-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!Foo.class-type-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.class-type-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-20:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!Foo.constructor-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.constructor-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-21:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!Foo.exception-Bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.exception-Bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!Foo.extension-Bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.extension-Bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!Foo.field-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.field-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!foo.section-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.section-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-17:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!foo.instance-variable-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.instance-variable-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-27:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!foo.method-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.method-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-16:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!foo.page-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!Foo.val-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.val-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-13:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!Foo.exception-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Exception":[{"`Root":["Foo","`TUnknown"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.exception-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Exception":[{"`Root":["Foo","`TModule"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.exception-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.exception-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!page-foo.exception-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.exception-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.extension-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Extension":[{"`Root":["Foo","`TUnknown"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.extension-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Extension":[{"`Root":["Foo","`TModule"]},"Bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.extension-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.extension-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!page-foo.extension-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.extension-Bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.val-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Value":[{"`Root":["Foo","`TUnknown"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.val-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Value":[{"`Root":["Foo","`TModule"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.val-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.val-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!page-foo.val-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.val-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.class-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Class":[{"`Root":["Foo","`TUnknown"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.class-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Class":[{"`Root":["Foo","`TModule"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.class-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!page-foo.class-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.class-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!Foo.class-type-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`ClassType":[{"`Root":["Foo","`TUnknown"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.class-type-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`ClassType":[{"`Root":["Foo","`TModule"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.class-type-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-type-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!page-foo.class-type-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.class-type-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!.method-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":".method-foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Method":[{"`Root":["foo","`TUnknown"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Method":[{"`Root":["foo","`TClass"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-type-foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Method":[{"`Root":["foo","`TClassType"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!constructor-Foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"constructor-Foo.method-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-17:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!exception-Foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"exception-Foo.method-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-15:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!extension-Foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"extension-Foo.method-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-15:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!field-foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"field-foo.method-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!section-foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"section-foo.method-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-13:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!instance-variable-foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"instance-variable-foo.method-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-23:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!method-foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"method-foo.method-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-12:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!module-Foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"module-Foo.method-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-12:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!module-type-Foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"module-type-Foo.method-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-17:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!page-foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.method-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!type-foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"type-foo.method-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!val-foo.method-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"val-foo.method-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-9:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!foo.bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Method":[{"`Dot":[{"`Root":["foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.class-bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Method":[{"`Class":[{"`Root":["Foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!Foo.class-type-bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Method":[{"`ClassType":[{"`Root":["Foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo.constructor-Bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.constructor-Bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-21:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!Foo.exception-Bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.exception-Bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-19:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!Foo.extension-Bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.extension-Bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-19:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!foo.field-bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.field-bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-15:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!foo.section-bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.section-bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-17:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!foo.instance-variable-bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.instance-variable-bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-27:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!foo.method-bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.method-bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-16:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!Foo.module-Bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.module-Bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-16:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!Foo.module-type-Bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.module-type-Bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-21:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!foo.page-bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-14:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!Foo.type-bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.type-bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-14:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!Foo.val-bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"Foo.val-bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-13:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!Foo.instance-variable-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`InstanceVariable":[{"`Root":["Foo","`TUnknown"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.instance-variable-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"module-Foo.instance-variable-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-12:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!class-foo.instance-variable-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`InstanceVariable":[{"`Root":["foo","`TClass"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!page-foo.instance-variable-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.instance-variable-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'class-', 'class-type-', or an unqualified reference."]}
+--- input ---
+{!Foo.section-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Root":["Foo","`TUnknown"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.section-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Root":["Foo","`TModule"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.section-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Root":["foo","`TClass"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!page-foo.section-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Root":["foo","`TPage"]},"bar"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo.page-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-14:\nPage label is not allowed in on the right side of a dot.\nSuggestion: Reference pages as '<parent_path>/bar'."]}
+--- input ---
+{!foo.bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Field":[{"`Dot":[{"`Root":["foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Field":[{"`Dot":[{"`Root":["Foo","`TModule"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!page-foo.bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!module-Foo.module-Bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Field":[{"`Module":[{"`Root":["Foo","`TModule"]},"Bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.module-Bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-Bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!module-Foo.module-type-Bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Field":[{"`ModuleType":[{"`Root":["Foo","`TModule"]},"Bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.module-type-Bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-type-Bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!module-Foo.type-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Field":[{"`Type":[{"`Root":["Foo","`TModule"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.type-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.type-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!module-Foo.class-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"module-Foo.class-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 13-22:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!class-foo.class-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 12-21:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!module-Foo.class-type-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"module-Foo.class-type-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 13-27:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!class-foo.class-type-bar.field-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-type-bar.field-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 12-26:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!foo.bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Dot":[{"`Root":["foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!page-foo.bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Dot":[{"`Root":["foo","`TPage"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!module-Foo.module-Bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Module":[{"`Root":["Foo","`TModule"]},"Bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.module-Bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-Bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!module-Foo.module-type-Bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`ModuleType":[{"`Root":["Foo","`TModule"]},"Bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.module-type-Bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-type-Bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!module-Foo.type-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Type":[{"`Root":["Foo","`TModule"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.type-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.type-bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!module-Foo.class-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Class":[{"`Root":["Foo","`TModule"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.class-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!module-Foo.class-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Class":[{"`Root":["Foo","`TModule"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.class-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.page-bar.baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar.baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Method":[{"`Dot":[{"`Root":["foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!page-foo.bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!module-Foo.class-bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Method":[{"`Class":[{"`Root":["Foo","`TModule"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.class-bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!module-Foo.class-type-bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Method":[{"`ClassType":[{"`Root":["Foo","`TModule"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.class-type-bar.method-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.class-type-bar.method-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.bar.type-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Type":[{"`Dot":[{"`Root":["foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!page-foo.bar.type-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.bar.type-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!module-Foo.module-Bar.type-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Type":[{"`Module":[{"`Root":["Foo","`TModule"]},"Bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.module-Bar.type-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-Bar.type-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!module-Foo.module-type-Bar.type-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Type":[{"`ModuleType":[{"`Root":["Foo","`TModule"]},"Bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.module-type-Bar.type-baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.module-type-Bar.type-baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!foo.bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Constructor":[{"`Dot":[{"`Root":["foo","`TUnknown"]},"bar"]},"Baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!page-foo.bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"page-foo.bar.constructor-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', 'type-', or an unqualified reference."]}
+--- input ---
+{!module-Foo.type-bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Constructor":[{"`Type":[{"`Root":["Foo","`TModule"]},"bar"]},"Baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!class-foo.type-bar.constructor-Baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"class-foo.type-bar.constructor-Baz"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', a path, or an unqualified reference."]}
+--- input ---
+{!val:type-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TType"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-15:\nOld-style reference kind ('val:') does not match new ('type-')."]}
+--- input ---
+{!val:val-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TValue"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!value:val-foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TValue"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-7:\n'value' is deprecated, use 'val' instead."]}
+--- input ---
+@canonical Foo
+--- output ---
+{"value":[],"warnings":["File \"f.ml\", line 1, characters 0-14:\nUnexpected tag '@canonical' at this location."]}
+--- input ---
+@canonical module-Foo
+--- output ---
+{"value":[],"warnings":["File \"f.ml\", line 1, characters 0-21:\nUnexpected tag '@canonical' at this location."]}
+--- input ---
+@canonical Foo.Bar
+--- output ---
+{"value":[],"warnings":["File \"f.ml\", line 1, characters 0-18:\nUnexpected tag '@canonical' at this location."]}
+--- input ---
+@canonical val-foo
+--- output ---
+{"value":[],"warnings":["File \"f.ml\", line 1, characters 0-18:\nUnexpected tag '@canonical' at this location."]}
+--- input ---
+@canonical bar.page-foo
+--- output ---
+{"value":[],"warnings":["File \"f.ml\", line 1, characters 0-23:\nUnexpected tag '@canonical' at this location."]}
+--- input ---
+@canonical .Foo
+--- output ---
+{"value":[],"warnings":["File \"f.ml\", line 1, characters 11-15:\nExpected a valid path."]}
+--- input ---
+@canonical Foo.
+--- output ---
+{"value":[],"warnings":["File \"f.ml\", line 1, characters 11-15:\nExpected a valid path."]}
+--- input ---
+{!foo. bar .baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Dot":[{"`Root":["foo","`TUnknown"]},"bar"]},"baz"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{{!val-} foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Styled":["`Emphasis",[{"`Word":"foo"}]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 7-7:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!""foo"}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"\"\"foo\""}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-9:\nUnmatched quotation!"]}

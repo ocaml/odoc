@@ -1,0 +1,85 @@
+--- input ---
+{%html:foo%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Raw_markup":["html","foo"]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{%html: foo bar %}
+--- output ---
+{"value":[{"`Paragraph":[{"`Raw_markup":["html"," foo bar "]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{%html: %}
+--- output ---
+{"value":[{"`Paragraph":[{"`Raw_markup":["html"," "]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{%html:%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Raw_markup":["html",""]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{%html:<e>foo</e>%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Raw_markup":["html","<e>foo</e>"]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{%html:foo:bar%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Raw_markup":["html","foo:bar"]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{%foo%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 0-7:\n'{%...%}' (raw markup) needs a target language.\nSuggestion: try '{%html:...%}'."]}
+--- input ---
+{%:foo%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 0-8:\n'{%:': bad raw markup target.\nSuggestion: try '{%html:...%}'."]}
+--- input ---
+{% :foo%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 0-9:\n'{% :': bad raw markup target.\nSuggestion: try '{%html:...%}'."]}
+--- input ---
+{%
+:foo%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, character 0 to line 2, character 6:\n'{%\n:': bad raw markup target.\nSuggestion: try '{%html:...%}'."]}
+--- input ---
+{%%:%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":""}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 0-6:\n'{%%:': bad raw markup target.\nSuggestion: try '{%html:...%}'."]}
+--- input ---
+{%html:%%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Raw_markup":["html","%"]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{%%%foo%%:%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":""}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 0-12:\n'{%%%foo%%:': bad raw markup target.\nSuggestion: try '{%html:...%}'."]}
+--- input ---
+{%html:%%foo%%%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Raw_markup":["html","%%foo%%"]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{%{%:foo%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 0-10:\n'{%{%:': bad raw markup target.\nSuggestion: try '{%html:...%}'."]}
+--- input ---
+{%html:{%%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Raw_markup":["html","{%"]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{%}:%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":""}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 0-6:\n'{%}:': bad raw markup target.\nSuggestion: try '{%html:...%}'."]}
+--- input ---
+{%html:}%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Raw_markup":["html","}"]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{%
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":""}]}],"warnings":["File \"f.ml\", line 1, characters 2-2:\nEnd of text is not allowed in '{%...%}' (raw markup).","File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 0-2:\n'{%...%}' (raw markup) needs a target language.\nSuggestion: try '{%html:...%}'."]}
+--- input ---
+{%html:
+--- output ---
+{"value":[{"`Paragraph":[{"`Raw_markup":["html",""]}]}],"warnings":["File \"f.ml\", line 1, characters 7-7:\nEnd of text is not allowed in '{%...%}' (raw markup).","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{%}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"}"}]}],"warnings":["File \"f.ml\", line 1, characters 3-3:\nEnd of text is not allowed in '{%...%}' (raw markup).","File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 0-3:\n'{%...%}' (raw markup) needs a target language.\nSuggestion: try '{%html:...%}'."]}

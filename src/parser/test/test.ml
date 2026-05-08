@@ -275,11 +275,18 @@ let test ?(location = { Loc.line = 1; column = 0 }) str =
     }
   in
   let ast = Odoc_parser.parse_comment ~location ~text:str in
-  Format.printf "%a" parser_output ast
+  let buf = Buffer.create 256 in
+  let f = Format.formatter_of_buffer buf in
+  Format.fprintf f "%a" parser_output ast;
+  Format.pp_print_flush f ();
+  let body = Buffer.contents buf in
+  print_string body;
+  Expect_test_helper.dump_block ~input:str ~output:body
 
 [@@@ocaml.warning "-32"]
 
 let%expect_test _ =
+  Expect_test_helper.with_group "trivial" @@ fun () ->
   let module Trivial = struct
     let empty =
       test "";
@@ -316,6 +323,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "one_paragraph" @@ fun () ->
   let module One_paragraph = struct
     let word =
       test "foo";
@@ -460,6 +468,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "two_paragraphs" @@ fun () ->
   let module Two_paragraphs = struct
     let basic =
       test "foo\n\nbar";
@@ -509,6 +518,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "plus_minus_bar_words" @@ fun () ->
   let module Plus_minus_bar_words = struct
     let minus_in_word =
       test "foo-bar";
@@ -626,6 +636,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "escape_sequence" @@ fun () ->
   let module Escape_sequence = struct
     let left_brace =
       test "\\{";
@@ -797,6 +808,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "code_span" @@ fun () ->
   let module Code_span = struct
     let basic =
       test "[foo]";
@@ -951,6 +963,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "bold" @@ fun () ->
   let module Bold = struct
     let basic =
       test "{b foo}";
@@ -1258,6 +1271,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "italic" @@ fun () ->
   let module Italic = struct
     let basic =
       test "{i foo}";
@@ -1302,6 +1316,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "emphasis" @@ fun () ->
   let module Emphasis = struct
     let basic =
       test "{e foo}";
@@ -1346,6 +1361,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "superscript" @@ fun () ->
   let module Superscript = struct
     let basic =
       test "{^ foo}";
@@ -1430,6 +1446,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "subscript" @@ fun () ->
   let module Subscript = struct
     let basic =
       test "{_ foo}";
@@ -1494,6 +1511,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "simple_reference" @@ fun () ->
   let module Simple_reference = struct
     let basic =
       test "{!foo}";
@@ -1838,6 +1856,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "reference_with_text" @@ fun () ->
   let module Reference_with_text = struct
     let basic =
       test "{{!foo} bar}";
@@ -2048,6 +2067,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "medias" @@ fun () ->
   let module Medias = struct
     let basic_simple =
       test
@@ -2247,6 +2267,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "link" @@ fun () ->
   let module Link = struct
     let basic =
       test "{{:foo} bar}";
@@ -2434,6 +2455,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "module_list" @@ fun () ->
   let module Module_list = struct
     let basic =
       test "{!modules:Foo}";
@@ -2543,6 +2565,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "code_block" @@ fun () ->
   let module Code_block = struct
     let basic =
       test "{[foo]}";
@@ -3614,6 +3637,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "verbatim" @@ fun () ->
   let module Verbatim = struct
     let basic =
       test "{v foo v}";
@@ -4082,6 +4106,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "shorthand_list" @@ fun () ->
   let module Shorthand_list = struct
     let basic =
       test "- foo";
@@ -4288,6 +4313,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "explicit_list" @@ fun () ->
   let module Explicit_list = struct
     let basic =
       test "{ul {li foo}}";
@@ -4613,6 +4639,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "deprecated" @@ fun () ->
   let module Deprecated = struct
     let basic =
       test "@deprecated";
@@ -4872,6 +4899,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "param" @@ fun () ->
   let module Param = struct
     let basic =
       test "@param foo";
@@ -5012,6 +5040,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "raise" @@ fun () ->
   let module Raise = struct
     let basic =
       test "@raise Foo";
@@ -5053,6 +5082,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "return" @@ fun () ->
   let module Return = struct
     let basic =
       test "@return";
@@ -5085,6 +5115,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "see" @@ fun () ->
   let module See = struct
     let url =
       test "@see <foo>";
@@ -5220,6 +5251,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "since" @@ fun () ->
   let module Since = struct
     let basic =
       test "@since foo";
@@ -5272,6 +5304,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "before" @@ fun () ->
   let module Before = struct
     let basic =
       test "@before Foo";
@@ -5314,6 +5347,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "version" @@ fun () ->
   let module Version = struct
     let basic =
       test "@version foo";
@@ -5367,6 +5401,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "canonical" @@ fun () ->
   let module Canonical = struct
     let basic =
       test "@canonical Foo";
@@ -5424,6 +5459,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "inline" @@ fun () ->
   let module Inline = struct
     let basic =
       test "@inline";
@@ -5487,6 +5523,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "open" @@ fun () ->
   let module Open = struct
     let basic =
       test "@open";
@@ -5549,6 +5586,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "closed" @@ fun () ->
   let module Closed = struct
     let basic =
       test "@closed";
@@ -5612,6 +5650,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "hidden" @@ fun () ->
   let module Hidden = struct
     let basic =
       test "@hidden";
@@ -5675,6 +5714,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "bad_markup" @@ fun () ->
   let module Bad_markup = struct
     let left_brace =
       test "{";
@@ -5988,6 +6028,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "utf_8" @@ fun () ->
   let module Utf_8 = struct
     let lambda =
       test "\xce\xbb";
@@ -6164,6 +6205,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "comment_location" @@ fun () ->
   let module Comment_location = struct
     let error_on_first_line =
       test "@foo";
@@ -6186,6 +6228,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "unsupported" @@ fun () ->
   let module Unsupported = struct
     (* test "index list"
        "{!indexlist}"
@@ -6265,6 +6308,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "locations" @@ fun () ->
   let module Locations = struct
     (* test "index list"
        "{!indexlist}"
@@ -6316,7 +6360,13 @@ let%expect_test _ =
           Lexing.{ pos_bol = 0; pos_cnum = 0; pos_lnum = 1; pos_fname = "none" })
         text =
       let ast = Odoc_parser.parse_comment ~location ~text in
-      Format.printf "%a" parser_output ast
+      let buf = Buffer.create 256 in
+      let f = Format.formatter_of_buffer buf in
+      Format.fprintf f "%a" parser_output ast;
+      Format.pp_print_flush f ();
+      let body = Buffer.contents buf in
+      print_string body;
+      Expect_test_helper.dump_block ~input:text ~output:body
 
     let non_offset_location =
       test "one\n two\n  three";
@@ -6391,6 +6441,7 @@ let%expect_test _ =
   ()
 
 let%expect_test _ =
+  Expect_test_helper.with_group "math" @@ fun () ->
   let module Math = struct
     let block =
       test "{math \\sum_{i=0}^n x^i%}";

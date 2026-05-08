@@ -1,0 +1,125 @@
+--- input ---
+\{
+--- output ---
+((output (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word {)))))))
+ (warnings ()))
+--- input ---
+foo\{bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo{bar)))))))
+ (warnings ()))
+--- input ---
+\}
+--- output ---
+((output (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word })))))))
+ (warnings ()))
+--- input ---
+foo\{bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo{bar)))))))
+ (warnings ()))
+--- input ---
+\[
+--- output ---
+((output (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word [)))))))
+ (warnings ()))
+--- input ---
+foo\[bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo[bar)))))))
+ (warnings ()))
+--- input ---
+\]
+--- output ---
+((output (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (word ])))))))
+ (warnings ()))
+--- input ---
+foo\]bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo]bar)))))))
+ (warnings ()))
+--- input ---
+@
+--- output ---
+((output (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word @)))))))
+ (warnings ( "File \"f.ml\", line 1, characters 0-1:\
+            \nStray '@'.")))
+--- input ---
+\@author
+--- output ---
+((output
+  (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word @author)))))))
+ (warnings ()))
+--- input ---
+foo\@bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word foo@bar)))))))
+ (warnings ()))
+--- input ---
+foo\
+--- output ---
+((output
+  (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word "foo\\")))))))
+ (warnings ()))
+--- input ---
+foo\bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word "foo\\bar")))))))
+ (warnings ()))
+--- input ---
+foo\\{bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word "foo\\{bar")))))))
+ (warnings ()))
+--- input ---
+\
+--- output ---
+((output
+  (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word "\\")))))))
+ (warnings ()))
+--- input ---
+\{- foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 7))
+    (paragraph
+     (((f.ml (1 0) (1 3)) (word {-)) ((f.ml (1 3) (1 4)) space)
+      ((f.ml (1 4) (1 7)) (word foo)))))))
+ (warnings ()))
+--- input ---
+\{+ foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 7))
+    (paragraph
+     (((f.ml (1 0) (1 3)) (word {+)) ((f.ml (1 3) (1 4)) space)
+      ((f.ml (1 4) (1 7)) (word foo)))))))
+ (warnings ()))
+--- input ---
+-\{
+--- output ---
+((output (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word -{)))))))
+ (warnings ()))
+--- input ---
++\{
+--- output ---
+((output (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word +{)))))))
+ (warnings ()))
+--- input ---
+\{@author
+--- output ---
+((output
+  (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word {@author)))))))
+ (warnings ()))
+--- input ---
+\{\}
+--- output ---
+((output (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word {})))))))
+ (warnings ()))

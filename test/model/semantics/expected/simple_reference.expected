@@ -1,0 +1,116 @@
+--- input ---
+{!foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{! foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo }
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+bar{!foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Word":"bar"},{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+bar {!foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Word":"bar"},"`Space",{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo}bar
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]},{"`Word":"bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo} bar
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]},"`Space",{"`Word":"bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!val:foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TValue"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":""}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."]}
+--- input ---
+{! }
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":" "}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-3:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!( * )}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["(*)","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!"( * )"}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["( * )","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml\", line 1, characters 0-5:\nOpen bracket '{!' is never closed.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!:foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":":foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-2:\nUnknown reference qualifier ''."]}
+--- input ---
+{! :foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":" :foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-3:\nUnknown reference qualifier ''."]}
+--- input ---
+{!val:}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"val:"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-6:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!val: }
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"val: "}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-7:\nIdentifier in reference should not be empty."]}
+--- input ---
+{! val:foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TValue"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!va l:foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"va l:foo"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-6:\nUnknown reference qualifier 'va l'."]}
+--- input ---
+{!val:( * )}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["(*)","`TValue"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!val:"( * )"}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["( * )","`TValue"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!val:foo:bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"val:foo:bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 2-9:\nUnknown reference qualifier 'val:foo'."]}
+--- input ---
+{!val :foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TValue"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!val: foo}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TValue"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!val:foo
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TValue"]},[]]}]}],"warnings":["File \"f.ml\", line 1, characters 0-9:\nOpen bracket '{!' is never closed.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!(>>=)}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["(>>=)","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!(@->)}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["(@->)","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!(*.)}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["(*.)","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!(>::)}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["(>::)","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}

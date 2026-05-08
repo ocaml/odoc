@@ -1,0 +1,85 @@
+--- input ---
+{!modules:Foo}
+--- output ---
+((output (((f.ml (1 0) (1 14)) (modules (((f.ml (1 0) (1 14)) Foo))))))
+ (warnings ()))
+--- input ---
+{!modules:Foo Bar}
+--- output ---
+((output
+  (((f.ml (1 0) (1 18))
+    (modules (((f.ml (1 0) (1 18)) Foo) ((f.ml (1 0) (1 18)) Bar))))))
+ (warnings ()))
+--- input ---
+{!modules: Foo  Bar }
+--- output ---
+((output
+  (((f.ml (1 0) (1 21))
+    (modules (((f.ml (1 0) (1 21)) Foo) ((f.ml (1 0) (1 21)) Bar))))))
+ (warnings ()))
+--- input ---
+{!modules:Foo
+Bar}
+--- output ---
+((output
+  (((f.ml (1 0) (2 4))
+    (modules (((f.ml (1 0) (2 4)) Foo) ((f.ml (1 0) (2 4)) Bar))))))
+ (warnings ()))
+--- input ---
+{!modules:Foo
+Bar}
+--- output ---
+((output
+  (((f.ml (1 0) (2 4))
+    (modules (((f.ml (1 0) (2 4)) Foo) ((f.ml (1 0) (2 4)) Bar))))))
+ (warnings ()))
+--- input ---
+{!modules:}
+--- output ---
+((output (((f.ml (1 0) (1 11)) (modules ()))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-11:\
+   \n'{!modules ...}' should not be empty.")))
+--- input ---
+{!modules: }
+--- output ---
+((output (((f.ml (1 0) (1 12)) (modules ()))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-12:\
+   \n'{!modules ...}' should not be empty.")))
+--- input ---
+{!modules:
+--- output ---
+((output (((f.ml (1 0) (1 10)) (modules ()))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 10-10:\
+   \nEnd of text is not allowed in '{!modules ...}'."
+    "File \"f.ml\", line 1, characters 0-10:\
+   \n'{!modules ...}' should not be empty.")))
+--- input ---
+foo {!modules:Foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 4))
+    (paragraph (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space))))
+   ((f.ml (1 4) (1 18)) (modules (((f.ml (1 4) (1 18)) Foo))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 4-18:\
+   \n'{!modules ...}' should begin on its own line.")))
+--- input ---
+{!modules:Foo} foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 14)) (modules (((f.ml (1 0) (1 14)) Foo))))
+   ((f.ml (1 15) (1 18)) (paragraph (((f.ml (1 15) (1 18)) (word foo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 15-18:\
+   \nParagraph should begin on its own line.")))
+--- input ---
+- {!modules:Foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 16))
+    (unordered light
+     ((((f.ml (1 2) (1 16)) (modules (((f.ml (1 2) (1 16)) Foo))))))))))
+ (warnings ()))

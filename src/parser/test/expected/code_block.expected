@@ -1,0 +1,839 @@
+--- input ---
+{[foo]}
+--- output ---
+((output (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))))
+ (warnings ()))
+--- input ---
+{[]}
+--- output ---
+((output (((f.ml (1 0) (1 4)) (code_block ((f.ml (1 2) (1 2)) "")))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-4:\
+   \n'{[...]}' (code block) should not be empty.")))
+--- input ---
+{[ ]}
+--- output ---
+((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 3)) " ")))))
+ (warnings ()))
+--- input ---
+{[
+  
+]}
+--- output ---
+((output (((f.ml (1 0) (3 2)) (code_block ((f.ml (1 2) (3 0)) "  ")))))
+ (warnings ()))
+--- input ---
+{[foo bar]}
+--- output ---
+((output (((f.ml (1 0) (1 11)) (code_block ((f.ml (1 2) (1 9)) "foo bar")))))
+ (warnings ()))
+--- input ---
+{[foo
+bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "foo\
+                                                       \nbar")))))
+ (warnings ()))
+--- input ---
+{[foo
+bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3))  "foo\r\
+                                                       \nbar")))))
+ (warnings ()))
+--- input ---
+{[foo
+
+bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (3 5)) (code_block ((f.ml (1 2) (3 3))  "foo\
+                                                       \n\
+                                                       \nbar")))))
+ (warnings ()))
+--- input ---
+{[ foo]}
+--- output ---
+((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) " foo")))))
+ (warnings ()))
+--- input ---
+{[ foo
+ bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  " foo\
+                                                       \n bar")))))
+ (warnings ()))
+--- input ---
+{[ foo
+ bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  " foo\r\
+                                                       \n bar")))))
+ (warnings ()))
+--- input ---
+{[ foo
+   bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 8)) (code_block ((f.ml (1 2) (2 6))  " foo\
+                                                       \n   bar")))))
+ (warnings ()))
+--- input ---
+{[   foo
+ bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "   foo\
+                                                       \n bar")))))
+ (warnings ()))
+--- input ---
+{[ foo
+      bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 11))
+    (code_block ((f.ml (1 2) (2 9))  " foo\
+                                    \n      bar")))))
+ (warnings ()))
+--- input ---
+{[ foo
+
+ bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (3 6)) (code_block ((f.ml (1 2) (3 4))  " foo\
+                                                       \n\
+                                                       \n bar")))))
+ (warnings ()))
+--- input ---
+{[  foo
+ 
+  bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (3 7))
+    (code_block ((f.ml (1 2) (3 5))  "  foo\
+                                    \n \
+                                    \n  bar")))))
+ (warnings ()))
+--- input ---
+{[ foo
+   
+ bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (3 6))
+    (code_block ((f.ml (1 2) (3 4))  " foo\
+                                    \n   \
+                                    \n bar")))))
+ (warnings ()))
+--- input ---
+{[
+  foo
+  bar
+]}
+--- output ---
+((output
+  (((f.ml (1 0) (4 2)) (code_block ((f.ml (1 2) (4 0))  "  foo\
+                                                       \n  bar")))))
+ (warnings ()))
+--- input ---
+{[	foo]}
+--- output ---
+((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) "\tfoo")))))
+ (warnings ()))
+--- input ---
+{[	foo
+	bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4))  "\tfoo\
+                                                       \n\tbar")))))
+ (warnings ()))
+--- input ---
+{[	foo
+		bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 7)) (code_block ((f.ml (1 2) (2 5))  "\tfoo\
+                                                       \n\t\tbar")))))
+ (warnings ()))
+--- input ---
+{[
+foo]}
+--- output ---
+((output (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo)))))
+ (warnings ()))
+--- input ---
+{[
+foo]}
+--- output ---
+((output (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo)))))
+ (warnings ()))
+--- input ---
+{[
+
+foo]}
+--- output ---
+((output (((f.ml (1 0) (3 5)) (code_block ((f.ml (1 2) (3 3))  "\
+                                                              \nfoo")))))
+ (warnings ()))
+--- input ---
+{[
+ foo]}
+--- output ---
+((output (((f.ml (1 0) (2 6)) (code_block ((f.ml (1 2) (2 4)) " foo")))))
+ (warnings ()))
+--- input ---
+{[ 
+foo]}
+--- output ---
+((output (((f.ml (1 0) (2 5)) (code_block ((f.ml (1 2) (2 3)) foo)))))
+ (warnings ()))
+--- input ---
+{[{[]}
+--- output ---
+((output (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 4)) {[)))))
+ (warnings ()))
+--- input ---
+{[foo]}]}
+--- output ---
+((output (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))))
+ (warnings ()))
+--- input ---
+{[]]}
+--- output ---
+((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 3)) ])))))
+ (warnings ()))
+--- input ---
+{[]]]}
+--- output ---
+((output (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 4)) ]])))))
+ (warnings ()))
+--- input ---
+{[foo]]bar]}
+--- output ---
+((output (((f.ml (1 0) (1 12)) (code_block ((f.ml (1 2) (1 10)) foo]]bar)))))
+ (warnings ()))
+--- input ---
+{[foo ]}
+--- output ---
+((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) "foo ")))))
+ (warnings ()))
+--- input ---
+{[foo	]}
+--- output ---
+((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) "foo\t")))))
+ (warnings ()))
+--- input ---
+{[foo
+]}
+--- output ---
+((output (((f.ml (1 0) (2 2)) (code_block ((f.ml (1 2) (2 0)) foo)))))
+ (warnings ()))
+--- input ---
+{[foo
+]}
+--- output ---
+((output (((f.ml (1 0) (2 2)) (code_block ((f.ml (1 2) (2 0)) "foo\r")))))
+ (warnings ()))
+--- input ---
+{[foo
+
+]}
+--- output ---
+((output (((f.ml (1 0) (3 2)) (code_block ((f.ml (1 2) (3 0)) "foo\n")))))
+ (warnings ()))
+--- input ---
+{[foo]}
+--- output ---
+((output (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))))
+ (warnings ()))
+--- input ---
+{[foo]}
+--- output ---
+((output (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))))
+ (warnings ()))
+--- input ---
+{[foo]} {[bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+   ((f.ml (1 8) (1 15)) (code_block ((f.ml (1 10) (1 13)) bar)))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 8-15:\
+   \n'{[...]}' (code block) should begin on its own line.")))
+--- input ---
+{[foo]}
+{[bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+   ((f.ml (2 0) (2 7)) (code_block ((f.ml (2 2) (2 5)) bar)))))
+ (warnings ()))
+--- input ---
+{[foo]}
+
+{[bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+   ((f.ml (3 0) (3 7)) (code_block ((f.ml (3 2) (3 5)) bar)))))
+ (warnings ()))
+--- input ---
+{[foo]} bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+   ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word bar)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 8-11:\
+   \nParagraph should begin on its own line.")))
+--- input ---
+foo {[bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 4))
+    (paragraph (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) space))))
+   ((f.ml (1 4) (1 11)) (code_block ((f.ml (1 6) (1 9)) bar)))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 4-11:\
+   \n'{[...]}' (code block) should begin on its own line.")))
+--- input ---
+foo
+{[bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+   ((f.ml (2 0) (2 7)) (code_block ((f.ml (2 2) (2 5)) bar)))))
+ (warnings ()))
+--- input ---
+{[foo]}
+bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+   ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word bar)))))))
+ (warnings ()))
+--- input ---
+{[foo
+--- output ---
+((output (((f.ml (1 0) (1 5)) (code_block ((f.ml (1 2) (1 5)) foo)))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-5:\
+   \nMissing end of code block.\
+   \nSuggestion: add ']}'.")))
+--- input ---
+{[foo]
+--- output ---
+((output (((f.ml (1 0) (1 6)) (code_block ((f.ml (1 2) (1 6)) foo])))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-6:\
+   \nMissing end of code block.\
+   \nSuggestion: add ']}'.")))
+--- input ---
+{[foo]}
+--- output ---
+((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) "foo\r")))))
+ (warnings ()))
+--- input ---
+{[(* foo *)
+let bar = ()]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 14))
+    (code_block ((f.ml (1 2) (2 12))  "(* foo *)\
+                                     \nlet bar = ()")))))
+ (warnings ()))
+--- input ---
+{[(** foo *)
+let bar = ()]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 14))
+    (code_block ((f.ml (1 2) (2 12))  "(** foo *)\
+                                     \nlet bar = ()")))))
+ (warnings ()))
+--- input ---
+{[(** {[foo]} *)
+let bar = ()]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 13)) (code_block ((f.ml (1 2) (1 11)) "(** {[foo")))
+   ((f.ml (1 14) (2 12))
+    (paragraph
+     (((f.ml (1 14) (1 16)) (word "*)")) ((f.ml (1 16) (2 0)) space)
+      ((f.ml (2 0) (2 3)) (word let)) ((f.ml (2 3) (2 4)) space)
+      ((f.ml (2 4) (2 7)) (word bar)) ((f.ml (2 7) (2 8)) space)
+      ((f.ml (2 8) (2 9)) (word =)) ((f.ml (2 9) (2 10)) space)
+      ((f.ml (2 10) (2 12)) (word "()")))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 14-16:\
+   \nParagraph should begin on its own line.")))
+--- input ---
+{@ocaml env=f1 version>=4.06 [code goes here]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 46))
+    (code_block
+     (((f.ml (1 2) (1 7)) ocaml)
+      ((binding ((f.ml (1 8) (1 11)) env) ((f.ml (1 12) (1 14)) f1))
+       (binding ((f.ml (1 15) (1 23)) version>) ((f.ml (1 24) (1 28)) 4.06))))
+     ((f.ml (1 30) (1 44)) "code goes here")))))
+ (warnings ()))
+--- input ---
+{delim@ocaml[foo]delim[output {b foo}]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 39))
+    (code_block (((f.ml (1 7) (1 12)) ocaml) ()) ((f.ml (1 13) (1 16)) foo)
+     ((paragraph
+       (((f.ml (1 23) (1 29)) (word output)) ((f.ml (1 29) (1 30)) space)
+        ((f.ml (1 30) (1 37)) (bold (((f.ml (1 33) (1 36)) (word foo))))))))))))
+ (warnings ()))
+--- input ---
+{delim@ocaml env=f1 version>=4.06 [foo]delim[output {b foo}]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 61))
+    (code_block
+     (((f.ml (1 7) (1 12)) ocaml)
+      ((binding ((f.ml (1 13) (1 16)) env) ((f.ml (1 17) (1 19)) f1))
+       (binding ((f.ml (1 20) (1 28)) version>) ((f.ml (1 29) (1 33)) 4.06))))
+     ((f.ml (1 35) (1 38)) foo)
+     ((paragraph
+       (((f.ml (1 45) (1 51)) (word output)) ((f.ml (1 51) (1 52)) space)
+        ((f.ml (1 52) (1 59)) (bold (((f.ml (1 55) (1 58)) (word foo))))))))))))
+ (warnings ()))
+--- input ---
+{[foo][output {b foo}]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 23))
+    (code_block ((f.ml (1 2) (1 21)) "foo][output {b foo}")))))
+ (warnings ()))
+--- input ---
+{@ocaml[foo][output {b foo}]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 29))
+    (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+     ((f.ml (1 8) (1 27)) "foo][output {b foo}")))))
+ (warnings ()))
+--- input ---
+{[foo]unexpected[output {b foo}]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 33))
+    (code_block ((f.ml (1 2) (1 31)) "foo]unexpected[output {b foo}")))))
+ (warnings ()))
+--- input ---
+{@ocaml[foo]unexpected[output {b foo}]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 39))
+    (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+     ((f.ml (1 8) (1 37)) "foo]unexpected[output {b foo}")))))
+ (warnings ()))
+--- input ---
+{delim@ocaml[foo]wrong[output {b foo}]delim}
+--- output ---
+((output
+  (((f.ml (1 0) (1 44))
+    (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+     ((f.ml (1 13) (1 37)) "foo]wrong[output {b foo}")))))
+ (warnings ()))
+--- input ---
+{@[code goes here]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 19)) (code_block ((f.ml (1 3) (1 17)) "code goes here")))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-3:\
+   \n'{@' should be followed by a language tag.\
+   \nSuggestion: try '{[ ... ]}' or '{@ocaml[ ... ]}'.")))
+--- input ---
+{@meta[foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 10))
+    (code_block (((f.ml (1 2) (1 6)) meta) ()) ((f.ml (1 7) (1 10)) foo)))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-10:\
+   \nMissing end of code block.\
+   \nSuggestion: add ']}'.")))
+--- input ---
+{@met
+--- output ---
+((output
+  (((f.ml (1 0) (1 5))
+    (code_block (((f.ml (1 2) (1 5)) met) ()) ((f.ml (1 5) (1 5)) "")))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-5:\
+   \nMissing end of code block.\
+   \nSuggestion: try '{@ocaml[ ... ]}'."
+    "File \"f.ml\", line 1, characters 0-5:\
+   \n'{[...]}' (code block) should not be empty.")))
+--- input ---
+{@ocaml
+[ code ]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 9))
+    (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+     ((f.ml (2 1) (2 7)) " code ")))))
+ (warnings ()))
+--- input ---
+{@ocaml kind=toplevel
+[ code ]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 9))
+    (code_block
+     (((f.ml (1 2) (1 7)) ocaml)
+      ((binding ((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel))))
+     ((f.ml (2 1) (2 7)) " code ")))))
+ (warnings ()))
+--- input ---
+{@ocaml kind=toplevel [ code ]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 31))
+    (code_block
+     (((f.ml (1 2) (1 7)) ocaml)
+      ((binding ((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel))))
+     ((f.ml (1 23) (1 29)) " code ")))))
+ (warnings ()))
+--- input ---
+{@ocaml kind=toplevel 
+  [ code ]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 11))
+    (code_block
+     (((f.ml (1 2) (1 7)) ocaml)
+      ((binding ((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel))))
+     ((f.ml (2 3) (2 9)) " code ")))))
+ (warnings ()))
+--- input ---
+{@ocaml kind=toplevel
+env=e1[ code ]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 15))
+    (code_block
+     (((f.ml (1 2) (1 7)) ocaml)
+      ((binding ((f.ml (1 8) (1 12)) kind) ((f.ml (1 13) (1 21)) toplevel))
+       (binding ((f.ml (2 0) (2 3)) env) ((f.ml (2 4) (2 6)) e1))))
+     ((f.ml (2 7) (2 13)) " code ")))))
+ (warnings ()))
+--- input ---
+{@ocaml
+kind=toplevel[ code ]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 22))
+    (code_block
+     (((f.ml (1 2) (1 7)) ocaml)
+      ((binding ((f.ml (2 0) (2 4)) kind) ((f.ml (2 5) (2 13)) toplevel))))
+     ((f.ml (2 14) (2 20)) " code ")))))
+ (warnings ()))
+--- input ---
+{@ocaml =foo [ code ]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 22))
+    (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+     ((f.ml (1 14) (1 20)) " code ")))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 8-9:\
+   \nInvalid character in code block metadata tag '='."
+    "File \"f.ml\", line 1, characters 9-10:\
+   \nInvalid character in code block metadata tag 'f'.")))
+--- input ---
+{@ocaml \n\t\b=hello [ code ]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 30))
+    (code_block
+     (((f.ml (1 2) (1 7)) ocaml)
+      ((binding ((f.ml (1 8) (1 14)) "\\n\\t\\b")
+        ((f.ml (1 15) (1 20)) hello))))
+     ((f.ml (1 22) (1 28)) " code ")))))
+ (warnings ()))
+--- input ---
+{@ocaml "\065"=hello [ code ]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 30))
+    (code_block
+     (((f.ml (1 2) (1 7)) ocaml)
+      ((binding ((f.ml (1 8) (1 14)) A) ((f.ml (1 15) (1 20)) hello))))
+     ((f.ml (1 22) (1 28)) " code ")))))
+ (warnings ()))
+--- input ---
+{@ocaml,top[ code ]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 20))
+    (code_block (((f.ml (1 2) (1 7)) ocaml) ())
+     ((f.ml (1 12) (1 18)) " code ")))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 7-8:\
+   \nInvalid character in code block metadata tag ','.")))
+--- input ---
+{delim@ocaml[ all{}[2[{{]doo}}]]'''(* ]} ]delim}
+--- output ---
+((output
+  (((f.ml (1 0) (1 48))
+    (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+     ((f.ml (1 13) (1 41)) " all{}[2[{{]doo}}]]'''(* ]} ")))))
+ (warnings ()))
+--- input ---
+{delim@ocaml[ let x = ]delim[ {err@mdx-error[ here's the error ]} ]err}
+        ]delim}
+--- output ---
+((output
+  (((f.ml (1 0) (2 15))
+    (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+     ((f.ml (1 13) (1 22)) " let x = ")
+     ((code_block (((f.ml (1 35) (1 44)) mdx-error) ())
+       ((f.ml (1 45) (1 66)) " here's the error ]} "))
+      (paragraph
+       (((f.ml (2 8) (2 9)) (word ])) ((f.ml (2 9) (2 14)) (word delim)))))))))
+ (warnings
+  ( "File \"f.ml\", line 2, characters 8-9:\
+   \nUnpaired ']' (end of code).\
+   \nSuggestion: try '\\]'.")))
+--- input ---
+{delim@ocaml[ foo ]delim[ ]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 28))
+    (code_block (((f.ml (1 7) (1 12)) ocaml) ())
+     ((f.ml (1 13) (1 18)) " foo ") ()))))
+ (warnings ()))
+--- input ---
+
+   {[
+  foo
+ ]}
+--- output ---
+((output
+  (((f.ml (2 3) (4 3))
+    (code_block ((f.ml (2 5) (4 1)) foo)
+     (Warnings
+       "File \"f.ml\", line 2, character 3 to line 4, character 3:\
+      \nCode blocks should be indented at the opening `{`.")))))
+ (warnings ()))
+--- input ---
+
+   {[ foo
+ ]}
+--- output ---
+((output (((f.ml (2 3) (3 3)) (code_block ((f.ml (2 5) (3 1)) " foo")))))
+ (warnings ()))
+--- input ---
+
+   {[ foo
+  bar ]}
+--- output ---
+((output
+  (((f.ml (2 3) (3 8))
+    (code_block ((f.ml (2 5) (3 6))  "  foo\
+                                    \nbar ")
+     (Warnings
+       "File \"f.ml\", line 2, character 3 to line 3, character 8:\
+      \nCode blocks should be indented at the opening `{`.")))))
+ (warnings ()))
+--- input ---
+
+   {[
+   foo
+ ]}
+--- output ---
+((output (((f.ml (2 3) (4 3)) (code_block ((f.ml (2 5) (4 1)) foo)))))
+ (warnings ()))
+--- input ---
+ {[ foo ]} 
+--- output ---
+((output (((f.ml (1 1) (1 10)) (code_block ((f.ml (1 3) (1 8)) " foo ")))))
+ (warnings ()))
+--- input ---
+
+   {[
+   foo
+     bar
+       baz
+ ]}
+--- output ---
+((output
+  (((f.ml (2 3) (6 3))
+    (code_block ((f.ml (2 5) (6 1))  "foo\
+                                    \n  bar\
+                                    \n    baz")))))
+ (warnings ()))
+--- input ---
+
+   {[
+       baz
+     bar
+   foo
+ ]}
+--- output ---
+((output
+  (((f.ml (2 3) (6 3))
+    (code_block ((f.ml (2 5) (6 1))  "    baz\
+                                    \n  bar\
+                                    \nfoo")))))
+ (warnings ()))
+--- input ---
+
+   {[
+       baz
+     bar
+       foo
+ ]}
+--- output ---
+((output
+  (((f.ml (2 3) (6 3))
+    (code_block ((f.ml (2 5) (6 1))  "    baz\
+                                    \n  bar\
+                                    \n    foo")))))
+ (warnings ()))
+--- input ---
+
+   {[
+    baz
+  bar
+    foo
+ ]}
+--- output ---
+((output
+  (((f.ml (2 3) (6 3))
+    (code_block ((f.ml (2 5) (6 1))  "  baz\
+                                    \nbar\
+                                    \n  foo")
+     (Warnings
+       "File \"f.ml\", line 2, character 3 to line 6, character 3:\
+      \nCode blocks should be indented at the opening `{`.")))))
+ (warnings ()))
+--- input ---
+{@ocaml env=f1 version=4.06 "tag with several words" "binding with"=singleword also="other case" "everything has"="multiple words" [foo]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 137))
+    (code_block
+     (((f.ml (1 2) (1 7)) ocaml)
+      ((binding ((f.ml (1 8) (1 11)) env) ((f.ml (1 12) (1 14)) f1))
+       (binding ((f.ml (1 15) (1 22)) version) ((f.ml (1 23) (1 27)) 4.06))
+       (tag ((f.ml (1 28) (1 52)) "tag with several words"))
+       (binding ((f.ml (1 53) (1 67)) "binding with")
+        ((f.ml (1 68) (1 78)) singleword))
+       (binding ((f.ml (1 79) (1 83)) also)
+        ((f.ml (1 84) (1 96)) "other case"))
+       (binding ((f.ml (1 97) (1 113)) "everything has")
+        ((f.ml (1 114) (1 130)) "multiple words"))))
+     ((f.ml (1 132) (1 135)) foo)))))
+ (warnings ()))
+--- input ---
+{@ocaml
+         env=f1
+         version=4.06
+         single_tag
+         "tag with several words"
+         "binding with"=singleword
+         also="other case"
+         "everything has"="multiple words"
+         [foo]}
+--- output ---
+((output
+  (((f.ml (1 0) (9 15))
+    (code_block
+     (((f.ml (1 2) (1 7)) ocaml)
+      ((binding ((f.ml (2 9) (2 12)) env) ((f.ml (2 13) (2 15)) f1))
+       (binding ((f.ml (3 9) (3 16)) version) ((f.ml (3 17) (3 21)) 4.06))
+       (tag ((f.ml (4 9) (4 19)) single_tag))
+       (tag ((f.ml (5 9) (5 33)) "tag with several words"))
+       (binding ((f.ml (6 9) (6 23)) "binding with")
+        ((f.ml (6 24) (6 34)) singleword))
+       (binding ((f.ml (7 9) (7 13)) also)
+        ((f.ml (7 14) (7 26)) "other case"))
+       (binding ((f.ml (8 9) (8 25)) "everything has")
+        ((f.ml (8 26) (8 42)) "multiple words"))))
+     ((f.ml (9 10) (9 13)) foo)))))
+ (warnings ()))
+--- input ---
+{@ocaml "\""="\"" [foo]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 24))
+    (code_block
+     (((f.ml (1 2) (1 7)) ocaml)
+      ((binding ((f.ml (1 8) (1 12)) "\"") ((f.ml (1 13) (1 17)) "\""))))
+     ((f.ml (1 19) (1 22)) foo)))))
+ (warnings ()))
+--- input ---
+{@ocaml \"=\" [foo]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 20))
+    (code_block (((f.ml (1 2) (1 7)) ocaml) ()) ((f.ml (1 15) (1 18)) foo)))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 9-10:\
+   \nInvalid character in code block metadata tag '\"'.")))
+--- input ---
+{@ocaml "\\" [foo]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 19))
+    (code_block
+     (((f.ml (1 2) (1 7)) ocaml) ((tag ((f.ml (1 8) (1 12)) "\\"))))
+     ((f.ml (1 14) (1 17)) foo)))))
+ (warnings ()))
+--- input ---
+
+     {@ocaml "\a\b\c" [foo]}
+--- output ---
+((output
+  (((f.ml (2 5) (2 28))
+    (code_block
+     (((f.ml (2 7) (2 12)) ocaml) ((tag ((f.ml (2 13) (2 21)) "a\bc"))))
+     ((f.ml (2 23) (2 26)) foo)))))
+ (warnings
+  ( "File \"f.ml\", line 2, characters 14-16:\
+   \nThe 'a' character should not be escaped.\
+   \nSuggestion: Remove \\."
+    "File \"f.ml\", line 2, characters 18-20:\
+   \nThe 'c' character should not be escaped.\
+   \nSuggestion: Remove \\.")))
+--- input ---
+
+     {@ocaml "\a\b\c"="\x\y\z" [foo]}
+--- output ---
+((output
+  (((f.ml (2 5) (2 37))
+    (code_block
+     (((f.ml (2 7) (2 12)) ocaml)
+      ((binding ((f.ml (2 13) (2 21)) "a\bc") ((f.ml (2 22) (2 30)) xyz))))
+     ((f.ml (2 32) (2 35)) foo)))))
+ (warnings
+  ( "File \"f.ml\", line 2, characters 14-16:\
+   \nThe 'a' character should not be escaped.\
+   \nSuggestion: Remove \\."
+    "File \"f.ml\", line 2, characters 18-20:\
+   \nThe 'c' character should not be escaped.\
+   \nSuggestion: Remove \\."
+    "File \"f.ml\", line 2, characters 23-25:\
+   \nThe 'x' character should not be escaped.\
+   \nSuggestion: Remove \\."
+    "File \"f.ml\", line 2, characters 25-27:\
+   \nThe 'y' character should not be escaped.\
+   \nSuggestion: Remove \\."
+    "File \"f.ml\", line 2, characters 27-29:\
+   \nThe 'z' character should not be escaped.\
+   \nSuggestion: Remove \\.")))

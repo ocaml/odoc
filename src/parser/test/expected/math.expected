@@ -1,0 +1,56 @@
+--- input ---
+{math \sum_{i=0}^n x^i%}
+--- output ---
+((output (((f.ml (1 0) (1 24)) (math_block "\\sum_{i=0}^n x^i%"))))
+ (warnings ()))
+--- input ---
+{math
+      \alpha(x)=\left\{
+                \begin{array}{ll}                 % beginning of the array
+                  x \% 4\\                        % some variable modulo 4
+                  \frac{1}{1+e^{-kx}}\\           % something else
+                  \frac{e^x-e^{-x}}{e^x+e^{-x}}   % another action
+                \end{array}                       % end of the array
+              \right.
+      }
+--- output ---
+((output
+  (((f.ml (1 0) (9 7))
+    (math_block
+      "      \\alpha(x)=\\left\\{\
+     \n                \\begin{array}{ll}                 % beginning of the array\
+     \n                  x \\% 4\\\\                        % some variable modulo 4\
+     \n                  \\frac{1}{1+e^{-kx}}\\\\           % something else\
+     \n                  \\frac{e^x-e^{-x}}{e^x+e^{-x}}   % another action\
+     \n                \\end{array}                       % end of the array\
+     \n              \\right.\
+     \n      "))))
+ (warnings ()))
+--- input ---
+{m x + 4}
+--- output ---
+((output
+  (((f.ml (1 0) (1 9))
+    (paragraph (((f.ml (1 0) (1 9)) (math_span "x + 4")))))))
+ (warnings ()))
+--- input ---
+{m \sub_{i=0}^n x^i}
+--- output ---
+((output
+  (((f.ml (1 0) (1 20))
+    (paragraph (((f.ml (1 0) (1 20)) (math_span "\\sub_{i=0}^n x^i")))))))
+ (warnings ()))
+--- input ---
+{m \{ \mathbb{only_left}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 25))
+    (paragraph (((f.ml (1 0) (1 25)) (math_span "\\{ \\mathbb{only_left}")))))))
+ (warnings ()))
+--- input ---
+{m \mathbb{only_left}\}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 24))
+    (paragraph (((f.ml (1 0) (1 24)) (math_span "\\mathbb{only_left}\\}")))))))
+ (warnings ()))

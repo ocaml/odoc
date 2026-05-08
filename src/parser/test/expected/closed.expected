@@ -1,0 +1,51 @@
+--- input ---
+@closed
+--- output ---
+((output (((f.ml (1 0) (1 7)) @closed))) (warnings ()))
+--- input ---
+@closedfoo
+--- output ---
+((output
+  (((f.ml (1 0) (1 10))
+    (paragraph (((f.ml (1 0) (1 10)) (word @closedfoo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-10:\
+   \nUnknown tag '@closedfoo'.")))
+--- input ---
+@closed
+--- output ---
+((output (((f.ml (1 0) (1 7)) @closed))) (warnings ()))
+--- input ---
+@closed foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) @closed)
+   ((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 8-11:\
+   \nParagraph should begin on its own line.")))
+--- input ---
+@closed
+foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) @closed)
+   ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))
+ (warnings ()))
+--- input ---
+@closed
+@deprecated
+--- output ---
+((output (((f.ml (1 0) (1 7)) @closed) ((f.ml (2 0) (2 11)) (@deprecated))))
+ (warnings ()))
+--- input ---
+@closed - foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) @closed)
+   ((f.ml (1 8) (1 13))
+    (unordered light
+     ((((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word foo)))))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 8-9:\
+   \n'-' (bulleted list item) should begin on its own line.")))

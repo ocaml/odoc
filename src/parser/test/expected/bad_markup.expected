@@ -1,0 +1,257 @@
+--- input ---
+{
+--- output ---
+((output (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word {)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-1:\
+   \n'{': bad markup.\
+   \nSuggestion: escape the brace with '\\{'.")))
+--- input ---
+{g
+--- output ---
+((output
+  (((f.ml (1 0) (1 2))
+    (paragraph (((f.ml (1 0) (1 1)) (word {)) ((f.ml (1 1) (1 2)) (word g)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-1:\
+   \n'{': bad markup.\
+   \nSuggestion: escape the brace with '\\{'.")))
+--- input ---
+{gg
+--- output ---
+((output
+  (((f.ml (1 0) (1 3))
+    (paragraph
+     (((f.ml (1 0) (1 1)) (word {)) ((f.ml (1 1) (1 3)) (word gg)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-1:\
+   \n'{': bad markup.\
+   \nSuggestion: escape the brace with '\\{'.")))
+--- input ---
+{}
+--- output ---
+((output
+  (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word {)))))
+   ((f.ml (1 1) (1 2)) (paragraph (((f.ml (1 1) (1 2)) (word })))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-1:\
+   \n'{': bad markup.\
+   \nSuggestion: escape the brace with '\\{'."
+    "File \"f.ml\", line 1, characters 1-2:\
+   \nUnpaired '}' (end of markup).\
+   \nSuggestion: try '\\}'.")))
+--- input ---
+{ foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (code_span " foo")))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-6:\
+   \n'{ foo}': bad markup.\
+   \nSuggestion: did you mean '{! foo}' or '[ foo]'?")))
+--- input ---
+{  foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 7))
+    (paragraph (((f.ml (1 0) (1 7)) (code_span "  foo")))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-7:\
+   \n'{  foo}': bad markup.\
+   \nSuggestion: did you mean '{!  foo}' or '[  foo]'?")))
+--- input ---
+{
+--- output ---
+((output (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word {)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-1:\
+   \n'{': bad markup.\
+   \nSuggestion: escape the brace with '\\{'.")))
+--- input ---
+{foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 5)) (paragraph (((f.ml (1 0) (1 5)) (code_span foo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-5:\
+   \n'{foo}': bad markup.\
+   \nSuggestion: did you mean '{!foo}' or '[foo]'?")))
+--- input ---
+}
+--- output ---
+((output (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word })))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-1:\
+   \nUnpaired '}' (end of markup).\
+   \nSuggestion: try '\\}'.")))
+--- input ---
+foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+   ((f.ml (1 3) (1 4)) (paragraph (((f.ml (1 3) (1 4)) (word })))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 3-4:\
+   \nUnpaired '}' (end of markup).\
+   \nSuggestion: try '\\}'.")))
+--- input ---
+foo } bar } baz
+--- output ---
+((output
+  (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+   ((f.ml (1 4) (1 5)) (paragraph (((f.ml (1 4) (1 5)) (word })))))
+   ((f.ml (1 6) (1 9)) (paragraph (((f.ml (1 6) (1 9)) (word bar)))))
+   ((f.ml (1 10) (1 11)) (paragraph (((f.ml (1 10) (1 11)) (word })))))
+   ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word baz)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 4-5:\
+   \nUnpaired '}' (end of markup).\
+   \nSuggestion: try '\\}'."
+    "File \"f.ml\", line 1, characters 10-11:\
+   \nUnpaired '}' (end of markup).\
+   \nSuggestion: try '\\}'.")))
+--- input ---
+- foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 5))
+    (unordered light
+     ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
+   ((f.ml (1 5) (1 6)) (paragraph (((f.ml (1 5) (1 6)) (word })))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 5-6:\
+   \nUnpaired '}' (end of markup).\
+   \nSuggestion: try '\\}'.")))
+--- input ---
+[foo}]
+--- output ---
+((output
+  (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (code_span foo})))))))
+ (warnings ()))
+--- input ---
+{[foo}]}
+--- output ---
+((output (((f.ml (1 0) (1 8)) (code_block ((f.ml (1 2) (1 6)) foo})))))
+ (warnings ()))
+--- input ---
+{v foo} v}
+--- output ---
+((output (((f.ml (1 0) (1 10)) (verbatim foo})))) (warnings ()))
+--- input ---
+@author Foo}
+--- output ---
+((output (((f.ml (1 0) (1 12)) (@author Foo})))) (warnings ()))
+--- input ---
+@deprecated }
+--- output ---
+((output
+  (((f.ml (1 0) (1 11)) (@deprecated))
+   ((f.ml (1 12) (1 13)) (paragraph (((f.ml (1 12) (1 13)) (word })))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 12-13:\
+   \nUnpaired '}' (end of markup).\
+   \nSuggestion: try '\\}'.")))
+--- input ---
+]
+--- output ---
+((output (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word ])))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-1:\
+   \nUnpaired ']' (end of code).\
+   \nSuggestion: try '\\]'.")))
+--- input ---
+foo]
+--- output ---
+((output
+  (((f.ml (1 0) (1 4))
+    (paragraph
+     (((f.ml (1 0) (1 3)) (word foo)) ((f.ml (1 3) (1 4)) (word ])))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 3-4:\
+   \nUnpaired ']' (end of code).\
+   \nSuggestion: try '\\]'.")))
+--- input ---
+- foo]
+--- output ---
+((output
+  (((f.ml (1 0) (1 6))
+    (unordered light
+     ((((f.ml (1 2) (1 6))
+        (paragraph
+         (((f.ml (1 2) (1 5)) (word foo)) ((f.ml (1 5) (1 6)) (word ])))))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 5-6:\
+   \nUnpaired ']' (end of code).\
+   \nSuggestion: try '\\]'.")))
+--- input ---
+[]]
+--- output ---
+((output
+  (((f.ml (1 0) (1 3))
+    (paragraph
+     (((f.ml (1 0) (1 2)) (code_span "")) ((f.ml (1 2) (1 3)) (word ])))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 2-3:\
+   \nUnpaired ']' (end of code).\
+   \nSuggestion: try '\\]'.")))
+--- input ---
+{b]}
+--- output ---
+((output (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (bold ())))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-2:\
+   \n'{b' should be followed by space, a tab, or a new line."
+    "File \"f.ml\", line 1, characters 2-4:\
+   \n']}' is not allowed in '{b ...}' (boldface text)."
+    "File \"f.ml\", line 1, characters 0-2:\
+   \n'{b ...}' (boldface text) should not be empty.")))
+--- input ---
+{v ] v}
+--- output ---
+((output (((f.ml (1 0) (1 7)) (verbatim ])))) (warnings ()))
+--- input ---
+{ul ]}
+--- output ---
+((output (((f.ml (1 0) (1 6)) (unordered heavy ()))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 4-6:\
+   \n']}' is not allowed in '{ul ...}' (bulleted list).\
+   \nSuggestion: move ']}' into a list item, '{li ...}' or '{- ...}'."
+    "File \"f.ml\", line 1, characters 6-6:\
+   \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
+   \nSuggestion: add '}'."
+    "File \"f.ml\", line 1, characters 0-3:\
+   \n'{ul ...}' (bulleted list) should not be empty.")))
+--- input ---
+{ul {li ]}}
+--- output ---
+((output (((f.ml (1 0) (1 11)) (unordered heavy (())))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 4-7:\
+   \n'{li ...}' (list item) should not be empty."
+    "File \"f.ml\", line 1, characters 11-11:\
+   \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
+   \nSuggestion: add '}'.")))
+--- input ---
+{2 ]}
+--- output ---
+((output (((f.ml (1 0) (1 2)) (2 (label ()) ()))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 3-5:\
+   \n']}' is not allowed in '{2 ...}' (section heading)."
+    "File \"f.ml\", line 1, characters 0-2:\
+   \n'{2 ...}' (section heading) should not be empty.")))
+--- input ---
+@author Foo]
+--- output ---
+((output (((f.ml (1 0) (1 12)) (@author Foo])))) (warnings ()))
+--- input ---
+@
+--- output ---
+((output (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word @)))))))
+ (warnings ( "File \"f.ml\", line 1, characters 0-1:\
+            \nStray '@'.")))
+--- input ---
+
+--- output ---
+((output ()) (warnings ()))

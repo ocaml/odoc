@@ -1,0 +1,66 @@
+--- input ---
+one
+ two
+  three
+--- output ---
+((output
+  (((start ((pos_fname none) (pos_bol 0) (pos_lnum 1) (pos_cnum 0)))
+    (start_loc (1 0))
+    (end ((pos_fname none) (pos_bol 9) (pos_lnum 3) (pos_cnum 16)))
+    (end_loc (3 7))
+    (value
+     (paragraph
+      (((start ((pos_fname none) (pos_bol 0) (pos_lnum 1) (pos_cnum 0)))
+        (start_loc (1 0))
+        (end ((pos_fname none) (pos_bol 0) (pos_lnum 1) (pos_cnum 3)))
+        (end_loc (1 3)) (value (word one)))
+       ((start ((pos_fname none) (pos_bol 0) (pos_lnum 1) (pos_cnum 3)))
+        (start_loc (1 3))
+        (end ((pos_fname none) (pos_bol 4) (pos_lnum 2) (pos_cnum 5)))
+        (end_loc (2 1)) (value space))
+       ((start ((pos_fname none) (pos_bol 4) (pos_lnum 2) (pos_cnum 5)))
+        (start_loc (2 1))
+        (end ((pos_fname none) (pos_bol 4) (pos_lnum 2) (pos_cnum 8)))
+        (end_loc (2 4)) (value (word two)))
+       ((start ((pos_fname none) (pos_bol 4) (pos_lnum 2) (pos_cnum 8)))
+        (start_loc (2 4))
+        (end ((pos_fname none) (pos_bol 9) (pos_lnum 3) (pos_cnum 11)))
+        (end_loc (3 2)) (value space))
+       ((start ((pos_fname none) (pos_bol 9) (pos_lnum 3) (pos_cnum 11)))
+        (start_loc (3 2))
+        (end ((pos_fname none) (pos_bol 9) (pos_lnum 3) (pos_cnum 16)))
+        (end_loc (3 7)) (value (word three)))))))))
+ (warnings ()))
+--- input ---
+one
+ two
+  three
+--- output ---
+((output
+  (((start ((pos_fname none) (pos_bol 10) (pos_lnum 2) (pos_cnum 20)))
+    (start_loc (2 10))
+    (end ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 36)))
+    (end_loc (4 7))
+    (value
+     (paragraph
+      (((start ((pos_fname none) (pos_bol 10) (pos_lnum 2) (pos_cnum 20)))
+        (start_loc (2 10))
+        (end ((pos_fname none) (pos_bol 10) (pos_lnum 2) (pos_cnum 23)))
+        (end_loc (2 13)) (value (word one)))
+       ((start ((pos_fname none) (pos_bol 10) (pos_lnum 2) (pos_cnum 23)))
+        (start_loc (2 13))
+        (end ((pos_fname none) (pos_bol 24) (pos_lnum 3) (pos_cnum 25)))
+        (end_loc (3 1)) (value space))
+       ((start ((pos_fname none) (pos_bol 24) (pos_lnum 3) (pos_cnum 25)))
+        (start_loc (3 1))
+        (end ((pos_fname none) (pos_bol 24) (pos_lnum 3) (pos_cnum 28)))
+        (end_loc (3 4)) (value (word two)))
+       ((start ((pos_fname none) (pos_bol 24) (pos_lnum 3) (pos_cnum 28)))
+        (start_loc (3 4))
+        (end ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 31)))
+        (end_loc (4 2)) (value space))
+       ((start ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 31)))
+        (start_loc (4 2))
+        (end ((pos_fname none) (pos_bol 29) (pos_lnum 4) (pos_cnum 36)))
+        (end_loc (4 7)) (value (word three)))))))))
+ (warnings ()))
