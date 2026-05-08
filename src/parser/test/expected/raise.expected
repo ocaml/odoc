@@ -1,0 +1,30 @@
+--- input ---
+@raise Foo
+--- output ---
+((output (((f.ml (1 0) (1 10)) (@raise Foo)))) (warnings ()))
+--- input ---
+@raise
+--- output ---
+((output (((f.ml (1 0) (1 6)) (@raise ""))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-6:\
+   \n'@raise' expects exception constructor on the same line.")))
+--- input ---
+@raise foo bar baz
+--- output ---
+((output
+  (((f.ml (1 0) (1 18))
+    (@raise foo
+     ((f.ml (1 11) (1 18))
+      (paragraph
+       (((f.ml (1 11) (1 14)) (word bar)) ((f.ml (1 14) (1 15)) space)
+        ((f.ml (1 15) (1 18)) (word baz)))))))))
+ (warnings ()))
+--- input ---
+@raisefoo
+--- output ---
+((output
+  (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word @raisefoo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-9:\
+   \nUnknown tag '@raisefoo'.")))

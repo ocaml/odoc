@@ -1,0 +1,57 @@
+--- input ---
+{L foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 3) (1 6)) (word foo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-7:\
+   \n'{L ...}' (left alignment) should not be used because it has no effect.")))
+--- input ---
+{C foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 3) (1 6)) (word foo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-7:\
+   \n'{C ...}' (center alignment) should not be used because it has no effect.")))
+--- input ---
+{R foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 3) (1 6)) (word foo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-7:\
+   \n'{R ...}' (right alignment) should not be used because it has no effect.")))
+--- input ---
+{c foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 7))
+    (paragraph (((f.ml (1 0) (1 7)) (code_span "c foo")))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-7:\
+   \n'{c foo}': bad markup.\
+   \nSuggestion: did you mean '{!c foo}' or '[c foo]'?")))
+--- input ---
+@custom
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (word @custom)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-7:\
+   \nUnknown tag '@custom'.")))
+--- input ---
+{!custom:foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 13))
+    (paragraph
+     (((f.ml (1 0) (1 13)) (simple ((f.ml (1 2) (1 13)) custom:foo) ())))))))
+ (warnings ()))
+--- input ---
+<b>foo</b>
+--- output ---
+((output
+  (((f.ml (1 0) (1 10))
+    (paragraph (((f.ml (1 0) (1 10)) (word <b>foo</b>)))))))
+ (warnings ()))

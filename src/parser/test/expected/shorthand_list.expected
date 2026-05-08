@@ -1,0 +1,176 @@
+--- input ---
+- foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 5))
+    (unordered light
+     ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))))
+ (warnings ()))
+--- input ---
+- foo
+- bar
+--- output ---
+((output
+  (((f.ml (1 0) (2 5))
+    (unordered light
+     ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo))))))
+      (((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar)))))))))))
+ (warnings ()))
+--- input ---
+- foo
+
+- bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 5))
+    (unordered light
+     ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
+   ((f.ml (3 0) (3 5))
+    (unordered light
+     ((((f.ml (3 2) (3 5)) (paragraph (((f.ml (3 2) (3 5)) (word bar)))))))))))
+ (warnings ()))
+--- input ---
++ foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 5))
+    (ordered light
+     ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))))
+ (warnings ()))
+--- input ---
+- foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 5))
+    (unordered light
+     ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))))
+ (warnings ()))
+--- input ---
+- foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 5))
+    (unordered light
+     ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))))
+ (warnings ()))
+--- input ---
+- foo - bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 11))
+    (unordered light
+     ((((f.ml (1 2) (1 11))
+        (paragraph
+         (((f.ml (1 2) (1 5)) (word foo)) ((f.ml (1 5) (1 6)) space)
+          ((f.ml (1 6) (1 7)) (word -)) ((f.ml (1 7) (1 8)) space)
+          ((f.ml (1 8) (1 11)) (word bar)))))))))))
+ (warnings ()))
+--- input ---
+- - foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 7))
+    (unordered light
+     (()
+      (((f.ml (1 4) (1 7)) (paragraph (((f.ml (1 4) (1 7)) (word foo)))))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 2-3:\
+   \n'-' (bulleted list item) should begin on its own line."
+    "File \"f.ml\", line 1, characters 0-1:\
+   \n'-' (bulleted list item) should not be empty.")))
+--- input ---
+- {[foo]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 9))
+    (unordered light
+     ((((f.ml (1 2) (1 9)) (code_block ((f.ml (1 4) (1 7)) foo)))))))))
+ (warnings ()))
+--- input ---
+- {v foo v}
+--- output ---
+((output
+  (((f.ml (1 0) (1 11))
+    (unordered light ((((f.ml (1 2) (1 11)) (verbatim foo))))))))
+ (warnings ()))
+--- input ---
+- foo
+{[bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (2 7))
+    (unordered light
+     ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))
+       ((f.ml (2 0) (2 7)) (code_block ((f.ml (2 2) (2 5)) bar)))))))))
+ (warnings ()))
+--- input ---
+- foo
+
+{[bar]}
+--- output ---
+((output
+  (((f.ml (1 0) (1 5))
+    (unordered light
+     ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
+   ((f.ml (3 0) (3 7)) (code_block ((f.ml (3 2) (3 5)) bar)))))
+ (warnings ()))
+--- input ---
+- foo
++ bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 5))
+    (unordered light
+     ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
+   ((f.ml (2 0) (2 5))
+    (ordered light
+     ((((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar)))))))))))
+ (warnings ()))
+--- input ---
+-
+--- output ---
+((output (((f.ml (1 0) (1 1)) (unordered light (())))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-1:\
+   \n'-' (bulleted list item) should not be empty.")))
+--- input ---
+-
+foo
+--- output ---
+((output
+  (((f.ml (1 0) (2 3))
+    (unordered light
+     ((((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))))))
+ (warnings ()))
+--- input ---
+-
+
+foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 1)) (unordered light (())))
+   ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word foo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-1:\
+   \n'-' (bulleted list item) should not be empty.")))
+--- input ---
+-{b foo}
+--- output ---
+((output
+  (((f.ml (1 0) (1 8))
+    (unordered light
+     ((((f.ml (1 1) (1 8))
+        (paragraph
+         (((f.ml (1 1) (1 8)) (bold (((f.ml (1 4) (1 7)) (word foo))))))))))))))
+ (warnings ()))
+--- input ---
+{[foo]} - bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+   ((f.ml (1 8) (1 13))
+    (unordered light
+     ((((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word bar)))))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 8-9:\
+   \n'-' (bulleted list item) should begin on its own line.")))

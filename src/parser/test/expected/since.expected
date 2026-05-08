@@ -1,0 +1,38 @@
+--- input ---
+@since foo
+--- output ---
+((output (((f.ml (1 0) (1 10)) (@since foo)))) (warnings ()))
+--- input ---
+@since
+--- output ---
+((output (((f.ml (1 0) (1 6)) (@since ""))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-6:\
+   \n'@since' should not be empty.")))
+--- input ---
+@sincefoo
+--- output ---
+((output
+  (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word @sincefoo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-9:\
+   \nUnknown tag '@sincefoo'.")))
+--- input ---
+@since foo bar
+--- output ---
+((output (((f.ml (1 0) (1 14)) (@since "foo bar")))) (warnings ()))
+--- input ---
+@since  foo
+--- output ---
+((output (((f.ml (1 0) (1 11)) (@since foo)))) (warnings ()))
+--- input ---
+@since foo
+--- output ---
+((output (((f.ml (1 0) (1 10)) (@since foo)))) (warnings ()))
+--- input ---
+@since
+--- output ---
+((output (((f.ml (1 0) (1 6)) (@since ""))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-6:\
+   \n'@since' should not be empty.")))

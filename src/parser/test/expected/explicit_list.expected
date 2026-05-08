@@ -1,0 +1,278 @@
+--- input ---
+{ul {li foo}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 13))
+    (unordered heavy
+     ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
+ (warnings ()))
+--- input ---
+{ol {li foo}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 13))
+    (ordered heavy
+     ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
+ (warnings ()))
+--- input ---
+{ul {li foo} {li bar}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 22))
+    (unordered heavy
+     ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))
+      (((f.ml (1 17) (1 20)) (paragraph (((f.ml (1 17) (1 20)) (word bar)))))))))))
+ (warnings ()))
+--- input ---
+{ul {li foo}
+{li bar}}
+--- output ---
+((output
+  (((f.ml (1 0) (2 9))
+    (unordered heavy
+     ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))
+      (((f.ml (2 4) (2 7)) (paragraph (((f.ml (2 4) (2 7)) (word bar)))))))))))
+ (warnings ()))
+--- input ---
+{ul {li foo}
+
+{li bar}}
+--- output ---
+((output
+  (((f.ml (1 0) (3 9))
+    (unordered heavy
+     ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))
+      (((f.ml (3 4) (3 7)) (paragraph (((f.ml (3 4) (3 7)) (word bar)))))))))))
+ (warnings ()))
+--- input ---
+{ul {li foo
+
+bar}}
+--- output ---
+((output
+  (((f.ml (1 0) (3 5))
+    (unordered heavy
+     ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))
+       ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar)))))))))))
+ (warnings ()))
+--- input ---
+{ul foo}
+--- output ---
+((output (((f.ml (1 0) (1 8)) (unordered heavy ()))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 4-7:\
+   \n'foo' is not allowed in '{ul ...}' (bulleted list).\
+   \nSuggestion: move 'foo' into a list item, '{li ...}' or '{- ...}'."
+    "File \"f.ml\", line 1, characters 0-3:\
+   \n'{ul ...}' (bulleted list) should not be empty.")))
+--- input ---
+{ulfoo}
+--- output ---
+((output (((f.ml (1 0) (1 7)) (unordered heavy ()))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 3-6:\
+   \n'foo' is not allowed in '{ul ...}' (bulleted list).\
+   \nSuggestion: move 'foo' into a list item, '{li ...}' or '{- ...}'."
+    "File \"f.ml\", line 1, characters 0-3:\
+   \n'{ul ...}' (bulleted list) should not be empty.")))
+--- input ---
+{ul}
+--- output ---
+((output (((f.ml (1 0) (1 4)) (unordered heavy ()))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-3:\
+   \n'{ul ...}' (bulleted list) should not be empty.")))
+--- input ---
+{ul
+--- output ---
+((output (((f.ml (1 0) (1 3)) (unordered heavy ()))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 3-3:\
+   \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
+   \nSuggestion: add '}'."
+    "File \"f.ml\", line 1, characters 0-3:\
+   \n'{ul ...}' (bulleted list) should not be empty.")))
+--- input ---
+{ul{li foo}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 12))
+    (unordered heavy
+     ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo)))))))))))
+ (warnings ()))
+--- input ---
+{ul {li foo
+
+
+}}
+--- output ---
+((output
+  (((f.ml (1 0) (4 2))
+    (unordered heavy
+     ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
+ (warnings ()))
+--- input ---
+{ul {li foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 11))
+    (unordered heavy
+     ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 11-11:\
+   \nEnd of text is not allowed in '{li ...}' (list item).\
+   \nSuggestion: add '}'."
+    "File \"f.ml\", line 1, characters 11-11:\
+   \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
+   \nSuggestion: add '}'.")))
+--- input ---
+{ul {- foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 10))
+    (unordered heavy
+     ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo)))))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 10-10:\
+   \nEnd of text is not allowed in '{- ...}' (list item).\
+   \nSuggestion: add '}'."
+    "File \"f.ml\", line 1, characters 10-10:\
+   \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
+   \nSuggestion: add '}'.")))
+--- input ---
+{ul {li }}
+--- output ---
+((output (((f.ml (1 0) (1 10)) (unordered heavy (())))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 4-7:\
+   \n'{li ...}' (list item) should not be empty.")))
+--- input ---
+{ul {- }}
+--- output ---
+((output (((f.ml (1 0) (1 9)) (unordered heavy (())))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 4-6:\
+   \n'{- ...}' (list item) should not be empty.")))
+--- input ---
+{ul {lifoo}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 12))
+    (unordered heavy
+     ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo)))))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 4-7:\
+   \n'{li ...}' should be followed by space, a tab, or a new line.")))
+--- input ---
+{ul {li
+foo}}
+--- output ---
+((output
+  (((f.ml (1 0) (2 5))
+    (unordered heavy
+     ((((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))))))
+ (warnings ()))
+--- input ---
+{ul {li
+foo}}
+--- output ---
+((output
+  (((f.ml (1 0) (2 5))
+    (unordered heavy
+     ((((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))))))
+ (warnings ()))
+--- input ---
+{ul {li
+
+foo}}
+--- output ---
+((output
+  (((f.ml (1 0) (3 5))
+    (unordered heavy
+     ((((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word foo)))))))))))
+ (warnings ()))
+--- input ---
+{ul {-foo}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 11))
+    (unordered heavy
+     ((((f.ml (1 6) (1 9)) (paragraph (((f.ml (1 6) (1 9)) (word foo)))))))))))
+ (warnings ()))
+--- input ---
+{ul {li foo} {- bar}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 21))
+    (unordered heavy
+     ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo))))))
+      (((f.ml (1 16) (1 19)) (paragraph (((f.ml (1 16) (1 19)) (word bar)))))))))))
+ (warnings ()))
+--- input ---
+{ul {li {ul {li foo}}}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 23))
+    (unordered heavy
+     ((((f.ml (1 8) (1 21))
+        (unordered heavy
+         ((((f.ml (1 16) (1 19))
+            (paragraph (((f.ml (1 16) (1 19)) (word foo)))))))))))))))
+ (warnings ()))
+--- input ---
+{ul {li - foo
+- bar}}
+--- output ---
+((output
+  (((f.ml (1 0) (2 7))
+    (unordered heavy
+     ((((f.ml (1 8) (2 5))
+        (unordered light
+         ((((f.ml (1 10) (1 13))
+            (paragraph (((f.ml (1 10) (1 13)) (word foo))))))
+          (((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar)))))))))))))))
+ (warnings ()))
+--- input ---
+- {ul {li foo}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 15))
+    (unordered light
+     ((((f.ml (1 2) (1 15))
+        (unordered heavy
+         ((((f.ml (1 10) (1 13))
+            (paragraph (((f.ml (1 10) (1 13)) (word foo)))))))))))))))
+ (warnings ()))
+--- input ---
+{li foo}
+--- output ---
+((output
+  (((f.ml (1 4) (1 7)) (paragraph (((f.ml (1 4) (1 7)) (word foo)))))
+   ((f.ml (1 7) (1 8)) (paragraph (((f.ml (1 7) (1 8)) (word })))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-3:\
+   \n'{li ...}' (list item) is not allowed in top-level text.\
+   \nSuggestion: move '{li ...}' into '{ul ...}' (bulleted list), or use '-' (bulleted list item)."
+    "File \"f.ml\", line 1, characters 7-8:\
+   \nUnpaired '}' (end of markup).\
+   \nSuggestion: try '\\}'.")))
+--- input ---
+{- foo
+--- output ---
+((output
+  (((f.ml (1 3) (1 6)) (paragraph (((f.ml (1 3) (1 6)) (word foo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-2:\
+   \n'{- ...}' (list item) is not allowed in top-level text.\
+   \nSuggestion: move '{- ...}' into '{ul ...}' (bulleted list), or use '-' (bulleted list item).")))
+--- input ---
+{[foo]} {ul {li bar}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+   ((f.ml (1 8) (1 21))
+    (unordered heavy
+     ((((f.ml (1 16) (1 19)) (paragraph (((f.ml (1 16) (1 19)) (word bar)))))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 8-11:\
+   \n'{ul ...}' (bulleted list) should begin on its own line.")))

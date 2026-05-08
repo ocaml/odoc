@@ -1,0 +1,39 @@
+--- input ---
+@version foo
+--- output ---
+((output (((f.ml (1 0) (1 12)) (@version foo)))) (warnings ()))
+--- input ---
+@version
+--- output ---
+((output (((f.ml (1 0) (1 8)) (@version ""))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-8:\
+   \n'@version' should not be empty.")))
+--- input ---
+@versionfoo
+--- output ---
+((output
+  (((f.ml (1 0) (1 11))
+    (paragraph (((f.ml (1 0) (1 11)) (word @versionfoo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-11:\
+   \nUnknown tag '@versionfoo'.")))
+--- input ---
+@version foo bar
+--- output ---
+((output (((f.ml (1 0) (1 16)) (@version "foo bar")))) (warnings ()))
+--- input ---
+@version  foo
+--- output ---
+((output (((f.ml (1 0) (1 13)) (@version foo)))) (warnings ()))
+--- input ---
+@version foo
+--- output ---
+((output (((f.ml (1 0) (1 12)) (@version foo)))) (warnings ()))
+--- input ---
+@version
+--- output ---
+((output (((f.ml (1 0) (1 8)) (@version ""))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-8:\
+   \n'@version' should not be empty.")))

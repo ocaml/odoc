@@ -1,0 +1,15 @@
+--- input ---
+@foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word @foo)))))))
+ (warnings ( "File \"f.ml\", line 1, characters 0-4:\
+            \nUnknown tag '@foo'.")))
+--- input ---
+  
+  @foo
+--- output ---
+((output
+  (((f.ml (2 2) (2 6)) (paragraph (((f.ml (2 2) (2 6)) (word @foo)))))))
+ (warnings ( "File \"f.ml\", line 2, characters 2-6:\
+            \nUnknown tag '@foo'.")))
