@@ -1,0 +1,164 @@
+--- input ---
+{!/foo/bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TAbsolutePath",["foo","bar"]]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!/foo/bar.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TAbsolutePath",["foo","bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!/foo/Bar.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TAbsolutePath",["foo","Bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!//foo/bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TCurrentPackage",["foo","bar"]]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!//foo/Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TCurrentPackage",["foo","Bar"]]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!//foo/bar.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TCurrentPackage",["foo","bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!//foo/Bar.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TCurrentPackage",["foo","Bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo/bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TRelativePath",["foo","bar"]]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo/bar/baz}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TRelativePath",["foo","bar","baz"]]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo/Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TRelativePath",["foo","Bar"]]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo/bar.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TRelativePath",["foo","bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo/Bar.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TRelativePath",["foo","Bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!./bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TRelativePath",["bar"]]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!./Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Any_path":["`TRelativePath",["Bar"]]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!./bar.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TRelativePath",["bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!./Bar.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Dot":[{"`Any_path":["`TRelativePath",["Bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!/foo/bar.section-label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TAbsolutePath",["foo","bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!/foo/Bar.section-label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TAbsolutePath",["foo","Bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!//foo/bar.section-label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TCurrentPackage",["foo","bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!//foo/Bar.section-label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TCurrentPackage",["foo","Bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo/page-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Page_path":["`TRelativePath",["foo","bar"]]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!foo/module-Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Module_path":["`TRelativePath",["foo","Bar"]]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!page_path/page-pagename.section-sectionname}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Page_path":["`TRelativePath",["page_path","pagename"]]},"sectionname"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!/}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"/"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 3-3:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!foo/}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo/"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-6:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!//}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"//"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 4-4:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!foo/}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo/"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-6:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!./}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"./"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 4-4:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!foo.page-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo.page-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-14:\nPage label is not allowed in on the right side of a dot.\nSuggestion: Reference pages as '<parent_path>/bar'."]}
+--- input ---
+{!foo/type-bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo/type-bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'page-', a path, or an unqualified reference."]}
+--- input ---
+{!foo//bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo//bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-6:\nIdentifier in path reference should not be empty."]}
+--- input ---
+{!///bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"///bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 4-4:\nIdentifier in path reference should not be empty."]}
+--- input ---
+{!foo/}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"foo/"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 6-6:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!/}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"/"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 3-3:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!//}
+--- output ---
+{"value":[{"`Paragraph":[{"`Code_span":"//"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml\", line 1, characters 4-4:\nIdentifier in reference should not be empty."]}
+--- input ---
+{!section:/foo.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TAbsolutePath",["foo"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!section:/Foo.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TAbsolutePath",["Foo"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!section:foo/bar.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TRelativePath",["foo","bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!section:foo/Bar.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TRelativePath",["foo","Bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!section://foo/bar.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TCurrentPackage",["foo","bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{!section://foo/Bar.label}
+--- output ---
+{"value":[{"`Paragraph":[{"`Reference":[{"`Label":[{"`Any_path":["`TCurrentPackage",["foo","Bar"]]},"label"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}

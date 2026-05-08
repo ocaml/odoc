@@ -1,0 +1,189 @@
+--- input ---
+{2 Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":[]}
+--- input ---
+{3 Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsubsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":[]}
+--- input ---
+{4 Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Paragraph","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":[]}
+--- input ---
+{2  Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":[]}
+--- input ---
+{2Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":["File \"f.ml\", line 1, characters 0-2:\n'{2' should be followed by space, a tab, or a new line."]}
+--- input ---
+{3Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsubsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":["File \"f.ml\", line 1, characters 0-2:\n'{3' should be followed by space, a tab, or a new line."]}
+--- input ---
+{2
+Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":[]}
+--- input ---
+{2
+Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":[]}
+--- input ---
+{2
+
+Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":["File \"f.ml\", line 2, characters 0-0:\nBlank line is not allowed in '{2 ...}' (section heading)."]}
+--- input ---
+{3
+
+Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsubsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":["File \"f.ml\", line 2, characters 0-0:\nBlank line is not allowed in '{3 ...}' (section heading)."]}
+--- input ---
+{2 Foo }
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":[]}
+--- input ---
+{2 Foo
+}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":[]}
+--- input ---
+{2 Foo
+
+}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-"]},[{"`Word":"Foo"},"`Space"]]}],"warnings":["File \"f.ml\", line 2, characters 0-0:\nBlank line is not allowed in '{2 ...}' (section heading)."]}
+--- input ---
+{2 [foo]}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Code_span":"foo"}]]}],"warnings":[]}
+--- input ---
+{2 [Foo]}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Code_span":"Foo"}]]}],"warnings":[]}
+--- input ---
+{2 [ foo bar  baz  	]}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"-foo-bar--baz---"]},[{"`Code_span":" foo bar  baz  \t"}]]}],"warnings":[]}
+--- input ---
+{2 [foo
+bar
+baz]}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-bar-baz"]},[{"`Code_span":"foo bar baz"}]]}],"warnings":[]}
+--- input ---
+{2 {e foo bar}}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-bar"]},[{"`Styled":["`Emphasis",[{"`Word":"foo"},"`Space",{"`Word":"bar"}]]}]]}],"warnings":[]}
+--- input ---
+{2 foo bar}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-bar"]},[{"`Word":"foo"},"`Space",{"`Word":"bar"}]]}],"warnings":[]}
+--- input ---
+{2 {2 Foo}}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},""]},[]]},{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]},{"`Paragraph":[{"`Word":"}"}]}],"warnings":["File \"f.ml\", line 1, characters 3-5:\n'{2 ...}' (section heading) is not allowed in '{2 ...}' (section heading).","File \"f.ml\", line 1, characters 0-2:\n'{2 ...}' (section heading) should not be empty.","File \"f.ml\", line 1, characters 3-5:\n'{2 ...}' (section heading) should begin on its own line.","File \"f.ml\", line 1, characters 10-11:\nUnpaired '}' (end of markup).\nSuggestion: try '\\}'.","File \"f.ml\", line 1, characters 3-10:\n'{2': heading level should be lower than top heading level '2'."]}
+--- input ---
+- {2 Foo}
+--- output ---
+{"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"Foo"}]}]]]}],"warnings":["File \"f.ml\", line 1, characters 2-4:\n'{2 ...}' (section heading) is not allowed in '-' (bulleted list item).\nSuggestion: move '{2' outside of any other markup.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{2 Foo} bar
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]},{"`Paragraph":[{"`Word":"bar"}]}],"warnings":["File \"f.ml\", line 1, characters 8-11:\nParagraph should begin on its own line."]}
+--- input ---
+foo {2 Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Word":"foo"},"`Space"]},{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"bar"]},[{"`Word":"Bar"}]]}],"warnings":["File \"f.ml\", line 1, characters 4-6:\n'{2 ...}' (section heading) should begin on its own line.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{2 Foo}
+bar
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]},{"`Paragraph":[{"`Word":"bar"}]}],"warnings":[]}
+--- input ---
+foo
+{2 Bar}
+--- output ---
+{"value":[{"`Paragraph":[{"`Word":"foo"}]},{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"bar"]},[{"`Word":"Bar"}]]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{2:foo Bar}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"true"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Bar"}]]}],"warnings":[]}
+--- input ---
+{2 :foo Bar}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},":foo-bar"]},[{"`Word":":foo"},"`Space",{"`Word":"Bar"}]]}],"warnings":[]}
+--- input ---
+{2: foo Bar}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-bar"]},[{"`Word":"foo"},"`Space",{"`Word":"Bar"}]]}],"warnings":["File \"f.ml\", line 1, characters 0-3:\nHeading label should not be empty."]}
+--- input ---
+{2:foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"true"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[]]}],"warnings":["File \"f.ml\", line 1, characters 0-6:\n'{2 ...}' (section heading) should not be empty."]}
+--- input ---
+{2:foo }
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"true"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[]]}],"warnings":["File \"f.ml\", line 1, characters 0-6:\n'{2 ...}' (section heading) should not be empty."]}
+--- input ---
+{ul {2 Foo}}
+--- output ---
+{"value":[{"`List":["`Unordered",[]]},{"`Paragraph":[{"`Word":"}"}]}],"warnings":["File \"f.ml\", line 1, characters 4-6:\n'{2 ...}' (section heading) is not allowed in '{ul ...}' (bulleted list).\nSuggestion: move '{2 ...}' (section heading) outside the list.","File \"f.ml\", line 1, characters 7-10:\n'Foo' is not allowed in '{ul ...}' (bulleted list).\nSuggestion: move 'Foo' into a list item, '{li ...}' or '{- ...}'.","File \"f.ml\", line 1, characters 0-3:\n'{ul ...}' (bulleted list) should not be empty.","File \"f.ml\", line 1, characters 11-12:\nUnpaired '}' (end of markup).\nSuggestion: try '\\}'.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+- foo
+{2 Bar}
+--- output ---
+{"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"foo"}]}]]]},{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"bar"]},[{"`Word":"Bar"}]]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{ul {li - foo
+{2 Bar}}}
+--- output ---
+{"value":[{"`List":["`Unordered",[[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"foo"}]}]]]},{"`Paragraph":[{"`Word":"Bar"}]}]]]}],"warnings":["File \"f.ml\", line 2, characters 0-2:\n'{2 ...}' (section heading) is not allowed in '{li ...}' (list item).\nSuggestion: move '{2' outside of any other markup.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
+{22 Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subparagraph","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":["File \"f.ml\", line 1, characters 0-8:\n'22': bad heading level (0-5 allowed)."]}
+--- input ---
+{22:foo Bar}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subparagraph","heading_label_explicit":"true"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Bar"}]]}],"warnings":["File \"f.ml\", line 1, characters 0-12:\n'22': bad heading level (0-5 allowed)."]}
+--- input ---
+{02 Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":["File \"f.ml\", line 1, characters 1-3:\n'02': leading zero in heading level."]}
+--- input ---
+{02:foo Bar}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"true"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Bar"}]]}],"warnings":["File \"f.ml\", line 1, characters 1-7:\n'02': leading zero in heading level."]}
+--- input ---
+{0 Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Title","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":[]}
+--- input ---
+{6 Foo}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subparagraph","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]}],"warnings":["File \"f.ml\", line 1, characters 0-7:\n'6': bad heading level (0-5 allowed)."]}
+--- input ---
+{2 {{:foo}}}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},""]},[{"`Link":["foo",[]]}]]}],"warnings":[]}
+--- input ---
+{2 {!foo}}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},""]},[{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}]]}],"warnings":[]}
+--- input ---
+{2 Foo}
+{2 Bar}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]},{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"bar"]},[{"`Word":"Bar"}]]}],"warnings":["File \"f.ml\", line 2, characters 0-7:\n'{2': heading level should be lower than top heading level '2'."]}
+--- input ---
+{2 Foo}
+{3 Bar}
+--- output ---
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo"]},[{"`Word":"Foo"}]]},{"`Heading":[{"heading_level":"`Subsubsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"bar"]},[{"`Word":"Bar"}]]}],"warnings":[]}

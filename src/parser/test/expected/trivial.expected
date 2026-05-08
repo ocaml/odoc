@@ -1,0 +1,33 @@
+--- input ---
+
+--- output ---
+((output ()) (warnings ()))
+--- input ---
+ 
+--- output ---
+((output ()) (warnings ()))
+--- input ---
+  
+--- output ---
+((output ()) (warnings ()))
+--- input ---
+	
+--- output ---
+((output ()) (warnings ()))
+--- input ---
+ 	 	
+--- output ---
+((output ()) (warnings ()))
+--- input ---
+
+--- output ---
+((output ()) (warnings ()))
+--- input ---
+
+
+--- output ---
+((output ()) (warnings ()))
+--- input ---
+
+--- output ---
+((output ()) (warnings ()))

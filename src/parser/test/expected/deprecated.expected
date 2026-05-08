@@ -1,0 +1,230 @@
+--- input ---
+@deprecated
+--- output ---
+((output (((f.ml (1 0) (1 11)) (@deprecated)))) (warnings ()))
+--- input ---
+@deprecated foo bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 19))
+    (@deprecated
+     ((f.ml (1 12) (1 19))
+      (paragraph
+       (((f.ml (1 12) (1 15)) (word foo)) ((f.ml (1 15) (1 16)) space)
+        ((f.ml (1 16) (1 19)) (word bar)))))))))
+ (warnings ()))
+--- input ---
+@deprecated foo
+bar
+--- output ---
+((output
+  (((f.ml (1 0) (2 3))
+    (@deprecated
+     ((f.ml (1 12) (2 3))
+      (paragraph
+       (((f.ml (1 12) (1 15)) (word foo)) ((f.ml (1 15) (2 0)) space)
+        ((f.ml (2 0) (2 3)) (word bar)))))))))
+ (warnings ()))
+--- input ---
+@deprecated foo
+
+bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 15))
+    (@deprecated
+     ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))))
+   ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar)))))))
+ (warnings ()))
+--- input ---
+@deprecated
+--- output ---
+((output (((f.ml (1 0) (1 11)) (@deprecated)))) (warnings ()))
+--- input ---
+@deprecated
+foo
+--- output ---
+((output
+  (((f.ml (1 0) (2 3))
+    (@deprecated
+     ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))))
+ (warnings ()))
+--- input ---
+@deprecated
+foo
+--- output ---
+((output
+  (((f.ml (1 0) (2 3))
+    (@deprecated
+     ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))))
+ (warnings ()))
+--- input ---
+@deprecated
+
+foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 11)) (@deprecated))
+   ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word foo)))))))
+ (warnings ()))
+--- input ---
+@deprecated  foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 16))
+    (@deprecated
+     ((f.ml (1 13) (1 16)) (paragraph (((f.ml (1 13) (1 16)) (word foo)))))))))
+ (warnings ()))
+--- input ---
+@deprecated foo
+@deprecated bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 15))
+    (@deprecated
+     ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))))
+   ((f.ml (2 0) (2 15))
+    (@deprecated
+     ((f.ml (2 12) (2 15)) (paragraph (((f.ml (2 12) (2 15)) (word bar)))))))))
+ (warnings ()))
+--- input ---
+@deprecated foo
+@deprecated bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 15))
+    (@deprecated
+     ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))))
+   ((f.ml (2 0) (2 15))
+    (@deprecated
+     ((f.ml (2 12) (2 15)) (paragraph (((f.ml (2 12) (2 15)) (word bar)))))))))
+ (warnings ()))
+--- input ---
+@deprecated foo @deprecated bar
+--- output ---
+((output
+  (((f.ml (1 0) (1 31))
+    (@deprecated
+     ((f.ml (1 12) (1 16))
+      (paragraph
+       (((f.ml (1 12) (1 15)) (word foo)) ((f.ml (1 15) (1 16)) space))))
+     ((f.ml (1 16) (1 27))
+      (paragraph (((f.ml (1 16) (1 27)) (word @deprecated)))))
+     ((f.ml (1 28) (1 31)) (paragraph (((f.ml (1 28) (1 31)) (word bar)))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 16-27:\
+   \n'@deprecated' is not allowed in '@deprecated'.\
+   \nSuggestion: move '@deprecated' outside of any other markup.")))
+--- input ---
+@deprecated @deprecated foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 27))
+    (@deprecated
+     ((f.ml (1 12) (1 23))
+      (paragraph (((f.ml (1 12) (1 23)) (word @deprecated)))))
+     ((f.ml (1 24) (1 27)) (paragraph (((f.ml (1 24) (1 27)) (word foo)))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 12-23:\
+   \n'@deprecated' is not allowed in '@deprecated'.\
+   \nSuggestion: move '@deprecated' outside of any other markup.")))
+--- input ---
+foo
+@deprecated
+--- output ---
+((output
+  (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+   ((f.ml (2 0) (2 11)) (@deprecated))))
+ (warnings ()))
+--- input ---
+- foo
+@deprecated
+--- output ---
+((output
+  (((f.ml (1 0) (1 5))
+    (unordered light
+     ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
+   ((f.ml (2 0) (2 11)) (@deprecated))))
+ (warnings ()))
+--- input ---
+@deprecated - foo
+--- output ---
+((output
+  (((f.ml (1 0) (1 17))
+    (@deprecated
+     ((f.ml (1 12) (1 17))
+      (unordered light
+       ((((f.ml (1 14) (1 17))
+          (paragraph (((f.ml (1 14) (1 17)) (word foo)))))))))))))
+ (warnings ()))
+--- input ---
+@deprecated - foo
+- bar
+--- output ---
+((output
+  (((f.ml (1 0) (2 5))
+    (@deprecated
+     ((f.ml (1 12) (2 5))
+      (unordered light
+       ((((f.ml (1 14) (1 17))
+          (paragraph (((f.ml (1 14) (1 17)) (word foo))))))
+        (((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar)))))))))))))
+ (warnings ()))
+--- input ---
+@deprecated - foo
+- bar
+
+New paragraph
+--- output ---
+((output
+  (((f.ml (1 0) (2 5))
+    (@deprecated
+     ((f.ml (1 12) (2 5))
+      (unordered light
+       ((((f.ml (1 14) (1 17))
+          (paragraph (((f.ml (1 14) (1 17)) (word foo))))))
+        (((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar)))))))))))
+   ((f.ml (4 0) (4 13))
+    (paragraph
+     (((f.ml (4 0) (4 3)) (word New)) ((f.ml (4 3) (4 4)) space)
+      ((f.ml (4 4) (4 13)) (word paragraph)))))))
+ (warnings ()))
+--- input ---
+@deprecated
+- foo
+--- output ---
+((output
+  (((f.ml (1 0) (2 5))
+    (@deprecated
+     ((f.ml (2 0) (2 5))
+      (unordered light
+       ((((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word foo)))))))))))))
+ (warnings ()))
+--- input ---
+@deprecatedfoo
+--- output ---
+((output
+  (((f.ml (1 0) (1 14))
+    (paragraph (((f.ml (1 0) (1 14)) (word @deprecatedfoo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-14:\
+   \nUnknown tag '@deprecatedfoo'.")))
+--- input ---
+{[foo]} @deprecated
+--- output ---
+((output
+  (((f.ml (1 0) (1 7)) (code_block ((f.ml (1 2) (1 5)) foo)))
+   ((f.ml (1 8) (1 19)) (@deprecated))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 8-19:\
+   \n'@deprecated' should begin on its own line.")))
+--- input ---
+@deprecated foo
+{2 Bar}
+--- output ---
+((output
+  (((f.ml (1 0) (1 15))
+    (@deprecated
+     ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))))
+   ((f.ml (2 0) (2 7)) (2 (label ()) (((f.ml (2 3) (2 6)) (word Bar)))))))
+ (warnings ()))

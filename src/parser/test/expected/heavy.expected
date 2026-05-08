@@ -1,0 +1,166 @@
+--- input ---
+{table }
+--- output ---
+((output
+  (((f.ml (1 0) (1 8))
+    (table (syntax heavy) (grid ()) (align "no alignment")))))
+ (warnings ()))
+--- input ---
+{table {tr } }
+--- output ---
+((output
+  (((f.ml (1 0) (1 14))
+    (table (syntax heavy) (grid ((row ()))) (align "no alignment")))))
+ (warnings ()))
+--- input ---
+{table {tr {td}}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 17))
+    (table (syntax heavy) (grid ((row ((data ()))))) (align "no alignment")))))
+ (warnings ()))
+--- input ---
+{table {tr {th}}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 17))
+    (table (syntax heavy) (grid ((row ((header ())))))
+     (align "no alignment")))))
+ (warnings ()))
+--- input ---
+{table absurd content}
+--- output ---
+((output
+  (((f.ml (1 0) (1 22))
+    (table (syntax heavy) (grid ()) (align "no alignment")))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 7-13:\
+   \n'absurd' is not allowed in '{table ...}' (table).\
+   \nSuggestion: Move outside of {table ...}, or inside {tr ...}"
+    "File \"f.ml\", line 1, characters 14-21:\
+   \n'content' is not allowed in '{table ...}' (table).\
+   \nSuggestion: Move outside of {table ...}, or inside {tr ...}")))
+--- input ---
+{table {tr absurd content}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 27))
+    (table (syntax heavy) (grid ((row ()))) (align "no alignment")))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 11-17:\
+   \n'absurd' is not allowed in '{tr ...}' (table row).\
+   \nSuggestion: Move outside of {table ...}, or inside {td ...} or {th ...}"
+    "File \"f.ml\", line 1, characters 18-25:\
+   \n'content' is not allowed in '{tr ...}' (table row).\
+   \nSuggestion: Move outside of {table ...}, or inside {td ...} or {th ...}")))
+--- input ---
+{table {tr {th}} {tr {th}} {tr {td}}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 37))
+    (table (syntax heavy)
+     (grid ((row ((header ()))) (row ((header ()))) (row ((data ())))))
+     (align "no alignment")))))
+ (warnings ()))
+--- input ---
+{table {tr {td}}
+--- output ---
+((output
+  (((f.ml (1 0) (1 16))
+    (table (syntax heavy) (grid ((row ((data ()))))) (align "no alignment")))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 16-16:\
+   \nEnd of text is not allowed in table.\
+   \nSuggestion: add '}'.")))
+--- input ---
+
+        {table
+          {tr
+            {th xxx}
+            {th yyy}
+          }
+          {tr
+            {td aaaa bbb ccc {i ddd}
+            }
+            {td
+               {table {tr {td}}}
+            }
+          }
+          {tr
+            {td
+               - aaa
+               - bbb
+               - ccc
+            }
+            {td
+              {t
+                 x | y | z
+                 --|---|--
+                 1 | 2 | 3
+              }
+            }
+          }
+        }
+        
+--- output ---
+((output
+  (((f.ml (2 8) (28 9))
+    (table (syntax heavy)
+     (grid
+      ((row
+        ((header
+          (((f.ml (4 16) (4 19))
+            (paragraph (((f.ml (4 16) (4 19)) (word xxx)))))))
+         (header
+          (((f.ml (5 16) (5 19))
+            (paragraph (((f.ml (5 16) (5 19)) (word yyy)))))))))
+       (row
+        ((data
+          (((f.ml (8 16) (8 36))
+            (paragraph
+             (((f.ml (8 16) (8 20)) (word aaaa)) ((f.ml (8 20) (8 21)) space)
+              ((f.ml (8 21) (8 24)) (word bbb)) ((f.ml (8 24) (8 25)) space)
+              ((f.ml (8 25) (8 28)) (word ccc)) ((f.ml (8 28) (8 29)) space)
+              ((f.ml (8 29) (8 36))
+               (italic (((f.ml (8 32) (8 35)) (word ddd))))))))))
+         (data
+          (((f.ml (11 15) (11 32))
+            (table (syntax heavy) (grid ((row ((data ())))))
+             (align "no alignment")))))))
+       (row
+        ((data
+          (((f.ml (16 15) (18 20))
+            (unordered light
+             ((((f.ml (16 17) (16 20))
+                (paragraph (((f.ml (16 17) (16 20)) (word aaa))))))
+              (((f.ml (17 17) (17 20))
+                (paragraph (((f.ml (17 17) (17 20)) (word bbb))))))
+              (((f.ml (18 17) (18 20))
+                (paragraph (((f.ml (18 17) (18 20)) (word ccc)))))))))))
+         (data
+          (((f.ml (21 14) (25 15))
+            (table (syntax light)
+             (grid
+              ((row
+                ((header
+                  (((f.ml (22 17) (22 18))
+                    (paragraph (((f.ml (22 17) (22 18)) (word x)))))))
+                 (header
+                  (((f.ml (22 21) (22 22))
+                    (paragraph (((f.ml (22 21) (22 22)) (word y)))))))
+                 (header
+                  (((f.ml (22 25) (22 26))
+                    (paragraph (((f.ml (22 25) (22 26)) (word z)))))))))
+               (row
+                ((data
+                  (((f.ml (24 17) (24 18))
+                    (paragraph (((f.ml (24 17) (24 18)) (word 1)))))))
+                 (data
+                  (((f.ml (24 21) (24 22))
+                    (paragraph (((f.ml (24 21) (24 22)) (word 2)))))))
+                 (data
+                  (((f.ml (24 25) (24 26))
+                    (paragraph (((f.ml (24 25) (24 26)) (word 3)))))))))))
+             (align (default default default))))))))))
+     (align "no alignment")))))
+ (warnings ()))
