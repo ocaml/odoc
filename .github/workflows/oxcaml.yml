@@ -38,7 +38,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sed -i '/bisect_ppx/d' odoc.opam
           opam install --deps-only --with-test ./odoc.opam ./odoc-parser.opam \
             ${{ matrix.test-sherlodoc && './sherlodoc.opam' }}
 
