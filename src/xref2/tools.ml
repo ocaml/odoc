@@ -2356,25 +2356,32 @@ let apply_inner_substs env (sg : Component.Signature.t) : Component.Signature.t
   let rec inner (items : Component.Signature.item list) :
       Component.Signature.item list =
     match items with
-    | Component.Signature.TypeSubstitution (id, typedecl) :: rest -> (
+    | (Component.Signature.TypeSubstitution (id, typedecl) as orig) :: rest -> (
         let subst =
           Component.ModuleType.TypeSubst
             (`Dot (`Root, Ident.Name.type_ id), typedecl.equation)
         in
-        let rest =
+        let rest' = inner rest in
+        let inlined =
           Component.Signature.Type
             (id, Ordinary, Component.Delayed.put (fun () -> typedecl))
-          :: inner rest
+          :: rest'
         in
-        match fragmap env subst { sg with items = rest } with
+        match fragmap env subst { sg with items = inlined } with
         | Ok sg' -> sg'.items
-        | Error _ -> failwith "error")
-    | Component.Signature.ModuleSubstitution (id, modsubst) :: rest -> (
+        | Error e ->
+            Lookup_failures.report_internal
+              "apply_inner_substs: fragmap failed: %a" Errors.Tools_error.pp
+              (e :> Errors.Tools_error.any);
+            orig :: rest')
+    | (Component.Signature.ModuleSubstitution (id, modsubst) as orig) :: rest
+      -> (
         let subst =
           Component.ModuleType.ModuleSubst
             (`Dot (`Root, Ident.Name.module_ id), modsubst.manifest)
         in
-        let rest =
+        let rest' = inner rest in
+        let inlined =
           Component.Signature.Module
             ( id,
               Ordinary,
@@ -2386,17 +2393,23 @@ let apply_inner_substs env (sg : Component.Signature.t) : Component.Signature.t
                     canonical = None;
                     hidden = false;
                   }) )
-          :: inner rest
+          :: rest'
         in
-        match fragmap env subst { sg with items = rest } with
+        match fragmap env subst { sg with items = inlined } with
         | Ok sg' -> sg'.items
-        | Error _ -> failwith "error")
-    | Component.Signature.ModuleTypeSubstitution (id, modtypesubst) :: rest -> (
+        | Error e ->
+            Lookup_failures.report_internal
+              "apply_inner_substs: fragmap failed: %a" Errors.Tools_error.pp
+              (e :> Errors.Tools_error.any);
+            orig :: rest')
+    | (Component.Signature.ModuleTypeSubstitution (id, modtypesubst) as orig)
+      :: rest -> (
         let subst =
           Component.ModuleType.ModuleTypeSubst
             (`Dot (`Root, Ident.Name.module_type id), modtypesubst.manifest)
         in
-        let rest =
+        let rest' = inner rest in
+        let inlined =
           Component.Signature.ModuleType
             ( id,
               Component.Delayed.put (fun () ->
@@ -2406,11 +2419,15 @@ let apply_inner_substs env (sg : Component.Signature.t) : Component.Signature.t
                     expr = Some modtypesubst.manifest;
                     canonical = None;
                   }) )
-          :: inner rest
+          :: rest'
         in
-        match fragmap env subst { sg with items = rest } with
+        match fragmap env subst { sg with items = inlined } with
         | Ok sg' -> sg'.items
-        | Error _ -> failwith "error")
+        | Error e ->
+            Lookup_failures.report_internal
+              "apply_inner_substs: fragmap failed: %a" Errors.Tools_error.pp
+              (e :> Errors.Tools_error.any);
+            orig :: rest')
     | x :: rest -> x :: inner rest
     | [] -> []
   in
