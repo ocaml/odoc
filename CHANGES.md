@@ -5,6 +5,7 @@
   (@jonludlam, #1427)
 - Fix #1429, which broke docs in packages including `merlin-lib` (@jonludlam,
   #1430)
+- Fix #1431, a regression introduced in v3.2.0 (#1433, @jonludlam)
 
 # 3.2.0
 
