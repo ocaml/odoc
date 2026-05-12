@@ -1,3 +1,7 @@
+# Unreleased
+
+- Support for OxCaml unboxed named types (@art-w, #1407)
+
 # 3.2.1
 
 ### Fixed
@@ -15,7 +19,6 @@
   invocation, eliminating the need for shell scripting (@davesnx, #1387)
 - Support for OxCaml (@lukemaurer, @art-w, #1399)
 - OCaml 5.5.0 support (@panglesd, @xvw, #1406)
-- Support for OxCaml unboxed named types (@art-w, #1407)
 
 ### Fixed
 - Fix compile-time crashing bugs #930 and #1385 (@jonludlam, #1400)
