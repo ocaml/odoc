@@ -108,21 +108,26 @@ let of_voodoo pkg =
      reflect every lib reachable through META requires. *)
   let all_lib_deps =
     let cache : (string, Util.StringSet.t) Hashtbl.t =
-      Hashtbl.create (Util.StringMap.cardinal all_lib_deps) in
+      Hashtbl.create (Util.StringMap.cardinal all_lib_deps)
+    in
     let rec close lib =
       match Hashtbl.find_opt cache lib with
       | Some r -> r
       | None ->
-        Hashtbl.add cache lib Util.StringSet.empty;
-        let direct = match Util.StringMap.find_opt lib all_lib_deps with
-          | Some s -> s
-          | None -> Util.StringSet.empty
-        in
-        let closed = Util.StringSet.fold (fun dep acc ->
-          Util.StringSet.union (Util.StringSet.add dep (close dep)) acc
-        ) direct Util.StringSet.empty in
-        Hashtbl.replace cache lib closed;
-        closed
+          Hashtbl.add cache lib Util.StringSet.empty;
+          let direct =
+            match Util.StringMap.find_opt lib all_lib_deps with
+            | Some s -> s
+            | None -> Util.StringSet.empty
+          in
+          let closed =
+            Util.StringSet.fold
+              (fun dep acc ->
+                Util.StringSet.union (Util.StringSet.add dep (close dep)) acc)
+              direct Util.StringSet.empty
+          in
+          Hashtbl.replace cache lib closed;
+          closed
     in
     Util.StringMap.mapi (fun lib _ -> close lib) all_lib_deps
   in
