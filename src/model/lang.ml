@@ -324,13 +324,12 @@ and Value : sig
   type value = Abstract | External of string list
 
   module Zero_alloc : sig
-    type respect = {
-      opt : unit option;
-      strict : unit option;
-      arity : int option;
-      custom_error_message : string option;
+    type t = {
+      opt : bool;
+      strict : bool;
+      arity : int;
+      custom_error_msg : string option;
     }
-    type t = Ignore | Respect of respect
   end
   type attr = Zero_alloc of Zero_alloc.t
 

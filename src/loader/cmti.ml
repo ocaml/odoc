@@ -239,7 +239,7 @@ let read_value_description env parent vd =
     | [] -> Value.Abstract
     | primitives -> External primitives
   in
-  let ext_attr = List.filter_map Doc_attr.known_attribute vd.val_attributes in
+  let ext_attr = Doc_attr.attrs_of_value_description vd.val_val in
   Value { Value.id; source_loc; doc; type_; value; ext_attr }
 
 let read_type_parameter (ctyp, var_and_injectivity)  =
