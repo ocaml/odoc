@@ -1058,21 +1058,16 @@ module Make (Syntax : SYNTAX) = struct
             t.ext_attr
         with
         | exception Not_found -> O.noop
-        | Zero_alloc Ignore -> O.noop
-        | Zero_alloc (Respect { opt; strict; arity; custom_error_message }) ->
+        | Zero_alloc { opt; strict; arity; custom_error_msg } ->
             let ext_arg =
               match (opt, strict) with
-              | Some (), None -> " opt"
-              | None, Some () -> " strict"
+              | true, false -> " opt"
+              | false, true -> " strict"
               | _, _ -> ""
             in
+            let ext_arg = ext_arg ^ Printf.sprintf " arity %d" arity in
             let ext_arg =
-              match arity with
-              | None -> ext_arg
-              | Some n -> ext_arg ^ Printf.sprintf "arity %d" n
-            in
-            let ext_arg =
-              match custom_error_message with
+              match custom_error_msg with
               | None -> ext_arg
               | Some s -> ext_arg ^ Printf.sprintf "custom_error_message %S" s
             in

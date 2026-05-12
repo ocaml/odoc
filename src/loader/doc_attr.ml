@@ -74,107 +74,18 @@ let attribute_unpack = function
   | { Location.txt = name; loc }, attr_payload -> (name, attr_payload, loc)
 #endif
 
-module Zero_alloc = struct
-  let constant_of_expression (pexp_desc : Parsetree.expression_desc) =
-    match pexp_desc with
-    | Pexp_constant (Pconst_integer (i, _))  -> Some (`Integer (int_of_string i))
-    | Pexp_constant (Pconst_string (s, _, _)) -> Some (`String s)
-    | _ -> None
-
-  let parse_argument_of_keyword (pstr_desc : Parsetree.structure_item_desc) =
-    match pstr_desc with
-    | Pstr_eval ({pexp_desc; _}, _) -> constant_of_expression pexp_desc
-    | _ -> None
-
-  let identifier_of_expression (pexp_desc : Parsetree.expression_desc) =
-    match pexp_desc with
-    | Pexp_ident {txt=longident; _} -> (
-      match longident with
-      | Lident s -> Some s
-      | _ -> None)
-    | _ -> None
-
-  let keyword_of_structure_arg (pstr_desc: Parsetree.structure_item_desc) =
-    match pstr_desc with
-    | Pstr_eval ({pexp_desc; _}, _) -> (
-      match identifier_of_expression pexp_desc with
-      | Some "arity" -> Some `Arity
-      | Some "custom_error_message" -> Some `Custom_error_message
-      | Some "ignore" -> Some `Ignore
-      | Some "strict" -> Some `Strict
-      | Some "opt" -> Some `Opt
-      | _ -> None)
-    | _ -> None
-
-  let rec arguments_of_structure_items so_far (structure_items : Parsetree.structure) =
-    match structure_items with
-    | [] -> so_far
-    | {pstr_desc; _} :: structure_items ->
-        match (so_far : Lang.Value.Zero_alloc.t) with
-        | Ignore -> Ignore
-        | Respect respect ->
-          match keyword_of_structure_arg pstr_desc with
-          | None -> so_far
-          | Some `Ignore -> Lang.Value.Zero_alloc.Ignore
-          | Some `Strict ->
-            let so_far = Lang.Value.Zero_alloc.Respect {respect with strict = Some ()} in
-            arguments_of_structure_items so_far structure_items
-          | Some `Opt ->
-            let so_far = Lang.Value.Zero_alloc.Respect {respect with opt = Some ()} in
-            arguments_of_structure_items so_far structure_items
-          | Some `Arity -> (
-            match structure_items with
-            | [] ->
-              (* this is an error *)
-              so_far
-            | {pstr_desc; _} :: structure_items -> (
-              match parse_argument_of_keyword pstr_desc with
-              | Some (`Integer n) ->
-                let arity = Some n in
-                let so_far = Lang.Value.Zero_alloc.Respect {respect with arity} in
-                arguments_of_structure_items so_far structure_items
-              | _ ->
-                (* this is an error *)
-                so_far))
-          | Some `Custom_error_message -> (
-              match structure_items with
-              | [] ->
-                (* this is an error *)
-                so_far
-              | {pstr_desc; _} :: structure_items -> (
-                match parse_argument_of_keyword pstr_desc with
-                | Some (`String s) ->
-                  let custom_error_message = Some s in
-                  let so_far = Lang.Value.Zero_alloc.Respect {respect with custom_error_message} in
-                  arguments_of_structure_items so_far structure_items
-                | _ ->
-                  (* this is an error *)
-                  so_far))
-
-  let arguments_of_payload (payload : Parsetree.payload) =
-    match payload with
-    | PStr structure_items ->
-      (* start with completely empty arguments *)
-      let so_far = Lang.Value.Zero_alloc.Respect {
-        opt = None;
-        strict = None;
-        arity = None;
-        custom_error_message = None}
-      in
-      Some (arguments_of_structure_items so_far structure_items)
-    | _ -> None
-end
-
-let known_attribute attr =
-  let name, payload, _ = attribute_unpack attr in
-  match name with
-#if defined OXCAML
-  | "zero_alloc" -> (
-    match Zero_alloc.arguments_of_payload payload with
-    | Some zalloc_arg -> Some (Lang.Value.Zero_alloc zalloc_arg)
-    | None -> None)
-#endif
-  | _ -> None
+let attrs_of_value_description (vd : Types.value_description) =
+  let zero_alloc = match vd.val_zero_alloc |> Zero_alloc.get with
+    | Default_zero_alloc -> None
+    | Ignore_assert_all -> None
+    | Assume { arity; _} ->
+        Some ( Lang.Value.Zero_alloc.{ opt = false; strict = false; arity; custom_error_msg = None })
+    | Check { strict; opt; arity; custom_error_msg } ->
+        Some ( Lang.Value.Zero_alloc.{ opt; strict; arity; custom_error_msg })
+  in
+  match zero_alloc with
+  | Some za -> [Lang.Value.Zero_alloc za]
+  | None -> []
 
 type payload = string * Location.t
 

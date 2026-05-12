@@ -808,7 +808,7 @@ let read_value_description ({ident_env ; warnings_tag} as env) parent id vd =
         External primitives
     | _ -> assert false
   in
-  let ext_attr = List.filter_map Doc_attr.known_attribute vd.val_attributes in
+  let ext_attr = Doc_attr.attrs_of_value_description vd in
   Value { Value.id; source_loc; doc; type_; value; ext_attr }
 
 #if defined OXCAML

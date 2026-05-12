@@ -93,4 +93,4 @@ type parsed_attribute =
   ]
 
 val parse_attribute : Parsetree.attribute -> parsed_attribute option
-val known_attribute : Parsetree.attribute -> Lang.Value.attr option
+val attrs_of_value_description : Types.value_description -> Lang.Value.attr list
