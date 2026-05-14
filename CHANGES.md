@@ -31,7 +31,7 @@
 
 # 3.1.0
 
-### Added
+### Added
 - Exposed sherlodoc libraries for use in other projects (@jonludlam, #1349)
 - OCaml 5.4.0 support (@Octachron, #1355)
 - New arguments to LaTeX generator, --shorten-beyond-depth and
