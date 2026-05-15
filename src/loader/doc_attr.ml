@@ -75,6 +75,7 @@ let attribute_unpack = function
 #endif
 
 let attrs_of_value_description (vd : Types.value_description) =
+#if defined OXCAML
   let zero_alloc = match vd.val_zero_alloc |> Zero_alloc.get with
     | Default_zero_alloc -> None
     | Ignore_assert_all -> None
@@ -83,6 +84,9 @@ let attrs_of_value_description (vd : Types.value_description) =
     | Check { strict; opt; arity; custom_error_msg } ->
         Some ( Lang.Value.Zero_alloc.{ opt; strict; arity; custom_error_msg })
   in
+#else
+  let zero_alloc = None in
+#endif
   match zero_alloc with
   | Some za -> [Lang.Value.Zero_alloc za]
   | None -> []
