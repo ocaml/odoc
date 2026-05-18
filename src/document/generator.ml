@@ -1063,7 +1063,8 @@ module Make (Syntax : SYNTAX) = struct
               match (opt, strict) with
               | true, false -> " opt"
               | false, true -> " strict"
-              | _, _ -> ""
+              | true, true -> " strict opt"
+              | false, false -> ""
             in
             let ext_arg = ext_arg ^ Printf.sprintf " arity %d" arity in
             let ext_arg =

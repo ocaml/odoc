@@ -213,6 +213,26 @@ val add_strict : bool -> int -> int -> int [@@zero_alloc strict arity 3]
 Like `add` but with a `strict` attribute.
 
 ```ocaml
+val add_strict_opt : 
+  bool ->
+  int ->
+  int ->
+  int
+   [@@zero_alloc strict opt arity 3]
+```
+Like `add` but with a `strict` and `opt` attributes.
+
+```ocaml
+val add_opt_strict : 
+  bool ->
+  int ->
+  int ->
+  int
+   [@@zero_alloc strict opt arity 3]
+```
+Like `add` but with a `strict` and `opt` attributes in reverse order.
+
+```ocaml
 val f : int -> int [@@zero_alloc arity 1]
 ```
 Alternative syntax for zero alloc annotation
