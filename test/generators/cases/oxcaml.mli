@@ -133,5 +133,13 @@ val add_strict : bool -> int -> int -> int [@@zero_alloc strict]
 (** Like [add] but with a [strict] attribute.
  *)
 
+val add_strict_opt : bool -> int -> int -> int [@@zero_alloc strict opt]
+(** Like [add] but with a [strict] and [opt] attributes.
+ *)
+
+val add_opt_strict : bool -> int -> int -> int [@@zero_alloc opt strict]
+(** Like [add] but with a [strict] and [opt] attributes in reverse order.
+ *)
+
 val[@zero_alloc] f : int -> int
 (** Alternative syntax for zero alloc annotation *)
