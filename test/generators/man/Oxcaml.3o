@@ -11,6 +11,13 @@ Oxcaml
 .SH Documentation
 .sp 
 .nf 
+\f[CB]val\fR f : int \f[CB]\->\fR ('a\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR) \f[CB]\->\fR unit
+.fi 
+.br 
+.ti +2
+Polymorphic arguments require parentheses
+.nf 
+.sp 
 .fi 
 Unboxed types have a trailing hash '#'
 .nf 
@@ -333,7 +340,7 @@ Like add but with a strict and opt attributes\.
 Like add but with a strict and opt attributes in reverse order\.
 .nf 
 .sp 
-\f[CB]val\fR f : int \f[CB]\->\fR int [@@zero_alloc arity 1]
+\f[CB]val\fR alt_syntax : int \f[CB]\->\fR int [@@zero_alloc arity 1]
 .fi 
 .br 
 .ti +2

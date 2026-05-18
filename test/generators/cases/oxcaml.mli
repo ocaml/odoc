@@ -141,5 +141,5 @@ val add_opt_strict : bool -> int -> int -> int [@@zero_alloc opt strict]
 (** Like [add] but with a [strict] and [opt] attributes in reverse order.
  *)
 
-val[@zero_alloc] f : int -> int
+val[@zero_alloc] alt_syntax : int -> int
 (** Alternative syntax for zero alloc annotation *)

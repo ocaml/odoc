@@ -1,4 +1,6 @@
 \section{Module \ocamlinlinecode{Oxcaml}}\label{Oxcaml}%
+\label{Oxcaml--val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : int \ocamltag{arrow}{$\rightarrow$} ('a.\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}) \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Polymorphic arguments require parentheses\end{ocamlindent}%
+\medbreak
 Unboxed types have a trailing hash '\#'
 
 \label{Oxcaml--type-pt}\ocamlcodefragment{\ocamltag{keyword}{type} pt = \{}\\
@@ -104,7 +106,7 @@ Unboxed types have a trailing hash '\#'
   int
    [@@zero\_\allowbreak{}alloc strict opt arity 3]}\begin{ocamlindent}Like \ocamlinlinecode{add} but with a \ocamlinlinecode{strict} and \ocamlinlinecode{opt} attributes in reverse order.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc arity 1]}\begin{ocamlindent}Alternative syntax for zero alloc annotation\end{ocamlindent}%
+\label{Oxcaml--val-alt_syntax}\ocamlcodefragment{\ocamltag{keyword}{val} alt\_\allowbreak{}syntax : int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc arity 1]}\begin{ocamlindent}Alternative syntax for zero alloc annotation\end{ocamlindent}%
 \medbreak
 
 
