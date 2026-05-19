@@ -36,7 +36,10 @@ let cmt_builddir : string ref = ref ""
 let read_core_type env ctyp =
   Cmi.read_type_expr env ctyp.ctyp_type
 
-let rec read_pattern env parent doc pat =
+let zero_attr_of_ident (_ident, _, zero_alloc) =
+  Doc_attr.lang_value_attr_of_zero_alloc zero_alloc
+
+let rec read_pattern env parent doc vb pat =
   let source_loc = None in
   let open Signature in
     match pat.pat_desc with
@@ -53,8 +56,10 @@ let rec read_pattern env parent doc pat =
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          (* TODO read ext_attr out of id *)
-          let ext_attr = [] in
+          let ext_attr = [vb]
+            |> let_bound_idents_with_modes_sorts_and_checks
+            |> List.filter_map zero_attr_of_ident
+          in
           [Value {id; source_loc; doc; type_; value; ext_attr}]
 #if OCAML_VERSION < (5,2, 0)
     | Tpat_alias(pat, id, _) ->
@@ -70,37 +75,40 @@ let rec read_pattern env parent doc pat =
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          let ext_attr = [] in
-          Value {id; source_loc; doc; type_; value; ext_attr} :: read_pattern env parent doc pat
+          let ext_attr = [vb]
+            |> let_bound_idents_with_modes_sorts_and_checks
+            |> List.filter_map zero_attr_of_ident
+          in
+          Value {id; source_loc; doc; type_; value; ext_attr} :: read_pattern env parent doc vb pat
     | Tpat_constant _ -> []
     | Tpat_tuple pats ->
 #if OCAML_VERSION >= (5, 4, 0) || defined OXCAML
       let pats = List.map snd pats (* remove labels *) in
 #endif
-      List.concat (List.map (read_pattern env parent doc) pats)
+      List.concat (List.map (read_pattern env parent doc vb) pats)
 #if defined OXCAML
     | Tpat_unboxed_tuple pats ->
-        List.concat (List.map (fun (_, p, _) -> read_pattern env parent doc p) pats)
+        List.concat (List.map (fun (_, p, _) -> read_pattern env parent doc vb p) pats)
 #endif
 #if OCAML_VERSION < (4, 13, 0)
     | Tpat_construct(_, _, pats) ->
 #else
     | Tpat_construct(_,_,pats,_) ->
 #endif
-        List.concat (List.map (read_pattern env parent doc) pats)
+        List.concat (List.map (read_pattern env parent doc vb) pats)
     | Tpat_variant(_, None, _) -> []
     | Tpat_variant(_, Some pat, _) ->
-        read_pattern env parent doc pat
+        read_pattern env parent doc vb pat
     | Tpat_record(pats, _) ->
         List.concat
           (List.map
-             (fun (_, _, pat) -> read_pattern env parent doc pat)
+             (fun (_, _, pat) -> read_pattern env parent doc vb pat)
           pats)
 #if defined OXCAML
     | Tpat_record_unboxed_product(pats, _) ->
         List.concat
           (List.map
-             (fun (_, _, pat) -> read_pattern env parent doc pat)
+             (fun (_, _, pat) -> read_pattern env parent doc vb pat)
           pats)
     | Tpat_array (_, _, pats) ->
 #elif OCAML_VERSION < (5, 4, 0)
@@ -108,11 +116,11 @@ let rec read_pattern env parent doc pat =
 #else
     | Tpat_array (_, pats) ->
 #endif
-        List.concat (List.map (read_pattern env parent doc) pats)
+        List.concat (List.map (read_pattern env parent doc vb) pats)
     | Tpat_or(pat, _, _) ->
-        read_pattern env parent doc pat
+        read_pattern env parent doc vb pat
     | Tpat_lazy pat ->
-        read_pattern env parent doc pat
+        read_pattern env parent doc vb pat
 #if OCAML_VERSION >= (4,8,0) && OCAML_VERSION < (4,11,0)
     | Tpat_exception pat ->
         read_pattern env parent doc pat
@@ -125,7 +133,7 @@ let rec read_pattern env parent doc pat =
 let read_value_binding env parent vb =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container vb.vb_attributes in
-    read_pattern env parent doc vb.vb_pat
+    read_pattern env parent doc vb vb.vb_pat
 
 let read_value_bindings env parent vbs =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in

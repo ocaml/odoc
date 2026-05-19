@@ -74,21 +74,23 @@ let attribute_unpack = function
   | { Location.txt = name; loc }, attr_payload -> (name, attr_payload, loc)
 #endif
 
-let attrs_of_value_description (vd : Types.value_description) =
-#if defined OXCAML
-  let zero_alloc = match vd.val_zero_alloc |> Zero_alloc.get with
+let lang_value_attr_of_zero_alloc zero_alloc =
+  match Zero_alloc.get zero_alloc with
     | Default_zero_alloc -> None
     | Ignore_assert_all -> None
     | Assume { arity; _} ->
-        Some ( Lang.Value.Zero_alloc.{ opt = false; strict = false; arity; custom_error_msg = None })
+        Some (Lang.Value.Zero_alloc ( Lang.Value.Zero_alloc.{ opt = false; strict = false; arity; custom_error_msg = None }))
     | Check { strict; opt; arity; custom_error_msg } ->
-        Some ( Lang.Value.Zero_alloc.{ opt; strict; arity; custom_error_msg })
-  in
+        Some (Lang.Value.Zero_alloc ( Lang.Value.Zero_alloc.{ opt; strict; arity; custom_error_msg }))
+
+let attrs_of_value_description (vd : Types.value_description) =
+#if defined OXCAML
+  let zero_alloc = lang_value_attr_of_zero_alloc vd.val_zero_alloc in
 #else
   let zero_alloc = None in
 #endif
   match zero_alloc with
-  | Some za -> [Lang.Value.Zero_alloc za]
+  | Some za -> [za]
   | None -> []
 
 type payload = string * Location.t
