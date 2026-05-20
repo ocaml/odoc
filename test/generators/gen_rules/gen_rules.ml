@@ -62,7 +62,7 @@ let constraints =
     ("ocamlary.mli", Min "4.14");
     ("recent.mli", Min "5.4");
     ("labels.mli", Min "4.09");
-    ("recent_impl.ml", Min "4.09");
+    ("recent_impl.ml", MinNotOxCaml "4.09");
     ("bugs_pre_410.ml", Max "4.09");
     ("module_type_subst.mli", Min "4.13");
     ("class_comments.mli", Min "4.08");

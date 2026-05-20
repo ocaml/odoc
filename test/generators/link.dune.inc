@@ -662,7 +662,9 @@
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/recent_impl.ml}))
  (enabled_if
-  (>= %{ocaml_version} 4.09)))
+  (and
+   (>= %{ocaml_version} 4.09)
+   (not %{ocaml-config:ox}))))
 
 (rule
  (target recent_impl.odoc)
@@ -670,7 +672,9 @@
  (action
   (run odoc compile -o %{target} %{dep:recent_impl.cmt}))
  (enabled_if
-  (>= %{ocaml_version} 4.09)))
+  (and
+   (>= %{ocaml_version} 4.09)
+   (not %{ocaml-config:ox}))))
 
 (rule
  (target recent_impl.odocl)
@@ -678,7 +682,9 @@
  (action
   (run odoc link -o %{target} %{dep:recent_impl.odoc}))
  (enabled_if
-  (>= %{ocaml_version} 4.09)))
+  (and
+   (>= %{ocaml_version} 4.09)
+   (not %{ocaml-config:ox}))))
 
 (rule
  (target section.cmti)
@@ -12592,49 +12598,63 @@
     .
     %{dep:../recent_impl.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl.html Recent_impl.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl-Foo.html Recent_impl-Foo.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl-Foo-A.html Recent_impl-Foo-A.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl-Foo-B.html Recent_impl-Foo-B.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl-B.html Recent_impl-B.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl-module-type-S.html Recent_impl-module-type-S.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
@@ -12643,7 +12663,9 @@
     Recent_impl-module-type-S-F.html
     Recent_impl-module-type-S-F.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
@@ -12652,7 +12674,9 @@
     Recent_impl-module-type-S-F-argument-1-_.html
     Recent_impl-module-type-S-F-argument-1-_.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
@@ -12661,7 +12685,9 @@
     Recent_impl-module-type-S-X.html
     Recent_impl-module-type-S-X.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09))))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox})))))
 
 (subdir
  html
@@ -12673,14 +12699,18 @@
     recent_impl.targets.gen
     (run odoc html-targets -o . %{dep:../recent_impl.odocl} --flat)))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff recent_impl.targets recent_impl.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09))))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox})))))
 
 (subdir
  latex
@@ -12697,21 +12727,27 @@
     gen
     %{dep:../recent_impl.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl.tex Recent_impl.tex.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl.B.tex Recent_impl.B.tex.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09))))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox})))))
 
 (subdir
  latex
@@ -12723,14 +12759,18 @@
     recent_impl.targets.gen
     (run odoc latex-targets -o . %{dep:../recent_impl.odocl})))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff recent_impl.targets recent_impl.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09))))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox})))))
 
 (subdir
  man
@@ -12752,42 +12792,54 @@
     gen
     %{dep:../recent_impl.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl.3o Recent_impl.3o.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl.Foo.3o Recent_impl.Foo.3o.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl.Foo.A.3o Recent_impl.Foo.A.3o.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl.Foo.B.3o Recent_impl.Foo.B.3o.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl.B.3o Recent_impl.B.3o.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09))))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox})))))
 
 (subdir
  man
@@ -12799,14 +12851,18 @@
     recent_impl.targets.gen
     (run odoc man-targets -o . %{dep:../recent_impl.odocl})))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff recent_impl.targets recent_impl.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09))))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox})))))
 
 (subdir
  markdown
@@ -12832,56 +12888,72 @@
     gen
     %{dep:../recent_impl.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl.md Recent_impl.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl-Foo.md Recent_impl-Foo.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl-Foo-A.md Recent_impl-Foo-A.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl-Foo-B.md Recent_impl-Foo-B.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl-B.md Recent_impl-B.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl-module-type-S.md Recent_impl-module-type-S.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl-module-type-S-F.md Recent_impl-module-type-S-F.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
@@ -12890,14 +12962,18 @@
     Recent_impl-module-type-S-F-argument-1-_.md
     Recent_impl-module-type-S-F-argument-1-_.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Recent_impl-module-type-S-X.md Recent_impl-module-type-S-X.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09))))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox})))))
 
 (subdir
  markdown
@@ -12909,14 +12985,18 @@
     recent_impl.targets.gen
     (run odoc markdown-targets -o . %{dep:../recent_impl.odocl})))
   (enabled_if
-   (>= %{ocaml_version} 4.09)))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff recent_impl.targets recent_impl.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.09))))
+   (and
+    (>= %{ocaml_version} 4.09)
+    (not %{ocaml-config:ox})))))
 
 (subdir
  html
