@@ -57,7 +57,8 @@ its RHS correctly replaced with an `int`
           ]
         }
       },
-      "constraints": []
+      "constraints": [],
+      "kind": "Default"
     },
     "representation": "None"
   }

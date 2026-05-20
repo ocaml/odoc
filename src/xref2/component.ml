@@ -132,7 +132,7 @@ and TypeExpr : sig
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
     | Class of Cpath.class_type * t list
-    | Poly of string list * t
+    | Poly of (string * Odoc_model.Lang.Kind.t) list * t
     | Quote of t
     | Splice of t
     | Package of TypeExpr.Package.t
@@ -291,6 +291,7 @@ and TypeDecl : sig
       private_ : bool;
       manifest : TypeExpr.t option;
       constraints : (TypeExpr.t * TypeExpr.t) list;
+      kind : Odoc_model.Lang.Kind.t;
     }
   end
 
@@ -2298,6 +2299,7 @@ module Of_Lang = struct
           (fun (x, y) ->
             (type_expression ident_map x, type_expression ident_map y))
           teq.constraints;
+      kind = teq.kind;
     }
 
   and type_expr_polyvar ident_map v =

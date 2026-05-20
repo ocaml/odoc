@@ -172,10 +172,11 @@ let rec read_core_type env container ctyp =
     | Ttyp_poly([], typ) -> read_core_type env container typ
 #if defined OXCAML
     | Ttyp_poly(vars, typ) ->
-      (* TODO: presumably want the layouts, eventually *)
-      Poly(List.map fst vars, read_core_type env container typ)
+      Poly(List.map (fun (name, jk) ->
+        (name, Cmi.read_jkind_annotation jk)
+      ) vars, read_core_type env container typ)
 #else
-    | Ttyp_poly(vars, typ) -> Poly(vars, read_core_type env container typ)
+    | Ttyp_poly(vars, typ) -> Poly(List.map (fun v -> (v, Kind.Default)) vars, read_core_type env container typ)
 #endif
 #if OCAML_VERSION >= (5,5,0)
     | Ttyp_package {tpt_path = pack_path; tpt_constraints=pack_fields; _} ->
@@ -242,15 +243,14 @@ let read_value_description env parent vd =
 
 let read_type_parameter (ctyp, var_and_injectivity)  =
   let open TypeDecl in
-  let desc =
+  let desc, kind =
     match ctyp.ctyp_desc with
 #if defined OXCAML
-    (* TODO: presumably we want the layouts below, eventually *)
-    | Ttyp_var (None, _layout) -> Any
-    | Ttyp_var (Some s, _layout) -> Var s
+    | Ttyp_var (None, layout) -> Any, Cmi.read_jkind_annotation layout
+    | Ttyp_var (Some s, layout) -> Var s, Cmi.read_jkind_annotation layout
 #else
-    | Ttyp_any -> Any
-    | Ttyp_var s -> Var s
+    | Ttyp_any -> Any, Kind.Default
+    | Ttyp_var s -> Var s, Kind.Default
 #endif
     | _ -> assert false
   in
@@ -277,7 +277,7 @@ let read_type_parameter (ctyp, var_and_injectivity)  =
     var, injectivity
 #endif
   in
-    {desc; variance; injectivity}
+    {desc; variance; injectivity; kind}
 
 #if defined OXCAML
 let is_mutable = Types.is_mutable
@@ -376,7 +376,14 @@ let read_type_equation env container decl =
       decl.typ_cstrs
 #endif
   in
-    {params; private_; manifest; constraints}
+  let kind =
+#if defined OXCAML
+    Cmi.read_jkind_annotation decl.typ_jkind_annotation
+#else
+    Kind.Default
+#endif
+  in
+    {params; private_; manifest; constraints; kind}
 
 let read_type_declaration env parent decl =
   let open TypeDecl in

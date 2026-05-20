@@ -19,6 +19,7 @@
   invocation, eliminating the need for shell scripting (@davesnx, #1387)
 - Support for OxCaml (@lukemaurer, @art-w, #1399)
 - OCaml 5.5.0 support (@panglesd, @xvw, #1406)
+- Support for OxCaml kind annotations (@art-w, #1410)
 
 ### Fixed
 - Fix compile-time crashing bugs #930 and #1385 (@jonludlam, #1400)
