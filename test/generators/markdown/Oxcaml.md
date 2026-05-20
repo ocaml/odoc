@@ -193,3 +193,11 @@ Should render as `(float64 & immediate) mod portable`.
 type t_inner_mod : float64 & (immediate mod portable)
 ```
 Should render as `float64 & (immediate mod portable)`.
+
+
+## Kind abbreviations
+
+```ocaml
+type t_abbrev : my_abbrev mod immutable
+```
+A type with an abbreviated kind.

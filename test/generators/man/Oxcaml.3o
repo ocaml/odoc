@@ -283,4 +283,15 @@ Should render as (float64 & immediate) mod portable\.
 .ti +2
 Should render as float64 & (immediate mod portable)\.
 .nf 
+.sp 
+.in 3
+\fB9 Kind abbreviations\fR
+.in 
+.sp 
+\f[CB]type\fR t_abbrev : my_abbrev \f[CB]mod\fR immutable
+.fi 
+.br 
+.ti +2
+A type with an abbreviated kind\.
+.nf 
 

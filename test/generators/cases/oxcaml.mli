@@ -111,3 +111,11 @@ type t_outer_mod : float64 & immediate mod portable
 
 type t_inner_mod : float64 & (immediate mod portable)
 (** Should render as [float64 & (immediate mod portable)]. *)
+
+(** {1 Kind abbreviations} *)
+
+kind_ my_abbrev = value_or_null mod non_null global
+(** Declares a kind abbreviation named [my_abbrev]. *)
+
+type t_abbrev : my_abbrev mod immutable
+(** A type with an abbreviated kind. *)
