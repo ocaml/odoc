@@ -7,6 +7,7 @@ type enabledif =
   | Max of string
   | MinMax of string * string
   | OxCaml
+  | MinNotOxCaml of string
 
 type test_case = {
   input : Fpath.t;
@@ -54,6 +55,19 @@ module Dune = struct
             ];
         ]
     | Some OxCaml -> [ List [ Atom "enabled_if"; Atom "%{ocaml-config:ox}" ] ]
+    | Some (MinNotOxCaml v) ->
+        [
+          List
+            [
+              Atom "enabled_if";
+              List
+                [
+                  Atom "and";
+                  List [ Atom ">="; Atom "%{ocaml_version}"; Atom v ];
+                  List [ Atom "not"; Atom "%{ocaml-config:ox}" ];
+                ];
+            ];
+        ]
     | None -> []
 
   let run cmd = List (Atom "run" :: arg_list cmd)
