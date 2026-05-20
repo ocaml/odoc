@@ -24,47 +24,47 @@ type segment = {
 ## Layouts
 
 ```ocaml
-type t_any
+type t_any : any
 ```
 Layout `any`.
 
 ```ocaml
-type t_value_or_null
+type t_value_or_null : value_or_null
 ```
 Layout `value_or_null`.
 
 ```ocaml
-type t_float64
+type t_float64 : float64
 ```
 Layout `float64`.
 
 ```ocaml
-type t_float32
+type t_float32 : float32
 ```
 Layout `float32`.
 
 ```ocaml
-type t_word
+type t_word : word
 ```
 Layout `word`.
 
 ```ocaml
-type t_bits64
+type t_bits64 : bits64
 ```
 Layout `bits64`.
 
 ```ocaml
-type t_bits32
+type t_bits32 : bits32
 ```
 Layout `bits32`.
 
 ```ocaml
-type t_vec128
+type t_vec128 : vec128
 ```
 Layout `vec128`.
 
 ```ocaml
-type t_void
+type t_void : void
 ```
 Layout `void`.
 
@@ -77,27 +77,27 @@ type t_value
 `value` is the default kind, so the annotation is not rendered.
 
 ```ocaml
-type t_immediate
+type t_immediate : immediate
 ```
 Kind abbreviation `immediate`.
 
 ```ocaml
-type t_immediate64
+type t_immediate64 : immediate64
 ```
 Kind abbreviation `immediate64`.
 
 ```ocaml
-type t_immutable_data
+type t_immutable_data : immutable_data
 ```
 Kind abbreviation `immutable_data`.
 
 ```ocaml
-type t_sync_data
+type t_sync_data : sync_data
 ```
 Kind abbreviation `sync_data`.
 
 ```ocaml
-type t_mutable_data
+type t_mutable_data : mutable_data
 ```
 Kind abbreviation `mutable_data`.
 
@@ -105,22 +105,22 @@ Kind abbreviation `mutable_data`.
 ## Kind annotations with modalities
 
 ```ocaml
-type t_portable
+type t_portable : value mod portable
 ```
 Kind annotation with a modality.
 
 ```ocaml
-type t_contended
+type t_contended : value mod contended
 ```
 Kind annotation with a different modality.
 
 ```ocaml
-type t_multi_mod
+type t_multi_mod : value mod portable contended
 ```
 Kind annotation with multiple modalities.
 
 ```ocaml
-type t_everything
+type t_everything : float64 mod everything
 ```
 The `everything` bounds abbreviation.
 
@@ -128,17 +128,17 @@ The `everything` bounds abbreviation.
 ## Kind annotations on parameterized types
 
 ```ocaml
-type 'a imm_param
+type ('a : immediate) imm_param
 ```
 A type parameter with a kind constraint.
 
 ```ocaml
-type 'a float_param
+type ('a : float64) float_param
 ```
 A type parameter with a different kind constraint.
 
 ```ocaml
-type ('a, 'b) multi_kind
+type (('a : immediate), ('b : float64)) multi_kind
 ```
 Multiple kind-constrained parameters.
 
@@ -146,12 +146,12 @@ Multiple kind-constrained parameters.
 ## Kind annotations with `with` constraints
 
 ```ocaml
-type 'a t_with
+type 'a t_with : immediate with 'a
 ```
 Kind annotation with a `with` constraint.
 
 ```ocaml
-type 'a t_with_modalities
+type 'a t_with_modalities : immutable_data with 'a @@ portable contended
 ```
 Kind annotation with a `with` constraint and modalities.
 
@@ -159,7 +159,7 @@ Kind annotation with a `with` constraint and modalities.
 ## Kind annotations on type aliases
 
 ```ocaml
-type t_alias = int
+type t_alias : immediate = int
 ```
 Has both a kind annotation and a manifest.
 
@@ -167,12 +167,12 @@ Has both a kind annotation and a manifest.
 ## Kind-constrained polymorphism in values
 
 ```ocaml
-val poly_immediate : 'a. 'a -> 'a
+val poly_immediate : ('a : immediate). 'a -> 'a
 ```
 Kind constraint on a polymorphic type variable.
 
 ```ocaml
-val poly_float64 : 'a. 'a -> 'a
+val poly_float64 : ('a : float64). 'a -> 'a
 ```
 Kind constraint on a polymorphic type variable with a different kind.
 
@@ -180,16 +180,16 @@ Kind constraint on a polymorphic type variable with a different kind.
 ## Parenthesization of product kinds
 
 ```ocaml
-type t_many_modalities
+type t_many_modalities : value mod global aliased many contended portable forkable unyielding immutable stateless external_
 ```
 A `mod` kind annotation with many modalities.
 
 ```ocaml
-type t_outer_mod
+type t_outer_mod : (float64 & immediate) mod portable
 ```
 Should render as `(float64 & immediate) mod portable`.
 
 ```ocaml
-type t_inner_mod
+type t_inner_mod : float64 & (immediate mod portable)
 ```
 Should render as `float64 & (immediate mod portable)`.

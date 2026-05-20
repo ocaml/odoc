@@ -109,7 +109,8 @@ There should be an expansion on `NotHidden`
                   "params": [],
                   "private_": "false",
                   "manifest": "None",
-                  "constraints": []
+                  "constraints": [],
+                  "kind": "Default"
                 },
                 "representation": "None"
               }
