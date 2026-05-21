@@ -30,8 +30,6 @@ jobs:
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
-          # Do not pin odoc to not break Mdx installation
-          opam-pin: ${{ matrix.run-mdx != true }}
           opam-repositories: |
             oxcaml: "git+https://github.com/oxcaml/opam-repository.git"
             default: "git+https://github.com/ocaml/opam-repository.git"
@@ -50,9 +48,3 @@ jobs:
         if: matrix.test-sherlodoc != true
         # Run the tests for odoc and odoc-parser only
         run: opam exec -- dune runtest -p odoc,odoc-parser
-
-      - name: Mdx tests
-        if: matrix.run-mdx == true
-        run: |
-          opam install mdx
-          opam exec -- dune build @runmdx

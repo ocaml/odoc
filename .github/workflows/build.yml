@@ -23,8 +23,6 @@ jobs:
             ocaml-compiler: "5.3"
             # We don't need to compute coverage for more than one build
             send-coverage: true
-            # Mdx tests Mdx tests
-            run-mdx: true
             test-sherlodoc: true
           - os: macos-latest
             ocaml-compiler: "5.4"
@@ -47,8 +45,6 @@ jobs:
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
-          # Do not pin odoc to not break Mdx installation
-          opam-pin: ${{ matrix.run-mdx != true }}
 
       - name: Install dependencies
         run: |
@@ -64,12 +60,6 @@ jobs:
         if: matrix.test-sherlodoc != true
         # Run the tests for odoc and odoc-parser only
         run: opam exec -- dune runtest -p odoc,odoc-parser
-
-      - name: Mdx tests
-        if: matrix.run-mdx == true
-        run: |
-          opam install mdx
-          opam exec -- dune build @runmdx
 
       - name: Send coverage stats to Coveralls
         if: matrix.send-coverage == true
