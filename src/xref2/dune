@@ -32,39 +32,3 @@
  (with-stdout-to
   shape_tools.mli
   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{dep:shape_tools.cppo.mli})))
-
-(rule
- (alias runmdx)
- (deps
-  (:x paths.md)
-  (package odoc))
- (enabled_if
-  (> %{ocaml_version} 4.08))
- (action
-  (progn
-   (run ocaml-mdx-test %{x})
-   (diff? %{x} %{x}.corrected))))
-
-(rule
- (alias runmdx)
- (deps
-  (:x test.md)
-  (package odoc))
- (enabled_if
-  (> %{ocaml_version} 4.08))
- (action
-  (progn
-   (run ocaml-mdx-test %{x})
-   (diff? %{x} %{x}.corrected))))
-
-(rule
- (alias runmdx)
- (deps
-  (:x notes.md)
-  (package odoc))
- (enabled_if
-  (> %{ocaml_version} 4.08))
- (action
-  (progn
-   (run ocaml-mdx-test %{x})
-   (diff? %{x} %{x}.corrected))))
