@@ -36,10 +36,7 @@ let cmt_builddir : string ref = ref ""
 let read_core_type env ctyp =
   Cmi.read_type_expr env ctyp.ctyp_type
 
-let zero_attr_of_ident (_ident, _, zero_alloc) =
-  Doc_attr.lang_value_attr_of_zero_alloc zero_alloc
-
-let rec read_pattern env parent doc vb pat =
+let rec read_pattern env parent doc id_attrs pat =
   let source_loc = None in
   let open Signature in
     match pat.pat_desc with
@@ -52,14 +49,11 @@ let rec read_pattern env parent doc vb pat =
     | Tpat_var(id, _, _uid) ->
 #endif
         let open Value in
+        let ext_attr = id_attrs id in
         let id = Env.find_value_identifier env.ident_env id in
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          let ext_attr = [vb]
-            |> let_bound_idents_with_modes_sorts_and_checks
-            |> List.filter_map zero_attr_of_ident
-          in
           [Value {id; source_loc; doc; type_; value; ext_attr}]
 #if OCAML_VERSION < (5,2, 0)
     | Tpat_alias(pat, id, _) ->
@@ -71,44 +65,41 @@ let rec read_pattern env parent doc vb pat =
     | Tpat_alias(pat, id,_,_,_) ->
 #endif
         let open Value in
+        let ext_attr = id_attrs id in
         let id = Env.find_value_identifier env.ident_env id in
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          let ext_attr = [vb]
-            |> let_bound_idents_with_modes_sorts_and_checks
-            |> List.filter_map zero_attr_of_ident
-          in
-          Value {id; source_loc; doc; type_; value; ext_attr} :: read_pattern env parent doc vb pat
+          Value {id; source_loc; doc; type_; value; ext_attr} :: read_pattern env parent doc id_attrs pat
     | Tpat_constant _ -> []
     | Tpat_tuple pats ->
 #if OCAML_VERSION >= (5, 4, 0) || defined OXCAML
       let pats = List.map snd pats (* remove labels *) in
 #endif
-      List.concat (List.map (read_pattern env parent doc vb) pats)
+      List.concat (List.map (read_pattern env parent doc id_attrs) pats)
 #if defined OXCAML
     | Tpat_unboxed_tuple pats ->
-        List.concat (List.map (fun (_, p, _) -> read_pattern env parent doc vb p) pats)
+        List.concat (List.map (fun (_, p, _) -> read_pattern env parent doc id_attrs p) pats)
 #endif
 #if OCAML_VERSION < (4, 13, 0)
     | Tpat_construct(_, _, pats) ->
 #else
     | Tpat_construct(_,_,pats,_) ->
 #endif
-        List.concat (List.map (read_pattern env parent doc vb) pats)
+        List.concat (List.map (read_pattern env parent doc id_attrs) pats)
     | Tpat_variant(_, None, _) -> []
     | Tpat_variant(_, Some pat, _) ->
-        read_pattern env parent doc vb pat
+        read_pattern env parent doc id_attrs pat
     | Tpat_record(pats, _) ->
         List.concat
           (List.map
-             (fun (_, _, pat) -> read_pattern env parent doc vb pat)
+             (fun (_, _, pat) -> read_pattern env parent doc id_attrs pat)
           pats)
 #if defined OXCAML
     | Tpat_record_unboxed_product(pats, _) ->
         List.concat
           (List.map
-             (fun (_, _, pat) -> read_pattern env parent doc vb pat)
+             (fun (_, _, pat) -> read_pattern env parent doc id_attrs pat)
           pats)
     | Tpat_array (_, _, pats) ->
 #elif OCAML_VERSION < (5, 4, 0)
@@ -116,11 +107,11 @@ let rec read_pattern env parent doc vb pat =
 #else
     | Tpat_array (_, pats) ->
 #endif
-        List.concat (List.map (read_pattern env parent doc vb) pats)
+        List.concat (List.map (read_pattern env parent doc id_attrs) pats)
     | Tpat_or(pat, _, _) ->
-        read_pattern env parent doc vb pat
+        read_pattern env parent doc id_attrs pat
     | Tpat_lazy pat ->
-        read_pattern env parent doc vb pat
+        read_pattern env parent doc id_attrs pat
 #if OCAML_VERSION >= (4,8,0) && OCAML_VERSION < (4,11,0)
     | Tpat_exception pat ->
         read_pattern env parent doc pat
@@ -130,13 +121,24 @@ let rec read_pattern env parent doc vb pat =
     | Tpat_unboxed_bool _ -> []
 #endif
 
-let read_value_binding env parent vb =
+let read_value_binding env parent id_attrs vb =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container vb.vb_attributes in
-    read_pattern env parent doc vb vb.vb_pat
+    read_pattern env parent doc id_attrs vb.vb_pat
 
 let read_value_bindings env parent vbs =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
+  let id_attrs =
+    vbs |> let_bound_idents_with_modes_sorts_and_checks |> List.fold_left (fun tbl (ident, _, zero_alloc) ->
+      match Doc_attr.lang_value_attr_of_zero_alloc zero_alloc with
+      | None -> tbl
+      | Some attr -> Ident.add ident [attr] tbl) Ident.empty
+  in
+  let lookup_attr_by_id id =
+    match Ident.find_same id id_attrs with
+    | attr -> attr
+    | exception Not_found -> []
+  in
   let items =
     List.fold_left
       (fun acc vb ->
@@ -144,7 +146,7 @@ let read_value_bindings env parent vbs =
         let comments =
           Doc_attr.standalone_multiple container ~warnings_tag:env.warnings_tag vb.vb_attributes in
          let comments = List.map (fun com -> Comment com) comments in
-         let vb = read_value_binding env parent vb in
+         let vb = read_value_binding env parent lookup_attr_by_id vb in
           List.rev_append vb (List.rev_append comments acc))
       [] vbs
   in
