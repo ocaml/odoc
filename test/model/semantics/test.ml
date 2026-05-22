@@ -690,6 +690,14 @@ let%expect_test _ =
         {|
         {"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},""]},[{"`Link":["foo",[]]}]]}],"warnings":[]} |}]
 
+    let multilines_link_in_markup =
+      test {|{{:https://github.com/ocaml/\
+   odoc/\
+issues/\
+                865}this issue}|};
+      [%expect
+        {| {"value":[{"`Paragraph":[{"`Link":["https://github.com/ocaml/odoc/issues/865",[{"`Word":"this"},"`Space",{"`Word":"issue"}]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]} |}]
+
     let reference_in_markup =
       test "{2 {!foo}}";
       [%expect

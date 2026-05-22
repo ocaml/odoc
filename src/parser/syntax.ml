@@ -1,3 +1,4 @@
+
 (* This module is a recursive descent parser for the ocamldoc syntax. The parser
    consumes a token stream of type [Token.t Stream.t], provided by the lexer,
    and produces a comment AST of the type defined in [Parser_.Ast].
@@ -167,6 +168,15 @@ type token_that_always_begins_an_inline_element =
   | `Begin_link_with_replacement_text of string
   | `Math_span of string ]
 
+let multilines_link_to_link link =
+  String.split_on_char '\n' link
+  |> List.map (fun line ->
+      String.trim @@
+      if String.ends_with ~suffix:{|\|} line then
+        String.(sub line 0 (length line - 1))
+      else line)
+  |> String.concat ""
+
 (* Check that the token constructors above actually are all in [Token.t]. *)
 let _check_subset : token_that_always_begins_an_inline_element -> Token.t =
  fun t -> (t :> Token.t)
@@ -277,7 +287,7 @@ let rec inline_element :
           location
         |> add_warning input;
 
-      Loc.at location (`Link (u, []))
+      Loc.at location (`Link (multilines_link_to_link u, []))
   | `Begin_link_with_replacement_text u as parent_markup ->
       junk input;
 
@@ -295,7 +305,7 @@ let rec inline_element :
           input
       in
 
-      `Link (u, content) |> Loc.at (Loc.span [ location; brace_location ])
+      `Link ((multilines_link_to_link u), content) |> Loc.at (Loc.span [ location; brace_location ])
 
 (* Consumes tokens that make up a sequence of inline elements that is ended by
    a '}', a [`Right_brace] token. The brace token is also consumed.
