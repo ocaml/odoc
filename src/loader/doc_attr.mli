@@ -93,5 +93,7 @@ type parsed_attribute =
   ]
 
 val parse_attribute : Parsetree.attribute -> parsed_attribute option
+#if defined OXCAML
 val lang_value_attr_of_zero_alloc : Zero_alloc.t -> Lang.Value.attr option
+#endif
 val attrs_of_value_description : Types.value_description -> Lang.Value.attr list
