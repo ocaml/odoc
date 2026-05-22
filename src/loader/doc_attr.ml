@@ -74,6 +74,9 @@ let attribute_unpack = function
   | { Location.txt = name; loc }, attr_payload -> (name, attr_payload, loc)
 #endif
 
+#if defined OXCAML
+(* the input is a [Zero_alloc.t] which is not present in OCaml, so it can't be
+   a no-op *)
 let lang_value_attr_of_zero_alloc zero_alloc =
   match Zero_alloc.get zero_alloc with
     | Default_zero_alloc -> None
@@ -82,6 +85,7 @@ let lang_value_attr_of_zero_alloc zero_alloc =
         Some (Lang.Value.Zero_alloc ( Lang.Value.Zero_alloc.{ opt = false; strict = false; arity; custom_error_msg = None }))
     | Check { strict; opt; arity; custom_error_msg } ->
         Some (Lang.Value.Zero_alloc ( Lang.Value.Zero_alloc.{ opt; strict; arity; custom_error_msg }))
+#endif
 
 let attrs_of_value_description (vd : Types.value_description) =
 #if defined OXCAML
