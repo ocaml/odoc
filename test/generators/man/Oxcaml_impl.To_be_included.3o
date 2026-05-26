@@ -1,0 +1,14 @@
+
+.TH To_be_included 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_impl\.To_be_included
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml_impl\.To_be_included\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR add : bool \f[CB]\->\fR int \f[CB]\->\fR int \f[CB]\->\fR int [@@zero_alloc arity 3]
