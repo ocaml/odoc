@@ -1,6 +1,10 @@
 # Unreleased
 
+### Added
 - Support for OxCaml unboxed named types (@art-w, #1407)
+
+### Fixed
+- Allow to break link into multiline (@Tim-ats-d, #1439)
 
 # 3.2.1
 
