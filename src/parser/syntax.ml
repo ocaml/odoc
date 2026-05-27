@@ -168,14 +168,29 @@ type token_that_always_begins_an_inline_element =
   | `Begin_link_with_replacement_text of string
   | `Math_span of string ]
 
-let multilines_link_to_link link =
-  String.split_on_char '\n' link
-  |> List.map (fun line ->
-      String.trim @@
-      if String.ends_with ~suffix:{|\|} line then
-        String.(sub line 0 (length line - 1))
-      else line)
-  |> String.concat ""
+let escape_link link =
+  let link = String.trim link in
+  let buf = Buffer.create (String.length link) in
+  let last_state =
+    String.fold_left
+         (fun acc chr ->
+           match (acc, chr) with
+           | `Char, '\\' -> `Backslash
+           | `Char, _ ->
+               Buffer.add_char buf chr;
+               `Char
+           | (`Backslash | `Escaping), (' ' | '\t' | '\n') -> `Escaping
+           | (`Backslash | `Escaping), _ ->
+               Buffer.add_char buf chr;
+               `Char)
+         `Char link
+  in
+  let () =
+    match last_state with
+    | `Backslash -> Buffer.add_char buf '\\'
+    | `Escaping | `Char -> ()
+  in
+  Buffer.contents buf
 
 (* Check that the token constructors above actually are all in [Token.t]. *)
 let _check_subset : token_that_always_begins_an_inline_element -> Token.t =
@@ -279,7 +294,7 @@ let rec inline_element :
   | `Simple_link u ->
       junk input;
 
-      let u = String.trim u in
+      let u = escape_link u |> String.trim in
 
       if u = "" then
         Parse_error.should_not_be_empty
@@ -287,11 +302,11 @@ let rec inline_element :
           location
         |> add_warning input;
 
-      Loc.at location (`Link (multilines_link_to_link u, []))
+      Loc.at location (`Link (u, []))
   | `Begin_link_with_replacement_text u as parent_markup ->
       junk input;
 
-      let u = String.trim u in
+      let u = escape_link u |> String.trim in
 
       if u = "" then
         Parse_error.should_not_be_empty
@@ -305,7 +320,7 @@ let rec inline_element :
           input
       in
 
-      `Link ((multilines_link_to_link u), content) |> Loc.at (Loc.span [ location; brace_location ])
+      `Link (u, content) |> Loc.at (Loc.span [ location; brace_location ])
 
 (* Consumes tokens that make up a sequence of inline elements that is ended by
    a '}', a [`Right_brace] token. The brace token is also consumed.
