@@ -13,7 +13,7 @@ A quick test to repro the issue found in #941
 
 The rendered html
 
-  $ cat html/Foo/index.html | grep "splice_me" -A 3
+  $ grep "splice_me" -A 3 < html/Foo/index.html | grep -v -- "--"
       <ul><li><a href="#splice_me">Splice me</a></li></ul>
      </nav>
     </div>
