@@ -355,6 +355,7 @@ and Value : sig
     doc : CComment.docs;
     type_ : TypeExpr.t;
     value : value;
+    ext_attr : Odoc_model.Lang.Value.attr list;
   }
 end
 
