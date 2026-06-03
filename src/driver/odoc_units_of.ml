@@ -56,12 +56,14 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     let includes =
       List.concat_map dash_l (Util.StringSet.to_list lib_deps) |> List.map snd
     in
-    let libs =
-      List.fold_left
-        (fun acc lib -> Util.StringSet.add lib.Packages.lib_name acc)
-        lib_deps pkg.Packages.libraries
-    in
-    let libs = List.concat_map dash_l (Util.StringSet.to_list libs) in
+    (* Link only against this unit's actual library dependencies ([lib_deps]
+       already holds the unit's own library plus its declared deps). Adding
+       every library of the package put sibling libraries that neither depend on
+       each other nor share a dependency (e.g. eliom.server / eliom.client, two
+       libs with the SAME module names) on the link path, so a module defined in
+       both, typically a functor result like [Content.Html], resolved to the
+       wrong sibling. *)
+    let libs = List.concat_map dash_l (Util.StringSet.to_list lib_deps) in
     Pkg_args.v ~pages:[ own_page ] ~libs ~includes ~odoc_dir ~odocl_dir
   in
   let args_of_config config : Pkg_args.t =
