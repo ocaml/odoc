@@ -808,8 +808,8 @@ let read_value_description ({ident_env ; warnings_tag} as env) parent id vd =
         External primitives
     | _ -> assert false
   in
-  let ext_attr = Doc_attr.attrs_of_value_description vd in
-  Value { Value.id; source_loc; doc; type_; value; ext_attr }
+  let ext_attrs = Doc_attr.attrs_of_value_description vd in
+  Value { Value.id; source_loc; doc; type_; value; ext_attrs }
 
 #if defined OXCAML
 let is_mutable = Types.is_mutable

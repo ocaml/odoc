@@ -49,12 +49,12 @@ let rec read_pattern env parent doc id_attrs pat =
     | Tpat_var(id, _, _uid) ->
 #endif
         let open Value in
-        let ext_attr = id_attrs id in
+        let ext_attrs = id_attrs id in
         let id = Env.find_value_identifier env.ident_env id in
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          [Value {id; source_loc; doc; type_; value; ext_attr}]
+          [Value {id; source_loc; doc; type_; value; ext_attrs}]
 #if OCAML_VERSION < (5,2, 0)
     | Tpat_alias(pat, id, _) ->
 #elif defined OXCAML
@@ -65,12 +65,12 @@ let rec read_pattern env parent doc id_attrs pat =
     | Tpat_alias(pat, id,_,_,_) ->
 #endif
         let open Value in
-        let ext_attr = id_attrs id in
+        let ext_attrs = id_attrs id in
         let id = Env.find_value_identifier env.ident_env id in
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          Value {id; source_loc; doc; type_; value; ext_attr} :: read_pattern env parent doc id_attrs pat
+          Value {id; source_loc; doc; type_; value; ext_attrs} :: read_pattern env parent doc id_attrs pat
     | Tpat_constant _ -> []
     | Tpat_tuple pats ->
 #if OCAML_VERSION >= (5, 4, 0) || defined OXCAML

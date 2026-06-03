@@ -339,7 +339,7 @@ and Value : sig
     value : value;
     doc : Comment.docs;
     type_ : TypeExpr.t;
-    ext_attr : attr list;
+    ext_attrs : attr list;
   }
 end =
   Value

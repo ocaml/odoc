@@ -694,7 +694,7 @@ and value_ map parent id v =
     doc = docs (parent :> Identifier.LabelParent.t) v.doc;
     type_ = type_expr map (parent :> Identifier.LabelParent.t) v.type_;
     value = v.value;
-    ext_attr = v.ext_attr;
+    ext_attrs = v.ext_attrs;
   }
 
 and typ_ext map parent t =
