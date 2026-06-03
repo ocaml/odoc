@@ -313,7 +313,7 @@ and Value : sig
     doc : CComment.docs;
     type_ : TypeExpr.t;
     value : value;
-    ext_attr : Odoc_model.Lang.Value.attr list;
+    ext_attrs : Odoc_model.Lang.Value.attr list;
   }
 end =
   Value
@@ -2622,7 +2622,7 @@ module Of_Lang = struct
       doc = docs ident_map v.doc;
       value = v.value;
       source_loc = v.source_loc;
-      ext_attr = v.ext_attr;
+      ext_attrs = v.ext_attrs;
     }
 
   and include_ ident_map i =

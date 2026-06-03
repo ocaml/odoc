@@ -1055,7 +1055,7 @@ module Make (Syntax : SYNTAX) = struct
         match
           List.find
             (function Odoc_model.Lang.Value.Zero_alloc _ -> true)
-            t.ext_attr
+            t.ext_attrs
         with
         | exception Not_found -> O.noop
         | Zero_alloc { opt; strict; arity; custom_error_msg } ->
