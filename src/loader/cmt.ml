@@ -128,16 +128,7 @@ let read_value_binding env parent id_attrs vb =
 
 let read_value_bindings env parent vbs =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let id_attrs =
-#if defined OXCAML
-    vbs |> let_bound_idents_with_modes_sorts_and_checks |> List.fold_left (fun tbl (ident, _, zero_alloc) ->
-      match Doc_attr.lang_value_attr_of_zero_alloc zero_alloc with
-      | None -> tbl
-      | Some attr -> Ident.add ident [attr] tbl) Ident.empty
-#else
-    Ident.empty
-#endif
-  in
+  let id_attrs = Doc_attr.id_attrs_of_value_bindings vbs in
   let lookup_attr_by_id id =
     match Ident.find_same id id_attrs with
     | attr -> attr

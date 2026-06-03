@@ -4,7 +4,6 @@ loader/cmi.mli
 loader/cmt.ml
 loader/cmti.ml
 loader/doc_attr.ml
-loader/doc_attr.mli
 loader/ident_env.ml
 loader/implementation.ml
 loader/lookup_def.ml
