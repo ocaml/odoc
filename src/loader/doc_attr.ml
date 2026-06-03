@@ -87,15 +87,15 @@ let lang_value_attr_of_zero_alloc zero_alloc =
         Some (Lang.Value.Zero_alloc ( Lang.Value.Zero_alloc.{ opt; strict; arity; custom_error_msg }))
 #endif
 
-let attrs_of_value_description (vd : Types.value_description) =
 #if defined OXCAML
+let attrs_of_value_description (vd : Types.value_description) =
   let zero_alloc = lang_value_attr_of_zero_alloc vd.val_zero_alloc in
-#else
-  let zero_alloc = None in
-#endif
   match zero_alloc with
   | Some za -> [za]
   | None -> []
+#else
+let attrs_of_value_description (vd : Types.value_description) = []
+#endif
 
 type payload = string * Location.t
 
