@@ -4,7 +4,7 @@ Testing the depends command.
   $ ocamlc -c -bin-annot -I . -o lib_a.cmti a.mli
   $ ocamlc -c -bin-annot -I . -o lib_b.cmti b.mli
 
-  $ odoc compile-deps lib_b.cmti | grep -v "CamlinternalFormatBasics\|Stdlib\|Pervasives" | cut -d ' ' -f 1 | sort -u
+  $ odoc compile-deps lib_b.cmti | grep -v CamlinternalFormatBasics | grep -v Stdlib | grep -v Pervasives | cut -d ' ' -f 1 | sort -u
   Lib
   Lib_a
   Lib_b

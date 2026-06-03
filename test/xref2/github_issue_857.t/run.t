@@ -9,7 +9,11 @@ A quick test to repro the issue found in #857
   $ odoc latex-generate -o latex/ a.odocl
 
 In latex, labels in subpages should be disambiguated since the subpage is inlined inside the generated latex source.
-  $ cat latex/A.tex | sed 's/\\/\n\\/g' | grep label
+
+(Replace \\ with \n\ for readability)
+
+  $ awk '{ gsub("\\\\","\n\\",$0); print $0 }' < latex/A.tex > newlines.tex
+  $ grep label < newlines.tex
   \label{A}%
   \label{A--module-type-A}
   \label{A-module-type-A}
