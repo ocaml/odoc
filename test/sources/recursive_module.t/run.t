@@ -10,14 +10,14 @@ Checking that source links exists inside recursive modules.
 
 Both modules should contain source links
 
-  $ grep source_link html/Main/A/index.html --context=2
+  $ grep source_link html/Main/A/index.html -C2
     <header class="odoc-preamble">
      <h1>Module <code><span>Main.A</span></code>
       <a href="../../src/main.ml.html#module-A" class="source_link">Source</a>
      </h1>
     </header>
 
-  $ grep source_link html/Main/B/index.html --context=2
+  $ grep source_link html/Main/B/index.html -C2
     <header class="odoc-preamble">
      <h1>Module <code><span>Main.B</span></code>
       <a href="../../src/main.ml.html#module-B" class="source_link">Source</a>
