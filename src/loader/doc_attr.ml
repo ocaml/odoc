@@ -97,6 +97,16 @@ let attrs_of_value_description (vd : Types.value_description) =
 let attrs_of_value_description (vd : Types.value_description) = []
 #endif
 
+#if defined OXCAML
+let id_attrs_of_value_bindings vbs =
+  vbs |> Typedtree.let_bound_idents_with_modes_sorts_and_checks |> List.fold_left (fun tbl (ident, _, zero_alloc) ->
+    match lang_value_attr_of_zero_alloc zero_alloc with
+    | None -> tbl
+    | Some attr -> Ident.add ident [attr] tbl) Ident.empty
+#else
+let id_attrs_of_value_bindings _vbs = Ident.empty
+#endif
+
 type payload = string * Location.t
 
 type parsed_attribute =
