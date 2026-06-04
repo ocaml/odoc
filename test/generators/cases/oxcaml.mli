@@ -143,3 +143,7 @@ val add_opt_strict : bool -> int -> int -> int [@@zero_alloc opt strict]
 
 val[@zero_alloc] alt_syntax : int -> int
 (** Alternative syntax for zero alloc annotation *)
+
+val curried_zero_alloc : int -> int -> int [@@zero_alloc arity 1]
+(** Function that returns a function that is [zero_alloc].
+ *)
