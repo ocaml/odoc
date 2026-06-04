@@ -1044,6 +1044,11 @@ module Make (Syntax : SYNTAX) = struct
   module Value : sig
     val value : Lang.Value.t -> Item.t
   end = struct
+    let rec arity_of_type_expr = function
+      | Lang.TypeExpr.Arrow (_lbl, _arg, curried) ->
+          1 + arity_of_type_expr curried
+      | _ -> 0
+
     let value (t : Odoc_model.Lang.Value.t) =
       let extra_attr, semicolon =
         match t.value with
@@ -1066,7 +1071,11 @@ module Make (Syntax : SYNTAX) = struct
               | true, true -> " strict opt"
               | false, false -> ""
             in
-            let ext_arg = ext_arg ^ Printf.sprintf " arity %d" arity in
+            let ext_arg =
+              match Int.equal (arity_of_type_expr t.type_) arity with
+              | true -> ext_arg
+              | false -> ext_arg ^ Printf.sprintf " arity %d" arity
+            in
             let ext_arg =
               match custom_error_msg with
               | None -> ext_arg
