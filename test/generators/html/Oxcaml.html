@@ -590,6 +590,21 @@
     <div class="spec-doc"><p>Alternative syntax for zero alloc annotation</p>
     </div>
    </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-curried_zero_alloc">
+     <a href="#val-curried_zero_alloc" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> curried_zero_alloc : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> 
+       <span>int <span class="arrow">&#45;&gt;</span></span> int 
+       [@@zero_alloc arity 1]
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Function that returns a function that is <code>zero_alloc</code>.</p>
+    </div>
+   </div>
   </div>
  </body>
 </html>

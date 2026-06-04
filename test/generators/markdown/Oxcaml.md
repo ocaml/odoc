@@ -241,3 +241,8 @@ Like `add` but with a `strict` and `opt` attributes in reverse order.
 val alt_syntax : int -> int [@@zero_alloc arity 1]
 ```
 Alternative syntax for zero alloc annotation
+
+```ocaml
+val curried_zero_alloc : int -> int -> int [@@zero_alloc arity 1]
+```
+Function that returns a function that is `zero_alloc`.
