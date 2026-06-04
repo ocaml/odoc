@@ -203,42 +203,32 @@ type t_abbrev : my_abbrev mod immutable
 A type with an abbreviated kind.
 
 ```ocaml
-val add : bool -> int -> int -> int [@@zero_alloc arity 3]
+val add : bool -> int -> int -> int [@@zero_alloc]
 ```
 Zero allocation bindings have an extension attribute attached. See https://oxcaml.org/documentation/miscellaneous-extensions/zero\_alloc\_check/
 
 ```ocaml
-val add_opt : bool -> int -> int -> int [@@zero_alloc opt arity 3]
+val add_opt : bool -> int -> int -> int [@@zero_alloc opt]
 ```
 Like `add` but with an `opt` attribute.
 
 ```ocaml
-val add_strict : bool -> int -> int -> int [@@zero_alloc strict arity 3]
+val add_strict : bool -> int -> int -> int [@@zero_alloc strict]
 ```
 Like `add` but with a `strict` attribute.
 
 ```ocaml
-val add_strict_opt : 
-  bool ->
-  int ->
-  int ->
-  int
-   [@@zero_alloc strict opt arity 3]
+val add_strict_opt : bool -> int -> int -> int [@@zero_alloc strict opt]
 ```
 Like `add` but with a `strict` and `opt` attributes.
 
 ```ocaml
-val add_opt_strict : 
-  bool ->
-  int ->
-  int ->
-  int
-   [@@zero_alloc strict opt arity 3]
+val add_opt_strict : bool -> int -> int -> int [@@zero_alloc strict opt]
 ```
 Like `add` but with a `strict` and `opt` attributes in reverse order.
 
 ```ocaml
-val alt_syntax : int -> int [@@zero_alloc arity 1]
+val alt_syntax : int -> int [@@zero_alloc]
 ```
 Alternative syntax for zero alloc annotation
 

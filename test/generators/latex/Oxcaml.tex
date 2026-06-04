@@ -86,27 +86,17 @@ Unboxed types have a trailing hash '\#'
 \subsection{Kind abbreviations\label{Oxcaml--kind-abbreviations_2}}%
 \label{Oxcaml--type-t_abbrev}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}abbrev : my\_\allowbreak{}abbrev \ocamltag{keyword}{mod} immutable}\begin{ocamlindent}A type with an abbreviated kind.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-add}\ocamlcodefragment{\ocamltag{keyword}{val} add : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc arity 3]}\begin{ocamlindent}Zero allocation bindings have an extension attribute attached. See https://oxcaml.org/documentation/miscellaneous-extensions/zero\_alloc\_check/\end{ocamlindent}%
+\label{Oxcaml--val-add}\ocamlcodefragment{\ocamltag{keyword}{val} add : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc]}\begin{ocamlindent}Zero allocation bindings have an extension attribute attached. See https://oxcaml.org/documentation/miscellaneous-extensions/zero\_alloc\_check/\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-add_opt}\ocamlcodefragment{\ocamltag{keyword}{val} add\_\allowbreak{}opt : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc opt arity 3]}\begin{ocamlindent}Like \ocamlinlinecode{add} but with an \ocamlinlinecode{opt} attribute.\end{ocamlindent}%
+\label{Oxcaml--val-add_opt}\ocamlcodefragment{\ocamltag{keyword}{val} add\_\allowbreak{}opt : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc opt]}\begin{ocamlindent}Like \ocamlinlinecode{add} but with an \ocamlinlinecode{opt} attribute.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-add_strict}\ocamlcodefragment{\ocamltag{keyword}{val} add\_\allowbreak{}strict : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc strict arity 3]}\begin{ocamlindent}Like \ocamlinlinecode{add} but with a \ocamlinlinecode{strict} attribute.\end{ocamlindent}%
+\label{Oxcaml--val-add_strict}\ocamlcodefragment{\ocamltag{keyword}{val} add\_\allowbreak{}strict : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc strict]}\begin{ocamlindent}Like \ocamlinlinecode{add} but with a \ocamlinlinecode{strict} attribute.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-add_strict_opt}\ocamlcodefragment{\ocamltag{keyword}{val} add\_\allowbreak{}strict\_\allowbreak{}opt : 
-  bool \ocamltag{arrow}{$\rightarrow$}
-  int \ocamltag{arrow}{$\rightarrow$}
-  int \ocamltag{arrow}{$\rightarrow$}
-  int
-   [@@zero\_\allowbreak{}alloc strict opt arity 3]}\begin{ocamlindent}Like \ocamlinlinecode{add} but with a \ocamlinlinecode{strict} and \ocamlinlinecode{opt} attributes.\end{ocamlindent}%
+\label{Oxcaml--val-add_strict_opt}\ocamlcodefragment{\ocamltag{keyword}{val} add\_\allowbreak{}strict\_\allowbreak{}opt : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc strict opt]}\begin{ocamlindent}Like \ocamlinlinecode{add} but with a \ocamlinlinecode{strict} and \ocamlinlinecode{opt} attributes.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-add_opt_strict}\ocamlcodefragment{\ocamltag{keyword}{val} add\_\allowbreak{}opt\_\allowbreak{}strict : 
-  bool \ocamltag{arrow}{$\rightarrow$}
-  int \ocamltag{arrow}{$\rightarrow$}
-  int \ocamltag{arrow}{$\rightarrow$}
-  int
-   [@@zero\_\allowbreak{}alloc strict opt arity 3]}\begin{ocamlindent}Like \ocamlinlinecode{add} but with a \ocamlinlinecode{strict} and \ocamlinlinecode{opt} attributes in reverse order.\end{ocamlindent}%
+\label{Oxcaml--val-add_opt_strict}\ocamlcodefragment{\ocamltag{keyword}{val} add\_\allowbreak{}opt\_\allowbreak{}strict : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc strict opt]}\begin{ocamlindent}Like \ocamlinlinecode{add} but with a \ocamlinlinecode{strict} and \ocamlinlinecode{opt} attributes in reverse order.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-alt_syntax}\ocamlcodefragment{\ocamltag{keyword}{val} alt\_\allowbreak{}syntax : int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc arity 1]}\begin{ocamlindent}Alternative syntax for zero alloc annotation\end{ocamlindent}%
+\label{Oxcaml--val-alt_syntax}\ocamlcodefragment{\ocamltag{keyword}{val} alt\_\allowbreak{}syntax : int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc]}\begin{ocamlindent}Alternative syntax for zero alloc annotation\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--val-curried_zero_alloc}\ocamlcodefragment{\ocamltag{keyword}{val} curried\_\allowbreak{}zero\_\allowbreak{}alloc : int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc arity 1]}\begin{ocamlindent}Function that returns a function that is \ocamlinlinecode{zero\_\allowbreak{}alloc}.\end{ocamlindent}%
 \medbreak

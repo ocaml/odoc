@@ -11,4 +11,4 @@ Oxcaml_impl\.To_be_included
 .SH Documentation
 .sp 
 .nf 
-\f[CB]val\fR add : bool \f[CB]\->\fR int \f[CB]\->\fR int \f[CB]\->\fR int [@@zero_alloc arity 3]
+\f[CB]val\fR add : bool \f[CB]\->\fR int \f[CB]\->\fR int \f[CB]\->\fR int [@@zero_alloc]
