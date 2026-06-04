@@ -1,0 +1,4 @@
+(library
+ (name expect_test_helper)
+ (enabled_if
+  (>= %{ocaml_version} 4.04.1)))
