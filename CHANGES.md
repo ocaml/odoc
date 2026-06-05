@@ -2,6 +2,7 @@
 
 - Support for OxCaml unboxed named types (@art-w, #1407)
 - Support for OxCaml zero alloc definitions (@Leonidas-from-XIV, #1422)
+- Remove requirement for ppx_expect in tests (@jonludlam, #1445)
 
 # 3.2.1
 
