@@ -957,9 +957,9 @@ module Fmt = struct
     if c.show_expansions || (is_include && c.show_include_expansions) then
       match m with
       | ModuleType.Signature sg ->
-          Format.fprintf ppf "@[<hv 2>(sig :@ %a@;<1 -1>end@])" (signature c) sg
+          Format.fprintf ppf "@[<hv 2>=> sig@ %a@;<1 -1>end@]" (signature c) sg
       | Functor (arg, sg) ->
-          Format.fprintf ppf "(functor: (%a) -> %a)" (functor_parameter c) arg
+          Format.fprintf ppf "=> functor (%a) -> %a" (functor_parameter c) arg
             (simple_expansion c is_include)
             sg
     else ()
