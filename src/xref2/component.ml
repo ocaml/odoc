@@ -946,9 +946,10 @@ module Fmt = struct
 
   and module_ c ppf m =
     let fmt_canonical ppf popt =
-      if c.show_canonical then
-        Format.fprintf ppf "@ (canonical=%a)" (option c model_path) popt
-      else ()
+      match popt with
+      | Some p when c.show_canonical ->
+          Format.fprintf ppf "@ (canonical=%a)" (model_path c) p
+      | _ -> ()
     in
     Format.fprintf ppf "%a%a" (module_decl c) m.type_ fmt_canonical
       (m.canonical :> path option)
