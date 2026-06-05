@@ -19,24 +19,26 @@ Module `C` then includes them both, causing further shadowing.
       include {B}1/shadowed/(CCCC)
         => sig module [{A}1/shadowed/(AAAA)] = A.A end
       include sig
-        module A : 
-          sig
-            include module type of struct include {A}1/shadowed/(AAAA) end
-              => sig type t end
-            type a
-          endend => sig module [{A}2/shadowed/(CCCC)] = A.A end
+                module A : 
+                  sig
+                    include module type of struct include {A}1/shadowed/(AAAA) end
+                      => sig type t end
+                    type a
+                  end
+              end => sig module [{A}2/shadowed/(CCCC)] = A.A end
      end
   include module type of struct include B end
     => sig
       module type B = B.B
       include B => sig module [{A}1/shadowed/(BBBB)] = B.A end
       include sig
-        module A : 
-          sig
-            include module type of struct include {A}1/shadowed/(BBBB) end
-              => sig type t end
-            type b
-          endend => sig module [{A}3/shadowed/(CCCC)] = B.A end
+                module A : 
+                  sig
+                    include module type of struct include {A}1/shadowed/(BBBB) end
+                      => sig type t end
+                    type b
+                  end
+              end => sig module [{A}3/shadowed/(CCCC)] = B.A end
      end
   module A : 
     sig

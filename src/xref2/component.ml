@@ -994,7 +994,8 @@ module Fmt = struct
     match mt with
     | Path p -> module_type_path c ppf p
     | Signature sg when is_empty_sg sg -> Format.fprintf ppf "sig end"
-    | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" (signature c) sg
+    | Signature sg ->
+        Format.fprintf ppf "@[<hv 2>sig@ %a@;<1 -2>end@]" (signature c) sg
     | With (subs, e) ->
         Format.fprintf ppf "%a with [%a]" (u_module_type_expr c) e
           (substitution_list c) subs

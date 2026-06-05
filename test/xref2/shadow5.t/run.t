@@ -32,8 +32,7 @@ type `t`, but in the subsequent include, the type `t` within the signature _isn'
     sig
       type t = int
       val y : t
-      include sigtype t = t
-                   val z : tend with [t := t] => sig val z : t end
+      include sig type t = t val z : t end with [t := t] => sig val z : t end
     end
   module type Z = 
     sig
@@ -41,9 +40,7 @@ type `t`, but in the subsequent include, the type `t` within the signature _isn'
         => sig
           type {t}1/shadowed/(AAAA) = int
           val y : int
-          include sig
-            type t = {t}1/shadowed/(AAAA)
-              val z : tend with [t := {t}1/shadowed/(AAAA)]
+          include sig type t = {t}1/shadowed/(AAAA) val z : t end with [t := {t}1/shadowed/(AAAA)]
             => sig val z : int end
          end
       type t = int
