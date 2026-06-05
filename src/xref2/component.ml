@@ -779,8 +779,13 @@ module Fmt = struct
     let ident_fmt = if c.short_paths then Ident.short_fmt else Ident.fmt in
     let sig_item ppf = function
       | Module (id, _, m) ->
-          Format.fprintf ppf "@[<hov 2>module %a %a@]" ident_fmt id (module_ c)
-            (Delayed.get m)
+          let m = Delayed.get m in
+          let hidden_name = ModuleName.is_hidden (Ident.Name.typed_module id) in
+          let lb, rb =
+            if m.hidden || hidden_name then ("[", "]") else ("", "")
+          in
+          Format.fprintf ppf "@[<hov 2>module %s%a%s %a@]" lb ident_fmt id rb
+            (module_ c) m
       | ModuleSubstitution (id, m) ->
           Format.fprintf ppf "@[<v 2>module %a := %a@]" ident_fmt id
             (module_path c) m.ModuleSubstitution.manifest

@@ -575,7 +575,7 @@ module Fmt : sig
           |};;
         module type S = sig type t end
         module M : S => sig type t end
-        module Internal__thing : S => sig type t end
+        module [Internal__thing] : S => sig type t end
         module F : (X : S) -> sig end
         module type T = S with t = int => sig type t = int end
         module type Tsub = S with t := int => sig  (removed=type () t = (int)) end
@@ -585,7 +585,7 @@ module Fmt : sig
         type either = Left of a | Right of b
         type reassoc = (a * b) either
         type e = A | B of int
-        module Hidden__impl : S => sig type t end (canonical=Root.Pub)
+        module [Hidden__impl] : S => sig type t end (canonical=Root.Pub)
         module Pub = Root.Pub
         type via_canonical = Root.Pub.t
         - : unit = ()

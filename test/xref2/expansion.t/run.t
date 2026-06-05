@@ -16,8 +16,8 @@ In addition, the expansion for the alias Test after the link phase should be the
   module Test = S
   $ odoc compile test.cmti
   $ odoc_print --short --show-expansions test.odoc
-   module H : sig type t end
-  module S : 
+   module [H] : sig type t end
+  module [S] : 
     sig
       module type X = sig module M : sig type t end end
       module X : X with M.t = int => sig module M : sig type t = int end end
@@ -29,8 +29,8 @@ In addition, the expansion for the alias Test after the link phase should be the
   module Test = S
   $ odoc link test.odoc
   $ odoc_print --short --show-expansions test.odocl
-   module H : sig type t end
-  module S : 
+   module [H] : sig type t end
+  module [S] : 
     sig
       module type X = sig module M : sig type t end end
       module X : X with M.t = int => sig module M : sig type t = int end end
