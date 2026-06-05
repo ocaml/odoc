@@ -10,33 +10,6 @@ let print_to oc ~input ~output =
 
 let print ~input ~output = print_to stdout ~input ~output
 
-(* Transient: side-channel snapshot capture used while migrating off
-   ppx_expect. Removed once the diff-based runner replaces it. *)
-
-let dump_oc = ref None
-
-let with_group name f =
-  match Sys.getenv_opt "EXPECTED_DUMP_DIR" with
-  | None -> f ()
-  | Some dir -> (
-      let path = Filename.concat dir (name ^ ".expected") in
-      let oc = open_out path in
-      dump_oc := Some oc;
-      let finalize () =
-        dump_oc := None;
-        close_out oc
-      in
-      try
-        let r = f () in
-        finalize ();
-        r
-      with e ->
-        finalize ();
-        raise e)
-
-let dump_block ~input ~output =
-  match !dump_oc with None -> () | Some oc -> print_to oc ~input ~output
-
 let expect ~input format_output =
   let buf = Buffer.create 256 in
   let fmt = Format.formatter_of_buffer buf in
