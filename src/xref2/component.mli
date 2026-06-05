@@ -587,8 +587,8 @@ module Fmt : sig
         type reassoc = [a * b] either
         type e = A of  | B of int
         module Hidden__impl : S (sig : type t end) (canonical=Some(Root.Pub))
-        module Pub = Hidden__impl (canonical=None)
-        type via_canonical = Hidden__impl.t
+        module Pub = Root.Pub (canonical=None)
+        type via_canonical = Root.Pub.t
         - : unit = ()
       ]} *)
 
