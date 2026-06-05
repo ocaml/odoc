@@ -1,6 +1,8 @@
 open Odoc_model
 open Odoc_model_desc
 
+(** See docs in {!Expect_test_helpers} for modifying this! *)
+
 type sections_allowed = [ `All | `No_titles | `None ]
 
 let warning_desc = Type_desc.To_string Error.to_string
