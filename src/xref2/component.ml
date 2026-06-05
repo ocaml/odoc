@@ -1197,7 +1197,7 @@ module Fmt = struct
     match l with
     | [ t ] -> Format.fprintf ppf "%a" (type_expr c) t
     | t :: ts ->
-        Format.fprintf ppf "%a * %a" (type_expr c) t (type_expr_list c) ts
+        Format.fprintf ppf "%a, %a" (type_expr c) t (type_expr_list c) ts
     | [] -> ()
 
   and type_labeled_tuple c ppf l =
@@ -1209,8 +1209,8 @@ module Fmt = struct
 
   and with_label c ppf (l, ty) =
     match l with
-    | None -> type_expr c ppf ty
-    | Some lbl -> Format.fprintf ppf "%s:%a" lbl (type_expr c) ty
+    | None -> type_expr_atom c ppf ty
+    | Some lbl -> Format.fprintf ppf "%s:%a" lbl (type_expr_atom c) ty
 
   and type_object _c ppf _o = Format.fprintf ppf "(object)"
 
@@ -1238,6 +1238,19 @@ module Fmt = struct
           xs
     | Open -> fpf ppf "[> %a ]" pp_elements p.elements
 
+  (* An arrow binds more loosely than a constructor argument or a tuple
+     element, so it needs brackets there. Tuples print their own. *)
+  and is_arrow : TypeExpr.t -> bool = function
+    | Arrow _ | Arrow_functor _ -> true
+    | Var _ | Any | Alias _ | Tuple _ | Unboxed_tuple _ | Constr _
+    | Polymorphic_variant _ | Object _ | Class _ | Poly _ | Quote _ | Splice _
+    | Package _ ->
+        false
+
+  and type_expr_atom c ppf t =
+    if is_arrow t then Format.fprintf ppf "(%a)" (type_expr c) t
+    else type_expr c ppf t
+
   and type_expr c ppf e =
     let open TypeExpr in
     match e with
@@ -1245,15 +1258,18 @@ module Fmt = struct
     | Any -> Format.fprintf ppf "_"
     | Alias (x, y) -> Format.fprintf ppf "(alias %a %s)" (type_expr c) x y
     | Arrow (l, (t1, _), (t2, _)) ->
-        Format.fprintf ppf "%a(%a) -> %a" type_expr_label l (type_expr c) t1
+        (* -> is right-associative: only wrap LHS when it is itself an arrow. *)
+        Format.fprintf ppf "%a%a -> %a" type_expr_label l (type_expr_atom c) t1
           (type_expr c) t2
     | Tuple ts -> Format.fprintf ppf "(%a)" (type_labeled_tuple c) ts
     | Unboxed_tuple ts -> Format.fprintf ppf "#(%a)" (type_labeled_tuple c) ts
     | Constr (p, args) -> (
         match args with
         | [] -> Format.fprintf ppf "%a" (type_path c) p
+        | [ a ] ->
+            Format.fprintf ppf "%a %a" (type_expr_atom c) a (type_path c) p
         | _ ->
-            Format.fprintf ppf "[%a] %a" (type_expr_list c) args (type_path c) p
+            Format.fprintf ppf "(%a) %a" (type_expr_list c) args (type_path c) p
         )
     | Polymorphic_variant poly ->
         Format.fprintf ppf "(poly_var %a)"
