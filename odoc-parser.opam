@@ -17,7 +17,6 @@ depends: [
   "ocaml" {>= "4.08.0"}
   "astring"
   "camlp-streams"
-  "ppx_expect" {with-test}
   "sexplib0" {with-test}
 ]
 build: [

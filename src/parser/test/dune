@@ -1,10 +1,29 @@
 (library
  (name odoc_parser_test)
- (inline_tests)
+ (modules test test_tables)
  (enabled_if
   (>= %{ocaml_version} 4.04.1))
  (instrumentation
   (backend landmarks --auto))
- (preprocess
-  (pps ppx_expect))
  (libraries sexplib0 odoc-parser expect_test_helper))
+
+(executable
+ (name test_main)
+ (modules test_main)
+ (libraries odoc_parser_test expect_test_helper))
+
+(rule
+ (with-stdout-to
+  dune.inc.gen.raw
+  (run %{exe:test_main.exe} --gen-rules)))
+
+(rule
+ (action
+  (format-dune-file dune.inc.gen.raw dune.inc.gen)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff dune.inc dune.inc.gen)))
+
+(include dune.inc)
