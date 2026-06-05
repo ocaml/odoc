@@ -1,5 +1,7 @@
 open Odoc_parser
 
+(** See docs in {!Expect_test_helpers} for modifying this! *)
+
 type sexp = Sexplib0.Sexp.t = Atom of string | List of sexp list
 
 module Location_to_sexp = struct
