@@ -1,0 +1,9 @@
+type tuple_arg = (int * int) list
+type arrow_arg = (int -> int) list
+type arrows = int -> int -> int
+type arrow_left = (int -> int) -> int
+type labelled = l:(int -> int) -> ?o:int -> int
+type two_args = (int * int, string) result
+type tuple_left = int * int -> int
+type arrow_in_tuple = int * (int -> int)
+type tuple_in_tuple = (int * int) * int
