@@ -222,6 +222,7 @@ let run inp short long_paths show_canonical show_expansions
       show_expansions;
       show_include_expansions;
       show_removed;
+      identifier_name_only = false;
     }
   in
   Odoc_file.load inp >>= fun unit ->

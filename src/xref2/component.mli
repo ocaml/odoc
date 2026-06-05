@@ -598,6 +598,11 @@ module Fmt : sig
     show_removed : bool;
     show_expansions : bool;
     show_include_expansions : bool;
+    identifier_name_only : bool;
+        (** Print Identifier-wrapped paths using only the leaf name (as the HTML
+            renderer does). When canonical resolution has lifted a path like
+            [Mylib.A] into a single Identifier, this prints just [A]. Has no
+            effect on Module-step paths. *)
   }
 
   val default : config

@@ -590,6 +590,12 @@ module Fmt = struct
     show_removed : bool;
     show_expansions : bool;
     show_include_expansions : bool;
+    identifier_name_only : bool;
+        (** Print Identifier-wrapped paths using only the leaf name (as the HTML
+            renderer does). When canonical resolution has lifted a path like
+            [Mylib.A] into a single Identifier, this prints just [A]. Has no
+            effect on Module-step paths where the structure inherently requires
+            walking the chain. *)
   }
 
   let default =
@@ -599,6 +605,7 @@ module Fmt = struct
       show_removed = true;
       show_expansions = true;
       show_include_expansions = true;
+      identifier_name_only = false;
     }
 
   type id = Odoc_model.Paths.Identifier.t
@@ -1416,6 +1423,8 @@ module Fmt = struct
 
     match p with
     | `Resolved rp -> wrap c "resolved" model_resolved_path ppf rp
+    | `Identifier (id, _) when c.identifier_name_only ->
+        Format.fprintf ppf "%s" (Odoc_model.Paths.Identifier.name (id :> id))
     | `Identifier (id, b) ->
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
     | `Root s -> wrap c "root" str ppf (ModuleName.to_string s)
@@ -1443,6 +1452,8 @@ module Fmt = struct
     let open Odoc_model.Paths.Path.Resolved in
     match p with
     | `CoreType x -> Format.fprintf ppf "%s" (TypeName.to_string x)
+    | `Identifier id when c.identifier_name_only ->
+        Format.fprintf ppf "%s" (Odoc_model.Paths.Identifier.name (id :> id))
     | `Identifier id -> Format.fprintf ppf "%a" (model_identifier c) (id :> id)
     | `Module (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_resolved_path c)
