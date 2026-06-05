@@ -34,9 +34,9 @@ render as aliases in any case.
   module User : 
     sig
       type t = X.t
-      include module type of X with [t(params ) = X.t]
+      include module type of X with [t := X.t]
         => sig
-          include S with [t(params ) = X.t]
+          include S with [t := X.t]
             => sig
               type u = X0.u
               val v : u
