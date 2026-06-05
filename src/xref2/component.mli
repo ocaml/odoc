@@ -545,6 +545,53 @@ end
 
 (** Formatting functions for components *)
 module Fmt : sig
+  (** Pretty-printer for the {!Component} representation, used by debug output
+      and tests.
+
+      The following example uses [show] to compile a snippet of [.mli] source
+      into a {!Signature.t} and renders it with {!Fmt.signature} (see the
+      [component_fmt_prelude] MDX prelude):
+
+      {@ocaml[
+        # show {|
+            module type S = sig type t end
+            module M : S
+            module Internal__thing : S
+            module F (X : S) : sig end
+            module type T = S with type t = int
+            module type Tsub = S with type t := int
+            type fn = (int -> int) -> int
+            type curried = int -> int -> int
+            type 'a boxed = 'a list
+            type ('a, 'b) either = Left of 'a | Right of 'b
+            type ('a, 'b) reassoc = ('a, 'b) either
+            type e = A | B of int
+
+            (** @canonical Root.Pub *)
+            module Hidden__impl : S
+
+            module Pub = Hidden__impl
+            type via_canonical = Hidden__impl.t
+          |};;
+        module type S = sig type t end
+        module M : S (sig : type t end) (canonical=None)
+        module Internal__thing : S (sig : type t end) (canonical=None)
+        module F : (X/25 : S) -> sig  end (canonical=None)
+        module type T = S with t(params ) = int (sig : type t = int end)
+        module type Tsub = S with t(params ) = int
+          (sig :  (removed=type () t = (int)) end)
+        type fn = ((int) -> int) -> int
+        type curried = (int) -> (int) -> int
+        type boxed = [a] list
+        type either = Left of a | Right of b
+        type reassoc = [a * b] either
+        type e = A of  | B of int
+        module Hidden__impl : S (sig : type t end) (canonical=Some(Root.Pub))
+        module Pub = Hidden__impl (canonical=None)
+        type via_canonical = Hidden__impl.t
+        - : unit = ()
+      ]} *)
+
   type config = {
     short_paths : bool;
     show_canonical : bool;
