@@ -577,9 +577,8 @@ module Fmt : sig
         module M : S => sig type t end
         module Internal__thing : S => sig type t end
         module F : (X/25 : S) -> sig  end
-        module type T = S with t(params ) = int => sig type t = int end
-        module type Tsub = S with t(params ) = int
-          => sig  (removed=type () t = (int)) end
+        module type T = S with t = int => sig type t = int end
+        module type Tsub = S with t := int => sig  (removed=type () t = (int)) end
         type fn = (int -> int) -> int
         type curried = int -> int -> int
         type boxed = a list
@@ -650,7 +649,8 @@ module Fmt : sig
 
   val type_decl : config -> Format.formatter -> TypeDecl.t -> unit
 
-  val type_equation : config -> Format.formatter -> TypeDecl.Equation.t -> unit
+  val type_equation :
+    ?sep:string -> config -> Format.formatter -> TypeDecl.Equation.t -> unit
 
   val exception_ : config -> Format.formatter -> Exception.t -> unit
 

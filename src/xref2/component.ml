@@ -1101,19 +1101,20 @@ module Fmt = struct
     let pp_sep ppf () = Format.fprintf ppf ", " in
     Format.fprintf ppf "(%a)" (Format.pp_print_list ~pp_sep type_param) ts
 
-  and type_equation_manifest c ppf t =
+  and type_equation_manifest ?(sep = "=") c ppf t =
     match t.TypeDecl.Equation.manifest with
     | None -> ()
-    | Some m -> Format.fprintf ppf " = %a" (type_expr c) m
+    | Some m -> Format.fprintf ppf " %s %a" sep (type_expr c) m
 
   and type_equation_params _c ppf t =
     match t.TypeDecl.Equation.params with
     | [] -> ()
-    | ps -> Format.fprintf ppf "%a" type_params ps
+    | ps -> Format.fprintf ppf " %a" type_params ps
 
-  and type_equation c ppf t =
-    Format.fprintf ppf "(params %a)%a" (type_equation_params c) t
-      (type_equation_manifest c) t
+  and type_equation ?sep c ppf t =
+    Format.fprintf ppf "%a%a" (type_equation_params c) t
+      (type_equation_manifest ?sep c)
+      t
 
   and exception_ _c _ppf _e = ()
 
@@ -1137,7 +1138,9 @@ module Fmt = struct
     | TypeEq (frag, decl) ->
         Format.fprintf ppf "%a%a" (type_fragment c) frag (type_equation c) decl
     | TypeSubst (frag, decl) ->
-        Format.fprintf ppf "%a%a" (type_fragment c) frag (type_equation c) decl
+        Format.fprintf ppf "%a%a" (type_fragment c) frag
+          (type_equation ~sep:":=" c)
+          decl
 
   and substitution_list c ppf l =
     match l with
