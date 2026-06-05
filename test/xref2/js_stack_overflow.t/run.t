@@ -13,14 +13,14 @@ simply finishing!
   $ odoc_print --short a.odocl --show-expansions --show-include-expansions
   open [  ]
   include Import.S
-    (sig :
+    => sig
       include Import.S0
-        (sig :
+        => sig
           module {Thing}1/shadowed/(IIII) : sig module Config : sig  end end
-         end)
+         end
       module {Thing}1/shadowed/(AAAA) : 
-        sig module Config = {Thing}1/shadowed/(IIII).Config (sig :  end) end
-     end)
+        sig module Config = {Thing}1/shadowed/(IIII).Config => sig  end end
+     end
   module Thing : sig  end
 
 

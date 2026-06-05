@@ -43,17 +43,17 @@ contains only 2 modules (the module `X` should have been removed)
 
   $ odoc_print m.odocl -r T --short --show-expansions
   module type M.T = M.S with X := M.X1
-    (sig :
-      module type Y = module type of M.X1 (sig : type t end)
+    => sig
+      module type Y = module type of M.X1 => sig type t end
       module type Z = module type of struct include M.X1 end
-        (sig : type t = M.X1.t end)
-     end)
+        => sig type t = M.X1.t end
+     end
 
 Check that the expansion of 'T.Y' contains only 1 type
 
   $ odoc_print m.odocl -r T.Y --short --show-expansions
   module type M.T.Y = module type of M.X1
-    (sig : type t end)
+    => sig type t end
 
 Verify that T.Y.t has not been strengthened
 

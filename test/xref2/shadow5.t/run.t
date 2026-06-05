@@ -33,19 +33,19 @@ type `t`, but in the subsequent include, the type `t` within the signature _isn'
       type t = int
       val y : t
       include sigtype t = t
-                   val z : tend with [t(params ) = t] (sig : val z : t end)
+                   val z : tend with [t(params ) = t] => sig val z : t end
     end
   module type Z = 
     sig
       include Y
-        (sig :
+        => sig
           type {t}1/shadowed/(AAAA) = int
           val y : int
           include sig
             type t = {t}1/shadowed/(AAAA)
               val z : tend with [t(params ) = {t}1/shadowed/(AAAA)]
-            (sig : val z : int end)
-         end)
+            => sig val z : int end
+         end
       type t = int
     end
   $ odoc html-generate a.odocl -o html
@@ -81,15 +81,15 @@ For comparison, another test case that didn't have the bug:
     sig
       type t = int
       val y : t
-      include X with [t(params ) = t] (sig : val z : t end)
+      include X with [t(params ) = t] => sig val z : t end
     end
   module type Z = 
     sig
       include Y
-        (sig :
+        => sig
           type {t}1/shadowed/(BBBB) = int
           val y : int
-          include X with [t(params ) = int] (sig : val z : int end)
-         end)
+          include X with [t(params ) = int] => sig val z : int end
+         end
       type t = int
     end
