@@ -957,6 +957,8 @@ module Fmt = struct
   and simple_expansion c is_include ppf (m : ModuleType.simple_expansion) =
     if c.show_expansions || (is_include && c.show_include_expansions) then
       match m with
+      | ModuleType.Signature sg when is_empty_sg sg ->
+          Format.fprintf ppf "=> sig end"
       | ModuleType.Signature sg ->
           Format.fprintf ppf "@[<hv 2>=> sig@ %a@;<1 -1>end@]" (signature c) sg
       | Functor (arg, sg) ->
@@ -980,10 +982,13 @@ module Fmt = struct
         Format.fprintf ppf "module type of struct include %a end"
           (module_path c) p
 
+  and is_empty_sg (sg : Signature.t) = sg.items = [] && sg.removed = []
+
   and u_module_type_expr c ppf mt =
     let open ModuleType.U in
     match mt with
     | Path p -> module_type_path c ppf p
+    | Signature sg when is_empty_sg sg -> Format.fprintf ppf "sig end"
     | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" (signature c) sg
     | With (subs, e) ->
         Format.fprintf ppf "%a with [%a]" (u_module_type_expr c) e
@@ -997,6 +1002,7 @@ module Fmt = struct
     let open ModuleType in
     match mt with
     | Path { p_path; _ } -> module_type_path c ppf p_path
+    | Signature sg when is_empty_sg sg -> Format.fprintf ppf "sig end"
     | Signature sg ->
         Format.fprintf ppf "@,@[<hv 2>sig@ %a@;<1 -2>end@]" (signature c) sg
     | With { w_substitutions = subs; w_expr; _ } ->
@@ -1031,7 +1037,8 @@ module Fmt = struct
     | Named x -> Format.fprintf ppf "%a" (functor_parameter_parameter c) x
 
   and functor_parameter_parameter c ppf x =
-    Format.fprintf ppf "%a : %a" Ident.fmt x.FunctorParameter.id
+    let ident_fmt = if c.short_paths then Ident.short_fmt else Ident.fmt in
+    Format.fprintf ppf "%a : %a" ident_fmt x.FunctorParameter.id
       (module_type_expr c) x.FunctorParameter.expr
 
   and type_decl c ppf t =
@@ -1053,11 +1060,16 @@ module Fmt = struct
 
   and type_decl_constructor c ppf t =
     let open TypeDecl.Constructor in
+    let no_args =
+      match t.args with Tuple [] -> true | Tuple _ | Record _ -> false
+    in
     match t.res with
+    | Some res when no_args -> fpf ppf "%s : %a" t.name (type_expr c) res
     | Some res ->
         fpf ppf "%s : %a -> %a" t.name
           (type_decl_constructor_arg c)
           t.args (type_expr c) res
+    | None when no_args -> fpf ppf "%s" t.name
     | None -> fpf ppf "%s of %a" t.name (type_decl_constructor_arg c) t.args
 
   and type_decl_constructor_arg c ppf =
