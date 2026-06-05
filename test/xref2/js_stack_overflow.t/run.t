@@ -16,11 +16,11 @@ simply finishing!
     => sig
       include Import.S0
         => sig
-          module {Thing}1/shadowed/(IIII) : sig module Config : sig  end end
+          module {Thing}1/shadowed/(IIII) : sig module Config : sig end end
          end
       module {Thing}1/shadowed/(AAAA) : 
-        sig module Config = {Thing}1/shadowed/(IIII).Config => sig  end end
+        sig module Config = {Thing}1/shadowed/(IIII).Config => sig end end
      end
-  module Thing : sig  end
+  module Thing : sig end
 
 

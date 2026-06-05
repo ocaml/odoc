@@ -59,13 +59,13 @@ The expansions below should match OCaml's calculated signatures above.
     => sig type t end
   $ odoc_print b.odocl -r X4 --short --show-expansions
   module type B.X4 = module type of B.Y
-    => functor (A/0 : 
+    => functor (A : 
     sig type t end) -> => sig type t end
   $ odoc_print b.odocl -r X5 --short --show-expansions
   module type B.X5 = B.Foo with X := B.SubX
     => sig
-      module Y : (A/3 : sig type t end) -> sig module Z = B.SubX end
-      module type Z = module type of Y => functor (A/6 : 
+      module Y : (A : sig type t end) -> sig module Z = B.SubX end
+      module type Z = module type of Y => functor (A : 
         sig type t end) -> => sig module Z = B.SubX end
       module X' : module type of struct include B.SubX end
         => sig type t = B.SubX.t end

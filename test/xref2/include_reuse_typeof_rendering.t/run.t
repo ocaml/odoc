@@ -18,7 +18,7 @@ render as aliases in any case.
       type u
       val v : u
       module type H = sig val h : int end
-      module Make : (X/11 : H) -> sig val mk : t end
+      module Make : (X : H) -> sig val mk : t end
     end
   module X0 : 
     sig
@@ -28,7 +28,7 @@ render as aliases in any case.
           type u
           val v : u
           module type H = sig val h : int end
-          module Make : (X/20 : H) -> sig val mk : t end
+          module Make : (X : H) -> sig val mk : t end
          end
     end module X = X0
   module User : 
