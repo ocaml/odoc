@@ -683,6 +683,23 @@ module Fmt = struct
     if c.short_paths then Format.fprintf ppf "%a" (fn2 c) y
     else Format.fprintf ppf "%s(%a,%a)" txt (fn1 c) x (fn2 c) y
 
+  (* Like [wrap2r], but short paths prefer the canonical path only once it is
+     resolved. An unresolved canonical path names nothing that exists, so the
+     path it is attached to is printed instead. *)
+  let wrap2_canonical : type a.
+      config ->
+      string ->
+      (config -> Format.formatter -> a -> unit) ->
+      (config -> Format.formatter -> path -> unit) ->
+      Format.formatter ->
+      a ->
+      path ->
+      unit =
+   fun c txt fn1 fn2 ppf x y ->
+    match y with
+    | `Resolved _ -> wrap2r c txt fn1 fn2 ppf x y
+    | _ -> wrap2 c txt fn1 fn2 ppf x y
+
   let str : config -> Format.formatter -> string -> unit =
    fun _ ppf s -> Format.fprintf ppf "%s" s
 
@@ -1266,7 +1283,8 @@ module Fmt = struct
           p2
     | `Hidden p1 -> wrap c "hidden" resolved_module_path ppf p1
     | `Canonical (p1, p2) ->
-        wrap2 c "canonical" resolved_module_path model_path ppf p1 (p2 :> path)
+        wrap2_canonical c "canonical" resolved_module_path model_path ppf p1
+          (p2 :> path)
     | `OpaqueModule m -> wrap c "opaquemodule" resolved_module_path ppf m
 
   and module_path : config -> Format.formatter -> Cpath.module_ -> unit =
@@ -1297,7 +1315,8 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
           (ModuleTypeName.to_string m)
     | `CanonicalModuleType (m1, m2) ->
-        wrap2 c "canonicalt" resolved_module_type_path model_path ppf m1
+        wrap2_canonical c "canonicalt" resolved_module_type_path model_path ppf
+          m1
           (m2 :> path)
     | `OpaqueModuleType m ->
         wrap c "opaquemoduletype" resolved_module_type_path ppf m
@@ -1333,7 +1352,7 @@ module Fmt = struct
     | `Substituted x -> wrap c "substituted" resolved_type_path ppf x
     | `Unbox x -> wrap c "unbox" resolved_type_path ppf x
     | `CanonicalType (t1, t2) ->
-        wrap2 c "canonicaltype" resolved_type_path model_path ppf t1
+        wrap2_canonical c "canonicaltype" resolved_type_path model_path ppf t1
           (t2 :> path)
     | `Class (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
@@ -1503,11 +1522,12 @@ module Fmt = struct
           (t1 :> t)
           (t2 :> t)
     | `CanonicalModuleType (t1, t2) ->
-        wrap2 c "canonicalmoduletype" model_resolved_path model_path ppf
+        wrap2_canonical c "canonicalmoduletype" model_resolved_path model_path
+          ppf
           (t1 :> t)
           (t2 :> path)
     | `CanonicalType (t1, t2) ->
-        wrap2 c "canonicaltype" model_resolved_path model_path ppf
+        wrap2_canonical c "canonicaltype" model_resolved_path model_path ppf
           (t1 :> t)
           (t2 :> path)
     | `Apply (funct, arg) ->
@@ -1523,7 +1543,7 @@ module Fmt = struct
           (model_resolved_path c)
           (arg :> t)
     | `Canonical (p1, p2) ->
-        wrap2 c "canonical" model_resolved_path model_path ppf
+        wrap2_canonical c "canonical" model_resolved_path model_path ppf
           (p1 :> t)
           (p2 :> path)
     | `Hidden p -> wrap c "hidden" model_resolved_path ppf (p :> t)
