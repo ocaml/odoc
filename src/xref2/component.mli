@@ -545,63 +545,113 @@ end
 
 (** Formatting functions for components *)
 module Fmt : sig
-  (** Pretty-printer for the {!Component} representation, used by debug output
-      and tests.
+  (** Pretty-printer for the {!Component} representation. {!signature} renders a
+      {!Signature.t}; what it prints is controlled by a {!config}.
 
-      The following example uses [show] to compile a snippet of [.mli] source
-      into a {!Signature.t} and renders it with {!Fmt.signature} (see the
-      [component_fmt_prelude] MDX prelude):
+      The examples below compile a fragment of [.mli] source into the
+      {!Signature.t} it denotes with [sig_of] (a helper from the
+      [component_fmt_prelude] MDX prelude) and render it with {!signature}.
+      [readable] is {!default} with {!short_paths} enabled.
 
       {@ocaml[
-        # show {|
+        # let example = {|
             module type S = sig type t end
             module M : S
-            module Internal__thing : S
             module F (X : S) : sig end
-            module type T = S with type t = int
+            include S
             module type Tsub = S with type t := int
-            type fn = (int -> int) -> int
-            type curried = int -> int -> int
-            type 'a boxed = 'a list
-            type ('a, 'b) either = Left of 'a | Right of 'b
-            type ('a, 'b) reassoc = ('a, 'b) either
-            type e = A | B of int
-
-            (** @canonical Root.Pub *)
-            module Hidden__impl : S
-
-            module Pub = Hidden__impl
-            type via_canonical = Hidden__impl.t
           |};;
+        val example : string =
+          "\n    module type S = sig type t end\n    module M : S\n    module F (X : S) : sig end\n    include S\n    module type Tsub = S with type t := int\n  "
+      ]}
+
+      With [readable] the rendering stays close to source syntax: a module's
+      expansion is shown after [=>], and a destructively-removed item is flagged
+      with [(removed=...)]:
+
+      {@ocaml[
+        # Format.printf "@[<v>%a@]@." (Component.Fmt.signature readable) (sig_of example);;
         module type S = sig type t end
         module M : S => sig type t end
-        module [Internal__thing] : S => sig type t end
         module F : (X : S) -> sig end
-        module type T = S with t = int => sig type t = int end
+        include S => sig type t end
         module type Tsub = S with t := int => sig  (removed=type () t = (int)) end
-        type fn = (int -> int) -> int
-        type curried = int -> int -> int
-        type boxed = a list
-        type either = Left of a | Right of b
-        type reassoc = (a * b) either
-        type e = A | B of int
-        module [Hidden__impl] : S => sig type t end (canonical=Root.Pub)
-        module Pub = Root.Pub
-        type via_canonical = Root.Pub.t
         - : unit = ()
-      ]} *)
+      ]}
+
+      Each {!config} field switches one of these off. [short_paths = false] is
+      the raw internal view — unique [name/NN] idents and the
+      [r(...)]/[resolved(...)] wrappers used while resolving paths:
+
+      {@ocaml[
+        # Format.printf "@[<v>%a@]@."
+            (Component.Fmt.signature { readable with short_paths = false })
+            (sig_of example);;
+        module type S/6 = sig type t/7 end
+        module M/4 : r(S/6) => sig type t/8 end
+        module F/3 : (X/9 : r(S/6)) -> sig end
+        include r(S/6) => sig type t/2 end
+        module type Tsub/5 = r(S/6) with resolved(root(S/6).t) := resolved(int)
+          => sig  (removed=type () t = (resolved(int))) end
+        - : unit = ()
+      ]}
+
+      [show_expansions = false] hides the [=> sig ... end] expansions. Includes
+      are governed separately by [show_include_expansions], so the [include]
+      keeps its expansion while [M] loses it:
+
+      {@ocaml[
+        # Format.printf "@[<v>%a@]@."
+            (Component.Fmt.signature { readable with show_expansions = false })
+            (sig_of example);;
+        module type S = sig type t end
+        module M : S
+        module F : (X : S) -> sig end
+        include S => sig type t end
+        module type Tsub = S with t := int
+        - : unit = ()
+      ]}
+
+      [show_removed = false] hides items deleted by destructive substitution
+      (here the [t] removed by [Tsub], leaving an empty expansion):
+
+      {@ocaml[
+        # Format.printf "@[<v>%a@]@."
+            (Component.Fmt.signature { readable with show_removed = false })
+            (sig_of example);;
+        module type S = sig type t end
+        module M : S => sig type t end
+        module F : (X : S) -> sig end
+        include S => sig type t end
+        module type Tsub = S with t := int => sig  end
+        - : unit = ()
+      ]}
+
+      The remaining two fields need inputs this self-contained example does not
+      produce: [show_canonical] toggles the [(canonical=...)] note printed for a
+      module carrying a [@canonical] tag, and [identifier_name_only] shortens
+      paths that resolution has lifted to a single cross-unit
+      {!Odoc_model.Paths.Identifier.t} — which only arises across compilation
+      units, not the in-unit signatures [sig_of] builds. *)
 
   type config = {
     short_paths : bool;
+        (** Render short, source-like names instead of the raw [name/NN] idents
+            and [r(...)]/[resolved(...)] path wrappers. *)
     show_canonical : bool;
+        (** Print the [(canonical=...)] note for a module with a [@canonical]
+            target. *)
     show_removed : bool;
+        (** Print items removed by destructive substitution, flagged
+            [(removed=...)]. *)
     show_expansions : bool;
+        (** Print module and module-type expansions after [=>]. *)
     show_include_expansions : bool;
+        (** Print the expansion of [include]d signatures, even when
+            [show_expansions] is off. *)
     identifier_name_only : bool;
-        (** Print Identifier-wrapped paths using only the leaf name (as the HTML
-            renderer does). When canonical resolution has lifted a path like
-            [Mylib.A] into a single Identifier, this prints just [A]. Has no
-            effect on Module-step paths. *)
+        (** Print Identifiers using only the leaf name (as the HTML renderer
+            does). *)
   }
 
   val default : config
