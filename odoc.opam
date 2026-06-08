@@ -60,6 +60,7 @@ depends: [
 conflicts: [
   "ocaml-option-bytecode-only"
   "oxcaml-compiler" {< "5.2.0minus31"}
+  "ocamlfind" {< "1.9.8"}
 ]
 
 x-extra-doc-deps: [
