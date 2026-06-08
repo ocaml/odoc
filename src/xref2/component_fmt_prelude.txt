@@ -9,8 +9,13 @@
 open Odoc_xref2;;
 open Odoc_xref_test;;
 
-let show ?(config = { Component.Fmt.default with short_paths = true }) src =
+(* [readable] is [Component.Fmt.default] with [short_paths] turned on, the form
+   wanted for most debugging output. *)
+let readable = { Component.Fmt.default with short_paths = true }
+
+(* Compile a fragment of [.mli] source into the {!Component.Signature.t} it
+   denotes, ready to render with [Component.Fmt.signature]. *)
+let sig_of src =
   let sg = Common.signature_of_mli_string src in
   let sg = Common.compile_signature sg in
-  let csg = Component.Of_Lang.(signature (empty ()) sg) in
-  Format.printf "@[<v>%a@]@." (Component.Fmt.signature config) csg;;
+  Component.Of_Lang.(signature (empty ()) sg);;
