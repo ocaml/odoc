@@ -8,14 +8,14 @@
  (libraries sexplib0 odoc-parser expect_test_helper))
 
 (executable
- (name test_main)
- (modules test_main)
+ (name odoc_parser_test_main)
+ (modules odoc_parser_test_main)
  (libraries odoc_parser_test expect_test_helper))
 
 (rule
  (with-stdout-to
   dune.inc.gen.raw
-  (run %{exe:test_main.exe} --gen-rules)))
+  (run %{exe:odoc_parser_test_main.exe} --gen-rules)))
 
 (rule
  (action
