@@ -4,7 +4,7 @@
   (progn
    (with-stdout-to
     trivial.actual
-    (run %{exe:test_main.exe} trivial))
+    (run %{exe:odoc_parser_test_main.exe} trivial))
    (diff expected/trivial.expected trivial.actual))))
 
 (rule
@@ -13,7 +13,7 @@
   (progn
    (with-stdout-to
     one_paragraph.actual
-    (run %{exe:test_main.exe} one_paragraph))
+    (run %{exe:odoc_parser_test_main.exe} one_paragraph))
    (diff expected/one_paragraph.expected one_paragraph.actual))))
 
 (rule
@@ -22,7 +22,7 @@
   (progn
    (with-stdout-to
     two_paragraphs.actual
-    (run %{exe:test_main.exe} two_paragraphs))
+    (run %{exe:odoc_parser_test_main.exe} two_paragraphs))
    (diff expected/two_paragraphs.expected two_paragraphs.actual))))
 
 (rule
@@ -31,7 +31,7 @@
   (progn
    (with-stdout-to
     plus_minus_bar_words.actual
-    (run %{exe:test_main.exe} plus_minus_bar_words))
+    (run %{exe:odoc_parser_test_main.exe} plus_minus_bar_words))
    (diff expected/plus_minus_bar_words.expected plus_minus_bar_words.actual))))
 
 (rule
@@ -40,7 +40,7 @@
   (progn
    (with-stdout-to
     escape_sequence.actual
-    (run %{exe:test_main.exe} escape_sequence))
+    (run %{exe:odoc_parser_test_main.exe} escape_sequence))
    (diff expected/escape_sequence.expected escape_sequence.actual))))
 
 (rule
@@ -49,7 +49,7 @@
   (progn
    (with-stdout-to
     code_span.actual
-    (run %{exe:test_main.exe} code_span))
+    (run %{exe:odoc_parser_test_main.exe} code_span))
    (diff expected/code_span.expected code_span.actual))))
 
 (rule
@@ -58,7 +58,7 @@
   (progn
    (with-stdout-to
     bold.actual
-    (run %{exe:test_main.exe} bold))
+    (run %{exe:odoc_parser_test_main.exe} bold))
    (diff expected/bold.expected bold.actual))))
 
 (rule
@@ -67,7 +67,7 @@
   (progn
    (with-stdout-to
     italic.actual
-    (run %{exe:test_main.exe} italic))
+    (run %{exe:odoc_parser_test_main.exe} italic))
    (diff expected/italic.expected italic.actual))))
 
 (rule
@@ -76,7 +76,7 @@
   (progn
    (with-stdout-to
     emphasis.actual
-    (run %{exe:test_main.exe} emphasis))
+    (run %{exe:odoc_parser_test_main.exe} emphasis))
    (diff expected/emphasis.expected emphasis.actual))))
 
 (rule
@@ -85,7 +85,7 @@
   (progn
    (with-stdout-to
     superscript.actual
-    (run %{exe:test_main.exe} superscript))
+    (run %{exe:odoc_parser_test_main.exe} superscript))
    (diff expected/superscript.expected superscript.actual))))
 
 (rule
@@ -94,7 +94,7 @@
   (progn
    (with-stdout-to
     subscript.actual
-    (run %{exe:test_main.exe} subscript))
+    (run %{exe:odoc_parser_test_main.exe} subscript))
    (diff expected/subscript.expected subscript.actual))))
 
 (rule
@@ -103,7 +103,7 @@
   (progn
    (with-stdout-to
     simple_reference.actual
-    (run %{exe:test_main.exe} simple_reference))
+    (run %{exe:odoc_parser_test_main.exe} simple_reference))
    (diff expected/simple_reference.expected simple_reference.actual))))
 
 (rule
@@ -112,7 +112,7 @@
   (progn
    (with-stdout-to
     reference_with_text.actual
-    (run %{exe:test_main.exe} reference_with_text))
+    (run %{exe:odoc_parser_test_main.exe} reference_with_text))
    (diff expected/reference_with_text.expected reference_with_text.actual))))
 
 (rule
@@ -121,7 +121,7 @@
   (progn
    (with-stdout-to
     medias.actual
-    (run %{exe:test_main.exe} medias))
+    (run %{exe:odoc_parser_test_main.exe} medias))
    (diff expected/medias.expected medias.actual))))
 
 (rule
@@ -130,7 +130,7 @@
   (progn
    (with-stdout-to
     link.actual
-    (run %{exe:test_main.exe} link))
+    (run %{exe:odoc_parser_test_main.exe} link))
    (diff expected/link.expected link.actual))))
 
 (rule
@@ -139,7 +139,7 @@
   (progn
    (with-stdout-to
     module_list.actual
-    (run %{exe:test_main.exe} module_list))
+    (run %{exe:odoc_parser_test_main.exe} module_list))
    (diff expected/module_list.expected module_list.actual))))
 
 (rule
@@ -148,7 +148,7 @@
   (progn
    (with-stdout-to
     code_block.actual
-    (run %{exe:test_main.exe} code_block))
+    (run %{exe:odoc_parser_test_main.exe} code_block))
    (diff expected/code_block.expected code_block.actual))))
 
 (rule
@@ -157,7 +157,7 @@
   (progn
    (with-stdout-to
     verbatim.actual
-    (run %{exe:test_main.exe} verbatim))
+    (run %{exe:odoc_parser_test_main.exe} verbatim))
    (diff expected/verbatim.expected verbatim.actual))))
 
 (rule
@@ -166,7 +166,7 @@
   (progn
    (with-stdout-to
     shorthand_list.actual
-    (run %{exe:test_main.exe} shorthand_list))
+    (run %{exe:odoc_parser_test_main.exe} shorthand_list))
    (diff expected/shorthand_list.expected shorthand_list.actual))))
 
 (rule
@@ -175,7 +175,7 @@
   (progn
    (with-stdout-to
     explicit_list.actual
-    (run %{exe:test_main.exe} explicit_list))
+    (run %{exe:odoc_parser_test_main.exe} explicit_list))
    (diff expected/explicit_list.expected explicit_list.actual))))
 
 (rule
@@ -184,7 +184,7 @@
   (progn
    (with-stdout-to
     deprecated.actual
-    (run %{exe:test_main.exe} deprecated))
+    (run %{exe:odoc_parser_test_main.exe} deprecated))
    (diff expected/deprecated.expected deprecated.actual))))
 
 (rule
@@ -193,7 +193,7 @@
   (progn
    (with-stdout-to
     param.actual
-    (run %{exe:test_main.exe} param))
+    (run %{exe:odoc_parser_test_main.exe} param))
    (diff expected/param.expected param.actual))))
 
 (rule
@@ -202,7 +202,7 @@
   (progn
    (with-stdout-to
     raise.actual
-    (run %{exe:test_main.exe} raise))
+    (run %{exe:odoc_parser_test_main.exe} raise))
    (diff expected/raise.expected raise.actual))))
 
 (rule
@@ -211,7 +211,7 @@
   (progn
    (with-stdout-to
     return.actual
-    (run %{exe:test_main.exe} return))
+    (run %{exe:odoc_parser_test_main.exe} return))
    (diff expected/return.expected return.actual))))
 
 (rule
@@ -220,7 +220,7 @@
   (progn
    (with-stdout-to
     see.actual
-    (run %{exe:test_main.exe} see))
+    (run %{exe:odoc_parser_test_main.exe} see))
    (diff expected/see.expected see.actual))))
 
 (rule
@@ -229,7 +229,7 @@
   (progn
    (with-stdout-to
     since.actual
-    (run %{exe:test_main.exe} since))
+    (run %{exe:odoc_parser_test_main.exe} since))
    (diff expected/since.expected since.actual))))
 
 (rule
@@ -238,7 +238,7 @@
   (progn
    (with-stdout-to
     before.actual
-    (run %{exe:test_main.exe} before))
+    (run %{exe:odoc_parser_test_main.exe} before))
    (diff expected/before.expected before.actual))))
 
 (rule
@@ -247,7 +247,7 @@
   (progn
    (with-stdout-to
     version.actual
-    (run %{exe:test_main.exe} version))
+    (run %{exe:odoc_parser_test_main.exe} version))
    (diff expected/version.expected version.actual))))
 
 (rule
@@ -256,7 +256,7 @@
   (progn
    (with-stdout-to
     canonical.actual
-    (run %{exe:test_main.exe} canonical))
+    (run %{exe:odoc_parser_test_main.exe} canonical))
    (diff expected/canonical.expected canonical.actual))))
 
 (rule
@@ -265,7 +265,7 @@
   (progn
    (with-stdout-to
     inline.actual
-    (run %{exe:test_main.exe} inline))
+    (run %{exe:odoc_parser_test_main.exe} inline))
    (diff expected/inline.expected inline.actual))))
 
 (rule
@@ -274,7 +274,7 @@
   (progn
    (with-stdout-to
     open.actual
-    (run %{exe:test_main.exe} open))
+    (run %{exe:odoc_parser_test_main.exe} open))
    (diff expected/open.expected open.actual))))
 
 (rule
@@ -283,7 +283,7 @@
   (progn
    (with-stdout-to
     closed.actual
-    (run %{exe:test_main.exe} closed))
+    (run %{exe:odoc_parser_test_main.exe} closed))
    (diff expected/closed.expected closed.actual))))
 
 (rule
@@ -292,7 +292,7 @@
   (progn
    (with-stdout-to
     hidden.actual
-    (run %{exe:test_main.exe} hidden))
+    (run %{exe:odoc_parser_test_main.exe} hidden))
    (diff expected/hidden.expected hidden.actual))))
 
 (rule
@@ -301,7 +301,7 @@
   (progn
    (with-stdout-to
     bad_markup.actual
-    (run %{exe:test_main.exe} bad_markup))
+    (run %{exe:odoc_parser_test_main.exe} bad_markup))
    (diff expected/bad_markup.expected bad_markup.actual))))
 
 (rule
@@ -310,7 +310,7 @@
   (progn
    (with-stdout-to
     utf_8.actual
-    (run %{exe:test_main.exe} utf_8))
+    (run %{exe:odoc_parser_test_main.exe} utf_8))
    (diff expected/utf_8.expected utf_8.actual))))
 
 (rule
@@ -319,7 +319,7 @@
   (progn
    (with-stdout-to
     comment_location.actual
-    (run %{exe:test_main.exe} comment_location))
+    (run %{exe:odoc_parser_test_main.exe} comment_location))
    (diff expected/comment_location.expected comment_location.actual))))
 
 (rule
@@ -328,7 +328,7 @@
   (progn
    (with-stdout-to
     unsupported.actual
-    (run %{exe:test_main.exe} unsupported))
+    (run %{exe:odoc_parser_test_main.exe} unsupported))
    (diff expected/unsupported.expected unsupported.actual))))
 
 (rule
@@ -337,7 +337,7 @@
   (progn
    (with-stdout-to
     locations.actual
-    (run %{exe:test_main.exe} locations))
+    (run %{exe:odoc_parser_test_main.exe} locations))
    (diff expected/locations.expected locations.actual))))
 
 (rule
@@ -346,7 +346,7 @@
   (progn
    (with-stdout-to
     math.actual
-    (run %{exe:test_main.exe} math))
+    (run %{exe:odoc_parser_test_main.exe} math))
    (diff expected/math.expected math.actual))))
 
 (rule
@@ -355,7 +355,7 @@
   (progn
    (with-stdout-to
     heavy.actual
-    (run %{exe:test_main.exe} heavy))
+    (run %{exe:odoc_parser_test_main.exe} heavy))
    (diff expected/heavy.expected heavy.actual))))
 
 (rule
@@ -364,5 +364,5 @@
   (progn
    (with-stdout-to
     light.actual
-    (run %{exe:test_main.exe} light))
+    (run %{exe:odoc_parser_test_main.exe} light))
    (diff expected/light.expected light.actual))))

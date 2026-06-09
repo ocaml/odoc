@@ -2,7 +2,7 @@
  (copy ../../odoc_print/type_desc_to_yojson.ml type_desc_to_yojson.ml))
 
 (executable
- (name test)
+ (name odoc_semantic_test)
  (enabled_if
   (>= %{ocaml_version} 4.04.1))
  (libraries sexplib0 odoc_model odoc_model_desc yojson expect_test_helper))
@@ -10,7 +10,7 @@
 (rule
  (with-stdout-to
   dune.inc.gen.raw
-  (run %{exe:test.exe} --gen-rules)))
+  (run %{exe:odoc_semantic_test.exe} --gen-rules)))
 
 (rule
  (action
