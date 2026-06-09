@@ -1,3 +1,4 @@
+
 (* This module is a recursive descent parser for the ocamldoc syntax. The parser
    consumes a token stream of type [Token.t Stream.t], provided by the lexer,
    and produces a comment AST of the type defined in [Parser_.Ast].
@@ -167,6 +168,30 @@ type token_that_always_begins_an_inline_element =
   | `Begin_link_with_replacement_text of string
   | `Math_span of string ]
 
+let escape_link link =
+  let link = String.trim link in
+  let buf = Buffer.create (String.length link) in
+  let last_state =
+    String.fold_left
+         (fun acc chr ->
+           match (acc, chr) with
+           | `Char, '\\' -> `Backslash
+           | `Char, _ ->
+               Buffer.add_char buf chr;
+               `Char
+           | (`Backslash | `Escaping), (' ' | '\t' | '\n') -> `Escaping
+           | (`Backslash | `Escaping), _ ->
+               Buffer.add_char buf chr;
+               `Char)
+         `Char link
+  in
+  let () =
+    match last_state with
+    | `Backslash -> Buffer.add_char buf '\\'
+    | `Escaping | `Char -> ()
+  in
+  Buffer.contents buf
+
 (* Check that the token constructors above actually are all in [Token.t]. *)
 let _check_subset : token_that_always_begins_an_inline_element -> Token.t =
  fun t -> (t :> Token.t)
@@ -269,7 +294,7 @@ let rec inline_element :
   | `Simple_link u ->
       junk input;
 
-      let u = String.trim u in
+      let u = escape_link u |> String.trim in
 
       if u = "" then
         Parse_error.should_not_be_empty
@@ -281,7 +306,7 @@ let rec inline_element :
   | `Begin_link_with_replacement_text u as parent_markup ->
       junk input;
 
-      let u = String.trim u in
+      let u = escape_link u |> String.trim in
 
       if u = "" then
         Parse_error.should_not_be_empty
