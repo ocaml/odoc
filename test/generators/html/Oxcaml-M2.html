@@ -20,6 +20,20 @@
   </header>
   <div class="odoc-content">
    <div class="odoc-spec">
+    <div class="spec type anchored" id="type-s">
+     <a href="#type-s" class="anchor"></a>
+     <code><span><span class="keyword">type</span> s : immutable_data</span>
+      <span> = </span><span>{</span>
+     </code>
+     <ol>
+      <li id="type-s.a" class="def record field anchored">
+       <a href="#type-s.a" class="anchor"></a>
+       <code><span>a : int;</span></code>
+      </li>
+     </ol><code><span>}</span></code>
+    </div>
+   </div>
+   <div class="odoc-spec">
     <div class="spec value anchored" id="val-x">
      <a href="#val-x" class="anchor"></a>
      <code><span><span class="keyword">val</span> x : int @@ portable</span>
@@ -38,17 +52,47 @@
     </div>
    </div>
    <div class="odoc-spec">
-    <div class="spec type anchored" id="type-s">
-     <a href="#type-s" class="anchor"></a>
-     <code><span><span class="keyword">type</span> s : immutable_data</span>
-      <span> = </span><span>{</span>
+    <div class="spec value anchored" id="val-portable">
+     <a href="#val-portable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> portable : 
+       <span>string <span class="arrow">&#45;&gt;</span></span> 
+       <span>string array</span> @@ portable
+      </span>
      </code>
-     <ol>
-      <li id="type-s.a" class="def record field anchored">
-       <a href="#type-s.a" class="anchor"></a>
-       <code><span>a : int;</span></code>
-      </li>
-     </ol><code><span>}</span></code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-contended">
+     <a href="#val-contended" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> contended : 
+       <span>string <span class="arrow">&#45;&gt;</span></span> bytes
+        @@ portable contended
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-uncontended">
+     <a href="#val-uncontended" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> uncontended : 
+       <span>string <span class="arrow">&#45;&gt;</span></span> bytes
+        @@ portable
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-nonportable">
+     <a href="#val-nonportable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> nonportable : 
+       <span>string <span class="arrow">&#45;&gt;</span></span> 
+       <span>string array</span> @@ portable
+      </span>
+     </code>
     </div>
    </div>
   </div>

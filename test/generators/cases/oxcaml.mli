@@ -158,39 +158,39 @@ type modalities_all = {
   f_global : opaque @@ global;
       (** Locality modality. *)
   f_local : opaque @@ local;
-      (** Locality modality (identity, not rendered). *)
+      (** Locality modality (local is not rendered). *)
   f_unique : opaque @@ unique;
-      (** Uniqueness modality. *)
+      (** Uniqueness modality (unique is not rendered). *)
   f_aliased : opaque @@ aliased;
-      (** Uniqueness modality (identity, not rendered). *)
+      (** Uniqueness modality. *)
   f_many : opaque @@ many;
       (** Linearity modality. *)
   f_once : opaque @@ once;
-      (** Linearity modality (identity, not rendered). *)
+      (** Linearity modality (once is not rendered). *)
   f_portable : opaque @@ portable;
       (** Portability modality. *)
   f_nonportable : opaque @@ nonportable;
-      (** Portability modality (identity, not rendered). *)
+      (** Portability modality (nonportable is not rendered). *)
   f_uncontended : opaque @@ uncontended;
-      (** Contention modality (identity, not rendered). *)
+      (** Contention modality (uncontended is not rendered). *)
   f_contended : opaque @@ contended;
       (** Contention modality. *)
   f_unyielding : opaque @@ unyielding;
       (** Yield modality. *)
   f_yielding : opaque @@ yielding;
-      (** Yield modality (identity, not rendered). *)
+      (** Yield modality (yielding is not rendered). *)
   f_forkable : opaque @@ forkable;
       (** Fork modality. *)
   f_unforkable : opaque @@ unforkable;
-      (** Fork modality (identity, not rendered). *)
+      (** Fork modality (unforkable is not rendered). *)
   f_stateless : opaque @@ stateless;
       (** Statefulness modality. *)
   f_stateful : opaque @@ stateful;
-      (** Statefulness modality (identity, not rendered). *)
+      (** Statefulness modality (stateful is not rendered). *)
   f_immutable : opaque @@ immutable;
       (** Visibility modality. *)
   f_read_write : opaque @@ read_write;
-      (** Visibility modality (identity, not rendered). *)
+      (** Visibility modality (read_write is not rendered). *)
   f_no_modality : opaque;
       (** No modality, for reference. *)
 }
@@ -225,20 +225,43 @@ type modalities_cstr =
       (** Tuple constructor argument with modality. *)
   | D of int @@ portable * string @@ global
       (** Per-element modalities in a constructor tuple. *)
-  | E
+  | E of { x : int @@ portable ; y : string @@ global }
+      (** Per-element modalities in a constructor record. *)
+  | F
       (** Constant constructor. *)
 
-(** {1 Modalities on values} *)
+type 'a modalities_gadt =
+  | A : string @@ global -> [`a] modalities_gadt
+      (** Constructor argument with [global] modality. *)
+  | B : (int -> int) @@ portable -> [`b] modalities_gadt
+      (** Function constructor argument with modality. *)
+  | C : int * string @@ portable -> [`c] modalities_gadt
+      (** Tuple constructor argument with modality. *)
+  | D : int @@ portable * string @@ global -> [`d] modalities_gadt
+      (** Per-element modalities in a constructor tuple. *)
+  | E : { x : int @@ portable ; y : string @@ global } -> [`e] modalities_gadt
+      (** Per-element modalities in a constructor record. *)
+  | F : [`f] modalities_gadt
+      (** Constant constructor. *)
+
+(** {2 Modalities on values} *)
 
 val portable_fn : (int -> int) @@ portable
 (** Value with [portable] modality. *)
 
-(** {1 Modalities on module declarations} *)
+(** {2 Modalities on module declarations} *)
 
 module type S = sig
+  type s = { a : int }
   val x : int
   val f : string -> bool
-  type s = { a : int }
+  val portable : string -> string array @@ portable
+  val contended : string -> bytes @@ contended
+
+  (** [uncontended] and [nonportable] are the defaults (not rendered). *)
+
+  val uncontended : string -> bytes @@ uncontended
+  val nonportable : string -> string array @@ nonportable
 end
 
 module M1 : S
@@ -249,7 +272,11 @@ module M2 : S @@ portable
     all value members of [M2]. *)
 
 module M3 : sig @@ contended
-  val f : string -> bool
   type s
+  val f : string -> bool
+  val portable : string -> string array @@ portable
+  val nonportable : string -> string array @@ nonportable
+  val uncontended : string -> bytes @@ uncontended
 end
-(** [contended] modality applied to all definitions in the module. *)
+(** [contended] modality applied to all definitions in the module, except the
+    ones which have already specified this axis. *)

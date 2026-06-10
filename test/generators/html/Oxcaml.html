@@ -64,11 +64,13 @@
       <a href="#modalities-on-constructor-arguments">Modalities on 
        constructor arguments
       </a>
-     </li><li><a href="#modalities-on-values">Modalities on values</a></li>
-     <li>
-      <a href="#modalities-on-module-declarations">Modalities on module
-        declarations
-      </a>
+      <ul><li><a href="#modalities-on-values">Modalities on values</a></li>
+       <li>
+        <a href="#modalities-on-module-declarations">Modalities on module
+          declarations
+        </a>
+       </li>
+      </ul>
      </li>
     </ul>
    </nav>
@@ -645,7 +647,7 @@
        <a href="#type-modalities_all.f_local" class="anchor"></a>
        <code><span>f_local : <a href="#type-opaque">opaque</a>;</span></code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>Locality modality (identity, not rendered).</p>
+        <p>Locality modality (local is not rendered).</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -654,7 +656,8 @@
        <code><span>f_unique : <a href="#type-opaque">opaque</a>;</span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>Uniqueness modality.</p><span class="comment-delim">*)</span>
+        <p>Uniqueness modality (unique is not rendered).</p>
+        <span class="comment-delim">*)</span>
        </div>
       </li>
       <li id="type-modalities_all.f_aliased" class="def record field
@@ -664,8 +667,7 @@
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>Uniqueness modality (identity, not rendered).</p>
-        <span class="comment-delim">*)</span>
+        <p>Uniqueness modality.</p><span class="comment-delim">*)</span>
        </div>
       </li>
       <li id="type-modalities_all.f_many" class="def record field anchored">
@@ -680,7 +682,7 @@
        <a href="#type-modalities_all.f_once" class="anchor"></a>
        <code><span>f_once : <a href="#type-opaque">opaque</a>;</span></code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>Linearity modality (identity, not rendered).</p>
+        <p>Linearity modality (once is not rendered).</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -701,7 +703,7 @@
        <code><span>f_nonportable : <a href="#type-opaque">opaque</a>;</span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>Portability modality (identity, not rendered).</p>
+        <p>Portability modality (nonportable is not rendered).</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -711,7 +713,7 @@
        <code><span>f_uncontended : <a href="#type-opaque">opaque</a>;</span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>Contention modality (identity, not rendered).</p>
+        <p>Contention modality (uncontended is not rendered).</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -743,7 +745,7 @@
        <code><span>f_yielding : <a href="#type-opaque">opaque</a>;</span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>Yield modality (identity, not rendered).</p>
+        <p>Yield modality (yielding is not rendered).</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -764,7 +766,7 @@
        <code><span>f_unforkable : <a href="#type-opaque">opaque</a>;</span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>Fork modality (identity, not rendered).</p>
+        <p>Fork modality (unforkable is not rendered).</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -785,7 +787,7 @@
        <code><span>f_stateful : <a href="#type-opaque">opaque</a>;</span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>Statefulness modality (identity, not rendered).</p>
+        <p>Statefulness modality (stateful is not rendered).</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -806,7 +808,7 @@
        <code><span>f_read_write : <a href="#type-opaque">opaque</a>;</span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
-        <p>Visibility modality (identity, not rendered).</p>
+        <p>Visibility modality (read_write is not rendered).</p>
         <span class="comment-delim">*)</span>
        </div>
       </li>
@@ -956,7 +958,29 @@
       </li>
       <li id="type-modalities_cstr.E" class="def variant constructor
        anchored"><a href="#type-modalities_cstr.E" class="anchor"></a>
-       <code><span>| </span><span><span class="constructor">E</span></span>
+       <code><span>| </span>
+        <span><span class="constructor">E</span> 
+         <span class="keyword">of</span> 
+        </span><span>{</span>
+       </code>
+       <ol>
+        <li id="type-modalities_cstr.x" class="def record field anchored">
+         <a href="#type-modalities_cstr.x" class="anchor"></a>
+         <code><span>x : int @@ portable;</span></code>
+        </li>
+        <li id="type-modalities_cstr.y" class="def record field anchored">
+         <a href="#type-modalities_cstr.y" class="anchor"></a>
+         <code><span>y : string @@ global;</span></code>
+        </li>
+       </ol><code><span>}</span></code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Per-element modalities in a constructor record.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_cstr.F" class="def variant constructor
+       anchored"><a href="#type-modalities_cstr.F" class="anchor"></a>
+       <code><span>| </span><span><span class="constructor">F</span></span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
         <p>Constant constructor.</p><span class="comment-delim">*)</span>
@@ -965,10 +989,122 @@
      </ol>
     </div>
    </div>
-   <h2 id="modalities-on-values">
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-modalities_gadt">
+     <a href="#type-modalities_gadt" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> <span>'a modalities_gadt</span>
+      </span><span> = </span>
+     </code>
+     <ol>
+      <li id="type-modalities_gadt.A" class="def variant constructor
+       anchored"><a href="#type-modalities_gadt.A" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">A</span> : string @@ global 
+         <span class="arrow">&#45;&gt;</span> 
+         <span><span>[ `a ]</span> 
+          <a href="#type-modalities_gadt">modalities_gadt</a>
+         </span>
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Constructor argument with <code>global</code> modality.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_gadt.B" class="def variant constructor
+       anchored"><a href="#type-modalities_gadt.B" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">B</span> : 
+         <span>(<span>int <span class="arrow">&#45;&gt;</span></span> int)
+         </span> @@ portable <span class="arrow">&#45;&gt;</span> 
+         <span><span>[ `b ]</span> 
+          <a href="#type-modalities_gadt">modalities_gadt</a>
+         </span>
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Function constructor argument with modality.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_gadt.C" class="def variant constructor
+       anchored"><a href="#type-modalities_gadt.C" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">C</span> : int * string @@ portable
+          <span class="arrow">&#45;&gt;</span> 
+         <span><span>[ `c ]</span> 
+          <a href="#type-modalities_gadt">modalities_gadt</a>
+         </span>
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Tuple constructor argument with modality.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_gadt.D" class="def variant constructor
+       anchored"><a href="#type-modalities_gadt.D" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">D</span> : int @@ portable * 
+         string @@ global <span class="arrow">&#45;&gt;</span> 
+         <span><span>[ `d ]</span> 
+          <a href="#type-modalities_gadt">modalities_gadt</a>
+         </span>
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Per-element modalities in a constructor tuple.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_gadt.E" class="def variant constructor
+       anchored"><a href="#type-modalities_gadt.E" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">E</span> : </span><span>{</span>
+       </code>
+       <ol>
+        <li id="type-modalities_gadt.x" class="def record field anchored">
+         <a href="#type-modalities_gadt.x" class="anchor"></a>
+         <code><span>x : int @@ portable;</span></code>
+        </li>
+        <li id="type-modalities_gadt.y" class="def record field anchored">
+         <a href="#type-modalities_gadt.y" class="anchor"></a>
+         <code><span>y : string @@ global;</span></code>
+        </li>
+       </ol>
+       <code><span>}</span>
+        <span> <span class="arrow">&#45;&gt;</span> 
+         <span><span>[ `e ]</span> 
+          <a href="#type-modalities_gadt">modalities_gadt</a>
+         </span>
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Per-element modalities in a constructor record.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-modalities_gadt.F" class="def variant constructor
+       anchored"><a href="#type-modalities_gadt.F" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">F</span> : 
+         <span><span>[ `f ]</span> 
+          <a href="#type-modalities_gadt">modalities_gadt</a>
+         </span>
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Constant constructor.</p><span class="comment-delim">*)</span>
+       </div>
+      </li>
+     </ol>
+    </div>
+   </div>
+   <h3 id="modalities-on-values">
     <a href="#modalities-on-values" class="anchor"></a>Modalities on 
     values
-   </h2>
+   </h3>
    <div class="odoc-spec">
     <div class="spec value anchored" id="val-portable_fn">
      <a href="#val-portable_fn" class="anchor"></a>
@@ -981,10 +1117,10 @@
     <div class="spec-doc"><p>Value with <code>portable</code> modality.</p>
     </div>
    </div>
-   <h2 id="modalities-on-module-declarations">
+   <h3 id="modalities-on-module-declarations">
     <a href="#modalities-on-module-declarations" class="anchor"></a>
     Modalities on module declarations
-   </h2>
+   </h3>
    <div class="odoc-spec">
     <div class="spec module-type anchored" id="module-type-S">
      <a href="#module-type-S" class="anchor"></a>
@@ -1041,7 +1177,8 @@
     </div>
     <div class="spec-doc">
      <p><code>contended</code> modality applied to all definitions in
-       the module.
+       the module, except the ones which have already specified this 
+      axis.
      </p>
     </div>
    </div>

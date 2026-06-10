@@ -14,13 +14,25 @@ Module without modality\.
 .SH Documentation
 .sp 
 .nf 
-\f[CB]val\fR x : int
-.sp 
-\f[CB]val\fR f : string \f[CB]\->\fR bool
-.sp 
 \f[CB]type\fR s = {
 .br 
 .ti +2
 a : int;
 .br 
 }
+.sp 
+\f[CB]val\fR x : int
+.sp 
+\f[CB]val\fR f : string \f[CB]\->\fR bool
+.sp 
+\f[CB]val\fR portable : string \f[CB]\->\fR string array @@ portable
+.sp 
+\f[CB]val\fR contended : string \f[CB]\->\fR bytes @@ contended
+.sp 
+.fi 
+uncontended and nonportable are the defaults (not rendered)\.
+.nf 
+.sp 
+\f[CB]val\fR uncontended : string \f[CB]\->\fR bytes
+.sp 
+\f[CB]val\fR nonportable : string \f[CB]\->\fR string array

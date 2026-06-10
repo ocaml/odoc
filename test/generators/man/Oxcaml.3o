@@ -366,19 +366,19 @@ f_global : opaque @@ global;
 f_local : opaque;
 .br 
 .ti +4
-(* Locality modality (identity, not rendered)\. *)
+(* Locality modality (local is not rendered)\. *)
 .br 
 .ti +2
 f_unique : opaque;
 .br 
 .ti +4
-(* Uniqueness modality\. *)
+(* Uniqueness modality (unique is not rendered)\. *)
 .br 
 .ti +2
 f_aliased : opaque @@ aliased;
 .br 
 .ti +4
-(* Uniqueness modality (identity, not rendered)\. *)
+(* Uniqueness modality\. *)
 .br 
 .ti +2
 f_many : opaque @@ many;
@@ -390,7 +390,7 @@ f_many : opaque @@ many;
 f_once : opaque;
 .br 
 .ti +4
-(* Linearity modality (identity, not rendered)\. *)
+(* Linearity modality (once is not rendered)\. *)
 .br 
 .ti +2
 f_portable : opaque @@ portable;
@@ -402,13 +402,13 @@ f_portable : opaque @@ portable;
 f_nonportable : opaque;
 .br 
 .ti +4
-(* Portability modality (identity, not rendered)\. *)
+(* Portability modality (nonportable is not rendered)\. *)
 .br 
 .ti +2
 f_uncontended : opaque;
 .br 
 .ti +4
-(* Contention modality (identity, not rendered)\. *)
+(* Contention modality (uncontended is not rendered)\. *)
 .br 
 .ti +2
 f_contended : opaque @@ contended;
@@ -426,7 +426,7 @@ f_unyielding : opaque @@ unyielding;
 f_yielding : opaque;
 .br 
 .ti +4
-(* Yield modality (identity, not rendered)\. *)
+(* Yield modality (yielding is not rendered)\. *)
 .br 
 .ti +2
 f_forkable : opaque @@ forkable;
@@ -438,7 +438,7 @@ f_forkable : opaque @@ forkable;
 f_unforkable : opaque;
 .br 
 .ti +4
-(* Fork modality (identity, not rendered)\. *)
+(* Fork modality (unforkable is not rendered)\. *)
 .br 
 .ti +2
 f_stateless : opaque @@ stateless;
@@ -450,7 +450,7 @@ f_stateless : opaque @@ stateless;
 f_stateful : opaque;
 .br 
 .ti +4
-(* Statefulness modality (identity, not rendered)\. *)
+(* Statefulness modality (stateful is not rendered)\. *)
 .br 
 .ti +2
 f_immutable : opaque @@ immutable;
@@ -462,7 +462,7 @@ f_immutable : opaque @@ immutable;
 f_read_write : opaque;
 .br 
 .ti +4
-(* Visibility modality (identity, not rendered)\. *)
+(* Visibility modality (read_write is not rendered)\. *)
 .br 
 .ti +2
 f_no_modality : opaque;
@@ -541,14 +541,77 @@ g : int \f[CB]\->\fR int @@ portable;
 (* Per-element modalities in a constructor tuple\. *)
 .br 
 .ti +2
-| \f[CB]E\fR
+| \f[CB]E\fR \f[CB]of\fR {
+.br 
+.ti +6
+x : int @@ portable;
+.br 
+.ti +6
+y : string @@ global;
+.br 
+.ti +4
+}
+.br 
+.ti +4
+(* Per-element modalities in a constructor record\. *)
+.br 
+.ti +2
+| \f[CB]F\fR
 .br 
 .ti +4
 (* Constant constructor\. *)
 .br 
 .sp 
-.in 3
-\fB15 Modalities on values\fR
+\f[CB]type\fR 'a modalities_gadt = 
+.br 
+.ti +2
+| \f[CB]A\fR : string @@ global \f[CB]\->\fR [ `a ] modalities_gadt
+.br 
+.ti +4
+(* Constructor argument with global modality\. *)
+.br 
+.ti +2
+| \f[CB]B\fR : (int \f[CB]\->\fR int) @@ portable \f[CB]\->\fR [ `b ] modalities_gadt
+.br 
+.ti +4
+(* Function constructor argument with modality\. *)
+.br 
+.ti +2
+| \f[CB]C\fR : int * string @@ portable \f[CB]\->\fR [ `c ] modalities_gadt
+.br 
+.ti +4
+(* Tuple constructor argument with modality\. *)
+.br 
+.ti +2
+| \f[CB]D\fR : int @@ portable * string @@ global \f[CB]\->\fR [ `d ] modalities_gadt
+.br 
+.ti +4
+(* Per-element modalities in a constructor tuple\. *)
+.br 
+.ti +2
+| \f[CB]E\fR : {
+.br 
+.ti +6
+x : int @@ portable;
+.br 
+.ti +6
+y : string @@ global;
+.br 
+.ti +4
+} \f[CB]\->\fR [ `e ] modalities_gadt
+.br 
+.ti +4
+(* Per-element modalities in a constructor record\. *)
+.br 
+.ti +2
+| \f[CB]F\fR : [ `f ] modalities_gadt
+.br 
+.ti +4
+(* Constant constructor\. *)
+.br 
+.sp 
+.in 4
+\fB14\.1 Modalities on values\fR
 .in 
 .sp 
 \f[CB]val\fR portable_fn : int \f[CB]\->\fR int @@ portable
@@ -558,18 +621,12 @@ g : int \f[CB]\->\fR int @@ portable;
 Value with portable modality\.
 .nf 
 .sp 
-.in 3
-\fB16 Modalities on module declarations\fR
+.in 4
+\fB14\.2 Modalities on module declarations\fR
 .in 
 .sp 
 \f[CB]module\fR \f[CB]type\fR S = \f[CB]sig\fR
 .br 
-.ti +2
-\f[CB]val\fR x : int
-.sp 
-.ti +2
-\f[CB]val\fR f : string \f[CB]\->\fR bool
-.sp 
 .ti +2
 \f[CB]type\fR s = {
 .br 
@@ -578,6 +635,29 @@ a : int;
 .br 
 .ti +2
 }
+.sp 
+.ti +2
+\f[CB]val\fR x : int
+.sp 
+.ti +2
+\f[CB]val\fR f : string \f[CB]\->\fR bool
+.sp 
+.ti +2
+\f[CB]val\fR portable : string \f[CB]\->\fR string array @@ portable
+.sp 
+.ti +2
+\f[CB]val\fR contended : string \f[CB]\->\fR bytes @@ contended
+.sp 
+.ti +2
+.fi 
+uncontended and nonportable are the defaults (not rendered)\.
+.nf 
+.sp 
+.ti +2
+\f[CB]val\fR uncontended : string \f[CB]\->\fR bytes
+.sp 
+.ti +2
+\f[CB]val\fR nonportable : string \f[CB]\->\fR string array
 .br 
 \f[CB]end\fR
 .sp 
@@ -599,6 +679,6 @@ Module with portable modality\. The modality is applied to all value members of 
 .fi 
 .br 
 .ti +2
-contended modality applied to all definitions in the module\.
+contended modality applied to all definitions in the module, except the ones which have already specified this axis\.
 .nf 
 
