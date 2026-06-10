@@ -1197,4 +1197,5 @@ fn_both : int @ local \f[CB]\->\fR int @ local;
 .ti +4
 (* GADT constructor *)
 .br 
-
+.sp 
+\f[CB]module\fR Include_functor : \f[CB]sig\fR \.\.\. \f[CB]end\fR

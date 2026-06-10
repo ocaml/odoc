@@ -517,3 +517,9 @@ type mode_cstr =
       (** Nested arrow: higher-order with a mode on the inner argument. *)
   | Mc_gadt : ('a @ once -> 'a) -> mode_cstr
       (** GADT constructor *)
+
+module Include_functor : sig
+  module Make (T : sig type t end) : sig type included end
+  type t
+  include functor module type of Make
+end
