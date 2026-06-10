@@ -280,3 +280,9 @@ module M3 : sig @@ contended
 end
 (** [contended] modality applied to all definitions in the module, except the
     ones which have already specified this axis. *)
+
+module Include_functor : sig
+  module Make (T : sig type t end) : sig type included end
+  type t
+  include functor module type of Make
+end

@@ -681,4 +681,5 @@ Module with portable modality\. The modality is applied to all value members of 
 .ti +2
 contended modality applied to all definitions in the module, except the ones which have already specified this axis\.
 .nf 
-
+.sp 
+\f[CB]module\fR Include_functor : \f[CB]sig\fR \.\.\. \f[CB]end\fR
