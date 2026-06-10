@@ -240,13 +240,7 @@ let read_value_description env parent vd =
     | primitives -> External primitives
   in
   let ext_attrs = Doc_attr.attrs_of_value_description vd.val_val in
-  let modalities =
-#if defined OXCAML
-    Cmi.read_value_modalities vd.val_val.val_modalities
-#else
-    []
-#endif
-  in
+  let modalities = Cmi.read_value_descr_modalities vd.val_val in
   Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities }
 
 let read_type_parameter (ctyp, var_and_injectivity)  =
@@ -288,9 +282,21 @@ let read_type_parameter (ctyp, var_and_injectivity)  =
     {desc; variance; injectivity; kind}
 
 #if defined OXCAML
+
 let is_mutable = Types.is_mutable
+
+let read_typedtree_label_modalities ld =
+  Cmi.read_modalities ld.ld_mutable ld.ld_modalities.moda_modalities
+
+let read_constructor_argument arg =
+  arg.ca_type, Cmi.read_modalities Immutable arg.ca_modalities.moda_modalities
+
 #else
+
 let is_mutable ld = ld = Mutable
+let read_typedtree_label_modalities _ld = []
+let read_constructor_argument arg = arg, []
+
 #endif
 
 let read_label_declaration env parent label_parent ld =
@@ -301,14 +307,8 @@ let read_label_declaration env parent label_parent ld =
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent ld.ld_attributes in
   let mutable_ = is_mutable ld.ld_mutable in
   let type_ = read_core_type env label_parent ld.ld_type in
-  let modalities =
-#if defined OXCAML
-    Cmi.read_modalities ld.ld_mutable ld.ld_modalities.moda_modalities
-#else
-    []
-#endif
-  in
-    {id; doc; mutable_; type_; modalities}
+  let modalities = read_typedtree_label_modalities ld in
+  {id; doc; mutable_; type_; modalities}
 
 let read_unboxed_label_declaration env parent label_parent ld =
   let open TypeDecl.UnboxedField in
@@ -328,18 +328,14 @@ let read_constructor_declaration_arguments env parent label_parent arg =
 #else
   match arg with
   | Cstr_tuple args ->
-#if defined OXCAML
-      let args_with_modalities =
+      let args =
         List.map
           (fun arg ->
-            read_core_type env label_parent arg.ca_type,
-            Cmi.read_modalities Immutable arg.ca_modalities.moda_modalities)
+            let arg_type, arg_modalities = read_constructor_argument arg in
+            read_core_type env label_parent arg_type, arg_modalities)
           args
       in
-      Tuple args_with_modalities
-#else
-      Tuple (List.map (fun arg -> read_core_type env label_parent arg, []) args)
-#endif
+      Tuple args
   | Cstr_record lds ->
       Record (List.map (read_label_declaration env parent label_parent) lds)
 #endif

@@ -111,3 +111,11 @@ val read_value_modalities :
   Mode.Modality.t ->
   Odoc_model.Lang.Modalities.t
 #endif
+
+val read_value_descr_modalities :
+  Types.value_description ->
+  Odoc_model.Lang.Modalities.t
+
+val read_label_modalities :
+  Types.label_declaration ->
+  Odoc_model.Lang.Modalities.t
