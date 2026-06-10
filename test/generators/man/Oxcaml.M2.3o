@@ -14,13 +14,21 @@ Module with portable modality\. The modality is applied to all value members of 
 .SH Documentation
 .sp 
 .nf 
-\f[CB]val\fR x : int @@ portable
-.sp 
-\f[CB]val\fR f : string \f[CB]\->\fR bool @@ portable
-.sp 
 \f[CB]type\fR s : immutable_data = {
 .br 
 .ti +2
 a : int;
 .br 
 }
+.sp 
+\f[CB]val\fR x : int @@ portable
+.sp 
+\f[CB]val\fR f : string \f[CB]\->\fR bool @@ portable
+.sp 
+\f[CB]val\fR portable : string \f[CB]\->\fR string array @@ portable
+.sp 
+\f[CB]val\fR contended : string \f[CB]\->\fR bytes @@ portable contended
+.sp 
+\f[CB]val\fR uncontended : string \f[CB]\->\fR bytes @@ portable
+.sp 
+\f[CB]val\fR nonportable : string \f[CB]\->\fR string array @@ portable

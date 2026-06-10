@@ -1,12 +1,18 @@
 \section{Module \ocamlinlinecode{Oxcaml.\allowbreak{}M1}}\label{Oxcaml-M1}%
 Module without modality.
 
-\label{Oxcaml-M1--val-x}\ocamlcodefragment{\ocamltag{keyword}{val} x : int}\\
-\label{Oxcaml-M1--val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : string \ocamltag{arrow}{$\rightarrow$} bool}\\
 \label{Oxcaml-M1--type-s}\ocamlcodefragment{\ocamltag{keyword}{type} s = \{}\\
 \begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{Oxcaml-M1--type-s.a}\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{\}}\\
+\label{Oxcaml-M1--val-x}\ocamlcodefragment{\ocamltag{keyword}{val} x : int}\\
+\label{Oxcaml-M1--val-f}\ocamlcodefragment{\ocamltag{keyword}{val} f : string \ocamltag{arrow}{$\rightarrow$} bool}\\
+\label{Oxcaml-M1--val-portable}\ocamlcodefragment{\ocamltag{keyword}{val} portable : string \ocamltag{arrow}{$\rightarrow$} string array @@ portable}\\
+\label{Oxcaml-M1--val-contended}\ocamlcodefragment{\ocamltag{keyword}{val} contended : string \ocamltag{arrow}{$\rightarrow$} bytes @@ contended}\\
+\ocamlinlinecode{uncontended} and \ocamlinlinecode{nonportable} are the defaults (not rendered).
+
+\label{Oxcaml-M1--val-uncontended}\ocamlcodefragment{\ocamltag{keyword}{val} uncontended : string \ocamltag{arrow}{$\rightarrow$} bytes}\\
+\label{Oxcaml-M1--val-nonportable}\ocamlcodefragment{\ocamltag{keyword}{val} nonportable : string \ocamltag{arrow}{$\rightarrow$} string array}\\
 
 
