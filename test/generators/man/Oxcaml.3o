@@ -682,4 +682,10 @@ Module with portable modality\. The modality is applied to all value members of 
 contended modality applied to all definitions in the module, except the ones which have already specified this axis\.
 .nf 
 .sp 
+.in 3
+\fB15 Include functor on signatures\fR
+.in 
+.sp 
+\f[CB]module\fR No_include_functor : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
 \f[CB]module\fR Include_functor : \f[CB]sig\fR \.\.\. \f[CB]end\fR

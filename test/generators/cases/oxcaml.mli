@@ -281,6 +281,18 @@ end
 (** [contended] modality applied to all definitions in the module, except the
     ones which have already specified this axis. *)
 
+(** {1 Include functor on signatures} *)
+
+module No_include_functor : sig
+  module Make (T : sig type t end) : sig type included end
+  module T : sig
+    type t
+  end
+
+  include module type of T
+  include module type of Make(T)
+end
+
 module Include_functor : sig
   module Make (T : sig type t end) : sig type included end
   type t
