@@ -518,6 +518,18 @@ type mode_cstr =
   | Mc_gadt : ('a @ once -> 'a) -> mode_cstr
       (** GADT constructor *)
 
+(** {1 Include functor on signatures} *)
+
+module No_include_functor : sig
+  module Make (T : sig type t end) : sig type included end
+  module T : sig
+    type t
+  end
+
+  include module type of T
+  include module type of Make(T)
+end
+
 module Include_functor : sig
   module Make (T : sig type t end) : sig type included end
   type t

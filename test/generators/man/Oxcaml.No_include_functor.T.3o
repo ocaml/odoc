@@ -1,0 +1,14 @@
+
+.TH T 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.No_include_functor\.T
+.SH Synopsis
+.sp 
+.in 2
+\fBModule No_include_functor\.T\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t
