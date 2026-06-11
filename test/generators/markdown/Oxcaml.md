@@ -695,6 +695,12 @@ type mode_cstr =
   | Mc_nested of (int @ local -> int) -> unit (* Nested arrow: higher-order with a mode on the inner argument. *)
   | Mc_gadt : ('a @ once -> 'a) -> mode_cstr (* GADT constructor *)
 ```
+
+## Include functor on signatures
+
+```ocaml
+module No_include_functor : sig ... end
+```
 ```ocaml
 module Include_functor : sig ... end
 ```
