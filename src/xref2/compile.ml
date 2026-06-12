@@ -389,6 +389,9 @@ and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
   | ModuleType expr ->
       if is_elidable_with_module_type_u expr then ModuleType expr
       else ModuleType (u_module_type_expr env id expr)
+  | Functor p ->
+      (* TODO deduplicate *)
+      Functor (module_path env p)
   | Alias p -> Alias (module_path env p)
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
@@ -410,10 +413,14 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
     match
       let open Odoc_utils.ResultMonad in
       match decl with
+      | Functor p ->
+          Tools.expansion_of_module_path env ~strengthen:true p >>= fun exp ->
+          Tools.assert_functor exp
       | Alias p ->
           Tools.expansion_of_module_path env ~strengthen:true p >>= fun exp ->
           Tools.assert_not_functor exp
-      | ModuleType mty -> Tools.signature_of_u_module_type_expr env mty
+      | ModuleType mty -> 
+          Tools.signature_of_u_module_type_expr env mty
     with
     | Error e ->
         Errors.report ~what:(`Include decl) ~tools_error:e `Expand;

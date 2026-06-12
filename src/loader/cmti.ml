@@ -965,8 +965,16 @@ and read_include env parent incl =
 #endif
     let decl = Include.ModuleType uexpr in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
+#if defined OXCAML
+  | Some uexpr, (Tincl_functor _ | Tincl_gen_functor _) ->
+    let p = match uexpr with
+      | TypeOf (ModPath p, _) -> p
+      | _ -> failwith "We expected TypeOf with a ModPath but got something else"
+    in
+    let decl = Include.Functor p in
+    [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
+#endif
   | _ ->
-    (* TODO: Handle [include functor] *)
     content.items
 
 and read_open env parent o =

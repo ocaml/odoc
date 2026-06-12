@@ -707,6 +707,8 @@ and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
   match decl with
   | ModuleType expr when is_elidable_with_module_type_u expr -> ModuleType expr
   | ModuleType expr -> ModuleType (u_module_type_expr env id expr)
+  (* TODO dedup *)
+  | Functor p -> Functor (module_path env p)
   | Alias p -> Alias (module_path env p)
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =

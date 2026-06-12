@@ -201,6 +201,8 @@ val prefix_signature :
 
 val assert_not_functor : expansion -> (Component.Signature.t, 'err) result
 
+val assert_functor : expansion -> (Component.Signature.t, 'err) result
+
 val expansion_of_module_path :
   Env.t ->
   strengthen:bool ->

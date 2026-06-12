@@ -759,6 +759,7 @@ and module_decl s t =
 and include_decl s t =
   match t with
   | Include.Alias p -> Include.Alias (module_path s p)
+  | Functor p -> Functor (module_path s p)
   | ModuleType t -> ModuleType (u_module_type_expr s t)
 
 and module_ s t =

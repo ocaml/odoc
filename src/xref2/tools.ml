@@ -1586,6 +1586,12 @@ and assert_not_functor : type err.
   | Signature sg -> Ok sg
   | _ -> assert false
 
+and assert_functor : type err. expansion -> (Component.Signature.t, err) result
+    = function
+  | Functor (_, mty) -> (
+      match mty with Signature s -> Ok s | _ -> assert false)
+  | _ -> assert false
+
 and unresolve_subs subs =
   List.map
     (function
@@ -1810,6 +1816,10 @@ and fragmap :
     match decl with
     | Alias p ->
         expansion_of_module_path env ~strengthen:true p >>= assert_not_functor
+        >>= fun sg ->
+        fragmap env subst sg >>= fun sg -> Ok (ModuleType (Signature sg))
+    | Functor p ->
+        expansion_of_module_path env ~strengthen:true p >>= assert_functor
         >>= fun sg ->
         fragmap env subst sg >>= fun sg -> Ok (ModuleType (Signature sg))
     | ModuleType mty' -> Ok (ModuleType (With ([ subst ], mty')))
