@@ -143,4 +143,11 @@ Mode on a function argument, via a type annotation\.
 .ti +2
 Multiple modes on argument and return\.
 .nf 
-
+.sp 
+.in 3
+\fB3 Include functor on structures\fR
+.in 
+.sp 
+\f[CB]module\fR No_include_functor : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Include_functor : \f[CB]sig\fR \.\.\. \f[CB]end\fR
