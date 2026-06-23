@@ -70,3 +70,13 @@ Mode on a function argument, via a type annotation.
 val mode_multi : string @ local once -> string @ local once
 ```
 Multiple modes on argument and return.
+
+
+## Include functor on structures
+
+```ocaml
+module No_include_functor : sig ... end
+```
+```ocaml
+module Include_functor : sig ... end
+```

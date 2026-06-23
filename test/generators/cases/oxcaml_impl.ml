@@ -59,3 +59,21 @@ let mode_arg : int @ local -> int = fun x -> x
 
 let mode_multi : string @ local once -> string @ local once = fun x -> x
 (** Multiple modes on argument and return. *)
+
+(** {1 Include functor on structures} *)
+
+module No_include_functor = struct
+  module Make (T : sig type t end) = struct type included end
+  module T = struct
+    type t
+  end
+
+  include T
+  include Make(T)
+end
+
+module Include_functor = struct
+  module Make (T : sig type t end) = struct type included end
+  type t
+  include functor Make
+end
