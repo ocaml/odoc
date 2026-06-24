@@ -613,25 +613,28 @@ and read_include env parent incl =
   let decl_modty =
 #if defined OXCAML
     match unwrap_module_expr_desc incl.incl_mod.mod_desc, incl.incl_kind with
-    | _, (Tincl_functor _ | Tincl_gen_functor _) ->
-      (* TODO: Handle [include functor] *)
-      None
+    | Tmod_ident (p, _), (Tincl_functor _ | Tincl_gen_functor _) -> (
+      let p = Env.Path.read_module env.ident_env p in
+      Some (`Functor p))
     | Tmod_ident(p, _), Tincl_structure ->
 #else
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
     | Tmod_ident(p, _) ->
 #endif
       let p = Env.Path.read_module env.ident_env p in
-      Some (ModuleType.U.TypeOf (ModuleType.StructInclude p, p))
+      Some (`Module_type (ModuleType.U.TypeOf (ModuleType.StructInclude p, p)))
     | _ ->
       let mty = read_module_expr env parent container incl.incl_mod in
-      umty_of_mty mty
+      umty_of_mty mty |> Option.map (fun m -> `Module_type m)
   in
   let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expansion = { content; shadowed; } in
   match decl_modty with
-  | Some m ->
+  | Some `Module_type m ->
     let decl = ModuleType m in
+    [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
+  | Some `Functor p ->
+    let decl = Include.Functor p in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
   | _ ->
     content.items
