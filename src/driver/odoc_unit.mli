@@ -39,17 +39,17 @@ type 'a t = {
   odocl_file : Fpath.t;
   pkg_args : Pkg_args.t;
   pkgname : string option;
+  deps : (string * Digest.t) list;
+      (** The unit's per-module dependencies (interface deps for [`Intf], the
+          implementation's for [`Impl]; empty otherwise). Used by
+          [Compile.includes_of_deps] to derive the compile [-I] set. *)
   index : index option;
   enable_warnings : bool;
   to_output : bool;
   kind : 'a;
 }
 
-type intf_extra = {
-  hidden : bool;
-  hash : string;
-  deps : (string * Digest.t) list;
-}
+type intf_extra = { hidden : bool; hash : string }
 and intf = [ `Intf of intf_extra ]
 
 type impl_extra = { src_id : Odoc.Id.t; src_path : Fpath.t }

@@ -83,18 +83,17 @@ type 'a t = {
   odocl_file : Fpath.t;
   pkg_args : Pkg_args.t;
   pkgname : string option;
+  deps : (string * Digest.t) list;
+      (* The unit's per-module dependencies (interface deps for [`Intf], the
+         implementation's for [`Impl]; empty otherwise). Used by
+         [Compile.includes_of_deps] to derive the compile include set. *)
   index : index option;
   enable_warnings : bool;
   to_output : bool;
   kind : 'a;
 }
 
-type intf_extra = {
-  hidden : bool;
-  hash : string;
-  deps : (string * Digest.t) list;
-}
-
+type intf_extra = { hidden : bool; hash : string }
 and intf = [ `Intf of intf_extra ]
 
 type impl_extra = { src_id : Odoc.Id.t; src_path : Fpath.t }
@@ -117,9 +116,7 @@ let rec pp_kind : all_kinds Fmt.t =
   | `Asset -> Format.fprintf fmt "`Asset"
 
 and pp_intf_extra fmt x =
-  Format.fprintf fmt "@[<hov>hidden: %b@;hash: %s@;deps: [%a]@]" x.hidden x.hash
-    Fmt.Dump.(list (pair string string))
-    x.deps
+  Format.fprintf fmt "@[<hov>hidden: %b@;hash: %s@]" x.hidden x.hash
 
 and pp_impl_extra fmt x =
   Format.fprintf fmt "@[<hov>src_id: %s@;src_path: %a@]"
@@ -136,13 +133,15 @@ and pp : all_kinds t Fmt.t =
      odocl_file: %a@;\
      pkg_args: %a@;\
      pkgname: %a@;\
+     deps: [%a]@;\
      index: %a@;\
      kind:%a@;\
      @]"
     (Odoc.Id.to_string x.parent_id)
     Fpath.pp x.input_file Fpath.pp x.output_dir Fpath.pp x.odoc_file Fpath.pp
     x.odocl_file Pkg_args.pp x.pkg_args (Fmt.option Fmt.string) x.pkgname
-    (Fmt.option pp_index) x.index pp_kind
+    Fmt.Dump.(list (pair string string))
+    x.deps (Fmt.option pp_index) x.index pp_kind
     (x.kind :> all_kinds)
 
 let pkg_dir : Packages.t -> Fpath.t = fun pkg -> pkg.pkg_dir

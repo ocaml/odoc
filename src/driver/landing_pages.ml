@@ -26,6 +26,7 @@ let make_index ~dirs ~rel_dir ~libs ~pkgs ~index ~enable_warnings ~content :
     output_dir = dirs.odoc_dir;
     pkgname = None;
     pkg_args;
+    deps = [];
     parent_id;
     input_file;
     input_copy = None;
