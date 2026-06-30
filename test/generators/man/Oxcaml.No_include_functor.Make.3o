@@ -8,6 +8,9 @@ Oxcaml\.No_include_functor\.Make
 \fBModule No_include_functor\.Make\fR
 .in 
 .sp 
+.fi 
+Module without any include functor features, this is how things are done in plain OCaml at the moment\.
+.nf 
 .SH Documentation
 .sp 
 .nf 

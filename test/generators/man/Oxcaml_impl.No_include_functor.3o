@@ -12,6 +12,11 @@ Oxcaml_impl\.No_include_functor
 .sp 
 .nf 
 \f[CB]module\fR Make (T : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+This module shows how to achieve the effect without include functor, with an intermediate module T\.
+.nf 
 .sp 
 \f[CB]module\fR T : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .sp 
