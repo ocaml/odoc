@@ -8,6 +8,9 @@ Oxcaml\.Include_functor\.Make
 \fBModule Include_functor\.Make\fR
 .in 
 .sp 
+.fi 
+Module which defines a functor and includes it via module type of
+.nf 
 .SH Documentation
 .sp 
 .nf 

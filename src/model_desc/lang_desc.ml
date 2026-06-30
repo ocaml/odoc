@@ -293,7 +293,8 @@ and include_decl =
   Variant
     (function
     | Alias p -> C ("Alias", (p :> Paths.Path.t), path)
-    | Functor p -> C ("Functor", (p :> Paths.Path.t), path)
+    | Functor (Path p) -> C ("Functor", (p :> Paths.Path.t), path)
+    | Functor (ModuleType e) -> C ("Functor", e, moduletype_u_expr)
     | ModuleType e -> C ("ModuleType", e, moduletype_u_expr))
 
 and include_expansion =

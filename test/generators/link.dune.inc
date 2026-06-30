@@ -11963,7 +11963,10 @@
    Oxcaml-No_include_functor-T.html.gen
    Oxcaml-Include_functor.html.gen
    Oxcaml-Include_functor-Make.html.gen
-   Oxcaml-Include_functor-Make-argument-1-T.html.gen)
+   Oxcaml-Include_functor-Make-argument-1-T.html.gen
+   Oxcaml-Include_functor_named_type.html.gen
+   Oxcaml-Include_functor_named_type-module-type-Make.html.gen
+   Oxcaml-Include_functor_named_type-module-type-Make-argument-1-_.html.gen)
   (package odoc)
   (action
    (run
@@ -12090,6 +12093,30 @@
    (diff
     Oxcaml-Include_functor-Make-argument-1-T.html
     Oxcaml-Include_functor-Make-argument-1-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type.html
+    Oxcaml-Include_functor_named_type.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type-module-type-Make.html
+    Oxcaml-Include_functor_named_type-module-type-Make.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type-module-type-Make-argument-1-_.html
+    Oxcaml-Include_functor_named_type-module-type-Make-argument-1-_.html.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -12178,7 +12205,8 @@
    Oxcaml.No_include_functor.Make.3o.gen
    Oxcaml.No_include_functor.T.3o.gen
    Oxcaml.Include_functor.3o.gen
-   Oxcaml.Include_functor.Make.3o.gen)
+   Oxcaml.Include_functor.Make.3o.gen
+   Oxcaml.Include_functor_named_type.3o.gen)
   (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../oxcaml.odocl}))
@@ -12256,6 +12284,14 @@
   (package odoc)
   (action
    (diff Oxcaml.Include_functor.Make.3o Oxcaml.Include_functor.Make.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_named_type.3o
+    Oxcaml.Include_functor_named_type.3o.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -12295,7 +12331,10 @@
    Oxcaml-No_include_functor-T.md.gen
    Oxcaml-Include_functor.md.gen
    Oxcaml-Include_functor-Make.md.gen
-   Oxcaml-Include_functor-Make-argument-1-T.md.gen)
+   Oxcaml-Include_functor-Make-argument-1-T.md.gen
+   Oxcaml-Include_functor_named_type.md.gen
+   Oxcaml-Include_functor_named_type-module-type-Make.md.gen
+   Oxcaml-Include_functor_named_type-module-type-Make-argument-1-_.md.gen)
   (package odoc)
   (action
    (run
@@ -12414,6 +12453,30 @@
    (diff
     Oxcaml-Include_functor-Make-argument-1-T.md
     Oxcaml-Include_functor-Make-argument-1-T.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type.md
+    Oxcaml-Include_functor_named_type.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type-module-type-Make.md
+    Oxcaml-Include_functor_named_type-module-type-Make.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type-module-type-Make-argument-1-_.md
+    Oxcaml-Include_functor_named_type-module-type-Make-argument-1-_.md.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
