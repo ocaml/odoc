@@ -11,6 +11,8 @@
 - Support OxCaml 5.2.0minus39 (@jonludlam, #1469)
 - Support for OxCaml modes (@art-w, #1454)
 - Fix OxCaml with-bounds for arbitrary types (@art-w, #1466)
+- Display items included via `include functor` as included via the functor
+  (@Leonidas-from-XIV, #1452)
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
