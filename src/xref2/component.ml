@@ -364,7 +364,11 @@ end =
   Open
 
 and Include : sig
-  type decl = Alias of Cpath.module_ | ModuleType of ModuleType.U.expr | Functor of Cpath.module_
+  type functor' = Path of Cpath.module_ | ModuleType of ModuleType.U.expr
+  type decl =
+    | Alias of Cpath.module_
+    | ModuleType of ModuleType.U.expr
+    | Functor of functor'
 
   type t = {
     parent : Odoc_model.Paths.Identifier.Signature.t;
@@ -924,7 +928,9 @@ module Fmt = struct
     let open Include in
     function
     | Alias p -> Format.fprintf ppf "%a" (module_path c) p
-    | Functor p -> Format.fprintf ppf "functor %a" (module_path c) p
+    | Functor (Path p) -> Format.fprintf ppf "functor %a" (module_path c) p
+    | Functor (ModuleType mt) ->
+        Format.fprintf ppf "functor %a" (u_module_type_expr c) mt
     | ModuleType mt -> Format.fprintf ppf "%a" (u_module_type_expr c) mt
 
   and value c ppf v =
@@ -2411,7 +2417,9 @@ module Of_Lang = struct
   and include_decl ident_map m =
     match m with
     | Odoc_model.Lang.Include.Alias p -> Include.Alias (module_path ident_map p)
-    | Functor p -> Functor (module_path ident_map p)
+    | Functor (Path p) -> Functor (Path (module_path ident_map p))
+    | Functor (ModuleType s) ->
+        Functor (ModuleType (u_module_type_expr ident_map s))
     | ModuleType s -> ModuleType (u_module_type_expr ident_map s)
 
   and simple_expansion ident_map

@@ -12,6 +12,8 @@ end
 (** {1 Include functor on structures} *)
 
 module No_include_functor = struct
+(** This module shows how to achieve the effect without [include functor],
+    with an intermediate module [T]. *)
   module Make (T : sig type t end) = struct type included end
   module T = struct
     type t
@@ -22,6 +24,7 @@ module No_include_functor = struct
 end
 
 module Include_functor = struct
+(** This module demonstratest the [include functor] functionality *)
   module Make (T : sig type t end) = struct type included end
   type t
   include functor Make

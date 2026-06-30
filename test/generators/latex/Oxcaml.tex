@@ -241,7 +241,8 @@ Unboxed types have a trailing hash '\#'
 \ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}\ocamlinlinecode{contended} modality applied to all definitions in the module, except the ones which have already specified this axis.\end{ocamlindent}%
 \medbreak
 \subsection{Include functor on signatures\label{Oxcaml--include-functor-on-signatures}}%
-\label{Oxcaml--module-No_include_functor}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-No_include_functor]{\ocamlinlinecode{No\_\allowbreak{}include\_\allowbreak{}functor}}}\label{Oxcaml-No_include_functor}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-No_include_functor--module-Make}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-No_include_functor-Make]{\ocamlinlinecode{Make}}}\ocamlcodefragment{ (\hyperref[Oxcaml-No_include_functor-Make-argument-1-T]{\ocamlinlinecode{T}} : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{Oxcaml--module-No_include_functor}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-No_include_functor]{\ocamlinlinecode{No\_\allowbreak{}include\_\allowbreak{}functor}}}\label{Oxcaml-No_include_functor}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-No_include_functor--module-Make}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-No_include_functor-Make]{\ocamlinlinecode{Make}}}\ocamlcodefragment{ (\hyperref[Oxcaml-No_include_functor-Make-argument-1-T]{\ocamlinlinecode{T}} : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\begin{ocamlindent}Module without any \ocamlinlinecode{include functor} features, this is how things are done in plain OCaml at the moment.\end{ocamlindent}%
+\medbreak
 \label{Oxcaml-No_include_functor--module-T}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-No_include_functor-T]{\ocamlinlinecode{T}}}\label{Oxcaml-No_include_functor-T}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-No_include_functor-T--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
@@ -249,9 +250,23 @@ Unboxed types have a trailing hash '\#'
 \ocamltag{keyword}{include} \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}\label{Oxcaml-No_include_functor--type-included}\ocamlcodefragment{\ocamltag{keyword}{type} included = \hyperref[Oxcaml-No_include_functor-Make--type-included]{\ocamlinlinecode{Make(T).\allowbreak{}included}}}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
-\label{Oxcaml--module-Include_functor}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-Include_functor]{\ocamlinlinecode{Include\_\allowbreak{}functor}}}\label{Oxcaml-Include_functor}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-Include_functor--module-Make}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-Include_functor-Make]{\ocamlinlinecode{Make}}}\ocamlcodefragment{ (\hyperref[Oxcaml-Include_functor-Make-argument-1-T]{\ocamlinlinecode{T}} : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{Oxcaml--module-Include_functor}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-Include_functor]{\ocamlinlinecode{Include\_\allowbreak{}functor}}}\label{Oxcaml-Include_functor}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-Include_functor--module-Make}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-Include_functor-Make]{\ocamlinlinecode{Make}}}\ocamlcodefragment{ (\hyperref[Oxcaml-Include_functor-Make-argument-1-T]{\ocamlinlinecode{T}} : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\begin{ocamlindent}Module which defines a functor and includes it via \ocamlinlinecode{module type of}\end{ocamlindent}%
+\medbreak
 \label{Oxcaml-Include_functor--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
 \ocamltag{keyword}{include functor} \hyperref[Oxcaml-Include_functor-Make]{\ocamlinlinecode{Make}}\label{Oxcaml-Include_functor--type-included}\ocamlcodefragment{\ocamltag{keyword}{type} included}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{Oxcaml--module-Include_functor_named_type}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-Include_functor_named_type]{\ocamlinlinecode{Include\_\allowbreak{}functor\_\allowbreak{}named\_\allowbreak{}type}}}\label{Oxcaml-Include_functor_named_type}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-Include_functor_named_type--module-type-Make}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[Oxcaml-Include_functor_named_type-module-type-Make]{\ocamlinlinecode{Make}}}\label{Oxcaml-Include_functor_named_type-module-type-Make}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\subsubsection{Parameters\label{Oxcaml-Include_functor_named_type-module-type-Make--parameters_3}}%
+\label{Oxcaml-Include_functor_named_type-module-type-Make--argument-1-_}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-Include_functor_named_type-module-type-Make-argument-1-_]{\ocamlinlinecode{\_\allowbreak{}}}}\label{Oxcaml-Include_functor_named_type-module-type-Make-argument-1-_}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-Include_functor_named_type-module-type-Make-argument-1-_--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\subsubsection{Signature\label{Oxcaml-Include_functor_named_type-module-type-Make--signature_3}}%
+\label{Oxcaml-Include_functor_named_type-module-type-Make--type-included}\ocamlcodefragment{\ocamltag{keyword}{type} included}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}This is a Module where the type is named and then included.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml-Include_functor_named_type--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\ocamltag{keyword}{include functor} \hyperref[Oxcaml-Include_functor_named_type-module-type-Make]{\ocamlinlinecode{Make}}\label{Oxcaml-Include_functor_named_type--type-included}\ocamlcodefragment{\ocamltag{keyword}{type} included}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
 

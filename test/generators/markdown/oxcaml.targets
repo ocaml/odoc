@@ -10,3 +10,6 @@ Oxcaml-No_include_functor-T.md
 Oxcaml-Include_functor.md
 Oxcaml-Include_functor-Make.md
 Oxcaml-Include_functor-Make-argument-1-T.md
+Oxcaml-Include_functor_named_type.md
+Oxcaml-Include_functor_named_type-module-type-Make.md
+Oxcaml-Include_functor_named_type-module-type-Make-argument-1-_.md

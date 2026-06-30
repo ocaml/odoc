@@ -651,7 +651,10 @@ and include_decl :
   (* Don't start shadowing within any signatures *)
   match d with
   | Alias p -> Alias (Path.module_ map p)
-  | Functor p -> Functor (Path.module_ map p)
+  | Functor (Path p) -> Functor (Path (Path.module_ map p))
+  | Functor (ModuleType mty) ->
+      let include_parent = Identifier.fresh_include_parent identifier in
+      Functor (ModuleType (u_module_type_expr map include_parent mty))
   | ModuleType mty ->
       let include_parent = Identifier.fresh_include_parent identifier in
       ModuleType (u_module_type_expr map include_parent mty)

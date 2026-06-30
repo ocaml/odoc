@@ -8,6 +8,9 @@ Oxcaml_impl\.Include_functor\.Make
 \fBModule Include_functor\.Make\fR
 .in 
 .sp 
+.fi 
+This module demonstratest the include functor functionality
+.nf 
 .SH Documentation
 .sp 
 .nf 

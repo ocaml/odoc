@@ -4,6 +4,8 @@
 ```ocaml
 module Make (T : sig ... end) : sig ... end
 ```
+This module demonstratest the `include functor` functionality
+
 ```ocaml
 type t
 ```

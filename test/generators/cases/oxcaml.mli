@@ -284,6 +284,8 @@ end
 (** {1 Include functor on signatures} *)
 
 module No_include_functor : sig
+(** Module without any [include functor] features, this is how things are done
+    in plain OCaml at the moment. *)
   module Make (T : sig type t end) : sig type included end
   module T : sig
     type t
@@ -294,7 +296,15 @@ module No_include_functor : sig
 end
 
 module Include_functor : sig
+(** Module which defines a functor and includes it via [module type of] *)
   module Make (T : sig type t end) : sig type included end
   type t
   include functor module type of Make
+end
+
+module Include_functor_named_type : sig
+(** This is a Module where the type is named and then included. *)
+  module type Make = (_ : sig type t end) -> sig type included end
+  type t
+  include functor Make
 end

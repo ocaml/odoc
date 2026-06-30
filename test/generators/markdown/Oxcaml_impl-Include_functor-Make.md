@@ -1,6 +1,8 @@
 
 # Module `Include_functor.Make`
 
+This module demonstratest the `include functor` functionality
+
 
 ## Parameters
 

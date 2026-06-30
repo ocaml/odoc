@@ -7,3 +7,4 @@ Oxcaml.No_include_functor.Make.3o
 Oxcaml.No_include_functor.T.3o
 Oxcaml.Include_functor.3o
 Oxcaml.Include_functor.Make.3o
+Oxcaml.Include_functor_named_type.3o

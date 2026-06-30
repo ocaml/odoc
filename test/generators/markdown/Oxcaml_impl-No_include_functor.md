@@ -4,6 +4,8 @@
 ```ocaml
 module Make (T : sig ... end) : sig ... end
 ```
+This module shows how to achieve the effect without `include functor`, with an intermediate module `T`.
+
 ```ocaml
 module T : sig ... end
 ```

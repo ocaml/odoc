@@ -336,7 +336,11 @@ and Open : sig
 end
 
 and Include : sig
-  type decl = Alias of Cpath.module_ | ModuleType of ModuleType.U.expr | Functor of Cpath.module_
+  type functor' = Path of Cpath.module_ | ModuleType of ModuleType.U.expr
+  type decl =
+    | Alias of Cpath.module_
+    | ModuleType of ModuleType.U.expr
+    | Functor of functor'
 
   type t = {
     parent : Odoc_model.Paths.Identifier.Signature.t;

@@ -634,7 +634,7 @@ and read_include env parent incl =
     let decl = ModuleType m in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
   | Some `Functor p ->
-    let decl = Include.Functor p in
+    let decl = Include.Functor (Path p) in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
   | _ ->
     content.items

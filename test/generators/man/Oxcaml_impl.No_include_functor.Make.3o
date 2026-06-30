@@ -8,6 +8,9 @@ Oxcaml_impl\.No_include_functor\.Make
 \fBModule No_include_functor\.Make\fR
 .in 
 .sp 
+.fi 
+This module shows how to achieve the effect without include functor, with an intermediate module T\.
+.nf 
 .SH Documentation
 .sp 
 .nf 
