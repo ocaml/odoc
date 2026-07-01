@@ -70,7 +70,7 @@ Omitted has been added in the children of index, after the ones that were ordere
 Typo is in the children field of index, but does not exist. It is omitted to,
 but this should be a warning!
 
-  $ cat _html/pkg/index.html | grep odoc-global-toc -A 11
+  $ cat _html/pkg/index.html | grep -A11 odoc-global-toc
      <nav class="odoc-toc odoc-global-toc">
       <ul>
        <li><a href="#" class="current_unit">This is the main index</a>

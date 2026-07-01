@@ -9,7 +9,7 @@ A quick test to repro the issue found in #342
 
 The table of content:
 
-  $ cat html/Foo/index.html | grep "odoc-toc" -A 9
+  $ cat html/Foo/index.html | grep -A9 "odoc-toc"
     <div class="odoc-tocs">
      <nav class="odoc-toc odoc-local-toc">
       <ul>
@@ -24,7 +24,7 @@ The table of content:
 
 The rendered headings
 
-  $ cat html/Foo/index.html | grep "<h2" -A 3
+  $ cat html/Foo/index.html | grep -A3 "<h2"
      <h2 id="references--and-with-text-in-title">
       <a href="#references--and-with-text-in-title" class="anchor"></a>
       References <a href="A/index.html"><code>A</code></a> and 

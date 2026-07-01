@@ -28,7 +28,7 @@ Since -L subfolders are omitted from -P roots, the index page should not be adde
   $ odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o html _odoc/pkg/libname/unit.odocl
   $ odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o html _odoc/pkg/libname/page-index.odocl
 
-  $ cat html/pkg/index.html | grep odoc-global-toc -A 15
+  $ cat html/pkg/index.html | grep -A15 odoc-global-toc
      <nav class="odoc-toc odoc-global-toc">
       <ul>
        <li><a href="#" class="current_unit">Package <code>pkg</code></a>
