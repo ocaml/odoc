@@ -345,3 +345,286 @@ Module with `portable` modality. The modality is applied to all value members of
 module M3 : sig ... end
 ```
 `contended` modality applied to all definitions in the module, except the ones which have already specified this axis.
+
+
+## Modes
+
+```ocaml
+val mode_arg : int -> int
+```
+Mode on a function argument.
+
+```ocaml
+val mode_ret : int -> int
+```
+Mode on a function return.
+
+```ocaml
+val mode_both : int -> int
+```
+Modes on both argument and return.
+
+```ocaml
+val mode_multi : string -> string
+```
+Multiple modes on argument and return.
+
+```ocaml
+val mode_labeled : x:int -> int
+```
+Mode on a labeled argument.
+
+```ocaml
+val mode_optional : ?x:int -> unit -> int
+```
+Mode on an optional argument.
+
+```ocaml
+val mode_higher_order : ('a -> 'b) -> 'a -> 'b
+```
+Mode on a higher-order function argument.
+
+```ocaml
+val mode_arrow_result : int -> int -> int
+```
+Mode on a result that is itself an arrow. The arrow must be parenthesized so the mode does not appear to bind to the inner return type.
+
+
+### Curry-implied result modes
+
+Closing over an argument constrains the partial-application closure across several axes, not just locality. When the result mode is the one currying implies from the argument, it is suppressed (as the compiler does).
+
+```ocaml
+val curry_once : (int -> int) -> int -> int
+```
+`once` argument: the implied `once` result mode is suppressed.
+
+```ocaml
+val curry_portable : (int -> int) -> int -> int
+```
+`portable` argument: the implied result mode is suppressed.
+
+```ocaml
+val curry_contended : (int -> int) -> int -> int
+```
+`contended` argument: the implied result mode is suppressed.
+
+
+### Result modes that are kept
+
+A result mode is only suppressed when it is exactly the one currying implies. An explicit mode on a different axis is kept (and the arrow result is parenthesized).
+
+```ocaml
+val keep_portable : int -> int -> int
+```
+`portable` on the result is not implied by a `local` argument, so it is kept.
+
+```ocaml
+val keep_once : int -> int -> int
+```
+`once` on the result is not implied by a `local` argument, so it is kept.
+
+```ocaml
+val keep_over_once : (int -> int) -> int -> int
+```
+The curry-implied `once` is suppressed, but the explicit `portable` is kept.
+
+```ocaml
+val keep_over_local : (int -> int) -> int -> int
+```
+The curry-implied `local` is suppressed, but the explicit `portable` is kept.
+
+```ocaml
+val keep_portable_over_nonportable : (int -> int) -> int -> int
+```
+The `nonportable` argument mode is the default and dropped, while the explicit `portable` result, not implied by currying, is kept.
+
+
+### All mode axes
+
+```ocaml
+val mode_global : int -> unit
+```
+Locality mode (legacy, not rendered).
+
+```ocaml
+val mode_local : int -> unit
+```
+Locality mode.
+
+```ocaml
+val mode_aliased : int -> unit
+```
+Uniqueness mode (legacy, not rendered).
+
+```ocaml
+val mode_unique : int -> unit
+```
+Uniqueness mode.
+
+```ocaml
+val mode_many : int -> unit
+```
+Linearity mode (legacy, not rendered).
+
+```ocaml
+val mode_once : int -> unit
+```
+Linearity mode.
+
+```ocaml
+val mode_portable : int -> unit
+```
+Portability mode.
+
+```ocaml
+val mode_shareable : int -> unit
+```
+Portability mode (intermediate value).
+
+```ocaml
+val mode_nonportable : int -> unit
+```
+Portability mode (legacy, not rendered).
+
+```ocaml
+val mode_uncontended : int -> unit
+```
+Contention mode (legacy, not rendered).
+
+```ocaml
+val mode_shared : int -> unit
+```
+Contention mode.
+
+```ocaml
+val mode_contended : int -> unit
+```
+Contention mode.
+
+```ocaml
+val mode_yielding : int -> unit
+```
+Yield mode.
+
+```ocaml
+val mode_unyielding : int -> unit
+```
+Yield mode (legacy, not rendered).
+
+```ocaml
+val mode_forkable : int -> unit
+```
+Fork mode (identity on a non-`local` argument, not rendered).
+
+```ocaml
+val mode_local_forkable : int -> unit
+```
+Fork mode, rendered because the argument is also `local`.
+
+```ocaml
+val mode_unforkable : int -> unit
+```
+Fork mode.
+
+```ocaml
+val mode_local_unforkable : int -> unit
+```
+Fork mode (identity for a `local` argument, not rendered).
+
+```ocaml
+val mode_stateless : int -> unit
+```
+Statefulness mode.
+
+```ocaml
+val mode_observing : int -> unit
+```
+Statefulness mode.
+
+```ocaml
+val mode_stateful : int -> unit
+```
+Statefulness mode (identity when `portability` is at its default, not rendered).
+
+```ocaml
+val mode_immutable : int -> unit
+```
+Visibility mode.
+
+```ocaml
+val mode_read : int -> unit
+```
+Visibility mode.
+
+```ocaml
+val mode_read_write : int -> unit
+```
+Visibility mode (legacy, not rendered).
+
+```ocaml
+val mode_static : int -> unit
+```
+Staticity mode.
+
+```ocaml
+val mode_dynamic : int -> unit
+```
+Staticity mode (legacy, not rendered).
+
+
+### Cross-axis suppression
+
+Some axes have a default value that is implied by another axis; the implied value is suppressed when rendering.
+
+```ocaml
+val mode_local_yielding : int -> unit
+```
+`yielding` is the default for `local`, so it is not rendered.
+
+```ocaml
+val mode_local_unyielding : int -> unit
+```
+`unyielding` is non-default for `local`, so it is rendered.
+
+```ocaml
+val mode_immutable_contended : int -> unit
+```
+`contended` is the default for `immutable`, so it is not rendered.
+
+```ocaml
+val mode_immutable_uncontended : int -> unit
+```
+`uncontended` is non-default for `immutable`, so it is rendered.
+
+```ocaml
+val mode_stateless_portable : int -> unit
+```
+`portable` is the default for `stateless`, so it is not rendered.
+
+```ocaml
+val mode_stateful_portable : int -> unit
+```
+`portable` is non-default for `stateful`, so it is rendered.
+
+
+### Modes in type definitions
+
+```ocaml
+type mode_alias = int -> int
+```
+Type alias for an arrow with a mode on its argument.
+
+```ocaml
+type mode_record = {
+  fn : int -> int; (* Record field whose type is an arrow with a mode. *)
+  fn_both : int -> int; (* Arrow field with modes on both sides. *)
+  mutable mfn : int -> int; (* Mutable arrow field with a mode. *)
+}
+```
+```ocaml
+type mode_cstr = 
+  | Mc_arrow of int -> int (* Constructor argument is a parenthesized arrow with a mode. *)
+  | Mc_nested of (int -> int) -> unit (* Nested arrow: higher-order with a mode on the inner argument. *)
+  | Mc_gadt : ('a -> 'a) -> mode_cstr (* GADT constructor *)
+```
