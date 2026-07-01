@@ -104,7 +104,7 @@ Compile the pages with the --source option:
 
 Source links generated in the documentation:
 
-  $ grep source_link html/A/index.html -B 2
+  $ grep -B2 source_link html/A/index.html
     <header class="odoc-preamble">
      <h1>Module <code><span>A</span></code>
       <a href="../src/a.ml.html" class="source_link">Source</a>

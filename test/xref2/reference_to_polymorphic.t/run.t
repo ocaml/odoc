@@ -11,7 +11,7 @@
   Warning: Failed to resolve reference unresolvedroot(On) Couldn't find "On"
 
   $ odoc html-generate -o html --indent main.odocl
-  $ cat html/Main/index.html | grep "<li>" -A 3
+  $ cat html/Main/index.html | grep -A3 "<li>"
      <ul><li><a href="#type-switch.On"><code>switch.`On</code></a></li>
       <li><a href="#type-switch.Off"><code>switch.`Off</code></a></li>
       <li><a href="#type-switch.On"><code>switch.`On</code></a></li>

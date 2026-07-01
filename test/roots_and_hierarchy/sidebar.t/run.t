@@ -142,7 +142,7 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
     }
   ]
 
-  $ cat html/pkg/index.html | grep odoc-global-toc -A 15
+  $ cat html/pkg/index.html | grep -A15 odoc-global-toc
      <nav class="odoc-toc odoc-global-toc">
       <ul>
        <li><a href="#" class="current_unit">Package <code>pkg</code></a>
@@ -160,7 +160,7 @@ A json version of a sidebar can be obtained using the sidebar-generate command:
          </li>
         </ul>
 
-  $ cat html/pkg/libname/Unit/X/index.html | grep odoc-global-toc -A 15
+  $ cat html/pkg/libname/Unit/X/index.html | grep -A15 odoc-global-toc
      <nav class="odoc-toc odoc-global-toc">
       <ul>
        <li><a href="../../../index.html">Package <code>pkg</code></a>

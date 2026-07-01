@@ -9,7 +9,7 @@ A quick test to repro the issue found in #941
 
 The rendered html
 
-  $ cat html/Foo/index.html | grep "extension" -A 3
+  $ cat html/Foo/index.html | grep -A3 "extension"
       <div class="spec type extension anchored" id="extension-decl-A">
        <a href="#extension-decl-A" class="anchor"></a>
        <code>
