@@ -1039,8 +1039,8 @@ and type_expr map (parent : Identifier.LabelParent.t) (t : Component.TypeExpr.t)
     | Var s -> Var s
     | Any -> Any
     | Alias (t, str) -> Alias (type_expr map parent t, str)
-    | Arrow (lbl, t1, t2) ->
-        Arrow (lbl, type_expr map parent t1, type_expr map parent t2)
+    | Arrow (lbl, (t1, m1), (t2, m2)) ->
+        Arrow (lbl, (type_expr map parent t1, m1), (type_expr map parent t2, m2))
     | Tuple ts ->
         Tuple (List.map (fun (lbl, ty) -> (lbl, type_expr map parent ty)) ts)
     | Unboxed_tuple ts ->
