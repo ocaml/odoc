@@ -125,7 +125,10 @@ and TypeExpr : sig
     | Var of string
     | Any
     | Alias of t * string
-    | Arrow of label option * t * t
+    | Arrow of
+        label option
+        * (t * Odoc_model.Lang.Modes.t)
+        * (t * Odoc_model.Lang.Modes.t)
     | Tuple of (string option * t) list
     | Unboxed_tuple of (string option * t) list
     | Constr of Cpath.type_ * t list
@@ -1201,7 +1204,7 @@ module Fmt = struct
     | Var x -> Format.fprintf ppf "%s" x
     | Any -> Format.fprintf ppf "_"
     | Alias (x, y) -> Format.fprintf ppf "(alias %a %s)" (type_expr c) x y
-    | Arrow (l, t1, t2) ->
+    | Arrow (l, (t1, _), (t2, _)) ->
         Format.fprintf ppf "%a(%a) -> %a" type_expr_label l (type_expr c) t1
           (type_expr c) t2
     | Tuple ts -> Format.fprintf ppf "(%a)" (type_labeled_tuple c) ts
@@ -2362,8 +2365,11 @@ module Of_Lang = struct
     | Any -> Any
     | Constr (p, xs) ->
         Constr (type_path ident_map p, List.map (type_expression ident_map) xs)
-    | Arrow (lbl, t1, t2) ->
-        Arrow (lbl, type_expression ident_map t1, type_expression ident_map t2)
+    | Arrow (lbl, (t1, m1), (t2, m2)) ->
+        Arrow
+          ( lbl,
+            (type_expression ident_map t1, m1),
+            (type_expression ident_map t2, m2) )
     | Tuple ts ->
         Tuple
           (List.map (fun (lbl, ty) -> (lbl, type_expression ident_map ty)) ts)
