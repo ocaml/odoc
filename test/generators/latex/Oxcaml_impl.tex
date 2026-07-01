@@ -6,5 +6,43 @@
 \label{Oxcaml_impl--module-Including}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml_impl-Including]{\ocamlinlinecode{Including}}}\label{Oxcaml_impl-Including}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \ocamltag{keyword}{struct} \ocamltag{keyword}{include} \hyperref[Oxcaml_impl-To_be_included]{\ocamlinlinecode{To\_\allowbreak{}be\_\allowbreak{}included}} \ocamltag{keyword}{end}\label{Oxcaml_impl-Including--val-add}\ocamlcodefragment{\ocamltag{keyword}{val} add : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc]}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{Oxcaml_impl--type-opaque}\ocamlcodefragment{\ocamltag{keyword}{type} opaque}\\
+\subsection{Modalities\label{Oxcaml_impl--modalities}}%
+\subsubsection{Modalities on record fields\label{Oxcaml_impl--modalities-on-record-fields}}%
+\label{Oxcaml_impl--type-modalities_record}\ocamlcodefragment{\ocamltag{keyword}{type} modalities\_\allowbreak{}record = \{}\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{f\_\allowbreak{}global : \hyperref[Oxcaml_impl--type-opaque]{\ocamlinlinecode{opaque}} @@ global;\allowbreak{}}\label{Oxcaml_impl--type-modalities_record.f_global}& Locality modality.\\
+\ocamlinlinecode{f\_\allowbreak{}portable : \hyperref[Oxcaml_impl--type-opaque]{\ocamlinlinecode{opaque}} @@ portable;\allowbreak{}}\label{Oxcaml_impl--type-modalities_record.f_portable}& Portability modality.\\
+\ocamlinlinecode{f\_\allowbreak{}multi : \hyperref[Oxcaml_impl--type-opaque]{\ocamlinlinecode{opaque}} @@ global portable;\allowbreak{}}\label{Oxcaml_impl--type-modalities_record.f_multi}& Multiple modalities.\\
+\ocamlinlinecode{f\_\allowbreak{}plain : \hyperref[Oxcaml_impl--type-opaque]{\ocamlinlinecode{opaque}};\allowbreak{}}\label{Oxcaml_impl--type-modalities_record.f_plain}& No modality, for reference.\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+\subsubsection{Modalities on constructor arguments\label{Oxcaml_impl--modalities-on-constructor-arguments}}%
+\label{Oxcaml_impl--type-modalities_variant}\ocamlcodefragment{\ocamltag{keyword}{type} modalities\_\allowbreak{}variant = }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A} \ocamltag{keyword}{of} string @@ global}\label{Oxcaml_impl--type-modalities_variant.A}& Constructor argument with \ocamlinlinecode{global} modality.\\
+\ocamlcodefragment{| \ocamltag{constructor}{B} \ocamltag{keyword}{of} int \ocamltag{arrow}{$\rightarrow$} int @@ portable}\label{Oxcaml_impl--type-modalities_variant.B}& Function constructor argument with modality.\\
+\ocamlcodefragment{| \ocamltag{constructor}{C} \ocamltag{keyword}{of} int @@ portable * string @@ global}\label{Oxcaml_impl--type-modalities_variant.C}& Per-element modalities in a constructor tuple.\\
+\end{ocamltabular}%
+\\
+\subsection{Modes\label{Oxcaml_impl--modes}}%
+\subsubsection{Modes in type definitions\label{Oxcaml_impl--modes-in-type-definitions}}%
+\label{Oxcaml_impl--type-mode_alias}\ocamlcodefragment{\ocamltag{keyword}{type} mode\_\allowbreak{}alias = int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Type alias for an arrow with a mode on its argument.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml_impl--type-mode_record}\ocamlcodefragment{\ocamltag{keyword}{type} mode\_\allowbreak{}record = \{}\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{fn : int \ocamltag{arrow}{$\rightarrow$} int;\allowbreak{}}\label{Oxcaml_impl--type-mode_record.fn}& Field whose type is an arrow with a mode.\\
+\ocamlinlinecode{fn\_\allowbreak{}both : int \ocamltag{arrow}{$\rightarrow$} int;\allowbreak{}}\label{Oxcaml_impl--type-mode_record.fn_both}& Modes on both sides.\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+\label{Oxcaml_impl--type-mode_cstr}\ocamlcodefragment{\ocamltag{keyword}{type} mode\_\allowbreak{}cstr = }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{Mc\_\allowbreak{}arrow} \ocamltag{keyword}{of} int \ocamltag{arrow}{$\rightarrow$} int}\label{Oxcaml_impl--type-mode_cstr.Mc_arrow}& Constructor argument is a parenthesized arrow with a mode.\\
+\ocamlcodefragment{| \ocamltag{constructor}{Mc\_\allowbreak{}nested} \ocamltag{keyword}{of} (int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} unit}\label{Oxcaml_impl--type-mode_cstr.Mc_nested}& Nested arrow: higher-order with a mode on the inner argument.\\
+\end{ocamltabular}%
+\\
+\subsubsection{Modes on values\label{Oxcaml_impl--modes-on-values}}%
+\label{Oxcaml_impl--val-mode_arg}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}arg : int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Mode on a function argument, via a type annotation.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml_impl--val-mode_multi}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}multi : string \ocamltag{arrow}{$\rightarrow$} string}\begin{ocamlindent}Multiple modes on argument and return.\end{ocamlindent}%
+\medbreak
 
 

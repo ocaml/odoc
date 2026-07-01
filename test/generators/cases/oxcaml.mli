@@ -280,3 +280,189 @@ module M3 : sig @@ contended
 end
 (** [contended] modality applied to all definitions in the module, except the
     ones which have already specified this axis. *)
+
+(** {1 Modes} *)
+
+val mode_arg : int @ local -> int
+(** Mode on a function argument. *)
+
+val mode_ret : int -> int @ local
+(** Mode on a function return. *)
+
+val mode_both : int @ local -> int @ local
+(** Modes on both argument and return. *)
+
+val mode_multi : string @ local once -> string @ local unique
+(** Multiple modes on argument and return. *)
+
+val mode_labeled : x:int @ local -> int
+(** Mode on a labeled argument. *)
+
+val mode_optional : ?x:int @ local -> unit -> int
+(** Mode on an optional argument. *)
+
+val mode_higher_order : ('a -> 'b) @ local -> 'a -> 'b
+(** Mode on a higher-order function argument. *)
+
+val mode_arrow_result : int -> (int -> int) @ local
+(** Mode on a result that is itself an arrow. The arrow must be parenthesized so
+    the mode does not appear to bind to the inner return type. *)
+
+(** {2 Curry-implied result modes}
+
+    Closing over an argument constrains the partial-application closure across
+    several axes, not just locality. When the result mode is the one currying
+    implies from the argument, it is suppressed (as the compiler does). *)
+
+val curry_once : (int -> int) @ once -> int -> int
+(** [once] argument: the implied [once] result mode is suppressed. *)
+
+val curry_portable : (int -> int) @ portable -> int -> int
+(** [portable] argument: the implied result mode is suppressed. *)
+
+val curry_contended : (int -> int) @ contended -> int -> int
+(** [contended] argument: the implied result mode is suppressed. *)
+
+(** {2 Result modes that are kept}
+
+    A result mode is only suppressed when it is exactly the one currying
+    implies. An explicit mode on a different axis is kept (and the arrow result
+    is parenthesized). *)
+
+val keep_portable : int @ local -> (int -> int) @ portable
+(** [portable] on the result is not implied by a [local] argument, so it is kept. *)
+
+val keep_once : int @ local -> (int -> int) @ once
+(** [once] on the result is not implied by a [local] argument, so it is kept. *)
+
+val keep_over_once : (int -> int) @ once -> (int -> int) @ portable
+(** The curry-implied [once] is suppressed, but the explicit [portable] is kept. *)
+
+val keep_over_local : (int -> int) @ local -> (int -> int) @ portable
+(** The curry-implied [local] is suppressed, but the explicit [portable] is kept. *)
+
+val keep_portable_over_nonportable : (int -> int) @ nonportable -> (int -> int) @ portable
+(** The [nonportable] argument mode is the default and dropped, while the
+    explicit [portable] result, not implied by currying, is kept. *)
+
+(** {2 All mode axes} *)
+
+val mode_global : int @ global -> unit
+(** Locality mode (legacy, not rendered). *)
+
+val mode_local : int @ local -> unit
+(** Locality mode. *)
+
+val mode_aliased : int @ aliased -> unit
+(** Uniqueness mode (legacy, not rendered). *)
+
+val mode_unique : int @ unique -> unit
+(** Uniqueness mode. *)
+
+val mode_many : int @ many -> unit
+(** Linearity mode (legacy, not rendered). *)
+
+val mode_once : int @ once -> unit
+(** Linearity mode. *)
+
+val mode_portable : int @ portable -> unit
+(** Portability mode. *)
+
+val mode_shareable : int @ shareable -> unit
+(** Portability mode (intermediate value). *)
+
+val mode_nonportable : int @ nonportable -> unit
+(** Portability mode (legacy, not rendered). *)
+
+val mode_uncontended : int @ uncontended -> unit
+(** Contention mode (legacy, not rendered). *)
+
+val mode_shared : int @ shared -> unit
+(** Contention mode. *)
+
+val mode_contended : int @ contended -> unit
+(** Contention mode. *)
+
+val mode_yielding : int @ yielding -> unit
+(** Yield mode. *)
+
+val mode_unyielding : int @ unyielding -> unit
+(** Yield mode (legacy, not rendered). *)
+
+val mode_forkable : int @ forkable -> unit
+(** Fork mode (identity on a non-[local] argument, not rendered). *)
+
+val mode_local_forkable : int @ local forkable -> unit
+(** Fork mode, rendered because the argument is also [local]. *)
+
+val mode_unforkable : int @ unforkable -> unit
+(** Fork mode. *)
+
+val mode_local_unforkable : int @ local unforkable -> unit
+(** Fork mode (identity for a [local] argument, not rendered). *)
+
+val mode_stateless : int @ stateless -> unit
+(** Statefulness mode. *)
+
+val mode_observing : int @ observing -> unit
+(** Statefulness mode. *)
+
+val mode_stateful : int @ stateful -> unit
+(** Statefulness mode (identity when [portability] is at its default, not rendered). *)
+
+val mode_immutable : int @ immutable -> unit
+(** Visibility mode. *)
+
+val mode_read : int @ read -> unit
+(** Visibility mode. *)
+
+val mode_read_write : int @ read_write -> unit
+(** Visibility mode (legacy, not rendered). *)
+
+val mode_static : int @ static -> unit
+(** Staticity mode. *)
+
+val mode_dynamic : int @ dynamic -> unit
+(** Staticity mode (legacy, not rendered). *)
+
+(** {2 Cross-axis suppression}
+
+    Some axes have a default value that is implied by another axis; the implied
+    value is suppressed when rendering. *)
+
+val mode_local_yielding : int @ local yielding -> unit
+(** [yielding] is the default for [local], so it is not rendered. *)
+
+val mode_local_unyielding : int @ local unyielding -> unit
+(** [unyielding] is non-default for [local], so it is rendered. *)
+
+val mode_immutable_contended : int @ immutable contended -> unit
+(** [contended] is the default for [immutable], so it is not rendered. *)
+
+val mode_immutable_uncontended : int @ immutable uncontended -> unit
+(** [uncontended] is non-default for [immutable], so it is rendered. *)
+
+val mode_stateless_portable : int @ stateless portable -> unit
+(** [portable] is the default for [stateless], so it is not rendered. *)
+
+val mode_stateful_portable : int @ stateful portable -> unit
+(** [portable] is non-default for [stateful], so it is rendered. *)
+
+(** {2 Modes in type definitions} *)
+
+type mode_alias = int @ local -> int
+(** Type alias for an arrow with a mode on its argument. *)
+
+type mode_record = {
+  fn : int @ local -> int;  (** Record field whose type is an arrow with a mode. *)
+  fn_both : int @ local -> int @ local;  (** Arrow field with modes on both sides. *)
+  mutable mfn : int @ local -> int;  (** Mutable arrow field with a mode. *)
+}
+
+type mode_cstr =
+  | Mc_arrow of (int @ local -> int)
+      (** Constructor argument is a parenthesized arrow with a mode. *)
+  | Mc_nested of ((int @ local -> int) -> unit)
+      (** Nested arrow: higher-order with a mode on the inner argument. *)
+  | Mc_gadt : ('a @ once -> 'a) -> mode_cstr
+      (** GADT constructor *)
