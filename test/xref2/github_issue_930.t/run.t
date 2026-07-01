@@ -30,10 +30,10 @@ S1 is included in S2 and S2 is included in S3:
 Check that S0_with_creators_base compiles without crashing and has the
 concat function with simplified types (t -> t):
 
-  $ odoc_print test.odocl -r S0_with_creators_base.concat | jq -c '.type_.Arrow[1].Constr[0]'
+  $ odoc_print test.odocl -r S0_with_creators_base.concat | jq -c '.type_.Arrow[1][0].Constr[0]'
   {"`Resolved":{"`Identifier":{"`Type":[{"`ModuleType":[{"`Root":["None","Test"]},"S0_with_creators_base"]},"t"]}}}
 
-  $ odoc_print test.odocl -r S0_with_creators_base.concat | jq -c '.type_.Arrow[2].Constr[0]'
+  $ odoc_print test.odocl -r S0_with_creators_base.concat | jq -c '.type_.Arrow[2][0].Constr[0]'
   {"`Resolved":{"`Identifier":{"`Type":[{"`ModuleType":[{"`Root":["None","Test"]},"S0_with_creators_base"]},"t"]}}}
 
 === Test 3: Deeply nested includes ===

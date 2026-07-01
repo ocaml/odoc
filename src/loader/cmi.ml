@@ -549,6 +549,84 @@ let read_label_modalities ld =
 let read_constructor_argument arg =
   arg.ca_type, read_modalities Immutable arg.ca_modalities
 
+let tree_of_modes (modes : Mode.Alloc.Const.t) : string list =
+  (* Same as the OxCaml's [Printtyp.tree_of_modes]: axes whose value is legacy
+     or is implied by another axis are suppressed. *)
+  let forkable =
+    match modes.areality, modes.forkable with
+    | Local, Unforkable | Global, Forkable -> None
+    | _, _ -> Some modes.forkable
+  in
+  let yielding =
+    match modes.areality, modes.yielding with
+    | Local, Yielding | Global, Unyielding -> None
+    | _, _ -> Some modes.yielding
+  in
+  let contention =
+    match modes.visibility, modes.contention with
+    | Immutable, Contended
+    | Read, Shared
+    | Read_write, Uncontended -> None
+    | _, _ -> Some modes.contention
+  in
+  let portability =
+    match modes.statefulness, modes.portability with
+    | Stateless, Portable
+    | Observing, Shareable
+    | Stateful, Nonportable -> None
+    | _, _ -> Some modes.portability
+  in
+  let diff = Mode.Alloc.Const.diff modes Mode.Alloc.Const.legacy in
+  let diff = { diff with forkable; yielding; contention; portability } in
+  let print_opt print a = Option.map (Format_doc.asprintf "%a" print) a in
+  List.filter_map (fun x -> x)
+    [ print_opt Mode.Locality.Const.print diff.areality
+    ; print_opt Mode.Uniqueness.Const.print diff.uniqueness
+    ; print_opt Mode.Linearity.Const.print diff.linearity
+    ; print_opt Mode.Portability.Const.print diff.portability
+    ; print_opt Mode.Contention.Const.print diff.contention
+    ; print_opt Mode.Forkable.Const.print diff.forkable
+    ; print_opt Mode.Yielding.Const.print diff.yielding
+    ; print_opt Mode.Statefulness.Const.print diff.statefulness
+    ; print_opt Mode.Visibility.Const.print diff.visibility
+    ; print_opt Mode.Staticity.Const.print diff.staticity ]
+
+let read_alloc_modes m = tree_of_modes (Mode.Alloc.zap_to_legacy m)
+
+type modes = Mode.Alloc.Const.t
+
+let legacy_modes = Mode.Alloc.Const.legacy
+
+let curried_acc modes arg_mode =
+  Ctype.curry_mode modes (Mode.Alloc.zap_to_legacy arg_mode)
+
+let mode_is_implied modes res_mode =
+  let snap = Btype.snapshot () in
+  let implied =
+    match Mode.Alloc.equate (Mode.Alloc.of_const modes) res_mode with
+    | Ok () -> true
+    | Error _ -> false
+  in
+  Btype.backtrack snap;
+  implied
+
+let read_arrow_modes modes typ =
+  match Compat.get_desc typ with
+  | Tarrow ((_, arg_mode, res_mode), _, res, _) ->
+      let arg_modes = read_alloc_modes arg_mode in
+      let modes = curried_acc modes arg_mode in
+      let res_is_arrow =
+        match Compat.get_desc res with
+        | Tarrow _ -> not (is_aliased (proxy res))
+        | _ -> false
+      in
+      let res_modes =
+        if res_is_arrow && mode_is_implied modes res_mode then []
+        else read_alloc_modes res_mode
+      in
+      (arg_modes, res_modes, modes)
+  | _ -> ([], [], modes)
+
 #else
 
 let jkind_of_type_desc _te = Kind.Default
@@ -556,9 +634,17 @@ let read_value_descr_modalities _vd = []
 let read_label_modalities _ld = []
 let read_constructor_argument arg = arg, []
 
+type modes = unit
+
+let legacy_modes : modes = ()
+
+let read_arrow_modes (modes : modes) _typ = ([], [], modes)
+
 #endif
 
-let rec read_type_expr env typ =
+let rec read_type_expr env typ = read_type_expr_modal env legacy_modes typ
+
+and read_type_expr_modal env modes typ =
   let open TypeExpr in
   let px = proxy typ in
   if used_alias px then Var (name_of_type typ)
@@ -593,8 +679,9 @@ let rec read_type_expr env typ =
             | _ ->
               lbl, read_type_expr env arg
           in
-          let res = read_type_expr env res in
-            Arrow(lbl, arg, res)
+          let arg_modes, res_modes, modes = read_arrow_modes modes typ in
+          let res = read_type_expr_modal env modes res in
+            Arrow(lbl, (arg, arg_modes), (res, res_modes))
       | Ttuple typs ->
 #if OCAML_VERSION >= (5,4,0) || defined OXCAML
           let typs = List.map (fun (lbl,x) -> lbl, read_type_expr env x) typs in

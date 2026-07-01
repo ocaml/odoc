@@ -686,56 +686,56 @@ contended modality applied to all definitions in the module, except the ones whi
 \fB15 Modes\fR
 .in 
 .sp 
-\f[CB]val\fR mode_arg : int \f[CB]\->\fR int
+\f[CB]val\fR mode_arg : int @ local \f[CB]\->\fR int
 .fi 
 .br 
 .ti +2
 Mode on a function argument\.
 .nf 
 .sp 
-\f[CB]val\fR mode_ret : int \f[CB]\->\fR int
+\f[CB]val\fR mode_ret : int \f[CB]\->\fR int @ local
 .fi 
 .br 
 .ti +2
 Mode on a function return\.
 .nf 
 .sp 
-\f[CB]val\fR mode_both : int \f[CB]\->\fR int
+\f[CB]val\fR mode_both : int @ local \f[CB]\->\fR int @ local
 .fi 
 .br 
 .ti +2
 Modes on both argument and return\.
 .nf 
 .sp 
-\f[CB]val\fR mode_multi : string \f[CB]\->\fR string
+\f[CB]val\fR mode_multi : string @ local once \f[CB]\->\fR string @ local unique
 .fi 
 .br 
 .ti +2
 Multiple modes on argument and return\.
 .nf 
 .sp 
-\f[CB]val\fR mode_labeled : \f[CB]x\fR:int \f[CB]\->\fR int
+\f[CB]val\fR mode_labeled : \f[CB]x\fR:int @ local \f[CB]\->\fR int
 .fi 
 .br 
 .ti +2
 Mode on a labeled argument\.
 .nf 
 .sp 
-\f[CB]val\fR mode_optional : \f[CB]?x\fR:int \f[CB]\->\fR unit \f[CB]\->\fR int
+\f[CB]val\fR mode_optional : \f[CB]?x\fR:int @ local \f[CB]\->\fR unit \f[CB]\->\fR int
 .fi 
 .br 
 .ti +2
 Mode on an optional argument\.
 .nf 
 .sp 
-\f[CB]val\fR mode_higher_order : (\f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR) \f[CB]\->\fR \f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR
+\f[CB]val\fR mode_higher_order : (\f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR) @ local \f[CB]\->\fR \f[CB]'a\fR \f[CB]\->\fR \f[CB]'b\fR
 .fi 
 .br 
 .ti +2
 Mode on a higher-order function argument\.
 .nf 
 .sp 
-\f[CB]val\fR mode_arrow_result : int \f[CB]\->\fR int \f[CB]\->\fR int
+\f[CB]val\fR mode_arrow_result : int \f[CB]\->\fR (int \f[CB]\->\fR int) @ local
 .fi 
 .br 
 .ti +2
@@ -750,21 +750,21 @@ Mode on a result that is itself an arrow\. The arrow must be parenthesized so th
 Closing over an argument constrains the partial-application closure across several axes, not just locality\. When the result mode is the one currying implies from the argument, it is suppressed (as the compiler does)\.
 .nf 
 .sp 
-\f[CB]val\fR curry_once : (int \f[CB]\->\fR int) \f[CB]\->\fR int \f[CB]\->\fR int
+\f[CB]val\fR curry_once : (int \f[CB]\->\fR int) @ once \f[CB]\->\fR int \f[CB]\->\fR int
 .fi 
 .br 
 .ti +2
 once argument: the implied once result mode is suppressed\.
 .nf 
 .sp 
-\f[CB]val\fR curry_portable : (int \f[CB]\->\fR int) \f[CB]\->\fR int \f[CB]\->\fR int
+\f[CB]val\fR curry_portable : (int \f[CB]\->\fR int) @ portable \f[CB]\->\fR int \f[CB]\->\fR int
 .fi 
 .br 
 .ti +2
 portable argument: the implied result mode is suppressed\.
 .nf 
 .sp 
-\f[CB]val\fR curry_contended : (int \f[CB]\->\fR int) \f[CB]\->\fR int \f[CB]\->\fR int
+\f[CB]val\fR curry_contended : (int \f[CB]\->\fR int) @ contended \f[CB]\->\fR int \f[CB]\->\fR int
 .fi 
 .br 
 .ti +2
@@ -779,35 +779,35 @@ contended argument: the implied result mode is suppressed\.
 A result mode is only suppressed when it is exactly the one currying implies\. An explicit mode on a different axis is kept (and the arrow result is parenthesized)\.
 .nf 
 .sp 
-\f[CB]val\fR keep_portable : int \f[CB]\->\fR int \f[CB]\->\fR int
+\f[CB]val\fR keep_portable : int @ local \f[CB]\->\fR (int \f[CB]\->\fR int) @ portable
 .fi 
 .br 
 .ti +2
 portable on the result is not implied by a local argument, so it is kept\.
 .nf 
 .sp 
-\f[CB]val\fR keep_once : int \f[CB]\->\fR int \f[CB]\->\fR int
+\f[CB]val\fR keep_once : int @ local \f[CB]\->\fR (int \f[CB]\->\fR int) @ once
 .fi 
 .br 
 .ti +2
 once on the result is not implied by a local argument, so it is kept\.
 .nf 
 .sp 
-\f[CB]val\fR keep_over_once : (int \f[CB]\->\fR int) \f[CB]\->\fR int \f[CB]\->\fR int
+\f[CB]val\fR keep_over_once : (int \f[CB]\->\fR int) @ once \f[CB]\->\fR (int \f[CB]\->\fR int) @ portable
 .fi 
 .br 
 .ti +2
 The curry-implied once is suppressed, but the explicit portable is kept\.
 .nf 
 .sp 
-\f[CB]val\fR keep_over_local : (int \f[CB]\->\fR int) \f[CB]\->\fR int \f[CB]\->\fR int
+\f[CB]val\fR keep_over_local : (int \f[CB]\->\fR int) @ local \f[CB]\->\fR (int \f[CB]\->\fR int) @ portable
 .fi 
 .br 
 .ti +2
 The curry-implied local is suppressed, but the explicit portable is kept\.
 .nf 
 .sp 
-\f[CB]val\fR keep_portable_over_nonportable : (int \f[CB]\->\fR int) \f[CB]\->\fR int \f[CB]\->\fR int
+\f[CB]val\fR keep_portable_over_nonportable : (int \f[CB]\->\fR int) \f[CB]\->\fR (int \f[CB]\->\fR int) @ portable
 .fi 
 .br 
 .ti +2
@@ -825,7 +825,7 @@ The nonportable argument mode is the default and dropped, while the explicit por
 Locality mode (legacy, not rendered)\.
 .nf 
 .sp 
-\f[CB]val\fR mode_local : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_local : int @ local \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
@@ -839,7 +839,7 @@ Locality mode\.
 Uniqueness mode (legacy, not rendered)\.
 .nf 
 .sp 
-\f[CB]val\fR mode_unique : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_unique : int @ unique \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
@@ -853,21 +853,21 @@ Uniqueness mode\.
 Linearity mode (legacy, not rendered)\.
 .nf 
 .sp 
-\f[CB]val\fR mode_once : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_once : int @ once \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 Linearity mode\.
 .nf 
 .sp 
-\f[CB]val\fR mode_portable : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_portable : int @ portable \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 Portability mode\.
 .nf 
 .sp 
-\f[CB]val\fR mode_shareable : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_shareable : int @ shareable \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
@@ -888,21 +888,21 @@ Portability mode (legacy, not rendered)\.
 Contention mode (legacy, not rendered)\.
 .nf 
 .sp 
-\f[CB]val\fR mode_shared : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_shared : int @ shared \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 Contention mode\.
 .nf 
 .sp 
-\f[CB]val\fR mode_contended : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_contended : int @ contended \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 Contention mode\.
 .nf 
 .sp 
-\f[CB]val\fR mode_yielding : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_yielding : int @ yielding \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
@@ -923,35 +923,35 @@ Yield mode (legacy, not rendered)\.
 Fork mode (identity on a non-local argument, not rendered)\.
 .nf 
 .sp 
-\f[CB]val\fR mode_local_forkable : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_local_forkable : int @ local forkable \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 Fork mode, rendered because the argument is also local\.
 .nf 
 .sp 
-\f[CB]val\fR mode_unforkable : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_unforkable : int @ unforkable \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 Fork mode\.
 .nf 
 .sp 
-\f[CB]val\fR mode_local_unforkable : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_local_unforkable : int @ local \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 Fork mode (identity for a local argument, not rendered)\.
 .nf 
 .sp 
-\f[CB]val\fR mode_stateless : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_stateless : int @ stateless \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 Statefulness mode\.
 .nf 
 .sp 
-\f[CB]val\fR mode_observing : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_observing : int @ observing \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
@@ -965,14 +965,14 @@ Statefulness mode\.
 Statefulness mode (identity when portability is at its default, not rendered)\.
 .nf 
 .sp 
-\f[CB]val\fR mode_immutable : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_immutable : int @ immutable \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 Visibility mode\.
 .nf 
 .sp 
-\f[CB]val\fR mode_read : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_read : int @ read \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
@@ -986,7 +986,7 @@ Visibility mode\.
 Visibility mode (legacy, not rendered)\.
 .nf 
 .sp 
-\f[CB]val\fR mode_static : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_static : int @ static \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
@@ -1008,42 +1008,42 @@ Staticity mode (legacy, not rendered)\.
 Some axes have a default value that is implied by another axis; the implied value is suppressed when rendering\.
 .nf 
 .sp 
-\f[CB]val\fR mode_local_yielding : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_local_yielding : int @ local \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 yielding is the default for local, so it is not rendered\.
 .nf 
 .sp 
-\f[CB]val\fR mode_local_unyielding : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_local_unyielding : int @ local unyielding \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 unyielding is non-default for local, so it is rendered\.
 .nf 
 .sp 
-\f[CB]val\fR mode_immutable_contended : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_immutable_contended : int @ immutable \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 contended is the default for immutable, so it is not rendered\.
 .nf 
 .sp 
-\f[CB]val\fR mode_immutable_uncontended : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_immutable_uncontended : int @ uncontended immutable \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 uncontended is non-default for immutable, so it is rendered\.
 .nf 
 .sp 
-\f[CB]val\fR mode_stateless_portable : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_stateless_portable : int @ stateless \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
 portable is the default for stateless, so it is not rendered\.
 .nf 
 .sp 
-\f[CB]val\fR mode_stateful_portable : int \f[CB]\->\fR unit
+\f[CB]val\fR mode_stateful_portable : int @ portable \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2
@@ -1054,7 +1054,7 @@ portable is non-default for stateful, so it is rendered\.
 \fB15\.5 Modes in type definitions\fR
 .in 
 .sp 
-\f[CB]type\fR mode_alias = int \f[CB]\->\fR int
+\f[CB]type\fR mode_alias = int @ local \f[CB]\->\fR int
 .fi 
 .br 
 .ti +2
@@ -1064,19 +1064,19 @@ Type alias for an arrow with a mode on its argument\.
 \f[CB]type\fR mode_record = {
 .br 
 .ti +2
-fn : int \f[CB]\->\fR int;
+fn : int @ local \f[CB]\->\fR int;
 .br 
 .ti +4
 (* Record field whose type is an arrow with a mode\. *)
 .br 
 .ti +2
-fn_both : int \f[CB]\->\fR int;
+fn_both : int @ local \f[CB]\->\fR int @ local;
 .br 
 .ti +4
 (* Arrow field with modes on both sides\. *)
 .br 
 .ti +2
-\f[CB]mutable\fR mfn : int \f[CB]\->\fR int;
+\f[CB]mutable\fR mfn : int @ local \f[CB]\->\fR int;
 .br 
 .ti +4
 (* Mutable arrow field with a mode\. *)
@@ -1086,19 +1086,19 @@ fn_both : int \f[CB]\->\fR int;
 \f[CB]type\fR mode_cstr = 
 .br 
 .ti +2
-| \f[CB]Mc_arrow\fR \f[CB]of\fR int \f[CB]\->\fR int
+| \f[CB]Mc_arrow\fR \f[CB]of\fR int @ local \f[CB]\->\fR int
 .br 
 .ti +4
 (* Constructor argument is a parenthesized arrow with a mode\. *)
 .br 
 .ti +2
-| \f[CB]Mc_nested\fR \f[CB]of\fR (int \f[CB]\->\fR int) \f[CB]\->\fR unit
+| \f[CB]Mc_nested\fR \f[CB]of\fR (int @ local \f[CB]\->\fR int) \f[CB]\->\fR unit
 .br 
 .ti +4
 (* Nested arrow: higher-order with a mode on the inner argument\. *)
 .br 
 .ti +2
-| \f[CB]Mc_gadt\fR : (\f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR) \f[CB]\->\fR mode_cstr
+| \f[CB]Mc_gadt\fR : (\f[CB]'a\fR @ once \f[CB]\->\fR \f[CB]'a\fR) \f[CB]\->\fR mode_cstr
 .br 
 .ti +4
 (* GADT constructor *)

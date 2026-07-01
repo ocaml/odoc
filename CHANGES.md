@@ -5,6 +5,7 @@
 - Support for OxCaml zero alloc definitions (@Leonidas-from-XIV, #1422, #1444)
 - Support for OxCaml modalities (@art-w, #1420)
 - Support OxCaml 5.2.0minus39 (@jonludlam, #1469)
+- Support for OxCaml modes (@art-w, #1454)
 
 ### Fixed
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)

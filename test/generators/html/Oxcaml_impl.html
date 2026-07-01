@@ -203,7 +203,8 @@
     <div class="spec type anchored" id="type-mode_alias">
      <a href="#type-mode_alias" class="anchor"></a>
      <code><span><span class="keyword">type</span> mode_alias</span>
-      <span> = <span>int <span class="arrow">&#45;&gt;</span></span> int
+      <span> = <span>int @ local <span class="arrow">&#45;&gt;</span></span>
+        int
       </span>
      </code>
     </div>
@@ -221,7 +222,9 @@
       <li id="type-mode_record.fn" class="def record field anchored">
        <a href="#type-mode_record.fn" class="anchor"></a>
        <code>
-        <span>fn : <span>int <span class="arrow">&#45;&gt;</span></span> int;
+        <span>fn : 
+         <span>int @ local <span class="arrow">&#45;&gt;</span></span>
+          int;
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
@@ -232,8 +235,9 @@
       <li id="type-mode_record.fn_both" class="def record field anchored">
        <a href="#type-mode_record.fn_both" class="anchor"></a>
        <code>
-        <span>fn_both : <span>int <span class="arrow">&#45;&gt;</span></span>
-          int;
+        <span>fn_both : 
+         <span>int @ local <span class="arrow">&#45;&gt;</span></span>
+          int @ local;
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
@@ -255,7 +259,8 @@
        <code><span>| </span>
         <span><span class="constructor">Mc_arrow</span> 
          <span class="keyword">of</span> 
-         <span>int <span class="arrow">&#45;&gt;</span></span> int
+         <span>int @ local <span class="arrow">&#45;&gt;</span></span>
+          int
         </span>
        </code>
        <div class="def-doc"><span class="comment-delim">(*</span>
@@ -269,7 +274,9 @@
         <span><span class="constructor">Mc_nested</span> 
          <span class="keyword">of</span> 
          <span>
-          <span>(<span>int <span class="arrow">&#45;&gt;</span></span> int)
+          <span>(
+           <span>int @ local <span class="arrow">&#45;&gt;</span></span>
+            int)
           </span> <span class="arrow">&#45;&gt;</span>
          </span> unit
         </span>
@@ -290,7 +297,8 @@
      <a href="#val-mode_arg" class="anchor"></a>
      <code>
       <span><span class="keyword">val</span> mode_arg : 
-       <span>int <span class="arrow">&#45;&gt;</span></span> int
+       <span>int @ local <span class="arrow">&#45;&gt;</span></span> 
+       int
       </span>
      </code>
     </div>
@@ -303,7 +311,8 @@
      <a href="#val-mode_multi" class="anchor"></a>
      <code>
       <span><span class="keyword">val</span> mode_multi : 
-       <span>string <span class="arrow">&#45;&gt;</span></span> string
+       <span>string @ local once <span class="arrow">&#45;&gt;</span></span>
+        string @ local once
       </span>
      </code>
     </div>

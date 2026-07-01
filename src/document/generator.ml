@@ -325,6 +325,11 @@ module Make (Syntax : SYNTAX) = struct
 
     val with_kind_annotation : Odoc_model.Lang.Kind.t -> text -> text
   end = struct
+    let format_modes (modes : Odoc_model.Lang.Modes.t) =
+      match modes with
+      | [] -> O.noop
+      | ms -> O.txt " @ " ++ O.txt (String.concat ~sep:" " ms)
+
     let rec te_variant (t : Odoc_model.Lang.TypeExpr.Polymorphic_variant.t) =
       let style_arguments ~constant arguments =
         (* Multiple arguments in a polymorphic variant constructor correspond
@@ -494,35 +499,26 @@ module Make (Syntax : SYNTAX) = struct
           enclose_parens_if_needed
             (type_expr ~needs_parentheses:true te
             ++ O.txt " " ++ O.keyword "as" ++ O.txt " '" ++ O.txt alias)
-      | Arrow (None, src, dst) ->
-          let res =
-            O.span
-              ((O.box_hv @@ type_expr ~needs_parentheses:true src)
-              ++ O.txt " " ++ Syntax.Type.arrow)
-            ++ O.sp ++ type_expr dst
-            (* ++ O.end_hv *)
+      | Arrow (lbl, (src, src_modes), (dst, dst_modes)) ->
+          let src =
+            (O.box_hv @@ type_expr ~needs_parentheses:true src)
+            ++ format_modes src_modes
           in
-          enclose_parens_if_needed res
-      | Arrow (Some (RawOptional _ as lbl), _src, dst) ->
-          let res =
-            O.span
-              (O.box_hv
-              @@ label lbl ++ O.txt ":"
-                 ++ tag "error" (O.txt "???")
-                 ++ O.txt " " ++ Syntax.Type.arrow)
-            ++ O.sp ++ type_expr dst
+          let labelized_src =
+            match lbl with
+            | None -> src
+            | Some (RawOptional _ as lbl) ->
+                O.box_hv
+                @@ label lbl ++ O.txt ":"
+                   ++ tag "error" (O.txt "???")
+                   ++ format_modes src_modes
+            | Some lbl -> O.box_hv @@ (label lbl ++ O.txt ":" ++ O.cut ++ src)
           in
-          enclose_parens_if_needed res
-      | Arrow (Some lbl, src, dst) ->
-          let res =
-            O.span
-              ((O.box_hv
-               @@ label lbl ++ O.txt ":" ++ O.cut
-                  ++ (O.box_hv @@ type_expr ~needs_parentheses:true src))
-              ++ O.txt " " ++ Syntax.Type.arrow)
-            ++ O.sp ++ type_expr dst
-          in
-          enclose_parens_if_needed res
+          enclose_parens_if_needed
+            (O.span (labelized_src ++ O.txt " " ++ Syntax.Type.arrow)
+            ++ O.sp
+            ++ type_expr ~needs_parentheses:(dst_modes <> []) dst
+            ++ format_modes dst_modes)
       | Tuple lst -> tuple ~needs_parentheses ~boxed:true lst
       | Unboxed_tuple lst -> tuple ~needs_parentheses ~boxed:false lst
       | Constr (path, args) ->
@@ -1053,7 +1049,7 @@ module Make (Syntax : SYNTAX) = struct
     val value : Lang.Value.t -> Item.t
   end = struct
     let rec arity_of_type_expr = function
-      | Lang.TypeExpr.Arrow (_lbl, _arg, curried) ->
+      | Lang.TypeExpr.Arrow (_lbl, _arg, (curried, _modes)) ->
           1 + arity_of_type_expr curried
       | _ -> 0
 

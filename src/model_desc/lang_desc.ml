@@ -683,7 +683,10 @@ and typeexpr_t =
         C
           ( "Arrow",
             (x1, x2, x3),
-            Triple (Option typeexpr_label, typeexpr_t, typeexpr_t) )
+            Triple
+              ( Option typeexpr_label,
+                Pair (typeexpr_t, List string),
+                Pair (typeexpr_t, List string) ) )
     | Tuple x -> C ("Tuple", x, List (Pair (Option string, typeexpr_t)))
     | Unboxed_tuple x ->
         C ("Unboxed_tuple", x, List (Pair (Option string, typeexpr_t)))

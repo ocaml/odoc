@@ -14,14 +14,20 @@ We should have an 'Optional' argument (as opposed to a 'RawOptional' one)
     "type_": {
       "Arrow": [
         { "Some": { "Optional": "optional" } },
-        { "Constr": [ { "`Resolved": { "`CoreType": "int" } }, [] ] },
-        {
-          "Arrow": [
-            "None",
-            { "Constr": [ { "`Resolved": { "`CoreType": "unit" } }, [] ] },
-            { "Var": "a" }
-          ]
-        }
+        [ { "Constr": [ { "`Resolved": { "`CoreType": "int" } }, [] ] }, [] ],
+        [
+          {
+            "Arrow": [
+              "None",
+              [
+                { "Constr": [ { "`Resolved": { "`CoreType": "unit" } }, [] ] },
+                []
+              ],
+              [ { "Var": "a" }, [] ]
+            ]
+          },
+          []
+        ]
       ]
     },
     "value": "Abstract",
@@ -38,25 +44,34 @@ Harder case contains a "RawOptional":
     "type_": {
       "Arrow": [
         { "Some": { "RawOptional": "optional" } },
-        {
-          "Constr": [
-            {
-              "`Resolved": {
-                "`Identifier": {
-                  "`Type": [ { "`Root": [ "None", "Test" ] }, "hard" ]
+        [
+          {
+            "Constr": [
+              {
+                "`Resolved": {
+                  "`Identifier": {
+                    "`Type": [ { "`Root": [ "None", "Test" ] }, "hard" ]
+                  }
                 }
-              }
-            },
-            []
-          ]
-        },
-        {
-          "Arrow": [
-            "None",
-            { "Constr": [ { "`Resolved": { "`CoreType": "unit" } }, [] ] },
-            { "Var": "a" }
-          ]
-        }
+              },
+              []
+            ]
+          },
+          []
+        ],
+        [
+          {
+            "Arrow": [
+              "None",
+              [
+                { "Constr": [ { "`Resolved": { "`CoreType": "unit" } }, [] ] },
+                []
+              ],
+              [ { "Var": "a" }, [] ]
+            ]
+          },
+          []
+        ]
       ]
     },
     "value": "Abstract",

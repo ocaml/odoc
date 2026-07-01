@@ -442,7 +442,7 @@ let warn_on_hidden_representation (id : Id.Type.t)
         is_hidden (p :> Paths.Path.t)
         || List.exists (fun t -> internal_typ_exp t) ts
     | Poly (_, t) | Alias (t, _) -> internal_typ_exp t
-    | Arrow (_, t, t2) -> internal_typ_exp t || internal_typ_exp t2
+    | Arrow (_, (t, _), (t2, _)) -> internal_typ_exp t || internal_typ_exp t2
     | Tuple ts -> List.exists (fun (_, t) -> internal_typ_exp t) ts
     | Class (_, ts) -> List.exists (fun t -> internal_typ_exp t) ts
     | _ -> false
@@ -1141,11 +1141,11 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
   match texpr with
   | Var _ | Any -> texpr
   | Alias (t, str) -> Alias (type_expression env parent visited t, str)
-  | Arrow (lbl, t1, t2) ->
+  | Arrow (lbl, (t1, m1), (t2, m2)) ->
       Arrow
         ( lbl,
-          type_expression env parent visited t1,
-          type_expression env parent visited t2 )
+          (type_expression env parent visited t1, m1),
+          (type_expression env parent visited t2, m2) )
   | Tuple ts ->
       Tuple
         (List.map

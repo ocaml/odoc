@@ -88,7 +88,7 @@ f_plain : opaque;
 \fB2\.1 Modes in type definitions\fR
 .in 
 .sp 
-\f[CB]type\fR mode_alias = int \f[CB]\->\fR int
+\f[CB]type\fR mode_alias = int @ local \f[CB]\->\fR int
 .fi 
 .br 
 .ti +2
@@ -98,13 +98,13 @@ Type alias for an arrow with a mode on its argument\.
 \f[CB]type\fR mode_record = {
 .br 
 .ti +2
-fn : int \f[CB]\->\fR int;
+fn : int @ local \f[CB]\->\fR int;
 .br 
 .ti +4
 (* Field whose type is an arrow with a mode\. *)
 .br 
 .ti +2
-fn_both : int \f[CB]\->\fR int;
+fn_both : int @ local \f[CB]\->\fR int @ local;
 .br 
 .ti +4
 (* Modes on both sides\. *)
@@ -114,13 +114,13 @@ fn_both : int \f[CB]\->\fR int;
 \f[CB]type\fR mode_cstr = 
 .br 
 .ti +2
-| \f[CB]Mc_arrow\fR \f[CB]of\fR int \f[CB]\->\fR int
+| \f[CB]Mc_arrow\fR \f[CB]of\fR int @ local \f[CB]\->\fR int
 .br 
 .ti +4
 (* Constructor argument is a parenthesized arrow with a mode\. *)
 .br 
 .ti +2
-| \f[CB]Mc_nested\fR \f[CB]of\fR (int \f[CB]\->\fR int) \f[CB]\->\fR unit
+| \f[CB]Mc_nested\fR \f[CB]of\fR (int @ local \f[CB]\->\fR int) \f[CB]\->\fR unit
 .br 
 .ti +4
 (* Nested arrow: higher-order with a mode on the inner argument\. *)
@@ -130,14 +130,14 @@ fn_both : int \f[CB]\->\fR int;
 \fB2\.2 Modes on values\fR
 .in 
 .sp 
-\f[CB]val\fR mode_arg : int \f[CB]\->\fR int
+\f[CB]val\fR mode_arg : int @ local \f[CB]\->\fR int
 .fi 
 .br 
 .ti +2
 Mode on a function argument, via a type annotation\.
 .nf 
 .sp 
-\f[CB]val\fR mode_multi : string \f[CB]\->\fR string
+\f[CB]val\fR mode_multi : string @ local once \f[CB]\->\fR string @ local once
 .fi 
 .br 
 .ti +2

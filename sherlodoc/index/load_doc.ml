@@ -82,8 +82,9 @@ let searchable_type_of_constructor args res =
   | TypeDecl.Constructor.Tuple args -> begin
       match args with
       | _ :: _ :: _ ->
-          TypeExpr.Arrow (None, Tuple (List.map (fun (x, _mods) -> None, x) args), res)
-      | [ (arg, _) ] -> TypeExpr.Arrow (None, arg, res)
+          TypeExpr.Arrow
+            (None, (Tuple (List.map (fun (x, _mods) -> None, x) args), []), (res, []))
+      | [ (arg, _) ] -> TypeExpr.Arrow (None, (arg, []), (res, []))
       | _ -> res
     end
   | TypeDecl.Constructor.Record fields ->
@@ -91,12 +92,12 @@ let searchable_type_of_constructor args res =
         (fun res field ->
            let open TypeDecl.Field in
            let field_name = Odoc_model.Paths.Identifier.name field.id in
-           TypeExpr.Arrow (Some (Label field_name), field.type_, res))
+           TypeExpr.Arrow (Some (Label field_name), (field.type_, []), (res, [])))
         res
         fields
 
 let searchable_type_of_record parent_type type_ =
-  Odoc_model.Lang.TypeExpr.Arrow (None, parent_type, type_)
+  Odoc_model.Lang.TypeExpr.Arrow (None, (parent_type, []), (type_, []))
 
 let convert_kind ~db (Odoc_index.Entry.{ kind; _ } as entry) =
   match kind with

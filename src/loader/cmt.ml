@@ -292,7 +292,7 @@ let rec read_class_field env parent cf =
                must keep only the type after the first arrow. *)
             let type_ =
               match Cmi.read_type_expr env expr.exp_type with
-              | Arrow (_, _, t) -> t
+              | Arrow (_, _, (t, _)) -> t
               | t -> t
             in
             false, type_
