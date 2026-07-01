@@ -72,6 +72,19 @@
        </li>
       </ul>
      </li>
+     <li><a href="#modes">Modes</a>
+      <ul>
+       <li>
+        <a href="#curry-implied-result-modes">Curry-implied result modes</a>
+       </li>
+       <li>
+        <a href="#result-modes-that-are-kept">Result modes that are kept</a>
+       </li><li><a href="#all-mode-axes">All mode axes</a></li>
+       <li><a href="#cross-axis-suppression">Cross-axis suppression</a></li>
+       <li><a href="#modes-in-type-definitions">Modes in type definitions</a>
+       </li>
+      </ul>
+     </li>
     </ul>
    </nav>
   </div>
@@ -1180,6 +1193,783 @@
        the module, except the ones which have already specified this 
       axis.
      </p>
+    </div>
+   </div><h2 id="modes"><a href="#modes" class="anchor"></a>Modes</h2>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_arg">
+     <a href="#val-mode_arg" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_arg : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> int
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Mode on a function argument.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_ret">
+     <a href="#val-mode_ret" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_ret : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> int
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Mode on a function return.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_both">
+     <a href="#val-mode_both" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_both : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> int
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Modes on both argument and return.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_multi">
+     <a href="#val-mode_multi" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_multi : 
+       <span>string <span class="arrow">&#45;&gt;</span></span> string
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Multiple modes on argument and return.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_labeled">
+     <a href="#val-mode_labeled" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_labeled : 
+       <span><span class="label">x</span>:int 
+        <span class="arrow">&#45;&gt;</span>
+       </span> int
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Mode on a labeled argument.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_optional">
+     <a href="#val-mode_optional" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_optional : 
+       <span><span class="optlabel">?x</span>:int 
+        <span class="arrow">&#45;&gt;</span>
+       </span> <span>unit <span class="arrow">&#45;&gt;</span></span>
+        int
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Mode on an optional argument.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_higher_order">
+     <a href="#val-mode_higher_order" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_higher_order : 
+       <span>
+        <span>(
+         <span><span class="type-var">'a</span> 
+          <span class="arrow">&#45;&gt;</span>
+         </span> <span class="type-var">'b</span>)
+        </span> <span class="arrow">&#45;&gt;</span>
+       </span> 
+       <span><span class="type-var">'a</span> 
+        <span class="arrow">&#45;&gt;</span>
+       </span> <span class="type-var">'b</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Mode on a higher-order function argument.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_arrow_result">
+     <a href="#val-mode_arrow_result" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_arrow_result : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> 
+       <span>int <span class="arrow">&#45;&gt;</span></span> int
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Mode on a result that is itself an arrow. The arrow must be 
+      parenthesized so the mode does not appear to bind to the inner 
+      return type.
+     </p>
+    </div>
+   </div>
+   <h3 id="curry-implied-result-modes">
+    <a href="#curry-implied-result-modes" class="anchor"></a>Curry-implied
+     result modes
+   </h3>
+   <p>Closing over an argument constrains the partial-application closure
+     across several axes, not just locality. When the result mode is 
+    the one currying implies from the argument, it is suppressed (as 
+    the compiler does).
+   </p>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-curry_once">
+     <a href="#val-curry_once" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> curry_once : 
+       <span>
+        <span>(<span>int <span class="arrow">&#45;&gt;</span></span> int)
+        </span> <span class="arrow">&#45;&gt;</span>
+       </span> <span>int <span class="arrow">&#45;&gt;</span></span> 
+       int
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p><code>once</code> argument: the implied <code>once</code> result
+       mode is suppressed.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-curry_portable">
+     <a href="#val-curry_portable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> curry_portable : 
+       <span>
+        <span>(<span>int <span class="arrow">&#45;&gt;</span></span> int)
+        </span> <span class="arrow">&#45;&gt;</span>
+       </span> <span>int <span class="arrow">&#45;&gt;</span></span> 
+       int
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p><code>portable</code> argument: the implied result mode is 
+      suppressed.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-curry_contended">
+     <a href="#val-curry_contended" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> curry_contended : 
+       <span>
+        <span>(<span>int <span class="arrow">&#45;&gt;</span></span> int)
+        </span> <span class="arrow">&#45;&gt;</span>
+       </span> <span>int <span class="arrow">&#45;&gt;</span></span> 
+       int
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p><code>contended</code> argument: the implied result mode is 
+      suppressed.
+     </p>
+    </div>
+   </div>
+   <h3 id="result-modes-that-are-kept">
+    <a href="#result-modes-that-are-kept" class="anchor"></a>Result modes
+     that are kept
+   </h3>
+   <p>A result mode is only suppressed when it is exactly the one currying
+     implies. An explicit mode on a different axis is kept (and the arrow
+     result is parenthesized).
+   </p>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-keep_portable">
+     <a href="#val-keep_portable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> keep_portable : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> 
+       <span>int <span class="arrow">&#45;&gt;</span></span> int
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p><code>portable</code> on the result is not implied by a 
+      <code>local</code> argument, so it is kept.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-keep_once">
+     <a href="#val-keep_once" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> keep_once : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> 
+       <span>int <span class="arrow">&#45;&gt;</span></span> int
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p><code>once</code> on the result is not implied by a 
+      <code>local</code> argument, so it is kept.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-keep_over_once">
+     <a href="#val-keep_over_once" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> keep_over_once : 
+       <span>
+        <span>(<span>int <span class="arrow">&#45;&gt;</span></span> int)
+        </span> <span class="arrow">&#45;&gt;</span>
+       </span> <span>int <span class="arrow">&#45;&gt;</span></span> 
+       int
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>The curry-implied <code>once</code> is suppressed, but the explicit
+       <code>portable</code> is kept.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-keep_over_local">
+     <a href="#val-keep_over_local" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> keep_over_local : 
+       <span>
+        <span>(<span>int <span class="arrow">&#45;&gt;</span></span> int)
+        </span> <span class="arrow">&#45;&gt;</span>
+       </span> <span>int <span class="arrow">&#45;&gt;</span></span> 
+       int
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>The curry-implied <code>local</code> is suppressed, but the explicit
+       <code>portable</code> is kept.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-keep_portable_over_nonportable">
+     <a href="#val-keep_portable_over_nonportable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> keep_portable_over_nonportable
+        : 
+       <span>
+        <span>(<span>int <span class="arrow">&#45;&gt;</span></span> int)
+        </span> <span class="arrow">&#45;&gt;</span>
+       </span> <span>int <span class="arrow">&#45;&gt;</span></span> 
+       int
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>The <code>nonportable</code> argument mode is the default and
+       dropped, while the explicit <code>portable</code> result, not 
+      implied by currying, is kept.
+     </p>
+    </div>
+   </div>
+   <h3 id="all-mode-axes"><a href="#all-mode-axes" class="anchor"></a>
+    All mode axes
+   </h3>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_global">
+     <a href="#val-mode_global" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_global : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Locality mode (legacy, not rendered).</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_local">
+     <a href="#val-mode_local" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_local : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Locality mode.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_aliased">
+     <a href="#val-mode_aliased" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_aliased : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Uniqueness mode (legacy, not rendered).</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_unique">
+     <a href="#val-mode_unique" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_unique : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Uniqueness mode.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_many">
+     <a href="#val-mode_many" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_many : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Linearity mode (legacy, not rendered).</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_once">
+     <a href="#val-mode_once" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_once : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Linearity mode.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_portable">
+     <a href="#val-mode_portable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_portable : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Portability mode.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_shareable">
+     <a href="#val-mode_shareable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_shareable : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Portability mode (intermediate value).</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_nonportable">
+     <a href="#val-mode_nonportable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_nonportable : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Portability mode (legacy, not rendered).</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_uncontended">
+     <a href="#val-mode_uncontended" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_uncontended : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Contention mode (legacy, not rendered).</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_shared">
+     <a href="#val-mode_shared" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_shared : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Contention mode.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_contended">
+     <a href="#val-mode_contended" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_contended : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Contention mode.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_yielding">
+     <a href="#val-mode_yielding" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_yielding : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Yield mode.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_unyielding">
+     <a href="#val-mode_unyielding" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_unyielding : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Yield mode (legacy, not rendered).</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_forkable">
+     <a href="#val-mode_forkable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_forkable : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Fork mode (identity on a non-<code>local</code> argument, not
+       rendered).
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_local_forkable">
+     <a href="#val-mode_local_forkable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_local_forkable : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Fork mode, rendered because the argument is also <code>local</code>.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_unforkable">
+     <a href="#val-mode_unforkable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_unforkable : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Fork mode.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_local_unforkable">
+     <a href="#val-mode_local_unforkable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_local_unforkable : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Fork mode (identity for a <code>local</code> argument, not rendered).
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_stateless">
+     <a href="#val-mode_stateless" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_stateless : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Statefulness mode.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_observing">
+     <a href="#val-mode_observing" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_observing : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Statefulness mode.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_stateful">
+     <a href="#val-mode_stateful" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_stateful : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Statefulness mode (identity when <code>portability</code> is 
+      at its default, not rendered).
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_immutable">
+     <a href="#val-mode_immutable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_immutable : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Visibility mode.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_read">
+     <a href="#val-mode_read" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_read : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Visibility mode.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_read_write">
+     <a href="#val-mode_read_write" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_read_write : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Visibility mode (legacy, not rendered).</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_static">
+     <a href="#val-mode_static" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_static : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div><div class="spec-doc"><p>Staticity mode.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_dynamic">
+     <a href="#val-mode_dynamic" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_dynamic : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>Staticity mode (legacy, not rendered).</p></div>
+   </div>
+   <h3 id="cross-axis-suppression">
+    <a href="#cross-axis-suppression" class="anchor"></a>Cross-axis 
+    suppression
+   </h3>
+   <p>Some axes have a default value that is implied by another axis;
+     the implied value is suppressed when rendering.
+   </p>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_local_yielding">
+     <a href="#val-mode_local_yielding" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_local_yielding : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p><code>yielding</code> is the default for <code>local</code>, 
+      so it is not rendered.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_local_unyielding">
+     <a href="#val-mode_local_unyielding" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_local_unyielding : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p><code>unyielding</code> is non-default for <code>local</code>
+      , so it is rendered.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_immutable_contended">
+     <a href="#val-mode_immutable_contended" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_immutable_contended
+        : <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p><code>contended</code> is the default for <code>immutable</code>
+      , so it is not rendered.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_immutable_uncontended">
+     <a href="#val-mode_immutable_uncontended" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_immutable_uncontended
+        : <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p><code>uncontended</code> is non-default for <code>immutable</code>
+      , so it is rendered.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_stateless_portable">
+     <a href="#val-mode_stateless_portable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_stateless_portable : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p><code>portable</code> is the default for <code>stateless</code>
+      , so it is not rendered.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-mode_stateful_portable">
+     <a href="#val-mode_stateful_portable" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> mode_stateful_portable : 
+       <span>int <span class="arrow">&#45;&gt;</span></span> unit
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p><code>portable</code> is non-default for <code>stateful</code>
+      , so it is rendered.
+     </p>
+    </div>
+   </div>
+   <h3 id="modes-in-type-definitions">
+    <a href="#modes-in-type-definitions" class="anchor"></a>Modes in 
+    type definitions
+   </h3>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-mode_alias">
+     <a href="#type-mode_alias" class="anchor"></a>
+     <code><span><span class="keyword">type</span> mode_alias</span>
+      <span> = <span>int <span class="arrow">&#45;&gt;</span></span> int
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Type alias for an arrow with a mode on its argument.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-mode_record">
+     <a href="#type-mode_record" class="anchor"></a>
+     <code><span><span class="keyword">type</span> mode_record</span>
+      <span> = </span><span>{</span>
+     </code>
+     <ol>
+      <li id="type-mode_record.fn" class="def record field anchored">
+       <a href="#type-mode_record.fn" class="anchor"></a>
+       <code>
+        <span>fn : <span>int <span class="arrow">&#45;&gt;</span></span> int;
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Record field whose type is an arrow with a mode.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-mode_record.fn_both" class="def record field anchored">
+       <a href="#type-mode_record.fn_both" class="anchor"></a>
+       <code>
+        <span>fn_both : <span>int <span class="arrow">&#45;&gt;</span></span>
+          int;
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Arrow field with modes on both sides.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-mode_record.mfn" class="def record field anchored">
+       <a href="#type-mode_record.mfn" class="anchor"></a>
+       <code>
+        <span><span class="keyword">mutable</span> mfn : 
+         <span>int <span class="arrow">&#45;&gt;</span></span> int;
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Mutable arrow field with a mode.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+     </ol><code><span>}</span></code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-mode_cstr">
+     <a href="#type-mode_cstr" class="anchor"></a>
+     <code><span><span class="keyword">type</span> mode_cstr</span>
+      <span> = </span>
+     </code>
+     <ol>
+      <li id="type-mode_cstr.Mc_arrow" class="def variant constructor
+       anchored"><a href="#type-mode_cstr.Mc_arrow" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">Mc_arrow</span> 
+         <span class="keyword">of</span> 
+         <span>int <span class="arrow">&#45;&gt;</span></span> int
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Constructor argument is a parenthesized arrow with a mode.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-mode_cstr.Mc_nested" class="def variant constructor
+       anchored"><a href="#type-mode_cstr.Mc_nested" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">Mc_nested</span> 
+         <span class="keyword">of</span> 
+         <span>
+          <span>(<span>int <span class="arrow">&#45;&gt;</span></span> int)
+          </span> <span class="arrow">&#45;&gt;</span>
+         </span> unit
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>Nested arrow: higher-order with a mode on the inner argument.</p>
+        <span class="comment-delim">*)</span>
+       </div>
+      </li>
+      <li id="type-mode_cstr.Mc_gadt" class="def variant constructor
+       anchored"><a href="#type-mode_cstr.Mc_gadt" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">Mc_gadt</span> : 
+         <span>(
+          <span><span class="type-var">'a</span> 
+           <span class="arrow">&#45;&gt;</span>
+          </span> <span class="type-var">'a</span>)
+         </span> <span class="arrow">&#45;&gt;</span> 
+         <a href="#type-mode_cstr">mode_cstr</a>
+        </span>
+       </code>
+       <div class="def-doc"><span class="comment-delim">(*</span>
+        <p>GADT constructor</p><span class="comment-delim">*)</span>
+       </div>
+      </li>
+     </ol>
     </div>
    </div>
   </div>
