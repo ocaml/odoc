@@ -26,23 +26,23 @@
 \\
 \subsection{Modes\label{Oxcaml_impl--modes}}%
 \subsubsection{Modes in type definitions\label{Oxcaml_impl--modes-in-type-definitions}}%
-\label{Oxcaml_impl--type-mode_alias}\ocamlcodefragment{\ocamltag{keyword}{type} mode\_\allowbreak{}alias = int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Type alias for an arrow with a mode on its argument.\end{ocamlindent}%
+\label{Oxcaml_impl--type-mode_alias}\ocamlcodefragment{\ocamltag{keyword}{type} mode\_\allowbreak{}alias = int @ local \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Type alias for an arrow with a mode on its argument.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml_impl--type-mode_record}\ocamlcodefragment{\ocamltag{keyword}{type} mode\_\allowbreak{}record = \{}\\
-\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{fn : int \ocamltag{arrow}{$\rightarrow$} int;\allowbreak{}}\label{Oxcaml_impl--type-mode_record.fn}& Field whose type is an arrow with a mode.\\
-\ocamlinlinecode{fn\_\allowbreak{}both : int \ocamltag{arrow}{$\rightarrow$} int;\allowbreak{}}\label{Oxcaml_impl--type-mode_record.fn_both}& Modes on both sides.\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{fn : int @ local \ocamltag{arrow}{$\rightarrow$} int;\allowbreak{}}\label{Oxcaml_impl--type-mode_record.fn}& Field whose type is an arrow with a mode.\\
+\ocamlinlinecode{fn\_\allowbreak{}both : int @ local \ocamltag{arrow}{$\rightarrow$} int @ local;\allowbreak{}}\label{Oxcaml_impl--type-mode_record.fn_both}& Modes on both sides.\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{\}}\\
 \label{Oxcaml_impl--type-mode_cstr}\ocamlcodefragment{\ocamltag{keyword}{type} mode\_\allowbreak{}cstr = }\\
-\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{Mc\_\allowbreak{}arrow} \ocamltag{keyword}{of} int \ocamltag{arrow}{$\rightarrow$} int}\label{Oxcaml_impl--type-mode_cstr.Mc_arrow}& Constructor argument is a parenthesized arrow with a mode.\\
-\ocamlcodefragment{| \ocamltag{constructor}{Mc\_\allowbreak{}nested} \ocamltag{keyword}{of} (int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} unit}\label{Oxcaml_impl--type-mode_cstr.Mc_nested}& Nested arrow: higher-order with a mode on the inner argument.\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{Mc\_\allowbreak{}arrow} \ocamltag{keyword}{of} int @ local \ocamltag{arrow}{$\rightarrow$} int}\label{Oxcaml_impl--type-mode_cstr.Mc_arrow}& Constructor argument is a parenthesized arrow with a mode.\\
+\ocamlcodefragment{| \ocamltag{constructor}{Mc\_\allowbreak{}nested} \ocamltag{keyword}{of} (int @ local \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} unit}\label{Oxcaml_impl--type-mode_cstr.Mc_nested}& Nested arrow: higher-order with a mode on the inner argument.\\
 \end{ocamltabular}%
 \\
 \subsubsection{Modes on values\label{Oxcaml_impl--modes-on-values}}%
-\label{Oxcaml_impl--val-mode_arg}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}arg : int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Mode on a function argument, via a type annotation.\end{ocamlindent}%
+\label{Oxcaml_impl--val-mode_arg}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}arg : int @ local \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Mode on a function argument, via a type annotation.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml_impl--val-mode_multi}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}multi : string \ocamltag{arrow}{$\rightarrow$} string}\begin{ocamlindent}Multiple modes on argument and return.\end{ocamlindent}%
+\label{Oxcaml_impl--val-mode_multi}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}multi : string @ local once \ocamltag{arrow}{$\rightarrow$} string @ local once}\begin{ocamlindent}Multiple modes on argument and return.\end{ocamlindent}%
 \medbreak
 
 

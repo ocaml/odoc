@@ -108,7 +108,18 @@ val read_modalities :
 val read_value_modalities :
   Mode.Modality.t ->
   Odoc_model.Lang.Modalities.t
+
+val tree_of_modes : Mode.Alloc.Const.t -> Odoc_model.Lang.Modes.t
 #endif
+
+type modes
+
+val legacy_modes : modes
+
+val read_arrow_modes :
+  modes ->
+  Types.type_expr ->
+  Odoc_model.Lang.Modes.t * Odoc_model.Lang.Modes.t * modes
 
 val read_value_descr_modalities :
   Types.value_description ->

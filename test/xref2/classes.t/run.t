@@ -121,36 +121,42 @@ resolve correctly. All of the 'Class' json objects should contain
   {
     "Arrow": [
       "None",
-      {
-        "Class": [
-          {
-            "`Resolved": {
-              "`ClassType": [
-                {
-                  "`Identifier": {
-                    "`Root": [
-                      "None",
-                      "B"
-                    ]
-                  }
-                },
-                "u"
-              ]
-            }
-          },
-          []
-        ]
-      },
-      {
-        "Constr": [
-          {
-            "`Resolved": {
-              "`CoreType": "unit"
-            }
-          },
-          []
-        ]
-      }
+      [
+        {
+          "Class": [
+            {
+              "`Resolved": {
+                "`ClassType": [
+                  {
+                    "`Identifier": {
+                      "`Root": [
+                        "None",
+                        "B"
+                      ]
+                    }
+                  },
+                  "u"
+                ]
+              }
+            },
+            []
+          ]
+        },
+        []
+      ],
+      [
+        {
+          "Constr": [
+            {
+              "`Resolved": {
+                "`CoreType": "unit"
+              }
+            },
+            []
+          ]
+        },
+        []
+      ]
     ]
   }
 

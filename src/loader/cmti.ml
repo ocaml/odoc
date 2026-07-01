@@ -41,6 +41,9 @@ let opt_map f = function
 let read_label = Cmi.read_label
 
 let rec read_core_type env container ctyp =
+  read_core_type_modal env Cmi.legacy_modes container ctyp
+
+and read_core_type_modal env modes container ctyp =
   let open TypeExpr in
     match ctyp.ctyp_desc with
 #if defined OXCAML
@@ -59,8 +62,11 @@ let rec read_core_type env container ctyp =
 #endif
         let lbl = read_label lbl in
         let arg = read_core_type env container arg in
-        let res = read_core_type env container res in
-          Arrow(lbl, arg, res)
+        let arg_modes, res_modes, modes =
+          Cmi.read_arrow_modes modes ctyp.ctyp_type
+        in
+        let res = read_core_type_modal env modes container res in
+          Arrow(lbl, (arg, arg_modes), (res, res_modes))
     | Ttyp_tuple typs ->
 #if OCAML_VERSION >= (5,4,0) || defined OXCAML
         let typs = List.map (fun (lbl,x) -> lbl, read_core_type env container x) typs in

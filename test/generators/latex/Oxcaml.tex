@@ -241,126 +241,126 @@ Unboxed types have a trailing hash '\#'
 \ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}\ocamlinlinecode{contended} modality applied to all definitions in the module, except the ones which have already specified this axis.\end{ocamlindent}%
 \medbreak
 \subsection{Modes\label{Oxcaml--modes}}%
-\label{Oxcaml--val-mode_arg}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}arg : int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Mode on a function argument.\end{ocamlindent}%
+\label{Oxcaml--val-mode_arg}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}arg : int @ local \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Mode on a function argument.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_ret}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}ret : int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Mode on a function return.\end{ocamlindent}%
+\label{Oxcaml--val-mode_ret}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}ret : int \ocamltag{arrow}{$\rightarrow$} int @ local}\begin{ocamlindent}Mode on a function return.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_both}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}both : int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Modes on both argument and return.\end{ocamlindent}%
+\label{Oxcaml--val-mode_both}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}both : int @ local \ocamltag{arrow}{$\rightarrow$} int @ local}\begin{ocamlindent}Modes on both argument and return.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_multi}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}multi : string \ocamltag{arrow}{$\rightarrow$} string}\begin{ocamlindent}Multiple modes on argument and return.\end{ocamlindent}%
+\label{Oxcaml--val-mode_multi}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}multi : string @ local once \ocamltag{arrow}{$\rightarrow$} string @ local unique}\begin{ocamlindent}Multiple modes on argument and return.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_labeled}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}labeled : \ocamltag{label}{x}:int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Mode on a labeled argument.\end{ocamlindent}%
+\label{Oxcaml--val-mode_labeled}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}labeled : \ocamltag{label}{x}:int @ local \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Mode on a labeled argument.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_optional}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}optional : \ocamltag{optlabel}{?x}:int \ocamltag{arrow}{$\rightarrow$} unit \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Mode on an optional argument.\end{ocamlindent}%
+\label{Oxcaml--val-mode_optional}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}optional : \ocamltag{optlabel}{?x}:int @ local \ocamltag{arrow}{$\rightarrow$} unit \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Mode on an optional argument.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_higher_order}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}higher\_\allowbreak{}order : (\ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'b}) \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'b}}\begin{ocamlindent}Mode on a higher-order function argument.\end{ocamlindent}%
+\label{Oxcaml--val-mode_higher_order}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}higher\_\allowbreak{}order : (\ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'b}) @ local \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'b}}\begin{ocamlindent}Mode on a higher-order function argument.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_arrow_result}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}arrow\_\allowbreak{}result : int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Mode on a result that is itself an arrow. The arrow must be parenthesized so the mode does not appear to bind to the inner return type.\end{ocamlindent}%
+\label{Oxcaml--val-mode_arrow_result}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}arrow\_\allowbreak{}result : int \ocamltag{arrow}{$\rightarrow$} (int \ocamltag{arrow}{$\rightarrow$} int) @ local}\begin{ocamlindent}Mode on a result that is itself an arrow. The arrow must be parenthesized so the mode does not appear to bind to the inner return type.\end{ocamlindent}%
 \medbreak
 \subsubsection{Curry-implied result modes\label{Oxcaml--curry-implied-result-modes}}%
 Closing over an argument constrains the partial-application closure across several axes, not just locality. When the result mode is the one currying implies from the argument, it is suppressed (as the compiler does).
 
-\label{Oxcaml--val-curry_once}\ocamlcodefragment{\ocamltag{keyword}{val} curry\_\allowbreak{}once : (int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}\ocamlinlinecode{once} argument: the implied \ocamlinlinecode{once} result mode is suppressed.\end{ocamlindent}%
+\label{Oxcaml--val-curry_once}\ocamlcodefragment{\ocamltag{keyword}{val} curry\_\allowbreak{}once : (int \ocamltag{arrow}{$\rightarrow$} int) @ once \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}\ocamlinlinecode{once} argument: the implied \ocamlinlinecode{once} result mode is suppressed.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-curry_portable}\ocamlcodefragment{\ocamltag{keyword}{val} curry\_\allowbreak{}portable : (int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}\ocamlinlinecode{portable} argument: the implied result mode is suppressed.\end{ocamlindent}%
+\label{Oxcaml--val-curry_portable}\ocamlcodefragment{\ocamltag{keyword}{val} curry\_\allowbreak{}portable : (int \ocamltag{arrow}{$\rightarrow$} int) @ portable \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}\ocamlinlinecode{portable} argument: the implied result mode is suppressed.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-curry_contended}\ocamlcodefragment{\ocamltag{keyword}{val} curry\_\allowbreak{}contended : (int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}\ocamlinlinecode{contended} argument: the implied result mode is suppressed.\end{ocamlindent}%
+\label{Oxcaml--val-curry_contended}\ocamlcodefragment{\ocamltag{keyword}{val} curry\_\allowbreak{}contended : (int \ocamltag{arrow}{$\rightarrow$} int) @ contended \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}\ocamlinlinecode{contended} argument: the implied result mode is suppressed.\end{ocamlindent}%
 \medbreak
 \subsubsection{Result modes that are kept\label{Oxcaml--result-modes-that-are-kept}}%
 A result mode is only suppressed when it is exactly the one currying implies. An explicit mode on a different axis is kept (and the arrow result is parenthesized).
 
-\label{Oxcaml--val-keep_portable}\ocamlcodefragment{\ocamltag{keyword}{val} keep\_\allowbreak{}portable : int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}\ocamlinlinecode{portable} on the result is not implied by a \ocamlinlinecode{local} argument, so it is kept.\end{ocamlindent}%
+\label{Oxcaml--val-keep_portable}\ocamlcodefragment{\ocamltag{keyword}{val} keep\_\allowbreak{}portable : int @ local \ocamltag{arrow}{$\rightarrow$} (int \ocamltag{arrow}{$\rightarrow$} int) @ portable}\begin{ocamlindent}\ocamlinlinecode{portable} on the result is not implied by a \ocamlinlinecode{local} argument, so it is kept.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-keep_once}\ocamlcodefragment{\ocamltag{keyword}{val} keep\_\allowbreak{}once : int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}\ocamlinlinecode{once} on the result is not implied by a \ocamlinlinecode{local} argument, so it is kept.\end{ocamlindent}%
+\label{Oxcaml--val-keep_once}\ocamlcodefragment{\ocamltag{keyword}{val} keep\_\allowbreak{}once : int @ local \ocamltag{arrow}{$\rightarrow$} (int \ocamltag{arrow}{$\rightarrow$} int) @ once}\begin{ocamlindent}\ocamlinlinecode{once} on the result is not implied by a \ocamlinlinecode{local} argument, so it is kept.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-keep_over_once}\ocamlcodefragment{\ocamltag{keyword}{val} keep\_\allowbreak{}over\_\allowbreak{}once : (int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}The curry-implied \ocamlinlinecode{once} is suppressed, but the explicit \ocamlinlinecode{portable} is kept.\end{ocamlindent}%
+\label{Oxcaml--val-keep_over_once}\ocamlcodefragment{\ocamltag{keyword}{val} keep\_\allowbreak{}over\_\allowbreak{}once : (int \ocamltag{arrow}{$\rightarrow$} int) @ once \ocamltag{arrow}{$\rightarrow$} (int \ocamltag{arrow}{$\rightarrow$} int) @ portable}\begin{ocamlindent}The curry-implied \ocamlinlinecode{once} is suppressed, but the explicit \ocamlinlinecode{portable} is kept.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-keep_over_local}\ocamlcodefragment{\ocamltag{keyword}{val} keep\_\allowbreak{}over\_\allowbreak{}local : (int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}The curry-implied \ocamlinlinecode{local} is suppressed, but the explicit \ocamlinlinecode{portable} is kept.\end{ocamlindent}%
+\label{Oxcaml--val-keep_over_local}\ocamlcodefragment{\ocamltag{keyword}{val} keep\_\allowbreak{}over\_\allowbreak{}local : (int \ocamltag{arrow}{$\rightarrow$} int) @ local \ocamltag{arrow}{$\rightarrow$} (int \ocamltag{arrow}{$\rightarrow$} int) @ portable}\begin{ocamlindent}The curry-implied \ocamlinlinecode{local} is suppressed, but the explicit \ocamlinlinecode{portable} is kept.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-keep_portable_over_nonportable}\ocamlcodefragment{\ocamltag{keyword}{val} keep\_\allowbreak{}portable\_\allowbreak{}over\_\allowbreak{}nonportable : (int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}The \ocamlinlinecode{nonportable} argument mode is the default and dropped, while the explicit \ocamlinlinecode{portable} result, not implied by currying, is kept.\end{ocamlindent}%
+\label{Oxcaml--val-keep_portable_over_nonportable}\ocamlcodefragment{\ocamltag{keyword}{val} keep\_\allowbreak{}portable\_\allowbreak{}over\_\allowbreak{}nonportable : (int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} (int \ocamltag{arrow}{$\rightarrow$} int) @ portable}\begin{ocamlindent}The \ocamlinlinecode{nonportable} argument mode is the default and dropped, while the explicit \ocamlinlinecode{portable} result, not implied by currying, is kept.\end{ocamlindent}%
 \medbreak
 \subsubsection{All mode axes\label{Oxcaml--all-mode-axes}}%
 \label{Oxcaml--val-mode_global}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}global : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Locality mode (legacy, not rendered).\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_local}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}local : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Locality mode.\end{ocamlindent}%
+\label{Oxcaml--val-mode_local}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}local : int @ local \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Locality mode.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--val-mode_aliased}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}aliased : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Uniqueness mode (legacy, not rendered).\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_unique}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}unique : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Uniqueness mode.\end{ocamlindent}%
+\label{Oxcaml--val-mode_unique}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}unique : int @ unique \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Uniqueness mode.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--val-mode_many}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}many : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Linearity mode (legacy, not rendered).\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_once}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}once : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Linearity mode.\end{ocamlindent}%
+\label{Oxcaml--val-mode_once}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}once : int @ once \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Linearity mode.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_portable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}portable : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Portability mode.\end{ocamlindent}%
+\label{Oxcaml--val-mode_portable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}portable : int @ portable \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Portability mode.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_shareable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}shareable : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Portability mode (intermediate value).\end{ocamlindent}%
+\label{Oxcaml--val-mode_shareable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}shareable : int @ shareable \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Portability mode (intermediate value).\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--val-mode_nonportable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}nonportable : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Portability mode (legacy, not rendered).\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--val-mode_uncontended}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}uncontended : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Contention mode (legacy, not rendered).\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_shared}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}shared : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Contention mode.\end{ocamlindent}%
+\label{Oxcaml--val-mode_shared}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}shared : int @ shared \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Contention mode.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_contended}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}contended : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Contention mode.\end{ocamlindent}%
+\label{Oxcaml--val-mode_contended}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}contended : int @ contended \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Contention mode.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_yielding}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}yielding : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Yield mode.\end{ocamlindent}%
+\label{Oxcaml--val-mode_yielding}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}yielding : int @ yielding \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Yield mode.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--val-mode_unyielding}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}unyielding : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Yield mode (legacy, not rendered).\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--val-mode_forkable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}forkable : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Fork mode (identity on a non-\ocamlinlinecode{local} argument, not rendered).\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_local_forkable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}local\_\allowbreak{}forkable : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Fork mode, rendered because the argument is also \ocamlinlinecode{local}.\end{ocamlindent}%
+\label{Oxcaml--val-mode_local_forkable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}local\_\allowbreak{}forkable : int @ local forkable \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Fork mode, rendered because the argument is also \ocamlinlinecode{local}.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_unforkable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}unforkable : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Fork mode.\end{ocamlindent}%
+\label{Oxcaml--val-mode_unforkable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}unforkable : int @ unforkable \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Fork mode.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_local_unforkable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}local\_\allowbreak{}unforkable : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Fork mode (identity for a \ocamlinlinecode{local} argument, not rendered).\end{ocamlindent}%
+\label{Oxcaml--val-mode_local_unforkable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}local\_\allowbreak{}unforkable : int @ local \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Fork mode (identity for a \ocamlinlinecode{local} argument, not rendered).\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_stateless}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}stateless : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Statefulness mode.\end{ocamlindent}%
+\label{Oxcaml--val-mode_stateless}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}stateless : int @ stateless \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Statefulness mode.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_observing}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}observing : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Statefulness mode.\end{ocamlindent}%
+\label{Oxcaml--val-mode_observing}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}observing : int @ observing \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Statefulness mode.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--val-mode_stateful}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}stateful : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Statefulness mode (identity when \ocamlinlinecode{portability} is at its default, not rendered).\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_immutable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}immutable : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Visibility mode.\end{ocamlindent}%
+\label{Oxcaml--val-mode_immutable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}immutable : int @ immutable \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Visibility mode.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_read}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}read : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Visibility mode.\end{ocamlindent}%
+\label{Oxcaml--val-mode_read}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}read : int @ read \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Visibility mode.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--val-mode_read_write}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}read\_\allowbreak{}write : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Visibility mode (legacy, not rendered).\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_static}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}static : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Staticity mode.\end{ocamlindent}%
+\label{Oxcaml--val-mode_static}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}static : int @ static \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Staticity mode.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--val-mode_dynamic}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}dynamic : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}Staticity mode (legacy, not rendered).\end{ocamlindent}%
 \medbreak
 \subsubsection{Cross-axis suppression\label{Oxcaml--cross-axis-suppression}}%
 Some axes have a default value that is implied by another axis; the implied value is suppressed when rendering.
 
-\label{Oxcaml--val-mode_local_yielding}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}local\_\allowbreak{}yielding : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}\ocamlinlinecode{yielding} is the default for \ocamlinlinecode{local}, so it is not rendered.\end{ocamlindent}%
+\label{Oxcaml--val-mode_local_yielding}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}local\_\allowbreak{}yielding : int @ local \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}\ocamlinlinecode{yielding} is the default for \ocamlinlinecode{local}, so it is not rendered.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_local_unyielding}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}local\_\allowbreak{}unyielding : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}\ocamlinlinecode{unyielding} is non-default for \ocamlinlinecode{local}, so it is rendered.\end{ocamlindent}%
+\label{Oxcaml--val-mode_local_unyielding}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}local\_\allowbreak{}unyielding : int @ local unyielding \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}\ocamlinlinecode{unyielding} is non-default for \ocamlinlinecode{local}, so it is rendered.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_immutable_contended}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}immutable\_\allowbreak{}contended : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}\ocamlinlinecode{contended} is the default for \ocamlinlinecode{immutable}, so it is not rendered.\end{ocamlindent}%
+\label{Oxcaml--val-mode_immutable_contended}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}immutable\_\allowbreak{}contended : int @ immutable \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}\ocamlinlinecode{contended} is the default for \ocamlinlinecode{immutable}, so it is not rendered.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_immutable_uncontended}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}immutable\_\allowbreak{}uncontended : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}\ocamlinlinecode{uncontended} is non-default for \ocamlinlinecode{immutable}, so it is rendered.\end{ocamlindent}%
+\label{Oxcaml--val-mode_immutable_uncontended}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}immutable\_\allowbreak{}uncontended : int @ uncontended immutable \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}\ocamlinlinecode{uncontended} is non-default for \ocamlinlinecode{immutable}, so it is rendered.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_stateless_portable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}stateless\_\allowbreak{}portable : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}\ocamlinlinecode{portable} is the default for \ocamlinlinecode{stateless}, so it is not rendered.\end{ocamlindent}%
+\label{Oxcaml--val-mode_stateless_portable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}stateless\_\allowbreak{}portable : int @ stateless \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}\ocamlinlinecode{portable} is the default for \ocamlinlinecode{stateless}, so it is not rendered.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--val-mode_stateful_portable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}stateful\_\allowbreak{}portable : int \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}\ocamlinlinecode{portable} is non-default for \ocamlinlinecode{stateful}, so it is rendered.\end{ocamlindent}%
+\label{Oxcaml--val-mode_stateful_portable}\ocamlcodefragment{\ocamltag{keyword}{val} mode\_\allowbreak{}stateful\_\allowbreak{}portable : int @ portable \ocamltag{arrow}{$\rightarrow$} unit}\begin{ocamlindent}\ocamlinlinecode{portable} is non-default for \ocamlinlinecode{stateful}, so it is rendered.\end{ocamlindent}%
 \medbreak
 \subsubsection{Modes in type definitions\label{Oxcaml--modes-in-type-definitions}}%
-\label{Oxcaml--type-mode_alias}\ocamlcodefragment{\ocamltag{keyword}{type} mode\_\allowbreak{}alias = int \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Type alias for an arrow with a mode on its argument.\end{ocamlindent}%
+\label{Oxcaml--type-mode_alias}\ocamlcodefragment{\ocamltag{keyword}{type} mode\_\allowbreak{}alias = int @ local \ocamltag{arrow}{$\rightarrow$} int}\begin{ocamlindent}Type alias for an arrow with a mode on its argument.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--type-mode_record}\ocamlcodefragment{\ocamltag{keyword}{type} mode\_\allowbreak{}record = \{}\\
-\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{fn : int \ocamltag{arrow}{$\rightarrow$} int;\allowbreak{}}\label{Oxcaml--type-mode_record.fn}& Record field whose type is an arrow with a mode.\\
-\ocamlinlinecode{fn\_\allowbreak{}both : int \ocamltag{arrow}{$\rightarrow$} int;\allowbreak{}}\label{Oxcaml--type-mode_record.fn_both}& Arrow field with modes on both sides.\\
-\ocamlinlinecode{\ocamltag{keyword}{mutable} mfn : int \ocamltag{arrow}{$\rightarrow$} int;\allowbreak{}}\label{Oxcaml--type-mode_record.mfn}& Mutable arrow field with a mode.\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{fn : int @ local \ocamltag{arrow}{$\rightarrow$} int;\allowbreak{}}\label{Oxcaml--type-mode_record.fn}& Record field whose type is an arrow with a mode.\\
+\ocamlinlinecode{fn\_\allowbreak{}both : int @ local \ocamltag{arrow}{$\rightarrow$} int @ local;\allowbreak{}}\label{Oxcaml--type-mode_record.fn_both}& Arrow field with modes on both sides.\\
+\ocamlinlinecode{\ocamltag{keyword}{mutable} mfn : int @ local \ocamltag{arrow}{$\rightarrow$} int;\allowbreak{}}\label{Oxcaml--type-mode_record.mfn}& Mutable arrow field with a mode.\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{\}}\\
 \label{Oxcaml--type-mode_cstr}\ocamlcodefragment{\ocamltag{keyword}{type} mode\_\allowbreak{}cstr = }\\
-\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{Mc\_\allowbreak{}arrow} \ocamltag{keyword}{of} int \ocamltag{arrow}{$\rightarrow$} int}\label{Oxcaml--type-mode_cstr.Mc_arrow}& Constructor argument is a parenthesized arrow with a mode.\\
-\ocamlcodefragment{| \ocamltag{constructor}{Mc\_\allowbreak{}nested} \ocamltag{keyword}{of} (int \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} unit}\label{Oxcaml--type-mode_cstr.Mc_nested}& Nested arrow: higher-order with a mode on the inner argument.\\
-\ocamlcodefragment{| \ocamltag{constructor}{Mc\_\allowbreak{}gadt} : (\ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}) \ocamltag{arrow}{$\rightarrow$} \hyperref[Oxcaml--type-mode_cstr]{\ocamlinlinecode{mode\_\allowbreak{}cstr}}}\label{Oxcaml--type-mode_cstr.Mc_gadt}& GADT constructor\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{Mc\_\allowbreak{}arrow} \ocamltag{keyword}{of} int @ local \ocamltag{arrow}{$\rightarrow$} int}\label{Oxcaml--type-mode_cstr.Mc_arrow}& Constructor argument is a parenthesized arrow with a mode.\\
+\ocamlcodefragment{| \ocamltag{constructor}{Mc\_\allowbreak{}nested} \ocamltag{keyword}{of} (int @ local \ocamltag{arrow}{$\rightarrow$} int) \ocamltag{arrow}{$\rightarrow$} unit}\label{Oxcaml--type-mode_cstr.Mc_nested}& Nested arrow: higher-order with a mode on the inner argument.\\
+\ocamlcodefragment{| \ocamltag{constructor}{Mc\_\allowbreak{}gadt} : (\ocamltag{type-var}{'a} @ once \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}) \ocamltag{arrow}{$\rightarrow$} \hyperref[Oxcaml--type-mode_cstr]{\ocamlinlinecode{mode\_\allowbreak{}cstr}}}\label{Oxcaml--type-mode_cstr.Mc_gadt}& GADT constructor\\
 \end{ocamltabular}%
 \\
 

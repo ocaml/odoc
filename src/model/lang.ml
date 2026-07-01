@@ -217,6 +217,11 @@ and Modalities : sig
 end =
   Modalities
 
+and Modes : sig
+  type t = string list
+end =
+  Modes
+
 and TypeDecl : sig
   module Field : sig
     type t = {
@@ -496,7 +501,7 @@ and TypeExpr : sig
     | Var of string
     | Any
     | Alias of t * string
-    | Arrow of label option * t * t
+    | Arrow of label option * (t * Modes.t) * (t * Modes.t)
     | Tuple of (string option * t) list
     | Unboxed_tuple of (string option * t) list
     | Constr of Path.Type.t * t list
