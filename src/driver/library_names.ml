@@ -24,10 +24,24 @@ type t = { meta_dir : Fpath.t; libraries : library list }
 let read_libraries_from_pkg_defs ~library_name pkg_defs =
   try
     let archive_filename =
-      try Some (Fl_metascanner.lookup "archive" [ "byte" ] pkg_defs)
-      with _ -> (
-        try Some (Fl_metascanner.lookup "archive" [ "native" ] pkg_defs)
-        with _ -> None)
+      (* Try the plain [byte]/[native] archives first, then the [ppx_driver]
+         variants. ppx derivers such as [ppxlib.traverse] and [ppxlib.metaquot]
+         declare their archive only under the [ppx_driver] predicate; without
+         this they'd be dropped here and later re-discovered by the no-META
+         fallback, which names a library after its [.cma] file (e.g.
+         [ppxlib_traverse] instead of [ppxlib.traverse]). Mirrors
+         [Ocamlfind.archives]. *)
+      let lookup preds =
+        try Some (Fl_metascanner.lookup "archive" preds pkg_defs)
+        with _ -> None
+      in
+      List.find_map lookup
+        [
+          [ "byte" ];
+          [ "native" ];
+          [ "byte"; "ppx_driver" ];
+          [ "native"; "ppx_driver" ];
+        ]
     in
 
     let deps =
