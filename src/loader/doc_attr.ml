@@ -35,9 +35,7 @@ let empty warnings_tag : Odoc_model.Comment.docs = empty_body warnings_tag
 
 let load_constant_string = function
   | {Parsetree.pexp_desc =
-#if OCAML_VERSION < (4,3,0)
-     Pexp_constant (Const_string (text, _))
-#elif OCAML_VERSION < (4,11,0)
+#if OCAML_VERSION < (4,11,0)
      Pexp_constant (Pconst_string (text, _))
 #elif OCAML_VERSION < (5,3,0)
      Pexp_constant (Pconst_string (text, _, _))
@@ -65,14 +63,9 @@ let load_alert_name_and_payload = function
       | _ -> None)
   | _ -> None
 
-#if OCAML_VERSION >= (4,8,0)
 let attribute_unpack = function
   | { Parsetree.attr_name = { Location.txt = name; _ }; attr_payload; attr_loc } ->
       (name, attr_payload, attr_loc)
-#else
-let attribute_unpack = function
-  | { Location.txt = name; loc }, attr_payload -> (name, attr_payload, loc)
-#endif
 
 #if defined OXCAML
 (* the input is a [Zero_alloc.t] which is not present in OCaml, so it can't be

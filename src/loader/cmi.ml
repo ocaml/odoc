@@ -100,16 +100,7 @@ let opt_iter f = function
 
 let read_label lbl =
   let open TypeExpr in
-#if OCAML_VERSION < (4,3,0)
-  (* NOTE(@ostera): 4.02 does not have an Asttypes variant for whether the
-   * label exists, and is an optional label or not, so I went back to string
-   * manipulation *)
-  if String.length lbl == 0
-  then None
-  else match String.get lbl 0 with
-      | '?' -> Some (Optional (String.sub lbl 1 (String.length lbl - 1)))
-      | _ -> Some (Label lbl)
-#elif defined OXCAML
+#if defined OXCAML
   match lbl with
   | Types.Nolabel -> None
   | Types.Labelled s -> Some (Label s)
@@ -396,9 +387,6 @@ let prepare_type_parameters params manifest =
 
 (* NOTE(@ostera): constructor with inlined records were introduced post 4.02 *)
 let mark_constructor_args =
-#if OCAML_VERSION < (4,3,0)
-  List.iter mark_type
-#else
   function
 #if defined OXCAML
    | Cstr_tuple args -> List.iter (fun carg -> mark_type carg.ca_type) args
@@ -406,7 +394,6 @@ let mark_constructor_args =
    | Cstr_tuple args -> List.iter mark_type args
 #endif
    | Cstr_record lds -> List.iter (fun ld -> mark_type ld.ld_type) lds
-#endif
 
 let mark_type_kind = function
 #if OCAML_VERSION >= (5,2,0)
@@ -857,12 +844,6 @@ let read_label_declaration env parent ld =
   {id; doc; mutable_; type_; modalities}
 
 let read_constructor_declaration_arguments env parent arg =
-#if OCAML_VERSION < (4,3,0)
-  (* NOTE(@ostera): constructor with inlined records were introduced post 4.02
-     so it's safe to use Tuple here *)
-  ignore parent;
-  TypeDecl.Constructor.Tuple(List.map (fun x -> read_type_expr env x, []) arg)
-#else
   let open TypeDecl.Constructor in
     match arg with
     | Cstr_tuple args ->
@@ -876,7 +857,6 @@ let read_constructor_declaration_arguments env parent arg =
         Tuple args_with_modalities
     | Cstr_record lds ->
         Record (List.map (read_label_declaration env parent) lds)
-#endif
 
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in

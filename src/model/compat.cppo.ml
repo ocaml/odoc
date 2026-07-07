@@ -146,7 +146,7 @@ and modtype_declaration : Types.modtype_declaration -> modtype_declaration = fun
     mtd_attributes = x.Types.mtd_attributes;
     mtd_loc = x.Types.mtd_loc }
 
-#elif OCAML_VERSION >= (4,8,0)
+#else
 
 let rec signature : Types.signature -> signature = fun x -> List.map signature_item x
 
@@ -186,75 +186,6 @@ and modtype_declaration : Types.modtype_declaration -> modtype_declaration = fun
   { mtd_type = opt module_type x.Types.mtd_type;
     mtd_attributes = x.Types.mtd_attributes;
     mtd_loc = x.Types.mtd_loc }
-
-#elif OCAML_VERSION >= (4,4,0) && OCAML_VERSION < (4,8,0)
-
-  let rec module_type : Types.module_type -> module_type = function
-  | Types.Mty_ident p -> Mty_ident p
-  | Types.Mty_signature s -> Mty_signature (signature s)
-  | Types.Mty_functor (a, b, c) -> begin
-    match b with
-    | Some m -> Mty_functor(Named(Some a,module_type m),module_type c)
-    | None -> Mty_functor(Unit,module_type c)
-    end
-  | Types.Mty_alias (_,q) -> Mty_alias q
-
-  and signature_item : Types.signature_item -> signature_item = function
-  | Types.Sig_value (id, d) -> Sig_value (id, d, Exported)
-  | Types.Sig_type (id, td, rec_status) -> Sig_type (id, td, rec_status, Exported)
-  | Types.Sig_typext (id, ec, es) -> Sig_typext (id, ec, es, Exported)
-  | Types.Sig_module (id, ({md_type = Types.Mty_alias (Types.Mta_present, _); _} as md), rs) -> Sig_module (id, Mp_present, module_declaration md, rs, Exported)
-  | Types.Sig_module (id, ({md_type = Types.Mty_alias (Types.Mta_absent, _); _} as md), rs) -> Sig_module (id, Mp_absent, module_declaration md, rs, Exported)
-  | Types.Sig_module (id, md, rs) -> Sig_module (id, Mp_present, module_declaration md, rs, Exported)
-  | Types.Sig_modtype (id, mtd) -> Sig_modtype (id, modtype_declaration mtd, Exported)
-  | Types.Sig_class (id, cd, rs) -> Sig_class (id, cd, rs, Exported)
-  | Types.Sig_class_type (id, ctd, rs) -> Sig_class_type (id, ctd, rs, Exported)
-
-  and signature : Types.signature -> signature = fun x -> List.map signature_item x
-
-  and module_declaration : Types.module_declaration -> module_declaration = fun x ->
-    { md_type = module_type x.Types.md_type;
-      md_attributes = x.Types.md_attributes;
-      md_loc = x.Types.md_loc }
-
-  and modtype_declaration : Types.modtype_declaration -> modtype_declaration = fun x ->
-    { mtd_type = opt module_type x.Types.mtd_type;
-      mtd_attributes = x.Types.mtd_attributes;
-      mtd_loc = x.Types.mtd_loc }
-
-#elif OCAML_VERSION >= (4,2,0) && OCAML_VERSION < (4,4,0)
-
-  let rec module_type : Types.module_type -> module_type = function
-  | Types.Mty_ident p -> Mty_ident p
-  | Types.Mty_signature s -> Mty_signature (signature s)
-  | Types.Mty_functor (a, b, c) -> begin
-    match b with
-    | Some m -> Mty_functor(Named(Some a,module_type m),module_type c)
-    | None -> Mty_functor(Unit,module_type c)
-    end
-  | Types.Mty_alias q -> Mty_alias q
-
-  and signature_item : Types.signature_item -> signature_item = function
-  | Types.Sig_value (id, d) -> Sig_value (id, d, Exported)
-  | Types.Sig_type (id, td, rec_status) -> Sig_type (id, td, rec_status, Exported)
-  | Types.Sig_typext (id, ec, es) -> Sig_typext (id, ec, es, Exported)
-  | Types.Sig_module (id, md, rs) -> Sig_module (id, Mp_present, module_declaration md, rs, Exported)
-  | Types.Sig_modtype (id, mtd) -> Sig_modtype (id, modtype_declaration mtd, Exported)
-  | Types.Sig_class (id, cd, rs) -> Sig_class (id, cd, rs, Exported)
-  | Types.Sig_class_type (id, ctd, rs) -> Sig_class_type (id, ctd, rs, Exported)
-
-  and signature : Types.signature -> signature = fun x -> List.map signature_item x
-
-  and module_declaration : Types.module_declaration -> module_declaration = fun x ->
-    { md_type = module_type x.Types.md_type;
-      md_attributes = x.Types.md_attributes;
-      md_loc = x.Types.md_loc }
-
-  and modtype_declaration : Types.modtype_declaration -> modtype_declaration = fun x ->
-    { mtd_type = opt module_type x.Types.mtd_type;
-      mtd_attributes = x.Types.mtd_attributes;
-      mtd_loc = x.Types.mtd_loc }
-
 
 #endif
 
@@ -322,14 +253,9 @@ let compunit_name : Cmo_format.compunit -> string = function | Compunit x -> x
 
 let required_compunit_names x = List.map compunit_name x.Cmo_format.cu_required_compunits
 
-#elif OCAML_VERSION >= (4,04,0)
+#else
 
 let compunit_name x = x
 let required_compunit_names x = List.map Ident.name x.Cmo_format.cu_required_globals
-
-#else
-
-  let compunit_name x = x
-  let required_compunit_names x = List.map fst x.Cmo_format.cu_imports
 
 #endif

@@ -29,7 +29,7 @@ let cmti_of_string s =
     let l = Lexing.from_string s in
     let p = Parse.interface l in
     Typemod.type_interface
-#if OCAML_VERSION >= (4,4,0) && OCAML_VERSION < (4,9,0)
+#if OCAML_VERSION < (4,9,0)
     ""
 #elif defined OXCAML
     ~sourcefile:""
@@ -623,10 +623,8 @@ let mkresolver () =
 #if OCAML_VERSION >= (5,2,0)
   (let paths = Load_path.get_paths () in
    List.filter (fun s -> s <> "") (paths.visible @ paths.hidden))
-#elif OCAML_VERSION >= (4,8,0)
-    (Load_path.get_paths () |> List.filter (fun s -> s <> ""))
 #else
-    !Config.load_path
+    (Load_path.get_paths () |> List.filter (fun s -> s <> ""))
 #endif
     ) ~open_modules:[]
 

@@ -31,9 +31,7 @@ val read_interface :
   Odoc_model.Compat.signature ->
   Paths.Identifier.RootModule.t * Odoc_model.Lang.Signature.t
 
-#if OCAML_VERSION < (4,3,0)
-val read_label : Asttypes.label -> Odoc_model.Lang.TypeExpr.label option
-#elif defined OXCAML
+#if defined OXCAML
 val read_label : Types.arg_label -> Odoc_model.Lang.TypeExpr.label option
 #else
 val read_label : Asttypes.arg_label -> Odoc_model.Lang.TypeExpr.label option
