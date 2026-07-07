@@ -302,6 +302,7 @@ type extra_paths = {
   pkgs : Fpath.t Util.StringMap.t;
   libs : Fpath.t Util.StringMap.t;
   libs_of_pkg : string list Util.StringMap.t;
+  lib_name_by_hash : string list Util.StringMap.t;
 }
 
 let empty_extra_paths =
@@ -309,7 +310,34 @@ let empty_extra_paths =
     pkgs = Util.StringMap.empty;
     libs = Util.StringMap.empty;
     libs_of_pkg = Util.StringMap.empty;
+    lib_name_by_hash = Util.StringMap.empty;
   }
+
+(* Parse a lib marker written by {!write_lib_markers} and fold its
+   "<digest> <module>" lines into [acc], mapping each digest to [libname]. Only
+   lines whose first token is a 32-char hex MD5 digest are accepted, so markers
+   written by older drivers (a prose sentence) are ignored. *)
+let read_lib_hashes libname marker_path acc =
+  let is_hex_digest s =
+    String.length s = 32
+    && String.for_all
+         (fun c -> (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))
+         s
+  in
+  match Bos.OS.File.read_lines marker_path with
+  | Error _ -> acc
+  | Ok lines ->
+      List.fold_left
+        (fun acc line ->
+          match Astring.String.cut ~sep:" " line with
+          | Some (hash, _module_name) when is_hex_digest hash ->
+              Util.StringMap.update hash
+                (function
+                  | None -> Some [ libname ]
+                  | Some l -> Some (libname :: l))
+                acc
+          | _ -> acc)
+        acc lines
 
 let extra_paths compile_dir =
   let contents =
@@ -322,41 +350,51 @@ let extra_paths compile_dir =
       (function None -> Some [ libname ] | Some l -> Some (libname :: l))
       libs_of_pkg
   in
-  let pkgs, libs, libs_of_pkg =
+  let pkgs, libs, libs_of_pkg, lib_name_by_hash =
     match contents with
     | Error _ ->
-        (Util.StringMap.empty, Util.StringMap.empty, Util.StringMap.empty)
+        ( Util.StringMap.empty,
+          Util.StringMap.empty,
+          Util.StringMap.empty,
+          Util.StringMap.empty )
     | Ok c ->
         List.fold_left
-          (fun (pkgs, libs, libs_of_pkg) abs_path ->
+          (fun (pkgs, libs, libs_of_pkg, lnbh) abs_path ->
             let path = Fpath.rem_prefix compile_dir abs_path |> Option.get in
             match Fpath.segs path with
             | [ "p"; pkg; _version; "doc"; libname; l ] when l = lib_marker ->
                 Logs.debug (fun m -> m "Found lib marker: %a" Fpath.pp path);
                 ( pkgs,
                   Util.StringMap.add libname (Fpath.parent path) libs,
-                  add_libs pkg libname libs_of_pkg )
+                  add_libs pkg libname libs_of_pkg,
+                  read_lib_hashes libname abs_path lnbh )
             | [ "p"; pkg; _version; "doc"; l ] when l = pkg_marker ->
                 Logs.debug (fun m -> m "Found pkg marker: %a" Fpath.pp path);
                 ( Util.StringMap.add pkg (Fpath.parent path) pkgs,
                   libs,
-                  libs_of_pkg )
+                  libs_of_pkg,
+                  lnbh )
             | [ "u"; _universe; pkg; _version; "doc"; libname; l ]
               when l = lib_marker ->
                 Logs.debug (fun m -> m "Found lib marker: %a" Fpath.pp path);
                 ( pkgs,
                   Util.StringMap.add libname (Fpath.parent path) libs,
-                  add_libs pkg libname libs_of_pkg )
+                  add_libs pkg libname libs_of_pkg,
+                  read_lib_hashes libname abs_path lnbh )
             | [ "u"; _universe; pkg; _version; "doc"; l ] when l = pkg_marker ->
                 Logs.debug (fun m -> m "Found pkg marker: %a" Fpath.pp path);
                 ( Util.StringMap.add pkg (Fpath.parent path) pkgs,
                   libs,
-                  libs_of_pkg )
-            | _ -> (pkgs, libs, libs_of_pkg))
-          (Util.StringMap.empty, Util.StringMap.empty, Util.StringMap.empty)
+                  libs_of_pkg,
+                  lnbh )
+            | _ -> (pkgs, libs, libs_of_pkg, lnbh))
+          ( Util.StringMap.empty,
+            Util.StringMap.empty,
+            Util.StringMap.empty,
+            Util.StringMap.empty )
           c
   in
-  { pkgs; libs; libs_of_pkg }
+  { pkgs; libs; libs_of_pkg; lib_name_by_hash }
 
 let write_lib_markers odoc_dir pkgs =
   let write file str =
@@ -380,10 +418,21 @@ let write_lib_markers odoc_dir pkgs =
         (fun (lib : Packages.libty) ->
           let lib_dir = Odoc_unit.lib_dir pkg lib in
           let marker = Fpath.(odoc_dir // lib_dir / lib_marker) in
-          write marker
-            (Fmt.str
-               "This marks this directory as the location of odoc files for \
-                library %s in package %s"
-               lib.lib_name pkg.name))
+          (* The marker also records module hashes: one "<digest> <module>"
+             line per module in the library. A dependent package reads these in
+             {!extra_paths} to recover which library provides a given module
+             hash, so that {!Packages.fix_missing_deps_with} can add include
+             paths for dependencies that the META files fail to declare (e.g.
+             [tyxml.functor], reached only through [tyxml]'s own META). *)
+          let contents =
+            List.filter_map
+              (fun (m : Packages.modulety) ->
+                let hash = m.m_intf.Packages.mif_hash in
+                if String.length hash = 0 then None
+                else Some (Fmt.str "%s %s" hash m.m_name))
+              lib.modules
+            |> String.concat "\n"
+          in
+          write marker contents)
         libs)
     pkgs

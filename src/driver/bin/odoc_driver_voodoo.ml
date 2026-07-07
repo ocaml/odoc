@@ -76,6 +76,24 @@ let run package_name blessed actions odoc_dir odocl_dir
 
   let all = Packages.remap_virtual [ all ] in
 
+  (* The META files only tell us a library's directly-declared requires, and
+     only for this package's own libraries. Dependencies reached solely through
+     a transitive META edge (e.g. [tyxml.functor], required by [tyxml] but not
+     by [eliom]) are therefore missing from the include paths, leaving their
+     modules unresolved. Recover them the same way the non-voodoo driver does,
+     with {!Packages.fix_missing_deps}, resolving module hashes against this
+     package's own modules merged with the module hashes recorded in the lib
+     markers of its already-compiled dependencies. *)
+  let all =
+    let lib_name_by_hash =
+      Util.StringMap.union
+        (fun _ a b -> Some (a @ b))
+        (Packages.lib_name_by_hash all)
+        extra_paths.Voodoo.lib_name_by_hash
+    in
+    Packages.fix_missing_deps_with lib_name_by_hash all
+  in
+
   let partial =
     match all with
     | [ p ] ->

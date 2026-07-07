@@ -303,23 +303,31 @@ let mk_mlds docs =
             { md_path = doc.file; md_rel_path = doc.rel_path } :: others ))
     ([], [], []) docs
 
-let fix_missing_deps pkgs =
-  let lib_name_by_hash =
-    List.fold_right
-      (fun pkg acc ->
-        List.fold_left
-          (fun acc lib ->
-            List.fold_left
-              (fun acc m ->
-                Util.StringMap.update m.m_intf.mif_hash
-                  (function
-                    | None -> Some [ lib.lib_name ]
-                    | Some l -> Some (lib.lib_name :: l))
-                  acc)
-              acc lib.modules)
-          acc pkg.libraries)
-      pkgs Util.StringMap.empty
-  in
+(* Map from a module's interface hash to the name(s) of the library(ies) that
+   provide it. This is the raw material [fix_missing_deps] uses to recover
+   library dependencies that a package's META files fail to declare. *)
+let lib_name_by_hash pkgs =
+  List.fold_right
+    (fun pkg acc ->
+      List.fold_left
+        (fun acc lib ->
+          List.fold_left
+            (fun acc m ->
+              Util.StringMap.update m.m_intf.mif_hash
+                (function
+                  | None -> Some [ lib.lib_name ]
+                  | Some l -> Some (lib.lib_name :: l))
+                acc)
+            acc lib.modules)
+        acc pkg.libraries)
+    pkgs Util.StringMap.empty
+
+(* Like [fix_missing_deps] but with a caller-supplied [lib_name_by_hash]. In
+   voodoo mode the dependencies' modules aren't loaded in memory, so the map is
+   assembled from the lib markers written alongside their odoc files (see
+   {!Voodoo.write_lib_markers}) and merged with the current package's own
+   modules. *)
+let fix_missing_deps_with lib_name_by_hash pkgs =
   List.map
     (fun pkg ->
       let libraries =
@@ -363,6 +371,8 @@ let fix_missing_deps pkgs =
       in
       { pkg with libraries })
     pkgs
+
+let fix_missing_deps pkgs = fix_missing_deps_with (lib_name_by_hash pkgs) pkgs
 
 let of_libs ~packages_dir libs =
   let Ocamlfind.Db.
