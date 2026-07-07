@@ -113,7 +113,7 @@ let rec read_pattern env parent doc id_attrs pat =
         read_pattern env parent doc id_attrs pat
     | Tpat_lazy pat ->
         read_pattern env parent doc id_attrs pat
-#if OCAML_VERSION >= (4,8,0) && OCAML_VERSION < (4,11,0)
+#if OCAML_VERSION < (4,11,0)
     | Tpat_exception pat ->
         read_pattern env parent doc pat
 #endif
@@ -244,9 +244,7 @@ and read_class_signature env parent params cltyp =
         Signature {self; items; doc}
 
     | Tcty_arrow _ -> assert false
-#if OCAML_VERSION >= (4,6,0)
     | Tcty_open _ -> assert false
-#endif
 
 let rec read_class_type env parent params cty =
   let open Class in
@@ -258,11 +256,7 @@ let rec read_class_type env parent params cty =
       let arg = read_core_type env arg in
       let res = read_class_type env parent params res in
         Arrow(lbl, arg, res)
-#if OCAML_VERSION >= (4,8,0)
   | Tcty_open (_, cty) -> read_class_type env parent params cty
-#elif OCAML_VERSION >= (4,6,0)
-  | Tcty_open (_, _, _, _, cty) -> read_class_type env parent params cty
-#endif
 
 
 let rec read_class_field env parent cf =
@@ -343,11 +337,7 @@ and read_class_structure env parent params cl =
     | Tcl_constraint(cl, None, _, _, _) -> read_class_structure env parent params cl
     | Tcl_constraint(_, Some cltyp, _, _, _) ->
         read_class_signature env parent params cltyp
-#if OCAML_VERSION >= (4,8,0)
     | Tcl_open (_, cl) -> read_class_structure env parent params cl
-#elif OCAML_VERSION >= (4,6,0)
-    | Tcl_open (_, _, _, _, cl) -> read_class_structure env parent params cl
-#endif
 
 
 let rec read_class_expr env parent params cl =
@@ -368,11 +358,7 @@ let rec read_class_expr env parent params cl =
       read_class_expr env parent params cl
   | Tcl_constraint(_, Some cltyp, _, _, _) ->
       read_class_type env parent params cltyp
-#if OCAML_VERSION >= (4,8,0)
     | Tcl_open (_, cl) -> read_class_expr env parent params cl
-#elif OCAML_VERSION >= (4,6,0)
-    | Tcl_open (_, _, _, _, cl) -> read_class_expr env parent params cl
-#endif
 
 let read_class_declaration env parent cld =
   let open Class in
@@ -546,27 +532,18 @@ and read_structure_item env parent item =
         read_value_bindings env parent vbs
     | Tstr_primitive vd ->
         [Cmti.read_value_description env parent vd]
-#if OCAML_VERSION < (4,3,0)
-    | Tstr_type (decls) ->
-      let rec_flag = Ordinary in
-#else
     | Tstr_type (rec_flag, decls) ->
       let rec_flag =
         match rec_flag with
         | Recursive -> Ordinary
         | Nonrecursive -> Nonrec
       in
-#endif
       Cmti.read_type_declarations env parent rec_flag decls
     | Tstr_typext tyext ->
         [TypExt (read_type_extension env parent tyext)]
     | Tstr_exception ext ->
         let ext =
-#if OCAML_VERSION >= (4,8,0)
           Cmi.read_exception env parent ext.tyexn_constructor.ext_id ext.tyexn_constructor.ext_type
-#else
-          Cmi.read_exception env parent ext.ext_id ext.ext_type
-#endif
         in
           [Exception ext]
     | Tstr_module mb -> begin
@@ -584,14 +561,7 @@ and read_structure_item env parent item =
     | Tstr_include incl ->
         read_include env parent incl
     | Tstr_class cls ->
-        let cls = List.map
-#if OCAML_VERSION < (4,3,0)
-          (* NOTE(@ostera): remember the virtual flag was removed post 4.02 *)
-          (fun (cl, _, _) -> cl)
-#else
-          (fun (cl, _) -> cl)
-#endif
-          cls in
+        let cls = List.map (fun (cl, _) -> cl) cls in
           read_class_declarations env parent cls
     | Tstr_class_type cltyps ->
         let cltyps = List.map (fun (_, _, clty) -> clty) cltyps in
@@ -639,11 +609,7 @@ and read_include env parent incl =
 and read_open env parent o =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container o.open_attributes in
-  #if OCAML_VERSION >= (4,8,0)
   let signature = o.open_bound_items in
-  #else
-  let signature = [] in
-  #endif
   let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature signature) in
   Open.{expansion; doc}
 

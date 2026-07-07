@@ -196,22 +196,16 @@ and extract_signature_type_items_skip vis item rest =
   | Sig_class _, _
   | Sig_class_type _, _ -> assert false
 
-#if OCAML_VERSION >= (4,8,0)
 
 let extract_extended_open o =
   let open Typedtree in
   extract_signature_type_items Hidden (Compat.signature o.open_bound_items)
-#endif
 
 
 let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> items list = fun hide_item items ->
   let open Typedtree in
   match items with
-#if OCAML_VERSION < (4,3,0)
-  | { sig_desc = Tsig_type decls; _} :: rest ->
-#else
   | { sig_desc = Tsig_type (_, decls); _} :: rest ->
-#endif
     Odoc_utils.List.concat_map (fun decl ->
       if Btype.is_row_name (Ident.name decl.typ_id)
       then []
@@ -231,11 +225,7 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
           )
       decls @ extract_signature_tree_items hide_item rest
 
-#if OCAML_VERSION < (4,8,0)
-    | { sig_desc = Tsig_exception tyexn_constructor; _ } :: rest ->
-#else
     | { sig_desc = Tsig_exception { tyexn_constructor; _ }; _ } :: rest ->
-#endif
        `Exception (tyexn_constructor.ext_id, Some tyexn_constructor.ext_loc) :: extract_signature_tree_items hide_item rest
 
   | { sig_desc = Tsig_typext { tyext_constructors; _ }; _} :: rest ->
@@ -279,9 +269,7 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
       List.map
         (fun cld ->
             let typehash =
-#if OCAML_VERSION < (4,4,0)
-            Some cld.ci_id_typesharp
-#elif OCAML_VERSION < (5,1,0)
+#if OCAML_VERSION < (5,1,0)
             Some cld.ci_id_typehash
 #else
             None
@@ -293,9 +281,7 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
     List.map
       (fun clty ->
           let typehash =
-#if OCAML_VERSION < (4,4,0)
-            Some clty.ci_id_typesharp
-#elif OCAML_VERSION < (5,1,0)
+#if OCAML_VERSION < (5,1,0)
             Some clty.ci_id_typehash
 #else
             None
@@ -304,13 +290,11 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
             
             `ClassType (clty.ci_id_class_type, clty.ci_id_object, typehash, hide_item, Some clty.ci_id_name.loc))
               cltyps @ extract_signature_tree_items hide_item rest
-#if OCAML_VERSION >= (4,8,0)
     | { sig_desc = Tsig_modsubst ms; sig_loc; _ } :: rest ->
       [`Module (ms.ms_id, hide_item, Some sig_loc )] @ extract_signature_tree_items hide_item rest
     | { sig_desc = Tsig_typesubst ts; sig_loc; _} :: rest ->
       List.map (fun decl -> `Type (decl.typ_id, hide_item, Some sig_loc)) 
         ts @ extract_signature_tree_items hide_item rest
-#endif
 #if OCAML_VERSION >= (4,13,0)
     | { sig_desc = Tsig_modtypesubst mtd; sig_loc; _ } :: rest ->
       [`ModuleType (mtd.mtd_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
@@ -377,7 +361,7 @@ let rec read_pattern hide_item pat =
   | Tpat_variant(_, Some pat, _)
   | Tpat_lazy pat -> read_pattern hide_item pat
   | Tpat_any | Tpat_constant _ | Tpat_variant(_, None, _) -> []
-#if OCAML_VERSION >= (4,8,0) && OCAML_VERSION < (4,11,0)
+#if OCAML_VERSION < (4,11,0)
   | Tpat_exception pat -> read_pattern hide_item pat
 #endif
 #if defined OXCAML
@@ -388,11 +372,7 @@ let rec read_pattern hide_item pat =
 let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> items list = fun hide_item items ->
   let open Typedtree in
     match items with
-#if OCAML_VERSION < (4,3,0)
-    | { str_desc = Tstr_type decls; _ } :: rest ->
-#else
     | { str_desc = Tstr_type (_, decls); _ } :: rest -> (* TODO: handle rec_flag *)
-#endif
   Odoc_utils.List.concat_map (fun decl ->
       `Type (decl.typ_id, hide_item, Some decl.typ_loc) ::
         (match decl.typ_kind with
@@ -409,22 +389,14 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
           ))
            decls @ extract_structure_tree_items hide_item rest
 
-#if OCAML_VERSION < (4,8,0)
-    | { str_desc = Tstr_exception tyexn_constructor; _ } :: rest ->
-#else
     | { str_desc = Tstr_exception { tyexn_constructor; _ }; _ } :: rest ->
-#endif
        `Exception (tyexn_constructor.ext_id, Some tyexn_constructor.ext_loc) :: extract_structure_tree_items hide_item rest
 
   | { str_desc = Tstr_typext { tyext_constructors; _ }; _} :: rest ->
     let x = List.map (fun { ext_id; ext_loc; _ } -> `Extension (ext_id, Some ext_loc)) tyext_constructors in
     x @ extract_structure_tree_items hide_item rest
 
-#if OCAML_VERSION < (4,3,0)
-    | { str_desc = Tstr_value (_, vbs ); _} :: rest ->
-#else
     | { str_desc = Tstr_value (_, vbs); _ } :: rest -> (*TODO: handle rec_flag *)
-#endif
    ( List.map (fun vb -> read_pattern hide_item vb.vb_pat) vbs
       |> List.flatten) @ extract_structure_tree_items hide_item rest
 
@@ -454,16 +426,10 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
         extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_class cls; _ } :: rest ->
         List.map
-#if OCAML_VERSION < (4,3,0)
-          (fun (cld, _, _) ->
-#else
           (fun (cld, _) ->
-#endif
              `Class (cld.ci_id_class,
                cld.ci_id_class_type, cld.ci_id_object,
-#if OCAML_VERSION < (4,4,0)
-               Some cld.ci_id_typesharp,
-#elif OCAML_VERSION < (5,1,0)
+#if OCAML_VERSION < (5,1,0)
                Some cld.ci_id_typehash,
 #else
                None,
@@ -475,21 +441,15 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
           (fun (_, _, clty) ->
              `ClassType (clty.ci_id_class_type,
                clty.ci_id_object,
-#if OCAML_VERSION < (4,4,0)
-               Some clty.ci_id_typesharp,
-#elif OCAML_VERSION < (5,1,0)
+#if OCAML_VERSION < (5,1,0)
                Some clty.ci_id_typehash,
 #else
                None,
 #endif
               hide_item, Some clty.ci_id_name.loc
              )) cltyps @ extract_structure_tree_items hide_item rest
-#if OCAML_VERSION < (4,8,0)
-    | { str_desc = Tstr_open _; _} :: rest -> extract_structure_tree_items hide_item rest
-#else
     | { str_desc = Tstr_open o; _ } :: rest ->
         ((extract_extended_open o) :> items list)  @ extract_structure_tree_items hide_item rest
-#endif
     | { str_desc = Tstr_primitive {val_id; _}; str_loc; _ } :: rest ->
       [`Value (val_id, false, Some str_loc)] @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_eval _; _} :: rest -> extract_structure_tree_items hide_item rest
@@ -795,11 +755,7 @@ module Path = struct
 
   let rec read_module : t -> Path.t -> Paths.Path.Module.t = fun env -> function
     | Path.Pident id -> read_module_ident env id
-#if OCAML_VERSION >= (4,8,0)
     | Path.Pdot(p, s) -> `Dot(read_module env p, ModuleName.make_std s)
-#else
-    | Path.Pdot(p, s, _) -> `Dot(read_module env p, ModuleName.make_std s)
-#endif
     | Path.Papply(p, arg) -> `Apply(read_module env p, read_module env arg)
 #if OCAML_VERSION >= (5,1,0)
     | Path.Pextra_ty _ -> assert false
@@ -807,11 +763,7 @@ module Path = struct
 
   let read_module_type env = function
     | Path.Pident id -> read_module_type_ident env id
-#if OCAML_VERSION >= (4,8,0)
     | Path.Pdot(p, s) -> `DotMT(read_module env p, ModuleTypeName.make_std s)
-#else
-    | Path.Pdot(p, s, _) -> `DotMT(read_module env p, ModuleTypeName.make_std s)
-#endif
     | Path.Papply(_, _)-> assert false
 #if OCAML_VERSION >= (5,1,0)
     | Path.Pextra_ty _ -> assert false
@@ -819,11 +771,7 @@ module Path = struct
 
   let read_class_type env = function
     | Path.Pident id -> read_class_type_ident env id
-#if OCAML_VERSION >= (4,8,0)
     | Path.Pdot(p, s) -> `DotT(read_module env p, TypeName.make_std (strip_hash s))
-#else
-    | Path.Pdot(p, s, _) -> `DotT(read_module env p, TypeName.make_std (strip_hash s))
-#endif
     | Path.Papply(_, _)-> assert false
 #if OCAML_VERSION >= (5,1,0)
     | Path.Pextra_ty _ -> assert false
@@ -835,11 +783,7 @@ module Path = struct
     let rec read_type env = function
 #endif
     | Path.Pident id -> read_type_ident env id
-#if OCAML_VERSION >= (4,8,0)
     | Path.Pdot(p, s) ->
-#else
-    | Path.Pdot(p, s, _) ->
-#endif
         `DotT(read_module env p, TypeName.make_std (strip_hash s))
     | Path.Papply(_, _)-> assert false
 #if defined OXCAML
@@ -852,11 +796,7 @@ module Path = struct
 
   let read_value env = function
     | Path.Pident id -> read_value_ident env id
-#if OCAML_VERSION >= (4,8,0)
     | Path.Pdot(p, s) -> `DotV(read_module env p, ValueName.make_std s)
-#else
-    | Path.Pdot(p, s, _) -> `DotV(read_module env p, ValueName.make_std s)
-#endif
     | Path.Papply(_, _) -> assert false
 #if OCAML_VERSION >= (5,1,0)
     | Path.Pextra_ty _ -> assert false
