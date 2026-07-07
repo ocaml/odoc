@@ -20,7 +20,8 @@ type extra_paths = {
   lib_name_by_hash : string list Util.StringMap.t;
       (** Maps a module interface hash to the name(s) of the previously-compiled
           library(ies) providing it, read from the lib markers written by
-          {!write_lib_markers}. Consumed by {!Packages.fix_missing_deps_with}. *)
+          {!write_lib_markers}. Consumed by {!Packages.fix_missing_deps_with}.
+      *)
 }
 
 val empty_extra_paths : extra_paths

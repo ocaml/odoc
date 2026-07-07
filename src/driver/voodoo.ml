@@ -333,8 +333,7 @@ let read_lib_hashes libname marker_path acc =
           | Some (hash, _module_name) when is_hex_digest hash ->
               Util.StringMap.update hash
                 (function
-                  | None -> Some [ libname ]
-                  | Some l -> Some (libname :: l))
+                  | None -> Some [ libname ] | Some l -> Some (libname :: l))
                 acc
           | _ -> acc)
         acc lines
