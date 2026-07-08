@@ -100,23 +100,33 @@ Let's have a look at a generic invocation of [odoc] during the compile phase:
   file. Prefer [.cmti] files over the other formats!
 
 - [--output-dir <od>] allows to specify the directory that will contain all the
-  [.odoc] files. This directory has to be fully managed by [odoc] and should not
-  be modified by another tool! The output file depends on the [--parent-id]
-  option.
+  [.odoc] files. The location of the output file below it depends on the
+  [--parent-id] option.
 
 - [--parent-id <pid>] allows to place the output [.odoc] file in the
   documentation hierarchy. This consists in a [/] separated sequence of non
   empty strings (used as directory name). This "path" determines where the
   [.odoc] file will be located below the [<od>] output dir. The name of the
   output file is [<input-file>.odoc] for modules, and [page-<input-file>.odoc]
-  for pages. Documentation artifacts that will be in the same {{!units}unit of
-  documentation} need to hare a common root in their parent id.
+  for pages. Documentation artifacts that will be in the same {{!units}unit of documentation} need to hare a common root in their parent id.
 
 - [-I <dir>] corresponds to the search path for other [.odoc] files. Multiple
   directory can be added to the search path, so every required [.odoc] file is
   in the search path. The required [.odoc] files are the one generated from a
   [.cm{i;t;ti}] file listed when calling [odoc compile-deps] on the input
-  file.
+  file. There should be roughly a one-to-one correspondence between the
+  set of paths provided to the OCaml compiler when building the unit, and
+  the set of directories passed to odoc via the [-I] argument, where each
+  directory passed to the compiler containing cmi files should have an
+  equivalent directory passed to odoc containing the corresponding odoc files.
+
+Note that a unit's identifier — which determines how references to it resolve
+and the URLs of its generated pages — is computed from [--parent-id] at
+compile time and stored inside the [.odoc] file itself. The file's location
+on disk carries no meaning of its own: later phases find files only through
+the paths they are given ([-I], [-P]/[-L], the index inputs), so a driver is
+free to arrange (or relocate) [.odoc] and [.odocl] files as it likes,
+provided it points later invocations at the right places.
 
 A concrete example for such command would be:
 
@@ -210,9 +220,8 @@ A generic link command is:
 ]}
 
 - [<path/to/file.odoc] is the input [.odoc] file. The result of this command is
-  [path/to/file.odocl]. This path was determined by [--output-dir] and
-  [--parent-id] from the link phase, and it is important for the indexing phase
-  that it stays in the same location.
+  [path/to/file.odocl], which can be placed elsewhere with [-o]; the indexing
+  phase must be pointed at wherever the [.odocl] files end up.
 
 - [-P <name>:<dir>] are used to list the "page trees", used to resolve
   references such as [{!/ocamlfind/index}].
@@ -224,6 +233,23 @@ A generic link command is:
 - [-I <dir>] adds [<dir>] to the search path. The search path is used to resolve
   references that do not use the "named tree" mechanism, such as [{!Module}] and
   [{!page-pagename}].
+
+The trees given to [-P] and [-L] must be mutually disjoint: odoc rejects
+nested or overlapping roots. Layouts where this cannot hold — for instance
+several libraries installed in a single directory — can pass
+[--custom-layout], which disables the check.
+
+Two different resolution mechanisms are served by these paths, and it is
+worth distinguishing them. The modules a unit was compiled against (those
+listed by [odoc compile-deps], with their interface digests) are looked up by
+name across every search-path directory provided via [-I] and disambiguated by digest, both at
+compile and at link time: several same-named files on the search path are
+handled correctly. References written in documentation comments are resolved
+by name in the search-path directories provided via [-L] and [-P]; when a
+name is provided by several roots, authors can disambiguate
+with a path reference naming the root — [{!/foo/module-A}] when [A] is
+present in library [foo] and in others. Drivers can therefore afford to be
+liberal in the roots they pass.
 
 {2 The indexing phase}
 
@@ -443,6 +469,51 @@ during the link phase, so that the proper [-P] and [-L] arguments are
 added. (Note that these dependencies can be circular, as they
 happen during the link phase and only require the artifact from the compile
 phase.)
+
+The reference driver decides this scope {e per package}: every library and
+every page of a package is linked with the same [-P] and [-L] arguments, so
+they resolve references against the same units. The scope has two halves — the
+{e module trees} that can be referenced (one [-L] per library) and the {e page
+trees} that can be referenced (one [-P] per package).
+
+For a package [<p>], the module trees ([-L]) are:
+
+{ul
+{- every library of [<p>] itself;}
+{- the {e direct} dependencies of those libraries — the libraries named in each
+   [META] [requires] field — but {e not} the full transitive closure;}
+{- the OCaml standard library;}
+{- any library named in [<p>]'s [odoc-config.sexp] (see below).}}
+
+The page trees ([-P]) are the packages that own those libraries — [<p>] itself
+and the packages providing its direct dependencies — plus any package named in
+[<p>]'s [odoc-config.sexp]. This is the driver side of the
+{{!odoc_for_authors.reference_scope}reference scope} seen by authors; other
+drivers should aim for equivalent behaviour. If you need to reference something
+in a transitive dependency, name it explicitly in the [META] [requires] field
+or in [odoc-config.sexp].
+
+The [-I] search path has a different job from [-P]/[-L]: it resolves each unit's
+imports, their expansions, and source links, which can reach {e deeper} than the
+declared scope — rendering a source link into a functor's body needs the functor
+library's own dependencies (e.g. [uutf] for [tyxml.functor]). The units of a
+library share a single [-I]: the union of their dependency cones, i.e. the
+directories the compiler used to build the library (see the compile phase). This
+is sufficient for the same reason, and providing it does not widen the reference
+scope defined by [-P] and [-L].
+
+Virtual libraries affect what a driver should compile. An implementation
+ships its modules as [.cmt] files only; the [.mli] and the documentation
+written in it belong to the virtual library, which ships the [.cmti].
+Implementing a virtual library adds it to the implementation's [requires], so
+the virtual [.cmti] is findable on the implementation's dependency cone (by
+file name and matching interface digest). The reference driver documents each
+implementation by {e re-compiling the virtual library's [.cmti]} under the
+implementation's own [--parent-id]: the interface documentation is compiled
+once per implementation — plus once for the virtual library itself — each copy
+living in its own tree. For instance [checkseum]'s single [checkseum.cmti] is
+compiled three times, under [checkseum/checkseum], [checkseum/checkseum.c] and
+[checkseum/checkseum.ocaml]. 
 
 An installed package [<p>] specifies its tree dependencies in a file at
 [<opam root>/doc/<p>/odoc-config.sexp]. This file contains s-expressions.
