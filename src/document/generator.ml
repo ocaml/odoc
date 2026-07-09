@@ -1925,15 +1925,18 @@ module Make (Syntax : SYNTAX) = struct
       let summary =
         if decl_hidden then O.render (O.keyword "include" ++ O.txt " ...")
         else
-          let include_kw, include_decl =
+          let include_kw =
             match t.decl with
-            | Odoc_model.Lang.Include.Alias mod_path ->
-                (O.keyword "include", Link.from_path (mod_path :> Paths.Path.t))
-            | Functor (Path mod_path) ->
-                ( O.keyword "include functor",
-                  Link.from_path (mod_path :> Paths.Path.t) )
-            | Functor (ModuleType mt) -> (O.keyword "include functor", umty mt)
-            | ModuleType mt -> (O.keyword "include", umty mt)
+            | Odoc_model.Lang.Include.Alias _ | ModuleType _ ->
+                O.keyword "include"
+            | Functor _ -> O.keyword "include functor"
+          in
+          let include_decl =
+            match t.decl with
+            | Odoc_model.Lang.Include.Alias mod_path | Functor (Path mod_path)
+              ->
+                Link.from_path (mod_path :> Paths.Path.t)
+            | Functor (ModuleType mt) | ModuleType mt -> umty mt
           in
           O.render
             (include_kw ++ O.txt " " ++ include_decl
