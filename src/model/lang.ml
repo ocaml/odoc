@@ -195,13 +195,15 @@ and Include : sig
 
   type expansion = { shadowed : shadowed; content : Signature.t }
 
-  type functor' = Path of Path.Module.t | ModuleType of ModuleType.U.expr
+  type functor_ref = Path of Path.Module.t | ModuleType of ModuleType.expr
+
+  type functor_t = { target : functor_ref; original_ref : functor_ref }
 
   (* Explicitly unexpanded decl *)
   type decl =
     | Alias of Path.Module.t
     | ModuleType of ModuleType.U.expr
-    | Functor of functor'
+    | Functor of functor_t
 
   type t = {
     loc : Location_.span;
@@ -644,9 +646,9 @@ let extract_signature_doc (s : Signature.t) =
     (* A signature that starts with an include may inherits the
        top-comment from the expansion. *)
     | { Include.status = `Inline; _ } -> true
-    | { decl = Alias p; _ } | { decl = Functor (Path p); _ } ->
+    | { decl = Functor { original_ref = Path p }; _ } | { decl = Alias p; _ } ->
         Paths.Path.is_hidden (p :> Path.t)
-    | { decl = Functor (ModuleType expr); _ } -> uexpr_considered_hidden expr
+    | { decl = Functor { original_ref = ModuleType _ }; _ } -> assert false
     | { decl = ModuleType expr; _ } -> uexpr_considered_hidden expr
   in
   match (s.doc, s.items) with

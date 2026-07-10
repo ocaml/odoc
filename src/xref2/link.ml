@@ -767,9 +767,10 @@ and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
   match decl with
   | ModuleType expr when is_elidable_with_module_type_u expr -> ModuleType expr
   | ModuleType expr -> ModuleType (u_module_type_expr env id expr)
-  | Functor (Path p) -> Functor (Path (module_path env p))
-  | Functor (ModuleType expr) ->
-      Functor (ModuleType (u_module_type_expr env id expr))
+  | Functor ({ target = Path p; _ } as f) ->
+      let target = Path (module_path env p) in
+      Functor { f with target }
+  | Functor mt -> Functor mt
   | Alias p -> Alias (module_path env p)
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
@@ -961,9 +962,7 @@ and u_module_type_expr :
   | Path p -> Path (module_type_path env p)
   | With (subs, expr) as unresolved -> (
       let cexpr = Component.Of_Lang.(u_module_type_expr (empty ()) expr) in
-      match
-        Tools.signature_of_u_module_type_expr env cexpr ~allow_functor:false
-      with
+      match Tools.signature_of_u_module_type_expr env cexpr with
       | Ok sg ->
           With (handle_fragments env id sg subs, u_module_type_expr env id expr)
       | Error e ->
@@ -1010,9 +1009,7 @@ and module_type_expr :
       Path { p_path; p_expansion = do_expn p_expansion (Some p_path) }
   | With { w_substitutions; w_expansion; w_expr } as unresolved -> (
       let cexpr = Component.Of_Lang.(u_module_type_expr (empty ()) w_expr) in
-      match
-        Tools.signature_of_u_module_type_expr env cexpr ~allow_functor:false
-      with
+      match Tools.signature_of_u_module_type_expr env cexpr with
       | Ok sg ->
           With
             {

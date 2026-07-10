@@ -1643,3 +1643,65 @@ let read_interface root name ~warnings_tag intf =
       id intf
   in
   (id, items)
+
+let generate_wrapper_module =
+  let wrapper_counter = ref 0 in
+  fun parent ~prefix ~hidden ->
+    incr wrapper_counter;
+    let dummy_id =
+      let dummy_name =
+        let sep = match hidden with | true -> "__" | false -> "_" in
+        let name = Printf.sprintf "%s%s%d" prefix sep !wrapper_counter in
+        match hidden with
+        | false -> Odoc_model.Names.ModuleName.make_std name
+        | true -> Odoc_model.Names.ModuleName.hidden_of_string name
+      in
+      Identifier.Mk.module_ (parent, dummy_name)
+    in
+    let dummy_path = `Identifier (dummy_id, hidden) in
+    (dummy_id, dummy_path)
+
+let shadow_nothing : Include.shadowed =
+  {s_modules=[]; s_module_types=[]; s_values=[]; s_types=[]; s_classes=[]; s_class_types=[]}
+
+let no_doc : Odoc_model.Comment.docs = { elements = []; warnings_tag = None }
+let no_loc = Odoc_model.Location_.span []
+
+let wrapper_and_include parent (dummy_id, dummy_path) ~hidden items =
+  let doc = no_doc in
+  let sig_ : Signature.t = {items; compiled=true; removed=[]; doc} in
+  let type_ : Module.decl = ModuleType (Signature sig_) in
+  let module_ : Module.t = {id=dummy_id; source_loc=None; doc; type_; canonical=None; hidden} in
+  let dummy_module : Signature.item = Module (Ordinary, module_) in
+  let umt : ModuleType.U.expr = TypeOf (StructInclude dummy_path, dummy_path) in
+  let decl : Include.decl = ModuleType umt in
+  let expansion : Include.expansion = {shadowed=shadow_nothing; content=sig_} in
+  let include_ : Include.t = {loc=no_loc; parent; strengthened=None; doc; status=`Inline; decl; expansion} in
+  let include_dummy : Signature.item = Include include_ in
+  (dummy_module, include_dummy)
+
+let generate_wrapper_module_sig parent ~include_functors wrapper ~hidden items =
+  let dummy_module, include_dummy = wrapper_and_include parent wrapper ~hidden items in
+  let include_functors = List.rev_map (fun include_ -> Signature.Include include_) include_functors in
+  [dummy_module; include_dummy] @ include_functors
+
+let generate_wrapper_module_functor_type parent ~include_functors (dummy_id, dummy_path) ~hidden items =
+  let dummy_module, include_dummy = wrapper_and_include parent (dummy_id, dummy_path) ~hidden items in
+  (* functor type applied modules *)
+  let modules_and_applications = List.map (fun include_functor ->
+    match include_functor with
+    | {Include.decl = Include.Functor ({target=ModuleType mty; _} as f)} -> (
+      let (id, path) = generate_wrapper_module parent ~prefix:"APPLIED" ~hidden in
+      let type_ = Module.ModuleType mty in
+      let functor_module : Module.t = {id; source_loc=None; doc=no_doc; type_; canonical=None; hidden} in
+      let module_ = Signature.Module (Ordinary, functor_module) in
+      let expansion = include_functor.Include.expansion in
+      let decl = Include.Functor {f with target = Path path} in
+      let application = Signature.Include {decl; parent; doc=no_doc; strengthened=None; loc=no_loc;expansion;status=`Default} in
+      [module_; application]
+      )
+    | _ -> failwith "unexpected include which is not an include functor") include_functors
+    |> List.concat
+  in
+  [dummy_module; include_dummy] @ modules_and_applications
+

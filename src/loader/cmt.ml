@@ -22,6 +22,7 @@ module OCamlPath = Path
 
 open Odoc_model.Paths
 open Odoc_model.Lang
+module Names = Odoc_model.Names
 
 module Env = Ident_env
 
@@ -522,7 +523,7 @@ and read_module_bindings env parent mbs =
   |> fst
   |> List.rev
 
-and read_structure_item env parent item =
+and read_structure_item env parent include_functor_wrapper item =
   let open Signature in
     match item.str_desc with
     | Tstr_eval _ -> []
@@ -557,7 +558,7 @@ and read_structure_item env parent item =
     | Tstr_open o ->
         [Open (read_open env parent o)]
     | Tstr_include incl ->
-        read_include env parent incl
+        read_include env parent include_functor_wrapper incl
     | Tstr_class cls ->
         let cls = List.map (fun (cl, _) -> cl) cls in
           read_class_declarations env parent cls
@@ -573,7 +574,7 @@ and read_structure_item env parent item =
           | None -> []
           | Some doc -> [Comment doc]
 
-and read_include env parent incl =
+and read_include env parent include_functor_wrapper incl =
   let open Include in
   let loc = Doc_attr.read_location incl.incl_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -582,8 +583,9 @@ and read_include env parent incl =
 #if defined OXCAML
     match unwrap_module_expr_desc incl.incl_mod.mod_desc, incl.incl_kind with
     | Tmod_ident (p, _), (Tincl_functor _ | Tincl_gen_functor _) -> (
-      let p = Env.Path.read_module env.ident_env p in
-      Some (`Functor p))
+      let include_functor = Env.Path.read_module env.ident_env p in
+      let target = `Apply (include_functor, include_functor_wrapper) in
+      Some (`Functor (target, include_functor)))
     | Tmod_ident(p, _), Tincl_structure ->
 #else
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
@@ -601,8 +603,8 @@ and read_include env parent incl =
   | Some `Module_type m ->
     let decl = ModuleType m in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
-  | Some `Functor p ->
-    let decl = Include.Functor (Path p) in
+  | Some `Functor (target, original_ref) ->
+    let decl = Include.Functor {target = Path target; original_ref=Path original_ref} in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
   | _ ->
     content.items
@@ -629,12 +631,26 @@ and read_structure :
     in
     Doc_attr.extract_top_comment internal_tags ~warnings_tag:env.warnings_tag ~classify parent str.str_items
   in
-  let items =
+  let hidden = false in
+  let dummy_id, dummy_path = Cmi.generate_wrapper_module parent ~prefix:"BODY" ~hidden in
+  let items, include_functors =
     List.fold_left
-      (fun items item ->
-        List.rev_append (read_structure_item env parent item) items)
-      [] items
-    |> List.rev
+      (fun (items, include_functors) item ->
+        let structure_items, include_functors =
+          read_structure_item env parent dummy_path item
+          |> List.partition_map (function
+            | Signature.Include ({ decl = Include.Functor _ } as include_functor) -> Right include_functor
+            | otherwise -> Left otherwise)
+        in
+        (List.rev_append structure_items items, include_functors))
+      ([], []) items
+  in
+  let items = List.rev items in
+  let items = match include_functors with
+  | [] -> items
+  | include_functors ->
+    (* if we have any include functors, we need to wrap  *)
+    Cmi.generate_wrapper_module_sig parent ~include_functors (dummy_id, dummy_path) ~hidden items
   in
   match doc_post with
   | { elements = [] ; _} ->

@@ -2,7 +2,10 @@
 # Module `Oxcaml.Include_functor_named_type`
 
 ```ocaml
-module type Make = functor (_ : sig ... end) -> sig ... end
+module BODY_21 : sig ... end
+```
+```ocaml
+module type MakeType = functor (_ : sig ... end) -> sig ... end
 ```
 This is a module where the functor is named and then included.
 
@@ -10,5 +13,11 @@ This is a module where the functor is named and then included.
 type t
 ```
 ```ocaml
-type included
+module INCLUDE_24 : MakeType
+```
+```ocaml
+module APPLIED_25 : module type of struct include INCLUDE_24(BODY_21) end
+```
+```ocaml
+type included = INCLUDE_24(BODY_21).included
 ```

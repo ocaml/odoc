@@ -1,0 +1,16 @@
+
+.TH Anonymous_functor_desugared 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.Anonymous_functor_desugared
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml\.Anonymous_functor_desugared\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t
+.sp 
+\f[CB]type\fR included

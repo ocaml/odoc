@@ -1,0 +1,45 @@
+
+.TH BODY_21 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.Include_functor_named_type\.BODY_21
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Include_functor_named_type\.BODY_21\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR MakeType = \f[CB]sig\fR
+.br 
+.ti +2
+.sp 
+.ti +2
+\fB1\.1 Parameters\fR
+.sp 
+.ti +2
+\f[CB]module\fR _ : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR t
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\fB1\.2 Signature\fR
+.sp 
+.ti +2
+\f[CB]type\fR included
+.br 
+\f[CB]end\fR
+.fi 
+.br 
+.ti +2
+This is a module where the functor is named and then included\.
+.nf 
+.sp 
+\f[CB]type\fR t
+.sp 
+\f[CB]module\fR INCLUDE_24 : MakeType

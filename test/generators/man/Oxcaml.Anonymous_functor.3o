@@ -1,0 +1,27 @@
+
+.TH Anonymous_functor 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.Anonymous_functor
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml\.Anonymous_functor\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR BODY_31 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR t
+.fi 
+.br 
+.ti +2
+In this test case the functor is defined inline
+.nf 
+.sp 
+\f[CB]module\fR INCLUDE_34 (T : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR APPLIED_35 : \f[CB]module\fR \f[CB]type\fR \f[CB]of\fR \f[CB]struct\fR \f[CB]include\fR INCLUDE_34(BODY_31) \f[CB]end\fR
+.sp 
+\f[CB]type\fR included = INCLUDE_34(BODY_31)\.included

@@ -62,21 +62,30 @@ let mode_multi : string @ local once -> string @ local once = fun x -> x
 
 (** {1 Include functor on structures} *)
 
-module No_include_functor = struct
-(** This module shows how to achieve the effect without [include functor],
-    with an intermediate module [T]. *)
-  module Make (T : sig type t end) = struct type included end
-  module T = struct
-    type t
-  end
-
-  include T
-  include Make(T)
-end
-
 module Include_functor = struct
-(** This module demonstratest the [include functor] functionality *)
+(** This module demonstrates the [include functor] functionality *)
   module Make (T : sig type t end) = struct type included end
   type t
   include functor Make
+end
+
+module Include_functor_desugared = struct
+(** This module is the desugared version from above *)
+  module Make (T : sig type t end) = struct type included end
+  module DUMMY__ = struct
+    type t
+  end
+  include DUMMY__
+  include Make(DUMMY__)
+end
+
+module Resolve_functor = struct
+  module F ( I : sig type t end ) = struct
+    type myt = I.t
+  end
+
+  module M = struct
+    type t = float
+    include functor F
+  end
 end

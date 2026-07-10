@@ -9,7 +9,7 @@ Oxcaml_impl\.Include_functor\.Make
 .in 
 .sp 
 .fi 
-This module demonstratest the include functor functionality
+This module demonstrates the include functor functionality
 .nf 
 .SH Documentation
 .sp 
