@@ -1,11 +1,11 @@
 
-.TH Include_functor_named_type 3 "" "Odoc" "OCaml Library"
+.TH Include_functor_inline 3 "" "Odoc" "OCaml Library"
 .SH Name
-Oxcaml\.Include_functor_named_type
+Oxcaml\.Include_functor_inline
 .SH Synopsis
 .sp 
 .in 2
-\fBModule Oxcaml\.Include_functor_named_type\fR
+\fBModule Oxcaml\.Include_functor_inline\fR
 .in 
 .sp 
 .SH Documentation
@@ -37,7 +37,7 @@ Oxcaml\.Include_functor_named_type
 .fi 
 .br 
 .ti +2
-This is a module where the functor is named and then included\.
+This is a test case where the functor is named and included inline
 .nf 
 .sp 
 \f[CB]type\fR t

@@ -1,10 +1,10 @@
 
-# Module `Oxcaml.Include_functor_named_type`
+# Module `Oxcaml.Include_functor_inline`
 
 ```ocaml
 module type Make = functor (_ : sig ... end) -> sig ... end
 ```
-This is a module where the functor is named and then included.
+This is a test case where the functor is named and included inline
 
 ```ocaml
 type t

@@ -303,8 +303,16 @@ module Include_functor : sig
 end
 
 module Include_functor_named_type : sig
-(** This is a Module where the type is named and then included. *)
+(** This is a module where the functor is named and then included. *)
   module type Make = (_ : sig type t end) -> sig type included end
   type t
   include functor Make
+end
+
+module Include_functor_inline : sig
+(** This is a test case where the functor is named and included inline *)
+  module type Make = (_ : sig type t end) -> sig type included end
+  type t
+  include functor Make
+  (** @inline *)
 end
