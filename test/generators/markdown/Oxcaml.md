@@ -707,3 +707,6 @@ module Include_functor : sig ... end
 ```ocaml
 module Include_functor_named_type : sig ... end
 ```
+```ocaml
+module Include_functor_inline : sig ... end
+```

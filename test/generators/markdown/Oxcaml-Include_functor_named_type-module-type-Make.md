@@ -1,7 +1,7 @@
 
 # Module type `Include_functor_named_type.Make`
 
-This is a Module where the type is named and then included.
+This is a module where the functor is named and then included.
 
 
 ## Parameters

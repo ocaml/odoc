@@ -1207,3 +1207,5 @@ fn_both : int @ local \f[CB]\->\fR int @ local;
 \f[CB]module\fR Include_functor : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .sp 
 \f[CB]module\fR Include_functor_named_type : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR Include_functor_inline : \f[CB]sig\fR \.\.\. \f[CB]end\fR
