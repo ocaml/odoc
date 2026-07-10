@@ -75,8 +75,11 @@ Multiple modes on argument and return.
 ## Include functor on structures
 
 ```ocaml
-module No_include_functor : sig ... end
+module Include_functor : sig ... end
 ```
 ```ocaml
-module Include_functor : sig ... end
+module Include_functor_desugared : sig ... end
+```
+```ocaml
+module Resolve_functor : sig ... end
 ```

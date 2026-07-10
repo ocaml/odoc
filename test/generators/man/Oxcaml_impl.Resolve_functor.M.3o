@@ -1,0 +1,18 @@
+
+.TH M 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_impl\.Resolve_functor\.M
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Resolve_functor\.M\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR BODY_14 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR t = float
+.sp 
+\f[CB]type\fR myt = BODY_14\.t

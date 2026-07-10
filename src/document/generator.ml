@@ -1911,8 +1911,10 @@ module Make (Syntax : SYNTAX) = struct
     and include_ (t : Odoc_model.Lang.Include.t) =
       let decl_hidden =
         match t.decl with
-        | Alias p | Functor (Path p) -> Paths.Path.(is_hidden (p :> t))
-        | ModuleType mty | Functor (ModuleType mty) -> umty_hidden mty
+        | Alias p | Functor { original_ref = Path p; _ } ->
+            Paths.Path.(is_hidden (p :> t))
+        | Functor { original_ref = ModuleType mty; _ } -> mty_hidden mty
+        | ModuleType umty -> umty_hidden umty
       in
       let status = if decl_hidden then `Inline else t.status in
 
@@ -1928,10 +1930,11 @@ module Make (Syntax : SYNTAX) = struct
           in
           let include_decl =
             match t.decl with
-            | Odoc_model.Lang.Include.Alias mod_path | Functor (Path mod_path)
-              ->
+            | Odoc_model.Lang.Include.Alias mod_path
+            | Functor { original_ref = Path mod_path; _ } ->
                 Link.from_path (mod_path :> Paths.Path.t)
-            | Functor (ModuleType mt) | ModuleType mt -> umty mt
+            | Functor { original_ref = ModuleType mt; _ } -> mty mt
+            | ModuleType mt -> umty mt
           in
           O.render
             (include_kw ++ O.txt " " ++ include_decl

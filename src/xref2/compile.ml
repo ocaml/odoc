@@ -389,10 +389,19 @@ and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
   | ModuleType expr ->
       if is_elidable_with_module_type_u expr then ModuleType expr
       else ModuleType (u_module_type_expr env id expr)
-  | Functor (Path p) -> Functor (Path (module_path env p))
-  | Functor (ModuleType expr) ->
-      if is_elidable_with_module_type_u expr then ModuleType expr
-      else Functor (ModuleType (u_module_type_expr env id expr))
+  | Functor { target = Path target; original_ref = Path original_ref } ->
+      Functor
+        {
+          target = Path (module_path env target);
+          original_ref = Path (module_path env original_ref);
+        }
+  | Functor { target = Path p; original_ref = ModuleType mt } ->
+      Functor
+        {
+          target = Path (module_path env p);
+          original_ref = ModuleType (module_type_expr env id mt);
+        }
+  | Functor { target = ModuleType _ } -> assert false
   | Alias p -> Alias (module_path env p)
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
@@ -414,16 +423,10 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
     match
       let open Odoc_utils.ResultMonad in
       match decl with
-      | Functor (Path p) ->
-          Tools.expansion_of_module_path env ~strengthen:true p >>= fun exp ->
-          Tools.assert_functor exp
-      | Functor (ModuleType mty) ->
-          Tools.signature_of_u_module_type_expr env mty ~allow_functor:true
-      | Alias p ->
+      | Alias p | Functor p ->
           Tools.expansion_of_module_path env ~strengthen:true p >>= fun exp ->
           Tools.assert_not_functor exp
-      | ModuleType mty ->
-          Tools.signature_of_u_module_type_expr env mty ~allow_functor:false
+      | ModuleType mty -> Tools.signature_of_u_module_type_expr env mty
     with
     | Error e ->
         Errors.report ~what:(`Include decl) ~tools_error:e `Expand;
@@ -649,9 +652,7 @@ and module_type_map_subs env id cexpr subs =
   match find_parent cexpr with
   | None -> None
   | Some parent -> (
-      match
-        Tools.signature_of_u_module_type_expr env cexpr ~allow_functor:false
-      with
+      match Tools.signature_of_u_module_type_expr env cexpr with
       | Error e ->
           Errors.report ~what:(`Module_type id) ~tools_error:e `Lookup;
           None

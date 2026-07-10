@@ -813,7 +813,7 @@ and read_module_equation env p =
   let open Module in
     Alias (Env.Path.read_module env.ident_env p, None)
 
-and read_signature_item env parent item =
+and read_signature_item env parent include_functor_wrapper item =
   let open Signature in
     match item.sig_desc with
     | Tsig_value vd ->
@@ -847,7 +847,7 @@ and read_signature_item env parent item =
 #else
     | Tsig_include incl ->
 #endif
-        read_include env parent incl
+        read_include env parent include_functor_wrapper incl
     | Tsig_class cls ->
         read_class_descriptions env parent cls
     | Tsig_class_type cltyps ->
@@ -894,7 +894,7 @@ and read_module_type_substitution env parent mtd =
 
 
 
-and read_include env parent incl =
+and read_include env parent include_functor_wrapper incl =
   let open Include in
   let loc = Doc_attr.read_location incl.incl_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -910,8 +910,8 @@ and read_include env parent incl =
   let umty = Odoc_model.Lang.umty_of_mty expr in 
   let expansion = { content; shadowed; } in
 #if defined OXCAML
-  match umty, incl.incl_kind with
-  | Some uexpr, Tincl_structure ->
+  match umty, incl.incl_mod.mty_desc, incl.incl_kind with
+  | Some uexpr, _, Tincl_structure ->
 #else
   match umty with
   | Some uexpr ->
@@ -919,13 +919,20 @@ and read_include env parent incl =
     let decl = Include.ModuleType uexpr in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
 #if defined OXCAML
-  | Some uexpr, (Tincl_functor _ | Tincl_gen_functor _) ->
-    let decl = match uexpr with
-      | TypeOf (ModPath p, _) -> Include.Functor (Path p)
-      | Path p -> Include.Functor (ModuleType uexpr)
-      | _ -> failwith "We expected TypeOf or Path but got something else"
-    in
-    [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
+  | _, Tmty_typeof _, (Tincl_functor _ | Tincl_gen_functor _)
+  | _, Tmty_ident (_, _), (Tincl_functor _ | Tincl_gen_functor _) -> (
+    let hidden = false in
+    let type_ : Module.decl = ModuleType expr in
+    let id, functor_path = Cmi.generate_wrapper_module parent ~prefix:"INCLUDE" ~hidden in
+    let functor_ : Module.t = {id; source_loc=None; doc; type_; canonical=None; hidden} in
+    let functor_ = Signature.Module (Ordinary, functor_) in
+    let module_path : Path.Module.t = `Apply (functor_path, include_functor_wrapper) in
+
+    (* include that module *)
+    let mt : ModuleType.expr = ModuleType.TypeOf {t_desc = StructInclude module_path; t_original_path = module_path; t_expansion = None } in
+    let decl = Functor {target=ModuleType mt; original_ref=ModuleType expr} in
+    let include_ = Signature.Include {parent; doc; decl; expansion; status; strengthened=None; loc } in
+    [functor_; include_])
 #endif
   | _ ->
     content.items
@@ -952,12 +959,26 @@ and read_signature :
     in
     Doc_attr.extract_top_comment internal_tags ~warnings_tag:env.warnings_tag ~classify parent sg.sig_items
   in
-  let items =
+  let hidden = false in
+  let dummy_id, dummy_path = Cmi.generate_wrapper_module parent ~prefix:"BODY" ~hidden in
+  let items, include_functors =
     List.fold_left
-      (fun items item ->
-        List.rev_append (read_signature_item env parent item) items)
-      [] items
-    |> List.rev
+      (fun (items, include_functors) item ->
+        let signature_items, include_functors =
+          read_signature_item env parent dummy_path item
+          |> List.partition_map (function
+            | Signature.Include ({ decl = Include.Functor _ } as include_functor) -> Right include_functor
+            | otherwise -> Left otherwise)
+        in
+        (List.rev_append signature_items items, include_functors))
+      ([], []) items
+  in
+  let items = List.rev items in
+  let items = match include_functors with
+  | [] -> items
+  | include_functors ->
+    (* if we have any include functor, we need to wrap  *)
+    Cmi.generate_wrapper_module_functor_type parent ~include_functors (dummy_id, dummy_path) ~hidden items
   in
   match doc_post with
   | {elements=[]; _} ->

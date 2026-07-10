@@ -17,6 +17,19 @@
   </header>
   <div class="odoc-content">
    <div class="odoc-spec">
+    <div class="spec module anchored" id="module-BODY_26">
+     <a href="#module-BODY_26" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-Include_functor_inline-BODY_26.html">BODY_26</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
     <div class="spec module-type anchored" id="module-type-Make">
      <a href="#module-type-Make" class="anchor"></a>
      <code>
@@ -49,10 +62,60 @@
     </div>
    </div>
    <div class="odoc-spec">
-    <div class="spec type anchored" id="type-included">
-     <a href="#type-included" class="anchor"></a>
-     <code><span><span class="keyword">type</span> included</span></code>
+    <div class="spec module anchored" id="module-INCLUDE_29">
+     <a href="#module-INCLUDE_29" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-Include_functor_inline-INCLUDE_29.html">INCLUDE_29</a>
+      </span>
+      <span> : 
+       <a href="Oxcaml-Include_functor_inline-module-type-Make.html">Make</a>
+      </span>
+     </code>
     </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-APPLIED_30">
+     <a href="#module-APPLIED_30" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-Include_functor_inline-APPLIED_30.html">APPLIED_30</a>
+      </span>
+      <span> : <span class="keyword">module</span> 
+       <span class="keyword">type</span> <span class="keyword">of</span>
+        <span class="keyword">struct</span> 
+       <span class="keyword">include</span> 
+       <a href="Oxcaml-Include_functor_inline-INCLUDE_29.html">
+        INCLUDE_29(BODY_26)
+       </a> <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-include">
+    <details open="open">
+     <summary class="spec include">
+      <code>
+       <span><span class="keyword">include functor</span> 
+        <a href="Oxcaml-Include_functor_inline-module-type-Make.html">Make
+        </a>
+       </span>
+      </code>
+     </summary>
+     <div class="odoc-spec">
+      <div class="spec type anchored" id="type-included">
+       <a href="#type-included" class="anchor"></a>
+       <code><span><span class="keyword">type</span> included</span>
+        <span> = 
+         <a
+          href="Oxcaml-Include_functor_inline-INCLUDE_29.html#type-included">
+          INCLUDE_29(BODY_26).included
+         </a>
+        </span>
+       </code>
+      </div>
+     </div>
+    </details>
    </div>
   </div>
  </body>

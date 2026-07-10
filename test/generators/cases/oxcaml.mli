@@ -539,11 +539,34 @@ module Include_functor : sig
   include functor module type of Make
 end
 
+module Include_functor_desugared : sig
+  module Make (T : sig type t end) : sig type included end
+
+  module DUMMY__ : sig
+    type t
+  end
+  include module type of DUMMY__
+
+  include module type of Make(DUMMY__)
+end
+
+module Include_functor_named_type_desugared : sig
+(** This is a module where the functor is named and then included. *)
+  module type MakeType = (_ : sig type t end) -> sig type included end
+  module DUMMY__ : sig
+    type t
+  end
+  include module type of DUMMY__
+
+  module STRUCT__MakeType : MakeType
+  include module type of STRUCT__MakeType(DUMMY__)
+end
+
 module Include_functor_named_type : sig
 (** This is a module where the functor is named and then included. *)
-  module type Make = (_ : sig type t end) -> sig type included end
+  module type MakeType = (_ : sig type t end) -> sig type included end
   type t
-  include functor Make
+  include functor MakeType
 end
 
 module Include_functor_inline : sig
@@ -553,3 +576,20 @@ module Include_functor_inline : sig
   include functor Make
   (** @inline *)
 end
+
+module Anonymous_functor : sig
+(** In this test case the functor is defined inline *)
+  type t
+  include functor module type of functor (T : sig type t end) -> struct type included end
+end
+
+module Anonymous_functor_desugared : sig
+(** In this test case the functor is defined inline *)
+  module DUMMY__ : sig
+    type t
+  end
+  include module type of DUMMY__
+
+  include module type of (functor (T : sig type t end) -> struct type included end)(DUMMY__)
+end
+

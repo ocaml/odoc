@@ -1,0 +1,14 @@
+
+# Module `Oxcaml.Include_functor_named_type_desugared`
+
+```ocaml
+module type MakeType = functor (_ : sig ... end) -> sig ... end
+```
+This is a module where the functor is named and then included.
+
+```ocaml
+type t
+```
+```ocaml
+type included
+```
