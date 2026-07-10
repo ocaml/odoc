@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
- <head>
-  <title>Include_functor_named_type (Oxcaml.Include_functor_named_type)
-  </title><meta charset="utf-8"/><link rel="stylesheet" href="odoc.css"/>
+ <head><title>Include_functor_inline (Oxcaml.Include_functor_inline)</title>
+  <meta charset="utf-8"/><link rel="stylesheet" href="odoc.css"/>
   <meta name="generator" content="odoc %%VERSION%%"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <script src="highlight.pack.js"></script>
@@ -11,11 +10,10 @@
  <body class="odoc">
   <nav class="odoc-nav"><a href="Oxcaml.html">Up</a> – 
    <a href="index.html">Index</a> &#x00BB; <a href="Oxcaml.html">Oxcaml</a>
-    &#x00BB; Include_functor_named_type
+    &#x00BB; Include_functor_inline
   </nav>
   <header class="odoc-preamble">
-   <h1>Module <code><span>Oxcaml.Include_functor_named_type</span></code>
-   </h1>
+   <h1>Module <code><span>Oxcaml.Include_functor_inline</span></code></h1>
   </header>
   <div class="odoc-content">
    <div class="odoc-spec">
@@ -24,13 +22,12 @@
      <code>
       <span><span class="keyword">module</span> 
        <span class="keyword">type</span> 
-       <a href="Oxcaml-Include_functor_named_type-module-type-Make.html">Make
-       </a>
+       <a href="Oxcaml-Include_functor_inline-module-type-Make.html">Make</a>
       </span>
       <span> = <span class="keyword">functor</span>
        <span> (
         <a
-         href="Oxcaml-Include_functor_named_type-module-type-Make-argument-1-_.html"
+         href="Oxcaml-Include_functor_inline-module-type-Make-argument-1-_.html"
          >_
         </a> : <span class="keyword">sig</span> ... 
         <span class="keyword">end</span>) 
@@ -41,7 +38,8 @@
      </code>
     </div>
     <div class="spec-doc">
-     <p>This is a module where the functor is named and then included.</p>
+     <p>This is a test case where the functor is named and included inline
+     </p>
     </div>
    </div>
    <div class="odoc-spec">
@@ -50,24 +48,11 @@
      <code><span><span class="keyword">type</span> t</span></code>
     </div>
    </div>
-   <div class="odoc-include">
-    <details open="open">
-     <summary class="spec include">
-      <code>
-       <span><span class="keyword">include functor</span> 
-        <a href="Oxcaml-Include_functor_named_type-module-type-Make.html">
-         Make
-        </a>
-       </span>
-      </code>
-     </summary>
-     <div class="odoc-spec">
-      <div class="spec type anchored" id="type-included">
-       <a href="#type-included" class="anchor"></a>
-       <code><span><span class="keyword">type</span> included</span></code>
-      </div>
-     </div>
-    </details>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-included">
+     <a href="#type-included" class="anchor"></a>
+     <code><span><span class="keyword">type</span> included</span></code>
+    </div>
    </div>
   </div>
  </body>
