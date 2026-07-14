@@ -4,6 +4,11 @@
 - Support for OxCaml zero alloc definitions (@Leonidas-from-XIV, #1422, #1444)
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)
 - Support for OxCaml modalities (@art-w, #1420)
+- Improve documentation of link scope in odoc-driver (@jonludlam, #1461)
+
+### Fixed
+- Fix #1450 - incorrect linking of same-named but different digest modules
+  (@jonludlam, #1461)
 
 # 3.2.1
 
