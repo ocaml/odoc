@@ -5,6 +5,9 @@
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)
 - Support for OxCaml modalities (@art-w, #1420)
 - Improve documentation of link scope in odoc-driver (@jonludlam, #1461)
+- `odoc compile`: `-o` now overrides the output path computed from
+  `--parent-id` and `--output-dir`, which is no longer required in that case
+  (@jonludlam)
 
 ### Fixed
 - Fix #1450 - incorrect linking of same-named but different digest modules
