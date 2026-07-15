@@ -25,7 +25,13 @@ type parent_spec = {
   output : Fpath.t;
 }
 
-type parent_id_spec = { parent_id : string; output_dir : string }
+type parent_id_spec = {
+  parent_id : string;
+  output : [ `Dir of string | `File of Fpath.t ];
+      (** With [`Dir], the output path is computed from the directory, the
+          parent id and the input file name. [`File] specifies the output path
+          directly. *)
+}
 
 type cli_spec =
   | CliNoParent of Fpath.t

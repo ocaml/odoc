@@ -19,6 +19,9 @@
 - Allow to break link into multiple lines (@Tim-ats-d, #1439)
 - Support for atomic annotation (@ElectreAAS, #1496)
 - Support for OxCaml parameterized libraries (@art-w, #1464)
+- `odoc compile`: `-o` now overrides the output path computed from
+  `--parent-id` and `--output-dir`, which is no longer required in that case
+  (@jonludlam, #1462)
 - `{!modules: ...}` lists accept path references such as
   `{!modules: /lib/Module}` (@jonludlam, #1503)
 - Support for strikethrough text (@Leonidas-from-XIV, #1515)
