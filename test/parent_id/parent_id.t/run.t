@@ -34,6 +34,15 @@ Passing -o overrides the output path computed from --parent-id and
   page-renamed.odoc
   unit.odoc
 
+compile-impl also honours -o, writing to the given path instead of the one
+computed from --parent-id and --output-dir:
+
+  $ odoc compile-impl --parent-id pkg/libname --source-id pkg/src/unit.ml -o custom/impl-unit.odoc unit.cmt
+  $ ls custom
+  impl-unit.odoc
+  page-renamed.odoc
+  unit.odoc
+
 Either -o or --output-dir must be passed with --parent-id:
 
   $ odoc compile --parent-id pkg file.mld
