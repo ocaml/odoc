@@ -426,6 +426,13 @@ module Compile_impl = struct
       & opt (some string) None
       & info ~docs ~docv:"PATH" ~doc [ "output-dir" ])
 
+  let dst =
+    let doc =
+      "Output file path. Takes precedence over the output path computed from \
+       $(b,--parent-id) and $(b,--output-dir), which is then not required."
+    in
+    Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
+
   let output_file output_dir parent_id input =
     let name =
       Fs.File.basename input |> Fpath.set_ext "odoc" |> Fs.File.to_string
@@ -439,16 +446,20 @@ module Compile_impl = struct
       ~name
 
   let compile_impl directories output_dir parent_id source_id input
-      warnings_options =
+      warnings_options dst =
     let input = Fs.File.of_string input in
-    let output_dir =
-      match output_dir with Some x -> Fpath.v x | None -> Fpath.v "."
-    in
     let output =
-      output_file output_dir
-        (match parent_id with Some x -> Fpath.v x | None -> Fpath.v ".")
-        input
+      match dst with
+      | Some dst -> Fs.File.of_string dst
+      | None ->
+          let output_dir =
+            match output_dir with Some x -> Fpath.v x | None -> Fpath.v "."
+          in
+          output_file output_dir
+            (match parent_id with Some x -> Fpath.v x | None -> Fpath.v ".")
+            input
     in
+    Fs.Directory.mkdir_p (Fs.File.dirname output);
     let resolver =
       Resolver.create ~important_digests:true ~directories ~open_modules:[]
         ~roots:None
@@ -478,7 +489,7 @@ module Compile_impl = struct
     Term.(
       const handle_error
       $ (const compile_impl $ odoc_file_directories $ output_dir $ parent_id
-       $ source_id $ input $ warnings_options))
+       $ source_id $ input $ warnings_options $ dst))
 
   let info ~docs =
     let doc =
