@@ -26,7 +26,9 @@ let make_index ~dirs ~rel_dir ~libs ~pkgs ~index ~enable_warnings ~content :
     output_dir = dirs.odoc_dir;
     pkgname = None;
     pkg_args;
+    lib_name = "";
     deps = [];
+    lib_deps = Util.StringSet.empty;
     parent_id;
     input_file;
     input_copy = None;

@@ -76,6 +76,23 @@ let run package_name blessed actions odoc_dir odocl_dir
 
   let all = Packages.remap_virtual [ all ] in
 
+  (* The META files only declare a library's direct dependencies, and don't
+     always name a transitively-needed library (e.g. [tyxml.functor], reached
+     only through [tyxml]'s own META). Recover the missing ones by digest, the
+     same way the non-voodoo driver does: resolve this package's module
+     dependencies against its own modules merged with those of its
+     already-compiled dependencies, whose [digest -> library] mapping is read
+     back from their partials. *)
+  let all =
+    let lib_name_by_hash =
+      Util.StringMap.union
+        (fun _ a b -> Some (a @ b))
+        (Packages.lib_name_by_hash all)
+        (Compile.lib_name_by_hash_of_partials odoc_dir)
+    in
+    Packages.fix_missing_deps_with lib_name_by_hash all
+  in
+
   let partial =
     match all with
     | [ p ] ->
@@ -100,8 +117,8 @@ let run package_name blessed actions odoc_dir odocl_dir
     | CompileOnly -> ()
     | LinkAndGen | All ->
         let linked =
-          Compile.link ~warnings_tags:[ package_name ] ~custom_layout:false
-            compiled
+          Compile.link ?partial ~partial_dir:odoc_dir
+            ~warnings_tags:[ package_name ] ~custom_layout:false compiled
         in
         let () =
           Odoc.count_occurrences ~input:odocl_dirs ~output:occurrence_file

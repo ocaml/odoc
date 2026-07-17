@@ -303,23 +303,30 @@ let mk_mlds docs =
             { md_path = doc.file; md_rel_path = doc.rel_path } :: others ))
     ([], [], []) docs
 
-let fix_missing_deps pkgs =
-  let lib_name_by_hash =
-    List.fold_right
-      (fun pkg acc ->
-        List.fold_left
-          (fun acc lib ->
-            List.fold_left
-              (fun acc m ->
-                Util.StringMap.update m.m_intf.mif_hash
-                  (function
-                    | None -> Some [ lib.lib_name ]
-                    | Some l -> Some (lib.lib_name :: l))
-                  acc)
-              acc lib.modules)
-          acc pkg.libraries)
-      pkgs Util.StringMap.empty
-  in
+(* Map from a module's interface hash to the name(s) of the library(ies) that
+   provide it. This is the raw material [fix_missing_deps] uses to recover
+   library dependencies that a package's META files fail to declare. *)
+let lib_name_by_hash pkgs =
+  List.fold_right
+    (fun pkg acc ->
+      List.fold_left
+        (fun acc lib ->
+          List.fold_left
+            (fun acc m ->
+              Util.StringMap.update m.m_intf.mif_hash
+                (function
+                  | None -> Some [ lib.lib_name ]
+                  | Some l -> Some (lib.lib_name :: l))
+                acc)
+            acc lib.modules)
+        acc pkg.libraries)
+    pkgs Util.StringMap.empty
+
+(* Like [fix_missing_deps] but with a caller-supplied [lib_name_by_hash]. In
+   voodoo mode the dependencies' modules aren't loaded in memory, so the map is
+   assembled from the [lib_name] recorded in the partials of already-compiled
+   dependencies and merged with the current package's own modules. *)
+let fix_missing_deps_with lib_name_by_hash pkgs =
   List.map
     (fun pkg ->
       let libraries =
@@ -363,6 +370,8 @@ let fix_missing_deps pkgs =
       in
       { pkg with libraries })
     pkgs
+
+let fix_missing_deps pkgs = fix_missing_deps_with (lib_name_by_hash pkgs) pkgs
 
 let of_libs ~packages_dir libs =
   let Ocamlfind.Db.
@@ -579,26 +588,32 @@ let remap_virtual_interfaces duplicate_hashes pkgs =
       })
     pkgs
 
+(* Modules grouped by interface hash, keeping only hashes shared by more than
+   one module (a virtual library's modules with those of its implementations),
+   each paired with its library. Underlies both interface remapping and
+   sibling-implementation exclusion. *)
+let virtual_modules pkgs =
+  let by_hash =
+    List.fold_left
+      (fun acc pkg ->
+        List.fold_left
+          (fun acc lib ->
+            List.fold_left
+              (fun acc m ->
+                Util.StringMap.update m.m_intf.mif_hash
+                  (function
+                    | None -> Some [ (lib, m) ] | Some l -> Some ((lib, m) :: l))
+                  acc)
+              acc lib.modules)
+          acc pkg.libraries)
+      Util.StringMap.empty pkgs
+  in
+  Util.StringMap.filter (fun _hash ms -> List.length ms > 1) by_hash
+
 let remap_virtual all =
   let virtual_check =
-    let hashes =
-      List.fold_left
-        (fun acc pkg ->
-          List.fold_left
-            (fun acc lib ->
-              List.fold_left
-                (fun acc m ->
-                  let hash = m.m_intf.mif_hash in
-                  Util.StringMap.update hash
-                    (function
-                      | None -> Some [ m.m_intf ]
-                      | Some l -> Some (m.m_intf :: l))
-                    acc)
-                acc lib.modules)
-            acc pkg.libraries)
-        Util.StringMap.empty all
-    in
-    Util.StringMap.filter (fun _hash intfs -> List.length intfs > 1) hashes
+    Util.StringMap.map
+      (List.map (fun (_lib, m) -> m.m_intf))
+      (virtual_modules all)
   in
-
   remap_virtual_interfaces virtual_check all
