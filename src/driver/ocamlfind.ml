@@ -81,6 +81,17 @@ let deps pkgs =
        (Util.StringSet.singleton "stdlib")
        (List.map (Result.value ~default:Util.StringSet.empty) results))
 
+(* The directly-declared dependencies of a package, from its META [requires] —
+   not transitively closed. *)
+let direct_deps pkg =
+  init ();
+  try
+    Ok
+      (Util.StringSet.add "stdlib"
+         (Util.StringSet.of_list
+            (Fl_package_base.requires ~preds:[ "ppx_driver" ] pkg)))
+  with e -> Error (`Msg (Printexc.to_string e))
+
 module Db = struct
   type t = {
     all_libs : Util.StringSet.t;
@@ -110,11 +121,13 @@ module Db = struct
     in
     let all_libs = Util.StringSet.elements all_libs_set in
 
-    (* Now we need the dependency tree of those libraries *)
+    (* The directly-declared dependencies of each library. We deliberately keep
+       these un-closed: transitive gaps are recovered by digest later
+       ([Packages.fix_missing_deps]). *)
     let all_lib_deps =
       List.fold_right
         (fun lib_name acc ->
-          match deps [ lib_name ] with
+          match direct_deps lib_name with
           | Ok deps -> Util.StringMap.add lib_name deps acc
           | Error (`Msg msg) ->
               Logs.err (fun m ->

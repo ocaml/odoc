@@ -91,6 +91,17 @@ val pp : Format.formatter -> t -> unit
 
 val fix_missing_deps : t list -> t list
 
+val lib_name_by_hash : t list -> string list Util.StringMap.t
+(** [lib_name_by_hash pkgs] maps each module interface hash to the name(s) of
+    the library(ies) in [pkgs] providing a module with that hash. *)
+
+val fix_missing_deps_with : string list Util.StringMap.t -> t list -> t list
+(** [fix_missing_deps_with lib_name_by_hash pkgs] is like {!fix_missing_deps}
+    but resolves module hashes against the supplied map rather than only the
+    modules present in [pkgs]. Used in voodoo mode, where the dependencies'
+    modules aren't loaded but their hashes and library names are available from
+    the partials of already-compiled dependencies. *)
+
 val mk_mlds : Opam.doc_file list -> mld list * asset list * md list
 
 val of_libs : packages_dir:Fpath.t option -> Util.StringSet.t -> t list
