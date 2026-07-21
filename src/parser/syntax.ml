@@ -1,4 +1,3 @@
-
 (* This module is a recursive descent parser for the ocamldoc syntax. The parser
    consumes a token stream of type [Token.t Stream.t], provided by the lexer,
    and produces a comment AST of the type defined in [Parser_.Ast].
@@ -173,17 +172,17 @@ let escape_link link =
   let buf = Buffer.create (String.length link) in
   let last_state =
     String.fold_left
-         (fun state chr ->
-           match (state, chr) with
-           | `Char, '\\' -> `Backslash
-           | `Char, _ ->
-               Buffer.add_char buf chr;
-               `Char
-           | (`Backslash | `Escaping), (' ' | '\t' | '\n') -> `Escaping
-           | (`Backslash | `Escaping), _ ->
-               Buffer.add_char buf chr;
-               `Char)
-         `Char link
+      (fun state chr ->
+        match (state, chr) with
+        | `Char, '\\' -> `Backslash
+        | `Char, _ ->
+            Buffer.add_char buf chr;
+            `Char
+        | (`Backslash | `Escaping), _ when Char.Ascii.is_white chr -> `Escaping
+        | (`Backslash | `Escaping), _ ->
+            Buffer.add_char buf chr;
+            `Char)
+      `Char link
   in
   let () =
     match last_state with
