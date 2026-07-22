@@ -167,6 +167,8 @@ type token_that_always_begins_an_inline_element =
   | `Begin_link_with_replacement_text of string
   | `Math_span of string ]
 
+(** When a backslash is followed by space, remove both the backslash and the
+    space. *)
 let escape_link link =
   let link = String.trim link in
   let buf = Buffer.create (String.length link) in
