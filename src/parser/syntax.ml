@@ -170,6 +170,10 @@ type token_that_always_begins_an_inline_element =
 let escape_link link =
   let link = String.trim link in
   let buf = Buffer.create (String.length link) in
+  let add_backslash = function
+    | `Backslash -> Buffer.add_char buf '\\'
+    | `Escaping | `Char -> ()
+  in
   let last_state =
     String.fold_left
       (fun state chr ->
@@ -179,16 +183,13 @@ let escape_link link =
             Buffer.add_char buf chr;
             `Char
         | (`Backslash | `Escaping), _ when Char.Ascii.is_white chr -> `Escaping
-        | (`Backslash | `Escaping), _ ->
+        | ((`Backslash | `Escaping) as state), _ ->
+            add_backslash state;
             Buffer.add_char buf chr;
             `Char)
       `Char link
   in
-  let () =
-    match last_state with
-    | `Backslash -> Buffer.add_char buf '\\'
-    | `Escaping | `Char -> ()
-  in
+  add_backslash last_state;
   Buffer.contents buf
 
 (* Check that the token constructors above actually are all in [Token.t]. *)
