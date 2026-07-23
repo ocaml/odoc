@@ -14337,7 +14337,8 @@
    Oxcaml_impl-Include_functor_not_last.html.gen
    Oxcaml_impl-Include_functor_not_last-Make.html.gen
    Oxcaml_impl-Include_functor_not_last-Make-argument-1-T.html.gen
-   Oxcaml_impl-Anonymous_functor.html.gen)
+   Oxcaml_impl-Anonymous_functor.html.gen
+   Oxcaml_impl-Shadowing_source.html.gen)
   (package odoc)
   (action
    (run
@@ -14520,6 +14521,14 @@
    (diff
     Oxcaml_impl-Anonymous_functor.html
     Oxcaml_impl-Anonymous_functor.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Shadowing_source.html
+    Oxcaml_impl-Shadowing_source.html.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -14597,7 +14606,8 @@
    Oxcaml_impl.Multiple_include_functors.Second.3o.gen
    Oxcaml_impl.Include_functor_not_last.3o.gen
    Oxcaml_impl.Include_functor_not_last.Make.3o.gen
-   Oxcaml_impl.Anonymous_functor.3o.gen)
+   Oxcaml_impl.Anonymous_functor.3o.gen
+   Oxcaml_impl.Shadowing_source.3o.gen)
   (package odoc)
   (action
    (run
@@ -14726,6 +14736,12 @@
    (diff
     Oxcaml_impl.Anonymous_functor.3o
     Oxcaml_impl.Anonymous_functor.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_impl.Shadowing_source.3o Oxcaml_impl.Shadowing_source.3o.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -14770,7 +14786,8 @@
    Oxcaml_impl-Include_functor_not_last.md.gen
    Oxcaml_impl-Include_functor_not_last-Make.md.gen
    Oxcaml_impl-Include_functor_not_last-Make-argument-1-T.md.gen
-   Oxcaml_impl-Anonymous_functor.md.gen)
+   Oxcaml_impl-Anonymous_functor.md.gen
+   Oxcaml_impl-Shadowing_source.md.gen)
   (package odoc)
   (action
    (run
@@ -14947,6 +14964,12 @@
    (diff
     Oxcaml_impl-Anonymous_functor.md
     Oxcaml_impl-Anonymous_functor.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_impl-Shadowing_source.md Oxcaml_impl-Shadowing_source.md.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir

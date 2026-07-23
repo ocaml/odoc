@@ -92,3 +92,9 @@ module Include_functor_not_last : sig ... end
 ```ocaml
 module Anonymous_functor : sig ... end
 ```
+```ocaml
+type t_abbrev : my_abbrev mod immutable
+```
+```ocaml
+module Shadowing_source : sig ... end
+```
