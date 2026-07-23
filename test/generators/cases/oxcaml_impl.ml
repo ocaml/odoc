@@ -125,6 +125,19 @@ module Anonymous_functor = struct
   include functor (functor (T : sig type t end) -> struct type included = T.t end)
 end
 
+module Include_functor_kind = struct
+(** A kind abbreviation reaching the functor through its argument. [T.k] is
+    rendered as plain text: kind annotations hold references, which are not
+    substituted when the functor is applied. *)
+  module Make (T : sig kind_ k end) = struct
+    type inherited : T.k
+  end
+
+  kind_ k = value mod portable
+
+  include functor Make
+end
+
 (* A kind abbreviation defined in an implementation. *)
 kind_ my_abbrev = value_or_null mod non_null global
 

@@ -140,6 +140,7 @@ let prefix_substitution path sg =
     | Exception _ :: rest
     | TypExt _ :: rest
     | Value (_, _) :: rest
+    | KindAbbreviation _ :: rest
     | Comment _ :: rest ->
         get_sub sub' rest
     | Class (id, _, _) :: rest ->
@@ -204,7 +205,8 @@ let prefix_signature (path, sg) =
             ClassType (Ident.Rename.type_ id, r, Subst.class_type sub c)
         | Include i -> Include (Subst.include_ sub i)
         | Open o -> Open (Subst.open_ sub o)
-        | Comment c -> Comment c)
+        | Comment c -> Comment c
+        | KindAbbreviation _ as item -> item)
       sg.items
   in
   { sg with items }

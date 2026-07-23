@@ -138,6 +138,7 @@ let kind_dir = "dir"
 let kind_impl = "impl"
 
 let kind_typedecl = "type"
+let kind_kind_abbreviation = "kind"
 
 let kind_module = "mod"
 
@@ -170,6 +171,7 @@ let string_of_kind =
   | UnboxedField _ -> kind_unboxed_field
   | ExtensionConstructor _ -> kind_extension_constructor
   | TypeDecl _ -> kind_typedecl
+  | KindAbbreviation -> kind_kind_abbreviation
   | Module _ -> kind_module
   | Value _ -> kind_value
   | Exception _ -> kind_exception
@@ -194,6 +196,7 @@ let of_strings ~kind ~prefix_name ~name ~rhs ~typedecl_params ~doc =
 let rhs_of_kind (entry : Entry.kind) =
   match entry with
   | TypeDecl td -> typedecl_rhs td
+  | KindAbbreviation -> None
   | Value t -> Some (value_rhs t)
   | Constructor t | ExtensionConstructor t | Exception t ->
       Some (constructor_rhs t)
