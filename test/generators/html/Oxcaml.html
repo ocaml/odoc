@@ -403,6 +403,245 @@
      </p>
     </div>
    </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-comparator">
+     <a href="#type-comparator" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> 
+       <span>('k, 'cmp) comparator</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Helper used in the <code>with</code> constraints below.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_with_constr">
+     <a href="#type-t_with_constr" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> 
+       <span>('k, 'v, 'cmp)
+                             t_with_constr</span>
+        : 
+       <span>(
+        <span>(immutable_data <span class="keyword">with</span> 
+         <span class="type-var">'k</span>)
+        </span> <span class="keyword">with</span> 
+        <span class="type-var">'v</span>)
+       </span> <span class="keyword">with</span> 
+       <span>
+        <span>(<span class="type-var">'k</span>, 
+         <span class="type-var">'cmp</span>)
+        </span> comparator
+       </span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A <code>with</code> constraint whose right-hand side is a 
+      parameterized type constructor (as found in <code>base</code>'s
+       <code>Map</code> module).
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_with_app">
+     <a href="#type-t_with_app" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> <span>'a t_with_app</span>
+        : immutable_data <span class="keyword">with</span> 
+       <span><span class="type-var">'a</span> list</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A <code>with</code> constraint whose right-hand side applies 
+      a type constructor.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_with_arrow">
+     <a href="#type-t_with_arrow" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> <span>'a t_with_arrow</span>
+        : immutable_data <span class="keyword">with</span> 
+       <span><span class="type-var">'a</span> 
+        <span class="arrow">&#45;&gt;</span>
+       </span> <span class="type-var">'a</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A <code>with</code> constraint whose right-hand side is an arrow
+       type.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_with_arrow_modes">
+     <a href="#type-t_with_arrow_modes" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> 
+       <span>'a t_with_arrow_modes</span> : immutable_data 
+       <span class="keyword">with</span> 
+       <span><span class="type-var">'a</span> 
+        <span class="arrow">&#45;&gt;</span>
+       </span> <span class="type-var">'a</span> @ local
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A <code>with</code> constraint whose right-hand side is an arrow
+       type carrying a mode.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_with_tuple">
+     <a href="#type-t_with_tuple" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> <span>'a t_with_tuple</span>
+        : immutable_data <span class="keyword">with</span> 
+       <span class="type-var">'a</span> * int
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A <code>with</code> constraint whose right-hand side is a tuple type.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-M_with">
+     <a href="#module-M_with" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-M_with.html">M_with</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Helper module used in the <code>with</code> constraint below.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_with_dot">
+     <a href="#type-t_with_dot" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> <span>'a t_with_dot</span>
+        : immutable_data <span class="keyword">with</span> 
+       <span><span class="type-var">'a</span> 
+        <span class="xref-unresolved">M_with</span>.t
+       </span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A <code>with</code> constraint referring to a type through a 
+      module path (<code>M.t</code>).
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module-type anchored" id="module-type-Arg_with">
+     <a href="#module-type-Arg_with" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <span class="keyword">type</span> 
+       <a href="Oxcaml-module-type-Arg_with.html">Arg_with</a>
+      </span>
+      <span> = <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-F_with">
+     <a href="#module-F_with" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-F_with.html">F_with</a>
+      </span>
+      <span> (<a href="Oxcaml-F_with-argument-1-X.html">X</a> : 
+       <a href="Oxcaml-module-type-Arg_with.html">Arg_with</a>) : 
+       <span class="keyword">sig</span> ... <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Helper functor used in the <code>with</code> constraint below.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-X_with">
+     <a href="#module-X_with" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-X_with.html">X_with</a>
+      </span>
+      <span> : <a href="Oxcaml-module-type-Arg_with.html">Arg_with</a></span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_with_functor">
+     <a href="#type-t_with_functor" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> <span>'a t_with_functor</span>
+        : immutable_data <span class="keyword">with</span> 
+       <span><span class="type-var">'a</span> 
+        <span class="xref-unresolved">F_with</span>(
+        <span class="xref-unresolved">X_with</span>).t
+       </span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A <code>with</code> constraint referring to a type through a 
+      functor application (<code>F(X).t</code>).
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_with_variant">
+     <a href="#type-t_with_variant" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> <span>'a t_with_variant</span>
+        : immutable_data <span class="keyword">with</span> 
+       <span>[ <span>`Foo of <span class="type-var">'a</span></span> 
+        <span>| `Bar</span> ]
+       </span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A <code>with</code> constraint whose right-hand side is a polymorphic
+       variant.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_with_object">
+     <a href="#type-t_with_object" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> <span>'a t_with_object</span>
+        : immutable_data <span class="keyword">with</span> 
+       <span>&lt; foo : <span class="type-var">'a</span> &gt;</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A <code>with</code> constraint whose right-hand side is an object
+       type.
+     </p>
+    </div>
+   </div>
    <h2 id="kind-annotations-on-type-aliases">
     <a href="#kind-annotations-on-type-aliases" class="anchor"></a>Kind
      annotations on type aliases

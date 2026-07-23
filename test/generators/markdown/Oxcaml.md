@@ -155,6 +155,73 @@ type 'a t_with_modalities : immutable_data with 'a @@ portable contended
 ```
 Kind annotation with a `with` constraint and modalities.
 
+```ocaml
+type ('k, 'cmp) comparator
+```
+Helper used in the `with` constraints below.
+
+```ocaml
+type ('k, 'v, 'cmp)
+  t_with_constr : ((immutable_data with 'k) with 'v) with ('k, 'cmp) comparator
+```
+A `with` constraint whose right-hand side is a parameterized type constructor (as found in `base`'s `Map` module).
+
+```ocaml
+type 'a t_with_app : immutable_data with 'a list
+```
+A `with` constraint whose right-hand side applies a type constructor.
+
+```ocaml
+type 'a t_with_arrow : immutable_data with 'a -> 'a
+```
+A `with` constraint whose right-hand side is an arrow type.
+
+```ocaml
+type 'a t_with_arrow_modes : immutable_data with 'a -> 'a @ local
+```
+A `with` constraint whose right-hand side is an arrow type carrying a mode.
+
+```ocaml
+type 'a t_with_tuple : immutable_data with 'a * int
+```
+A `with` constraint whose right-hand side is a tuple type.
+
+```ocaml
+module M_with : sig ... end
+```
+Helper module used in the `with` constraint below.
+
+```ocaml
+type 'a t_with_dot : immutable_data with 'a M_with.t
+```
+A `with` constraint referring to a type through a module path (`M.t`).
+
+```ocaml
+module type Arg_with = sig ... end
+```
+```ocaml
+module F_with (X : Arg_with) : sig ... end
+```
+Helper functor used in the `with` constraint below.
+
+```ocaml
+module X_with : Arg_with
+```
+```ocaml
+type 'a t_with_functor : immutable_data with 'a F_with(X_with).t
+```
+A `with` constraint referring to a type through a functor application (`F(X).t`).
+
+```ocaml
+type 'a t_with_variant : immutable_data with [ `Foo of 'a | `Bar ]
+```
+A `with` constraint whose right-hand side is a polymorphic variant.
+
+```ocaml
+type 'a t_with_object : immutable_data with < foo : 'a >
+```
+A `with` constraint whose right-hand side is an object type.
+
 
 ## Kind annotations on type aliases
 
