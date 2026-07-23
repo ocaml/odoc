@@ -160,6 +160,10 @@ aliases, functors and first-class module arguments referring to the parameter:
   >   let min a b = if O.compare a b <= 0 then a else b
   > end
   > 
+  > module type S = sig type q end
+  > 
+  > module Inner = struct type i = int let v = 0 end
+  > 
   > let pick (type a) (module O : A_param.ORDER with type o = a) (x : a) (y : a) =
   >   if O.compare x y <= 0 then x else y
   > EOF
@@ -185,6 +189,14 @@ using [Both_ab]'s [B_param]):
   > let demo_a1 : Only_a1.wrapped = Only_a1.default 1
   > 
   > let demo_a_of_b : Only_a_of_b.wrapped = Only_a_of_b.default 2
+  > 
+  > module Nested = Only_a1.Inner
+  > 
+  > let nested : Only_a1.Inner.i = 0
+  > 
+  > module type Sig = Only_a1.S
+  > 
+  > let packed : (module Only_a1.S) option = None
   > EOF
 
 [Final] depends on the full instantiations [Both_ab(A1)(B1)] and
@@ -210,20 +222,20 @@ Everything builds and odoc generates documentation for all the libraries:
 
 Render to markdown for inspection:
 
-  $ for f in $(find _build/default/_doc/_odocls -name '*.odocl' | sort); do
+  $ for f in $(find _build -name '*.odocl' | sort); do
   >   odoc markdown-generate "$f" -o markdown 2>&1
   > done
 
 The library names below are suffixed with an opaque hash by dune; we normalise
 it away so the output is stable.
 
-  $ md() { cat markdown/$1@*/$2.md | sed 's/@[0-9a-f]*/@HASH/g'; }
+  $ md() { sed 's/@[0-9a-f]*/@HASH/g' markdown/$1@*/$2.md; }
 
 The library parameters are reported as such:
 
   $ md a_param A_param
   
-  # Module `A_param`
+  # Library parameter `A_param`
   
   The `A_param` library parameter.
   
@@ -249,7 +261,7 @@ The library parameters are reported as such:
   ```
   $ md b_param B_param
   
-  # Module `B_param`
+  # Library parameter `B_param`
   
   The `B_param` library parameter.
   
@@ -276,6 +288,8 @@ parameter documentation:
   
   # Module `A1`
   
+  Implements the library parameter [`A_param`](./../a_param@HASH/A_param.md).
+  
   ```ocaml
   type t = int
   ```
@@ -297,6 +311,8 @@ parameter documentation:
   $ md a2 A2
   
   # Module `A2`
+  
+  Implements the library parameter [`A_param`](./../a_param@HASH/A_param.md).
   
   ```ocaml
   type t = string
@@ -320,6 +336,8 @@ parameter documentation:
   
   # Module `B1`
   
+  Implements the library parameter [`B_param`](./../b_param@HASH/B_param.md).
+  
   ```ocaml
   type u = int
   ```
@@ -338,6 +356,17 @@ parameter documentation:
   $ md a_of_b A_of_b
   
   # Module `A_of_b`
+  
+  Implements the library parameter [`A_param`](./../a_param@HASH/A_param.md).
+  
+  
+  ## Library parameters
+  
+  ```ocaml
+  parameter B_param
+  ```
+  
+  ## Signature
   
   ```ocaml
   type t = B_param.u
@@ -370,6 +399,15 @@ rather than through the internal wrapper modules:
   
   Helpers built on top of the [`A_param`](./../a_param@HASH/A_param.md) parameter.
   
+  
+  ## Library parameters
+  
+  ```ocaml
+  parameter A_param
+  ```
+  
+  ## Signature
+  
   ```ocaml
   type wrapped = {
     value : A_param.t;
@@ -392,11 +430,29 @@ rather than through the internal wrapper modules:
   module Make (O : A_param.ORDER) : sig ... end
   ```
   ```ocaml
+  module type S = sig ... end
+  ```
+  ```ocaml
+  module Inner : sig ... end
+  ```
+  ```ocaml
   val pick : (module A_param.ORDER with type o = 'a) -> 'a -> 'a -> 'a
   ```
   $ md both_ab Both_ab
   
   # Module `Both_ab`
+  
+  
+  ## Library parameters
+  
+  ```ocaml
+  parameter A_param
+  ```
+  ```ocaml
+  parameter B_param
+  ```
+  
+  ## Signature
   
   ```ocaml
   type combined = {
@@ -408,21 +464,53 @@ rather than through the internal wrapper modules:
   val make : int -> combined
   ```
   ```ocaml
-  val demo_a1 : Both_ab__.Only_a1.wrapped
+  val demo_a1 : Only_a[A_param:A1].wrapped
   ```
   ```ocaml
-  val demo_a_of_b : Both_ab__.Only_a_of_b.wrapped
+  val demo_a_of_b : Only_a[A_param:A_of_b].wrapped
+  ```
+  ```ocaml
+  module Nested = Only_a[A_param:A1].Inner
+  ```
+  ```ocaml
+  val nested : Only_a[A_param:A1].Inner.i
+  ```
+  ```ocaml
+  module type Sig = Only_a[A_param:A1].S
+  ```
+  ```ocaml
+  val packed : (module Only_a[A_param:A1].S) option
   ```
   $ md final Final
   
   # Module `Final`
   
   ```ocaml
-  val x : Final__.Both_a1_b1.combined
+  val x : Both_ab[A_param:A1][B_param:B1].combined
   ```
   ```ocaml
-  val y : Final__.Both_a2_b1.combined
+  val y : Both_ab[A_param:A2][B_param:B1].combined
   ```
   ```ocaml
-  val combos : Final__.Both_a1_b1.combined * Final__.Both_a2_b1.combined
+  val combos : 
+    Both_ab[A_param:A1][B_param:B1].combined
+    * Both_ab[A_param:A2][B_param:B1].combined
   ```
+
+The page of a library parameter keeps the url derived from its identifier, so
+the sidebar marks it as the current unit and keeps its children, exactly like a
+plain module:
+
+  $ odoc compile-index --root _build/default/_doc/_odocls/
+  $ odoc sidebar-generate index.odoc-index
+  $ for lib in a_param a1; do
+  >   odoc html-generate --indent --sidebar sidebar.odoc-sidebar -o html \
+  >     $(find _build -iname "$lib.odocl")
+  > done
+  $ grep -Rl 'current_unit' html/ | sed 's/@[0-9a-f]*/@HASH/g' | sort
+  html/a1@HASH/A1/Sub/index.html
+  html/a1@HASH/A1/index.html
+  html/a1@HASH/A1/module-type-ORDER/index.html
+  html/a_param@HASH/A_param/Sub/index.html
+  html/a_param@HASH/A_param/index.html
+  html/a_param@HASH/A_param/module-type-ORDER/index.html
