@@ -51,52 +51,83 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
         Logs.debug (fun m -> m "Library %s not found" lib_name);
         []
   in
-  let base_args pkg lib_deps : Pkg_args.t =
-    let own_page = dash_p pkg.Packages.name (doc_dir pkg) in
-    let includes =
-      List.concat_map dash_l (Util.StringSet.to_list lib_deps) |> List.map snd
-    in
-    let libs =
-      List.fold_left
-        (fun acc lib -> Util.StringSet.add lib.Packages.lib_name acc)
-        lib_deps pkg.Packages.libraries
-    in
-    let libs = List.concat_map dash_l (Util.StringSet.to_list libs) in
-    Pkg_args.v ~pages:[ own_page ] ~libs ~includes ~odoc_dir ~odocl_dir
+  (* Inverse of [libs_of_pkg]: which package provides a given library. *)
+  let pkg_of_lib =
+    Util.StringMap.fold
+      (fun pkgname libs acc ->
+        List.fold_left
+          (fun acc lib -> Util.StringMap.add lib pkgname acc)
+          acc libs)
+      libs_of_pkg Util.StringMap.empty
   in
-  let args_of_config config : Pkg_args.t =
-    let { Global_config.deps = { packages; libraries } } = config in
-    let pages_rel =
-      List.filter_map
-        (fun pkgname ->
-          match Util.StringMap.find_opt pkgname pkg_paths with
-          | None ->
-              Logs.debug (fun m -> m "Package '%s' not found" pkgname);
-              None
-          | Some path -> Some (dash_p pkgname path))
-        packages
-    in
-    (* Add all liraries from added packages *)
-    let libraries_from_pkgs =
-      List.filter_map
-        (fun pkgname -> Util.StringMap.find_opt pkgname libs_of_pkg)
-        packages
-    in
-    let libraries = List.concat @@ (libraries :: libraries_from_pkgs) in
-    let libs_rel = List.concat_map dash_l libraries in
-    Pkg_args.v ~pages:pages_rel ~libs:libs_rel ~includes:[] ~odoc_dir ~odocl_dir
-  in
-  let args_of =
+
+  (* Link arguments ([-L]/[-P]) are computed per package, so every unit in
+     a package gets the same set. [-L] is the directly-declared library
+     dependencies of all the package's libraries (which therefore includes the
+     package's own libraries), plus any libraries named in [odoc-config.sexp]
+     (directly, or via a named package). We do not take the transitive closure:
+     dependencies the META files omit are recovered earlier by digest
+     ([Packages.fix_missing_deps]). [-P] is every package that provides one of
+     those libraries, plus the package itself and any package named in
+     [odoc-config.sexp]. [-I] is computed per unit instead (see
+     [Compile.includes_of_deps] / [Compile.unit_includes]). *)
+  let link_args_of =
     let cache = Hashtbl.create 10 in
-    fun pkg lib_deps : Pkg_args.t ->
-      match Hashtbl.find_opt cache (pkg, lib_deps) with
+    fun pkg _lib_deps : Pkg_args.t ->
+      match Hashtbl.find_opt cache pkg.Packages.name with
       | Some res -> res
       | None ->
-          let result =
-            Pkg_args.combine (base_args pkg lib_deps)
-              (args_of_config pkg.Packages.config)
+          let {
+            Global_config.deps = { packages = cfg_pkgs; libraries = cfg_libs };
+          } =
+            pkg.Packages.config
           in
-          Hashtbl.add cache (pkg, lib_deps) result;
+          let libs_from_pkg =
+            List.fold_left
+              (fun acc (lib : Packages.libty) ->
+                Util.StringSet.add lib.lib_name
+                  (Util.StringSet.union lib.lib_deps acc))
+              Util.StringSet.empty pkg.Packages.libraries
+          in
+          let libs_of_cfg_pkgs =
+            List.fold_left
+              (fun acc pkgname ->
+                match Util.StringMap.find_opt pkgname libs_of_pkg with
+                | Some libs ->
+                    List.fold_left
+                      (fun acc l -> Util.StringSet.add l acc)
+                      acc libs
+                | None -> acc)
+              Util.StringSet.empty cfg_pkgs
+          in
+          let lib_set =
+            Util.StringSet.union libs_from_pkg
+              (Util.StringSet.union
+                 (Util.StringSet.of_list cfg_libs)
+                 libs_of_cfg_pkgs)
+          in
+          let libs = List.concat_map dash_l (Util.StringSet.to_list lib_set) in
+          let pkg_set =
+            Util.StringSet.fold
+              (fun libname acc ->
+                match Util.StringMap.find_opt libname pkg_of_lib with
+                | Some p -> Util.StringSet.add p acc
+                | None -> acc)
+              lib_set
+              (Util.StringSet.add pkg.Packages.name
+                 (Util.StringSet.of_list cfg_pkgs))
+          in
+          let pages =
+            Util.StringSet.to_list pkg_set
+            |> List.filter_map (fun pkgname ->
+                   match Util.StringMap.find_opt pkgname pkg_paths with
+                   | Some path -> Some (dash_p pkgname path)
+                   | None -> None)
+          in
+          let result =
+            Pkg_args.v ~pages ~libs ~includes:[] ~odoc_dir ~odocl_dir
+          in
+          Hashtbl.add cache pkg.Packages.name result;
           result
   in
 
@@ -117,13 +148,13 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     }
   in
 
-  let make_unit ~name ~kind ~rel_dir ~input_file ~pkg ~lib_deps ~enable_warnings
-      ~to_output ~stash_input : _ t =
+  let make_unit ~name ~kind ~rel_dir ~input_file ~pkg ~lib_name ~deps
+      ~lib_deps ~enable_warnings ~to_output ~stash_input : _ t =
     let to_output = to_output || not remap in
     (* If we haven't got active remapping, we output everything *)
     let ( // ) = Fpath.( // ) in
     let ( / ) = Fpath.( / ) in
-    let pkg_args = args_of pkg lib_deps in
+    let pkg_args = link_args_of pkg lib_deps in
     let parent_id = rel_dir |> Odoc.Id.of_fpath in
     let odoc_file =
       odoc_dir // rel_dir / (String.uncapitalize_ascii name ^ ".odoc")
@@ -141,6 +172,9 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
       output_dir = odoc_dir;
       pkgname = Some pkg.Packages.name;
       pkg_args;
+      lib_name;
+      deps;
+      lib_deps;
       parent_id;
       input_file;
       input_copy;
@@ -156,15 +190,13 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
   let of_intf hidden pkg (lib : Packages.libty) lib_deps (intf : Packages.intf)
       : intf t =
     let rel_dir = lib_dir pkg lib in
-    let kind =
-      let deps = intf.mif_deps in
-      let kind = `Intf { hidden; hash = intf.mif_hash; deps } in
-      kind
-    in
+    let kind = `Intf { hidden; hash = intf.mif_hash } in
     let name = intf.mif_path |> Fpath.rem_ext |> Fpath.basename in
     let stash_input = lib.archive_name = None in
-    make_unit ~name ~kind ~rel_dir ~input_file:intf.mif_path ~pkg ~lib_deps
-      ~enable_warnings:pkg.selected ~to_output:pkg.selected ~stash_input
+    make_unit ~name ~kind ~rel_dir
+      ~input_file:intf.mif_path ~pkg ~lib_name:lib.lib_name ~deps:intf.mif_deps
+      ~lib_deps ~enable_warnings:pkg.selected ~to_output:pkg.selected
+      ~stash_input
   in
   let of_impl pkg lib lib_deps (impl : Packages.impl) : impl t option =
     match impl.mip_src_info with
@@ -183,9 +215,10 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
           |> String.uncapitalize_ascii |> ( ^ ) "impl-"
         in
         let unit =
-          make_unit ~name ~kind ~rel_dir ~input_file:impl.mip_path ~pkg
-            ~lib_deps ~enable_warnings:false ~to_output:pkg.selected
-            ~stash_input:false
+          make_unit ~name ~kind ~rel_dir
+            ~input_file:impl.mip_path ~pkg ~lib_name:lib.lib_name
+            ~deps:impl.mip_deps ~lib_deps ~enable_warnings:false
+            ~to_output:pkg.selected ~stash_input:false
         in
         Some unit
   in
@@ -219,7 +252,8 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
       |> Util.StringSet.of_list
     in
     let unit =
-      make_unit ~name ~kind ~rel_dir ~input_file:mld_path ~pkg ~lib_deps
+      make_unit ~name ~kind ~rel_dir
+        ~input_file:mld_path ~pkg ~lib_name:"" ~deps:[] ~lib_deps
         ~enable_warnings:pkg.selected ~to_output:pkg.selected ~stash_input:false
     in
     [ unit ]
@@ -239,7 +273,8 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
         in
         let lib_deps = Util.StringSet.empty in
         let unit =
-          make_unit ~name ~kind ~rel_dir ~input_file:md_path ~pkg ~lib_deps
+          make_unit ~name ~kind ~rel_dir
+            ~input_file:md_path ~pkg ~lib_name:"" ~deps:[] ~lib_deps
             ~enable_warnings:pkg.selected ~to_output:pkg.selected
             ~stash_input:false
         in
@@ -258,7 +293,8 @@ let packages ~dirs ~extra_paths ~remap ~indices_style (pkgs : Packages.t list) :
     let kind = `Asset in
     let unit =
       let name = asset_path |> Fpath.basename |> ( ^ ) "asset-" in
-      make_unit ~name ~kind ~rel_dir ~input_file:asset_path ~pkg
+      make_unit ~name ~kind ~rel_dir
+        ~input_file:asset_path ~pkg ~lib_name:"" ~deps:[]
         ~lib_deps:Util.StringSet.empty ~enable_warnings:false ~to_output:true
         ~stash_input:false
     in

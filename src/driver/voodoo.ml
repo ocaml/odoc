@@ -104,34 +104,11 @@ let of_voodoo pkg =
       (Util.StringMap.empty, []) metas
   in
 
-  (* Transitively close [all_lib_deps] over itself so each lib's deps
-     reflect every lib reachable through META requires. *)
-  let all_lib_deps =
-    let cache : (string, Util.StringSet.t) Hashtbl.t =
-      Hashtbl.create (Util.StringMap.cardinal all_lib_deps)
-    in
-    let rec close lib =
-      match Hashtbl.find_opt cache lib with
-      | Some r -> r
-      | None ->
-          Hashtbl.add cache lib Util.StringSet.empty;
-          let direct =
-            match Util.StringMap.find_opt lib all_lib_deps with
-            | Some s -> s
-            | None -> Util.StringSet.empty
-          in
-          let closed =
-            Util.StringSet.fold
-              (fun dep acc ->
-                Util.StringSet.union (Util.StringSet.add dep (close dep)) acc)
-              direct Util.StringSet.empty
-          in
-          Hashtbl.replace cache lib closed;
-          closed
-    in
-    Util.StringMap.mapi (fun lib _ -> close lib) all_lib_deps
-  in
-
+  (* [all_lib_deps] holds only the directly-declared META dependencies of each
+     library. We deliberately do not take the transitive closure here: missing
+     dependencies are instead recovered by digest (see
+     [Packages.fix_missing_deps_with] wired into the voodoo driver), which is
+     both more precise and able to reach libraries the META files omit. *)
   let ss_pp fmt ss = Format.fprintf fmt "[%d]" (Util.StringSet.cardinal ss) in
   Logs.debug (fun m ->
       m "all_lib_deps: %a\n%!"

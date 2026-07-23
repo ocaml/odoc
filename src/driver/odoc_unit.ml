@@ -1,3 +1,5 @@
+(* Arguments for the link step ([-L] / [-P] / [-I]); not used by compile, which
+   derives its includes per module (see [Compile.includes_of_deps]). *)
 module Pkg_args = struct
   type t = {
     odoc_dir : Fpath.t;
@@ -83,18 +85,25 @@ type 'a t = {
   odocl_file : Fpath.t;
   pkg_args : Pkg_args.t;
   pkgname : string option;
+  lib_name : string;
+      (* The library this unit belongs to (empty for pages and assets, which
+         aren't part of a library). *)
+  deps : (string * Digest.t) list;
+      (* The unit's per-module dependencies (interface deps for [`Intf], the
+         implementation's for [`Impl]; empty otherwise). *)
+  lib_deps : Util.StringSet.t;
+      (* The unit's own library plus that library's dependencies. Used by
+         [Compile.includes_of_deps] to pick the right provider when a dependency
+         hash is offered by more than one unit (e.g. virtual-library
+         implementations). Not the link-step arguments — those live in
+         [pkg_args]. *)
   index : index option;
   enable_warnings : bool;
   to_output : bool;
   kind : 'a;
 }
 
-type intf_extra = {
-  hidden : bool;
-  hash : string;
-  deps : (string * Digest.t) list;
-}
-
+type intf_extra = { hidden : bool; hash : string }
 and intf = [ `Intf of intf_extra ]
 
 type impl_extra = { src_id : Odoc.Id.t; src_path : Fpath.t }
@@ -117,9 +126,7 @@ let rec pp_kind : all_kinds Fmt.t =
   | `Asset -> Format.fprintf fmt "`Asset"
 
 and pp_intf_extra fmt x =
-  Format.fprintf fmt "@[<hov>hidden: %b@;hash: %s@;deps: [%a]@]" x.hidden x.hash
-    Fmt.Dump.(list (pair string string))
-    x.deps
+  Format.fprintf fmt "@[<hov>hidden: %b@;hash: %s@]" x.hidden x.hash
 
 and pp_impl_extra fmt x =
   Format.fprintf fmt "@[<hov>src_id: %s@;src_path: %a@]"
@@ -136,12 +143,20 @@ and pp : all_kinds t Fmt.t =
      odocl_file: %a@;\
      pkg_args: %a@;\
      pkgname: %a@;\
+     lib_name: %s@;\
+     deps: [%a]@;\
+     lib_deps: [%a]@;\
      index: %a@;\
      kind:%a@;\
      @]"
     (Odoc.Id.to_string x.parent_id)
     Fpath.pp x.input_file Fpath.pp x.output_dir Fpath.pp x.odoc_file Fpath.pp
     x.odocl_file Pkg_args.pp x.pkg_args (Fmt.option Fmt.string) x.pkgname
+    x.lib_name
+    Fmt.Dump.(list (pair string string))
+    x.deps
+    Fmt.Dump.(list string)
+    (Util.StringSet.elements x.lib_deps)
     (Fmt.option pp_index) x.index pp_kind
     (x.kind :> all_kinds)
 

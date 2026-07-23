@@ -6,6 +6,49 @@
   $ odoc compile --output-dir _odoc/ --parent-id pkg index.mld
   $ odoc compile --output-dir _odoc/ --parent-id pkg/libname unit.cmt
 
+Passing -o overrides the output path computed from --parent-id and
+--output-dir. The parent id is still used for the identifier:
+
+  $ odoc compile --output-dir _odoc/ --parent-id pkg -o custom/page-renamed.odoc file.mld
+  $ ls custom
+  page-renamed.odoc
+  $ odoc_print custom/page-renamed.odoc | jq ".name"
+  {
+    "`LeafPage": [
+      {
+        "Some": {
+          "`Page": [
+            "None",
+            "pkg"
+          ]
+        }
+      },
+      "renamed"
+    ]
+  }
+
+--output-dir is not required when -o is passed:
+
+  $ odoc compile --parent-id pkg/libname -o custom/unit.odoc unit.cmt
+  $ ls custom
+  page-renamed.odoc
+  unit.odoc
+
+compile-impl also honours -o, writing to the given path instead of the one
+computed from --parent-id and --output-dir:
+
+  $ odoc compile-impl --parent-id pkg/libname --source-id pkg/src/unit.ml -o custom/impl-unit.odoc unit.cmt
+  $ ls custom
+  impl-unit.odoc
+  page-renamed.odoc
+  unit.odoc
+
+Either -o or --output-dir must be passed with --parent-id:
+
+  $ odoc compile --parent-id pkg file.mld
+  --output-dir or -o is required when passing --parent-id.
+  [2]
+
   $ odoc link _odoc/pkg/page-file.odoc 2>&1 >/dev/null | grep 'Failure'
   [1]
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/page-file.odoc

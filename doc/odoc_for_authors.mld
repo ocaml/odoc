@@ -658,9 +658,38 @@ inline [open] statements do {e not} bring other elements into scope.
 In order for [odoc] to resolve links to other compilation units or [.mld] pages,
 the referenced
 unit or page must be {e compiled} and available to [odoc]. That is, when performing the
-[odoc link] command, one of the include paths passed via the command-line argument
-[-I] must contain the relevant [.odoc] file. This is normally the responsibility of
-the {{!page-driver}driver}.
+[odoc link] command, the referenced [.odoc] file must be reachable through one of
+the library ([-L]), package ([-P]) or include ([-I]) arguments. Deciding which
+units to make available is the responsibility of the {{!page-driver}driver}, and
+this is what determines the set of things you can actually reference.
+
+{4:reference_scope What is in scope}
+
+The reference driver computes this scope {e per package}: every library and
+every page in a package shares the same set of visible units. Other drivers
+should aim for equivalent behaviour. For a package [P], the following are in scope.
+
+You may reference the modules of (and the types, values, etc. within):
+
+{ul
+{- every library in [P] itself;}
+{- the {e direct} dependencies of those libraries — the libraries listed in each
+   library's [META] [requires] field;}
+{- the OCaml standard library;}
+{- any library named in the package's {{!section-"config-file"}[odoc-config.sexp]},
+   whether listed there directly or belonging to a package listed there.}}
+
+You may reference the {e pages} of:
+
+{ul
+{- [P] itself;}
+{- every package that provides one of the in-scope libraries above;}
+{- any package named in [odoc-config.sexp].}}
+
+We make no effort to ensure {e transitive} dependencies are in scope for
+references. Should you need to refer to elements in a transitive dependency,
+add it to the explicit dependencies in the META file, or to
+{{!section-"config-file"}[odoc-config.sexp]}.
 
 {2:tags Tags}
 

@@ -239,32 +239,45 @@ end = struct
     let output = output_file ~dst ~input in
     let cli_spec =
       let error message = Error (`Cli_error message) in
-      match
-        (parent_name_opt, package_opt, parent_id_opt, children, output_dir)
-      with
-      | Some _, None, None, _, None ->
-          Ok (Compile.CliParent { parent = parent_name_opt; children; output })
-      | None, Some p, None, [], None ->
-          Ok (Compile.CliPackage { package = p; output })
-      | None, None, Some p, [], Some output_dir ->
-          Ok (Compile.CliParentId { parent_id = p; output_dir })
-      | None, None, None, _ :: _, None ->
-          Ok (Compile.CliParent { parent = None; output; children })
-      | None, None, None, [], None -> Ok (Compile.CliNoParent output)
-      | Some _, Some _, _, _, _ ->
+      let no_output_dir =
+        match output_dir with
+        | None -> Ok ()
+        | Some _ -> error "--output-dir can only be passed with --parent-id."
+      in
+      let no_children flag =
+        match children with
+        | [] -> Ok ()
+        | _ :: _ -> error ("--child cannot be passed with " ^ flag ^ ".")
+      in
+      match (parent_name_opt, package_opt, parent_id_opt) with
+      | Some _, Some _, _ ->
           error "Either --package or --parent should be specified, not both."
-      | _, Some _, Some _, _, _ ->
+      | _, Some _, Some _ ->
           error "Either --package or --parent-id should be specified, not both."
-      | Some _, _, Some _, _, _ ->
+      | Some _, _, Some _ ->
           error "Either --parent or --parent-id should be specified, not both."
-      | _, _, None, _, Some _ ->
-          error "--output-dir can only be passed with --parent-id."
-      | None, Some _, _, _ :: _, _ ->
-          error "--child cannot be passed with --package."
-      | None, _, Some _, _ :: _, _ ->
-          error "--child cannot be passed with --parent-id."
-      | _, _, Some _, _, None ->
-          error "--output-dir is required when passing --parent-id."
+      | (Some _ as parent), None, None ->
+          no_output_dir >>= fun () ->
+          Ok (Compile.CliParent { parent; children; output })
+      | None, Some package, None ->
+          no_output_dir >>= fun () ->
+          no_children "--package" >>= fun () ->
+          Ok (Compile.CliPackage { package; output })
+      | None, None, Some parent_id -> (
+          no_children "--parent-id" >>= fun () ->
+          match (dst, output_dir) with
+          | Some _, _ ->
+              Ok (Compile.CliParentId { parent_id; output = `File output })
+          | None, Some output_dir ->
+              Ok (Compile.CliParentId { parent_id; output = `Dir output_dir })
+          | None, None ->
+              error "--output-dir or -o is required when passing --parent-id.")
+      | None, None, None -> (
+          no_output_dir >>= fun () ->
+          match children with
+          | [] -> Ok (Compile.CliNoParent output)
+          | _ :: _ -> Ok (Compile.CliParent { parent = None; output; children })
+          )
     in
     cli_spec >>= fun cli_spec ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
@@ -281,7 +294,8 @@ end = struct
        absent outputs a $(i,BASE.odoc) file in the same directory as the input \
        file where $(i,BASE) is the basename of the input file. For mld files \
        the \"page-\" prefix will be added if not already present in the input \
-       basename."
+       basename. Takes precedence over the output path computed from \
+       $(b,--parent-id) and $(b,--output-dir)."
     in
     Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
 
@@ -412,6 +426,13 @@ module Compile_impl = struct
       & opt (some string) None
       & info ~docs ~docv:"PATH" ~doc [ "output-dir" ])
 
+  let dst =
+    let doc =
+      "Output file path. Takes precedence over the output path computed from \
+       $(b,--parent-id) and $(b,--output-dir), which is then not required."
+    in
+    Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc [ "o" ])
+
   let output_file output_dir parent_id input =
     let name =
       Fs.File.basename input |> Fpath.set_ext "odoc" |> Fs.File.to_string
@@ -425,16 +446,20 @@ module Compile_impl = struct
       ~name
 
   let compile_impl directories output_dir parent_id source_id input
-      warnings_options =
+      warnings_options dst =
     let input = Fs.File.of_string input in
-    let output_dir =
-      match output_dir with Some x -> Fpath.v x | None -> Fpath.v "."
-    in
     let output =
-      output_file output_dir
-        (match parent_id with Some x -> Fpath.v x | None -> Fpath.v ".")
-        input
+      match dst with
+      | Some dst -> Fs.File.of_string dst
+      | None ->
+          let output_dir =
+            match output_dir with Some x -> Fpath.v x | None -> Fpath.v "."
+          in
+          output_file output_dir
+            (match parent_id with Some x -> Fpath.v x | None -> Fpath.v ".")
+            input
     in
+    Fs.Directory.mkdir_p (Fs.File.dirname output);
     let resolver =
       Resolver.create ~important_digests:true ~directories ~open_modules:[]
         ~roots:None
@@ -464,7 +489,7 @@ module Compile_impl = struct
     Term.(
       const handle_error
       $ (const compile_impl $ odoc_file_directories $ output_dir $ parent_id
-       $ source_id $ input $ warnings_options))
+       $ source_id $ input $ warnings_options $ dst))
 
   let info ~docs =
     let doc =

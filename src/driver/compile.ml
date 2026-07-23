@@ -97,25 +97,122 @@ let find_partials odoc_dir :
   | Ok h -> (h, tbl)
   | Error _ -> (* odoc_dir doesn't exist...? *) (Util.StringMap.empty, tbl)
 
-let compile ?partial ~partial_dir (all : Odoc_unit.any list) =
+(* Build a [digest -> library name(s)] map from the partials written by earlier
+   [compile] runs under [odoc_dir]. Each partial is keyed by interface hash and
+   its units carry their [lib_name], so this reconstructs the same information
+   [Packages.lib_name_by_hash] gives for in-memory packages — but for
+   already-compiled dependencies, as needed in voodoo mode. *)
+let lib_name_by_hash_of_partials odoc_dir : string list Util.StringMap.t =
+  let result =
+    OS.Dir.fold_contents ~dotfiles:false ~elements:`Dirs
+      (fun p acc ->
+        let index_m = Fpath.( / ) p odoc_partial_filename in
+        match OS.File.exists index_m with
+        | Ok true ->
+            Util.StringMap.fold
+              (fun h units acc ->
+                List.fold_left
+                  (fun acc u ->
+                    let lib_name = u.Odoc_unit.lib_name in
+                    Util.StringMap.update h
+                      (function
+                        | None -> Some [ lib_name ]
+                        | Some l -> Some (lib_name :: l))
+                      acc)
+                  acc units)
+              (unmarshal index_m) acc
+        | _ -> acc)
+      Util.StringMap.empty odoc_dir
+  in
+  match result with Ok m -> m | Error _ -> Util.StringMap.empty
+
+(* Include set for compiling a unit: the directories that provide the modules
+   it actually depends on. Each dependency carries the interface hash of the
+   module it refers to, so we look that hash up in [all_hashes] (this run's
+   units plus the partials of already-compiled dependencies) and add the
+   directory of a providing unit. This is more precise than including whole
+   libraries and doesn't depend on the META files declaring every
+   transitively-needed library.
+
+   A single hash can be offered by more than one unit — the interface of a
+   virtual library and each of its implementations all share it, for instance.
+   When that happens we prefer a provider whose library is in [prefer] (the
+   unit's own library plus that library's dependencies), so a unit resolves
+   its actual dependency rather than an unrelated sibling implementation. If
+   none of the providers is a dependency we pick an arbitrary one; sharing the
+   interface hash, they are interchangeable for compilation anyway. *)
+let includes_of_deps ~all_hashes ~prefer deps =
+  List.fold_left
+    (fun acc (_name, dep_hash) ->
+      match Util.StringMap.find_opt dep_hash all_hashes with
+      | None | Some [] -> acc
+      | Some units ->
+          let chosen =
+            match
+              List.find_opt
+                (fun u -> Util.StringSet.mem u.Odoc_unit.lib_name prefer)
+                units
+            with
+            | Some u -> u
+            | None -> List.hd units
+          in
+          Fpath.Set.add (Fpath.parent chosen.Odoc_unit.odoc_file) acc)
+    Fpath.Set.empty deps
+
+(* PROTOTYPE: per-library -I. Every unit of a library shares one include set --
+   the union of its units' dependency cones (see [includes_of_deps]) -- rather
+   than each unit getting its own. Keyed by library name; pages/assets/md
+   contribute nothing and get an empty set. *)
+let library_includes ~all_hashes all : (string, Fpath.Set.t) Hashtbl.t =
+  let tbl = Hashtbl.create 16 in
+  List.iter
+    (fun (u : Odoc_unit.any) ->
+      match u.Odoc_unit.kind with
+      | `Intf _ | `Impl _ ->
+          let prev =
+            Option.value ~default:Fpath.Set.empty
+              (Hashtbl.find_opt tbl u.Odoc_unit.lib_name)
+          in
+          let inc =
+            includes_of_deps ~all_hashes ~prefer:u.Odoc_unit.lib_deps
+              u.Odoc_unit.deps
+          in
+          Hashtbl.replace tbl u.Odoc_unit.lib_name (Fpath.Set.union prev inc)
+      | `Mld | `Asset | `Md -> ())
+    all;
+  tbl
+
+let unit_includes ~lib_includes (unit : Odoc_unit.any) : Fpath.Set.t =
+  match unit.Odoc_unit.kind with
+  | `Intf _ | `Impl _ ->
+      Option.value ~default:Fpath.Set.empty
+        (Hashtbl.find_opt lib_includes unit.Odoc_unit.lib_name)
+  | `Mld | `Asset | `Md -> Fpath.Set.empty
+
+let build_all_hashes ?partial ~partial_dir all =
   let hashes = mk_byhash all in
+  let other_hashes, tbl =
+    match partial with
+    | Some _ -> find_partials partial_dir
+    | None -> (Util.StringMap.empty, Hashtbl.create 10)
+  in
+  let hashes =
+    Odoc_unit.fix_virtual ~precompiled_units:other_hashes ~units:hashes
+  in
+  let all_hashes =
+    Util.StringMap.union (fun _x o1 o2 -> Some (o1 @ o2)) hashes other_hashes
+  in
+  (all_hashes, hashes, tbl)
+
+let compile ?partial ~partial_dir (all : Odoc_unit.any list) =
+  let all_hashes, hashes, tbl = build_all_hashes ?partial ~partial_dir all in
+  let lib_includes = library_includes ~all_hashes all in
   let compile_mod =
     (* Modules have a more complicated compilation because:
        - They have dependencies and must be compiled in the right order
        - In Voodoo mode, there might exists already compiled parts *)
-    let other_hashes, tbl =
-      match partial with
-      | Some _ -> find_partials partial_dir
-      | None -> (Util.StringMap.empty, Hashtbl.create 10)
-    in
-    let hashes =
-      Odoc_unit.fix_virtual ~precompiled_units:other_hashes ~units:hashes
-    in
-    let all_hashes =
-      Util.StringMap.union (fun _x o1 o2 -> Some (o1 @ o2)) hashes other_hashes
-    in
     let compile_one compile_other (unit : Odoc_unit.intf Odoc_unit.t) =
-      let (`Intf { Odoc_unit.deps; _ }) = unit.kind in
+      let deps = unit.Odoc_unit.deps in
       let _fibers =
         Fiber.List.map
           (fun (other_unit_name, other_unit_hash) ->
@@ -131,12 +228,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.any list) =
                 None)
           deps
       in
-      let includes =
-        List.fold_left
-          (fun acc (_lib, path) -> Fpath.Set.add path acc)
-          Fpath.Set.empty
-          (Odoc_unit.Pkg_args.compiled_libs unit.pkg_args)
-      in
+      let includes = unit_includes ~lib_includes (unit :> Odoc_unit.any) in
       Odoc.compile ~output_dir:unit.output_dir ~input_file:unit.input_file
         ~includes ~warnings_tag:unit.pkgname ~parent_id:unit.parent_id
         ~ignore_output:(not unit.enable_warnings);
@@ -177,12 +269,7 @@ let compile ?partial ~partial_dir (all : Odoc_unit.any list) =
     match unit.kind with
     | `Intf intf -> (compile_mod intf.hash :> (Odoc_unit.any list, _) Result.t)
     | `Impl src ->
-        let includes =
-          List.fold_left
-            (fun acc (_lib, path) -> Fpath.Set.add path acc)
-            Fpath.Set.empty
-            (Odoc_unit.Pkg_args.compiled_libs unit.pkg_args)
-        in
+        let includes = unit_includes ~lib_includes unit in
         let source_id = src.src_id in
         Odoc.compile_impl ~output_dir:unit.output_dir
           ~input_file:unit.input_file ~includes ~parent_id:unit.parent_id
@@ -216,15 +303,22 @@ let compile ?partial ~partial_dir (all : Odoc_unit.any list) =
 
 type linked = Odoc_unit.any
 
-let link : warnings_tags:string list -> custom_layout:bool -> compiled list -> _
-    =
- fun ~warnings_tags ~custom_layout compiled ->
+let link :
+    warnings_tags:string list ->
+    custom_layout:bool ->
+    ?partial:Fpath.t ->
+    partial_dir:Fpath.t ->
+    compiled list ->
+    _ =
+ fun ~warnings_tags ~custom_layout ?partial ~partial_dir compiled ->
+  let all_hashes, _, _ = build_all_hashes ?partial ~partial_dir compiled in
+  let lib_includes = library_includes ~all_hashes compiled in
   let link : compiled -> linked =
    fun c ->
     let link input_file output_file enable_warnings =
       let libs = Odoc_unit.Pkg_args.compiled_libs c.pkg_args in
       let pages = Odoc_unit.Pkg_args.compiled_pages c.pkg_args in
-      let includes = Odoc_unit.Pkg_args.includes c.pkg_args in
+      let includes = Fpath.Set.elements (unit_includes ~lib_includes c) in
       Odoc.link ~custom_layout ~input_file ~output_file ~libs ~docs:pages
         ~includes ~ignore_output:(not enable_warnings) ~warnings_tags
         ?current_package:c.pkgname ()

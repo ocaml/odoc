@@ -26,7 +26,10 @@ type parent_spec = {
   output : Fpath.t;
 }
 
-type parent_id_spec = { parent_id : string; output_dir : string }
+type parent_id_spec = {
+  parent_id : string;
+  output : [ `Dir of string | `File of Fpath.t ];
+}
 
 type cli_spec =
   | CliNoParent of Fpath.t
@@ -370,20 +373,25 @@ let resolve_spec ~input resolver cli_spec =
           parents_children = None;
           children = [];
         }
-  | CliParentId { parent_id; output_dir } ->
+  | CliParentId { parent_id; output } ->
       let parent_id = mk_id parent_id in
-      let directory =
-        path_of_id output_dir parent_id
-        |> Fpath.to_string |> Fs.Directory.of_string
+      let output =
+        match output with
+        | `File output -> output
+        | `Dir output_dir ->
+            let directory =
+              path_of_id output_dir parent_id
+              |> Fpath.to_string |> Fs.Directory.of_string
+            in
+            let name =
+              let ext = Fs.File.get_ext input in
+              let name = Fs.File.set_ext ".odoc" input in
+              let name = Fs.File.basename name in
+              if ext = ".mld" then "page-" ^ Fs.File.to_string name
+              else name |> Fpath.to_string |> String.Ascii.uncapitalize
+            in
+            Fs.File.create ~directory ~name
       in
-      let name =
-        let ext = Fs.File.get_ext input in
-        let name = Fs.File.set_ext ".odoc" input in
-        let name = Fs.File.basename name in
-        if ext = ".mld" then "page-" ^ Fs.File.to_string name
-        else name |> Fpath.to_string |> String.Ascii.uncapitalize
-      in
-      let output = Fs.File.create ~directory ~name in
       Ok { parent_id; output; parents_children = None; children = [] }
   | CliNoParent output ->
       Ok { output; parent_id = None; parents_children = None; children = [] }
