@@ -580,6 +580,7 @@ module LangUtils = struct
             | `DotT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) TypeName.fmt s
             | `DotV (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ValueName.fmt s
             | `Apply (func,arg) -> Format.fprintf ppf "%a(%a)" path (func :> Odoc_model.Paths.Path.t) path (arg :> Odoc_model.Paths.Path.t)
+            | `ApplyParam (inst,param,arg) -> Format.fprintf ppf "%a[%a:%a]" path (inst :> Odoc_model.Paths.Path.t) path (param :> Odoc_model.Paths.Path.t) path (arg :> Odoc_model.Paths.Path.t)
             | `SubstitutedT _|`SubstitutedMT _|`Substituted _|`SubstitutedCT _|`Unbox _  -> Format.fprintf ppf "Unimplemented path"
 
         and model_fragment ppf (f : Odoc_model.Paths.Fragment.t) =
@@ -614,6 +615,8 @@ let my_compilation_unit id (s : Odoc_model.Lang.Signature.t) =
     ; linked = false
     ; canonical = None
     ; source_loc = None
+    ; parameterisation =
+        { is_parameter = false; parameters = []; argument_for = None }
 }
 
 let mkresolver () =

@@ -98,6 +98,7 @@ let rec is_forward : Paths.Path.Module.t -> bool = function
   | `Identifier _ -> false
   | `Dot (p, _) -> is_forward p
   | `Apply (p1, p2) -> is_forward p1 || is_forward p2
+  | `ApplyParam (p1, p2, p3) -> is_forward p1 || is_forward p2 || is_forward p3
   | `Substituted s -> is_forward s
 
 let rec should_reresolve : Paths.Path.Resolved.t -> bool =
@@ -231,6 +232,34 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
         | Error e ->
             Errors.report ~what:(`Module_path cp) ~tools_error:e `Resolve;
             p)
+
+let rec resolve_module_path_parts env (m : Paths.Path.Module.t) :
+    Paths.Path.Module.t =
+  match m with
+  | `Apply (fn, arg) ->
+      `Apply
+        (resolve_module_path_parts env fn, resolve_module_path_parts env arg)
+  | `ApplyParam (inst, param, arg) ->
+      `ApplyParam
+        ( resolve_module_path_parts env inst,
+          resolve_module_path_parts env param,
+          resolve_module_path_parts env arg )
+  | _ -> module_path env m
+
+let resolve_type_path_prefix env (p : Paths.Path.Type.t) : Paths.Path.Type.t =
+  match p with
+  | `DotT (m, t) ->
+      let m =
+        let cp = Component.Of_Lang.(module_path (empty ()) m) in
+        match Tools.resolve_module env cp with
+        | Ok (_, md) -> (
+            match (Component.Delayed.get md).Component.Module.type_ with
+            | Alias (target, _) -> Lang_of.(Path.module_ (empty ()) target)
+            | ModuleType _ -> m)
+        | Error _ -> m
+      in
+      `DotT (resolve_module_path_parts env m, t)
+  | _ -> p
 
 let rec comment_inline_element :
     loc:_ ->
@@ -502,7 +531,16 @@ let rec unit env t =
       | Pack _ as p -> p
   in
   let source_loc = source_loc env t.id t.source_loc in
-  { t with content; linked = true; source_loc }
+  let parameterisation =
+    let open Compilation_unit.Parameterisation in
+    let p = t.parameterisation in
+    {
+      p with
+      parameters = List.map (module_path env) p.parameters;
+      argument_for = Option.map (module_path env) p.argument_for;
+    }
+  in
+  { t with content; linked = true; source_loc; parameterisation }
 
 and value_ env parent t =
   let open Value in
@@ -1199,7 +1237,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
         | Ok (_cp, `FType_removed (_, x, _eq)) ->
             (* Type variables ? *)
             Lang_of.(type_expr (empty ()) (parent :> Id.LabelParent.t) x)
-        | Error _ -> Constr (path', ts))
+        | Error _ -> Constr (resolve_type_path_prefix env path', ts))
   | Polymorphic_variant v ->
       Polymorphic_variant (type_expression_polyvar env parent visited v)
   | Object o -> Object (type_expression_object env parent visited o)

@@ -223,7 +223,7 @@ The library parameters are reported as such:
 
   $ md a_param A_param
   
-  # Module `A_param`
+  # Library parameter `A_param`
   
   The `A_param` library parameter.
   
@@ -249,7 +249,7 @@ The library parameters are reported as such:
   ```
   $ md b_param B_param
   
-  # Module `B_param`
+  # Library parameter `B_param`
   
   The `B_param` library parameter.
   
@@ -276,6 +276,8 @@ parameter documentation:
   
   # Module `A1`
   
+  Implements the library parameter [`A_param`](./../a_param@HASH/A_param.md).
+  
   ```ocaml
   type t = int
   ```
@@ -297,6 +299,8 @@ parameter documentation:
   $ md a2 A2
   
   # Module `A2`
+  
+  Implements the library parameter [`A_param`](./../a_param@HASH/A_param.md).
   
   ```ocaml
   type t = string
@@ -320,6 +324,8 @@ parameter documentation:
   
   # Module `B1`
   
+  Implements the library parameter [`B_param`](./../b_param@HASH/B_param.md).
+  
   ```ocaml
   type u = int
   ```
@@ -338,6 +344,17 @@ parameter documentation:
   $ md a_of_b A_of_b
   
   # Module `A_of_b`
+  
+  Implements the library parameter [`A_param`](./../a_param@HASH/A_param.md).
+  
+  
+  ## Library parameters
+  
+  ```ocaml
+  parameter B_param
+  ```
+  
+  ## Signature
   
   ```ocaml
   type t = B_param.u
@@ -370,6 +387,15 @@ rather than through the internal wrapper modules:
   
   Helpers built on top of the [`A_param`](./../a_param@HASH/A_param.md) parameter.
   
+  
+  ## Library parameters
+  
+  ```ocaml
+  parameter A_param
+  ```
+  
+  ## Signature
+  
   ```ocaml
   type wrapped = {
     value : A_param.t;
@@ -398,6 +424,18 @@ rather than through the internal wrapper modules:
   
   # Module `Both_ab`
   
+  
+  ## Library parameters
+  
+  ```ocaml
+  parameter A_param
+  ```
+  ```ocaml
+  parameter B_param
+  ```
+  
+  ## Signature
+  
   ```ocaml
   type combined = {
     a : A_param.t;
@@ -408,21 +446,23 @@ rather than through the internal wrapper modules:
   val make : int -> combined
   ```
   ```ocaml
-  val demo_a1 : Both_ab__.Only_a1.wrapped
+  val demo_a1 : Only_a[A_param:A1].wrapped
   ```
   ```ocaml
-  val demo_a_of_b : Both_ab__.Only_a_of_b.wrapped
+  val demo_a_of_b : Only_a[A_param:A_of_b].wrapped
   ```
   $ md final Final
   
   # Module `Final`
   
   ```ocaml
-  val x : Final__.Both_a1_b1.combined
+  val x : Both_ab[A_param:A1][B_param:B1].combined
   ```
   ```ocaml
-  val y : Final__.Both_a2_b1.combined
+  val y : Both_ab[A_param:A2][B_param:B1].combined
   ```
   ```ocaml
-  val combos : Final__.Both_a1_b1.combined * Final__.Both_a2_b1.combined
+  val combos : 
+    Both_ab[A_param:A1][B_param:B1].combined
+    * Both_ab[A_param:A2][B_param:B1].combined
   ```

@@ -744,6 +744,18 @@ and compilation_unit_content =
     | Module x -> C ("Module", x, signature_t)
     | Pack x -> C ("Pack", x, compilation_unit_packed))
 
+and compilation_unit_parameterisation =
+  let open Lang.Compilation_unit.Parameterisation in
+  Record
+    [
+      F ("is_parameter", (fun t -> t.is_parameter), bool);
+      F ("parameters", (fun t -> (t.parameters :> Paths.Path.t list)), List path);
+      F
+        ( "argument_for",
+          (fun t -> (t.argument_for :> Paths.Path.t option)),
+          Option path );
+    ]
+
 and compilation_unit_t =
   let open Lang.Compilation_unit in
   Record
@@ -761,6 +773,10 @@ and compilation_unit_t =
         ( "canonical",
           (fun t -> (t.canonical :> Paths.Path.t option)),
           Option path );
+      F
+        ( "parameterisation",
+          (fun t -> t.parameterisation),
+          compilation_unit_parameterisation );
     ]
 
 (** {3 Page} *)

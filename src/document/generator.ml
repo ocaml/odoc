@@ -129,6 +129,11 @@ module Make (Syntax : SYNTAX) = struct
           let link1 = from_path (p1 :> Path.t) in
           let link2 = from_path (p2 :> Path.t) in
           link1 ++ O.txt "(" ++ link2 ++ O.txt ")"
+      | `ApplyParam (p1, p2, p3) ->
+          let link1 = from_path (p1 :> Path.t) in
+          let link2 = from_path (p2 :> Path.t) in
+          let link3 = from_path (p3 :> Path.t) in
+          link1 ++ O.txt "[" ++ link2 ++ O.txt ":" ++ link3 ++ O.txt "]"
       | `Resolved _ when Paths.Path.is_hidden path ->
           let txt = Url.render_path path in
           unresolved [ inline @@ Text txt ]
@@ -1982,13 +1987,80 @@ module Make (Syntax : SYNTAX) = struct
       in
       List.map f t
 
+    let parameterisation_items
+        (p : Odoc_model.Lang.Compilation_unit.Parameterisation.t) =
+      let text s : Inline.t = [ inline (Inline.Text s) ] in
+      let link (path : Paths.Path.Module.t) : Inline.t =
+        let path = (path :> Paths.Path.t) in
+        let content = O.code (O.txt (Url.render_path path)) in
+        match path with
+        | `Resolved rp when not (Paths.Path.is_hidden path) -> (
+            match Paths.Path.Resolved.identifier rp with
+            | Some id ->
+                let href = Url.from_identifier ~stop_before:false id in
+                [
+                  inline
+                    (Inline.Link
+                       {
+                         target = Internal (Resolved href);
+                         content;
+                         tooltip = None;
+                       });
+                ]
+            | None -> content)
+        | _ -> content
+      in
+      let para parts =
+        Item.Text [ block (Block.Paragraph (List.concat parts)) ]
+      in
+      let implements =
+        match p.argument_for with
+        | None -> []
+        | Some path ->
+            [
+              para
+                [
+                  text "Implements the library parameter "; link path; text ".";
+                ];
+            ]
+      in
+      let parameters =
+        match p.parameters with
+        | [] -> []
+        | parameters ->
+            let decl_of_parameter (path : Paths.Path.Module.t) =
+              let path = (path :> Paths.Path.t) in
+              let content =
+                O.documentedSrc (O.keyword "parameter " ++ Link.from_path path)
+              in
+              Item.Declaration
+                {
+                  content;
+                  anchor = None;
+                  attr = [ "parameter" ];
+                  doc = [];
+                  source_anchor = None;
+                }
+            in
+            mk_heading ~label:"library-parameters" "Library parameters"
+            :: List.map decl_of_parameter parameters
+            @ [ mk_heading ~label:"signature" "Signature" ]
+      in
+      implements @ parameters
+
     let compilation_unit (t : Odoc_model.Lang.Compilation_unit.t) =
       let url = Url.Path.from_identifier t.id in
+      let url =
+        if t.parameterisation.is_parameter then
+          { url with Url.Path.kind = `LibraryParameter }
+        else url
+      in
       let unit_doc, items =
         match t.content with
         | Module sign -> signature sign
         | Pack packed -> ([], pack packed)
       in
+      let items = parameterisation_items t.parameterisation @ items in
       let source_anchor = source_anchor t.source_loc in
       let page = make_expansion_page ~source_anchor url [ unit_doc ] items in
       Document.Page page

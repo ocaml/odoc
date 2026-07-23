@@ -252,6 +252,10 @@ let rec kind_of_module_cpath = function
       match kind_of_module_cpath a with
       | Some _ as a -> a
       | None -> kind_of_module_cpath b)
+  | `ApplyParam (a, _param, b) -> (
+      match kind_of_module_cpath a with
+      | Some _ as a -> a
+      | None -> kind_of_module_cpath b)
   | _ -> None
 
 let rec kind_of_module_type_cpath = function
