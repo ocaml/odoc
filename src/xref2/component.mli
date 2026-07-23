@@ -307,6 +307,7 @@ and Signature : sig
     | ModuleTypeSubstitution of Ident.module_type * ModuleTypeSubstitution.t
     | Type of Ident.type_ * recursive * TypeDecl.t Delayed.t
     | TypeSubstitution of Ident.type_ * TypeDecl.t
+    | KindAbbreviation of Odoc_model.Lang.KindAbbreviation.t
     | Exception of Ident.exception_ * Exception.t
     | TypExt of Extension.t
     | Value of Ident.value * Value.t Delayed.t
@@ -493,6 +494,10 @@ module Element : sig
 
   type datatype = [ `Type of Identifier.Type.t * TypeDecl.t ]
 
+  type kind_abbreviation =
+    [ `KindAbbreviation of
+      Identifier.KindAbbreviation.t * Odoc_model.Lang.KindAbbreviation.t ]
+
   type value = [ `Value of Identifier.Value.t * Value.t ]
 
   type label = [ `Label of Identifier.Label.t * Label.t ]
@@ -533,6 +538,7 @@ module Element : sig
     [ signature
     | value
     | datatype
+    | kind_abbreviation
     | label
     | class_
     | class_type

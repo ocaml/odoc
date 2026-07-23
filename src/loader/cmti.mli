@@ -67,3 +67,11 @@ val read_class_type_declarations :
   Paths.Identifier.Signature.t ->
   Typedtree.class_type Typedtree.class_infos list ->
   Odoc_model.Lang.Signature.item list
+
+#if defined OXCAML
+val read_kind_abbreviation :
+  Cmi.env ->
+  Paths.Identifier.Signature.t ->
+  Typedtree.jkind_declaration ->
+  Odoc_model.Lang.KindAbbreviation.t
+#endif

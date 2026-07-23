@@ -84,7 +84,46 @@ Unboxed types have a trailing hash '\#'
 \label{Oxcaml--type-t_inner_mod}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}inner\_\allowbreak{}mod : float64 \& (immediate \ocamltag{keyword}{mod} portable)}\begin{ocamlindent}Should render as \ocamlinlinecode{float64 \& (immediate mod portable)}.\end{ocamlindent}%
 \medbreak
 \subsection{Kind abbreviations\label{Oxcaml--kind-abbreviations_2}}%
-\label{Oxcaml--type-t_abbrev}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}abbrev : my\_\allowbreak{}abbrev \ocamltag{keyword}{mod} immutable}\begin{ocamlindent}A type with an abbreviated kind.\end{ocamlindent}%
+\label{Oxcaml--kind-missing_documentation}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} missing\_\allowbreak{}documentation = value \ocamltag{keyword}{mod} portable}\\
+TODO: The above kind abbreviation uses \ocamlinlinecode{(** *)} which are not captured by the OxCaml parser, so its documentation is currently missing. The following \ocamlinlinecode{kind\_\allowbreak{}} declarations use an explicit \ocamlinlinecode{@@ocaml.\allowbreak{}doc} to side-step this issue.
+
+\label{Oxcaml--kind-my_abbrev}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} my\_\allowbreak{}abbrev = value\_\allowbreak{}or\_\allowbreak{}null \ocamltag{keyword}{mod} non\_\allowbreak{}null global}\begin{ocamlindent}Declares a kind abbreviation named \ocamlinlinecode{my\_\allowbreak{}abbrev}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_abbrev}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}abbrev : \hyperref[Oxcaml--kind-my_abbrev]{\ocamlinlinecode{my\_\allowbreak{}abbrev}} \ocamltag{keyword}{mod} immutable}\begin{ocamlindent}A type with an abbreviated kind. The use of \ocamlinlinecode{my\_\allowbreak{}abbrev} should link to its definition. References to the kind abbreviation resolve too, both unqualified \hyperref[Oxcaml--kind-my_abbrev]{\ocamlinlinecode{\ocamlinlinecode{my\_\allowbreak{}abbrev}}[p\pageref*{Oxcaml--kind-my_abbrev}]} and qualified \hyperref[Oxcaml--kind-my_abbrev]{\ocamlinlinecode{\ocamlinlinecode{my\_\allowbreak{}abbrev}}[p\pageref*{Oxcaml--kind-my_abbrev}]}.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--kind-my_derived}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} my\_\allowbreak{}derived = \hyperref[Oxcaml--kind-my_abbrev]{\ocamlinlinecode{my\_\allowbreak{}abbrev}} \ocamltag{keyword}{mod} portable}\begin{ocamlindent}A kind abbreviation defined in terms of another one; the use of \ocamlinlinecode{my\_\allowbreak{}abbrev} in this definition should also link to its definition.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_derived}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}derived : \hyperref[Oxcaml--kind-my_derived]{\ocamlinlinecode{my\_\allowbreak{}derived}}}\begin{ocamlindent}A type whose kind is the derived abbreviation.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--kind-my_abstract}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} my\_\allowbreak{}abstract}\begin{ocamlindent}An abstract kind abbreviation (no manifest).\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_abstract}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}abstract : \hyperref[Oxcaml--kind-my_abstract]{\ocamlinlinecode{my\_\allowbreak{}abstract}}}\begin{ocamlindent}A type with an abstract abbreviated kind.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-abbrev_param}\ocamlcodefragment{\ocamltag{keyword}{type} ('a : \hyperref[Oxcaml--kind-my_abbrev]{\ocamlinlinecode{my\_\allowbreak{}abbrev}}) abbrev\_\allowbreak{}param}\begin{ocamlindent}A type parameter constrained by an abbreviated kind.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--val-poly_abbrev}\ocamlcodefragment{\ocamltag{keyword}{val} poly\_\allowbreak{}abbrev : ('a : \hyperref[Oxcaml--kind-my_abbrev]{\ocamlinlinecode{my\_\allowbreak{}abbrev}}).\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\begin{ocamlindent}A polymorphic value with an abbreviated kind constraint.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_with_abbrev}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t\_\allowbreak{}with\_\allowbreak{}abbrev : \hyperref[Oxcaml--kind-my_abbrev]{\ocamlinlinecode{my\_\allowbreak{}abbrev}} \ocamltag{keyword}{with} \ocamltag{type-var}{'a}}\begin{ocamlindent}An abbreviated kind in a \ocamlinlinecode{with} constraint.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--module-M_kinds}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M_kinds]{\ocamlinlinecode{M\_\allowbreak{}kinds}}}\label{Oxcaml-M_kinds}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-M_kinds--kind-mod_kind}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} mod\_\allowbreak{}kind = value \ocamltag{keyword}{mod} portable}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{Oxcaml--type-t_qualified}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}qualified : \hyperref[Oxcaml-M_kinds--kind-mod_kind]{\ocamlinlinecode{M\_\allowbreak{}kinds.\allowbreak{}mod\_\allowbreak{}kind}}}\begin{ocamlindent}A qualified use of a kind abbreviation from another module; the use should link to \ocamlinlinecode{M\_\allowbreak{}kinds.\allowbreak{}mod\_\allowbreak{}kind}'s definition.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-qualified_param}\ocamlcodefragment{\ocamltag{keyword}{type} ('a : \hyperref[Oxcaml-M_kinds--kind-mod_kind]{\ocamlinlinecode{M\_\allowbreak{}kinds.\allowbreak{}mod\_\allowbreak{}kind}}) qualified\_\allowbreak{}param}\begin{ocamlindent}A qualified kind abbreviation on a type parameter; the use should link to the definition (resolved during linking, like \ocamlinlinecode{t\_\allowbreak{}qualified}).\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--module-type-S_kind}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}}\label{Oxcaml-module-type-S_kind}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-module-type-S_kind--kind-functor_kind}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} functor\_\allowbreak{}kind = value \ocamltag{keyword}{mod} portable}\begin{ocamlindent}A kind declared in a module type.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{Oxcaml--module-F_kind}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-F_kind]{\ocamlinlinecode{F\_\allowbreak{}kind}}}\ocamlcodefragment{ (\hyperref[Oxcaml-F_kind-argument-1-X]{\ocamlinlinecode{X}} : \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}) : \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}}\\
+\label{Oxcaml--module-Arg_kind}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-Arg_kind]{\ocamlinlinecode{Arg\_\allowbreak{}kind}}}\ocamlcodefragment{ : \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}}\\
+\label{Oxcaml--type-t_functor_app}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}functor\_\allowbreak{}app : F\_\allowbreak{}kind(Arg\_\allowbreak{}kind).\allowbreak{}functor\_\allowbreak{}kind}\begin{ocamlindent}A use behind a functor application. odoc references can't express functor application, so this is rendered as plain text (not a link) rather than crashing.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--module-F_nested}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-F_nested]{\ocamlinlinecode{F\_\allowbreak{}nested}}}\ocamlcodefragment{ (\hyperref[Oxcaml-F_nested-argument-1-X]{\ocamlinlinecode{X}} : \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{Oxcaml--kind-functor_abbrev}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} functor\_\allowbreak{}abbrev = F\_\allowbreak{}nested(Arg\_\allowbreak{}kind).\allowbreak{}abstract\_\allowbreak{}kind}\begin{ocamlindent}A kind abbreviation defined through a functor-application path. The manifest is rendered but the functor-application path isn't a link.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--kind-nested_functor_abbrev}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} nested\_\allowbreak{}functor\_\allowbreak{}abbrev = F\_\allowbreak{}nested(Arg\_\allowbreak{}kind).\allowbreak{}Nested.\allowbreak{}custom\_\allowbreak{}kind\_\allowbreak{}abbrev}\begin{ocamlindent}A kind abbreviation defined through a functor-application-then-nested-module path. The manifest is rendered but the functor-application path isn't a link.\end{ocamlindent}%
 \medbreak
 \subsection{Zero alloc\label{Oxcaml--zero-alloc}}%
 \label{Oxcaml--val-add}\ocamlcodefragment{\ocamltag{keyword}{val} add : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc]}\begin{ocamlindent}Zero allocation bindings have an extension attribute attached. See https://oxcaml.org/documentation/miscellaneous-extensions/zero\_alloc\_check/\end{ocamlindent}%
@@ -241,4 +280,7 @@ Unboxed types have a trailing hash '\#'
 \ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}\ocamlinlinecode{contended} modality applied to all definitions in the module, except the ones which have already specified this axis.\end{ocamlindent}%
 \medbreak
 
+\input{Oxcaml.F_kind.tex}
+\input{Oxcaml.Arg_kind.tex}
+\input{Oxcaml.F_nested.tex}
 \input{Oxcaml.M1.tex}

@@ -288,11 +288,129 @@ Should render as float64 & (immediate mod portable)\.
 \fB9 Kind abbreviations\fR
 .in 
 .sp 
+\f[CB]kind_\fR missing_documentation = value \f[CB]mod\fR portable
+.sp 
+.fi 
+TODO: The above kind abbreviation uses (** *) which are not captured by the OxCaml parser, so its documentation is currently missing\. The following kind_ declarations use an explicit @@ocaml\.doc to side-step this issue\.
+.nf 
+.sp 
+\f[CB]kind_\fR my_abbrev = value_or_null \f[CB]mod\fR non_null global
+.fi 
+.br 
+.ti +2
+Declares a kind abbreviation named my_abbrev\.
+.nf 
+.sp 
 \f[CB]type\fR t_abbrev : my_abbrev \f[CB]mod\fR immutable
 .fi 
 .br 
 .ti +2
-A type with an abbreviated kind\.
+A type with an abbreviated kind\. The use of my_abbrev should link to its definition\. References to the kind abbreviation resolve too, both unqualified \f[CI]my_abbrev\fR and qualified \f[CI]my_abbrev\fR\.
+.nf 
+.sp 
+\f[CB]kind_\fR my_derived = my_abbrev \f[CB]mod\fR portable
+.fi 
+.br 
+.ti +2
+A kind abbreviation defined in terms of another one; the use of my_abbrev in this definition should also link to its definition\.
+.nf 
+.sp 
+\f[CB]type\fR t_derived : my_derived
+.fi 
+.br 
+.ti +2
+A type whose kind is the derived abbreviation\.
+.nf 
+.sp 
+\f[CB]kind_\fR my_abstract
+.fi 
+.br 
+.ti +2
+An abstract kind abbreviation (no manifest)\.
+.nf 
+.sp 
+\f[CB]type\fR t_abstract : my_abstract
+.fi 
+.br 
+.ti +2
+A type with an abstract abbreviated kind\.
+.nf 
+.sp 
+\f[CB]type\fR ('a : my_abbrev) abbrev_param
+.fi 
+.br 
+.ti +2
+A type parameter constrained by an abbreviated kind\.
+.nf 
+.sp 
+\f[CB]val\fR poly_abbrev : ('a : my_abbrev)\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR
+.fi 
+.br 
+.ti +2
+A polymorphic value with an abbreviated kind constraint\.
+.nf 
+.sp 
+\f[CB]type\fR 'a t_with_abbrev : my_abbrev \f[CB]with\fR \f[CB]'a\fR
+.fi 
+.br 
+.ti +2
+An abbreviated kind in a with constraint\.
+.nf 
+.sp 
+\f[CB]module\fR M_kinds : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR t_qualified : M_kinds\.mod_kind
+.fi 
+.br 
+.ti +2
+A qualified use of a kind abbreviation from another module; the use should link to M_kinds\.mod_kind's definition\.
+.nf 
+.sp 
+\f[CB]type\fR ('a : M_kinds\.mod_kind) qualified_param
+.fi 
+.br 
+.ti +2
+A qualified kind abbreviation on a type parameter; the use should link to the definition (resolved during linking, like t_qualified)\.
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR S_kind = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]kind_\fR functor_kind = value \f[CB]mod\fR portable
+.fi 
+.br 
+.ti +4
+A kind declared in a module type\.
+.nf 
+
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR F_kind (X : S_kind) : S_kind
+.sp 
+\f[CB]module\fR Arg_kind : S_kind
+.sp 
+\f[CB]type\fR t_functor_app : F_kind(Arg_kind)\.functor_kind
+.fi 
+.br 
+.ti +2
+A use behind a functor application\. odoc references can't express functor application, so this is rendered as plain text (not a link) rather than crashing\.
+.nf 
+.sp 
+\f[CB]module\fR F_nested (X : S_kind) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]kind_\fR functor_abbrev = F_nested(Arg_kind)\.abstract_kind
+.fi 
+.br 
+.ti +2
+A kind abbreviation defined through a functor-application path\. The manifest is rendered but the functor-application path isn't a link\.
+.nf 
+.sp 
+\f[CB]kind_\fR nested_functor_abbrev = F_nested(Arg_kind)\.Nested\.custom_kind_abbrev
+.fi 
+.br 
+.ti +2
+A kind abbreviation defined through a functor-application-then-nested-module path\. The manifest is rendered but the functor-application path isn't a link\.
 .nf 
 .sp 
 .in 3

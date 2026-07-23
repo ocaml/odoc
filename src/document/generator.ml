@@ -95,11 +95,19 @@ module Make (Syntax : SYNTAX) = struct
   module Link : sig
     val from_path : Paths.Path.t -> text
 
+    val from_identifier : ?text:string -> Paths.Identifier.t -> text
+
     val from_fragment : Paths.Fragment.leaf -> text
 
     val render_fragment_any : Paths.Fragment.t -> string
   end = struct
     open Paths
+
+    let from_identifier ?text : Identifier.t -> _ =
+     fun id ->
+      let href = Url.from_identifier ~stop_before:false id in
+      let label = match text with Some t -> t | None -> Identifier.name id in
+      resolved href [ inline @@ Text label ]
 
     let rec from_path : Path.t -> text =
      fun path ->
@@ -451,8 +459,15 @@ module Make (Syntax : SYNTAX) = struct
       in
       match k with
       | Default -> O.noop
-      | Abbreviation frag ->
-          O.txt (Link.render_fragment_any (frag :> Paths.Fragment.t))
+      | Abbreviation (name, ref_opt) -> (
+          let id_opt =
+            match ref_opt with
+            | Some (`Resolved r) -> Paths.Reference.Resolved.identifier r
+            | _ -> None
+          in
+          match id_opt with
+          | Some id -> Link.from_identifier ~text:name id
+          | None -> O.txt name)
       | Mod (base, modes) ->
           let res =
             kind_annotation ~needs_parentheses:true base
@@ -592,6 +607,8 @@ module Make (Syntax : SYNTAX) = struct
       ?is_substitution:bool ->
       Lang.Signature.recursive * Lang.TypeDecl.t ->
       Item.t
+
+    val kind_abbreviation : Lang.KindAbbreviation.t -> Item.t
 
     val extension : Lang.Extension.t -> Item.t
 
@@ -1045,6 +1062,21 @@ module Make (Syntax : SYNTAX) = struct
       let doc = Comment.to_ir t.doc.elements in
       let source_anchor = source_anchor t.source_loc in
       Item.Declaration { attr; anchor; doc; content; source_anchor }
+
+    let kind_abbreviation (t : Lang.KindAbbreviation.t) =
+      let name = Paths.Identifier.name t.id in
+      let intro = O.keyword "kind_" ++ O.sp ++ O.txt name in
+      let manifest =
+        match t.manifest with
+        | None -> O.noop
+        | Some k -> O.txt " =" ++ O.sp ++ Type_expression.kind_annotation k
+      in
+      let content = O.documentedSrc (intro ++ manifest) in
+      let attr = [ "type"; "kind-abbreviation" ] in
+      let anchor = path_to_id t.id in
+      let doc = Comment.to_ir t.doc.elements in
+      let source_anchor = source_anchor t.source_loc in
+      Item.Declaration { attr; anchor; doc; content; source_anchor }
   end
 
   open Type_declaration
@@ -1447,6 +1479,7 @@ module Make (Syntax : SYNTAX) = struct
             | TypeSubstitution t ->
                 continue @@ type_decl ~is_substitution:true (Ordinary, t)
             | Type (r, t) -> continue @@ type_decl (r, t)
+            | KindAbbreviation t -> continue @@ kind_abbreviation t
             | TypExt e -> continue @@ extension e
             | Exception e -> continue @@ exn e
             | Value v -> continue @@ value v

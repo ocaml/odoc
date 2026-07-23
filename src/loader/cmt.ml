@@ -561,7 +561,8 @@ and read_structure_item env parent item =
         let cltyps = List.map (fun (_, _, clty) -> clty) cltyps in
           Cmti.read_class_type_declarations env parent cltyps
 #if defined OXCAML
-    | Tstr_jkind _ -> []
+    | Tstr_jkind jkd ->
+        [ KindAbbreviation (Cmti.read_kind_abbreviation env parent jkd) ]
 #endif
     | Tstr_attribute attr ->
       let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in

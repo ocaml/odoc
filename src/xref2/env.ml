@@ -83,6 +83,7 @@ type kind =
   | Kind_Module
   | Kind_ModuleType
   | Kind_Type
+  | Kind_KindAbbreviation
   | Kind_Value
   | Kind_Label
   | Kind_Class
@@ -357,6 +358,12 @@ let add_type (identifier : Identifier.Type.t) t env =
     |> List.fold_right (add_cdocs identifier) docs
   else env
 
+let add_kind_abbreviation (identifier : Identifier.KindAbbreviation.t)
+    (t : Odoc_model.Lang.KindAbbreviation.t) env =
+  add_to_elts Kind_KindAbbreviation identifier
+    (`KindAbbreviation (identifier, t))
+    env
+
 let add_module_type identifier (t : Component.ModuleType.t) env =
   let env' =
     add_to_elts Kind_ModuleType identifier (`ModuleType (identifier, t)) env
@@ -607,6 +614,11 @@ let s_type : Component.Element.type_ scope =
 let s_datatype : Component.Element.datatype scope =
   make_scope (function #Component.Element.datatype as r -> Some r | _ -> None)
 
+let s_kind_abbreviation : Component.Element.kind_abbreviation scope =
+  make_scope (function
+    | #Component.Element.kind_abbreviation as r -> Some r
+    | _ -> None)
+
 let s_class : Component.Element.class_ scope =
   make_scope (function #Component.Element.class_ as r -> Some r | _ -> None)
 
@@ -830,6 +842,8 @@ let rec open_signature : Lang.Signature.t -> t -> t =
         | L.Signature.Value v, true ->
             let ty = value ident_map v in
             add_value v.L.Value.id ty env
+        | KindAbbreviation ka, _ ->
+            add_kind_abbreviation ka.L.KindAbbreviation.id ka env
         (* Skip when compiling *)
         | Exception _, false -> env
         | TypExt _, false -> env

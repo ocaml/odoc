@@ -493,14 +493,296 @@
     <a href="#kind-abbreviations_2" class="anchor"></a>Kind abbreviations
    </h2>
    <div class="odoc-spec">
+    <div class="spec type kind-abbreviation anchored"
+     id="kind-missing_documentation">
+     <a href="#kind-missing_documentation" class="anchor"></a>
+     <code>
+      <span><span class="keyword">kind_</span> missing_documentation =
+        value <span class="keyword">mod</span> portable
+      </span>
+     </code>
+    </div>
+   </div>
+   <p>TODO: The above kind abbreviation uses <code>(** *)</code> which
+     are not captured by the OxCaml parser, so its documentation is currently
+     missing. The following <code>kind_</code> declarations use an explicit
+     <code>@@ocaml.doc</code> to side-step this issue.
+   </p>
+   <div class="odoc-spec">
+    <div class="spec type kind-abbreviation anchored" id="kind-my_abbrev">
+     <a href="#kind-my_abbrev" class="anchor"></a>
+     <code>
+      <span><span class="keyword">kind_</span> my_abbrev = value_or_null
+        <span class="keyword">mod</span> non_null global
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Declares a kind abbreviation named <code>my_abbrev</code>.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
     <div class="spec type anchored" id="type-t_abbrev">
      <a href="#type-t_abbrev" class="anchor"></a>
      <code>
-      <span><span class="keyword">type</span> t_abbrev : my_abbrev 
+      <span><span class="keyword">type</span> t_abbrev : 
+       <a href="#kind-my_abbrev">my_abbrev</a> 
        <span class="keyword">mod</span> immutable
       </span>
      </code>
-    </div><div class="spec-doc"><p>A type with an abbreviated kind.</p></div>
+    </div>
+    <div class="spec-doc">
+     <p>A type with an abbreviated kind. The use of <code>my_abbrev</code>
+       should link to its definition. References to the kind abbreviation
+       resolve too, both unqualified 
+      <a href="#kind-my_abbrev"><code>my_abbrev</code></a> and qualified
+       <a href="#kind-my_abbrev"><code>my_abbrev</code></a>.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type kind-abbreviation anchored" id="kind-my_derived">
+     <a href="#kind-my_derived" class="anchor"></a>
+     <code>
+      <span><span class="keyword">kind_</span> my_derived = 
+       <a href="#kind-my_abbrev">my_abbrev</a> 
+       <span class="keyword">mod</span> portable
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A kind abbreviation defined in terms of another one; the use 
+      of <code>my_abbrev</code> in this definition should also link to
+       its definition.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_derived">
+     <a href="#type-t_derived" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_derived : 
+       <a href="#kind-my_derived">my_derived</a>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A type whose kind is the derived abbreviation.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type kind-abbreviation anchored" id="kind-my_abstract">
+     <a href="#kind-my_abstract" class="anchor"></a>
+     <code><span><span class="keyword">kind_</span> my_abstract</span></code>
+    </div>
+    <div class="spec-doc"><p>An abstract kind abbreviation (no manifest).</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_abstract">
+     <a href="#type-t_abstract" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_abstract : 
+       <a href="#kind-my_abstract">my_abstract</a>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>A type with an abstract abbreviated kind.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-abbrev_param">
+     <a href="#type-abbrev_param" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> 
+       <span>('a : <a href="#kind-my_abbrev">my_abbrev</a>) abbrev_param
+       </span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A type parameter constrained by an abbreviated kind.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-poly_abbrev">
+     <a href="#val-poly_abbrev" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> poly_abbrev : ('a : 
+       <a href="#kind-my_abbrev">my_abbrev</a>). 
+       <span><span class="type-var">'a</span> 
+        <span class="arrow">&#45;&gt;</span>
+       </span> <span class="type-var">'a</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A polymorphic value with an abbreviated kind constraint.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_with_abbrev">
+     <a href="#type-t_with_abbrev" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> <span>'a t_with_abbrev</span>
+        : <a href="#kind-my_abbrev">my_abbrev</a> 
+       <span class="keyword">with</span> <span class="type-var">'a</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>An abbreviated kind in a <code>with</code> constraint.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-M_kinds">
+     <a href="#module-M_kinds" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-M_kinds.html">M_kinds</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_qualified">
+     <a href="#type-t_qualified" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_qualified : 
+       <a href="Oxcaml-M_kinds.html#kind-mod_kind">M_kinds.mod_kind</a>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A qualified use of a kind abbreviation from another module; the
+       use should link to <code>M_kinds.mod_kind</code>'s definition.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-qualified_param">
+     <a href="#type-qualified_param" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> 
+       <span>('a : 
+        <a href="Oxcaml-M_kinds.html#kind-mod_kind">M_kinds.mod_kind</a>
+        ) qualified_param
+       </span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A qualified kind abbreviation on a type parameter; the use should
+       link to the definition (resolved during linking, like 
+      <code>t_qualified</code>).
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module-type anchored" id="module-type-S_kind">
+     <a href="#module-type-S_kind" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <span class="keyword">type</span> 
+       <a href="Oxcaml-module-type-S_kind.html">S_kind</a>
+      </span>
+      <span> = <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-F_kind">
+     <a href="#module-F_kind" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-F_kind.html">F_kind</a>
+      </span>
+      <span> (<a href="Oxcaml-F_kind-argument-1-X.html">X</a> : 
+       <a href="Oxcaml-module-type-S_kind.html">S_kind</a>) : 
+       <a href="Oxcaml-module-type-S_kind.html">S_kind</a>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-Arg_kind">
+     <a href="#module-Arg_kind" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-Arg_kind.html">Arg_kind</a>
+      </span>
+      <span> : <a href="Oxcaml-module-type-S_kind.html">S_kind</a></span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_functor_app">
+     <a href="#type-t_functor_app" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_functor_app : 
+       F_kind(Arg_kind).functor_kind
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A use behind a functor application. odoc references can't express
+       functor application, so this is rendered as plain text (not a 
+      link) rather than crashing.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-F_nested">
+     <a href="#module-F_nested" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-F_nested.html">F_nested</a>
+      </span>
+      <span> (<a href="Oxcaml-F_nested-argument-1-X.html">X</a> : 
+       <a href="Oxcaml-module-type-S_kind.html">S_kind</a>) : 
+       <span class="keyword">sig</span> ... <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type kind-abbreviation anchored"
+     id="kind-functor_abbrev">
+     <a href="#kind-functor_abbrev" class="anchor"></a>
+     <code>
+      <span><span class="keyword">kind_</span> functor_abbrev = 
+       F_nested(Arg_kind).abstract_kind
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A kind abbreviation defined through a functor-application path.
+       The manifest is rendered but the functor-application path isn't
+       a link.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type kind-abbreviation anchored"
+     id="kind-nested_functor_abbrev">
+     <a href="#kind-nested_functor_abbrev" class="anchor"></a>
+     <code>
+      <span><span class="keyword">kind_</span> nested_functor_abbrev =
+        F_nested(Arg_kind).Nested.custom_kind_abbrev
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A kind abbreviation defined through a 
+      functor-application-then-nested-module path. The manifest is rendered
+       but the functor-application path isn't a link.
+     </p>
+    </div>
    </div>
    <h2 id="zero-alloc"><a href="#zero-alloc" class="anchor"></a>Zero alloc
    </h2>

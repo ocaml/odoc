@@ -1002,6 +1002,8 @@ and rename_bound_idents s sg =
         (Open { expansion = { expansion with items; removed = [] }; doc } :: sg)
         rest
   | (Comment _ as item) :: rest -> rename_bound_idents s (item :: sg) rest
+  | (KindAbbreviation _ as item) :: rest ->
+      rename_bound_idents s (item :: sg) rest
 
 and removed_items s items =
   let open Component.Signature in
@@ -1056,6 +1058,7 @@ and apply_sig_map_item s item =
   | Include i -> Include (include_ s i)
   | Open o -> Open (open_ s o)
   | Comment c -> Comment c
+  | KindAbbreviation _ as item -> item
 
 and apply_sig_map_items s items =
   List.rev_map (apply_sig_map_item s) items |> List.rev

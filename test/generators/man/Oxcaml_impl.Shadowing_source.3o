@@ -11,4 +11,4 @@ Oxcaml_impl\.Shadowing_source
 .SH Documentation
 .sp 
 .nf 
-
+\f[CB]kind_\fR dup = value \f[CB]mod\fR portable

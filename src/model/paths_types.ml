@@ -143,6 +143,12 @@ module Identifier = struct
   and type_ = type_pv id
   (** @canonical Odoc_model.Paths.Identifier.Type.t *)
 
+  type kind_abbreviation_pv = [ `KindAbbreviation of signature * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.KindAbbreviation.t_pv *)
+
+  and kind_abbreviation = kind_abbreviation_pv id
+  (** @canonical Odoc_model.Paths.Identifier.KindAbbreviation.t *)
+
   type constructor_pv = [ `Constructor of datatype * ConstructorName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Constructor.t_pv *)
 
@@ -230,6 +236,7 @@ module Identifier = struct
     | functor_result_pv
     | module_type_pv
     | type_pv
+    | kind_abbreviation_pv
     | constructor_pv
     | field_pv
     | unboxed_field_pv
@@ -579,10 +586,13 @@ module rec Reference : sig
     | `TCurrentPackage  (** [{!//identifier}] *) ]
   (** @canonical Odoc_model.Paths.Reference.tag_hierarchy *)
 
+  type tag_only_kind_abbreviation = [ `TKindAbbreviation ]
+
   type tag_any =
     [ `TModule
     | `TModuleType
     | `TType
+    | `TKindAbbreviation
     | `TConstructor
     | `TField
     | `TUnboxedField
@@ -805,6 +815,7 @@ module rec Reference : sig
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
+    | `KindAbbreviation of signature * TypeName.t
     | `Constructor of fragment_type_parent * ConstructorName.t
     | `Field of fragment_type_parent * FieldName.t
     | `UnboxedField of fragment_type_parent * UnboxedFieldName.t

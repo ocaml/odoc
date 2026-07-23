@@ -138,7 +138,7 @@ let rec read_core_type env container ctyp =
 #if defined OXCAML
     | Ttyp_poly(vars, typ) ->
       Poly(List.map (fun (name, jk) ->
-        (name, Cmi.read_jkind_annotation jk)
+        (name, Cmi.read_jkind_annotation env.ident_env jk)
       ) vars, read_core_type env container typ)
 #else
     | Ttyp_poly(vars, typ) -> Poly(List.map (fun v -> (v, Kind.Default)) vars, read_core_type env container typ)
@@ -208,13 +208,16 @@ let read_value_description env parent vd =
   let modalities = Cmi.read_value_descr_modalities vd.val_val in
   Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities }
 
-let read_type_parameter (ctyp, var_and_injectivity)  =
+let read_type_parameter env (ctyp, var_and_injectivity)  =
   let open TypeDecl in
+#if not defined OXCAML
+  ignore env;
+#endif
   let desc, kind =
     match ctyp.ctyp_desc with
 #if defined OXCAML
-    | Ttyp_var (None, layout) -> Any, Cmi.read_jkind_annotation layout
-    | Ttyp_var (Some s, layout) -> Var s, Cmi.read_jkind_annotation layout
+    | Ttyp_var (None, layout) -> Any, Cmi.read_jkind_annotation env.ident_env layout
+    | Ttyp_var (Some s, layout) -> Var s, Cmi.read_jkind_annotation env.ident_env layout
 #else
     | Ttyp_any -> Any, Kind.Default
     | Ttyp_var s -> Var s, Kind.Default
@@ -340,7 +343,7 @@ let read_type_kind env parent =
 
 let read_type_equation env container decl =
   let open TypeDecl.Equation in
-  let params = List.map read_type_parameter decl.typ_params in
+  let params = List.map (read_type_parameter env) decl.typ_params in
   let private_ = (decl.typ_private = Private) in
   let manifest = opt_map (read_core_type env container) decl.typ_manifest in
   let constraints =
@@ -356,7 +359,7 @@ let read_type_equation env container decl =
   in
   let kind =
 #if defined OXCAML
-    Cmi.read_jkind_annotation decl.typ_jkind_annotation
+    Cmi.read_jkind_annotation env.ident_env decl.typ_jkind_annotation
 #else
     Kind.Default
 #endif
@@ -397,6 +400,24 @@ let read_type_declarations env parent rec_flag decls =
 let read_type_substitutions env parent decls =
   List.map (fun decl -> Odoc_model.Lang.Signature.TypeSubstitution (read_type_declaration env parent decl)) decls
 
+#if defined OXCAML
+let read_kind_abbreviation env parent (jkd : Typedtree.jkind_declaration) =
+  let open KindAbbreviation in
+  let id = Env.find_kind_abbreviation_identifier env.ident_env jkd.jkind_id in
+  let source_loc = None in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
+  let doc =
+    Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container
+      jkd.jkind_attributes
+  in
+  let manifest =
+    match jkd.jkind_annotation with
+    | None -> None
+    | Some _ as annot -> Some (Cmi.read_jkind_annotation env.ident_env annot)
+  in
+  { id; source_loc; doc; manifest }
+#endif
+
 let read_extension_constructor env parent ext =
   let open Extension.Constructor in
   let id = Env.find_extension_identifier env.ident_env ext.ext_id in
@@ -423,7 +444,7 @@ let read_type_extension env parent tyext =
   let type_path = Env.Path.read_type env.ident_env tyext.tyext_path in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container tyext.tyext_attributes in
-  let type_params = List.map read_type_parameter tyext.tyext_params in
+  let type_params = List.map (read_type_parameter env) tyext.tyext_params in
   let private_ = (tyext.tyext_private = Private) in
   let constructors =
     List.map (read_extension_constructor env parent) tyext.tyext_constructors
@@ -528,7 +549,7 @@ let read_class_type_declaration env parent cltd =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ~warnings_tag:env.warnings_tag cltd.ci_attributes in
   let virtual_ = (cltd.ci_virt = Virtual) in
-  let params = List.map read_type_parameter cltd.ci_params in
+  let params = List.map (read_type_parameter env) cltd.ci_params in
   let expr = read_class_signature env (id :> Identifier.ClassSignature.t) container cltd.ci_expr in
   { id; source_loc; doc; virtual_; params; expr; expansion = None }
 
@@ -563,7 +584,7 @@ let read_class_description env parent cld =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ~warnings_tag:env.warnings_tag cld.ci_attributes in
   let virtual_ = (cld.ci_virt = Virtual) in
-  let params = List.map read_type_parameter cld.ci_params in
+  let params = List.map (read_type_parameter env) cld.ci_params in
   let type_ = read_class_type env (id :> Identifier.ClassSignature.t) container cld.ci_expr in
   { id; source_loc; doc; virtual_; params; type_; expansion = None }
 
@@ -853,7 +874,8 @@ and read_signature_item env parent item =
         [ModuleTypeSubstitution (read_module_type_substitution env parent mtst)]
 #endif
 #if defined OXCAML
-    | Tsig_jkind _ -> []
+    | Tsig_jkind jkd ->
+        [ KindAbbreviation (read_kind_abbreviation env parent jkd) ]
 #endif
 
 
