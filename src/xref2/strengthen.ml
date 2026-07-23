@@ -69,7 +69,7 @@ and sig_items prefix ?canonical sg =
             (Include i' :: items, strengthened @ s)
         | Exception _ | TypExt _ | Value _ | Class _ | ClassType _
         | ModuleSubstitution _ | TypeSubstitution _ | ModuleTypeSubstitution _
-        | Comment _ | Open _ ->
+        | KindAbbreviation _ | Comment _ | Open _ ->
             (item :: items, s))
       ([], []) sg.items
   in

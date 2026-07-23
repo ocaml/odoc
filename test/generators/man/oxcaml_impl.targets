@@ -14,4 +14,6 @@ Oxcaml_impl.Multiple_include_functors.Second.3o
 Oxcaml_impl.Include_functor_not_last.3o
 Oxcaml_impl.Include_functor_not_last.Make.3o
 Oxcaml_impl.Anonymous_functor.3o
+Oxcaml_impl.Include_functor_kind.3o
+Oxcaml_impl.Include_functor_kind.Make.3o
 Oxcaml_impl.Shadowing_source.3o

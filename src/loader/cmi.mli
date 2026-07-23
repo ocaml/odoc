@@ -102,6 +102,7 @@ val read_exception : env ->
 
 #if defined OXCAML
 val read_jkind_annotation :
+  Ident_env.t ->
   Parsetree.jkind_annotation option ->
   Odoc_model.Lang.Kind.t
 
