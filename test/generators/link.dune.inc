@@ -12288,7 +12288,8 @@
   (targets
    Oxcaml_impl.html.gen
    Oxcaml_impl-To_be_included.html.gen
-   Oxcaml_impl-Including.html.gen)
+   Oxcaml_impl-Including.html.gen
+   Oxcaml_impl-Shadowing_source.html.gen)
   (package odoc)
   (action
    (run
@@ -12319,6 +12320,14 @@
   (package odoc)
   (action
    (diff Oxcaml_impl-Including.html Oxcaml_impl-Including.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Shadowing_source.html
+    Oxcaml_impl-Shadowing_source.html.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -12383,7 +12392,8 @@
   (targets
    Oxcaml_impl.3o.gen
    Oxcaml_impl.To_be_included.3o.gen
-   Oxcaml_impl.Including.3o.gen)
+   Oxcaml_impl.Including.3o.gen
+   Oxcaml_impl.Shadowing_source.3o.gen)
   (package odoc)
   (action
    (run
@@ -12412,6 +12422,12 @@
   (package odoc)
   (action
    (diff Oxcaml_impl.Including.3o Oxcaml_impl.Including.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_impl.Shadowing_source.3o Oxcaml_impl.Shadowing_source.3o.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -12437,7 +12453,8 @@
   (targets
    Oxcaml_impl.md.gen
    Oxcaml_impl-To_be_included.md.gen
-   Oxcaml_impl-Including.md.gen)
+   Oxcaml_impl-Including.md.gen
+   Oxcaml_impl-Shadowing_source.md.gen)
   (package odoc)
   (action
    (run
@@ -12466,6 +12483,12 @@
   (package odoc)
   (action
    (diff Oxcaml_impl-Including.md Oxcaml_impl-Including.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_impl-Shadowing_source.md Oxcaml_impl-Shadowing_source.md.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir

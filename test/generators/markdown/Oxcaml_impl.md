@@ -70,3 +70,10 @@ Mode on a function argument, via a type annotation.
 val mode_multi : string @ local once -> string @ local once
 ```
 Multiple modes on argument and return.
+
+```ocaml
+type t_abbrev : my_abbrev mod immutable
+```
+```ocaml
+module Shadowing_source : sig ... end
+```
