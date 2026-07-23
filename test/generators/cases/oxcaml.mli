@@ -280,3 +280,39 @@ module M3 : sig @@ contended
 end
 (** [contended] modality applied to all definitions in the module, except the
     ones which have already specified this axis. *)
+
+(** {1 Include functor on signatures} *)
+
+module No_include_functor : sig
+(** Module without any [include functor] features, this is how things are done
+    in plain OCaml at the moment. *)
+  module Make (T : sig type t end) : sig type included end
+  module T : sig
+    type t
+  end
+
+  include module type of T
+  include module type of Make(T)
+end
+
+module Include_functor : sig
+(** Module which defines a functor and includes it via [module type of] *)
+  module Make (T : sig type t end) : sig type included end
+  type t
+  include functor module type of Make
+end
+
+module Include_functor_named_type : sig
+(** This is a module where the functor is named and then included. *)
+  module type Make = (_ : sig type t end) -> sig type included end
+  type t
+  include functor Make
+end
+
+module Include_functor_inline : sig
+(** This is a test case where the functor is named and included inline *)
+  module type Make = (_ : sig type t end) -> sig type included end
+  type t
+  include functor Make
+  (** @inline *)
+end

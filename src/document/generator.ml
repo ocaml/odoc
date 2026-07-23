@@ -1916,8 +1916,8 @@ module Make (Syntax : SYNTAX) = struct
     and include_ (t : Odoc_model.Lang.Include.t) =
       let decl_hidden =
         match t.decl with
-        | Alias p -> Paths.Path.(is_hidden (p :> t))
-        | ModuleType mty -> umty_hidden mty
+        | Alias p | Functor (Path p) -> Paths.Path.(is_hidden (p :> t))
+        | ModuleType mty | Functor (ModuleType mty) -> umty_hidden mty
       in
       let status = if decl_hidden then `Inline else t.status in
 
@@ -1925,14 +1925,21 @@ module Make (Syntax : SYNTAX) = struct
       let summary =
         if decl_hidden then O.render (O.keyword "include" ++ O.txt " ...")
         else
+          let include_kw =
+            match t.decl with
+            | Odoc_model.Lang.Include.Alias _ | ModuleType _ ->
+                O.keyword "include"
+            | Functor _ -> O.keyword "include functor"
+          in
           let include_decl =
             match t.decl with
-            | Odoc_model.Lang.Include.Alias mod_path ->
+            | Odoc_model.Lang.Include.Alias mod_path | Functor (Path mod_path)
+              ->
                 Link.from_path (mod_path :> Paths.Path.t)
-            | ModuleType mt -> umty mt
+            | Functor (ModuleType mt) | ModuleType mt -> umty mt
           in
           O.render
-            (O.keyword "include" ++ O.txt " " ++ include_decl
+            (include_kw ++ O.txt " " ++ include_decl
             ++ if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop)
       in
       let content = { Include.content; status; summary } in

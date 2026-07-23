@@ -345,3 +345,19 @@ Module with `portable` modality. The modality is applied to all value members of
 module M3 : sig ... end
 ```
 `contended` modality applied to all definitions in the module, except the ones which have already specified this axis.
+
+
+## Include functor on signatures
+
+```ocaml
+module No_include_functor : sig ... end
+```
+```ocaml
+module Include_functor : sig ... end
+```
+```ocaml
+module Include_functor_named_type : sig ... end
+```
+```ocaml
+module Include_functor_inline : sig ... end
+```

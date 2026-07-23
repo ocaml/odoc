@@ -1586,6 +1586,12 @@ and assert_not_functor : type err.
   | Signature sg -> Ok sg
   | _ -> assert false
 
+and assert_functor : type err. expansion -> (Component.Signature.t, err) result
+    = function
+  | Functor (_, mty) -> (
+      match mty with Signature s -> Ok s | _ -> assert false)
+  | _ -> assert false
+
 and unresolve_subs subs =
   List.map
     (function
@@ -1621,22 +1627,28 @@ and signature_of_module_type_of :
 and signature_of_u_module_type_expr :
     Env.t ->
     Component.ModuleType.U.expr ->
+    allow_functor:bool ->
     (Component.Signature.t, expansion_of_module_error) result =
- fun env m ->
+ fun env m ~allow_functor ->
   match m with
   | Component.ModuleType.U.Path p -> (
       match resolve_module_type env p with
-      | Ok (_, mt) -> expansion_of_module_type env mt >>= assert_not_functor
+      | Ok (_, mt) -> (
+          expansion_of_module_type env mt
+          >>=
+          match allow_functor with
+          | true -> assert_functor
+          | false -> assert_not_functor)
       | Error e -> Error (`UnresolvedPath (`ModuleType (p, e))))
   | Signature s -> Ok s
   | With (subs, s) ->
-      signature_of_u_module_type_expr env s >>= fun sg ->
+      signature_of_u_module_type_expr env s ~allow_functor >>= fun sg ->
       let subs = unresolve_subs subs in
       handle_signature_with_subs env sg subs
   | TypeOf (desc, original_path) ->
       signature_of_module_type_of env desc ~original_path >>= assert_not_functor
   | Strengthen (expr, path, _aliasable) ->
-      signature_of_u_module_type_expr env expr >>= fun sg ->
+      signature_of_u_module_type_expr env expr ~allow_functor >>= fun sg ->
       Ok (Strengthen.signature path sg)
 
 and expansion_of_simple_expansion :
@@ -1667,7 +1679,8 @@ and expansion_of_module_type_expr :
   | Component.ModuleType.With { w_expansion = Some e; _ } ->
       Ok (expansion_of_simple_expansion e)
   | Component.ModuleType.With { w_substitutions; w_expr; _ } ->
-      signature_of_u_module_type_expr env w_expr >>= fun sg ->
+      signature_of_u_module_type_expr env w_expr ~allow_functor:false
+      >>= fun sg ->
       let subs = unresolve_subs w_substitutions in
       handle_signature_with_subs env sg subs >>= fun sg -> Ok (Signature sg)
   | Component.ModuleType.Functor (arg, expr) -> Ok (Functor (arg, expr))
@@ -1681,7 +1694,8 @@ and expansion_of_module_type_expr :
       in
       expansion_of_module_path env ~strengthen p
   | Component.ModuleType.Strengthen { s_expr; s_path; _ } ->
-      signature_of_u_module_type_expr env s_expr >>= fun sg ->
+      signature_of_u_module_type_expr env s_expr ~allow_functor:false
+      >>= fun sg ->
       let sg = Strengthen.signature s_path sg in
       Ok (Signature sg)
 
@@ -1812,7 +1826,12 @@ and fragmap :
         expansion_of_module_path env ~strengthen:true p >>= assert_not_functor
         >>= fun sg ->
         fragmap env subst sg >>= fun sg -> Ok (ModuleType (Signature sg))
-    | ModuleType mty' -> Ok (ModuleType (With ([ subst ], mty')))
+    | Functor (Path p) ->
+        expansion_of_module_path env ~strengthen:true p >>= assert_functor
+        >>= fun sg ->
+        fragmap env subst sg >>= fun sg -> Ok (ModuleType (Signature sg))
+    | Functor (ModuleType mty') | ModuleType mty' ->
+        Ok (ModuleType (With ([ subst ], mty')))
   in
   let map_module m new_subst =
     let open Component.Module in
