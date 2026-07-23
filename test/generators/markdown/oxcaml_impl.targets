@@ -20,4 +20,7 @@ Oxcaml_impl-Include_functor_not_last.md
 Oxcaml_impl-Include_functor_not_last-Make.md
 Oxcaml_impl-Include_functor_not_last-Make-argument-1-T.md
 Oxcaml_impl-Anonymous_functor.md
+Oxcaml_impl-Include_functor_kind.md
+Oxcaml_impl-Include_functor_kind-Make.md
+Oxcaml_impl-Include_functor_kind-Make-argument-1-T.md
 Oxcaml_impl-Shadowing_source.md

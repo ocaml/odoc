@@ -87,6 +87,7 @@ let match_extra_odoc_reference_kind (_location as loc) s :
   | "extension-decl" -> Some `TExtensionDecl
   | "field" -> Some `TField
   | "instance-variable" -> Some `TInstanceVariable
+  | "kind" -> Some `TKindAbbreviation
   | "label" ->
       d loc "label" "section";
       Some `TLabel
@@ -474,6 +475,9 @@ let parse whole_reference_location s :
                 (signature next_token tokens, ModuleTypeName.make_std identifier)
           | `TType ->
               `Type (signature next_token tokens, TypeName.make_std identifier)
+          | `TKindAbbreviation ->
+              `KindAbbreviation
+                (signature next_token tokens, TypeName.make_std identifier)
           | `TConstructor ->
               `Constructor
                 (parent next_token tokens, ConstructorName.make_std identifier)

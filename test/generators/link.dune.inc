@@ -11953,6 +11953,14 @@
    Oxcaml-F_with.html.gen
    Oxcaml-F_with-argument-1-X.html.gen
    Oxcaml-X_with.html.gen
+   Oxcaml-M_kinds.html.gen
+   Oxcaml-module-type-S_kind.html.gen
+   Oxcaml-F_kind.html.gen
+   Oxcaml-F_kind-argument-1-X.html.gen
+   Oxcaml-Arg_kind.html.gen
+   Oxcaml-F_nested.html.gen
+   Oxcaml-F_nested-argument-1-X.html.gen
+   Oxcaml-F_nested-Nested.html.gen
    Oxcaml-module-type-S.html.gen
    Oxcaml-M1.html.gen
    Oxcaml-M2.html.gen
@@ -12057,6 +12065,56 @@
   (package odoc)
   (action
    (diff Oxcaml-X_with.html Oxcaml-X_with.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M_kinds.html Oxcaml-M_kinds.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-module-type-S_kind.html Oxcaml-module-type-S_kind.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_kind.html Oxcaml-F_kind.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_kind-argument-1-X.html Oxcaml-F_kind-argument-1-X.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-Arg_kind.html Oxcaml-Arg_kind.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_nested.html Oxcaml-F_nested.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-F_nested-argument-1-X.html
+    Oxcaml-F_nested-argument-1-X.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_nested-Nested.html Oxcaml-F_nested-Nested.html.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12501,6 +12559,9 @@
    Oxcaml.tex.gen
    Oxcaml.F_with.tex.gen
    Oxcaml.X_with.tex.gen
+   Oxcaml.F_kind.tex.gen
+   Oxcaml.Arg_kind.tex.gen
+   Oxcaml.F_nested.tex.gen
    Oxcaml.M1.tex.gen)
   (package odoc)
   (action
@@ -12523,6 +12584,24 @@
   (package odoc)
   (action
    (diff Oxcaml.X_with.tex Oxcaml.X_with.tex.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.F_kind.tex Oxcaml.F_kind.tex.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.Arg_kind.tex Oxcaml.Arg_kind.tex.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.F_nested.tex Oxcaml.F_nested.tex.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12556,6 +12635,11 @@
    Oxcaml.M_with.3o.gen
    Oxcaml.F_with.3o.gen
    Oxcaml.X_with.3o.gen
+   Oxcaml.M_kinds.3o.gen
+   Oxcaml.F_kind.3o.gen
+   Oxcaml.Arg_kind.3o.gen
+   Oxcaml.F_nested.3o.gen
+   Oxcaml.F_nested.Nested.3o.gen
    Oxcaml.M1.3o.gen
    Oxcaml.M2.3o.gen
    Oxcaml.M3.3o.gen
@@ -12614,6 +12698,36 @@
   (package odoc)
   (action
    (diff Oxcaml.X_with.3o Oxcaml.X_with.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.M_kinds.3o Oxcaml.M_kinds.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.F_kind.3o Oxcaml.F_kind.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.Arg_kind.3o Oxcaml.Arg_kind.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.F_nested.3o Oxcaml.F_nested.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.F_nested.Nested.3o Oxcaml.F_nested.Nested.3o.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12875,6 +12989,14 @@
    Oxcaml-F_with.md.gen
    Oxcaml-F_with-argument-1-X.md.gen
    Oxcaml-X_with.md.gen
+   Oxcaml-M_kinds.md.gen
+   Oxcaml-module-type-S_kind.md.gen
+   Oxcaml-F_kind.md.gen
+   Oxcaml-F_kind-argument-1-X.md.gen
+   Oxcaml-Arg_kind.md.gen
+   Oxcaml-F_nested.md.gen
+   Oxcaml-F_nested-argument-1-X.md.gen
+   Oxcaml-F_nested-Nested.md.gen
    Oxcaml-module-type-S.md.gen
    Oxcaml-M1.md.gen
    Oxcaml-M2.md.gen
@@ -12975,6 +13097,54 @@
   (package odoc)
   (action
    (diff Oxcaml-X_with.md Oxcaml-X_with.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M_kinds.md Oxcaml-M_kinds.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-module-type-S_kind.md Oxcaml-module-type-S_kind.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_kind.md Oxcaml-F_kind.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_kind-argument-1-X.md Oxcaml-F_kind-argument-1-X.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-Arg_kind.md Oxcaml-Arg_kind.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_nested.md Oxcaml-F_nested.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_nested-argument-1-X.md Oxcaml-F_nested-argument-1-X.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_nested-Nested.md Oxcaml-F_nested-Nested.md.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -13434,6 +13604,9 @@
    Oxcaml_impl-Include_functor_not_last-Make.html.gen
    Oxcaml_impl-Include_functor_not_last-Make-argument-1-T.html.gen
    Oxcaml_impl-Anonymous_functor.html.gen
+   Oxcaml_impl-Include_functor_kind.html.gen
+   Oxcaml_impl-Include_functor_kind-Make.html.gen
+   Oxcaml_impl-Include_functor_kind-Make-argument-1-T.html.gen
    Oxcaml_impl-Shadowing_source.html.gen)
   (package odoc)
   (action
@@ -13623,6 +13796,30 @@
   (package odoc)
   (action
    (diff
+    Oxcaml_impl-Include_functor_kind.html
+    Oxcaml_impl-Include_functor_kind.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_kind-Make.html
+    Oxcaml_impl-Include_functor_kind-Make.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_kind-Make-argument-1-T.html
+    Oxcaml_impl-Include_functor_kind-Make-argument-1-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
     Oxcaml_impl-Shadowing_source.html
     Oxcaml_impl-Shadowing_source.html.gen))
   (enabled_if %{ocaml-config:ox})))
@@ -13703,6 +13900,8 @@
    Oxcaml_impl.Include_functor_not_last.3o.gen
    Oxcaml_impl.Include_functor_not_last.Make.3o.gen
    Oxcaml_impl.Anonymous_functor.3o.gen
+   Oxcaml_impl.Include_functor_kind.3o.gen
+   Oxcaml_impl.Include_functor_kind.Make.3o.gen
    Oxcaml_impl.Shadowing_source.3o.gen)
   (package odoc)
   (action
@@ -13837,6 +14036,22 @@
   (alias runtest)
   (package odoc)
   (action
+   (diff
+    Oxcaml_impl.Include_functor_kind.3o
+    Oxcaml_impl.Include_functor_kind.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl.Include_functor_kind.Make.3o
+    Oxcaml_impl.Include_functor_kind.Make.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
    (diff Oxcaml_impl.Shadowing_source.3o Oxcaml_impl.Shadowing_source.3o.gen))
   (enabled_if %{ocaml-config:ox})))
 
@@ -13883,6 +14098,9 @@
    Oxcaml_impl-Include_functor_not_last-Make.md.gen
    Oxcaml_impl-Include_functor_not_last-Make-argument-1-T.md.gen
    Oxcaml_impl-Anonymous_functor.md.gen
+   Oxcaml_impl-Include_functor_kind.md.gen
+   Oxcaml_impl-Include_functor_kind-Make.md.gen
+   Oxcaml_impl-Include_functor_kind-Make-argument-1-T.md.gen
    Oxcaml_impl-Shadowing_source.md.gen)
   (package odoc)
   (action
@@ -14060,6 +14278,30 @@
    (diff
     Oxcaml_impl-Anonymous_functor.md
     Oxcaml_impl-Anonymous_functor.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_kind.md
+    Oxcaml_impl-Include_functor_kind.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_kind-Make.md
+    Oxcaml_impl-Include_functor_kind-Make.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_kind-Make-argument-1-T.md
+    Oxcaml_impl-Include_functor_kind-Make-argument-1-T.md.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)

@@ -8,6 +8,9 @@ type module_type = [ `FModuleType of ModuleTypeName.t * ModuleType.t ]
 
 type datatype = [ `FType of TypeName.t * TypeDecl.t ]
 
+type kind_abbreviation =
+  [ `FKindAbbreviation of Odoc_model.Paths.Identifier.KindAbbreviation.t ]
+
 type class_ =
   [ `FClass of TypeName.t * Class.t | `FClassType of TypeName.t * ClassType.t ]
 
@@ -67,6 +70,9 @@ val module_in_sig : Signature.t -> ModuleName.t -> module_ option
 val type_in_sig : Signature.t -> TypeName.t -> type_ option
 
 val datatype_in_sig : Signature.t -> TypeName.t -> datatype option
+
+val kind_abbreviation_in_sig :
+  Signature.t -> TypeName.t -> kind_abbreviation option
 
 val module_type_in_sig : Signature.t -> ModuleTypeName.t -> module_type option
 

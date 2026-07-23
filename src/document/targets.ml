@@ -19,8 +19,8 @@ and signature (t : Odoc_model.Lang.Signature.t) =
         | ModuleType mty -> add_items ~don't (module_type mty :: acc) is
         | Include incl -> add_items ~don't (include_ incl :: acc) is
         | Open _ | ModuleSubstitution _ | ModuleTypeSubstitution _
-        | TypeSubstitution _ | Type _ | TypExt _ | Exception _ | Value _
-        | Class _ | ClassType _
+        | TypeSubstitution _ | Type _ | KindAbbreviation _ | TypExt _
+        | Exception _ | Value _ | Class _ | ClassType _
         | Comment (`Docs _) ->
             add_items ~don't acc is)
   in
