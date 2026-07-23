@@ -89,6 +89,8 @@ module Path = struct
     | `Root x -> `Root x
     | `Dot (p, s) -> `Dot (module_ map p, s)
     | `Apply (m1, m2) -> `Apply (module_ map m1, module_ map m2)
+    | `ApplyParam (i, p, a) ->
+        `ApplyParam (module_ map i, module_ map p, module_ map a)
     | `Module (`Module p, n) -> `Dot (`Resolved (resolved_module map p), n)
     | `Module (_, _) -> failwith "Probably shouldn't happen"
 
