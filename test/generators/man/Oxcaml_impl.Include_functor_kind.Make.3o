@@ -1,0 +1,33 @@
+
+.TH Make 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_impl\.Include_functor_kind\.Make
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Include_functor_kind\.Make\fR
+.in 
+.sp 
+.fi 
+A kind abbreviation reaching the functor through its argument\. T\.k is rendered as plain text: kind annotations hold references, which are not substituted when the functor is applied\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Parameters\fR
+.in 
+.sp 
+\f[CB]module\fR T : \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]kind_\fR k
+.br 
+\f[CB]end\fR
+.sp 
+.in 3
+\fB2 Signature\fR
+.in 
+.sp 
+\f[CB]type\fR inherited : T\.k

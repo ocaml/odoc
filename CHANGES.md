@@ -19,6 +19,7 @@
 - Allow to break link into multiple lines (@Tim-ats-d, #1439)
 - Support for atomic annotation (@ElectreAAS, #1496)
 - Support for OxCaml parameterized libraries (@art-w, #1464)
+- Support for OxCaml kind abbreviations (@art-w, #1467)
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
