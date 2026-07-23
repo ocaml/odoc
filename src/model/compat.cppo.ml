@@ -58,6 +58,9 @@ and signature_item =
   | Sig_modtype of Ident.t * modtype_declaration * visibility
   | Sig_class of Ident.t * Types.class_declaration * Types.rec_status * visibility
   | Sig_class_type of Ident.t * Types.class_type_declaration * Types.rec_status * visibility
+#if defined OXCAML
+  | Sig_jkind of Ident.t * Types.jkind_declaration * visibility
+#endif
 
 and module_declaration =
   {
@@ -79,13 +82,7 @@ let opt conv = function | None -> None | Some x -> Some (conv x)
 #if OCAML_VERSION >= (4,10,0)
 
 let rec signature : Types.signature -> signature = fun x ->
-#if defined OXCAML
-  List.filter_map (function
-    | Types.Sig_jkind _ -> None
-    | si -> Some (signature_item si)) x
-#else
   List.map signature_item x
-#endif
 
 and signature_item : Types.signature_item -> signature_item = function
   | Types.Sig_value (a,b,c) -> Sig_value (a,b,visibility c)
@@ -96,7 +93,7 @@ and signature_item : Types.signature_item -> signature_item = function
   | Types.Sig_class (a,b,c,d) -> Sig_class (a,b,c, visibility d)
   | Types.Sig_class_type (a,b,c,d) -> Sig_class_type (a,b,c, visibility d)
 #if defined OXCAML
-  | Types.Sig_jkind _ -> assert false  (* filtered in [signature] *)
+  | Types.Sig_jkind (a,b,c) -> Sig_jkind (a, b, visibility c)
 #endif
 
 and visibility : Types.visibility -> visibility = function

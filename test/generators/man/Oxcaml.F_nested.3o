@@ -1,0 +1,43 @@
+
+.TH F_nested 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.F_nested
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml\.F_nested\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Parameters\fR
+.in 
+.sp 
+\f[CB]module\fR X : \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]kind_\fR functor_kind = value \f[CB]mod\fR portable
+.fi 
+.br 
+.ti +4
+A kind declared in a module type\.
+.nf 
+
+.br 
+\f[CB]end\fR
+.sp 
+.in 3
+\fB2 Signature\fR
+.in 
+.sp 
+\f[CB]kind_\fR abstract_kind
+.fi 
+.br 
+.ti +2
+An abstract kind\.
+.nf 
+.sp 
+\f[CB]module\fR Nested : \f[CB]sig\fR \.\.\. \f[CB]end\fR

@@ -23,6 +23,7 @@ let empty_shadow =
     s_module_types = [];
     s_values = [];
     s_types = [];
+    s_kind_abbreviations = [];
     s_classes = [];
     s_class_types = [];
   }
@@ -386,6 +387,7 @@ module ExtractIDs = struct
       | Exception (_, _) :: rest
       | Value (_, _) :: rest
       | TypExt _ :: rest
+      | KindAbbreviation _ :: rest
       | Comment _ :: rest ->
           inner rest map
       | Include i :: rest -> inner rest (include_ parent map i)
@@ -439,6 +441,13 @@ let rec signature_items id map items =
           (ModuleSubstitution (module_substitution map parent id m) :: acc)
     | TypeSubstitution (id, t) :: rest ->
         inner rest (TypeSubstitution (type_decl map parent id t) :: acc)
+    | KindAbbreviation t :: rest ->
+        let name =
+          Odoc_model.Paths.Identifier.name t.Odoc_model.Lang.KindAbbreviation.id
+        in
+        if List.mem_assoc name map.shadowed.s_kind_abbreviations then
+          inner rest acc
+        else inner rest (KindAbbreviation t :: acc)
     | Class (id, r, c) :: rest ->
         inner rest (Class (r, class_ map parent id c) :: acc)
     | ClassType (id, r, c) :: rest ->
@@ -637,6 +646,8 @@ and combine_shadowed s1 s2 =
     s_module_types = combine s1.s_module_types s2.s_module_types;
     s_values = combine s1.s_values s2.s_values;
     s_types = combine s1.s_types s2.s_types;
+    s_kind_abbreviations =
+      combine s1.s_kind_abbreviations s2.s_kind_abbreviations;
     s_classes = combine s1.s_classes s2.s_classes;
     s_class_types = combine s1.s_class_types s2.s_class_types;
   }

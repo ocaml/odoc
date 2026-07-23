@@ -54,6 +54,8 @@ let rec of_id x =
       ret "ModuleType" (ModuleTypeName.to_string name) :: of_id (parent :> t)
   | `Type (parent, name) ->
       ret "Type" (TypeName.to_string name) :: of_id (parent :> t)
+  | `KindAbbreviation (parent, name) ->
+      ret "KindAbbreviation" (TypeName.to_string name) :: of_id (parent :> t)
   | `Constructor (parent, name) ->
       ret "Constructor" (ConstructorName.to_string name) :: of_id (parent :> t)
   | `Field (parent, name) ->
@@ -109,6 +111,8 @@ let rec prefix_name_kind_of_id (n : Odoc_model.Paths.Identifier.t) =
       (prefix_of_parent parent, ModuleTypeName.to_string name, "module_type")
   | `Type (parent, name) ->
       (prefix_of_parent parent, TypeName.to_string name, "type")
+  | `KindAbbreviation (parent, name) ->
+      (prefix_of_parent parent, TypeName.to_string name, "kind")
   | `Constructor (parent, name) ->
       (prefix_of_parent parent, ConstructorName.to_string name, "constructor")
   | `Field (parent, name) ->
@@ -182,6 +186,7 @@ let of_entry ({ Entry.id; doc; kind } as entry) html occurrences =
             ("manifest", manifest);
             ("constraints", constraints);
           ]
+    | KindAbbreviation -> return "KindAbbreviation" []
     | Module _ -> return "Module" []
     | Value { value = _; type_ } ->
         return "Value" [ ("type", `String (Text.of_type type_)) ]

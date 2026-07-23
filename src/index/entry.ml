@@ -44,6 +44,7 @@ type module_entry = { has_expansion : bool }
 
 type kind =
   | TypeDecl of type_decl_entry
+  | KindAbbreviation
   | Module of module_entry
   | Value of value_entry
   | Doc

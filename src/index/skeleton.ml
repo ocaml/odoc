@@ -48,6 +48,9 @@ module Entry = struct
     in
     Entry.entry ~id:td.id ~doc:td.doc.elements ~kind
 
+  let of_kind_abbreviation (ka : KindAbbreviation.t) =
+    Entry.entry ~id:ka.id ~doc:ka.doc.elements ~kind:Entry.KindAbbreviation
+
   let varify_params =
     List.mapi (fun i param ->
         match param.TypeDecl.desc with
@@ -186,6 +189,7 @@ and signature_item id s_item =
   | ModuleTypeSubstitution _ -> []
   | Open _ -> []
   | Type (_, t_decl) -> type_decl t_decl
+  | KindAbbreviation ka -> [ Tree.leaf (Entry.of_kind_abbreviation ka) ]
   | TypeSubstitution _ -> []
   | TypExt te -> type_ext te
   | Exception exc -> exception_ exc
