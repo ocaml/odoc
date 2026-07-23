@@ -18,3 +18,7 @@
  (applies_to html_support_files)
  (enabled_if
   (> %{ocaml_version} 4.14.0)))
+
+(cram
+ (applies_to parameterized)
+ (enabled_if %{ocaml-config:ox}))
