@@ -185,6 +185,7 @@ and Page : sig
     source_anchor : Url.t option;
         (** Url to the corresponding source code. Might be a whole source file
             or a sub part. *)
+    library_parameter : bool;
   }
 end =
   Page

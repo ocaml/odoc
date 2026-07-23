@@ -214,7 +214,8 @@ module rec Path : sig
     | `Substituted of module_
     | `Root of ModuleName.t
     | `Dot of module_ * ModuleName.t
-    | `Apply of module_ * module_ ]
+    | `Apply of module_ * module_
+    | `ApplyParam of module_ * module_ * module_ ]
   (** @canonical Odoc_model.Paths.Path.Module.t *)
 
   type module_type =
@@ -258,6 +259,7 @@ module rec Path : sig
     | `DotMT of module_ * ModuleTypeName.t
     | `DotV of module_ * ValueName.t
     | `Apply of module_ * module_
+    | `ApplyParam of module_ * module_ * module_
     | `Unbox of type_ ]
   (** @canonical Odoc_model.Paths.Path.t *)
 end =
