@@ -488,22 +488,138 @@ let mark_class_declaration cld =
   mark_class_type cld.cty_params cld.cty_type
 
 #if defined OXCAML
-let read_parsetree_core_type (ct : Parsetree.core_type) =
+let rec read_longident_module (l : Longident.t) : Paths.Path.Module.t =
+  match l with
+  | Longident.Lident s -> `Root (ModuleName.make_std s)
+  | Longident.Ldot (p, s) -> `Dot (read_longident_module p, ModuleName.make_std s)
+  | Longident.Lapply (p, arg) ->
+      `Apply (read_longident_module p, read_longident_module arg)
+
+let read_longident_type (l : Longident.t) : Paths.Path.Type.t =
+  match l with
+  | Longident.Lident s -> `Resolved (`CoreType (TypeName.make_std s))
+  | Longident.Ldot (p, s) -> `DotT (read_longident_module p, TypeName.make_std s)
+  | Longident.Lapply _ -> `Resolved (`CoreType (TypeName.make_std "_"))
+
+let read_longident_class_type (l : Longident.t) : Paths.Path.ClassType.t =
+  match l with
+  | Longident.Ldot (p, s) -> `DotT (read_longident_module p, TypeName.make_std s)
+  | Longident.Lident s ->
+      `DotT (`Root (ModuleName.make_std "*"), TypeName.make_std s)
+  | Longident.Lapply _ ->
+      `DotT (`Root (ModuleName.make_std "*"), TypeName.make_std "_")
+
+let read_longident_module_type (l : Longident.t) : Paths.Path.ModuleType.t =
+  match l with
+  | Longident.Ldot (p, s) ->
+      `DotMT (read_longident_module p, ModuleTypeName.make_std s)
+  | Longident.Lident s ->
+      `DotMT (`Root (ModuleName.make_std "_"), ModuleTypeName.make_std s)
+  | Longident.Lapply _ ->
+      `DotMT (`Root (ModuleName.make_std "_"), ModuleTypeName.make_std "_")
+
+let read_parsetree_modes (modes : Parsetree.modes) =
+  List.map (fun (m : Parsetree.mode Location.loc) ->
+    let (Parsetree.Mode s) = m.txt in s)
+    modes
+
+let rec read_parsetree_core_type (ct : Parsetree.core_type) =
   let open TypeExpr in
   match ct.ptyp_desc with
   | Ptyp_var (s, _) -> Var s
   | Ptyp_any _ -> Any
-  | _ -> failwith "invalid core type"
+  | Ptyp_constr (lid, args) ->
+      Constr (read_longident_type lid.txt, List.map read_parsetree_core_type args)
+  | Ptyp_class (lid, args) ->
+      Class
+        (read_longident_class_type lid.txt, List.map read_parsetree_core_type args)
+  | Ptyp_tuple ts ->
+      Tuple (List.map (fun (lbl, t) -> (lbl, read_parsetree_core_type t)) ts)
+  | Ptyp_unboxed_tuple ts ->
+      Unboxed_tuple (List.map (fun (lbl, t) -> (lbl, read_parsetree_core_type t)) ts)
+  | Ptyp_arrow (lbl, arg, res, arg_modes, res_modes) ->
+      let lbl =
+        match lbl with
+        | Asttypes.Nolabel -> None
+        | Asttypes.Labelled s -> Some (Label s)
+        | Asttypes.Optional s -> Some (Optional s)
+      in
+      Arrow
+        ( lbl,
+          (read_parsetree_core_type arg, read_parsetree_modes arg_modes),
+          (read_parsetree_core_type res, read_parsetree_modes res_modes) )
+  | Ptyp_variant (fields, closed, labels) ->
+      let open TypeExpr.Polymorphic_variant in
+      let elements =
+        List.map
+          (fun (field : Parsetree.row_field) ->
+            match field.prf_desc with
+            | Rtag (name, constant, args) ->
+                Constructor
+                  {
+                    name = name.txt;
+                    constant;
+                    arguments = List.map read_parsetree_core_type args;
+                    doc =
+                      { Odoc_model.Comment.elements = []; warnings_tag = None };
+                  }
+            | Rinherit ct -> Type (read_parsetree_core_type ct))
+          fields
+      in
+      let kind =
+        match (closed, labels) with
+        | Asttypes.Open, _ -> Open
+        | Asttypes.Closed, None -> Fixed
+        | Asttypes.Closed, Some ls -> Closed ls
+      in
+      Polymorphic_variant { kind; elements }
+  | Ptyp_object (fields, closed) ->
+      let open TypeExpr.Object in
+      let fields =
+        List.map
+          (fun (field : Parsetree.object_field) ->
+            match field.pof_desc with
+            | Otag (name, ct) ->
+                Method { name = name.txt; type_ = read_parsetree_core_type ct }
+            | Oinherit ct -> Inherit (read_parsetree_core_type ct))
+          fields
+      in
+      Object { fields; open_ = (closed = Asttypes.Open) }
+  | Ptyp_alias (ct, None, _) -> read_parsetree_core_type ct
+  | Ptyp_alias (ct, Some name, _) -> Alias (read_parsetree_core_type ct, name.txt)
+  | Ptyp_poly (vars, ct) ->
+      let vars =
+        List.map
+          (fun (name, jk) ->
+            let kind =
+              match jk with None -> Kind.Default | Some jk -> read_jkind_annotation jk
+            in
+            (name.txt, kind))
+          vars
+      in
+      Poly (vars, read_parsetree_core_type ct)
+  | Ptyp_package (lid, substs) ->
+      let path = read_longident_module_type lid.txt in
+      let substitutions =
+        List.map
+          (fun (frag, ct) ->
+            (Env.Fragment.read_type frag.txt, read_parsetree_core_type ct))
+          substs
+      in
+      Package { path; substitutions }
+  | Ptyp_quote ct -> Quote (read_parsetree_core_type ct)
+  | Ptyp_splice ct -> Splice (read_parsetree_core_type ct)
+  (* TODO: no good representation available atm *)
+  | Ptyp_of_kind _ | Ptyp_repr _ | Ptyp_extension _ -> Any
+  | Ptyp_open (_, ct) -> read_parsetree_core_type ct
 
-let rec read_jkind_annotation (jk : Parsetree.jkind_annotation) =
+and read_jkind_annotation (jk : Parsetree.jkind_annotation) =
   let open Kind in
   match jk.pjka_desc with
   | Pjk_default -> Default
   | Pjk_abbreviation s -> Abbreviation (Env.Fragment.read_type s.txt)
   | Pjk_mod (jk', modes) ->
-    let modes = List.map (fun (m : Parsetree.mode Location.loc) ->
-      let (Parsetree.Mode s) = m.txt in s) modes in
-    Mod (read_jkind_annotation jk', modes)
+    Mod (read_jkind_annotation jk', read_parsetree_modes modes)
   | Pjk_with (jk', cty, modalities) ->
     let ty = read_parsetree_core_type cty in
     let modalities = List.map (fun (m : Parsetree.modality Location.loc) ->
@@ -548,6 +664,84 @@ let read_label_modalities ld =
 let read_constructor_argument arg =
   arg.ca_type, read_modalities Immutable arg.ca_modalities
 
+let tree_of_modes (modes : Mode.Alloc.Const.t) : string list =
+  (* Same as the OxCaml's [Printtyp.tree_of_modes]: axes whose value is legacy
+     or is implied by another axis are suppressed. *)
+  let forkable =
+    match modes.areality, modes.forkable with
+    | Local, Unforkable | Global, Forkable -> None
+    | _, _ -> Some modes.forkable
+  in
+  let yielding =
+    match modes.areality, modes.yielding with
+    | Local, Yielding | Global, Unyielding -> None
+    | _, _ -> Some modes.yielding
+  in
+  let contention =
+    match modes.visibility, modes.contention with
+    | Immutable, Contended
+    | Read, Shared
+    | Read_write, Uncontended -> None
+    | _, _ -> Some modes.contention
+  in
+  let portability =
+    match modes.statefulness, modes.portability with
+    | Stateless, Portable
+    | Observing, Shareable
+    | Stateful, Nonportable -> None
+    | _, _ -> Some modes.portability
+  in
+  let diff = Mode.Alloc.Const.diff modes Mode.Alloc.Const.legacy in
+  let diff = { diff with forkable; yielding; contention; portability } in
+  let print_opt print a = Option.map (Format_doc.asprintf "%a" print) a in
+  List.filter_map (fun x -> x)
+    [ print_opt Mode.Locality.Const.print diff.areality
+    ; print_opt Mode.Uniqueness.Const.print diff.uniqueness
+    ; print_opt Mode.Linearity.Const.print diff.linearity
+    ; print_opt Mode.Portability.Const.print diff.portability
+    ; print_opt Mode.Contention.Const.print diff.contention
+    ; print_opt Mode.Forkable.Const.print diff.forkable
+    ; print_opt Mode.Yielding.Const.print diff.yielding
+    ; print_opt Mode.Statefulness.Const.print diff.statefulness
+    ; print_opt Mode.Visibility.Const.print diff.visibility
+    ; print_opt Mode.Staticity.Const.print diff.staticity ]
+
+let read_alloc_modes m = tree_of_modes (Mode.Alloc.zap_to_legacy m)
+
+type modes = Mode.Alloc.Const.t
+
+let legacy_modes = Mode.Alloc.Const.legacy
+
+let curried_acc modes arg_mode =
+  Ctype.curry_mode modes (Mode.Alloc.zap_to_legacy arg_mode)
+
+let mode_is_implied modes res_mode =
+  let snap = Btype.snapshot () in
+  let implied =
+    match Mode.Alloc.equate (Mode.Alloc.of_const modes) res_mode with
+    | Ok () -> true
+    | Error _ -> false
+  in
+  Btype.backtrack snap;
+  implied
+
+let read_arrow_modes modes typ =
+  match Compat.get_desc typ with
+  | Tarrow ((_, arg_mode, res_mode), _, res, _) ->
+      let arg_modes = read_alloc_modes arg_mode in
+      let modes = curried_acc modes arg_mode in
+      let res_is_arrow =
+        match Compat.get_desc res with
+        | Tarrow _ -> not (is_aliased (proxy res))
+        | _ -> false
+      in
+      let res_modes =
+        if res_is_arrow && mode_is_implied modes res_mode then []
+        else read_alloc_modes res_mode
+      in
+      (arg_modes, res_modes, modes)
+  | _ -> ([], [], modes)
+
 #else
 
 let jkind_of_type_desc _te = Kind.Default
@@ -555,9 +749,17 @@ let read_value_descr_modalities _vd = []
 let read_label_modalities _ld = []
 let read_constructor_argument arg = arg, []
 
+type modes = unit
+
+let legacy_modes : modes = ()
+
+let read_arrow_modes (modes : modes) _typ = ([], [], modes)
+
 #endif
 
-let rec read_type_expr env typ =
+let rec read_type_expr env typ = read_type_expr_modal env legacy_modes typ
+
+and read_type_expr_modal env modes typ =
   let open TypeExpr in
   let px = proxy typ in
   if used_alias px then Var (name_of_type typ)
@@ -592,8 +794,9 @@ let rec read_type_expr env typ =
             | _ ->
               lbl, read_type_expr env arg
           in
-          let res = read_type_expr env res in
-            Arrow(lbl, arg, res)
+          let arg_modes, res_modes, modes = read_arrow_modes modes typ in
+          let res = read_type_expr_modal env modes res in
+            Arrow(lbl, (arg, arg_modes), (res, res_modes))
       | Ttuple typs ->
 #if OCAML_VERSION >= (5,4,0) || defined OXCAML
           let typs = List.map (fun (lbl,x) -> lbl, read_type_expr env x) typs in

@@ -11948,6 +11948,11 @@
  (rule
   (targets
    Oxcaml.html.gen
+   Oxcaml-M_with.html.gen
+   Oxcaml-module-type-Arg_with.html.gen
+   Oxcaml-F_with.html.gen
+   Oxcaml-F_with-argument-1-X.html.gen
+   Oxcaml-X_with.html.gen
    Oxcaml-module-type-S.html.gen
    Oxcaml-M1.html.gen
    Oxcaml-M2.html.gen
@@ -11970,6 +11975,38 @@
   (package odoc)
   (action
    (diff Oxcaml.html Oxcaml.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M_with.html Oxcaml-M_with.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-module-type-Arg_with.html
+    Oxcaml-module-type-Arg_with.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_with.html Oxcaml-F_with.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_with-argument-1-X.html Oxcaml-F_with-argument-1-X.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-X_with.html Oxcaml-X_with.html.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12016,7 +12053,11 @@
 (subdir
  latex
  (rule
-  (targets Oxcaml.tex.gen Oxcaml.M1.tex.gen)
+  (targets
+   Oxcaml.tex.gen
+   Oxcaml.F_with.tex.gen
+   Oxcaml.X_with.tex.gen
+   Oxcaml.M1.tex.gen)
   (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../oxcaml.odocl}))
@@ -12026,6 +12067,18 @@
   (package odoc)
   (action
    (diff Oxcaml.tex Oxcaml.tex.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.F_with.tex Oxcaml.F_with.tex.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.X_with.tex Oxcaml.X_with.tex.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12054,7 +12107,14 @@
 (subdir
  man
  (rule
-  (targets Oxcaml.3o.gen Oxcaml.M1.3o.gen Oxcaml.M2.3o.gen Oxcaml.M3.3o.gen)
+  (targets
+   Oxcaml.3o.gen
+   Oxcaml.M_with.3o.gen
+   Oxcaml.F_with.3o.gen
+   Oxcaml.X_with.3o.gen
+   Oxcaml.M1.3o.gen
+   Oxcaml.M2.3o.gen
+   Oxcaml.M3.3o.gen)
   (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../oxcaml.odocl}))
@@ -12064,6 +12124,24 @@
   (package odoc)
   (action
    (diff Oxcaml.3o Oxcaml.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.M_with.3o Oxcaml.M_with.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.F_with.3o Oxcaml.F_with.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.X_with.3o Oxcaml.X_with.3o.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12106,6 +12184,11 @@
  (rule
   (targets
    Oxcaml.md.gen
+   Oxcaml-M_with.md.gen
+   Oxcaml-module-type-Arg_with.md.gen
+   Oxcaml-F_with.md.gen
+   Oxcaml-F_with-argument-1-X.md.gen
+   Oxcaml-X_with.md.gen
    Oxcaml-module-type-S.md.gen
    Oxcaml-M1.md.gen
    Oxcaml-M2.md.gen
@@ -12126,6 +12209,36 @@
   (package odoc)
   (action
    (diff Oxcaml.md Oxcaml.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M_with.md Oxcaml-M_with.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-module-type-Arg_with.md Oxcaml-module-type-Arg_with.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_with.md Oxcaml-F_with.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_with-argument-1-X.md Oxcaml-F_with-argument-1-X.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-X_with.md Oxcaml-X_with.md.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)

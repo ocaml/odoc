@@ -1,0 +1,17 @@
+
+.TH M_with 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.M_with
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml\.M_with\fR
+.in 
+.sp 
+.fi 
+Helper module used in the with constraint below\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR 'a t : immutable_data
