@@ -68,6 +68,37 @@ Unboxed types have a trailing hash '\#'
 \medbreak
 \label{Oxcaml--type-t_with_modalities}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t\_\allowbreak{}with\_\allowbreak{}modalities : immutable\_\allowbreak{}data \ocamltag{keyword}{with} \ocamltag{type-var}{'a} @@ portable contended}\begin{ocamlindent}Kind annotation with a \ocamlinlinecode{with} constraint and modalities.\end{ocamlindent}%
 \medbreak
+\label{Oxcaml--type-comparator}\ocamlcodefragment{\ocamltag{keyword}{type} ('k,\allowbreak{} 'cmp) comparator}\begin{ocamlindent}Helper used in the \ocamlinlinecode{with} constraints below.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_with_constr}\ocamlcodefragment{\ocamltag{keyword}{type} ('k,\allowbreak{} 'v,\allowbreak{} 'cmp)
+  t\_\allowbreak{}with\_\allowbreak{}constr : ((immutable\_\allowbreak{}data \ocamltag{keyword}{with} \ocamltag{type-var}{'k}) \ocamltag{keyword}{with} \ocamltag{type-var}{'v}) \ocamltag{keyword}{with} (\ocamltag{type-var}{'k},\allowbreak{} \ocamltag{type-var}{'cmp}) comparator}\begin{ocamlindent}A \ocamlinlinecode{with} constraint whose right-hand side is a parameterized type constructor (as found in \ocamlinlinecode{base}'s \ocamlinlinecode{Map} module).\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_with_app}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t\_\allowbreak{}with\_\allowbreak{}app : immutable\_\allowbreak{}data \ocamltag{keyword}{with} \ocamltag{type-var}{'a} list}\begin{ocamlindent}A \ocamlinlinecode{with} constraint whose right-hand side applies a type constructor.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_with_arrow}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t\_\allowbreak{}with\_\allowbreak{}arrow : immutable\_\allowbreak{}data \ocamltag{keyword}{with} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\begin{ocamlindent}A \ocamlinlinecode{with} constraint whose right-hand side is an arrow type.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_with_arrow_modes}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t\_\allowbreak{}with\_\allowbreak{}arrow\_\allowbreak{}modes : immutable\_\allowbreak{}data \ocamltag{keyword}{with} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a} @ local}\begin{ocamlindent}A \ocamlinlinecode{with} constraint whose right-hand side is an arrow type carrying a mode.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_with_tuple}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t\_\allowbreak{}with\_\allowbreak{}tuple : immutable\_\allowbreak{}data \ocamltag{keyword}{with} \ocamltag{type-var}{'a} * int}\begin{ocamlindent}A \ocamlinlinecode{with} constraint whose right-hand side is a tuple type.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--module-M_with}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M_with]{\ocamlinlinecode{M\_\allowbreak{}with}}}\label{Oxcaml-M_with}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-M_with--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t : immutable\_\allowbreak{}data}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}Helper module used in the \ocamlinlinecode{with} constraint below.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_with_dot}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t\_\allowbreak{}with\_\allowbreak{}dot : immutable\_\allowbreak{}data \ocamltag{keyword}{with} \ocamltag{type-var}{'a} \hyperref[xref-unresolved]{\ocamlinlinecode{M\_\allowbreak{}with}}.\allowbreak{}t}\begin{ocamlindent}A \ocamlinlinecode{with} constraint referring to a type through a module path (\ocamlinlinecode{M.\allowbreak{}t}).\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--module-type-Arg_with}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[Oxcaml-module-type-Arg_with]{\ocamlinlinecode{Arg\_\allowbreak{}with}}}\label{Oxcaml-module-type-Arg_with}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-module-type-Arg_with--type-s}\ocamlcodefragment{\ocamltag{keyword}{type} s}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{Oxcaml--module-F_with}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-F_with]{\ocamlinlinecode{F\_\allowbreak{}with}}}\ocamlcodefragment{ (\hyperref[Oxcaml-F_with-argument-1-X]{\ocamlinlinecode{X}} : \hyperref[Oxcaml-module-type-Arg_with]{\ocamlinlinecode{Arg\_\allowbreak{}with}}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\begin{ocamlindent}Helper functor used in the \ocamlinlinecode{with} constraint below.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--module-X_with}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-X_with]{\ocamlinlinecode{X\_\allowbreak{}with}}}\ocamlcodefragment{ : \hyperref[Oxcaml-module-type-Arg_with]{\ocamlinlinecode{Arg\_\allowbreak{}with}}}\\
+\label{Oxcaml--type-t_with_functor}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t\_\allowbreak{}with\_\allowbreak{}functor : immutable\_\allowbreak{}data \ocamltag{keyword}{with} \ocamltag{type-var}{'a} \hyperref[xref-unresolved]{\ocamlinlinecode{F\_\allowbreak{}with}}(\hyperref[xref-unresolved]{\ocamlinlinecode{X\_\allowbreak{}with}}).\allowbreak{}t}\begin{ocamlindent}A \ocamlinlinecode{with} constraint referring to a type through a functor application (\ocamlinlinecode{F(X).\allowbreak{}t}).\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_with_variant}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t\_\allowbreak{}with\_\allowbreak{}variant : immutable\_\allowbreak{}data \ocamltag{keyword}{with} [ `Foo of \ocamltag{type-var}{'a} | `Bar ]}\begin{ocamlindent}A \ocamlinlinecode{with} constraint whose right-hand side is a polymorphic variant.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--type-t_with_object}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t\_\allowbreak{}with\_\allowbreak{}object : immutable\_\allowbreak{}data \ocamltag{keyword}{with} < foo : \ocamltag{type-var}{'a} >}\begin{ocamlindent}A \ocamlinlinecode{with} constraint whose right-hand side is an object type.\end{ocamlindent}%
+\medbreak
 \subsection{Kind annotations on type aliases\label{Oxcaml--kind-annotations-on-type-aliases}}%
 \label{Oxcaml--type-t_alias}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}alias : immediate = int}\begin{ocamlindent}Has both a kind annotation and a manifest.\end{ocamlindent}%
 \medbreak
@@ -364,4 +395,6 @@ Some axes have a default value that is implied by another axis; the implied valu
 \end{ocamltabular}%
 \\
 
+\input{Oxcaml.F_with.tex}
+\input{Oxcaml.X_with.tex}
 \input{Oxcaml.M1.tex}

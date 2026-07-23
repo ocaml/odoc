@@ -88,6 +88,57 @@ type 'a t_with : immediate with 'a
 type 'a t_with_modalities : immutable_data with 'a @@ portable contended
 (** Kind annotation with a [with] constraint and modalities. *)
 
+type ('k, 'cmp) comparator
+(** Helper used in the [with] constraints below. *)
+
+type ('k, 'v, 'cmp) t_with_constr
+  : immutable_data with 'k with 'v with ('k, 'cmp) comparator
+(** A [with] constraint whose right-hand side is a parameterized type
+    constructor (as found in [base]'s [Map] module). *)
+
+type 'a t_with_app : immutable_data with 'a list
+(** A [with] constraint whose right-hand side applies a type constructor. *)
+
+type 'a t_with_arrow : immutable_data with ('a -> 'a)
+(** A [with] constraint whose right-hand side is an arrow type. *)
+
+type 'a t_with_arrow_modes : immutable_data with ('a -> 'a @ local)
+(** A [with] constraint whose right-hand side is an arrow type carrying a
+    mode. *)
+
+type 'a t_with_tuple : immutable_data with ('a * int)
+(** A [with] constraint whose right-hand side is a tuple type. *)
+
+module M_with : sig
+  type 'a t : immutable_data
+end
+(** Helper module used in the [with] constraint below. *)
+
+type 'a t_with_dot : immutable_data with 'a M_with.t
+(** A [with] constraint referring to a type through a module path
+    ([M.t]). *)
+
+module type Arg_with = sig
+  type s
+end
+
+module F_with (X : Arg_with) : sig
+  type 'a t : immutable_data
+end
+(** Helper functor used in the [with] constraint below. *)
+
+module X_with : Arg_with
+
+type 'a t_with_functor : immutable_data with 'a F_with(X_with).t
+(** A [with] constraint referring to a type through a functor application
+    ([F(X).t]). *)
+
+type 'a t_with_variant : immutable_data with [ `Foo of 'a | `Bar ]
+(** A [with] constraint whose right-hand side is a polymorphic variant. *)
+
+type 'a t_with_object : immutable_data with < foo : 'a >
+(** A [with] constraint whose right-hand side is an object type. *)
+
 (** {1 Kind annotations on type aliases} *)
 
 type t_alias : immediate = int

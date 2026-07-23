@@ -230,6 +230,100 @@ Kind annotation with a with constraint\.
 Kind annotation with a with constraint and modalities\.
 .nf 
 .sp 
+\f[CB]type\fR ('k, 'cmp) comparator
+.fi 
+.br 
+.ti +2
+Helper used in the with constraints below\.
+.nf 
+.sp 
+\f[CB]type\fR ('k, 'v, 'cmp)
+  t_with_constr : ((immutable_data \f[CB]with\fR \f[CB]'k\fR) \f[CB]with\fR \f[CB]'v\fR) \f[CB]with\fR (\f[CB]'k\fR, \f[CB]'cmp\fR) comparator
+.fi 
+.br 
+.ti +2
+A with constraint whose right-hand side is a parameterized type constructor (as found in base's Map module)\.
+.nf 
+.sp 
+\f[CB]type\fR 'a t_with_app : immutable_data \f[CB]with\fR \f[CB]'a\fR list
+.fi 
+.br 
+.ti +2
+A with constraint whose right-hand side applies a type constructor\.
+.nf 
+.sp 
+\f[CB]type\fR 'a t_with_arrow : immutable_data \f[CB]with\fR \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR
+.fi 
+.br 
+.ti +2
+A with constraint whose right-hand side is an arrow type\.
+.nf 
+.sp 
+\f[CB]type\fR 'a t_with_arrow_modes : immutable_data \f[CB]with\fR \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR @ local
+.fi 
+.br 
+.ti +2
+A with constraint whose right-hand side is an arrow type carrying a mode\.
+.nf 
+.sp 
+\f[CB]type\fR 'a t_with_tuple : immutable_data \f[CB]with\fR \f[CB]'a\fR * int
+.fi 
+.br 
+.ti +2
+A with constraint whose right-hand side is a tuple type\.
+.nf 
+.sp 
+\f[CB]module\fR M_with : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+Helper module used in the with constraint below\.
+.nf 
+.sp 
+\f[CB]type\fR 'a t_with_dot : immutable_data \f[CB]with\fR \f[CB]'a\fR M_with\.t
+.fi 
+.br 
+.ti +2
+A with constraint referring to a type through a module path (M\.t)\.
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR Arg_with = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR s
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR F_with (X : Arg_with) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+Helper functor used in the with constraint below\.
+.nf 
+.sp 
+\f[CB]module\fR X_with : Arg_with
+.sp 
+\f[CB]type\fR 'a t_with_functor : immutable_data \f[CB]with\fR \f[CB]'a\fR F_with(X_with)\.t
+.fi 
+.br 
+.ti +2
+A with constraint referring to a type through a functor application (F(X)\.t)\.
+.nf 
+.sp 
+\f[CB]type\fR 'a t_with_variant : immutable_data \f[CB]with\fR [ `Foo of \f[CB]'a\fR | `Bar ]
+.fi 
+.br 
+.ti +2
+A with constraint whose right-hand side is a polymorphic variant\.
+.nf 
+.sp 
+\f[CB]type\fR 'a t_with_object : immutable_data \f[CB]with\fR < foo : \f[CB]'a\fR >
+.fi 
+.br 
+.ti +2
+A with constraint whose right-hand side is an object type\.
+.nf 
+.sp 
 .in 3
 \fB6 Kind annotations on type aliases\fR
 .in 

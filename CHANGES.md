@@ -6,6 +6,7 @@
 - Support for OxCaml modalities (@art-w, #1420)
 - Support OxCaml 5.2.0minus39 (@jonludlam, #1469)
 - Support for OxCaml modes (@art-w, #1454)
+- Fix OxCaml with-bounds for arbitrary types (@art-w, #1466)
 
 ### Fixed
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)

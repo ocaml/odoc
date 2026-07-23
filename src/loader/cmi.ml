@@ -489,22 +489,138 @@ let mark_class_declaration cld =
   mark_class_type cld.cty_params cld.cty_type
 
 #if defined OXCAML
-let read_parsetree_core_type (ct : Parsetree.core_type) =
+let rec read_longident_module (l : Longident.t) : Paths.Path.Module.t =
+  match l with
+  | Longident.Lident s -> `Root (ModuleName.make_std s)
+  | Longident.Ldot (p, s) -> `Dot (read_longident_module p, ModuleName.make_std s)
+  | Longident.Lapply (p, arg) ->
+      `Apply (read_longident_module p, read_longident_module arg)
+
+let read_longident_type (l : Longident.t) : Paths.Path.Type.t =
+  match l with
+  | Longident.Lident s -> `Resolved (`CoreType (TypeName.make_std s))
+  | Longident.Ldot (p, s) -> `DotT (read_longident_module p, TypeName.make_std s)
+  | Longident.Lapply _ -> `Resolved (`CoreType (TypeName.make_std "_"))
+
+let read_longident_class_type (l : Longident.t) : Paths.Path.ClassType.t =
+  match l with
+  | Longident.Ldot (p, s) -> `DotT (read_longident_module p, TypeName.make_std s)
+  | Longident.Lident s ->
+      `DotT (`Root (ModuleName.make_std "*"), TypeName.make_std s)
+  | Longident.Lapply _ ->
+      `DotT (`Root (ModuleName.make_std "*"), TypeName.make_std "_")
+
+let read_longident_module_type (l : Longident.t) : Paths.Path.ModuleType.t =
+  match l with
+  | Longident.Ldot (p, s) ->
+      `DotMT (read_longident_module p, ModuleTypeName.make_std s)
+  | Longident.Lident s ->
+      `DotMT (`Root (ModuleName.make_std "_"), ModuleTypeName.make_std s)
+  | Longident.Lapply _ ->
+      `DotMT (`Root (ModuleName.make_std "_"), ModuleTypeName.make_std "_")
+
+let read_parsetree_modes (modes : Parsetree.modes) =
+  List.map (fun (m : Parsetree.mode Location.loc) ->
+    let (Parsetree.Mode s) = m.txt in s)
+    modes
+
+let rec read_parsetree_core_type (ct : Parsetree.core_type) =
   let open TypeExpr in
   match ct.ptyp_desc with
   | Ptyp_var (s, _) -> Var s
   | Ptyp_any _ -> Any
-  | _ -> failwith "invalid core type"
+  | Ptyp_constr (lid, args) ->
+      Constr (read_longident_type lid.txt, List.map read_parsetree_core_type args)
+  | Ptyp_class (lid, args) ->
+      Class
+        (read_longident_class_type lid.txt, List.map read_parsetree_core_type args)
+  | Ptyp_tuple ts ->
+      Tuple (List.map (fun (lbl, t) -> (lbl, read_parsetree_core_type t)) ts)
+  | Ptyp_unboxed_tuple ts ->
+      Unboxed_tuple (List.map (fun (lbl, t) -> (lbl, read_parsetree_core_type t)) ts)
+  | Ptyp_arrow (lbl, arg, res, arg_modes, res_modes) ->
+      let lbl =
+        match lbl with
+        | Asttypes.Nolabel -> None
+        | Asttypes.Labelled s -> Some (Label s)
+        | Asttypes.Optional s -> Some (Optional s)
+      in
+      Arrow
+        ( lbl,
+          (read_parsetree_core_type arg, read_parsetree_modes arg_modes),
+          (read_parsetree_core_type res, read_parsetree_modes res_modes) )
+  | Ptyp_variant (fields, closed, labels) ->
+      let open TypeExpr.Polymorphic_variant in
+      let elements =
+        List.map
+          (fun (field : Parsetree.row_field) ->
+            match field.prf_desc with
+            | Rtag (name, constant, args) ->
+                Constructor
+                  {
+                    name = name.txt;
+                    constant;
+                    arguments = List.map read_parsetree_core_type args;
+                    doc =
+                      { Odoc_model.Comment.elements = []; warnings_tag = None };
+                  }
+            | Rinherit ct -> Type (read_parsetree_core_type ct))
+          fields
+      in
+      let kind =
+        match (closed, labels) with
+        | Asttypes.Open, _ -> Open
+        | Asttypes.Closed, None -> Fixed
+        | Asttypes.Closed, Some ls -> Closed ls
+      in
+      Polymorphic_variant { kind; elements }
+  | Ptyp_object (fields, closed) ->
+      let open TypeExpr.Object in
+      let fields =
+        List.map
+          (fun (field : Parsetree.object_field) ->
+            match field.pof_desc with
+            | Otag (name, ct) ->
+                Method { name = name.txt; type_ = read_parsetree_core_type ct }
+            | Oinherit ct -> Inherit (read_parsetree_core_type ct))
+          fields
+      in
+      Object { fields; open_ = (closed = Asttypes.Open) }
+  | Ptyp_alias (ct, None, _) -> read_parsetree_core_type ct
+  | Ptyp_alias (ct, Some name, _) -> Alias (read_parsetree_core_type ct, name.txt)
+  | Ptyp_poly (vars, ct) ->
+      let vars =
+        List.map
+          (fun (name, jk) ->
+            let kind =
+              match jk with None -> Kind.Default | Some jk -> read_jkind_annotation jk
+            in
+            (name.txt, kind))
+          vars
+      in
+      Poly (vars, read_parsetree_core_type ct)
+  | Ptyp_package (lid, substs) ->
+      let path = read_longident_module_type lid.txt in
+      let substitutions =
+        List.map
+          (fun (frag, ct) ->
+            (Env.Fragment.read_type frag.txt, read_parsetree_core_type ct))
+          substs
+      in
+      Package { path; substitutions }
+  | Ptyp_quote ct -> Quote (read_parsetree_core_type ct)
+  | Ptyp_splice ct -> Splice (read_parsetree_core_type ct)
+  (* TODO: no good representation available atm *)
+  | Ptyp_of_kind _ | Ptyp_repr _ | Ptyp_extension _ -> Any
+  | Ptyp_open (_, ct) -> read_parsetree_core_type ct
 
-let rec read_jkind_annotation (jk : Parsetree.jkind_annotation) =
+and read_jkind_annotation (jk : Parsetree.jkind_annotation) =
   let open Kind in
   match jk.pjka_desc with
   | Pjk_default -> Default
   | Pjk_abbreviation (s, _) -> Abbreviation (Env.Fragment.read_type s.txt)
   | Pjk_mod (jk', modes) ->
-    let modes = List.map (fun (m : Parsetree.mode Location.loc) ->
-      let (Parsetree.Mode s) = m.txt in s) modes in
-    Mod (read_jkind_annotation jk', modes)
+    Mod (read_jkind_annotation jk', read_parsetree_modes modes)
   | Pjk_with (jk', cty, modalities) ->
     let ty = read_parsetree_core_type cty in
     let modalities = List.map (fun (m : Parsetree.modality Location.loc) ->
