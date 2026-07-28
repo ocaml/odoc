@@ -4,6 +4,10 @@
 - Support for OxCaml zero alloc definitions (@Leonidas-from-XIV, #1422, #1444)
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)
 - Support for OxCaml modalities (@art-w, #1420)
+- Fix #372: do not splice the name of the type into the text a reference to a
+  constructor, a polymorphic variant tag or a record field is rendered as, so
+  that `{!M.Foo}` now renders as `M.Foo` rather than as the invalid `M.t.Foo`
+  (@MavenRain, #PLACEHOLDER_PR)
 
 # 3.2.1
 
