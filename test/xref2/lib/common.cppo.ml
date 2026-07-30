@@ -620,7 +620,11 @@ let mkresolver () =
   Odoc_odoc.Resolver.create
  ~roots:None     ~important_digests:false
     ~directories:(List.map Odoc_odoc.Fs.Directory.of_string
-#if OCAML_VERSION >= (5,2,0)
+#if defined OXCAML
+  (let paths = Load_path.get_paths () in
+   let visible = List.map (fun (v : Clflags.visible_include) -> v.path) paths.visible in
+   List.filter (fun s -> s <> "") (visible @ paths.hidden))
+#elif OCAML_VERSION >= (5,2,0)
   (let paths = Load_path.get_paths () in
    List.filter (fun s -> s <> "") (paths.visible @ paths.hidden))
 #else

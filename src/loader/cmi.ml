@@ -315,6 +315,7 @@ let mark_type ty =
       | Tlink _ -> assert false
 #if defined OXCAML
       | Tquote typ -> loop visited typ
+      | Tquote_eval typ -> loop visited typ
       | Tsplice typ -> loop visited typ
       | Tof_kind _ -> ()
       | Trepr _ -> ()
@@ -499,7 +500,7 @@ let rec read_jkind_annotation (jk : Parsetree.jkind_annotation) =
   let open Kind in
   match jk.pjka_desc with
   | Pjk_default -> Default
-  | Pjk_abbreviation s -> Abbreviation (Env.Fragment.read_type s.txt)
+  | Pjk_abbreviation (s, _) -> Abbreviation (Env.Fragment.read_type s.txt)
   | Pjk_mod (jk', modes) ->
     let modes = List.map (fun (m : Parsetree.mode Location.loc) ->
       let (Parsetree.Mode s) = m.txt in s) modes in
@@ -665,6 +666,7 @@ let rec read_type_expr env typ =
       | Tlink _ -> assert false
 #if defined OXCAML
       | Tquote typ -> Quote (read_type_expr env typ)
+      | Tquote_eval typ -> Quote (read_type_expr env typ)
       | Tsplice typ -> Splice (read_type_expr env typ)
       | Tof_kind _ -> assert false
       | Trepr _ -> Any  (* oxcaml: representation annotations are ignored *)

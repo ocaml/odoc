@@ -243,7 +243,11 @@ let read_cmi ~make_root ~parent ~filename ~warnings_tag () =
       let name = name |> name_to_string in
       let id, sg =
         Cmi.read_interface parent name ~warnings_tag
+#if defined OXCAML
+          (Odoc_model.Compat.signature (fst cmi_info.cmi_sign))
+#else
           (Odoc_model.Compat.signature cmi_info.cmi_sign)
+#endif
       in
 #if defined OXCAML
       let imports =

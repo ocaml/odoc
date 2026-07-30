@@ -163,6 +163,9 @@ let rec read_core_type env container ctyp =
     | Ttyp_call_pos -> Constr(Env.Path.read_type env.ident_env Predef.path_lexing_position, [])
     | Ttyp_of_kind _ -> assert false
     | Ttyp_repr _ -> Any  (* oxcaml: representation annotations are ignored *)
+    | Ttyp_newlayout (_, ct) ->
+        (* oxcaml: layout-variable binder; odoc ignores the layout vars *)
+        read_core_type env container ct
 #elif OCAML_VERSION >= (5,5,0)
   | Ttyp_functor (lbl, id, pkg, ret_type) ->
     let lbl = read_label lbl in
@@ -586,28 +589,33 @@ let rec read_with_constraint env global_parent parent (_, frag, constr) =
     | Twith_type decl ->
         let frag = Env.Fragment.read_type frag.Location.txt in
         let eq = read_type_equation env parent decl in
-          TypeEq(frag, eq)
+          Some (TypeEq(frag, eq))
     | Twith_module(p, _) ->
         let frag = Env.Fragment.read_module frag.Location.txt in
         let eq = read_module_equation env p in
-          ModuleEq(frag, eq)
+          Some (ModuleEq(frag, eq))
     | Twith_typesubst decl ->
         let frag = Env.Fragment.read_type frag.Location.txt in
         let eq = read_type_equation env parent decl in
-          TypeSubst(frag, eq)
+          Some (TypeSubst(frag, eq))
     | Twith_modsubst(p, _) ->
         let frag = Env.Fragment.read_module frag.Location.txt in
         let p = Env.Path.read_module env.ident_env p in
-          ModuleSubst(frag, p)
+          Some (ModuleSubst(frag, p))
 #if OCAML_VERSION >= (4,13,0)
     | Twith_modtype mty ->
         let frag = Env.Fragment.read_module_type frag.Location.txt in
         let mty = read_module_type env global_parent parent mty in
-        ModuleTypeEq(frag, mty)
+        Some (ModuleTypeEq(frag, mty))
     | Twith_modtypesubst mty ->
         let frag = Env.Fragment.read_module_type frag.Location.txt in
         let mty = read_module_type env global_parent parent mty in
-        ModuleTypeSubst(frag, mty)
+        Some (ModuleTypeSubst(frag, mty))
+#endif
+#if defined OXCAML
+    (* oxcaml: [with kind] constraints have no representation in odoc's
+       model, so they are dropped. *)
+    | Twith_jkind _ | Twith_jkindsubst _ -> None
 #endif
 
 and read_module_type env parent label_parent mty =
@@ -671,7 +679,7 @@ and read_module_type env parent label_parent mty =
 #endif
     | Tmty_with(body, subs) -> (
       let body = read_module_type env parent label_parent body in
-      let subs = List.map (read_with_constraint env parent label_parent) subs in
+      let subs = List.filter_map (read_with_constraint env parent label_parent) subs in
       match Odoc_model.Lang.umty_of_mty body with
       | Some w_expr ->
           With {w_substitutions=subs; w_expansion=None; w_expr }
