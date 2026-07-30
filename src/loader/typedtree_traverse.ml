@@ -14,7 +14,7 @@ module Analysis = struct
     else
       match expr.exp_desc with
 #if defined OXCAML
-      | Texp_ident (p, _, _, _, _, _) ->
+      | Texp_ident { path = p; _ } ->
 #else
       | Texp_ident (p, _, _) ->
 #endif
@@ -31,7 +31,7 @@ module Analysis = struct
         let () =
           match pat_desc with
 #if defined OXCAML
-          | Tpat_var (id, loc, _uid, _, _) -> (
+          | Tpat_var { id; name = loc; _ } -> (
 #elif OCAML_VERSION >= (5, 2, 0)
           | Tpat_var (id, loc, _uid) -> (
 #else
@@ -41,7 +41,7 @@ module Analysis = struct
               | Some x -> poses := x :: !poses
               | None -> ())
 #if defined OXCAML
-          | Tpat_alias (_, id, loc, _uid, _, _, _) -> (
+          | Tpat_alias { id; name = loc; _ } -> (
 #elif OCAML_VERSION >= (5, 4, 0)
           | Tpat_alias (_, id, loc, _uid, _ty) -> (
 #elif OCAML_VERSION >= (5, 2, 0)

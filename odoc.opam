@@ -58,7 +58,7 @@ depends: [
 
 conflicts: [
   "ocaml-option-bytecode-only"
-  "oxcaml-compiler" {< "5.2.0minus31"}
+  "oxcaml-compiler" {< "5.2.0minus39"}
 ]
 
 x-extra-doc-deps: [
