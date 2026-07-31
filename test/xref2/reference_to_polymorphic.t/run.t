@@ -12,14 +12,14 @@
 
   $ odoc html-generate -o html --indent main.odocl
   $ cat html/Main/index.html | grep -A3 "<li>"
-     <ul><li><a href="#type-switch.On"><code>switch.`On</code></a></li>
-      <li><a href="#type-switch.Off"><code>switch.`Off</code></a></li>
-      <li><a href="#type-switch.On"><code>switch.`On</code></a></li>
-      <li><a href="#type-switch.Off"><code>switch.`Off</code></a></li>
-      <li><a href="#type-switch.On"><code>switch.`On</code></a></li>
-      <li><a href="#type-switch.Off"><code>switch.`Off</code></a></li>
-      <li><a href="#type-switch.On"><code>switch.`On</code></a></li>
-      <li><a href="#type-switch.Off"><code>switch.`Off</code></a></li>
+     <ul><li><a href="#type-switch.On"><code>`On</code></a></li>
+      <li><a href="#type-switch.Off"><code>`Off</code></a></li>
+      <li><a href="#type-switch.On"><code>`On</code></a></li>
+      <li><a href="#type-switch.Off"><code>`Off</code></a></li>
+      <li><a href="#type-switch.On"><code>`On</code></a></li>
+      <li><a href="#type-switch.Off"><code>`Off</code></a></li>
+      <li><a href="#type-switch.On"><code>`On</code></a></li>
+      <li><a href="#type-switch.Off"><code>`Off</code></a></li>
      </ul><p>References in the environment don't work:</p>
      <ul><li><code>On</code></li><li><code>`On</code></li>
       <li><code>On</code></li><li><code>`On</code></li>

@@ -40,12 +40,12 @@ module Reference = struct
         render_resolved (r :> t) ^ "." ^ ModuleTypeName.to_string s
     | `Type (r, s) -> render_resolved (r :> t) ^ "." ^ TypeName.to_string s
     | `Constructor (r, s) ->
-        render_resolved (r :> t) ^ "." ^ ConstructorName.to_string s
+        render_datatype_parent r ^ ConstructorName.to_string s
     | `PolyConstructor (r, s) ->
-        render_resolved (r :> t) ^ ".`" ^ ConstructorName.to_string s
-    | `Field (r, s) -> render_resolved (r :> t) ^ "." ^ FieldName.to_string s
+        render_datatype_parent r ^ "`" ^ ConstructorName.to_string s
+    | `Field (r, s) -> render_field_parent r ^ FieldName.to_string s
     | `UnboxedField (r, s) ->
-        render_resolved (r :> t) ^ "." ^ UnboxedFieldName.to_string s
+        render_datatype_parent r ^ UnboxedFieldName.to_string s
     | `Extension (r, s) ->
         render_resolved (r :> t) ^ "." ^ ExtensionName.to_string s
     | `ExtensionDecl (r, _, s) ->
@@ -62,6 +62,32 @@ module Reference = struct
         (* CR trefis: the following makes no sense to me... *)
         render_resolved (r :> t) ^ "." ^ InstanceVariableName.to_string s
     | `Label (_, s) -> LabelName.to_string s
+
+  (* The name of a type is not part of the OCaml path of its constructors and
+     of its fields: [M.t.Foo] is not valid syntax whereas [M.Foo] is. Render
+     the path of the parent of the type rather than the path of the type
+     itself. A polymorphic variant tag is not qualified in OCaml at all, but
+     the module prefix is kept for it too, as a locator rather than as a path.
+     See https://github.com/ocaml/odoc/issues/372 *)
+  and render_datatype_parent : Reference.Resolved.DataType.t -> string =
+   fun r ->
+    let open Reference.Resolved in
+    match r with
+    | `Identifier _ -> ""
+    | `Type (parent, _) -> render_resolved (parent :> t) ^ "."
+
+  and render_field_parent : Reference.Resolved.FieldParent.t -> string =
+   fun r ->
+    let open Reference.Resolved in
+    match r with
+    | `Identifier { iv = `Type _; _ } -> ""
+    | `Type (parent, _) -> render_resolved (parent :> t) ^ "."
+    (* The fields of an inline record in an extension constructor or in an
+       exception are parented by the enclosing signature rather than by a
+       type, so the parent is rendered as it was before. *)
+    | `Identifier { iv = #Identifier.Signature.t_pv; _ }
+    | `Alias _ | `AliasModuleType _ | `Module _ | `Hidden _ | `ModuleType _ ->
+        render_resolved (r :> t) ^ "."
 
   let render_path (tag, cs) =
     let tag =
