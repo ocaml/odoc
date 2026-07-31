@@ -85,11 +85,7 @@ module Reference = struct
     (* The fields of an inline record in an extension constructor or in an
        exception are parented by the enclosing signature rather than by a
        type, so the parent is rendered as it was before. *)
-    | `Identifier
-        {
-          iv = `Root _ | `Module _ | `Parameter _ | `Result _ | `ModuleType _;
-          _;
-        }
+    | `Identifier { iv = #Identifier.Signature.t_pv; _ }
     | `Alias _ | `AliasModuleType _ | `Module _ | `Hidden _ | `ModuleType _ ->
         render_resolved (r :> t) ^ "."
 

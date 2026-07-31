@@ -7,7 +7,7 @@
 - Fix #372: do not splice the name of the type into the text a reference to a
   constructor, a polymorphic variant tag or a record field is rendered as, so
   that `{!M.Foo}` now renders as `M.Foo` rather than as the invalid `M.t.Foo`
-  (@MavenRain, #PLACEHOLDER_PR)
+  (@MavenRain, #1468)
 
 # 3.2.1
 
