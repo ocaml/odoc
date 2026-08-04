@@ -1509,7 +1509,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
           if Env.is_shadowed env.ident_env id
           then
             let identifier = Env.find_value_identifier env.ident_env id in
-          match identifier.iv with
+          match identifier with
           | `Value (_, n) -> { shadowed with s_values = (Odoc_model.Names.parenthesise (Ident.name id), n) :: shadowed.s_values }
           else shadowed
         in
@@ -1523,7 +1523,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
           if Env.is_shadowed env.ident_env id
           then
             let identifier = Env.find_type_identifier env.ident_env id in
-            let `Type (_, name) = identifier.iv in
+            let `Type (_, name) = identifier in
             { shadowed with s_types = (Ident.name id, name) :: shadowed.s_types }
           else shadowed
         in
@@ -1552,7 +1552,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
             then
               let identifier = Env.find_module_identifier env.ident_env id in
             let name =
-              match identifier.iv with
+              match identifier with
               | `Module (_, n) -> n 
               | `Parameter (_, n) -> n
               | `Root (_, n) -> n
@@ -1568,7 +1568,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
             then
               let identifier = Env.find_module_type env.ident_env id in
             let name =
-              match identifier.iv with
+              match identifier with
               | `ModuleType (_, n) -> n
             in
 
@@ -1589,7 +1589,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
             then
               let identifier = Env.find_class_identifier env.ident_env id in
             let name =
-              match identifier.iv with
+              match identifier with
               | `Class (_, n) -> n
             in
 
@@ -1608,7 +1608,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
           then
             let identifier = Env.find_class_type_identifier env.ident_env id in
           let name =
-            match identifier.iv with
+            match identifier with
             | `ClassType (_, n) -> n
           in
 { shadowed with s_class_types = (Ident.name id, name) :: shadowed.s_class_types }

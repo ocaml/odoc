@@ -684,7 +684,7 @@ module Fmt = struct
     if c.short_paths then Ident.short_fmt ppf i else Ident.fmt ppf i
 
   let rec model_identifier c ppf (p : id) =
-    match p.iv with
+    match p with
     | `Root (_, unit_name) ->
         wrap c "root" (fun _ -> ModuleName.fmt) ppf unit_name
     | `Module (parent, name) ->
@@ -2000,12 +2000,9 @@ module Of_Lang = struct
 
   let find_any_module i ident_map =
     match i with
-    | { Odoc_model.Paths.Identifier.iv = `Root _ | `Module _; _ } as id ->
+    | `Root _ | `Module _ as id ->
         Maps.Module.find id ident_map.modules
-    | {
-        Odoc_model.Paths.Identifier.iv = #Paths.Identifier.FunctorParameter.t_pv;
-        _;
-      } as id ->
+    | #Paths.Identifier.FunctorParameter.t as id ->
         Maps.FunctorParameter.find id ident_map.functor_parameters
     | _ -> raise Not_found
 

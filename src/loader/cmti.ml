@@ -784,11 +784,11 @@ and read_module_declaration env parent md =
   let canonical = match canonical with | None -> None | Some s -> Some (Doc_attr.conv_canonical_module s) in
   let hidden =
 #if OCAML_VERSION >= (4,10,0)
-    match canonical, mid.iv with
+    match canonical, mid with
     | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | _,_ -> false
 #else
-    match canonical, mid.iv with
+    match canonical, mid with
     | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | _ -> false
 #endif

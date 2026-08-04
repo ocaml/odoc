@@ -73,12 +73,12 @@ let hash : t -> int = Hashtbl.hash
 
 let to_string t =
   let rec pp fmt (id : Paths.Identifier.OdocId.t) =
-    match id.iv with
+    match id with
     | `SourcePage (parent, name) ->
         let rec loop_pp fmt parent =
-          match parent.Paths.Identifier.iv with
+          match parent with
           | `SourceDir (p, name) -> Format.fprintf fmt "%a::%s" loop_pp p name
-          | `Page _ as iv -> Format.fprintf fmt "%a" pp { Paths.Identifier.iv }
+          | `Page _ as iv -> Format.fprintf fmt "%a" pp iv
         in
         Format.fprintf fmt "%a::%s" loop_pp parent name
     | `LeafPage (parent, name) | `Page (parent, name) -> (

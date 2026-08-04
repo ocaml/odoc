@@ -395,7 +395,7 @@ module L = struct
           match Odoc_model.Location_.value hd with
           | `Heading
               ( _,
-                ({ Odoc_model.Paths.Identifier.iv = `Label (_, name'); _ } as
+                (`Label (_, name') as
                  label),
                 content )
             when name = LabelName.to_string name' ->
@@ -455,7 +455,7 @@ module ED = struct
     match te.constructors with
     | [] -> assert false
     | c :: _ ->
-        let id_parent = match id.iv with `Extension (p, _) -> p in
+        let id_parent = match id with `Extension (p, _) -> p in
         Ok
           (`Identifier
              (Identifier.Mk.extension_decl

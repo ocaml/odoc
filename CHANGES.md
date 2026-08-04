@@ -2,6 +2,7 @@
 
 ### Added
 - Drop the cached `ikey`/`ihash` fields from identifiers (@jonludlam)
+- Remove the `'a Identifier.id` record wrapper (@jonludlam)
 - Support for OxCaml unboxed named types (@art-w, #1407)
 - Support for OxCaml zero alloc definitions (@Leonidas-from-XIV, #1422, #1444)
 - Support for OxCaml modalities (@art-w, #1420)

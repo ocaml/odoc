@@ -22,16 +22,14 @@ module Path : sig
 
   type t = { kind : kind; parent : t option; name : string }
 
-  type any_pv =
-    [ Identifier.Page.t_pv
-    | Identifier.Signature.t_pv
-    | Identifier.ClassSignature.t_pv
-    | Identifier.SourcePage.t_pv
-    | Identifier.AssetFile.t_pv ]
+  type any =
+    [ Identifier.Page.t
+    | Identifier.Signature.t
+    | Identifier.ClassSignature.t
+    | Identifier.SourcePage.t
+    | Identifier.AssetFile.t ]
 
-  and any = any_pv Odoc_model.Paths.Identifier.id
-
-  val from_identifier : [< any_pv ] Odoc_model.Paths.Identifier.id -> t
+  val from_identifier : [< any ] -> t
 
   val to_list : t -> (kind * string) list
 

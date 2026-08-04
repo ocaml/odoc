@@ -500,7 +500,7 @@ and read_module_binding env parent mb =
   in
   let canonical = match canonical with | None -> None | Some s -> Some (Doc_attr.conv_canonical_module s) in
   let hidden =
-    match canonical, mid.iv with
+    match canonical, mid with
     | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | Some _, _ -> false
   in

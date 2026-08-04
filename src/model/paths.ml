@@ -20,17 +20,13 @@ module Ocaml_env = Env
 open Names
 
 module Identifier = struct
-  type 'a id = 'a Paths_types.id = { iv : 'a }
-
   module Id = Paths_types.Identifier
 
   type t = Id.any
 
-  type t_pv = Id.any_pv
-
   let rec name_aux : t -> string =
    fun x ->
-    match x.iv with
+    match x with
     | `Root (_, name) -> ModuleName.to_string name
     | `Page (_, name) -> PageName.to_string name
     | `LeafPage (_, name) -> PageName.to_string name
@@ -61,7 +57,7 @@ module Identifier = struct
 
   let rec is_hidden : t -> bool =
    fun x ->
-    match x.iv with
+    match x with
     | `Root (_, name) -> ModuleName.is_hidden name
     | `Page (_, _) -> false
     | `LeafPage (_, _) -> false
@@ -86,11 +82,11 @@ module Identifier = struct
     | `SourceLocationInternal _ | `AssetFile _ ->
         false
 
-  let name : [< t_pv ] id -> string = fun n -> name_aux (n :> t)
+  let name : [< t ] -> string = fun n -> name_aux (n :> t)
 
   let rec full_name_aux : t -> string list =
    fun x ->
-    match x.iv with
+    match x with
     | `Root (_, name) -> [ ModuleName.to_string name ]
     | `Page (None, name) -> [ PageName.to_string name ]
     | `Page (Some parent, name) ->
@@ -140,36 +136,36 @@ module Identifier = struct
     | `AssetFile (parent, name) ->
         AssetName.to_string name :: full_name_aux (parent :> t)
 
-  let fullname : [< t_pv ] id -> string list =
+  let fullname : [< t ] -> string list =
    fun n -> List.rev @@ full_name_aux (n :> t)
 
-  let is_hidden : [< t_pv ] id -> bool = fun n -> is_hidden (n :> t)
+  let is_hidden : [< t ] -> bool = fun n -> is_hidden (n :> t)
 
   let rec label_parent_aux =
     let open Id in
     fun (n : non_src) ->
       match n with
-      | { iv = `Result i; _ } -> label_parent_aux (i :> non_src)
-      | { iv = `Root _; _ } as p -> (p :> label_parent)
-      | { iv = `Page _; _ } as p -> (p :> label_parent)
-      | { iv = `LeafPage _; _ } as p -> (p :> label_parent)
-      | { iv = `Module (p, _); _ }
-      | { iv = `ModuleType (p, _); _ }
-      | { iv = `Parameter (p, _); _ }
-      | { iv = `Class (p, _); _ }
-      | { iv = `ClassType (p, _); _ }
-      | { iv = `Type (p, _); _ }
-      | { iv = `Extension (p, _); _ }
-      | { iv = `ExtensionDecl (p, _, _); _ }
-      | { iv = `Exception (p, _); _ }
-      | { iv = `Value (p, _); _ } ->
+      | `Result i -> label_parent_aux (i :> non_src)
+      | `Root _ as p -> (p :> label_parent)
+      | `Page _ as p -> (p :> label_parent)
+      | `LeafPage _ as p -> (p :> label_parent)
+      | `Module (p, _)
+      | `ModuleType (p, _)
+      | `Parameter (p, _)
+      | `Class (p, _)
+      | `ClassType (p, _)
+      | `Type (p, _)
+      | `Extension (p, _)
+      | `ExtensionDecl (p, _, _)
+      | `Exception (p, _)
+      | `Value (p, _) ->
           (p : signature :> label_parent)
-      | { iv = `Label (p, _); _ } -> p
-      | { iv = `Method (p, _); _ } | { iv = `InstanceVariable (p, _); _ } ->
+      | `Label (p, _) -> p
+      | `Method (p, _) | `InstanceVariable (p, _) ->
           (p : class_signature :> label_parent)
-      | { iv = `Constructor (p, _); _ } -> (p : datatype :> label_parent)
-      | { iv = `Field (p, _); _ } -> (p : field_parent :> label_parent)
-      | { iv = `UnboxedField (p, _); _ } ->
+      | `Constructor (p, _) -> (p : datatype :> label_parent)
+      | `Field (p, _) -> (p : field_parent :> label_parent)
+      | `UnboxedField (p, _) ->
           (p : unboxed_field_parent :> label_parent)
 
   let label_parent n = label_parent_aux (n :> Id.non_src)
@@ -189,15 +185,14 @@ module Identifier = struct
      values are silently ignored and cannot help. *)
   let hash x = Hashtbl.hash_param 256 256 x
 
-  let compare x y = if x == y then 0 else compare x.iv y.iv
+  (* Left polymorphic on purpose: every sub-module below reuses this as its
+     own [compare], each at a narrower identifier type. *)
+  let compare = Stdlib.compare
 
   type any = t
 
-  type any_pv = t_pv
-
   module type IdSig = sig
     type t
-    type t_pv
     val equal : t -> t -> bool
     val hash : t -> int
     val compare : t -> t -> int
@@ -205,7 +200,6 @@ module Identifier = struct
 
   module Any = struct
     type t = any
-    type t_pv = any_pv
     let equal = equal
     let hash = hash
     let compare = compare
@@ -213,7 +207,6 @@ module Identifier = struct
 
   module Signature = struct
     type t = Id.signature
-    type t_pv = Id.signature_pv
     let equal = equal
     let hash = hash
     let compare = compare
@@ -221,7 +214,6 @@ module Identifier = struct
 
   module ClassSignature = struct
     type t = Id.class_signature
-    type t_pv = Id.class_signature_pv
     let equal = equal
     let hash = hash
     let compare = compare
@@ -229,22 +221,18 @@ module Identifier = struct
 
   module DataType = struct
     type t = Id.datatype
-    type t_pv = Id.datatype_pv
   end
 
   module FieldParent = struct
     type t = Paths_types.Identifier.field_parent
-    type t_pv = Paths_types.Identifier.field_parent_pv
   end
 
   module UnboxedFieldParent = struct
     type t = Paths_types.Identifier.unboxed_field_parent
-    type t_pv = Paths_types.Identifier.unboxed_field_parent_pv
   end
 
   module LabelParent = struct
     type t = Id.label_parent
-    type t_pv = Id.label_parent_pv
     let equal = equal
     let hash = hash
     let compare = compare
@@ -252,7 +240,6 @@ module Identifier = struct
 
   module RootModule = struct
     type t = Id.root_module
-    type t_pv = Id.root_module_pv
     let equal = equal
     let hash = hash
     let compare = compare
@@ -260,7 +247,6 @@ module Identifier = struct
 
   module Module = struct
     type t = Id.module_
-    type t_pv = Id.module_pv
     let equal = equal
     let hash = hash
     let compare = compare
@@ -268,27 +254,24 @@ module Identifier = struct
 
   module FunctorParameter = struct
     type t = Id.functor_parameter
-    type t_pv = Id.functor_parameter_pv
     let equal = equal
     let hash = hash
     let compare = compare
 
-    let functor_arg_pos { iv = `Parameter (p, _); _ } =
+    let functor_arg_pos (`Parameter (p, _)) =
       let rec inner_sig = function
-        | `Result { iv = p; _ } -> 1 + inner_sig p
+        | `Result p -> 1 + inner_sig p
         | `Module _ | `ModuleType _ | `Root _ | `Parameter _ -> 1
       in
-      inner_sig p.iv
+      inner_sig p
   end
 
   module FunctorResult = struct
     type t = Id.functor_result
-    type t_pv = Id.functor_result_pv
   end
 
   module ModuleType = struct
     type t = Id.module_type
-    type t_pv = Id.module_type_pv
     let equal = equal
     let hash = hash
     let compare = compare
@@ -296,7 +279,6 @@ module Identifier = struct
 
   module Type = struct
     type t = Id.type_
-    type t_pv = Id.type_pv
     let equal = equal
     let hash = hash
     let compare = compare
@@ -304,28 +286,22 @@ module Identifier = struct
 
   module Constructor = struct
     type t = Id.constructor
-    type t_pv = Id.constructor_pv
   end
 
   module Field = struct
     type t = Id.field
-    type t_pv = Id.field_pv
   end
 
   module UnboxedField = struct
     type t = Id.unboxed_field
-    type t_pv = Id.unboxed_field_pv
   end
 
   module Extension = struct
     type t = Id.extension
-    type t_pv = Id.extension_pv
   end
 
   module ExtensionDecl = struct
     type t = Paths_types.Identifier.extension_decl
-
-    type t_pv = Paths_types.Identifier.extension_decl_pv
 
     let equal = equal
 
@@ -336,17 +312,14 @@ module Identifier = struct
 
   module Exception = struct
     type t = Id.exception_
-    type t_pv = Id.exception_pv
   end
 
   module Value = struct
     type t = Id.value
-    type t_pv = Id.value_pv
   end
 
   module Class = struct
     type t = Id.class_
-    type t_pv = Id.class_pv
     let equal = equal
     let hash = hash
     let compare = compare
@@ -354,7 +327,6 @@ module Identifier = struct
 
   module ClassType = struct
     type t = Id.class_type
-    type t_pv = Id.class_type_pv
     let equal = equal
     let hash = hash
     let compare = compare
@@ -362,17 +334,14 @@ module Identifier = struct
 
   module Method = struct
     type t = Id.method_
-    type t_pv = Id.method_pv
   end
 
   module InstanceVariable = struct
     type t = Id.instance_variable
-    type t_pv = Id.instance_variable_pv
   end
 
   module Label = struct
     type t = Paths_types.Identifier.label
-    type t_pv = Paths_types.Identifier.label_pv
     let equal = equal
     let hash = hash
     let compare = compare
@@ -380,26 +349,22 @@ module Identifier = struct
 
   module Page = struct
     type t = Id.page
-    type t_pv = Id.page_pv
   end
 
   module LeafPage = struct
     type t = Id.leaf_page
-    type t_pv = Id.leaf_page_pv
     let equal = equal
     let hash = hash
   end
 
   module ContainerPage = struct
     type t = Id.container_page
-    type t_pv = Id.container_page_pv
     let equal = equal
     let hash = hash
   end
 
   module NonSrc = struct
     type t = Paths_types.Identifier.non_src
-    type t_pv = Paths_types.Identifier.non_src_pv
 
     (* [==] guard as in [equal] above: [( = )] alone never checks pointers. *)
     let equal x y = x == y || x = y
@@ -409,7 +374,6 @@ module Identifier = struct
 
   module SourcePage = struct
     type t = Id.source_page
-    type t_pv = Id.source_page_pv
 
     let equal = equal
     let hash = hash
@@ -417,23 +381,19 @@ module Identifier = struct
 
   module SourceLocation = struct
     type t = Paths_types.Identifier.source_location
-    type t_pv = Paths_types.Identifier.source_location_pv
   end
 
   module AssetFile = struct
     type t = Id.asset_file
-    type t_pv = Id.asset_file_pv
   end
 
   module OdocId = struct
     type t = Id.odoc_id
-    type t_pv = Id.odoc_id_pv
   end
 
   module Path = struct
     module Module = struct
       type t = Id.path_module
-      type t_pv = Id.path_module_pv
       let equal = equal
       let hash = hash
       let compare = compare
@@ -441,7 +401,6 @@ module Identifier = struct
 
     module ModuleType = struct
       type t = Id.path_module_type
-      type t_pv = Id.module_type_pv
       let equal = equal
       let hash = hash
       let compare = compare
@@ -449,7 +408,6 @@ module Identifier = struct
 
     module Type = struct
       type t = Id.path_type
-      type t_pv = Id.path_type_pv
       let equal = equal
       let hash = hash
       let compare = compare
@@ -457,7 +415,6 @@ module Identifier = struct
 
     module Value = struct
       type t = Id.path_value
-      type t_pv = Id.value_pv
       let equal = equal
       let hash = hash
       let compare = compare
@@ -465,7 +422,6 @@ module Identifier = struct
 
     module ClassType = struct
       type t = Id.path_class_type
-      type t_pv = Id.path_class_type_pv
       let equal = equal
       let hash = hash
       let compare = compare
@@ -493,16 +449,16 @@ module Identifier = struct
   end
 
   module Mk = struct
-    let mk f x = { iv = f x }
+    let mk f x = f x
 
     let page :
         ContainerPage.t option * PageName.t ->
-        [> `Page of ContainerPage.t option * PageName.t ] id =
+        [> `Page of ContainerPage.t option * PageName.t ] =
       mk (fun (p, n) -> `Page (p, n))
 
     let leaf_page :
         ContainerPage.t option * PageName.t ->
-        [> `LeafPage of ContainerPage.t option * PageName.t ] id =
+        [> `LeafPage of ContainerPage.t option * PageName.t ] =
       mk (fun (p, n) -> `LeafPage (p, n))
 
     let asset_file : Page.t * AssetName.t -> AssetFile.t =
@@ -513,107 +469,106 @@ module Identifier = struct
 
     let root :
         ContainerPage.t option * ModuleName.t ->
-        [> `Root of ContainerPage.t option * ModuleName.t ] id =
+        [> `Root of ContainerPage.t option * ModuleName.t ] =
       mk (fun (p, n) -> `Root (p, n))
 
     let implementation = mk (fun s -> `Implementation (ModuleName.make_std s))
 
     let module_ :
         Signature.t * ModuleName.t ->
-        [> `Module of Signature.t * ModuleName.t ] id =
+        [> `Module of Signature.t * ModuleName.t ] =
       mk (fun (p, n) -> `Module (p, n))
 
     let parameter :
         Signature.t * ModuleName.t ->
-        [> `Parameter of Signature.t * ModuleName.t ] id =
+        [> `Parameter of Signature.t * ModuleName.t ] =
       mk (fun (p, n) -> `Parameter (p, n))
 
-    let result : Signature.t -> [> `Result of Signature.t ] id =
+    let result : Signature.t -> [> `Result of Signature.t ] =
      fun s -> mk (fun s -> `Result s) s
 
     let module_type :
         Signature.t * ModuleTypeName.t ->
-        [> `ModuleType of Signature.t * ModuleTypeName.t ] id =
+        [> `ModuleType of Signature.t * ModuleTypeName.t ] =
       mk (fun (p, n) -> `ModuleType (p, n))
 
     let class_ :
-        Signature.t * TypeName.t -> [> `Class of Signature.t * TypeName.t ] id =
+        Signature.t * TypeName.t -> [> `Class of Signature.t * TypeName.t ] =
       mk (fun (p, n) -> `Class (p, n))
 
     let class_type :
         Signature.t * TypeName.t ->
-        [> `ClassType of Signature.t * TypeName.t ] id =
+        [> `ClassType of Signature.t * TypeName.t ] =
       mk (fun (p, n) -> `ClassType (p, n))
 
     let type_ :
-        Signature.t * TypeName.t -> [> `Type of Signature.t * TypeName.t ] id =
+        Signature.t * TypeName.t -> [> `Type of Signature.t * TypeName.t ] =
       mk (fun (p, n) -> `Type (p, n))
 
     let core_type = mk (fun s -> `CoreType (TypeName.make_std s))
 
     let constructor :
         DataType.t * ConstructorName.t ->
-        [> `Constructor of DataType.t * ConstructorName.t ] id =
+        [> `Constructor of DataType.t * ConstructorName.t ] =
       mk (fun (p, n) -> `Constructor (p, n))
 
     let field :
         FieldParent.t * FieldName.t ->
-        [> `Field of FieldParent.t * FieldName.t ] id =
+        [> `Field of FieldParent.t * FieldName.t ] =
       mk (fun (p, n) -> `Field (p, n))
 
     let unboxed_field :
         UnboxedFieldParent.t * UnboxedFieldName.t ->
-        [> `UnboxedField of UnboxedFieldParent.t * UnboxedFieldName.t ] id =
+        [> `UnboxedField of UnboxedFieldParent.t * UnboxedFieldName.t ] =
       mk (fun (p, n) -> `UnboxedField (p, n))
 
     let extension :
         Signature.t * ExtensionName.t ->
-        [> `Extension of Signature.t * ExtensionName.t ] id =
+        [> `Extension of Signature.t * ExtensionName.t ] =
       mk (fun (p, n) -> `Extension (p, n))
 
     let extension_decl :
         Signature.t * (ExtensionName.t * ExtensionName.t) ->
-        [> `ExtensionDecl of Signature.t * ExtensionName.t * ExtensionName.t ]
-        id =
+        [> `ExtensionDecl of Signature.t * ExtensionName.t * ExtensionName.t ] =
       mk (fun (p, (n, m)) -> `ExtensionDecl (p, n, m))
 
     let exception_ :
         Signature.t * ExceptionName.t ->
-        [> `Exception of Signature.t * ExceptionName.t ] id =
+        [> `Exception of Signature.t * ExceptionName.t ] =
       mk (fun (p, n) -> `Exception (p, n))
 
     let value :
-        Signature.t * ValueName.t -> [> `Value of Signature.t * ValueName.t ] id
+        Signature.t * ValueName.t -> [> `Value of Signature.t * ValueName.t ]
         =
       mk (fun (p, n) -> `Value (p, n))
 
     let method_ :
         ClassSignature.t * MethodName.t ->
-        [> `Method of ClassSignature.t * MethodName.t ] id =
+        [> `Method of ClassSignature.t * MethodName.t ] =
       mk (fun (p, n) -> `Method (p, n))
 
     let instance_variable :
         ClassSignature.t * InstanceVariableName.t ->
-        [> `InstanceVariable of ClassSignature.t * InstanceVariableName.t ] id =
+        [> `InstanceVariable of ClassSignature.t * InstanceVariableName.t ] =
       mk (fun (p, n) -> `InstanceVariable (p, n))
 
     let label :
         LabelParent.t * LabelName.t ->
-        [> `Label of LabelParent.t * LabelName.t ] id =
+        [> `Label of LabelParent.t * LabelName.t ] =
       mk (fun (p, n) -> `Label (p, n))
 
     let source_location :
         SourcePage.t * DefName.t ->
-        [> `SourceLocation of SourcePage.t * DefName.t ] id =
+        [> `SourceLocation of SourcePage.t * DefName.t ] =
       mk (fun (p, n) -> `SourceLocation (p, n))
 
     let source_location_mod :
-        SourcePage.t -> [> `SourceLocationMod of SourcePage.t ] id =
+        SourcePage.t -> [> `SourceLocationMod of SourcePage.t ] =
      fun s -> mk (fun s -> `SourceLocationMod s) s
 
     let source_location_int :
         SourcePage.t * LocalName.t ->
-        [> `SourceLocationInternal of SourcePage.t * LocalName.t ] id =
+        [> `SourceLocationInternal of SourcePage.t * LocalName.t ] =
       mk (fun (p, n) -> `SourceLocationInternal (p, n))
   end
 
@@ -657,12 +612,12 @@ module Path = struct
    fun ~weak_canonical_test x ->
     let open Paths_types.Resolved_path in
     let rec inner : Paths_types.Resolved_path.any -> bool = function
-      | `Identifier { iv = `ModuleType (_, m); _ }
+      | `Identifier `ModuleType (_, m)
         when Names.ModuleTypeName.is_hidden m ->
           true
-      | `Identifier { iv = `Type (_, t); _ } when Names.TypeName.is_hidden t ->
+      | `Identifier `Type (_, t) when Names.TypeName.is_hidden t ->
           true
-      | `Identifier { iv = `Module (_, m); _ } when Names.ModuleName.is_hidden m
+      | `Identifier `Module (_, m) when Names.ModuleName.is_hidden m
         ->
           true
       | `Identifier id -> Identifier.is_hidden id

@@ -72,49 +72,49 @@ module Of_Identifier = struct
   let type_ : Type.t -> type_ =
    fun t ->
     let i = fresh_int () in
-    match t.iv with `Type (_, n) -> `LType (n, i)
+    match t with `Type (_, n) -> `LType (n, i)
 
   let module_ : Module.t -> module_ = function
-    | { iv = `Module (_, n) | `Root (_, n); _ } ->
+    | `Module (_, n) | `Root (_, n) ->
         let i = fresh_int () in
         `LModule (n, i)
-    | { iv = `Parameter (_, n); _ } ->
+    | `Parameter (_, n) ->
         let i = fresh_int () in
         `LModule (n, i)
 
   let functor_parameter : FunctorParameter.t -> module_ =
-   fun { iv = `Parameter (_, n); _ } -> `LModule (n, fresh_int ())
+   fun (`Parameter (_, n)) -> `LModule (n, fresh_int ())
 
   let module_type : ModuleType.t -> module_type =
    fun m ->
     let i = fresh_int () in
-    match m.iv with `ModuleType (_, n) -> `LModuleType (n, i)
+    match m with `ModuleType (_, n) -> `LModuleType (n, i)
 
   let extension : Extension.t -> extension =
-   fun e -> match e.iv with `Extension (_, n) -> `LExtension (n, fresh_int ())
+   fun e -> match e with `Extension (_, n) -> `LExtension (n, fresh_int ())
 
   let exception_ : Exception.t -> exception_ =
-   fun e -> match e.iv with `Exception (_, n) -> `LException (n, fresh_int ())
+   fun e -> match e with `Exception (_, n) -> `LException (n, fresh_int ())
 
   let value : Value.t -> value =
-   fun v -> match v.iv with `Value (_, n) -> `LValue (n, fresh_int ())
+   fun v -> match v with `Value (_, n) -> `LValue (n, fresh_int ())
 
   let class_ : Class.t -> type_ =
-   fun c -> match c.iv with `Class (_, n) -> `LType (n, fresh_int ())
+   fun c -> match c with `Class (_, n) -> `LType (n, fresh_int ())
 
   let class_type : ClassType.t -> type_ =
-   fun c -> match c.iv with `ClassType (_, n) -> `LType (n, fresh_int ())
+   fun c -> match c with `ClassType (_, n) -> `LType (n, fresh_int ())
 
   let method_ : Method.t -> method_ =
-   fun c -> match c.iv with `Method (_, n) -> `LMethod (n, fresh_int ())
+   fun c -> match c with `Method (_, n) -> `LMethod (n, fresh_int ())
 
   let instance_variable : InstanceVariable.t -> instance_variable =
    fun i ->
-    match i.iv with
+    match i with
     | `InstanceVariable (_, n) -> `LInstanceVariable (n, fresh_int ())
 
   let label : Label.t -> label =
-   fun l -> match l.iv with `Label (_, n) -> `LLabel (n, fresh_int ())
+   fun l -> match l with `Label (_, n) -> `LLabel (n, fresh_int ())
 end
 
 module Name = struct

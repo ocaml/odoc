@@ -25,7 +25,7 @@ let compare_entry (t1 : t) (t2 : t) =
     match t.node.kind with
     | Page { short_title = Some title; _ } -> Comment.to_string title
     | _ -> (
-        match t.node.id.iv with
+        match t.node.id with
         | `LeafPage (Some parent, name)
           when Names.PageName.to_string name = "index" ->
             Id.name parent
@@ -72,7 +72,7 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
         (None, entry)
   in
   let pp_content fmt (id, _) =
-    match id.Id.iv with
+    match id with
     | `LeafPage (_, name) -> Format.fprintf fmt "'%s'" (PageName.to_string name)
     | `Page (_, name) -> Format.fprintf fmt "'%s/'" (PageName.to_string name)
     | `Root (_, name) ->
@@ -118,7 +118,7 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
           List.mapi (fun i x -> (i, x)) children_order.value
         in
         let equal id ch =
-          match (ch, id.Id.iv) with
+          match (ch, id) with
           | (_, { Location_.value = Frontmatter.Dir c; _ }), `Page (_, name) ->
               Astring.String.equal (PageName.to_string name) c
           | (_, { Location_.value = Page c; _ }), `LeafPage (_, name) ->

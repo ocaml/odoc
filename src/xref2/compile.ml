@@ -757,7 +757,7 @@ and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->
   let open TypeDecl in
   let container =
-    match t.id.iv with `Type (parent, _) -> (parent :> Id.LabelParent.t)
+    match t.id with `Type (parent, _) -> (parent :> Id.LabelParent.t)
   in
   let equation = type_decl_equation env container t.equation in
   let representation =

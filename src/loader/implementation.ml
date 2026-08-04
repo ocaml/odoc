@@ -203,13 +203,13 @@ let anchor_of_identifier id =
     let anchor kind name =
       Printf.sprintf "%s-%s" (Anchor.string_of_kind kind) name
     in
-    match id.iv with
+    match id with
     | `InstanceVariable (parent, name) ->
         let anchor = anchor `Val (InstanceVariableName.to_string name) in
         continue anchor parent
     | `Parameter (parent, name) as iv ->
         let arg_num =
-          Identifier.FunctorParameter.functor_arg_pos { Identifier.iv }
+          Identifier.FunctorParameter.functor_arg_pos iv
         in
         let kind = `Parameter arg_num in
         let anchor = anchor kind (ModuleName.to_string name) in

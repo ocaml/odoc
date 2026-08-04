@@ -22,11 +22,8 @@ module Ocaml_env = Env
 module Identifier : sig
   (** {2 Generic operations} *)
 
-  type 'a id = 'a Paths_types.id = { iv : 'a }
-
   module type IdSig = sig
     type t
-    type t_pv
     val equal : t -> t -> bool
     val hash : t -> int
     val compare : t -> t -> int
@@ -34,27 +31,26 @@ module Identifier : sig
 
   module Id = Paths_types.Identifier
 
-  module Any : IdSig with type t = Id.any and type t_pv = Id.any_pv
+  module Any : IdSig with type t = Id.any
 
   module RootModule :
-    IdSig with type t = Id.root_module and type t_pv = Id.root_module_pv
+    IdSig with type t = Id.root_module
 
   module Signature :
-    IdSig with type t = Id.signature and type t_pv = Id.signature_pv
+    IdSig with type t = Id.signature
 
   module ClassSignature :
-    IdSig with type t = Id.class_signature and type t_pv = Id.class_signature_pv
+    IdSig with type t = Id.class_signature
 
   module LabelParent :
-    IdSig with type t = Id.label_parent and type t_pv = Id.label_parent_pv
+    IdSig with type t = Id.label_parent
 
-  module Module : IdSig with type t = Id.module_ and type t_pv = Id.module_pv
+  module Module : IdSig with type t = Id.module_
 
   module FunctorParameter : sig
     include
       IdSig
         with type t = Id.functor_parameter
-         and type t_pv = Id.functor_parameter_pv
 
     val functor_arg_pos : t -> int
     (** Gets the index in which the functor argument is, in the argument list.
@@ -63,57 +59,47 @@ module Identifier : sig
   end
 
   module ModuleType :
-    IdSig with type t = Id.module_type and type t_pv = Id.module_type_pv
+    IdSig with type t = Id.module_type
 
-  module Type : IdSig with type t = Id.type_ and type t_pv = Id.type_pv
+  module Type : IdSig with type t = Id.type_
 
-  module Class : IdSig with type t = Id.class_ and type t_pv = Id.class_pv
+  module Class : IdSig with type t = Id.class_
 
   module ClassType :
-    IdSig with type t = Id.class_type and type t_pv = Id.class_type_pv
+    IdSig with type t = Id.class_type
 
   module DataType : sig
     type t = Id.datatype
-    type t_pv = Id.datatype_pv
   end
   module FieldParent : sig
     type t = Id.field_parent
-    type t_pv = Id.field_parent_pv
   end
   module UnboxedFieldParent : sig
     type t = Id.unboxed_field_parent
-    type t_pv = Id.unboxed_field_parent_pv
   end
 
   module FunctorResult : sig
     type t = Id.functor_result
-    type t_pv = Id.functor_result_pv
   end
 
   module Constructor : sig
     type t = Id.constructor
-    type t_pv = Id.constructor_pv
   end
 
   module Field : sig
     type t = Id.field
-    type t_pv = Id.field_pv
   end
 
   module UnboxedField : sig
     type t = Id.unboxed_field
-    type t_pv = Id.unboxed_field_pv
   end
 
   module Extension : sig
     type t = Id.extension
-    type t_pv = Id.extension_pv
   end
 
   module ExtensionDecl : sig
     type t = Paths_types.Identifier.extension_decl
-
-    type t_pv = Paths_types.Identifier.extension_decl_pv
 
     val equal : t -> t -> bool
 
@@ -124,106 +110,91 @@ module Identifier : sig
 
   module Exception : sig
     type t = Id.exception_
-    type t_pv = Id.exception_pv
   end
 
   module Value : sig
     type t = Id.value
-    type t_pv = Id.value_pv
   end
 
   module Method : sig
     type t = Id.method_
-    type t_pv = Id.method_pv
   end
 
   module InstanceVariable : sig
     type t = Id.instance_variable
-    type t_pv = Id.instance_variable_pv
   end
-  module Label : IdSig with type t = Id.label and type t_pv = Id.label_pv
+  module Label : IdSig with type t = Id.label
 
   module Page : sig
     type t = Id.page
-    type t_pv = Id.page_pv
   end
 
   module LeafPage : sig
     type t = Id.leaf_page
-    type t_pv = Id.leaf_page_pv
   end
 
   module ContainerPage : sig
     type t = Id.container_page
-    type t_pv = Id.container_page_pv
   end
 
   module NonSrc : sig
     type t = Id.non_src
-    type t_pv = Id.non_src_pv
     val hash : t -> int
-    val equal : ([< t_pv ] id as 'a) -> 'a -> bool
+    val equal : ([< t ] as 'a) -> 'a -> bool
   end
 
   module SourcePage : sig
     type t = Id.source_page
-    type t_pv = Id.source_page_pv
   end
 
   module SourceLocation : sig
     type t = Id.source_location
-    type t_pv = Id.source_location_pv
   end
 
   module AssetFile : sig
     type t = Id.asset_file
-    type t_pv = Id.asset_file_pv
   end
 
   module OdocId : sig
     type t = Id.odoc_id
-    type t_pv = Id.odoc_id_pv
   end
 
   module Path : sig
     module Module :
-      IdSig with type t = Id.path_module and type t_pv = Id.path_module_pv
+      IdSig with type t = Id.path_module
 
     module ModuleType :
-      IdSig with type t = Id.path_module_type and type t_pv = Id.module_type_pv
+      IdSig with type t = Id.path_module_type
 
     module Type :
-      IdSig with type t = Id.path_type and type t_pv = Id.path_type_pv
+      IdSig with type t = Id.path_type
 
-    module Value : IdSig with type t = Id.path_value and type t_pv = Id.value_pv
+    module Value : IdSig with type t = Id.path_value
 
     module ClassType :
       IdSig
         with type t = Id.path_class_type
-         and type t_pv = Id.path_class_type_pv
 
     type t = Id.path_any
   end
 
   type t = Id.any
 
-  type t_pv = Id.any_pv
-
   val hash : t -> int
 
-  val name : [< t_pv ] id -> string
+  val name : [< t ] -> string
 
-  val fullname : [< t_pv ] id -> string list
+  val fullname : [< t ] -> string list
   (** The fullname of value [x] in module [M] is [M.x], whereas the regular name
       is [x]. *)
 
-  val is_hidden : [< t_pv ] id -> bool
+  val is_hidden : [< t ] -> bool
 
   val compare : t -> t -> int
 
-  val equal : ([< t_pv ] id as 'a) -> 'a -> bool
+  val equal : ([< t ] as 'a) -> 'a -> bool
 
-  val label_parent : [< NonSrc.t_pv ] id -> LabelParent.t
+  val label_parent : [< NonSrc.t ] -> LabelParent.t
 
   module Maps : sig
     module Any : Map.S with type key = Any.t
@@ -262,11 +233,11 @@ module Identifier : sig
 
     val page :
       ContainerPage.t option * PageName.t ->
-      [> `Page of ContainerPage.t option * PageName.t ] id
+      [> `Page of ContainerPage.t option * PageName.t ]
 
     val leaf_page :
       ContainerPage.t option * PageName.t ->
-      [> `LeafPage of ContainerPage.t option * PageName.t ] id
+      [> `LeafPage of ContainerPage.t option * PageName.t ]
 
     val source_page : ContainerPage.t * string -> SourcePage.t
 
@@ -274,54 +245,54 @@ module Identifier : sig
 
     val root :
       ContainerPage.t option * ModuleName.t ->
-      [> `Root of ContainerPage.t option * ModuleName.t ] id
+      [> `Root of ContainerPage.t option * ModuleName.t ]
 
-    val implementation : string -> [> `Implementation of ModuleName.t ] id
+    val implementation : string -> [> `Implementation of ModuleName.t ]
 
     val module_ :
       Signature.t * ModuleName.t ->
-      [> `Module of Signature.t * ModuleName.t ] id
+      [> `Module of Signature.t * ModuleName.t ]
 
     val parameter :
       Signature.t * ModuleName.t ->
-      [> `Parameter of Signature.t * ModuleName.t ] id
+      [> `Parameter of Signature.t * ModuleName.t ]
 
-    val result : Signature.t -> [> `Result of Signature.t ] id
+    val result : Signature.t -> [> `Result of Signature.t ]
 
     val module_type :
       Signature.t * ModuleTypeName.t ->
-      [> `ModuleType of Signature.t * ModuleTypeName.t ] id
+      [> `ModuleType of Signature.t * ModuleTypeName.t ]
 
     val class_ :
-      Signature.t * TypeName.t -> [> `Class of Signature.t * TypeName.t ] id
+      Signature.t * TypeName.t -> [> `Class of Signature.t * TypeName.t ]
 
     val class_type :
-      Signature.t * TypeName.t -> [> `ClassType of Signature.t * TypeName.t ] id
+      Signature.t * TypeName.t -> [> `ClassType of Signature.t * TypeName.t ]
 
     val type_ :
-      Signature.t * TypeName.t -> [> `Type of Signature.t * TypeName.t ] id
+      Signature.t * TypeName.t -> [> `Type of Signature.t * TypeName.t ]
 
-    val core_type : string -> [> `CoreType of TypeName.t ] id
+    val core_type : string -> [> `CoreType of TypeName.t ]
 
     val constructor :
       DataType.t * ConstructorName.t ->
-      [> `Constructor of DataType.t * ConstructorName.t ] id
+      [> `Constructor of DataType.t * ConstructorName.t ]
 
     val field :
       FieldParent.t * FieldName.t ->
-      [> `Field of FieldParent.t * FieldName.t ] id
+      [> `Field of FieldParent.t * FieldName.t ]
 
     val unboxed_field :
       UnboxedFieldParent.t * UnboxedFieldName.t ->
-      [> `UnboxedField of UnboxedFieldParent.t * UnboxedFieldName.t ] id
+      [> `UnboxedField of UnboxedFieldParent.t * UnboxedFieldName.t ]
 
     val extension :
       Signature.t * ExtensionName.t ->
-      [> `Extension of Signature.t * ExtensionName.t ] id
+      [> `Extension of Signature.t * ExtensionName.t ]
 
     val extension_decl :
       Signature.t * (ExtensionName.t * ExtensionName.t) ->
-      [> `ExtensionDecl of Signature.t * ExtensionName.t * ExtensionName.t ] id
+      [> `ExtensionDecl of Signature.t * ExtensionName.t * ExtensionName.t ]
     (** [extension_decl (sg, e1, eN)] defines an extension declaration where
         [sg] is the parent, [e1] is the first constructor of the extension, and
         [eN] is the constructor the Id is created for. [e1] will be used for the
@@ -330,33 +301,33 @@ module Identifier : sig
 
     val exception_ :
       Signature.t * ExceptionName.t ->
-      [> `Exception of Signature.t * ExceptionName.t ] id
+      [> `Exception of Signature.t * ExceptionName.t ]
 
     val value :
-      Signature.t * ValueName.t -> [> `Value of Signature.t * ValueName.t ] id
+      Signature.t * ValueName.t -> [> `Value of Signature.t * ValueName.t ]
 
     val method_ :
       ClassSignature.t * MethodName.t ->
-      [> `Method of ClassSignature.t * MethodName.t ] id
+      [> `Method of ClassSignature.t * MethodName.t ]
 
     val instance_variable :
       ClassSignature.t * InstanceVariableName.t ->
-      [> `InstanceVariable of ClassSignature.t * InstanceVariableName.t ] id
+      [> `InstanceVariable of ClassSignature.t * InstanceVariableName.t ]
 
     val label :
       LabelParent.t * LabelName.t ->
-      [> `Label of LabelParent.t * LabelName.t ] id
+      [> `Label of LabelParent.t * LabelName.t ]
 
     val source_location :
       SourcePage.t * DefName.t ->
-      [> `SourceLocation of SourcePage.t * DefName.t ] id
+      [> `SourceLocation of SourcePage.t * DefName.t ]
 
     val source_location_mod :
-      SourcePage.t -> [> `SourceLocationMod of SourcePage.t ] id
+      SourcePage.t -> [> `SourceLocationMod of SourcePage.t ]
 
     val source_location_int :
       SourcePage.t * LocalName.t ->
-      [> `SourceLocationInternal of SourcePage.t * LocalName.t ] id
+      [> `SourceLocationInternal of SourcePage.t * LocalName.t ]
   end
 
   val fresh_include_parent : Signature.t -> Signature.t

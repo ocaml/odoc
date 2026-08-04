@@ -62,7 +62,7 @@ let ambiguous_label_warning label_name labels =
     generated. *)
 let check_ambiguous_label ~loc env
     ( attrs,
-      ({ Odoc_model.Paths.Identifier.iv = `Label (_, label_name); _ } as id),
+      (`Label (_, label_name) as id),
       _ ) =
   if attrs.Comment.heading_label_explicit then
     (* Looking for an identical identifier but a different location. *)

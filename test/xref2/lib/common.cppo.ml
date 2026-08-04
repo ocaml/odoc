@@ -386,7 +386,7 @@ module LangUtils = struct
                 let rec inner = function
                     | Odoc_model.Lang.Signature.Module (_, m) :: rest -> begin
                         let id = m.Odoc_model.Lang.Module.id in
-                        match id.iv with
+                        match id with
                         | `Module (_, mname') ->
                             if ModuleName.to_string mname' = mname
                             then m
@@ -413,7 +413,7 @@ module LangUtils = struct
         type 'a fmt = Format.formatter -> 'a -> unit
 
         open Paths
-        val identifier : [< Identifier.t_pv] Paths.Identifier.id fmt
+        val identifier : [< Identifier.t] fmt
 
         open Lang
 

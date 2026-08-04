@@ -145,21 +145,21 @@ let register_kind ~db elt =
 
 let rec categorize id =
   let open Odoc_model.Paths in
-  match id.Identifier.iv with
+  match id with
   | `Root _ | `Page _ | `LeafPage _ -> `definition
   | `ModuleType _ -> `declaration
   | `Parameter _ -> `ignore (* redundant with indexed signature *)
   | ( `InstanceVariable _ | `Method _ | `Field _ | `Result _ | `Label _ | `Type _
     | `Exception _ | `Class _ | `ClassType _ | `Value _ | `Constructor _ | `Extension _
     | `ExtensionDecl _ | `Module _ | `UnboxedField _ ) as x ->
-      let parent = Identifier.label_parent { Identifier.iv = x } in
+      let parent = Identifier.label_parent x in
       categorize (parent :> Identifier.Any.t)
   | `AssetFile _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
   | `SourceLocationInternal _ ->
       `ignore (* unclear what to do with those *)
 
 let categorize Odoc_index.Entry.{ id; _ } =
-  match id.iv with
+  match id with
   | `ModuleType (parent, _) ->
       (* A module type itself is not *from* a module type, but it might be if one
        of its parents is a module type. *)

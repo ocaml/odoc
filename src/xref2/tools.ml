@@ -734,19 +734,19 @@ and lookup_type_gpath :
   let res =
     match p with
     | `CoreType _ as c -> Ok c
-    | `Identifier ({ iv = `Type _; _ } as i) ->
+    | `Identifier (`Type _ as i) ->
         of_option ~error:(`Lookup_failureT i)
           (Env.(lookup_by_id s_datatype) i env)
-        >>= fun (`Type ({ iv = `Type (_, name); _ }, t)) ->
+        >>= fun (`Type (`Type (_, name), t)) ->
         Ok (`FType (name, t))
-    | `Identifier ({ iv = `Class _; _ } as i) ->
+    | `Identifier (`Class _ as i) ->
         of_option ~error:(`Lookup_failureT i) (Env.(lookup_by_id s_class) i env)
-        >>= fun (`Class ({ iv = `Class (_, name); _ }, t)) ->
+        >>= fun (`Class (`Class (_, name), t)) ->
         Ok (`FClass (name, t))
-    | `Identifier ({ iv = `ClassType _; _ } as i) ->
+    | `Identifier (`ClassType _ as i) ->
         of_option ~error:(`Lookup_failureT i)
           (Env.(lookup_by_id s_class_type) i env)
-        >>= fun (`ClassType ({ iv = `ClassType (_, name); _ }, t)) ->
+        >>= fun (`ClassType (`ClassType (_, name), t)) ->
         Ok (`FClassType (name, t))
     | `CanonicalType (t1, _) -> lookup_type_gpath env t1
     | `Type (p, id) -> do_type p id
@@ -774,9 +774,9 @@ and lookup_value_gpath :
   in
   let res =
     match p with
-    | `Identifier ({ iv = `Value _; _ } as i) ->
+    | `Identifier (`Value _ as i) ->
         of_option ~error:(`Lookup_failureV i) (Env.(lookup_by_id s_value) i env)
-        >>= fun (`Value ({ iv = `Value (_, name); _ }, t)) ->
+        >>= fun (`Value (`Value (_, name), t)) ->
         Ok (`FValue (name, t))
     | `Value (p, id) -> do_value p id
   in
@@ -801,14 +801,14 @@ and lookup_class_type_gpath :
   in
   let res =
     match p with
-    | `Identifier ({ iv = `Class _; _ } as i) ->
+    | `Identifier (`Class _ as i) ->
         of_option ~error:(`Lookup_failureT i) (Env.(lookup_by_id s_class) i env)
-        >>= fun (`Class ({ iv = `Class (_, name); _ }, t)) ->
+        >>= fun (`Class (`Class (_, name), t)) ->
         Ok (`FClass (name, t))
-    | `Identifier ({ iv = `ClassType _; _ } as i) ->
+    | `Identifier (`ClassType _ as i) ->
         of_option ~error:(`Lookup_failureT i)
           (Env.(lookup_by_id s_class_type) i env)
-        >>= fun (`ClassType ({ iv = `ClassType (_, name); _ }, t)) ->
+        >>= fun (`ClassType (`ClassType (_, name), t)) ->
         Ok (`FClassType (name, t))
     | `Class (p, id) -> do_type p id
     | `ClassType (p, id) -> do_type p id
@@ -2311,8 +2311,8 @@ and class_signature_of_class_type :
 let resolve_module_path env p =
   resolve_module env p >>= fun (p, m) ->
   match p with
-  | `Gpath (`Identifier { iv = `Root _; _ })
-  | `Hidden (`Gpath (`Identifier { iv = `Root _; _ })) ->
+  | `Gpath (`Identifier `Root _)
+  | `Hidden (`Gpath (`Identifier `Root _)) ->
       Ok p
   | _ -> (
       let m = Component.Delayed.get m in

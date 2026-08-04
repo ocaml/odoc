@@ -40,7 +40,7 @@ let rec of_id x =
   let ret kind name =
     `Object [ ("kind", `String kind); ("name", `String name) ]
   in
-  match x.iv with
+  match x with
   | `Root (_, name) -> [ ret "Root" (ModuleName.to_string name) ]
   | `Page (_, name) -> [ ret "Page" (PageName.to_string name) ]
   | `AssetFile (_, name) -> [ ret "Asset" (AssetName.to_string name) ]
@@ -95,7 +95,7 @@ let rec prefix_name_kind_of_id (n : Odoc_model.Paths.Identifier.t) =
     in
     if prefix = "" then pname else prefix ^ "." ^ pname
   in
-  match n.iv with
+  match n with
   | `Root (_, name) -> ("", ModuleName.to_string name, "module")
   | `Page (_, name) -> ("", PageName.to_string name, "page")
   | `AssetFile (_, name) -> ("", AssetName.to_string name, "asset")

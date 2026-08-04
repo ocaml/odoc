@@ -65,7 +65,7 @@ module Path = struct
         let hidden =
           b
           ||
-          match m.iv with
+          match m with
           | `Module (_, n) -> Odoc_model.Names.ModuleName.is_hidden n
           | _ -> false
         in
@@ -84,7 +84,7 @@ module Path = struct
     match p with
     | `Substituted x -> `SubstitutedMT (module_type map x)
     | `Identifier
-        (({ iv = #Odoc_model.Paths.Identifier.ModuleType.t_pv; _ } as y), b) ->
+        ((#Odoc_model.Paths.Identifier.ModuleType.t as y), b) ->
         `Identifier (y, b)
     | `Local (id, b) ->
         `Identifier
@@ -101,7 +101,7 @@ module Path = struct
     match p with
     | `Substituted x -> `SubstitutedT (type_ map x)
     | `Identifier
-        (({ iv = #Odoc_model.Paths.Identifier.Path.Type.t_pv; _ } as y), b) ->
+        ((#Odoc_model.Paths.Identifier.Path.Type.t as y), b) ->
         `Identifier (y, b)
     | `Unbox x -> `Unbox (type_ map x)
     | `Local (id, b) -> `Identifier (Component.TypeMap.find id map.path_type, b)
@@ -117,7 +117,7 @@ module Path = struct
     match p with
     | `Substituted x -> `SubstitutedCT (class_type map x)
     | `Identifier
-        (({ iv = #Odoc_model.Paths.Identifier.Path.ClassType.t_pv; _ } as y), b)
+        ((#Odoc_model.Paths.Identifier.Path.ClassType.t as y), b)
       ->
         `Identifier (y, b)
     | `Local (id, b) ->

@@ -127,7 +127,7 @@ val lookup_by_name : 'a scope -> string -> t -> 'a maybe_ambiguous
     name. *)
 
 val lookup_by_id :
-  'a scope -> [< Identifier.t_pv ] Paths.Identifier.id -> t -> 'a option
+  'a scope -> [< Identifier.t ] -> t -> 'a option
 (** Like [lookup_by_name] but use an identifier as key. *)
 
 val s_any : Component.Element.any scope

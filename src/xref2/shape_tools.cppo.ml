@@ -10,7 +10,7 @@ type t = Shape.t * Odoc_model.Paths.Identifier.SourceLocation.t Shape.Uid.Map.t
 
 (** Project an identifier into a shape. *)
 let rec shape_of_id env :
-    [< Identifier.NonSrc.t_pv ] Identifier.id -> Shape.t option =
+    [< Identifier.NonSrc.t ] -> Shape.t option =
   let proj parent kind name =
     let item = Shape.Item.make name kind in
     match shape_of_id env (parent :> Identifier.NonSrc.t) with
@@ -19,7 +19,7 @@ let rec shape_of_id env :
   in
   fun id ->
     if Identifier.is_hidden id then None else 
-    match id.iv with
+    match id with
     | `Root (_, name) -> (
         match Env.lookup_impl (ModuleName.to_string_unsafe name) env with
         | Some impl -> (

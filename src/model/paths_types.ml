@@ -1,290 +1,178 @@
 open Names
 (** {1 Paths} *)
 
-type 'a id = { iv : 'a }
-(** @canonical Odoc_model.Paths.Identifier.id *)
-
 module Identifier = struct
-  type container_page_pv = [ `Page of container_page option * PageName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.ContainerPage.t_pv *)
-
-  and container_page = container_page_pv id
+  type container_page = [ `Page of container_page option * PageName.t ]
   (** @canonical Odoc_model.Paths.Identifier.ContainerPage.t *)
 
-  type leaf_page_pv = [ `LeafPage of container_page option * PageName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.LeafPage.t_pv *)
-
-  and leaf_page = leaf_page_pv id
+  type leaf_page = [ `LeafPage of container_page option * PageName.t ]
   (** @canonical Odoc_model.Paths.Identifier.LeafPage.t *)
 
-  type page_pv = [ container_page_pv | leaf_page_pv ]
-  (** @canonical Odoc_model.Paths.Identifier.Page.t_pv *)
-
-  and page = page_pv id
+  type page = [ container_page | leaf_page ]
   (** @canonical Odoc_model.Paths.Identifier.Page.t *)
 
-  type source_page_pv = [ `SourcePage of container_page * string ]
+  type source_page = [ `SourcePage of container_page * string ]
   (** The second argument is the filename.
 
-      @canonical Odoc_model.Paths.Identifier.SourcePage.t_pv *)
+      @canonical Odoc_model.Paths.Identifier.SourcePage.t *)
 
-  type source_page = source_page_pv id
-  (** @canonical Odoc_model.Paths.Identifier.SourcePage.t *)
-
-  type asset_file_pv = [ `AssetFile of page * AssetName.t ]
+  type asset_file = [ `AssetFile of page * AssetName.t ]
   (** The second argument is the filename.
 
-      @canonical Odoc_model.Paths.Identifier.AssetFile.t_pv *)
+      @canonical Odoc_model.Paths.Identifier.AssetFile.t *)
 
-  type asset_file = asset_file_pv id
-  (** @canonical Odoc_model.Paths.Identifier.AssetFile.t *)
-
-  type source_location_pv =
+  type source_location =
     [ `SourceLocationMod of source_page
     | `SourceLocation of source_page * DefName.t
     | `SourceLocationInternal of source_page * LocalName.t ]
   (** @canonical Odoc_model.Paths.Identifier.SourceLocation.t *)
 
-  and source_location = source_location_pv id
-  (** @canonical Odoc_model.Paths.Identifier.SourceLocation.t_pv *)
-
-  type odoc_id_pv =
-    [ page_pv
-    | source_page_pv
-    | asset_file_pv
+  type odoc_id =
+    [ page
+    | source_page
+    | asset_file
     | `Root of container_page option * ModuleName.t
     | `Implementation of ModuleName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.OdocId.t_pv *)
-
-  and odoc_id = odoc_id_pv id
   (** @canonical Odoc_model.Paths.Identifier.OdocId.t *)
 
-  type signature_pv =
+  type signature =
     [ `Root of container_page option * ModuleName.t
     | `Module of signature * ModuleName.t
     | `Parameter of signature * ModuleName.t
     | `Result of signature
     | `ModuleType of signature * ModuleTypeName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.Signature.t_pv *)
-
-  and signature = signature_pv id
   (** @canonical Odoc_model.Paths.Identifier.Signature.t *)
 
-  type class_signature_pv =
+  type class_signature =
     [ `Class of signature * TypeName.t | `ClassType of signature * TypeName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.ClassSignature.t_pv *)
-
-  and class_signature = class_signature_pv id
   (** @canonical Odoc_model.Paths.Identifier.ClassSignature.t *)
 
-  type datatype_pv = [ `Type of signature * TypeName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.DataType.t_pv *)
-
-  and datatype = datatype_pv id
+  type datatype = [ `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Identifier.DataType.t *)
 
-  type field_parent_pv = [ signature_pv | datatype_pv ]
-  (** @canonical Odoc_model.Paths.Identifier.FieldParent.t_pv *)
+  type field_parent = [ signature | datatype ]
+  (** @canonical Odoc_model.Paths.Identifier.FieldParent.t *)
 
   (* fragment_type_parent in identifiers is for record fields parent. It’s type
      (for usual record fields) or [signature] for fields of inline records of
      extension constructor. *)
-  and field_parent = field_parent_pv id
-  (** @canonical Odoc_model.Paths.Identifier.FieldParent.t *)
-
-  type unboxed_field_parent_pv = datatype_pv
-  (** @canonical Odoc_model.Paths.Identifier.UnboxedFieldParent.t_pv *)
-
-  and unboxed_field_parent = unboxed_field_parent_pv id
+  type unboxed_field_parent = datatype
   (** @canonical Odoc_model.Paths.Identifier.UnboxedFieldParent.t *)
 
-  type label_parent_pv = [ field_parent_pv | page_pv | class_signature_pv ]
-  (** @canonical Odoc_model.Paths.Identifier.LabelParent.t_pv *)
-
-  and label_parent = label_parent_pv id
+  type label_parent = [ field_parent | page | class_signature ]
   (** @canonical Odoc_model.Paths.Identifier.LabelParent.t *)
 
-  type root_module_pv = [ `Root of container_page option * ModuleName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.RootModule.t_pv *)
-
-  and root_module = root_module_pv id
+  type root_module = [ `Root of container_page option * ModuleName.t ]
   (** @canonical Odoc_model.Paths.Identifier.RootModule.t *)
 
-  type module_pv =
-    [ root_module_pv
+  type module_ =
+    [ root_module
     | `Module of signature * ModuleName.t
     | `Parameter of signature * ModuleName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.Module.t_pv *)
-
-  and module_ = module_pv id
   (** @canonical Odoc_model.Paths.Identifier.Module.t *)
 
-  type functor_parameter_pv = [ `Parameter of signature * ModuleName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.FunctorParameter.t_pv *)
-
-  and functor_parameter = functor_parameter_pv id
+  type functor_parameter = [ `Parameter of signature * ModuleName.t ]
   (** @canonical Odoc_model.Paths.Identifier.FunctorParameter.t *)
 
-  type functor_result_pv = [ `Result of signature ]
-  (** @canonical Odoc_model.Paths.Identifier.FunctorResult.t_pv *)
-
-  and functor_result = functor_result_pv id
+  type functor_result = [ `Result of signature ]
   (** @canonical Odoc_model.Paths.Identifier.FunctorResult.t *)
 
-  type module_type_pv = [ `ModuleType of signature * ModuleTypeName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.ModuleType.t_pv *)
-
-  and module_type = module_type_pv id
+  type module_type = [ `ModuleType of signature * ModuleTypeName.t ]
   (** @canonical Odoc_model.Paths.Identifier.ModuleType.t *)
 
-  type type_pv = [ `Type of signature * TypeName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.Type.t_pv *)
-
-  and type_ = type_pv id
+  type type_ = [ `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Type.t *)
 
-  type constructor_pv = [ `Constructor of datatype * ConstructorName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.Constructor.t_pv *)
-
-  and constructor = constructor_pv id
+  type constructor = [ `Constructor of datatype * ConstructorName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Constructor.t *)
 
-  type field_pv = [ `Field of field_parent * FieldName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.Field.t_pv *)
-
-  and field = field_pv id
+  type field = [ `Field of field_parent * FieldName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Field.t *)
 
-  type unboxed_field_pv =
+  type unboxed_field =
     [ `UnboxedField of unboxed_field_parent * UnboxedFieldName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.UnboxedField.t_pv *)
-
-  and unboxed_field = unboxed_field_pv id
   (** @canonical Odoc_model.Paths.Identifier.UnboxedField.t *)
 
-  type extension_pv = [ `Extension of signature * ExtensionName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.Extension.t_pv *)
-
-  type extension_decl_pv =
-    [ `ExtensionDecl of signature * ExtensionName.t * ExtensionName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.ExtensionDecl.t_pv *)
-
-  and extension = extension_pv id
+  type extension = [ `Extension of signature * ExtensionName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Extension.t *)
 
-  and extension_decl = extension_decl_pv id
+  type extension_decl =
+    [ `ExtensionDecl of signature * ExtensionName.t * ExtensionName.t ]
   (** @canonical Odoc_model.Paths.Identifier.ExtensionDecl.t *)
 
-  type exception_pv = [ `Exception of signature * ExceptionName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.Exception.t_pv *)
-
-  and exception_ = exception_pv id
+  type exception_ = [ `Exception of signature * ExceptionName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Exception.t *)
 
-  type value_pv = [ `Value of signature * ValueName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.Value.t_pv *)
-
-  and value = value_pv id
+  type value = [ `Value of signature * ValueName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Value.t *)
 
-  type class_pv = [ `Class of signature * TypeName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.Class.t_pv *)
-
-  and class_ = class_pv id
+  type class_ = [ `Class of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Class.t *)
 
-  type class_type_pv = [ `ClassType of signature * TypeName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.ClassType.t_pv *)
-
-  and class_type = class_type_pv id
+  type class_type = [ `ClassType of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Identifier.ClassType.t *)
 
-  type method_pv = [ `Method of class_signature * MethodName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.Method.t_pv *)
-
-  and method_ = method_pv id
+  type method_ = [ `Method of class_signature * MethodName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Method.t *)
 
-  type instance_variable_pv =
+  type instance_variable =
     [ `InstanceVariable of class_signature * InstanceVariableName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.InstanceVariable.t_pv *)
-
-  and instance_variable = instance_variable_pv id
   (** @canonical Odoc_model.Paths.Identifier.InstanceVariable.t *)
 
-  type label_pv = [ `Label of label_parent * LabelName.t ]
-  (** @canonical Odoc_model.Paths.Identifier.Label.t_pv *)
-
-  and label = label_pv id
+  type label = [ `Label of label_parent * LabelName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Label.t *)
 
-  type non_src_pv =
-    [ signature_pv
-    | class_signature_pv
-    | datatype_pv
-    | field_parent_pv
-    | unboxed_field_parent_pv
-    | label_parent_pv
-    | module_pv
-    | functor_parameter_pv
-    | functor_result_pv
-    | module_type_pv
-    | type_pv
-    | constructor_pv
-    | field_pv
-    | unboxed_field_pv
-    | extension_pv
-    | extension_decl_pv
-    | exception_pv
-    | value_pv
-    | class_pv
-    | class_type_pv
-    | method_pv
-    | instance_variable_pv
-    | label_pv
-    | page_pv ]
-  (** @canonical Odoc_model.Paths.Identifier.NonSrc.t_pv *)
-
-  and non_src = non_src_pv id
+  type non_src =
+    [ signature
+    | class_signature
+    | datatype
+    | field_parent
+    | unboxed_field_parent
+    | label_parent
+    | module_
+    | functor_parameter
+    | functor_result
+    | module_type
+    | type_
+    | constructor
+    | field
+    | unboxed_field
+    | extension
+    | extension_decl
+    | exception_
+    | value
+    | class_
+    | class_type
+    | method_
+    | instance_variable
+    | label
+    | page ]
   (** @canonical Odoc_model.Paths.Identifier.NonSrc.t *)
 
-  type any_pv =
-    [ non_src_pv | source_page_pv | source_location_pv | asset_file_pv ]
-  (** @canonical Odoc_model.Paths.Identifier.t_pv *)
-
-  and any = any_pv id
+  type any =
+    [ non_src | source_page | source_location | asset_file ]
   (** @canonical Odoc_model.Paths.Identifier.t *)
 
-  type path_module_pv = [ module_pv | functor_parameter_pv | functor_result_pv ]
-  (** @canonical Odoc_model.Paths.Identifier.Path.Module.t_pv *)
-
-  and path_module = path_module_pv id
+  type path_module = [ module_ | functor_parameter | functor_result ]
   (** @canonical Odoc_model.Paths.Identifier.Path.Module.t *)
 
   type path_module_type = module_type
   (** @canonical Odoc_model.Paths.Identifier.Path.ModuleType.t *)
 
-  type path_type_pv = [ type_pv | class_pv | class_type_pv ]
-  (** @canonical Odoc_model.Paths.Identifier.Path.Type.t_pv *)
-
-  and path_type = path_type_pv id
+  type path_type = [ type_ | class_ | class_type ]
   (** @canonical Odoc_model.Paths.Identifier.Path.Type.t *)
 
   type path_value = value
 
-  type path_class_type_pv = [ class_pv | class_type_pv ]
-  (** @canonical Odoc_model.Paths.Identifier.Path.ClassType.t_pv *)
-
-  and path_class_type = path_class_type_pv id
+  type path_class_type = [ class_ | class_type ]
   (** @canonical Odoc_model.Paths.Identifier.Path.ClassType.t *)
 
   type path_any =
-    [ path_module_pv
-    | module_type_pv
-    | path_type_pv
-    | path_class_type_pv
-    | value_pv ]
-    id
+    [ path_module
+    | module_type
+    | path_type
+    | path_class_type
+    | value ]
   (** @canonical Odoc_model.Paths.Identifier.Path.t *)
 
   type fragment_module = path_module
@@ -298,13 +186,13 @@ module Identifier = struct
   type reference_type = path_type
 
   type reference_constructor =
-    [ constructor_pv | extension_pv | exception_pv ] id
+    [ constructor | extension | exception_ ]
 
   type reference_field = field
 
   type reference_unboxed_field = unboxed_field
 
-  type reference_extension = [ extension_pv | exception_pv ] id
+  type reference_extension = [ extension | exception_ ]
 
   type reference_extension_decl = extension_decl
 
@@ -314,7 +202,7 @@ module Identifier = struct
 
   type reference_class = class_
 
-  type reference_class_type = [ class_pv | class_type_pv ] id
+  type reference_class_type = [ class_ | class_type ]
 
   type reference_method = method_
 

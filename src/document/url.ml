@@ -69,15 +69,13 @@ let render_path : Path.t -> string =
   render_path
 
 module Path = struct
-  type nonsrc_pv =
-    [ Identifier.Page.t_pv
-    | Identifier.Signature.t_pv
-    | Identifier.ClassSignature.t_pv ]
+  type nonsrc =
+    [ Identifier.Page.t
+    | Identifier.Signature.t
+    | Identifier.ClassSignature.t ]
 
-  type any_pv =
-    [ nonsrc_pv | Identifier.SourcePage.t_pv | Identifier.AssetFile.t_pv ]
-
-  and any = any_pv Identifier.id
+  type any =
+    [ nonsrc | Identifier.SourcePage.t | Identifier.AssetFile.t ]
 
   type kind =
     [ `Module
@@ -114,7 +112,7 @@ module Path = struct
   let rec from_identifier : any -> t =
    fun x ->
     match x with
-    | { iv = `Root (parent, unit_name); _ } ->
+    | `Root (parent, unit_name) ->
         let parent =
           match parent with
           | Some p -> Some (from_identifier (p :> any))
@@ -123,7 +121,7 @@ module Path = struct
         let kind = `Module in
         let name = ModuleName.to_string unit_name in
         mk ?parent kind name
-    | { iv = `Page (parent, page_name); _ } ->
+    | `Page (parent, page_name) ->
         let parent =
           match parent with
           | Some p -> Some (from_identifier (p :> any))
@@ -132,7 +130,7 @@ module Path = struct
         let kind = `Page in
         let name = PageName.to_string page_name in
         mk ?parent kind name
-    | { iv = `LeafPage (parent, page_name); _ } ->
+    | `LeafPage (parent, page_name) ->
         let parent =
           match parent with
           | Some p -> Some (from_identifier (p :> any))
@@ -141,44 +139,44 @@ module Path = struct
         let kind = `LeafPage in
         let name = PageName.to_string page_name in
         mk ?parent kind name
-    | { iv = `Module (parent, mod_name); _ } ->
+    | `Module (parent, mod_name) ->
         let parent = from_identifier (parent :> any) in
         let kind = `Module in
         let name = ModuleName.to_string mod_name in
         mk ~parent kind name
-    | { iv = `Parameter (functor_id, arg_name); _ } as p ->
+    | `Parameter (functor_id, arg_name) as p ->
         let parent = from_identifier (functor_id :> any) in
         let arg_num = Identifier.FunctorParameter.functor_arg_pos p in
         let kind = `Parameter arg_num in
         let name = ModuleName.to_string arg_name in
         mk ~parent kind name
-    | { iv = `ModuleType (parent, modt_name); _ } ->
+    | `ModuleType (parent, modt_name) ->
         let parent = from_identifier (parent :> any) in
         let kind = `ModuleType in
         let name = ModuleTypeName.to_string modt_name in
         mk ~parent kind name
-    | { iv = `Class (parent, name); _ } ->
+    | `Class (parent, name) ->
         let parent = from_identifier (parent :> any) in
         let kind = `Class in
         let name = TypeName.to_string name in
         mk ~parent kind name
-    | { iv = `ClassType (parent, name); _ } ->
+    | `ClassType (parent, name) ->
         let parent = from_identifier (parent :> any) in
         let kind = `ClassType in
         let name = TypeName.to_string name in
         mk ~parent kind name
-    | { iv = `Result p; _ } -> from_identifier (p :> any)
-    | { iv = `SourcePage (parent, name); _ } ->
+    | `Result p -> from_identifier (p :> any)
+    | `SourcePage (parent, name) ->
         let parent = from_identifier (parent :> any) in
         let kind = `SourcePage in
         mk ~parent kind name
-    | { iv = `AssetFile (parent, name); _ } ->
+    | `AssetFile (parent, name) ->
         let parent = from_identifier (parent :> any) in
         let kind = `File in
         let name = AssetName.to_string name in
         mk ~parent kind name
 
-  let from_identifier p = from_identifier (p : [< any_pv ] Identifier.id :> any)
+  let from_identifier p = from_identifier (p : [< any ] :> any)
 
   let to_list url =
     let rec loop acc { parent; name; kind } =
@@ -274,7 +272,7 @@ module Anchor = struct
   let suffix_for_constructor x = x
 
   let rec from_identifier : Identifier.t -> t = function
-    | { iv = `Module (parent, mod_name); _ } ->
+    | `Module (parent, mod_name) ->
         let parent = Path.from_identifier (parent :> Path.any) in
         let kind = `Module in
         let anchor =
@@ -282,27 +280,24 @@ module Anchor = struct
             (ModuleName.to_string mod_name)
         in
         { page = parent; anchor; kind }
-    | { iv = `Root _; _ } as p ->
+    | `Root _ as p ->
         let page = Path.from_identifier (p :> Path.any) in
         { page; kind = `Module; anchor = "" }
-    | { iv = `Page _; _ } as p ->
+    | `Page _ as p ->
         let page = Path.from_identifier (p :> Path.any) in
         { page; kind = `Page; anchor = "" }
-    | { iv = `LeafPage _; _ } as p ->
+    | `LeafPage _ as p ->
         let page = Path.from_identifier (p :> Path.any) in
         { page; kind = `LeafPage; anchor = "" }
     (* For all these identifiers, page names and anchors are the same *)
-    | {
-        iv = `Parameter _ | `Result _ | `ModuleType _ | `Class _ | `ClassType _;
-        _;
-      } as p ->
+    | `Parameter _ | `Result _ | `ModuleType _ | `Class _ | `ClassType _ as p ->
         anchorify_path @@ Path.from_identifier p
-    | { iv = `Type (parent, type_name); _ } ->
+    | `Type (parent, type_name) ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Type in
         let name = TypeName.to_string type_name in
         { page; anchor = Format.asprintf "%a-%s" pp_kind kind name; kind }
-    | { iv = `Extension (parent, name); _ } ->
+    | `Extension (parent, name) ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Extension in
         {
@@ -311,7 +306,7 @@ module Anchor = struct
             Format.asprintf "%a-%s" pp_kind kind (ExtensionName.to_string name);
           kind;
         }
-    | { iv = `ExtensionDecl (parent, name, _); _ } ->
+    | `ExtensionDecl (parent, name, _) ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `ExtensionDecl in
         {
@@ -320,7 +315,7 @@ module Anchor = struct
             Format.asprintf "%a-%s" pp_kind kind (ExtensionName.to_string name);
           kind;
         }
-    | { iv = `Exception (parent, name); _ } ->
+    | `Exception (parent, name) ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Exception in
         {
@@ -329,7 +324,7 @@ module Anchor = struct
             Format.asprintf "%a-%s" pp_kind kind (ExceptionName.to_string name);
           kind;
         }
-    | { iv = `Value (parent, name); _ } ->
+    | `Value (parent, name) ->
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Val in
         {
@@ -338,53 +333,53 @@ module Anchor = struct
             Format.asprintf "%a-%s" pp_kind kind (ValueName.to_string name);
           kind;
         }
-    | { iv = `Method (parent, name); _ } ->
+    | `Method (parent, name) ->
         let str_name = MethodName.to_string name in
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Method in
         { page; anchor = Format.asprintf "%a-%s" pp_kind kind str_name; kind }
-    | { iv = `InstanceVariable (parent, name); _ } ->
+    | `InstanceVariable (parent, name) ->
         let str_name = InstanceVariableName.to_string name in
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Val in
         { page; anchor = Format.asprintf "%a-%s" pp_kind kind str_name; kind }
-    | { iv = `Constructor (parent, name); _ } ->
+    | `Constructor (parent, name) ->
         let page = from_identifier (parent :> Identifier.t) in
         let kind = `Constructor in
         let suffix = suffix_for_constructor (ConstructorName.to_string name) in
         add_suffix ~kind page suffix
-    | { iv = `Field (parent, name); _ } ->
+    | `Field (parent, name) ->
         let page = from_identifier (parent :> Identifier.t) in
         let kind = `Field in
         let suffix = FieldName.to_string name in
         add_suffix ~kind page suffix
-    | { iv = `UnboxedField (parent, name); _ } ->
+    | `UnboxedField (parent, name) ->
         let page = from_identifier (parent :> Identifier.t) in
         let kind = `UnboxedField in
         let suffix = UnboxedFieldName.to_string name in
         add_suffix ~kind page suffix
-    | { iv = `Label (parent, anchor); _ } -> (
+    | `Label (parent, anchor) -> (
         let str_name = LabelName.to_string anchor in
         (* [Identifier.LabelParent.t] contains datatypes. [`CoreType] can't
            happen, [`Type] may not happen either but just in case, use the
            grand-parent. *)
         match parent with
-        | { iv = `Type (gp, _); _ } -> mk ~kind:`Section gp str_name
-        | { iv = #Path.nonsrc_pv; _ } as p ->
+        | `Type (gp, _) -> mk ~kind:`Section gp str_name
+        | #Path.nonsrc as p ->
             mk ~kind:`Section (p :> Path.any) str_name)
-    | { iv = `SourceLocation (parent, loc); _ } ->
+    | `SourceLocation (parent, loc) ->
         let page = Path.from_identifier (parent :> Path.any) in
         { page; kind = `SourceAnchor; anchor = DefName.to_string loc }
-    | { iv = `SourceLocationInternal (parent, loc); _ } ->
+    | `SourceLocationInternal (parent, loc) ->
         let page = Path.from_identifier (parent :> Path.any) in
         { page; kind = `SourceAnchor; anchor = LocalName.to_string loc }
-    | { iv = `SourceLocationMod parent; _ } ->
+    | `SourceLocationMod parent ->
         let page = Path.from_identifier (parent :> Path.any) in
         { page; kind = `SourceAnchor; anchor = "" }
-    | { iv = `SourcePage _; _ } as p ->
+    | `SourcePage _ as p ->
         let page = Path.from_identifier (p :> Path.any) in
         { page; kind = `Page; anchor = "" }
-    | { iv = `AssetFile _; _ } as p ->
+    | `AssetFile _ as p ->
         let page = Path.from_identifier p in
         { page; kind = `File; anchor = "" }
 
@@ -429,7 +424,7 @@ let from_path page =
 
 let from_identifier ~stop_before x =
   match x with
-  | { Identifier.iv = #Path.any_pv; _ } as p when not stop_before ->
+  | #Path.any as p when not stop_before ->
       from_path @@ Path.from_identifier p
   | p -> Anchor.from_identifier p
 

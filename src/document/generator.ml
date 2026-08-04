@@ -280,7 +280,7 @@ module Make (Syntax : SYNTAX) = struct
     let info_of_info : Lang.Source_info.annotation -> Source_page.info option =
       function
       | Definition id -> (
-          match id.iv with
+          match id with
           | `SourceLocation (_, def) -> Some (Anchor (DefName.to_string def))
           | `SourceLocationInternal (_, local) ->
               Some (Anchor (LocalName.to_string local))
@@ -545,7 +545,7 @@ module Make (Syntax : SYNTAX) = struct
             match lbl with None -> O.noop | Some lbl -> label lbl ++ O.txt ":"
           in
           let name =
-            match m_arg.id.iv with
+            match m_arg.id with
             | `Parameter (_, name) -> ModuleName.to_string name
           in
           let dst = type_expr dst in
@@ -1383,37 +1383,37 @@ module Make (Syntax : SYNTAX) = struct
   end = struct
     let internal_module m =
       let open Lang.Module in
-      match m.id.iv with
+      match m.id with
       | `Module (_, name) when ModuleName.is_hidden name -> true
       | _ -> false
 
     let internal_type t =
       let open Lang.TypeDecl in
-      match t.id.iv with
+      match t.id with
       | `Type (_, name) when TypeName.is_hidden name -> true
       | _ -> false
 
     let internal_value v =
       let open Lang.Value in
-      match v.id.iv with
+      match v.id with
       | `Value (_, name) when ValueName.is_hidden name -> true
       | _ -> false
 
     let internal_module_type t =
       let open Lang.ModuleType in
-      match t.id.iv with
+      match t.id with
       | `ModuleType (_, name) when ModuleTypeName.is_hidden name -> true
       | _ -> false
 
     let internal_module_substitution t =
       let open Lang.ModuleSubstitution in
-      match t.id.iv with
+      match t.id with
       | `Module (_, name) when ModuleName.is_hidden name -> true
       | _ -> false
 
     let internal_module_type_substitution t =
       let open Lang.ModuleTypeSubstitution in
-      match t.id.iv with
+      match t.id with
       | `ModuleType (_, name) when ModuleTypeName.is_hidden name -> true
       | _ -> false
 
@@ -1991,7 +1991,7 @@ module Make (Syntax : SYNTAX) = struct
 
     let page (t : Odoc_model.Lang.Page.t) =
       (*let name =
-          match t.name.iv with `Page (_, name) | `LeafPage (_, name) -> name
+          match t.name with `Page (_, name) | `LeafPage (_, name) -> name
         in*)
       (*let title = Odoc_model.Names.PageName.to_string name in*)
       let url = Url.Path.from_identifier t.name in
