@@ -209,7 +209,7 @@ let anchor_of_identifier id =
         continue anchor parent
     | `Parameter (parent, name) as iv ->
         let arg_num =
-          Identifier.FunctorParameter.functor_arg_pos { id with iv }
+          Identifier.FunctorParameter.functor_arg_pos { Identifier.iv }
         in
         let kind = `Parameter arg_num in
         let anchor = anchor kind (ModuleName.to_string name) in

@@ -22,7 +22,7 @@ module Ocaml_env = Env
 module Identifier : sig
   (** {2 Generic operations} *)
 
-  type 'a id = 'a Paths_types.id = { iv : 'a; ihash : int; ikey : string }
+  type 'a id = 'a Paths_types.id = { iv : 'a }
 
   module type IdSig = sig
     type t

@@ -20,7 +20,7 @@ module Ocaml_env = Env
 open Names
 
 module Identifier = struct
-  type 'a id = 'a Paths_types.id = { iv : 'a; ihash : int; ikey : string }
+  type 'a id = 'a Paths_types.id = { iv : 'a }
 
   module Id = Paths_types.Identifier
 
@@ -174,11 +174,22 @@ module Identifier = struct
 
   let label_parent n = label_parent_aux (n :> Id.non_src)
 
-  let equal x y = x.ihash = y.ihash && x.ikey = y.ikey
+  (* An identifier is now just plain data, so structural equality is the right
+     notion. *)
+  let equal x y = x == y || x = y
 
-  let hash x = x.ihash
+  (* Deliberately not [Hashtbl.hash], which is [hash_param 10 100]. Hashing is a
+     breadth-first walk that stops after [count] meaningful nodes (ints,
+     strings) or [limit] enqueued ones, and each identifier level costs several
+     of each, so a budget of 10 is exhausted a few levels down and never reaches
+     the root.
 
-  let compare x y = compare x.ikey y.ikey
+     256/256 is the most reach obtainable: the runtime clamps [limit] to its
+     fixed-size traversal queue (HASH_QUEUE_SIZE, runtime/hash.c), so larger
+     values are silently ignored and cannot help. *)
+  let hash x = Hashtbl.hash_param 256 256 x
+
+  let compare x y = if x == y then 0 else compare x.iv y.iv
 
   type any = t
 
@@ -390,9 +401,10 @@ module Identifier = struct
     type t = Paths_types.Identifier.non_src
     type t_pv = Paths_types.Identifier.non_src_pv
 
-    let equal x y = x.ihash = y.ihash && x.ikey = y.ikey
+    (* [==] guard as in [equal] above: [( = )] alone never checks pointers. *)
+    let equal x y = x == y || x = y
 
-    let hash x = x.ihash
+    let hash x = Hashtbl.hash_param 256 256 x
   end
 
   module SourcePage = struct
@@ -481,169 +493,128 @@ module Identifier = struct
   end
 
   module Mk = struct
-    let mk_fresh to_str ty f x =
-      let ikey = Printf.sprintf "%s_%s" ty (to_str x) in
-      let ihash = Hashtbl.hash ikey in
-      { iv = f x; ihash; ikey }
-
-    let mk_parent to_str ty f (parent, x) =
-      let ikey = Printf.sprintf "%s_%s.%s" ty (to_str x) parent.ikey in
-      let ihash = Hashtbl.hash ikey in
-
-      { iv = f (parent, x); ihash; ikey }
-
-    let mk_parent_opt to_str ty f (parent_opt, x) =
-      let ikey =
-        match parent_opt with
-        | None -> Printf.sprintf "%s_%s" ty (to_str x)
-        | Some p -> Printf.sprintf "%s_%s.%s" ty (to_str x) p.ikey
-      in
-      let ihash = Hashtbl.hash ikey in
-      { iv = f (parent_opt, x); ihash; ikey }
+    let mk f x = { iv = f x }
 
     let page :
         ContainerPage.t option * PageName.t ->
         [> `Page of ContainerPage.t option * PageName.t ] id =
-      mk_parent_opt PageName.to_string "p" (fun (p, n) -> `Page (p, n))
+      mk (fun (p, n) -> `Page (p, n))
 
     let leaf_page :
         ContainerPage.t option * PageName.t ->
         [> `LeafPage of ContainerPage.t option * PageName.t ] id =
-      mk_parent_opt PageName.to_string "lp" (fun (p, n) -> `LeafPage (p, n))
+      mk (fun (p, n) -> `LeafPage (p, n))
 
     let asset_file : Page.t * AssetName.t -> AssetFile.t =
-      mk_parent AssetName.to_string "asset" (fun (p, n) -> `AssetFile (p, n))
+      mk (fun (p, n) -> `AssetFile (p, n))
 
     let source_page (container_page, name) =
-      mk_parent
-        (fun x -> x)
-        "sp"
-        (fun (p, rp) -> `SourcePage (p, rp))
-        (container_page, name)
+      mk (fun (p, rp) -> `SourcePage (p, rp)) (container_page, name)
 
     let root :
         ContainerPage.t option * ModuleName.t ->
         [> `Root of ContainerPage.t option * ModuleName.t ] id =
-      mk_parent_opt ModuleName.to_string "r" (fun (p, n) -> `Root (p, n))
+      mk (fun (p, n) -> `Root (p, n))
 
-    let implementation =
-      mk_fresh
-        (fun s -> s)
-        "impl"
-        (fun s -> `Implementation (ModuleName.make_std s))
+    let implementation = mk (fun s -> `Implementation (ModuleName.make_std s))
 
     let module_ :
         Signature.t * ModuleName.t ->
         [> `Module of Signature.t * ModuleName.t ] id =
-      mk_parent ModuleName.to_string "m" (fun (p, n) -> `Module (p, n))
+      mk (fun (p, n) -> `Module (p, n))
 
     let parameter :
         Signature.t * ModuleName.t ->
         [> `Parameter of Signature.t * ModuleName.t ] id =
-      mk_parent ModuleName.to_string "p" (fun (p, n) -> `Parameter (p, n))
+      mk (fun (p, n) -> `Parameter (p, n))
 
     let result : Signature.t -> [> `Result of Signature.t ] id =
-     fun s ->
-      mk_parent (fun () -> "__result__") "" (fun (s, ()) -> `Result s) (s, ())
+     fun s -> mk (fun s -> `Result s) s
 
     let module_type :
         Signature.t * ModuleTypeName.t ->
         [> `ModuleType of Signature.t * ModuleTypeName.t ] id =
-      mk_parent ModuleTypeName.to_string "mt" (fun (p, n) -> `ModuleType (p, n))
+      mk (fun (p, n) -> `ModuleType (p, n))
 
     let class_ :
         Signature.t * TypeName.t -> [> `Class of Signature.t * TypeName.t ] id =
-      mk_parent TypeName.to_string "c" (fun (p, n) -> `Class (p, n))
+      mk (fun (p, n) -> `Class (p, n))
 
     let class_type :
         Signature.t * TypeName.t ->
         [> `ClassType of Signature.t * TypeName.t ] id =
-      mk_parent TypeName.to_string "ct" (fun (p, n) -> `ClassType (p, n))
+      mk (fun (p, n) -> `ClassType (p, n))
 
     let type_ :
         Signature.t * TypeName.t -> [> `Type of Signature.t * TypeName.t ] id =
-      mk_parent TypeName.to_string "t" (fun (p, n) -> `Type (p, n))
+      mk (fun (p, n) -> `Type (p, n))
 
-    let core_type =
-      mk_fresh (fun s -> s) "coret" (fun s -> `CoreType (TypeName.make_std s))
+    let core_type = mk (fun s -> `CoreType (TypeName.make_std s))
 
     let constructor :
         DataType.t * ConstructorName.t ->
         [> `Constructor of DataType.t * ConstructorName.t ] id =
-      mk_parent ConstructorName.to_string "ctor" (fun (p, n) ->
-          `Constructor (p, n))
+      mk (fun (p, n) -> `Constructor (p, n))
 
     let field :
         FieldParent.t * FieldName.t ->
         [> `Field of FieldParent.t * FieldName.t ] id =
-      mk_parent FieldName.to_string "fld" (fun (p, n) -> `Field (p, n))
+      mk (fun (p, n) -> `Field (p, n))
 
     let unboxed_field :
         UnboxedFieldParent.t * UnboxedFieldName.t ->
         [> `UnboxedField of UnboxedFieldParent.t * UnboxedFieldName.t ] id =
-      mk_parent UnboxedFieldName.to_string "unboxedfld" (fun (p, n) ->
-          `UnboxedField (p, n))
+      mk (fun (p, n) -> `UnboxedField (p, n))
 
     let extension :
         Signature.t * ExtensionName.t ->
         [> `Extension of Signature.t * ExtensionName.t ] id =
-      mk_parent ExtensionName.to_string "extn" (fun (p, n) -> `Extension (p, n))
+      mk (fun (p, n) -> `Extension (p, n))
 
     let extension_decl :
         Signature.t * (ExtensionName.t * ExtensionName.t) ->
         [> `ExtensionDecl of Signature.t * ExtensionName.t * ExtensionName.t ]
         id =
-      mk_parent
-        (fun (n, m) ->
-          ExtensionName.to_string n ^ "." ^ ExtensionName.to_string m)
-        "extn-decl"
-        (fun (p, (n, m)) -> `ExtensionDecl (p, n, m))
+      mk (fun (p, (n, m)) -> `ExtensionDecl (p, n, m))
 
     let exception_ :
         Signature.t * ExceptionName.t ->
         [> `Exception of Signature.t * ExceptionName.t ] id =
-      mk_parent ExceptionName.to_string "exn" (fun (p, n) -> `Exception (p, n))
+      mk (fun (p, n) -> `Exception (p, n))
 
     let value :
         Signature.t * ValueName.t -> [> `Value of Signature.t * ValueName.t ] id
         =
-      mk_parent ValueName.to_string "v" (fun (p, n) -> `Value (p, n))
+      mk (fun (p, n) -> `Value (p, n))
 
     let method_ :
         ClassSignature.t * MethodName.t ->
         [> `Method of ClassSignature.t * MethodName.t ] id =
-      mk_parent MethodName.to_string "m" (fun (p, n) -> `Method (p, n))
+      mk (fun (p, n) -> `Method (p, n))
 
     let instance_variable :
         ClassSignature.t * InstanceVariableName.t ->
         [> `InstanceVariable of ClassSignature.t * InstanceVariableName.t ] id =
-      mk_parent InstanceVariableName.to_string "iv" (fun (p, n) ->
-          `InstanceVariable (p, n))
+      mk (fun (p, n) -> `InstanceVariable (p, n))
 
     let label :
         LabelParent.t * LabelName.t ->
         [> `Label of LabelParent.t * LabelName.t ] id =
-      mk_parent LabelName.to_string "l" (fun (p, n) -> `Label (p, n))
+      mk (fun (p, n) -> `Label (p, n))
 
     let source_location :
         SourcePage.t * DefName.t ->
         [> `SourceLocation of SourcePage.t * DefName.t ] id =
-      mk_parent DefName.to_string "sl" (fun (p, n) -> `SourceLocation (p, n))
+      mk (fun (p, n) -> `SourceLocation (p, n))
 
     let source_location_mod :
         SourcePage.t -> [> `SourceLocationMod of SourcePage.t ] id =
-     fun s ->
-      mk_parent
-        (fun () -> "__slm__")
-        ""
-        (fun (s, ()) -> `SourceLocationMod s)
-        (s, ())
+     fun s -> mk (fun s -> `SourceLocationMod s) s
 
     let source_location_int :
         SourcePage.t * LocalName.t ->
         [> `SourceLocationInternal of SourcePage.t * LocalName.t ] id =
-      mk_parent LocalName.to_string "sli" (fun (p, n) ->
-          `SourceLocationInternal (p, n))
+      mk (fun (p, n) -> `SourceLocationInternal (p, n))
   end
 
   (* Counter for generating unique synthetic parents for include expressions.

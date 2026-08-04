@@ -78,7 +78,7 @@ let to_string t =
         let rec loop_pp fmt parent =
           match parent.Paths.Identifier.iv with
           | `SourceDir (p, name) -> Format.fprintf fmt "%a::%s" loop_pp p name
-          | `Page _ as iv -> Format.fprintf fmt "%a" pp { parent with iv }
+          | `Page _ as iv -> Format.fprintf fmt "%a" pp { Paths.Identifier.iv }
         in
         Format.fprintf fmt "%a::%s" loop_pp parent name
     | `LeafPage (parent, name) | `Page (parent, name) -> (

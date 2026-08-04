@@ -1,7 +1,7 @@
 open Names
 (** {1 Paths} *)
 
-type 'a id = { iv : 'a; ihash : int; ikey : string }
+type 'a id = { iv : 'a }
 (** @canonical Odoc_model.Paths.Identifier.id *)
 
 module Identifier = struct

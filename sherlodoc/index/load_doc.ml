@@ -152,7 +152,7 @@ let rec categorize id =
   | ( `InstanceVariable _ | `Method _ | `Field _ | `Result _ | `Label _ | `Type _
     | `Exception _ | `Class _ | `ClassType _ | `Value _ | `Constructor _ | `Extension _
     | `ExtensionDecl _ | `Module _ | `UnboxedField _ ) as x ->
-      let parent = Identifier.label_parent { id with iv = x } in
+      let parent = Identifier.label_parent { Identifier.iv = x } in
       categorize (parent :> Identifier.Any.t)
   | `AssetFile _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
   | `SourceLocationInternal _ ->
