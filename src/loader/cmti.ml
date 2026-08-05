@@ -200,13 +200,63 @@ let read_value_description env parent vd =
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container vd.val_attributes in
   let type_ = read_core_type env container vd.val_desc in
   let value =
+#if OCAML_VERSION >= (5,6,0)
+    (* Since 5.6 externals have their own node, so a [val] is never one. *)
+    Value.Abstract
+#else
     match vd.val_prim with
     | [] -> Value.Abstract
     | primitives -> External primitives
+#endif
   in
   let ext_attrs = Doc_attr.attrs_of_value_description vd.val_val in
   let modalities = Cmi.read_value_descr_modalities vd.val_val in
   Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities }
+
+#if OCAML_VERSION >= (5,6,0)
+(* Since 5.6 (RFC 44) [external] declarations have their own Typedtree node,
+   because they can now also be written as an alias of an existing primitive:
+   [external x : t = M.y], or [external x = M.y] with the type left implicit.
+   An alias carries no primitive strings of its own, so recover them from the
+   resolved [Types.value_description] the way the .cmi reader does. *)
+let read_primitive_description env parent pd =
+  let open Signature in
+  let id = Env.find_value_identifier env.ident_env pd.prim_id in
+  let source_loc = None in
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container
+      pd.prim_attributes
+  in
+  let type_ =
+    match pd.prim_kind with
+    | Tprim_decl (core_type, _) | Tprim_alias (Some core_type, _, _) ->
+        read_core_type env container core_type
+    | Tprim_alias (None, _, _) ->
+        (* No type written at the declaration site: use the inferred one. *)
+        Cmi.mark_type_expr pd.prim_val.val_type;
+        Cmi.read_type_expr env pd.prim_val.val_type
+  in
+  let value =
+    match pd.prim_kind with
+    | Tprim_decl (_, primitives) -> Value.External primitives
+    | Tprim_alias _ -> (
+        match pd.prim_val.val_kind with
+        | Val_prim desc ->
+            let open Primitive in
+            Value.External
+              (desc.prim_name
+              :: (match desc.prim_native_name with
+                 | "" -> []
+                 | name -> [ name ]))
+        | _ -> Value.Abstract)
+  in
+  let ext_attrs = Doc_attr.attrs_of_value_description pd.prim_val in
+  let modalities = Cmi.read_value_descr_modalities pd.prim_val in
+  Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities }
+#endif
 
 let read_type_parameter (ctyp, var_and_injectivity)  =
   let open TypeDecl in
@@ -804,6 +854,10 @@ and read_signature_item env parent item =
     match item.sig_desc with
     | Tsig_value vd ->
         [read_value_description env parent vd]
+#if OCAML_VERSION >= (5,6,0)
+    | Tsig_primitive pd ->
+        [read_primitive_description env parent pd]
+#endif
     | Tsig_type (rec_flag, decls) ->
       let rec_flag =
         match rec_flag with

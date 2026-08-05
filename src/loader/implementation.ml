@@ -38,6 +38,9 @@ module Env = struct
     | Tsig_exception _ | Tsig_modsubst _ | Tsig_open _ | Tsig_include _
     | Tsig_class _ | Tsig_class_type _ | Tsig_attribute _ ->
         ()
+#if OCAML_VERSION >= (5,6,0)
+    | Tsig_primitive _ -> ()
+#endif
 #if defined OXCAML
     | Tsig_jkind _ -> ()
 #endif
