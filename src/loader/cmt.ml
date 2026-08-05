@@ -535,8 +535,13 @@ and read_structure_item env parent item =
     | Tstr_eval _ -> []
     | Tstr_value(_, vbs) ->
         read_value_bindings env parent vbs
+#if OCAML_VERSION >= (5,6,0)
+    | Tstr_primitive pd ->
+        [Cmti.read_primitive_description env parent pd]
+#else
     | Tstr_primitive vd ->
         [Cmti.read_value_description env parent vd]
+#endif
 #if OCAML_VERSION < (4,3,0)
     | Tstr_type (decls) ->
       let rec_flag = Ordinary in
