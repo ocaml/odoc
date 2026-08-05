@@ -68,6 +68,7 @@ let constraints =
     ("class_comments.mli", Min "4.08");
     ("functor_ml.ml", Min "4.14");
     ("ocaml_55.mli", Min "5.5");
+    ("ocaml_56.mli", Min "5.6");
     ("oxcaml.mli", OxCaml);
     ("oxcaml_impl.ml", OxCaml);
   ]
