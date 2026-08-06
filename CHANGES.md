@@ -4,6 +4,7 @@
 - Support for OxCaml zero alloc definitions (@Leonidas-from-XIV, #1422, #1444)
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)
 - Support for OxCaml modalities (@art-w, #1420)
+- Fix resolving functor through `module type of` (@Leonidas-from-XIV, #1471)
 
 # 3.2.1
 

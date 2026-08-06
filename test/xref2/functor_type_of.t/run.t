@@ -27,9 +27,7 @@ particular importance and the functor application.
 Test
 ----
 
-However, at the moment Odoc can't see through the indirection and emits a
-warning that the new functor, `Named`, is not a functor:
+Odoc should successfully resolve the functor and don't emit warnings about
+unknown functors:
 
   $ compile test.mli
-  File "test.odoc":
-  Warning: Failed to lookup type identifier(root(Test).Named,false)(identifier(root(Test).Applicant,false)).included Parent_module: Parent_expr: Apply module is not a functor

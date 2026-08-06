@@ -392,6 +392,18 @@ let rec handle_apply env func_path arg_path m =
         | Ok (_, { Component.ModuleType.expr = Some mty'; _ }) ->
             find_functor mty'
         | _ -> Error `OpaqueModule)
+    | Component.ModuleType.TypeOf { t_desc; _ } ->
+        let path = match t_desc with ModPath p -> p | StructInclude p -> p in
+        let rec recurse_module path =
+          match resolve_module env path with
+          | Ok (_, delayed_module) -> (
+              let module_ = Component.Delayed.get delayed_module in
+              match module_.type_ with
+              | ModuleType mty' -> find_functor mty'
+              | Alias (path, _) -> recurse_module path)
+          | _ -> Error `ApplyNotFunctor
+        in
+        recurse_module path
     | _ -> Error `ApplyNotFunctor
   in
   module_type_expr_of_module env m >>= fun mty' ->
