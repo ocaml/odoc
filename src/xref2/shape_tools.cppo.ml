@@ -81,6 +81,7 @@ let rec shape_of_module_path env : _ -> Shape.t option =
         >>= fun parent ->
         shape_of_module_path env (arg :> Odoc_model.Paths.Path.Module.t)
         >>= fun arg -> Some (Shape.app parent ~arg)
+    | `ApplyParam _ -> None
     | `Identifier (id, _) ->
         shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
     | `Substituted m ->
@@ -109,7 +110,8 @@ let rec shape_of_kind_path env kind :
     | `Forward _
     | `Dot _
     | `Root _
-    | `Apply _ -> None
+    | `Apply _
+    | `ApplyParam _ -> None
     
 module MkId = Identifier.Mk
 

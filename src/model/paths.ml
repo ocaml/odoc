@@ -757,6 +757,10 @@ module Path = struct
     | `Apply (p1, p2) ->
         is_path_hidden (p1 : module_ :> any)
         || is_path_hidden (p2 : module_ :> any)
+    | `ApplyParam (p1, p2, p3) ->
+        is_path_hidden (p1 : module_ :> any)
+        || is_path_hidden (p2 : module_ :> any)
+        || is_path_hidden (p3 : module_ :> any)
 
   module Resolved = struct
     type t = Paths_types.Resolved_path.any

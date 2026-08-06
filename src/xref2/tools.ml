@@ -917,7 +917,7 @@ and resolve_module : Env.t -> Cpath.module_ -> resolve_module_result =
         |> map_error (fun e -> (e :> simple_module_lookup_error))
         >>= fun (parent_sig, sub) ->
         handle_module_lookup env id parent parent_sig sub
-    | `Apply (m1, m2) -> (
+    | `Apply (m1, m2) | `ApplyParam (m1, _, m2) -> (
         let func = resolve_module env m1 in
         let arg = resolve_module env m2 in
         match (func, arg) with

@@ -19,7 +19,7 @@ let as_filename ?(add_ext = true) (url : Url.Path.t) =
 
 let rec is_class_or_module_path (url : Url.Path.t) =
   match url.kind with
-  | `Module | `LeafPage | `Page | `Class -> (
+  | `Module | `LibraryParameter | `LeafPage | `Page | `Class -> (
       match url.parent with
       | None -> true
       | Some url -> is_class_or_module_path url)

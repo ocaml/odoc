@@ -58,6 +58,13 @@ let render_path : Path.t -> string =
     | `DotV (p, s) -> dot p (ValueName.to_string s)
     | `Apply (p1, p2) ->
         render_path (p1 :> Path.t) ^ "(" ^ render_path (p2 :> Path.t) ^ ")"
+    | `ApplyParam (p1, p2, p3) ->
+        render_path (p1 :> Path.t)
+        ^ "["
+        ^ render_path (p2 :> Path.t)
+        ^ ":"
+        ^ render_path (p3 :> Path.t)
+        ^ "]"
     | `Resolved rp -> render_resolved rp
     | `Substituted m -> render_path (m :> Path.t)
     | `SubstitutedMT m -> render_path (m :> Path.t)
@@ -81,6 +88,7 @@ module Path = struct
 
   type kind =
     [ `Module
+    | `LibraryParameter
     | `Page
     | `LeafPage
     | `ModuleType
@@ -93,6 +101,7 @@ module Path = struct
   let string_of_kind : kind -> string = function
     | `Page -> "page"
     | `Module -> "module"
+    | `LibraryParameter -> "module"
     | `LeafPage -> "leaf-page"
     | `ModuleType -> "module-type"
     | `Parameter arg_num -> Printf.sprintf "argument-%d" arg_num
@@ -104,7 +113,8 @@ module Path = struct
   let pp_kind fmt kind = Format.fprintf fmt "%s" (string_of_kind kind)
 
   let pp_disambiguating_prefix fmt = function
-    | `Module | `Page | `LeafPage | `File | `SourcePage -> ()
+    | `Module | `LibraryParameter | `Page | `LeafPage | `File | `SourcePage ->
+        ()
     | kind -> Format.fprintf fmt "%s-" (string_of_kind kind)
 
   type t = { kind : kind; parent : t option; name : string }
