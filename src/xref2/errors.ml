@@ -31,9 +31,7 @@ module Tools_error = struct
       (* The module signature depends upon a forward path *)
     | `UnresolvedPath of
       [ `Module of Cpath.module_ * simple_module_lookup_error
-      | `ModuleType of Cpath.module_type * simple_module_type_lookup_error ]
-      (* The path to the module or module type could not be resolved *)
-    | `UnresolvedOriginalPath of Cpath.module_ * simple_module_lookup_error ]
+      | `ModuleType of Cpath.module_type * simple_module_type_lookup_error ] ]
 
   and simple_module_lookup_error =
     [ `Local of Env.t * Ident.module_
@@ -188,11 +186,6 @@ module Tools_error = struct
     | `UnresolvedPath (`ModuleType (p, e)) ->
         Format.fprintf fmt "Unresolved module type path %a (%a)"
           (module_type_path c) p pp
-          (e :> any)
-    | `UnresolvedOriginalPath (p, e) ->
-        Format.fprintf fmt "Unresolved original module path %a (%a)"
-          Component.Fmt.(module_path default)
-          p pp
           (e :> any)
     | `LocalMT (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `Local (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
