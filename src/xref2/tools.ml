@@ -392,8 +392,7 @@ let rec handle_apply env func_path arg_path m =
         | Ok (_, { Component.ModuleType.expr = Some mty'; _ }) ->
             find_functor mty'
         | _ -> Error `OpaqueModule)
-    | Component.ModuleType.TypeOf { t_desc; _ } ->
-        let path = match t_desc with ModPath p -> p | StructInclude p -> p in
+    | Component.ModuleType.TypeOf { t_desc = ModPath path; _ } ->
         let rec recurse_module path =
           match resolve_module env path with
           | Ok (_, delayed_module) -> (
