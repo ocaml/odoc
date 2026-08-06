@@ -20,6 +20,8 @@ which has the same type as `Make` and thus also a functor.
   module Applicant : sig end
   
   module Applied : module type of Named(Applicant)
+  
+  module StructApplied : module type of struct include Named(Applicant) end
 
 There is also the module which it is applied to (`Applicant`) which is of no
 particular importance and the functor application.
