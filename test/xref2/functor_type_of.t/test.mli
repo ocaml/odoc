@@ -4,3 +4,5 @@ module Named : module type of Make
 module Applicant : sig end
 
 module Applied : module type of Named(Applicant)
+
+module StructApplied : module type of struct include Named(Applicant) end
