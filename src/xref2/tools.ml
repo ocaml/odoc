@@ -383,41 +383,21 @@ let simplify_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
   | _ -> m
 
 let rec handle_apply env func_path arg_path m =
-  let rec find_functor mty =
-    match mty with
-    | Component.ModuleType.Functor (Named arg, expr) ->
-        Ok (arg.Component.FunctorParameter.id, expr)
-    | Component.ModuleType.Path { p_path; _ } -> (
-        match resolve_module_type env p_path with
-        | Ok (_, { Component.ModuleType.expr = Some mty'; _ }) ->
-            find_functor mty'
-        | _ -> Error `OpaqueModule)
-    | Component.ModuleType.TypeOf { t_desc = ModPath path; _ } ->
-        let rec recurse_module path =
-          match resolve_module env path with
-          | Ok (_, delayed_module) -> (
-              let module_ = Component.Delayed.get delayed_module in
-              match module_.type_ with
-              | ModuleType mty' -> find_functor mty'
-              | Alias (path, _) -> recurse_module path)
-          | _ -> Error `ApplyNotFunctor
-        in
-        recurse_module path
-    | _ -> Error `ApplyNotFunctor
-  in
-  module_type_expr_of_module env m >>= fun mty' ->
-  find_functor mty' >>= fun (arg_id, result) ->
-  let new_module = { m with Component.Module.type_ = ModuleType result } in
-  let substitution = `Substituted arg_path in
-
-  let path = `Apply (func_path, arg_path) in
-  let subst =
-    Subst.add_module
-      (arg_id :> Ident.module_)
-      (`Resolved substitution) substitution Subst.identity
-  in
-  let subst = Subst.unresolve_opaque_paths subst in
-  Ok (path, Subst.module_ subst new_module)
+  expansion_of_module env m
+  |> map_error (fun e -> (e :> simple_module_type_expr_of_module_error))
+  >>= function
+  | Signature _ | Functor (Unit, _) -> Error `ApplyNotFunctor
+  | Functor (Named arg, result) ->
+      let new_module = { m with Component.Module.type_ = ModuleType result } in
+      let substitution = `Substituted arg_path in
+      let path = `Apply (func_path, arg_path) in
+      let subst =
+        Subst.add_module
+          (arg.id :> Ident.module_)
+          (`Resolved substitution) substitution Subst.identity
+      in
+      let subst = Subst.unresolve_opaque_paths subst in
+      Ok (path, Subst.module_ subst new_module)
 
 and add_canonical_path :
     Component.Module.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
@@ -2221,10 +2201,7 @@ and resolve_module_fragment :
         match expansion_of_module env m' with
         | Ok (_m : expansion) -> f'
         | Error `OpaqueModule -> `OpaqueModule f'
-        | Error
-            ( `UnresolvedForwardPath | `UnresolvedPath _
-            | `UnresolvedOriginalPath _ ) ->
-            f'
+        | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> f'
       in
       Some (fixup_module_cfrag f'')
 
@@ -2250,9 +2227,7 @@ and resolve_module_type_fragment :
       let f'' =
         match expansion_of_module_type env m' with
         | Ok (_m : expansion) -> f'
-        | Error
-            ( `UnresolvedForwardPath | `UnresolvedPath _ | `OpaqueModule
-            | `UnresolvedOriginalPath _ ) ->
+        | Error (`UnresolvedForwardPath | `UnresolvedPath _ | `OpaqueModule) ->
             f'
       in
       Some (fixup_module_type_cfrag f'')
@@ -2344,20 +2319,14 @@ let resolve_module_path env p =
       match expansion_of_module_cached env p m with
       | Ok _ -> Ok p
       | Error `OpaqueModule -> Ok (`OpaqueModule p)
-      | Error
-          ( `UnresolvedForwardPath | `UnresolvedPath _
-          | `UnresolvedOriginalPath _ ) ->
-          Ok p)
+      | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> Ok p)
 
 let resolve_module_type_path env p =
   resolve_module_type env p >>= fun (p, mt) ->
   match expansion_of_module_type env mt with
   | Ok _ -> Ok p
   | Error `OpaqueModule -> Ok (`OpaqueModuleType p)
-  | Error
-      (`UnresolvedForwardPath | `UnresolvedPath _ | `UnresolvedOriginalPath _)
-    ->
-      Ok p
+  | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> Ok p
 
 let resolve_type_path env p = resolve_type env p >>= fun (p, _) -> Ok p
 
