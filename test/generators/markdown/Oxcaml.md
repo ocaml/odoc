@@ -198,9 +198,94 @@ Should render as `float64 & (immediate mod portable)`.
 ## Kind abbreviations
 
 ```ocaml
+kind_ missing_documentation = value mod portable
+```
+TODO: The above kind abbreviation uses `(** *)` which are not captured by the OxCaml parser, so its documentation is currently missing. The following `kind_` declarations use an explicit `@@ocaml.doc` to side-step this issue.
+
+```ocaml
+kind_ my_abbrev = value_or_null mod non_null global
+```
+Declares a kind abbreviation named `my_abbrev`.
+
+```ocaml
 type t_abbrev : my_abbrev mod immutable
 ```
-A type with an abbreviated kind.
+A type with an abbreviated kind. The use of `my_abbrev` should link to its definition. References to the kind abbreviation resolve too, both unqualified [`my_abbrev`](./#kind-my_abbrev) and qualified [`my_abbrev`](./#kind-my_abbrev).
+
+```ocaml
+kind_ my_derived = my_abbrev mod portable
+```
+A kind abbreviation defined in terms of another one; the use of `my_abbrev` in this definition should also link to its definition.
+
+```ocaml
+type t_derived : my_derived
+```
+A type whose kind is the derived abbreviation.
+
+```ocaml
+kind_ my_abstract
+```
+An abstract kind abbreviation (no manifest).
+
+```ocaml
+type t_abstract : my_abstract
+```
+A type with an abstract abbreviated kind.
+
+```ocaml
+type ('a : my_abbrev) abbrev_param
+```
+A type parameter constrained by an abbreviated kind.
+
+```ocaml
+val poly_abbrev : ('a : my_abbrev). 'a -> 'a
+```
+A polymorphic value with an abbreviated kind constraint.
+
+```ocaml
+type 'a t_with_abbrev : my_abbrev with 'a
+```
+An abbreviated kind in a `with` constraint.
+
+```ocaml
+module M_kinds : sig ... end
+```
+```ocaml
+type t_qualified : M_kinds.mod_kind
+```
+A qualified use of a kind abbreviation from another module; the use should link to `M_kinds.mod_kind`'s definition.
+
+```ocaml
+type ('a : M_kinds.mod_kind) qualified_param
+```
+A qualified kind abbreviation on a type parameter; the use should link to the definition (resolved during linking, like `t_qualified`).
+
+```ocaml
+module type S_kind = sig ... end
+```
+```ocaml
+module F_kind (X : S_kind) : S_kind
+```
+```ocaml
+module Arg_kind : S_kind
+```
+```ocaml
+type t_functor_app : F_kind(Arg_kind).functor_kind
+```
+A use behind a functor application. odoc references can't express functor application, so this is rendered as plain text (not a link) rather than crashing.
+
+```ocaml
+module F_nested (X : S_kind) : sig ... end
+```
+```ocaml
+kind_ functor_abbrev = F_nested(Arg_kind).abstract_kind
+```
+A kind abbreviation defined through a functor-application path. The manifest is rendered but the functor-application path isn't a link.
+
+```ocaml
+kind_ nested_functor_abbrev = F_nested(Arg_kind).Nested.custom_kind_abbrev
+```
+A kind abbreviation defined through a functor-application-then-nested-module path. The manifest is rendered but the functor-application path isn't a link.
 
 
 ## Zero alloc

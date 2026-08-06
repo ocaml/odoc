@@ -236,6 +236,9 @@ let anchor_of_identifier id =
     | `Type (parent, name) ->
         let anchor = anchor `Type (TypeName.to_string name) in
         continue anchor parent
+    | `KindAbbreviation (parent, name) ->
+        let anchor = anchor `KindAbbreviation (TypeName.to_string name) in
+        continue anchor parent
     | `Label _ -> assert false
     | `Exception (parent, name) ->
         let anchor = anchor `Exception (ExceptionName.to_string name) in

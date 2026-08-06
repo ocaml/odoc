@@ -87,6 +87,8 @@ module Reference = struct
     | `ModuleType (p, f) ->
         render_unresolved (p :> t) ^ "." ^ ModuleTypeName.to_string f
     | `Type (p, f) -> render_unresolved (p :> t) ^ "." ^ TypeName.to_string f
+    | `KindAbbreviation (p, f) ->
+        render_unresolved (p :> t) ^ "." ^ TypeName.to_string f
     | `Constructor (p, f) ->
         render_unresolved (p :> t) ^ "." ^ ConstructorName.to_string f
     | `Field (p, f) -> render_unresolved (p :> t) ^ "." ^ FieldName.to_string f

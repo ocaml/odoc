@@ -3,6 +3,7 @@ loader/cmi.ml
 loader/cmi.mli
 loader/cmt.ml
 loader/cmti.ml
+loader/cmti.mli
 loader/doc_attr.ml
 loader/ident_env.ml
 loader/implementation.ml

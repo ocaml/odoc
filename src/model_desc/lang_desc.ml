@@ -250,6 +250,7 @@ and signature_item =
     | Type (x1, x2) ->
         C ("Type", (x1, x2), Pair (signature_recursive, typedecl_t))
     | TypeSubstitution x -> C ("TypeSubstitution", x, typedecl_t)
+    | KindAbbreviation x -> C ("KindAbbreviation", x, kindabbreviation_t)
     | TypExt x -> C ("TypExt", x, extension_t)
     | Exception x -> C ("Exception", x, exception_t)
     | Value x -> C ("Value", x, value_t)
@@ -284,6 +285,10 @@ and include_shadowed =
       F ("s_module_types", (fun t -> List.map fst t.s_module_types), List string);
       F ("s_values", (fun t -> List.map fst t.s_values), List string);
       F ("s_types", (fun t -> List.map fst t.s_types), List string);
+      F
+        ( "s_kind_abbreviations",
+          (fun t -> List.map fst t.s_kind_abbreviations),
+          List string );
       F ("s_classes", (fun t -> List.map fst t.s_classes), List string);
       F ("s_class_types", (fun t -> List.map fst t.s_class_types), List string);
     ]
@@ -373,7 +378,11 @@ and kind_annotation =
   Variant
     (function
     | Default -> C0 "Default"
-    | Abbreviation x -> C ("Abbreviation", (x :> Paths.Fragment.t), fragment)
+    | Abbreviation (x1, x2) ->
+        C
+          ( "Abbreviation",
+            (x1, (x2 :> Paths.Reference.t option)),
+            Pair (string, Option reference) )
     | Mod (x1, x2) -> C ("Mod", (x1, x2), Pair (kind_annotation, List string))
     | With (x1, x2, x3) ->
         C
@@ -423,6 +432,16 @@ and typedecl_t =
         ( "representation",
           (fun t -> t.representation),
           Option typedecl_representation );
+    ]
+
+and kindabbreviation_t =
+  let open Lang.KindAbbreviation in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("source_loc", (fun t -> t.source_loc), Option identifier);
+      F ("doc", (fun t -> t.doc), docs);
+      F ("manifest", (fun t -> t.manifest), Option kind_annotation);
     ]
 
 (** {3 Extension} *)

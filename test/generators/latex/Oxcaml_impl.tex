@@ -6,5 +6,11 @@
 \label{Oxcaml_impl--module-Including}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml_impl-Including]{\ocamlinlinecode{Including}}}\label{Oxcaml_impl-Including}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \ocamltag{keyword}{struct} \ocamltag{keyword}{include} \hyperref[Oxcaml_impl-To_be_included]{\ocamlinlinecode{To\_\allowbreak{}be\_\allowbreak{}included}} \ocamltag{keyword}{end}\label{Oxcaml_impl-Including--val-add}\ocamlcodefragment{\ocamltag{keyword}{val} add : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc]}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{Oxcaml_impl--kind-my_abbrev}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} my\_\allowbreak{}abbrev = value\_\allowbreak{}or\_\allowbreak{}null \ocamltag{keyword}{mod} non\_\allowbreak{}null global}\\
+\label{Oxcaml_impl--type-t_abbrev}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}abbrev : \hyperref[Oxcaml_impl--kind-my_abbrev]{\ocamlinlinecode{my\_\allowbreak{}abbrev}} \ocamltag{keyword}{mod} immutable}\\
+\label{Oxcaml_impl--module-Shadowing_source}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml_impl-Shadowing_source]{\ocamlinlinecode{Shadowing\_\allowbreak{}source}}}\label{Oxcaml_impl-Shadowing_source}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml_impl-Shadowing_source--kind-dup}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} dup = value \ocamltag{keyword}{mod} portable}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \ocamltag{keyword}{struct} \ocamltag{keyword}{include} \hyperref[Oxcaml_impl-Shadowing_source]{\ocamlinlinecode{Shadowing\_\allowbreak{}source}} \ocamltag{keyword}{end}\label{Oxcaml_impl--kind-dup}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} dup = value\_\allowbreak{}or\_\allowbreak{}null \ocamltag{keyword}{mod} non\_\allowbreak{}null}\\
 
 

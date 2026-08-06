@@ -318,6 +318,7 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
         | TypeSubstitution t ->
             let env' = Env.open_type_substitution t env in
             loop (TypeSubstitution (type_decl env t) :: items) env' rest
+        | KindAbbreviation t -> loop (KindAbbreviation t :: items) env rest
         | ModuleType mt ->
             let m' = module_type env mt in
             let ty = Component.Of_Lang.(module_type (empty ()) m') in

@@ -101,6 +101,7 @@ let searchable_type_of_record parent_type type_ =
 let convert_kind ~db (Odoc_index.Entry.{ kind; _ } as entry) =
   match kind with
   | TypeDecl _ -> Entry.Kind.Type_decl (Odoc_search.Html.typedecl_params_of_entry entry)
+  | KindAbbreviation -> Entry.Kind.Type_decl None
   | Value { value = _; type_ } ->
       let typ = Db_writer.type_of_odoc ~db type_ in
       Entry.Kind.Val typ
@@ -149,8 +150,9 @@ let rec categorize id =
   | `ModuleType _ -> `declaration
   | `Parameter _ -> `ignore (* redundant with indexed signature *)
   | ( `InstanceVariable _ | `Method _ | `Field _ | `Result _ | `Label _ | `Type _
-    | `Exception _ | `Class _ | `ClassType _ | `Value _ | `Constructor _ | `Extension _
-    | `ExtensionDecl _ | `Module _ | `UnboxedField _ ) as x ->
+    | `KindAbbreviation _ | `Exception _ | `Class _ | `ClassType _ | `Value _
+    | `Constructor _ | `Extension _ | `ExtensionDecl _ | `Module _ | `UnboxedField _ ) as
+    x ->
       let parent = Identifier.label_parent { id with iv = x } in
       categorize (parent :> Identifier.Any.t)
   | `AssetFile _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _

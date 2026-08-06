@@ -154,6 +154,7 @@ and Signature : sig
     | Open of Open.t
     | Type of recursive * TypeDecl.t
     | TypeSubstitution of TypeDecl.t
+    | KindAbbreviation of KindAbbreviation.t
     | TypExt of Extension.t
     | Exception of Exception.t
     | Value of Value.t
@@ -189,6 +190,7 @@ and Include : sig
     s_module_types : (string * Names.ModuleTypeName.t) list;
     s_values : (string * Names.ValueName.t) list;
     s_types : (string * Names.TypeName.t) list;
+    s_kind_abbreviations : (string * Names.TypeName.t) list;
     s_classes : (string * Names.TypeName.t) list;
     s_class_types : (string * Names.TypeName.t) list;
   }
@@ -444,13 +446,25 @@ end =
 and Kind : sig
   type t =
     | Default
-    | Abbreviation of Fragment.Type.t
+    | Abbreviation of string * Reference.t option
     | Mod of t * string list
     | With of t * TypeExpr.t * Modalities.t
     | Kind_of of TypeExpr.t
     | Product of t list
 end =
   Kind
+
+(** {3 Kind abbreviation definitions} *)
+
+and KindAbbreviation : sig
+  type t = {
+    id : Identifier.KindAbbreviation.t;
+    source_loc : Identifier.SourceLocation.t option;
+    doc : Comment.docs;
+    manifest : Kind.t option;
+  }
+end =
+  KindAbbreviation
 
 (** {3 Type expressions} *)
 

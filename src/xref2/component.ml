@@ -332,6 +332,7 @@ and Signature : sig
     | ModuleTypeSubstitution of Ident.module_type * ModuleTypeSubstitution.t
     | Type of Ident.type_ * recursive * TypeDecl.t Delayed.t
     | TypeSubstitution of Ident.type_ * TypeDecl.t
+    | KindAbbreviation of Odoc_model.Lang.KindAbbreviation.t
     | Exception of Ident.exception_ * Exception.t
     | TypExt of Extension.t
     | Value of Ident.value * Value.t Delayed.t
@@ -517,6 +518,10 @@ module Element = struct
 
   type datatype = [ `Type of Identifier.Type.t * TypeDecl.t ]
 
+  type kind_abbreviation =
+    [ `KindAbbreviation of
+      Identifier.KindAbbreviation.t * Odoc_model.Lang.KindAbbreviation.t ]
+
   type value = [ `Value of Identifier.Value.t * Value.t ]
 
   type label = [ `Label of Identifier.Label.t * Label.t ]
@@ -557,6 +562,7 @@ module Element = struct
     [ signature
     | value
     | datatype
+    | kind_abbreviation
     | label
     | class_
     | class_type
@@ -574,6 +580,7 @@ module Element = struct
     | `Module (id, _) -> (id :> t)
     | `ModuleType (id, _) -> (id :> t)
     | `Type (id, _) -> (id :> t)
+    | `KindAbbreviation (id, _) -> (id :> t)
     | `ClassType (id, _) -> (id :> t)
     | `Class (id, _) -> (id :> t)
     | `Value (id, _) -> (id :> t)
@@ -707,6 +714,10 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (ty :> id)
           (ConstructorName.to_string x)
+    | `KindAbbreviation (parent, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (parent :> id)
+          (TypeName.to_string name)
     | `Value (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (parent :> id)
@@ -793,6 +804,10 @@ module Fmt = struct
       | TypeSubstitution (id, t) ->
           Format.fprintf ppf "@[<v 2>type %a :=%a@]" ident_fmt id (type_decl c)
             t
+      | KindAbbreviation ka ->
+          Format.fprintf ppf "@[<v 2>kind_ %s@]"
+            (Odoc_model.Paths.Identifier.name
+               ka.Odoc_model.Lang.KindAbbreviation.id)
       | Exception (id, e) ->
           Format.fprintf ppf "@[<v 2>exception %a %a@]" ident_fmt id
             (exception_ c) e
@@ -1789,6 +1804,10 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (TypeName.to_string name)
+    | `KindAbbreviation (parent, name) ->
+        Format.fprintf ppf "%a.%s" (model_reference c)
+          (parent :> t)
+          (TypeName.to_string name)
     | `Constructor (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
@@ -1883,6 +1902,7 @@ module LocalIdents = struct
             { ids with module_types = id :: ids.module_types }
         | Type (_, t) -> { ids with types = t.TypeDecl.id :: ids.types }
         | TypeSubstitution t -> { ids with types = t.TypeDecl.id :: ids.types }
+        | KindAbbreviation _ -> ids
         | Class (_, c) -> { ids with classes = c.Class.id :: ids.classes }
         | ClassType (_, c) ->
             { ids with class_types = c.ClassType.id :: ids.class_types }
@@ -2804,6 +2824,7 @@ module Of_Lang = struct
              let id = Identifier.Maps.Type.find t.id ident_map.types in
              let t' = type_decl ident_map t in
              Signature.TypeSubstitution (id, t')
+         | KindAbbreviation t -> Signature.KindAbbreviation t
          | Module (r, m) ->
              let id =
                Identifier.Maps.Module.find
