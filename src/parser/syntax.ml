@@ -167,6 +167,33 @@ type token_that_always_begins_an_inline_element =
   | `Begin_link_with_replacement_text of string
   | `Math_span of string ]
 
+(** When a backslash is followed by space, remove both the backslash and the
+    space. *)
+let escape_link link =
+  let link = String.trim link in
+  let buf = Buffer.create (String.length link) in
+  let add_backslash = function
+    | `Backslash -> Buffer.add_char buf '\\'
+    | `Escaping | `Char -> ()
+  in
+  let last_state =
+    String.fold_left
+      (fun state chr ->
+        match (state, chr) with
+        | `Char, '\\' -> `Backslash
+        | `Char, _ ->
+            Buffer.add_char buf chr;
+            `Char
+        | (`Backslash | `Escaping), _ when Char.Ascii.is_white chr -> `Escaping
+        | ((`Backslash | `Escaping) as state), _ ->
+            add_backslash state;
+            Buffer.add_char buf chr;
+            `Char)
+      `Char link
+  in
+  add_backslash last_state;
+  Buffer.contents buf
+
 (* Check that the token constructors above actually are all in [Token.t]. *)
 let _check_subset : token_that_always_begins_an_inline_element -> Token.t =
  fun t -> (t :> Token.t)
@@ -269,7 +296,7 @@ let rec inline_element :
   | `Simple_link u ->
       junk input;
 
-      let u = String.trim u in
+      let u = escape_link u |> String.trim in
 
       if u = "" then
         Parse_error.should_not_be_empty
@@ -281,7 +308,7 @@ let rec inline_element :
   | `Begin_link_with_replacement_text u as parent_markup ->
       junk input;
 
-      let u = String.trim u in
+      let u = escape_link u |> String.trim in
 
       if u = "" then
         Parse_error.should_not_be_empty

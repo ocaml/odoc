@@ -174,6 +174,13 @@ foo
 --- output ---
 {"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},""]},[{"`Link":["foo",[]]}]]}],"warnings":[]}
 --- input ---
+{{:https://github.com/ocaml/\
+   odoc/\
+issues/\
+                865\  }this issue}
+--- output ---
+{"value":[{"`Paragraph":[{"`Link":["https://github.com/ocaml/odoc/issues/865\\",[{"`Word":"this"},"`Space",{"`Word":"issue"}]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+--- input ---
 {2 {!foo}}
 --- output ---
 {"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},""]},[{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}]]}],"warnings":[]}

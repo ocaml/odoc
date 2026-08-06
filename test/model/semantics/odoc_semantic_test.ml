@@ -264,6 +264,13 @@ let heading () =
 
     let link_in_markup = test "{2 {{:foo}}}"
 
+    let multilines_link_in_markup =
+      test
+        {|{{:https://github.com/ocaml/\
+   odoc/\
+issues/\
+                865\  }this issue}|}
+
     let reference_in_markup = test "{2 {!foo}}"
 
     let two = test "{2 Foo}\n{2 Bar}"
