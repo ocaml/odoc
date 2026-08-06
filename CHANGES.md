@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fix #1456: don't emit spurious (and sometimes nested/invalid) source links for
+  ppx-generated code, by honouring the `[@merlin.hide]` attribute when collecting
+  source occurrences (@klakplok)
 - Support for OxCaml unboxed named types (@art-w, #1407)
 - Support for OxCaml zero alloc definitions (@Leonidas-from-XIV, #1422, #1444)
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)

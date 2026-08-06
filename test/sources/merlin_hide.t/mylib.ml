@@ -1,0 +1,1 @@
+let truc x = x
