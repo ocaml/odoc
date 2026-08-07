@@ -1,8 +1,6 @@
 let init =
   let initialized = ref false in
-  fun () ->
-    if !initialized then ()
-    else Findlib.init ()
+  fun () -> if !initialized then () else Findlib.init ()
 
 let all () =
   init ();
