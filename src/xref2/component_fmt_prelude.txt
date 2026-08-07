@@ -1,0 +1,21 @@
+(* MDX prelude for the Component.Fmt examples in component.mli.
+   Loaded with [ocaml-mdx-test --prelude]; uses #require so odoc's libraries
+   are loaded dynamically (avoiding a static double-link of odoc_parser with
+   mdx's vendored copy). *)
+
+#require "odoc.xref2";;
+#require "odoc.xref_test";;
+
+open Odoc_xref2;;
+open Odoc_xref_test;;
+
+(* [readable] is [Component.Fmt.default] with [short_paths] turned on, the form
+   wanted for most debugging output. *)
+let readable = { Component.Fmt.default with short_paths = true }
+
+(* Compile a fragment of [.mli] source into the {!Component.Signature.t} it
+   denotes, ready to render with [Component.Fmt.signature]. *)
+let sig_of src =
+  let sg = Common.signature_of_mli_string src in
+  let sg = Common.compile_signature sg in
+  Component.Of_Lang.(signature (empty ()) sg);;

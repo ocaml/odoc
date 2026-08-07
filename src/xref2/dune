@@ -32,3 +32,21 @@
  (with-stdout-to
   shape_tools.mli
   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{dep:shape_tools.cppo.mli})))
+
+; MDX demonstration of Component.Fmt, embedded in component.mli's Fmt
+; submodule. Run via ocaml-mdx-test (not the dune (mdx) stanza) so odoc's
+; libraries load dynamically through #require in the prelude, avoiding the
+; static double-link of odoc_parser against mdx's vendored copy.
+
+(rule
+ (alias runmdx)
+ (deps
+  (:x component.mli)
+  component_fmt_prelude.txt
+  (package odoc))
+ (enabled_if
+  (> %{ocaml_version} 4.08))
+ (action
+  (progn
+   (run ocaml-mdx-test --prelude=component_fmt_prelude.txt %{x})
+   (diff? %{x} %{x}.corrected))))

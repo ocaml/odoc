@@ -50,27 +50,27 @@ The expansions below should match OCaml's calculated signatures above.
 
   $ odoc_print b.odocl -r X1 --short --show-expansions
   module type B.X1 = module type of B.X
-    (sig : type t end)
+    => sig type t end
   $ odoc_print b.odocl -r X2 --short --show-expansions
   module type B.X2 = module type of A
-    (sig : module X : sig type t end end)
+    => sig module X : sig type t end end
   $ odoc_print b.odocl -r X3 --short --show-expansions
   module type B.X3 = module type of A.X
-    (sig : type t end)
+    => sig type t end
   $ odoc_print b.odocl -r X4 --short --show-expansions
   module type B.X4 = module type of B.Y
-    (functor: (A/0 : 
-    sig type t end) -> (sig : type t end))
+    => functor (A : 
+    sig type t end) -> => sig type t end
   $ odoc_print b.odocl -r X5 --short --show-expansions
   module type B.X5 = B.Foo with X := B.SubX
-    (sig :
-      module Y : (A/3 : sig type t end) -> sig module Z = B.SubX end
-      module type Z = module type of Y (functor: (A/6 : 
-        sig type t end) -> (sig : module Z = B.SubX end))
+    => sig
+      module Y : (A : sig type t end) -> sig module Z = B.SubX end
+      module type Z = module type of Y => functor (A : 
+        sig type t end) -> => sig module Z = B.SubX end
       module X' : module type of struct include B.SubX end
-        (sig : type t = B.SubX.t end)
-     end)
+        => sig type t = B.SubX.t end
+     end
   $ odoc_print b.odocl -r X6 --short --show-expansions
   module type B.X6 = module type of A.X
-    (sig : type t end)
+    => sig type t end
  

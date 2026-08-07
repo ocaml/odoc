@@ -594,6 +594,12 @@ module Fmt = struct
     show_removed : bool;
     show_expansions : bool;
     show_include_expansions : bool;
+    identifier_name_only : bool;
+        (** Print Identifier-wrapped paths using only the leaf name (as the HTML
+            renderer does). When canonical resolution has lifted a path like
+            [Mylib.A] into a single Identifier, this prints just [A]. Has no
+            effect on Module-step paths where the structure inherently requires
+            walking the chain. *)
   }
 
   let default =
@@ -603,6 +609,7 @@ module Fmt = struct
       show_removed = true;
       show_expansions = true;
       show_include_expansions = true;
+      identifier_name_only = false;
     }
 
   type id = Odoc_model.Paths.Identifier.t
@@ -776,8 +783,13 @@ module Fmt = struct
     let ident_fmt = if c.short_paths then Ident.short_fmt else Ident.fmt in
     let sig_item ppf = function
       | Module (id, _, m) ->
-          Format.fprintf ppf "@[<hov 2>module %a %a@]" ident_fmt id (module_ c)
-            (Delayed.get m)
+          let m = Delayed.get m in
+          let hidden_name = ModuleName.is_hidden (Ident.Name.typed_module id) in
+          let lb, rb =
+            if m.hidden || hidden_name then ("[", "]") else ("", "")
+          in
+          Format.fprintf ppf "@[<hov 2>module %s%a%s %a@]" lb ident_fmt id rb
+            (module_ c) m
       | ModuleSubstitution (id, m) ->
           Format.fprintf ppf "@[<v 2>module %a := %a@]" ident_fmt id
             (module_path c) m.ModuleSubstitution.manifest
@@ -943,9 +955,10 @@ module Fmt = struct
 
   and module_ c ppf m =
     let fmt_canonical ppf popt =
-      if c.show_canonical then
-        Format.fprintf ppf "@ (canonical=%a)" (option c model_path) popt
-      else ()
+      match popt with
+      | Some p when c.show_canonical ->
+          Format.fprintf ppf "@ (canonical=%a)" (model_path c) p
+      | _ -> ()
     in
     Format.fprintf ppf "%a%a" (module_decl c) m.type_ fmt_canonical
       (m.canonical :> path option)
@@ -953,10 +966,12 @@ module Fmt = struct
   and simple_expansion c is_include ppf (m : ModuleType.simple_expansion) =
     if c.show_expansions || (is_include && c.show_include_expansions) then
       match m with
+      | ModuleType.Signature sg when is_empty_sg sg ->
+          Format.fprintf ppf "=> sig end"
       | ModuleType.Signature sg ->
-          Format.fprintf ppf "@[<hv 2>(sig :@ %a@;<1 -1>end@])" (signature c) sg
+          Format.fprintf ppf "@[<hv 2>=> sig@ %a@;<1 -1>end@]" (signature c) sg
       | Functor (arg, sg) ->
-          Format.fprintf ppf "(functor: (%a) -> %a)" (functor_parameter c) arg
+          Format.fprintf ppf "=> functor (%a) -> %a" (functor_parameter c) arg
             (simple_expansion c is_include)
             sg
     else ()
@@ -976,11 +991,15 @@ module Fmt = struct
         Format.fprintf ppf "module type of struct include %a end"
           (module_path c) p
 
+  and is_empty_sg (sg : Signature.t) = sg.items = [] && sg.removed = []
+
   and u_module_type_expr c ppf mt =
     let open ModuleType.U in
     match mt with
     | Path p -> module_type_path c ppf p
-    | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" (signature c) sg
+    | Signature sg when is_empty_sg sg -> Format.fprintf ppf "sig end"
+    | Signature sg ->
+        Format.fprintf ppf "@[<hv 2>sig@ %a@;<1 -2>end@]" (signature c) sg
     | With (subs, e) ->
         Format.fprintf ppf "%a with [%a]" (u_module_type_expr c) e
           (substitution_list c) subs
@@ -993,6 +1012,7 @@ module Fmt = struct
     let open ModuleType in
     match mt with
     | Path { p_path; _ } -> module_type_path c ppf p_path
+    | Signature sg when is_empty_sg sg -> Format.fprintf ppf "sig end"
     | Signature sg ->
         Format.fprintf ppf "@,@[<hv 2>sig@ %a@;<1 -2>end@]" (signature c) sg
     | With { w_substitutions = subs; w_expr; _ } ->
@@ -1027,7 +1047,8 @@ module Fmt = struct
     | Named x -> Format.fprintf ppf "%a" (functor_parameter_parameter c) x
 
   and functor_parameter_parameter c ppf x =
-    Format.fprintf ppf "%a : %a" Ident.fmt x.FunctorParameter.id
+    let ident_fmt = if c.short_paths then Ident.short_fmt else Ident.fmt in
+    Format.fprintf ppf "%a : %a" ident_fmt x.FunctorParameter.id
       (module_type_expr c) x.FunctorParameter.expr
 
   and type_decl c ppf t =
@@ -1049,11 +1070,16 @@ module Fmt = struct
 
   and type_decl_constructor c ppf t =
     let open TypeDecl.Constructor in
+    let no_args =
+      match t.args with Tuple [] -> true | Tuple _ | Record _ -> false
+    in
     match t.res with
+    | Some res when no_args -> fpf ppf "%s : %a" t.name (type_expr c) res
     | Some res ->
         fpf ppf "%s : %a -> %a" t.name
           (type_decl_constructor_arg c)
           t.args (type_expr c) res
+    | None when no_args -> fpf ppf "%s" t.name
     | None -> fpf ppf "%s of %a" t.name (type_decl_constructor_arg c) t.args
 
   and type_decl_constructor_arg c ppf =
@@ -1097,19 +1123,20 @@ module Fmt = struct
     let pp_sep ppf () = Format.fprintf ppf ", " in
     Format.fprintf ppf "(%a)" (Format.pp_print_list ~pp_sep type_param) ts
 
-  and type_equation_manifest c ppf t =
+  and type_equation_manifest ?(sep = "=") c ppf t =
     match t.TypeDecl.Equation.manifest with
     | None -> ()
-    | Some m -> Format.fprintf ppf " = %a" (type_expr c) m
+    | Some m -> Format.fprintf ppf " %s %a" sep (type_expr c) m
 
   and type_equation_params _c ppf t =
     match t.TypeDecl.Equation.params with
     | [] -> ()
-    | ps -> Format.fprintf ppf "%a" type_params ps
+    | ps -> Format.fprintf ppf " %a" type_params ps
 
-  and type_equation c ppf t =
-    Format.fprintf ppf "(params %a)%a" (type_equation_params c) t
-      (type_equation_manifest c) t
+  and type_equation ?sep c ppf t =
+    Format.fprintf ppf "%a%a" (type_equation_params c) t
+      (type_equation_manifest ?sep c)
+      t
 
   and exception_ _c _ppf _e = ()
 
@@ -1133,7 +1160,9 @@ module Fmt = struct
     | TypeEq (frag, decl) ->
         Format.fprintf ppf "%a%a" (type_fragment c) frag (type_equation c) decl
     | TypeSubst (frag, decl) ->
-        Format.fprintf ppf "%a%a" (type_fragment c) frag (type_equation c) decl
+        Format.fprintf ppf "%a%a" (type_fragment c) frag
+          (type_equation ~sep:":=" c)
+          decl
 
   and substitution_list c ppf l =
     match l with
@@ -1197,20 +1226,36 @@ module Fmt = struct
 
   and type_expr c ppf e =
     let open TypeExpr in
+    let needs_outer_parens = function
+      (* Things that are looser than the constructor-application slot. *)
+      | Arrow _ | Tuple _ | Unboxed_tuple _ -> true
+      | _ -> false
+    in
+    let pp_atom ppf t =
+      if needs_outer_parens t then Format.fprintf ppf "(%a)" (type_expr c) t
+      else type_expr c ppf t
+    in
     match e with
     | Var x -> Format.fprintf ppf "%s" x
     | Any -> Format.fprintf ppf "_"
     | Alias (x, y) -> Format.fprintf ppf "(alias %a %s)" (type_expr c) x y
-    | Arrow (l, t1, t2) ->
-        Format.fprintf ppf "%a(%a) -> %a" type_expr_label l (type_expr c) t1
-          (type_expr c) t2
+    | Arrow (l, t1, t2) -> (
+        (* -> is right-associative: only wrap LHS when it is itself an arrow. *)
+        match t1 with
+        | Arrow _ ->
+            Format.fprintf ppf "%a(%a) -> %a" type_expr_label l (type_expr c) t1
+              (type_expr c) t2
+        | _ ->
+            Format.fprintf ppf "%a%a -> %a" type_expr_label l (type_expr c) t1
+              (type_expr c) t2)
     | Tuple ts -> Format.fprintf ppf "(%a)" (type_labeled_tuple c) ts
     | Unboxed_tuple ts -> Format.fprintf ppf "#(%a)" (type_labeled_tuple c) ts
     | Constr (p, args) -> (
         match args with
         | [] -> Format.fprintf ppf "%a" (type_path c) p
+        | [ a ] -> Format.fprintf ppf "%a %a" pp_atom a (type_path c) p
         | _ ->
-            Format.fprintf ppf "[%a] %a" (type_expr_list c) args (type_path c) p
+            Format.fprintf ppf "(%a) %a" (type_expr_list c) args (type_path c) p
         )
     | Polymorphic_variant poly ->
         Format.fprintf ppf "(poly_var %a)"
@@ -1248,7 +1293,7 @@ module Fmt = struct
           p2
     | `Hidden p1 -> wrap c "hidden" resolved_module_path ppf p1
     | `Canonical (p1, p2) ->
-        wrap2 c "canonical" resolved_module_path model_path ppf p1 (p2 :> path)
+        wrap2r c "canonical" resolved_module_path model_path ppf p1 (p2 :> path)
     | `OpaqueModule m -> wrap c "opaquemodule" resolved_module_path ppf m
 
   and module_path : config -> Format.formatter -> Cpath.module_ -> unit =
@@ -1279,7 +1324,7 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
           (ModuleTypeName.to_string m)
     | `CanonicalModuleType (m1, m2) ->
-        wrap2 c "canonicalt" resolved_module_type_path model_path ppf m1
+        wrap2r c "canonicalt" resolved_module_type_path model_path ppf m1
           (m2 :> path)
     | `OpaqueModuleType m ->
         wrap c "opaquemoduletype" resolved_module_type_path ppf m
@@ -1315,7 +1360,7 @@ module Fmt = struct
     | `Substituted x -> wrap c "substituted" resolved_type_path ppf x
     | `Unbox x -> wrap c "unbox" resolved_type_path ppf x
     | `CanonicalType (t1, t2) ->
-        wrap2 c "canonicaltype" resolved_type_path model_path ppf t1
+        wrap2r c "canonicaltype" resolved_type_path model_path ppf t1
           (t2 :> path)
     | `Class (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
@@ -1420,6 +1465,8 @@ module Fmt = struct
 
     match p with
     | `Resolved rp -> wrap c "resolved" model_resolved_path ppf rp
+    | `Identifier (id, _) when c.identifier_name_only ->
+        Format.fprintf ppf "%s" (Odoc_model.Paths.Identifier.name (id :> id))
     | `Identifier (id, b) ->
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
     | `Root s -> wrap c "root" str ppf (ModuleName.to_string s)
@@ -1447,6 +1494,8 @@ module Fmt = struct
     let open Odoc_model.Paths.Path.Resolved in
     match p with
     | `CoreType x -> Format.fprintf ppf "%s" (TypeName.to_string x)
+    | `Identifier id when c.identifier_name_only ->
+        Format.fprintf ppf "%s" (Odoc_model.Paths.Identifier.name (id :> id))
     | `Identifier id -> Format.fprintf ppf "%a" (model_identifier c) (id :> id)
     | `Module (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_resolved_path c)
@@ -1481,11 +1530,11 @@ module Fmt = struct
           (t1 :> t)
           (t2 :> t)
     | `CanonicalModuleType (t1, t2) ->
-        wrap2 c "canonicalmoduletype" model_resolved_path model_path ppf
+        wrap2r c "canonicalmoduletype" model_resolved_path model_path ppf
           (t1 :> t)
           (t2 :> path)
     | `CanonicalType (t1, t2) ->
-        wrap2 c "canonicaltype" model_resolved_path model_path ppf
+        wrap2r c "canonicaltype" model_resolved_path model_path ppf
           (t1 :> t)
           (t2 :> path)
     | `Apply (funct, arg) ->
@@ -1494,7 +1543,7 @@ module Fmt = struct
           (model_resolved_path c)
           (arg :> t)
     | `Canonical (p1, p2) ->
-        wrap2 c "canonical" model_resolved_path model_path ppf
+        wrap2r c "canonical" model_resolved_path model_path ppf
           (p1 :> t)
           (p2 :> path)
     | `Hidden p -> wrap c "hidden" model_resolved_path ppf (p :> t)
