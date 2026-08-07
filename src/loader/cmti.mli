@@ -49,6 +49,14 @@ val read_value_description :
   Typedtree.value_description ->
   Odoc_model.Lang.Signature.item
 
+#if OCAML_VERSION >= (5,6,0)
+val read_primitive_description :
+  Cmi.env ->
+  Paths.Identifier.Signature.t ->
+  Typedtree.primitive_description ->
+  Odoc_model.Lang.Signature.item
+#endif
+
 val read_type_declarations :
   Cmi.env ->
   Paths.Identifier.Signature.t ->

@@ -253,7 +253,11 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
       mds @ extract_signature_tree_items hide_item rest
 #endif
   | { sig_desc = Tsig_value {val_id; _}; sig_loc; _ } :: rest->
-      [`Value (val_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest 
+      [`Value (val_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
+#if OCAML_VERSION >= (5,6,0)
+  | { sig_desc = Tsig_primitive {prim_id; _}; sig_loc; _ } :: rest->
+      [`Value (prim_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
+#endif
   | { sig_desc = Tsig_modtype mtd; sig_loc; _} :: rest ->
       [`ModuleType (mtd.mtd_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
 #if defined OXCAML
@@ -450,8 +454,13 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
              )) cltyps @ extract_structure_tree_items hide_item rest
     | { str_desc = Tstr_open o; _ } :: rest ->
         ((extract_extended_open o) :> items list)  @ extract_structure_tree_items hide_item rest
+#if OCAML_VERSION >= (5,6,0)
+    | { str_desc = Tstr_primitive {prim_id; _}; str_loc; _ } :: rest ->
+      [`Value (prim_id, false, Some str_loc)] @ extract_structure_tree_items hide_item rest
+#else
     | { str_desc = Tstr_primitive {val_id; _}; str_loc; _ } :: rest ->
       [`Value (val_id, false, Some str_loc)] @ extract_structure_tree_items hide_item rest
+#endif
     | { str_desc = Tstr_eval _; _} :: rest -> extract_structure_tree_items hide_item rest
 #if defined OXCAML
     | { str_desc = Tstr_jkind _; _ } :: rest -> extract_structure_tree_items hide_item rest

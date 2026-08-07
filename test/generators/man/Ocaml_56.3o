@@ -1,0 +1,44 @@
+
+.TH Ocaml_56 3 "" "Odoc" "OCaml Library"
+.SH Name
+Ocaml_56
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Ocaml_56\fR
+.in 
+.sp 
+.fi 
+Features introduced in OCaml 5\.6\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR ext
+.fi 
+.br 
+.ti +2
+An external type declaration\.
+.nf 
+.sp 
+\f[CB]val\fR classic : int \f[CB]\->\fR int
+.fi 
+.br 
+.ti +2
+A classic external declaration\.
+.nf 
+.sp 
+\f[CB]val\fR alias_with_type : int \f[CB]\->\fR int
+.fi 
+.br 
+.ti +2
+A primitive alias declaring its type\.
+.nf 
+.sp 
+\f[CB]val\fR alias_no_type : int \f[CB]\->\fR int
+.fi 
+.br 
+.ti +2
+A primitive alias leaving its type implicit\.
+.nf 
+

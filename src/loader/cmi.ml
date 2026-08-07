@@ -46,7 +46,18 @@ module Compat = struct
        versions *)
   let repr x = Transient_expr.repr x
 
+#if OCAML_VERSION >= (5,6,0)
+  (** Since 5.6, abbreviation expansion happens in place in the type graph and
+      the original abbreviation is remembered in the [Texpand] edge that
+      replaced it. [Types.get_desc] walks past those edges and would hand us
+      the expanded type, so use the same accessor the compiler's own printer
+      uses ([Out_type.printer_get_desc]) to recover the abbreviation. *)
+  let get_desc ty = Btype.get_folded_desc ~keep_Tvar:true ty
+  let deep_occur = Btype.deep_occur
+#else
   let get_desc = Types.get_desc
+  let deep_occur = Ctype.deep_occur
+#endif
   let get_row_name = Types.row_name
   let row_field_repr = Types.row_field_repr
   let field_kind_repr = Types.field_kind_repr
@@ -69,6 +80,7 @@ module Compat = struct
   type repr_type_node = Types.type_expr
   let repr = Btype.repr
   let get_desc x = (repr x).Types.desc
+  let deep_occur = Ctype.deep_occur
   let get_row_name x = x.Types.row_name
   let row_field_repr = Btype.row_field_repr
   let field_kind_repr = Btype.field_kind_repr
@@ -313,6 +325,10 @@ let mark_type ty =
       | Tsubst (ty,_) -> loop visited ty
 #endif
       | Tlink _ -> assert false
+#if OCAML_VERSION >= (5,6,0)
+      (* [Compat.get_desc] walks past [Texpand] just as it does [Tlink]. *)
+      | Texpand _ -> assert false
+#endif
 #if defined OXCAML
       | Tquote typ -> loop visited typ
       | Tsplice typ -> loop visited typ
@@ -459,7 +475,7 @@ let rec mark_class_type params = function
       let sty = Compat.self_type cty in
       if is_row_visited (proxy sty)
       || List.exists aliasable params
-      || List.exists (Ctype.deep_occur sty) tyl
+      || List.exists (Compat.deep_occur sty) tyl
       then mark_class_type params cty
       else List.iter mark_type tyl
   | Cty_signature sign ->
@@ -663,6 +679,10 @@ let rec read_type_expr env typ =
 
 #endif
       | Tlink _ -> assert false
+#if OCAML_VERSION >= (5,6,0)
+      (* [Compat.get_desc] walks past [Texpand] just as it does [Tlink]. *)
+      | Texpand _ -> assert false
+#endif
 #if defined OXCAML
       | Tquote typ -> Quote (read_type_expr env typ)
       | Tsplice typ -> Splice (read_type_expr env typ)
