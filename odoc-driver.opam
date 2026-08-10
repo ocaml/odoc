@@ -40,7 +40,7 @@ depends: [
   "bos"
   "fpath" {>= "0.7.3"}
   "yojson" {>= "2.0.0"}
-  "ocamlfind"
+  "ocamlfind" {>= "1.9.8"}
   "opam-format" {>= "2.1.0"}
   "logs"
   "eio_main"
