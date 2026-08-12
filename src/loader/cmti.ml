@@ -966,9 +966,9 @@ and read_signature :
       (fun (items, include_functors) item ->
         let signature_items, include_functors =
           read_signature_item env parent dummy_path item
-          |> List.partition_map (function
-            | Signature.Include ({ decl = Include.Functor _ } as include_functor) -> Right include_functor
-            | otherwise -> Left otherwise)
+          |> Odoc_utils.List.partition_map (function
+            | Signature.Include ({ decl = Include.Functor _ } as include_functor) -> Odoc_utils.Either.Right include_functor
+            | otherwise -> Odoc_utils.Either.Left otherwise)
         in
         (List.rev_append signature_items items, include_functors))
       ([], []) items

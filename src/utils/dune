@@ -2,3 +2,19 @@
  (name odoc_utils)
  (public_name odoc.odoc_utils)
  (libraries astring))
+
+(rule
+ (deps
+  (:x odoc_either.cppo.ml))
+ (action
+  (with-stdout-to
+   odoc_either.ml
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x}))))
+
+(rule
+ (deps
+  (:x odoc_either.cppo.mli))
+ (action
+  (with-stdout-to
+   odoc_either.mli
+   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x}))))

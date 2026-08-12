@@ -18,6 +18,7 @@ module OptionMonad = struct
 end
 
 module List = Odoc_list
+module Either = Odoc_either
 
 module Tree = Tree
 module Forest = Tree.Forest
