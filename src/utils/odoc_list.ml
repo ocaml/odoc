@@ -6,7 +6,6 @@ let rec concat_map_sep ~sep ~f = function
       let tl = concat_map_sep ~sep ~f xs in
       hd @ (sep :: tl)
 
-(** @raise Failure if the list is empty. *)
 let rec last = function
   | [] -> failwith "Odoc_utils.List.last"
   | [ x ] -> x
@@ -25,17 +24,6 @@ let split_at ~f lst =
   loop [] lst
 
 module Overlay = struct
-  (* Since 4.12. Copied from ocaml/ocaml *)
-  let partition_map p l =
-    let rec part left right = function
-      | [] -> (List.rev left, List.rev right)
-      | x :: l -> (
-          match p x with
-          | Either.Left v -> part (v :: left) right l
-          | Either.Right v -> part left (v :: right) l)
-    in
-    part [] [] l
-
   (* Since 5.1 *)
   let is_empty = function [] -> true | _ :: _ -> false
 
