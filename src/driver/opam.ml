@@ -196,18 +196,19 @@ let classify_libs prefix only_package contents =
     match only_package with None -> true | Some p -> p = pkg
   in
 
-  let libs =
-    List.fold_left
-      (fun set fpath ->
-        match Fpath.segs fpath with
-        | "lib" :: "stublibs" :: _ -> set
-        | "lib" :: pkg :: _ :: _
-          when Fpath.has_ext ".cmi" fpath && pkg_match pkg ->
-            Fpath.Set.add Fpath.(prefix // fpath |> split_base |> fst) set
-        | _ -> set)
-      Fpath.Set.empty contents
-  in
-  libs
+  contents
+  |> List.filter (Fpath.has_ext ".cmi")
+  |> List.filter_map (fun fpath ->
+         match Fpath.segs fpath with
+         | ("lib" | "lib64") :: "stublibs" :: _ -> None
+         (* e.g., [lib/cohttp/**/*.cmi] *)
+         | ("lib" | "lib64") :: pkg :: _ :: _ when pkg_match pkg ->
+             Some Fpath.(prefix // fpath |> split_base |> fst)
+         (* e.g., [lib64/stdlib.cmi] *)
+         | [ ("lib" | "lib64"); _ ] ->
+             Some Fpath.(prefix // fpath |> split_base |> fst)
+         | _ -> None)
+  |> Fpath.Set.of_list
 
 let find_odoc_config prefix only_package contents =
   let pkg_match pkg =
