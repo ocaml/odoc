@@ -73,7 +73,6 @@ let rec shape_of_module_path env : _ -> Shape.t option =
             | Some (shape, _) -> Some shape
             | None -> None)
         | _ -> None)
-    | `Forward _ -> None
     | `Dot (parent, name) ->
         proj (parent :> Odoc_model.Paths.Path.Module.t) Kind.Module (ModuleName.to_string_unsafe name)
     | `Apply (parent, arg) ->
@@ -106,7 +105,6 @@ let rec shape_of_kind_path env kind :
     | `Identifier (id, _) -> shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
     | `Substituted t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
     | `Unbox t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
-    | `Forward _
     | `Dot _
     | `Root _
     | `Apply _ -> None

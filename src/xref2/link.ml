@@ -94,7 +94,6 @@ exception Loop
 let rec is_forward : Paths.Path.Module.t -> bool = function
   | `Resolved _ -> false
   | `Root _ -> false
-  | `Forward _ -> true
   | `Identifier _ -> false
   | `Dot (p, _) -> is_forward p
   | `Apply (p1, p2) -> is_forward p1 || is_forward p2

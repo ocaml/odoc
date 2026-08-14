@@ -1265,7 +1265,6 @@ module Fmt = struct
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
     | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
     | `Substituted p -> wrap c "substituted" module_path ppf p
-    | `Forward s -> wrap c "forward" str ppf s
     | `Root r -> wrap c "unresolvedroot" str ppf (ModuleName.to_string r)
 
   and resolved_module_type_path :
@@ -1423,7 +1422,6 @@ module Fmt = struct
     | `Identifier (id, b) ->
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
     | `Root s -> wrap c "root" str ppf (ModuleName.to_string s)
-    | `Forward s -> wrap c "forward" str ppf s
     | `Dot (p, s) -> dot p (ModuleName.to_string s)
     | `DotMT (p, s) -> dot p (ModuleTypeName.to_string s)
     | `DotT (p, s) -> dot p (TypeName.to_string s)
@@ -2111,7 +2109,6 @@ module Of_Lang = struct
     | `Dot (path', x) -> `Dot (module_path ident_map path', x)
     | `Apply (p1, p2) ->
         `Apply (module_path ident_map p1, module_path ident_map p2)
-    | `Forward str -> `Forward str
     | `Root str -> `Root str
 
   and module_type_path :

@@ -289,7 +289,6 @@ and module_path : t -> Cpath.module_ -> Cpath.module_ =
       | None -> `Local (id, b))
   | `Identifier _ -> p
   | `Substituted p -> `Substituted (module_path s p)
-  | `Forward _ -> p
   | `Root _ -> p
 
 and resolved_module_type_path :
