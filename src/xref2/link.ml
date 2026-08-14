@@ -91,14 +91,6 @@ let expansion_needed self target =
 
 exception Loop
 
-let rec is_forward : Paths.Path.Module.t -> bool = function
-  | `Resolved _ -> false
-  | `Root _ -> false
-  | `Identifier _ -> false
-  | `Dot (p, _) -> is_forward p
-  | `Apply (p1, p2) -> is_forward p1 || is_forward p2
-  | `Substituted s -> is_forward s
-
 let rec should_reresolve : Paths.Path.Resolved.t -> bool =
  fun p ->
   let open Paths.Path.Resolved in
@@ -226,7 +218,6 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
         | Ok p' ->
             let result = Tools.reresolve_module env p' in
             `Resolved Lang_of.(Path.resolved_module (empty ()) result)
-        | Error _ when is_forward p -> p
         | Error e ->
             Errors.report ~what:(`Module_path cp) ~tools_error:e `Resolve;
             p)
