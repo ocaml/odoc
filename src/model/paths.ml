@@ -664,7 +664,6 @@ module Path = struct
     | `SubstitutedCT r -> is_path_hidden (r :> any)
     | `Unbox r -> is_path_hidden (r :> any)
     | `Root s -> ModuleName.is_hidden s
-    | `Forward _ -> false
     | `Dot (p, n) ->
         ModuleName.is_hidden n || is_path_hidden (p : module_ :> any)
     | `DotMT (p, n) ->

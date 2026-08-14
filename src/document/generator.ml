@@ -112,7 +112,6 @@ module Make (Syntax : SYNTAX) = struct
       | `SubstitutedCT m -> from_path (m :> Path.t)
       | `Unbox t -> from_path (t :> Path.t)
       | `Root root -> unresolved [ inline @@ Text (ModuleName.to_string root) ]
-      | `Forward root -> unresolved [ inline @@ Text root ] (* FIXME *)
       | `Dot (prefix, suffix) ->
           let link = from_path (prefix :> Path.t) in
           link ++ O.txt ("." ^ ModuleName.to_string suffix)

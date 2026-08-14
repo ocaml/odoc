@@ -213,7 +213,6 @@ module rec Path : sig
     | `Identifier of Identifier.path_module * bool
     | `Substituted of module_
     | `Root of ModuleName.t
-    | `Forward of string
     | `Dot of module_ * ModuleName.t
     | `Apply of module_ * module_ ]
   (** @canonical Odoc_model.Paths.Path.Module.t *)
@@ -254,7 +253,6 @@ module rec Path : sig
     | `SubstitutedCT of class_type
     | `Identifier of Identifier.path_any * bool
     | `Root of ModuleName.t
-    | `Forward of string
     | `Dot of module_ * ModuleName.t
     | `DotT of module_ * TypeName.t
     | `DotMT of module_ * ModuleTypeName.t

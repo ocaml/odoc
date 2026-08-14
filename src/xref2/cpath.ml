@@ -57,7 +57,6 @@ and Cpath : sig
     | `Local of Ident.module_ * bool
     | `Identifier of Identifier.Path.Module.t * bool
     | `Root of ModuleName.t
-    | `Forward of string
     | `Dot of module_ * ModuleName.t
     | `Module of Resolved.parent * ModuleName.t (* Like dot, but typed *)
     | `Apply of module_ * module_ ]
@@ -148,7 +147,6 @@ let rec is_module_substituted : module_ -> bool = function
   | `Local _ -> false
   | `Substituted _ -> true
   | `Dot (a, _) | `Apply (a, _) -> is_module_substituted a
-  | `Forward _ -> false
   | `Root _ -> false
   | `Module (a, _) -> is_resolved_parent_substituted a
 
@@ -179,7 +177,6 @@ let is_class_type_substituted : class_type -> bool = function
   | `Class (a, _) | `ClassType (a, _) -> is_resolved_parent_substituted a
 
 let rec is_module_forward : module_ -> bool = function
-  | `Forward _ -> true
   | `Resolved _ -> false
   | `Root _ -> false
   | `Identifier _ -> false
@@ -192,7 +189,6 @@ let rec is_module_hidden : module_ -> bool = function
   | `Substituted p | `Dot (p, _) | `Apply (p, _) -> is_module_hidden p
   | `Identifier (_, b) -> b
   | `Local (_, b) -> b
-  | `Forward _ -> false
   | `Root _ -> false
   | `Module (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
 
@@ -348,7 +344,6 @@ and unresolve_module_path : module_ -> module_ = function
   | `Local (_, _) as x -> x
   | `Identifier _ as x -> x
   | `Root _ as x -> x
-  | `Forward _ as x -> x
   | `Dot (p, x) -> `Dot (unresolve_module_path p, x)
   | `Module (p, x) -> `Dot (unresolve_resolved_parent_path p, x)
   | `Apply (x, y) -> `Apply (unresolve_module_path x, unresolve_module_path y)

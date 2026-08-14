@@ -220,7 +220,6 @@ module General_paths = struct
       | `Identifier (x1, x2) ->
           C ("`Identifier", ((x1 :> id_t), x2), Pair (identifier, bool))
       | `Root x -> C ("`Root", x, Names.modulename)
-      | `Forward x -> C ("`Forward", x, string)
       | `Dot (x1, x2) ->
           C ("`Dot", ((x1 :> p), x2), Pair (path, Names.modulename))
       | `DotT (x1, x2) ->

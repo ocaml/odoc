@@ -574,7 +574,6 @@ module LangUtils = struct
             | `Resolved rp -> Format.fprintf ppf "resolved[%a]" resolved_path (rp :> Odoc_model.Paths.Path.Resolved.t)
             | `Identifier (i,b) -> Format.fprintf ppf "identifier(%a,%b)" identifier i b
             | `Root s -> Format.fprintf ppf "%a" ModuleName.fmt s
-            | `Forward s -> Format.fprintf ppf "%s" s
             | `Dot (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ModuleName.fmt s
             | `DotMT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ModuleTypeName.fmt s
             | `DotT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) TypeName.fmt s
