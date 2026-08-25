@@ -887,8 +887,8 @@ and handle_arrow :
     Env.t ->
     Id.Id.label_parent ->
     TypeExpr.label option ->
-    TypeExpr.t * Modes.t ->
-    TypeExpr.t * Modes.t ->
+    TypeExpr.with_modes ->
+    TypeExpr.with_modes ->
     TypeExpr.t =
  fun env parent lbl (t1, m1) (t2, m2) ->
   let t2' = (type_expression env parent t2, m2) in

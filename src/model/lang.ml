@@ -501,7 +501,7 @@ and TypeExpr : sig
     | Var of string
     | Any
     | Alias of t * string
-    | Arrow of label option * (t * Modes.t) * (t * Modes.t)
+    | Arrow of label option * with_modes * with_modes
     | Tuple of (string option * t) list
     | Unboxed_tuple of (string option * t) list
     | Constr of Path.Type.t * t list
@@ -513,6 +513,8 @@ and TypeExpr : sig
     | Splice of t
     | Package of TypeExpr.Package.t
     | Arrow_functor of label option * Module.t * t
+
+  and with_modes = t * Modes.t
 end =
   TypeExpr
 
