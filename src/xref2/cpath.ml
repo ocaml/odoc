@@ -176,14 +176,6 @@ let is_class_type_substituted : class_type -> bool = function
   | `DotT (a, _) -> is_module_substituted a
   | `Class (a, _) | `ClassType (a, _) -> is_resolved_parent_substituted a
 
-let rec is_module_forward : module_ -> bool = function
-  | `Resolved _ -> false
-  | `Root _ -> false
-  | `Identifier _ -> false
-  | `Local _ -> false
-  | `Substituted p | `Dot (p, _) | `Apply (p, _) -> is_module_forward p
-  | `Module (_, _) -> false
-
 let rec is_module_hidden : module_ -> bool = function
   | `Resolved r -> is_resolved_module_hidden ~weak_canonical_test:false r
   | `Substituted p | `Dot (p, _) | `Apply (p, _) -> is_module_hidden p

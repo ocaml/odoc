@@ -30,12 +30,6 @@ type expansion =
     - [add_canonical] asks for [`Canonical] constructors to be added to modules
       for which there is a defined canonical path. If the
 
-    If the path is a 'Forward' path, that is, a path to a module that has not
-    yet been compiled, then it may not be possible to resolve the path if this
-    is being called during the 'compile' phase, in which case the function will
-    return an unresolved path with no component. Resolution should be attempted
-    again during the link phase.
-
     On entry the assumption is that all
     {{!type:Odoc_model.Paths.Identifier.t}Identifiers} in the paths are
     available in [env], except where there are forward paths. If the environment
