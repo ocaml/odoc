@@ -550,7 +550,7 @@ let read_constructor_argument arg =
   arg.ca_type, read_modalities Immutable arg.ca_modalities
 
 let tree_of_modes (modes : Mode.Alloc.Const.t) : string list =
-  (* Same as the OxCaml's [Printtyp.tree_of_modes]: axes whose value is legacy
+  (* Same as the OxCaml's [tree_of_modes]: axes whose value is legacy
      or is implied by another axis are suppressed. *)
   let forkable =
     match modes.areality, modes.forkable with
@@ -576,20 +576,30 @@ let tree_of_modes (modes : Mode.Alloc.Const.t) : string list =
     | Stateful, Nonportable -> None
     | _, _ -> Some modes.portability
   in
-  let diff = Mode.Alloc.Const.diff modes Mode.Alloc.Const.legacy in
-  let diff = { diff with forkable; yielding; contention; portability } in
+  let { Mode.Alloc.areality;
+        linearity;
+        uniqueness;
+        portability = _;
+        contention = _;
+        forkable = _;
+        yielding = _;
+        statefulness;
+        visibility;
+        staticity
+      } = Mode.Alloc.Const.diff modes Mode.Alloc.Const.legacy
+  in
   let print_opt print a = Option.map (Format_doc.asprintf "%a" print) a in
   List.filter_map (fun x -> x)
-    [ print_opt Mode.Locality.Const.print diff.areality
-    ; print_opt Mode.Uniqueness.Const.print diff.uniqueness
-    ; print_opt Mode.Linearity.Const.print diff.linearity
-    ; print_opt Mode.Portability.Const.print diff.portability
-    ; print_opt Mode.Contention.Const.print diff.contention
-    ; print_opt Mode.Forkable.Const.print diff.forkable
-    ; print_opt Mode.Yielding.Const.print diff.yielding
-    ; print_opt Mode.Statefulness.Const.print diff.statefulness
-    ; print_opt Mode.Visibility.Const.print diff.visibility
-    ; print_opt Mode.Staticity.Const.print diff.staticity ]
+    [ print_opt Mode.Locality.Const.print areality
+    ; print_opt Mode.Uniqueness.Const.print uniqueness
+    ; print_opt Mode.Linearity.Const.print linearity
+    ; print_opt Mode.Portability.Const.print portability
+    ; print_opt Mode.Contention.Const.print contention
+    ; print_opt Mode.Forkable.Const.print forkable
+    ; print_opt Mode.Yielding.Const.print yielding
+    ; print_opt Mode.Statefulness.Const.print statefulness
+    ; print_opt Mode.Visibility.Const.print visibility
+    ; print_opt Mode.Staticity.Const.print staticity ]
 
 let read_alloc_modes m = tree_of_modes (Mode.Alloc.zap_to_legacy m)
 
