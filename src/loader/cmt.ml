@@ -289,7 +289,9 @@ let rec read_class_field env parent cf =
         | Tcfk_concrete(_, expr) ->
             (* Types of concrete methods in class implementation begin
                with the object as first (implicit) argument, so we
-               must keep only the type after the first arrow. *)
+               must keep only the type after the first arrow. That
+               arrow's modes are always legacy, since a method type
+               cannot carry a mode annotation. *)
             let type_ =
               match Cmi.read_type_expr env expr.exp_type with
               | Arrow (_, _, (t, _)) -> t
