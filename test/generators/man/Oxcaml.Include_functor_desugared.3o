@@ -15,4 +15,4 @@ Oxcaml\.Include_functor_desugared
 .sp 
 \f[CB]type\fR t
 .sp 
-\f[CB]type\fR included = Make(DUMMY__)\.included
+\f[CB]type\fR included

@@ -30,4 +30,4 @@ Module which defines a functor and includes it via module type of
 \fB2 Signature\fR
 .in 
 .sp 
-\f[CB]type\fR included
+\f[CB]type\fR included = T\.t

@@ -8,5 +8,5 @@ module Make (T : sig ... end) : sig ... end
 type t
 ```
 ```ocaml
-type included = Make(DUMMY__).included
+type included
 ```

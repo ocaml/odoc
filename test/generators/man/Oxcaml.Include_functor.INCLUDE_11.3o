@@ -27,4 +27,4 @@ Oxcaml\.Include_functor\.INCLUDE_11
 \fB2 Signature\fR
 .in 
 .sp 
-\f[CB]type\fR included
+\f[CB]type\fR included = T\.t

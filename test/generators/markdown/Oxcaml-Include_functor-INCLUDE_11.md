@@ -11,5 +11,5 @@ module T : sig ... end
 ## Signature
 
 ```ocaml
-type included
+type included = T.t
 ```
