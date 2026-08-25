@@ -11,4 +11,4 @@ Oxcaml\.Include_functor\.APPLIED_12
 .SH Documentation
 .sp 
 .nf 
-\f[CB]type\fR included = INCLUDE_11(BODY_8)\.included
+\f[CB]type\fR included = BODY_8\.t

@@ -534,13 +534,13 @@ end
 
 module Include_functor : sig
 (** Module which defines a functor and includes it via [module type of] *)
-  module Make (T : sig type t end) : sig type included end
+  module Make (T : sig type t end) : sig type included = T.t end
   type t
   include functor module type of Make
 end
 
 module Include_functor_desugared : sig
-  module Make (T : sig type t end) : sig type included end
+  module Make (T : sig type t end) : sig type included = T.t end
 
   module DUMMY__ : sig
     type t

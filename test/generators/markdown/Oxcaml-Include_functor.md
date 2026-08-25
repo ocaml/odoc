@@ -19,5 +19,5 @@ module INCLUDE_11 : module type of Make
 module APPLIED_12 : module type of struct include INCLUDE_11(BODY_8) end
 ```
 ```ocaml
-type included = INCLUDE_11(BODY_8).included
+type included = BODY_8.t
 ```

@@ -26,4 +26,4 @@ Module which defines a functor and includes it via module type of
 .sp 
 \f[CB]module\fR APPLIED_12 : \f[CB]module\fR \f[CB]type\fR \f[CB]of\fR \f[CB]struct\fR \f[CB]include\fR INCLUDE_11(BODY_8) \f[CB]end\fR
 .sp 
-\f[CB]type\fR included = INCLUDE_11(BODY_8)\.included
+\f[CB]type\fR included = BODY_8\.t
