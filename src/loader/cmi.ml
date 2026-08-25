@@ -610,32 +610,32 @@ let legacy_modes = Mode.Alloc.Const.legacy
 let curried_acc modes arg_mode =
   Ctype.curry_mode modes (Mode.Alloc.zap_to_legacy arg_mode)
 
-let mode_is_implied modes res_mode =
+let mode_is_implied implied_modes res_mode =
   let snap = Btype.snapshot () in
   let implied =
-    match Mode.Alloc.equate (Mode.Alloc.of_const modes) res_mode with
+    match Mode.Alloc.equate (Mode.Alloc.of_const implied_modes) res_mode with
     | Ok () -> true
     | Error _ -> false
   in
   Btype.backtrack snap;
   implied
 
-let read_arrow_modes modes typ =
+let read_arrow_modes implied_modes typ =
   match Compat.get_desc typ with
   | Tarrow ((_, arg_mode, res_mode), _, res, _) ->
       let arg_modes = read_alloc_modes arg_mode in
-      let modes = curried_acc modes arg_mode in
+      let implied_modes = curried_acc implied_modes arg_mode in
       let res_is_arrow =
         match Compat.get_desc res with
         | Tarrow _ -> not (is_aliased (proxy res))
         | _ -> false
       in
       let res_modes =
-        if res_is_arrow && mode_is_implied modes res_mode then []
+        if res_is_arrow && mode_is_implied implied_modes res_mode then []
         else read_alloc_modes res_mode
       in
-      (arg_modes, res_modes, modes)
-  | _ -> ([], [], modes)
+      (arg_modes, res_modes, implied_modes)
+  | _ -> ([], [], implied_modes)
 
 #else
 
@@ -648,13 +648,13 @@ type modes = unit
 
 let legacy_modes : modes = ()
 
-let read_arrow_modes (modes : modes) _typ = ([], [], modes)
+let read_arrow_modes (implied_modes : modes) _typ = ([], [], implied_modes)
 
 #endif
 
 let rec read_type_expr env typ = read_type_expr_modal env legacy_modes typ
 
-and read_type_expr_modal env modes typ =
+and read_type_expr_modal env implied_modes typ =
   let open TypeExpr in
   let px = proxy typ in
   if used_alias px then Var (name_of_type typ)
@@ -689,8 +689,8 @@ and read_type_expr_modal env modes typ =
             | _ ->
               lbl, read_type_expr env arg
           in
-          let arg_modes, res_modes, modes = read_arrow_modes modes typ in
-          let res = read_type_expr_modal env modes res in
+          let arg_modes, res_modes, modes = read_arrow_modes implied_modes typ in
+          let res = read_type_expr_modal env implied_modes res in
             Arrow(lbl, (arg, arg_modes), (res, res_modes))
       | Ttuple typs ->
 #if OCAML_VERSION >= (5,4,0) || defined OXCAML
