@@ -2,9 +2,6 @@ Oxcaml_impl.md
 Oxcaml_impl-To_be_included.md
 Oxcaml_impl-Including.md
 Oxcaml_impl-Include_functor.md
-Oxcaml_impl-Include_functor-BODY_4.md
-Oxcaml_impl-Include_functor-Make.md
-Oxcaml_impl-Include_functor-Make-argument-1-T.md
 Oxcaml_impl-Include_functor-Make.md
 Oxcaml_impl-Include_functor-Make-argument-1-T.md
 Oxcaml_impl-Include_functor_desugared.md
@@ -14,4 +11,3 @@ Oxcaml_impl-Resolve_functor.md
 Oxcaml_impl-Resolve_functor-F.md
 Oxcaml_impl-Resolve_functor-F-argument-1-I.md
 Oxcaml_impl-Resolve_functor-M.md
-Oxcaml_impl-Resolve_functor-M-BODY_14.md

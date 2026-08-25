@@ -11,8 +11,6 @@ Oxcaml\.Include_functor_named_type
 .SH Documentation
 .sp 
 .nf 
-\f[CB]module\fR BODY_21 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
-.sp 
 \f[CB]module\fR \f[CB]type\fR MakeType = \f[CB]sig\fR
 .br 
 .ti +2
@@ -44,8 +42,4 @@ This is a module where the functor is named and then included\.
 .sp 
 \f[CB]type\fR t
 .sp 
-\f[CB]module\fR INCLUDE_24 : MakeType
-.sp 
-\f[CB]module\fR APPLIED_25 : \f[CB]module\fR \f[CB]type\fR \f[CB]of\fR \f[CB]struct\fR \f[CB]include\fR INCLUDE_24(BODY_21) \f[CB]end\fR
-.sp 
-\f[CB]type\fR included = INCLUDE_24(BODY_21)\.included
+\f[CB]type\fR included
