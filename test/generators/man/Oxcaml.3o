@@ -714,6 +714,13 @@ Modes on both argument and return\.
 Multiple modes on argument and return\.
 .nf 
 .sp 
+\f[CB]val\fR mode_multi_flipped : string @ local once \f[CB]\->\fR string @ local unique
+.fi 
+.br 
+.ti +2
+Same as mode_multi, to show that modes order is normalized\.
+.nf 
+.sp 
 \f[CB]val\fR mode_labeled : \f[CB]x\fR:int @ local \f[CB]\->\fR int
 .fi 
 .br 

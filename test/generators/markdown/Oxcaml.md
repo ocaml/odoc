@@ -370,6 +370,11 @@ val mode_multi : string @ local once -> string @ local unique
 Multiple modes on argument and return.
 
 ```ocaml
+val mode_multi_flipped : string @ local once -> string @ local unique
+```
+Same as `mode_multi`, to show that modes order is normalized.
+
+```ocaml
 val mode_labeled : x:int @ local -> int
 ```
 Mode on a labeled argument.

@@ -295,6 +295,9 @@ val mode_both : int @ local -> int @ local
 val mode_multi : string @ local once -> string @ local unique
 (** Multiple modes on argument and return. *)
 
+val mode_multi_flipped : string @ once local -> string @ unique local
+(** Same as [mode_multi], to show that modes order is normalized. *)
+
 val mode_labeled : x:int @ local -> int
 (** Mode on a labeled argument. *)
 
