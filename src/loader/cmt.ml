@@ -294,7 +294,8 @@ let rec read_class_field env parent cf =
                cannot carry a mode annotation. *)
             let type_ =
               match Cmi.read_type_expr env expr.exp_type with
-              | Arrow (_, _, (t, _)) -> t
+              | Arrow (_, _, (t, [])) -> t
+              | Arrow (_, _, (_, _ :: _)) -> invalid_arg "unexpected modes on method"
               | t -> t
             in
             false, type_
