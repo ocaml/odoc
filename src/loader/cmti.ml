@@ -921,7 +921,7 @@ and read_include env parent include_functor_wrapper incl =
 #if defined OXCAML
   | _, Tmty_typeof _, (Tincl_functor _ | Tincl_gen_functor _)
   | _, Tmty_ident (_, _), (Tincl_functor _ | Tincl_gen_functor _) -> (
-    let hidden = false in
+    let hidden = true in
     let type_ : Module.decl = ModuleType expr in
     let id, functor_path = Cmi.generate_wrapper_module parent ~prefix:"INCLUDE" ~hidden in
     let functor_ : Module.t = {id; source_loc=None; doc; type_; canonical=None; hidden} in
@@ -959,7 +959,7 @@ and read_signature :
     in
     Doc_attr.extract_top_comment internal_tags ~warnings_tag:env.warnings_tag ~classify parent sg.sig_items
   in
-  let hidden = false in
+  let hidden = true in
   let dummy_id, dummy_path = Cmi.generate_wrapper_module parent ~prefix:"BODY" ~hidden in
   let items, include_functors =
     List.fold_left

@@ -17,58 +17,12 @@
   </header>
   <div class="odoc-content">
    <div class="odoc-spec">
-    <div class="spec module anchored" id="module-BODY_31">
-     <a href="#module-BODY_31" class="anchor"></a>
-     <code>
-      <span><span class="keyword">module</span> 
-       <a href="Oxcaml-Anonymous_functor-BODY_31.html">BODY_31</a>
-      </span>
-      <span> : <span class="keyword">sig</span> ... 
-       <span class="keyword">end</span>
-      </span>
-     </code>
-    </div>
-   </div>
-   <div class="odoc-spec">
     <div class="spec type anchored" id="type-t">
      <a href="#type-t" class="anchor"></a>
      <code><span><span class="keyword">type</span> t</span></code>
     </div>
     <div class="spec-doc">
      <p>In this test case the functor is defined inline</p>
-    </div>
-   </div>
-   <div class="odoc-spec">
-    <div class="spec module anchored" id="module-INCLUDE_34">
-     <a href="#module-INCLUDE_34" class="anchor"></a>
-     <code>
-      <span><span class="keyword">module</span> 
-       <a href="Oxcaml-Anonymous_functor-INCLUDE_34.html">INCLUDE_34</a>
-      </span>
-      <span> (
-       <a href="Oxcaml-Anonymous_functor-include10_-argument-1-T.html">T</a>
-        : <span class="keyword">sig</span> ... 
-       <span class="keyword">end</span>) : <span class="keyword">sig</span>
-        ... <span class="keyword">end</span>
-      </span>
-     </code>
-    </div>
-   </div>
-   <div class="odoc-spec">
-    <div class="spec module anchored" id="module-APPLIED_35">
-     <a href="#module-APPLIED_35" class="anchor"></a>
-     <code>
-      <span><span class="keyword">module</span> 
-       <a href="Oxcaml-Anonymous_functor-APPLIED_35.html">APPLIED_35</a>
-      </span>
-      <span> : <span class="keyword">module</span> 
-       <span class="keyword">type</span> <span class="keyword">of</span>
-        <span class="keyword">struct</span> 
-       <span class="keyword">include</span> 
-       <a href="Oxcaml-Anonymous_functor-INCLUDE_34.html">INCLUDE_34(BODY_31)
-       </a> <span class="keyword">end</span>
-      </span>
-     </code>
     </div>
    </div>
    <div class="odoc-include">
@@ -90,13 +44,7 @@
      <div class="odoc-spec">
       <div class="spec type anchored" id="type-included">
        <a href="#type-included" class="anchor"></a>
-       <code><span><span class="keyword">type</span> included</span>
-        <span> = 
-         <a href="Oxcaml-Anonymous_functor-INCLUDE_34.html#type-included">
-          INCLUDE_34(BODY_31).included
-         </a>
-        </span>
-       </code>
+       <code><span><span class="keyword">type</span> included</span></code>
       </div>
      </div>
     </details>

@@ -11,8 +11,6 @@ Oxcaml_impl\.Include_functor
 .SH Documentation
 .sp 
 .nf 
-\f[CB]module\fR BODY_4 : \f[CB]sig\fR \.\.\. \f[CB]end\fR
-.sp 
 \f[CB]module\fR Make (T : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .fi 
 .br 
@@ -22,4 +20,4 @@ This module demonstrates the include functor functionality
 .sp 
 \f[CB]type\fR t
 .sp 
-\f[CB]type\fR included = Make(BODY_4)\.included
+\f[CB]type\fR included

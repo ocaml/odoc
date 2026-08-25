@@ -631,7 +631,7 @@ and read_structure :
     in
     Doc_attr.extract_top_comment internal_tags ~warnings_tag:env.warnings_tag ~classify parent str.str_items
   in
-  let hidden = false in
+  let hidden = true in
   let dummy_id, dummy_path = Cmi.generate_wrapper_module parent ~prefix:"BODY" ~hidden in
   let items, include_functors =
     List.fold_left
