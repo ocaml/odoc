@@ -949,9 +949,6 @@ and resolve_module : Env.t -> Cpath.module_ -> resolve_module_result =
         | Some Env.Forward ->
             Error (`Parent (`Parent_sig `UnresolvedForwardPath))
         | None -> Error (`Lookup_failure_root r))
-    | `Forward f ->
-        resolve_module env (`Root (ModuleName.make_std f))
-        |> map_error (fun e -> `Parent (`Parent_module e))
   in
   LookupAndResolveMemo.memoize resolve env' id
 
@@ -1521,8 +1518,6 @@ and module_type_expr_of_module_decl :
       | Ok (_, m) ->
           let m = Component.Delayed.get m in
           module_type_expr_of_module env m
-      | Error _ when Cpath.is_module_forward path ->
-          Error `UnresolvedForwardPath
       | Error e -> Error (`UnresolvedPath (`Module (path, e))))
   | Component.Module.ModuleType expr -> Ok expr
 
@@ -1554,7 +1549,6 @@ and expansion_of_module_path :
           in
           Ok (Signature sg)
       | Functor _ as f -> Ok f)
-  | Error _ when Cpath.is_module_forward path -> Error `UnresolvedForwardPath
   | Error e -> Error (`UnresolvedPath (`Module (path, e)))
 
 and handle_signature_with_subs :
