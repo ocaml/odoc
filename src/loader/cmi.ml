@@ -1684,24 +1684,3 @@ let generate_wrapper_module_sig parent ~include_functors wrapper ~hidden items =
   let dummy_module, include_dummy = wrapper_and_include parent wrapper ~hidden items in
   let include_functors = List.rev_map (fun include_ -> Signature.Include include_) include_functors in
   [dummy_module; include_dummy] @ include_functors
-
-let generate_wrapper_module_functor_type parent ~include_functors (dummy_id, dummy_path) ~hidden items =
-  let dummy_module, include_dummy = wrapper_and_include parent (dummy_id, dummy_path) ~hidden items in
-  (* functor type applied modules *)
-  let modules_and_applications = List.map (fun include_functor ->
-    match include_functor with
-    | {Include.decl = Include.Functor ({target=ModuleType mty; _} as f)} -> (
-      let (id, path) = generate_wrapper_module parent ~prefix:"APPLIED" ~hidden in
-      let type_ = Module.ModuleType mty in
-      let functor_module : Module.t = {id; source_loc=None; doc=no_doc; type_; canonical=None; hidden} in
-      let module_ = Signature.Module (Ordinary, functor_module) in
-      let expansion = include_functor.Include.expansion in
-      let decl = Include.Functor {f with target = Path path} in
-      let application = Signature.Include {decl; parent; doc=no_doc; strengthened=None; loc=no_loc;expansion;status=`Default} in
-      [module_; application]
-      )
-    | _ -> failwith "unexpected include which is not an include functor") include_functors
-    |> List.concat
-  in
-  [dummy_module; include_dummy] @ modules_and_applications
-

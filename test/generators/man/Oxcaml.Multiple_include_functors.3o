@@ -24,6 +24,6 @@ Two include functors in the same signature, with an item defined between them\.
 .sp 
 \f[CB]type\fR between
 .sp 
-\f[CB]type\fR second = BODY__49\.first
+\f[CB]type\fR second = BODY__44\.first
 .sp 
 \f[CB]type\fR third
