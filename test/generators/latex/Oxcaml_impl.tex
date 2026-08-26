@@ -79,9 +79,9 @@
 \label{Oxcaml_impl-Include_functor_not_last--type-after}\ocamlcodefragment{\ocamltag{keyword}{type} after = string}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
-\label{Oxcaml_impl--module-Anonymous_functor}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml_impl-Anonymous_functor]{\ocamlinlinecode{Anonymous\_\allowbreak{}functor}}}\label{Oxcaml_impl-Anonymous_functor}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml_impl-Anonymous_functor--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\begin{ocamlindent}The functor is defined inline, so there is no path for odoc to apply: it has to bind the functor to a module first, as it does for every \ocamlinlinecode{include functor} in a signature.\end{ocamlindent}%
+\label{Oxcaml_impl--module-Anonymous_functor}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml_impl-Anonymous_functor]{\ocamlinlinecode{Anonymous\_\allowbreak{}functor}}}\label{Oxcaml_impl-Anonymous_functor}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\ocamltag{keyword}{include} .\allowbreak{}.\allowbreak{}.\allowbreak{}\label{Oxcaml_impl-Anonymous_functor--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\begin{ocamlindent}The functor is defined inline, so there is no path for odoc to apply: it has to bind the functor to a module first, as it does for every \ocamlinlinecode{include functor} in a signature.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml_impl-Anonymous_functor--type-included}\ocamlcodefragment{\ocamltag{keyword}{type} included = \hyperref[Oxcaml_impl-Anonymous_functor--type-t]{\ocamlinlinecode{t}}}\\
+\ocamltag{keyword}{include functor} \ocamltag{keyword}{functor} (\hyperref[Oxcaml_impl-Anonymous_functor-argument-1-T]{\ocamlinlinecode{T}} : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}) \ocamltag{arrow}{$\rightarrow$} \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}\label{Oxcaml_impl-Anonymous_functor--type-included}\ocamlcodefragment{\ocamltag{keyword}{type} included}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
 
