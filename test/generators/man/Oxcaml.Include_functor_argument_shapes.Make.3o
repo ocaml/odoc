@@ -1,0 +1,82 @@
+
+.TH Make 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.Include_functor_argument_shapes\.Make
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Include_functor_argument_shapes\.Make\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Parameters\fR
+.in 
+.sp 
+\f[CB]module\fR T : \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.sp 
+.ti +2
+\f[CB]type\fR 'a p
+.sp 
+.ti +2
+\f[CB]type\fR _ anon
+.sp 
+.ti +2
+\f[CB]module\fR X : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR v
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR S
+.br 
+\f[CB]end\fR
+.sp 
+.in 3
+\fB2 Signature\fR
+.in 
+.sp 
+\f[CB]type\fR included = T\.t
+.fi 
+.br 
+.ti +2
+No parameters, so the alias odoc puts in the synthetic module is a bare type t = t\.
+.nf 
+.sp 
+\f[CB]type\fR applied = int T\.p
+.fi 
+.br 
+.ti +2
+A named parameter, which the alias threads through as type 'a p = 'a p\.
+.nf 
+.sp 
+\f[CB]type\fR anonymous = bool T\.anon
+.fi 
+.br 
+.ti +2
+An anonymous parameter: _ gives the alias no name to mention on the right, so one is invented, as type 'a0 anon = 'a0 anon\.
+.nf 
+.sp 
+\f[CB]type\fR from_module = T\.X\.v
+.fi 
+.br 
+.ti +2
+Reached through a submodule of the argument, aliased as module X = X\.
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR Reexported = T\.S
+.fi 
+.br 
+.ti +2
+A module type of the argument, aliased as a path to it\.
+.nf 
+

@@ -8,3 +8,9 @@ Oxcaml_impl.Include_functor_desugared.Make.3o
 Oxcaml_impl.Resolve_functor.3o
 Oxcaml_impl.Resolve_functor.F.3o
 Oxcaml_impl.Resolve_functor.M.3o
+Oxcaml_impl.Multiple_include_functors.3o
+Oxcaml_impl.Multiple_include_functors.First.3o
+Oxcaml_impl.Multiple_include_functors.Second.3o
+Oxcaml_impl.Include_functor_not_last.3o
+Oxcaml_impl.Include_functor_not_last.Make.3o
+Oxcaml_impl.Anonymous_functor.3o

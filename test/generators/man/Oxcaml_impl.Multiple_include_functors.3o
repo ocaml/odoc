@@ -1,0 +1,29 @@
+
+.TH Multiple_include_functors 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_impl\.Multiple_include_functors
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml_impl\.Multiple_include_functors\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR First (T : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+Two include functors in the same structure, with an item defined between them\.
+.nf 
+.sp 
+\f[CB]module\fR Second (T : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR t
+.sp 
+\f[CB]type\fR between
+.sp 
+\f[CB]type\fR second = BODY__15\.first
+.sp 
+\f[CB]type\fR third

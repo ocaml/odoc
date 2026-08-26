@@ -19,7 +19,7 @@ Oxcaml\.Include_functor_named_type
 \fB1\.1 Parameters\fR
 .sp 
 .ti +2
-\f[CB]module\fR _ : \f[CB]sig\fR
+\f[CB]module\fR X : \f[CB]sig\fR
 .br 
 .ti +4
 \f[CB]type\fR t
@@ -31,7 +31,7 @@ Oxcaml\.Include_functor_named_type
 \fB1\.2 Signature\fR
 .sp 
 .ti +2
-\f[CB]type\fR included
+\f[CB]type\fR included = X\.t
 .br 
 \f[CB]end\fR
 .fi 

@@ -7,11 +7,11 @@ This is a module where the functor is named and then included.
 ## Parameters
 
 ```ocaml
-module _ : sig ... end
+module X : sig ... end
 ```
 
 ## Signature
 
 ```ocaml
-type included
+type included = X.t
 ```

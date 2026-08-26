@@ -20,4 +20,4 @@ This module is the desugared version from above
 .sp 
 \f[CB]type\fR t
 .sp 
-\f[CB]type\fR included = Make(DUMMY__)\.included
+\f[CB]type\fR included = t

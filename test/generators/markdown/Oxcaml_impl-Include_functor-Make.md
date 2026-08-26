@@ -1,7 +1,7 @@
 
 # Module `Include_functor.Make`
 
-This module demonstrates the `include functor` functionality
+This module demonstrates the `include functor` functionality. `Make` uses its argument, so `included` has to come out equal to `t` rather than abstract.
 
 
 ## Parameters
@@ -13,5 +13,5 @@ module T : sig ... end
 ## Signature
 
 ```ocaml
-type included
+type included = T.t
 ```

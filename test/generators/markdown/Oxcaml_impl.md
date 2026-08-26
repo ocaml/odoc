@@ -83,3 +83,12 @@ module Include_functor_desugared : sig ... end
 ```ocaml
 module Resolve_functor : sig ... end
 ```
+```ocaml
+module Multiple_include_functors : sig ... end
+```
+```ocaml
+module Include_functor_not_last : sig ... end
+```
+```ocaml
+module Anonymous_functor : sig ... end
+```
