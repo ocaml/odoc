@@ -586,6 +586,11 @@ and read_include env parent include_functor_wrapper incl =
       let include_functor = Env.Path.read_module env.ident_env p in
       let target = `Apply (include_functor, include_functor_wrapper) in
       Some (`Functor (target, include_functor)))
+    | _, (Tincl_functor _ | Tincl_gen_functor _) ->
+      (* An [include functor] whose functor is not a path -- an anonymous
+         functor, say.  There is nothing to apply, so bind it to a module
+         first, as the signature reader has to for every [include functor]. *)
+      Some (`Functor_expr (read_module_expr env parent container incl.incl_mod))
     | Tmod_ident(p, _), Tincl_structure ->
 #else
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
@@ -606,6 +611,14 @@ and read_include env parent include_functor_wrapper incl =
   | Some `Functor (target, original_ref) ->
     let decl = Include.Functor {target = Path target; original_ref=Path original_ref} in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
+  | Some `Functor_expr mty ->
+    let hidden = true in
+    let id, functor_path = Cmi.generate_wrapper_module parent ~prefix:"INCLUDE" ~hidden in
+    let functor_ : Module.t = {id; source_loc=None; doc; type_=ModuleType mty; canonical=None; hidden} in
+    let target : Path.Module.t = `Apply (functor_path, include_functor_wrapper) in
+    let decl = Include.Functor {target = Path target; original_ref=ModuleType mty} in
+    [Signature.Module (Ordinary, functor_);
+     Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
   | _ ->
     content.items
 
