@@ -927,10 +927,7 @@ and read_include env parent include_functor_wrapper incl =
     let functor_ : Module.t = {id; source_loc=None; doc; type_; canonical=None; hidden} in
     let functor_ = Signature.Module (Ordinary, functor_) in
     let module_path : Path.Module.t = `Apply (functor_path, include_functor_wrapper) in
-
-    (* include that module *)
-    let mt : ModuleType.expr = ModuleType.TypeOf {t_desc = StructInclude module_path; t_original_path = module_path; t_expansion = None } in
-    let decl = Functor {target=ModuleType mt; original_ref=ModuleType expr} in
+    let decl = Functor {target=Path module_path; original_ref=ModuleType expr} in
     let include_ = Signature.Include {parent; doc; decl; expansion; status; strengthened=None; loc } in
     [functor_; include_])
 #endif
@@ -978,7 +975,7 @@ and read_signature :
   | [] -> items
   | include_functors ->
     (* if we have any include functor, we need to wrap  *)
-    Cmi.generate_wrapper_module_functor_type parent ~include_functors (dummy_id, dummy_path) ~hidden items
+    Cmi.generate_wrapper_module_sig parent ~include_functors (dummy_id, dummy_path) ~hidden items
   in
   match doc_post with
   | {elements=[]; _} ->
