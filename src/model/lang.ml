@@ -648,7 +648,10 @@ let extract_signature_doc (s : Signature.t) =
     | { Include.status = `Inline; _ } -> true
     | { decl = Functor { original_ref = Path p }; _ } | { decl = Alias p; _ } ->
         Paths.Path.is_hidden (p :> Path.t)
-    | { decl = Functor { original_ref = ModuleType _ }; _ } -> assert false
+    | { decl = Functor { original_ref = ModuleType _ }; _ } ->
+        (* [include functor module type of ...]: nothing to be hidden behind,
+           so the enclosing signature does not inherit the top comment. *)
+        false
     | { decl = ModuleType expr; _ } -> uexpr_considered_hidden expr
   in
   match (s.doc, s.items) with

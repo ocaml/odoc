@@ -10,5 +10,8 @@ An `include functor` that is not the last item of the signature.
 type t
 ```
 ```ocaml
+type included
+```
+```ocaml
 type after
 ```

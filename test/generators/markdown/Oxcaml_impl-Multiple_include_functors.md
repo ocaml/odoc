@@ -13,10 +13,13 @@ module Second (T : sig ... end) : sig ... end
 type t
 ```
 ```ocaml
+type first
+```
+```ocaml
 type between
 ```
 ```ocaml
-type second = BODY__15.first
+type second = t
 ```
 ```ocaml
 type third

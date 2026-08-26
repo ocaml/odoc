@@ -1661,26 +1661,41 @@ let generate_wrapper_module =
     let dummy_path = `Identifier (dummy_id, hidden) in
     (dummy_id, dummy_path)
 
-let shadow_nothing : Include.shadowed =
-  {s_modules=[]; s_module_types=[]; s_values=[]; s_types=[]; s_classes=[]; s_class_types=[]}
-
 let no_doc : Odoc_model.Comment.docs = { elements = []; warnings_tag = None }
-let no_loc = Odoc_model.Location_.span []
 
-let wrapper_and_include parent (dummy_id, dummy_path) ~hidden items =
-  let doc = no_doc in
-  let sig_ : Signature.t = {items; compiled=true; removed=[]; doc} in
+(* [include functor F] is modelled as the application of [F] to a synthetic,
+   hidden module holding the items that precede the include.  Those items are
+   copied under fresh identifiers, since they stay in the enclosing signature
+   too. *)
+let wrapper_items dummy_id items =
+  let module Id = Identifier in
+  let name id = Id.name id in
+  let parent = (dummy_id : Id.Module.t :> Id.Signature.t) in
+  let rec wrapper_item item acc =
+    match (item : Signature.item) with
+    | Type (rec_, td) ->
+      let id = Id.Mk.type_ (parent, Odoc_model.Names.TypeName.make_std (name td.id)) in
+      Signature.Type (rec_, { td with TypeDecl.id; representation = None; canonical = None; source_loc = None }) :: acc
+    | Module (rec_, m) ->
+      let id = Id.Mk.module_ (parent, Odoc_model.Names.ModuleName.make_std (name m.id)) in
+      Signature.Module (rec_, { m with Module.id; canonical = None; hidden = false; source_loc = None }) :: acc
+    | ModuleType mt ->
+      let id = Id.Mk.module_type (parent, Odoc_model.Names.ModuleTypeName.make_std (name mt.id)) in
+      Signature.ModuleType { mt with ModuleType.id; canonical = None; source_loc = None } :: acc
+    | Include incl ->
+      (* The items an [include] brings in are visible to the functor too. *)
+      List.fold_left (fun acc item -> wrapper_item item acc) acc incl.Include.expansion.content.items
+    | Value _ | ModuleSubstitution _ | ModuleTypeSubstitution _ | Open _
+    | TypeSubstitution _ | TypExt _ | Exception _ | Comment _
+    | Class _ | ClassType _ ->
+      (* Nothing in the expansion of [F(BODY__n)] can refer to these. *)
+      acc
+  in
+  List.rev (List.fold_left (fun acc item -> wrapper_item item acc) [] items)
+
+let wrapper_module (dummy_id, _dummy_path) ~hidden items =
+  let items = wrapper_items dummy_id items in
+  let sig_ : Signature.t = { items; compiled = true; removed = []; doc = no_doc } in
   let type_ : Module.decl = ModuleType (Signature sig_) in
-  let module_ : Module.t = {id=dummy_id; source_loc=None; doc; type_; canonical=None; hidden} in
-  let dummy_module : Signature.item = Module (Ordinary, module_) in
-  let umt : ModuleType.U.expr = TypeOf (StructInclude dummy_path, dummy_path) in
-  let decl : Include.decl = ModuleType umt in
-  let expansion : Include.expansion = {shadowed=shadow_nothing; content=sig_} in
-  let include_ : Include.t = {loc=no_loc; parent; strengthened=None; doc; status=`Inline; decl; expansion} in
-  let include_dummy : Signature.item = Include include_ in
-  (dummy_module, include_dummy)
-
-let generate_wrapper_module_sig parent ~include_functors wrapper ~hidden items =
-  let dummy_module, include_dummy = wrapper_and_include parent wrapper ~hidden items in
-  let include_functors = List.rev_map (fun include_ -> Signature.Include include_) include_functors in
-  [dummy_module; include_dummy] @ include_functors
+  let module_ : Module.t = {id=dummy_id; source_loc=None; doc=no_doc; type_; canonical=None; hidden} in
+  Signature.Module (Ordinary, module_)

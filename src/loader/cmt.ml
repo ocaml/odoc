@@ -523,7 +523,7 @@ and read_module_bindings env parent mbs =
   |> fst
   |> List.rev
 
-and read_structure_item env parent include_functor_wrapper item =
+and read_structure_item env parent item =
   let open Signature in
     match item.str_desc with
     | Tstr_eval _ -> []
@@ -558,7 +558,7 @@ and read_structure_item env parent include_functor_wrapper item =
     | Tstr_open o ->
         [Open (read_open env parent o)]
     | Tstr_include incl ->
-        read_include env parent include_functor_wrapper incl
+        read_include env parent incl
     | Tstr_class cls ->
         let cls = List.map (fun (cl, _) -> cl) cls in
           read_class_declarations env parent cls
@@ -574,53 +574,56 @@ and read_structure_item env parent include_functor_wrapper item =
           | None -> []
           | Some doc -> [Comment doc]
 
-and read_include env parent include_functor_wrapper incl =
+and read_include env parent incl =
   let open Include in
   let loc = Doc_attr.read_location incl.incl_loc in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, status = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_status container incl.incl_attributes in
   let decl_modty =
-#if defined OXCAML
-    match unwrap_module_expr_desc incl.incl_mod.mod_desc, incl.incl_kind with
-    | Tmod_ident (p, _), (Tincl_functor _ | Tincl_gen_functor _) -> (
-      let include_functor = Env.Path.read_module env.ident_env p in
-      let target = `Apply (include_functor, include_functor_wrapper) in
-      Some (`Functor (target, include_functor)))
-    | _, (Tincl_functor _ | Tincl_gen_functor _) ->
-      (* An [include functor] whose functor is not a path -- an anonymous
-         functor, say.  There is nothing to apply, so bind it to a module
-         first, as the signature reader has to for every [include functor]. *)
-      Some (`Functor_expr (read_module_expr env parent container incl.incl_mod))
-    | Tmod_ident(p, _), Tincl_structure ->
-#else
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
     | Tmod_ident(p, _) ->
-#endif
       let p = Env.Path.read_module env.ident_env p in
-      Some (`Module_type (ModuleType.U.TypeOf (ModuleType.StructInclude p, p)))
+      Some (ModuleType.U.TypeOf (ModuleType.StructInclude p, p))
     | _ ->
       let mty = read_module_expr env parent container incl.incl_mod in
-      umty_of_mty mty |> Option.map (fun m -> `Module_type m)
+      umty_of_mty mty
   in
   let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expansion = { content; shadowed; } in
   match decl_modty with
-  | Some `Module_type m ->
+  | Some m ->
     let decl = ModuleType m in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
-  | Some `Functor (target, original_ref) ->
-    let decl = Include.Functor {target = Path target; original_ref=Path original_ref} in
-    [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
-  | Some `Functor_expr mty ->
-    let hidden = true in
-    let id, functor_path = Cmi.generate_wrapper_module parent ~prefix:"INCLUDE" ~hidden in
-    let functor_ : Module.t = {id; source_loc=None; doc; type_=ModuleType mty; canonical=None; hidden} in
-    let target : Path.Module.t = `Apply (functor_path, include_functor_wrapper) in
-    let decl = Include.Functor {target = Path target; original_ref=ModuleType mty} in
-    [Signature.Module (Ordinary, functor_);
-     Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
-  | _ ->
+  | None ->
     content.items
+
+#if defined OXCAML
+(* [include functor F] applies [F] to [wrapper], a synthetic module holding
+   everything defined before the include.  [F] itself need not be a path -- it
+   can be an anonymous functor -- in which case it is bound to a module so that
+   there is something to apply. *)
+and read_include_functor env parent wrapper incl =
+  let open Include in
+  let loc = Doc_attr.read_location incl.incl_loc in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
+  let doc, status = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_status container incl.incl_attributes in
+  let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
+  let expansion = { content; shadowed; } in
+  let bound, functor_path, original_ref =
+    match unwrap_module_expr_desc incl.incl_mod.mod_desc with
+    | Tmod_ident (p, _) ->
+      let p = Env.Path.read_module env.ident_env p in
+      ([], p, Path p)
+    | _ ->
+      let mty = read_module_expr env parent container incl.incl_mod in
+      let hidden = true in
+      let id, path = Cmi.generate_wrapper_module parent ~prefix:"INCLUDE" ~hidden in
+      let m : Module.t = {id; source_loc=None; doc; type_=ModuleType mty; canonical=None; hidden} in
+      ([Signature.Module (Ordinary, m)], path, ModuleType mty)
+  in
+  let decl = Functor {target = Path (`Apply (functor_path, wrapper)); original_ref} in
+  bound @ [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
+#endif
 
 and read_open env parent o =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -628,6 +631,22 @@ and read_open env parent o =
   let signature = o.open_bound_items in
   let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature signature) in
   Open.{expansion; doc}
+
+and read_items env parent items =
+  List.fold_left
+    (fun acc item ->
+      match item.str_desc with
+#if defined OXCAML
+      | Tstr_include ({ incl_kind = (Tincl_functor _ | Tincl_gen_functor _); _ } as incl) ->
+        let hidden = true in
+        let wrapper = Cmi.generate_wrapper_module parent ~prefix:"BODY" ~hidden in
+        let wrapper_module = Cmi.wrapper_module wrapper ~hidden (List.rev acc) in
+        let items = read_include_functor env parent (snd wrapper) incl in
+        List.rev_append items (wrapper_module :: acc)
+#endif
+      | _ -> List.rev_append (read_structure_item env parent item) acc)
+    [] items
+  |> List.rev
 
 and read_structure :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->
@@ -644,27 +663,7 @@ and read_structure :
     in
     Doc_attr.extract_top_comment internal_tags ~warnings_tag:env.warnings_tag ~classify parent str.str_items
   in
-  let hidden = true in
-  let dummy_id, dummy_path = Cmi.generate_wrapper_module parent ~prefix:"BODY" ~hidden in
-  let items, include_functors =
-    List.fold_left
-      (fun (items, include_functors) item ->
-        let structure_items, include_functors =
-          read_structure_item env parent dummy_path item
-          |> Odoc_utils.List.partition_map (function
-            | Signature.Include ({ decl = Include.Functor _ } as include_functor) -> Odoc_utils.Either.Right include_functor
-            | otherwise -> Odoc_utils.Either.Left otherwise)
-        in
-        (List.rev_append structure_items items, include_functors))
-      ([], []) items
-  in
-  let items = List.rev items in
-  let items = match include_functors with
-  | [] -> items
-  | include_functors ->
-    (* if we have any include functors, we need to wrap  *)
-    Cmi.generate_wrapper_module_sig parent ~include_functors (dummy_id, dummy_path) ~hidden items
-  in
+  let items = read_items env parent items in
   match doc_post with
   | { elements = [] ; _} ->
     ({ Signature.items; compiled = false; removed = []; doc }, tags)
