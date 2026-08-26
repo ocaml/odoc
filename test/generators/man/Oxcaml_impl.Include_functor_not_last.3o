@@ -1,0 +1,23 @@
+
+.TH Include_functor_not_last 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_impl\.Include_functor_not_last
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml_impl\.Include_functor_not_last\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR Make (T : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+An include functor that is not the last item of the structure\.
+.nf 
+.sp 
+\f[CB]type\fR t
+.sp 
+\f[CB]type\fR after = string

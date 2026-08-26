@@ -8,6 +8,9 @@ Oxcaml\.Include_functor_desugared\.Make
 \fBModule Include_functor_desugared\.Make\fR
 .in 
 .sp 
+.fi 
+This module is the desugared version of \f[CI]Include_functor\fR: the synthetic module aliases the preceding items rather than copying them, so that the types the functor inherits from its argument resolve back to them\.
+.nf 
 .SH Documentation
 .sp 
 .nf 

@@ -19,7 +19,7 @@ Oxcaml\.Include_functor_named_type_desugared
 \fB1\.1 Parameters\fR
 .sp 
 .ti +2
-\f[CB]module\fR _ : \f[CB]sig\fR
+\f[CB]module\fR X : \f[CB]sig\fR
 .br 
 .ti +4
 \f[CB]type\fR t
@@ -31,15 +31,15 @@ Oxcaml\.Include_functor_named_type_desugared
 \fB1\.2 Signature\fR
 .sp 
 .ti +2
-\f[CB]type\fR included
+\f[CB]type\fR included = X\.t
 .br 
 \f[CB]end\fR
 .fi 
 .br 
 .ti +2
-This is a module where the functor is named and then included\.
+This is the desugared version of \f[CI]Include_functor_named_type\fR\.
 .nf 
 .sp 
 \f[CB]type\fR t
 .sp 
-\f[CB]type\fR included
+\f[CB]type\fR included = t

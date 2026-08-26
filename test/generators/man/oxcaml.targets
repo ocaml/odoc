@@ -10,6 +10,9 @@ Oxcaml.No_include_functor.Make.3o
 Oxcaml.No_include_functor.T.3o
 Oxcaml.Include_functor.3o
 Oxcaml.Include_functor.Make.3o
+Oxcaml.Include_functor_argument_shapes.3o
+Oxcaml.Include_functor_argument_shapes.Make.3o
+Oxcaml.Include_functor_argument_shapes.X.3o
 Oxcaml.Include_functor_desugared.3o
 Oxcaml.Include_functor_desugared.Make.3o
 Oxcaml.Include_functor_named_type_desugared.3o
@@ -17,3 +20,8 @@ Oxcaml.Include_functor_named_type.3o
 Oxcaml.Include_functor_inline.3o
 Oxcaml.Anonymous_functor.3o
 Oxcaml.Anonymous_functor_desugared.3o
+Oxcaml.Multiple_include_functors.3o
+Oxcaml.Multiple_include_functors.First.3o
+Oxcaml.Multiple_include_functors.Second.3o
+Oxcaml.Include_functor_not_last.3o
+Oxcaml.Include_functor_not_last.Make.3o

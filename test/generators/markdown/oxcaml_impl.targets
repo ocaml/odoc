@@ -11,3 +11,12 @@ Oxcaml_impl-Resolve_functor.md
 Oxcaml_impl-Resolve_functor-F.md
 Oxcaml_impl-Resolve_functor-F-argument-1-I.md
 Oxcaml_impl-Resolve_functor-M.md
+Oxcaml_impl-Multiple_include_functors.md
+Oxcaml_impl-Multiple_include_functors-First.md
+Oxcaml_impl-Multiple_include_functors-First-argument-1-T.md
+Oxcaml_impl-Multiple_include_functors-Second.md
+Oxcaml_impl-Multiple_include_functors-Second-argument-1-T.md
+Oxcaml_impl-Include_functor_not_last.md
+Oxcaml_impl-Include_functor_not_last-Make.md
+Oxcaml_impl-Include_functor_not_last-Make-argument-1-T.md
+Oxcaml_impl-Anonymous_functor.md

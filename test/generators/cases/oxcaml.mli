@@ -539,24 +539,72 @@ module Include_functor : sig
   include functor module type of Make
 end
 
+module Include_functor_argument_shapes : sig
+(** Everything the expansion of the functor can inherit from its argument:
+    types, including parameterised and anonymously parameterised ones,
+    submodules, and module types. *)
+  module type Arg = sig
+    type t
+    type 'a p
+    type _ anon
+    module X : sig type v end
+    module type S
+  end
+
+  module Make (T : Arg) : sig
+    type included = T.t
+    (** No parameters, so the alias odoc puts in the synthetic module is a bare
+        [type t = t]. *)
+
+    type applied = int T.p
+    (** A named parameter, which the alias threads through as
+        [type 'a p = 'a p]. *)
+
+    type anonymous = bool T.anon
+    (** An anonymous parameter: [_] gives the alias no name to mention on the
+        right, so one is invented, as [type 'a0 anon = 'a0 anon]. *)
+
+    type from_module = T.X.v
+    (** Reached through a submodule of the argument, aliased as
+        [module X = X]. *)
+
+    module type Reexported = T.S
+    (** A module type of the argument, aliased as a path to it. *)
+  end
+
+  type t
+  type 'a p
+  type _ anon
+  module X : sig type v end
+  module type S = sig type u end
+
+  include functor module type of Make
+end
+
 module Include_functor_desugared : sig
+(** This module is the desugared version of {!Include_functor}: the synthetic
+    module aliases the preceding items rather than copying them, so that the
+    types the functor inherits from its argument resolve back to them. *)
   module Make (T : sig type t end) : sig type included = T.t end
 
+  type t
+
   module DUMMY__ : sig
-    type t
+    type nonrec t = t
   end
-  include module type of DUMMY__
 
   include module type of Make(DUMMY__)
 end
 
 module Include_functor_named_type_desugared : sig
-(** This is a module where the functor is named and then included. *)
-  module type MakeType = (_ : sig type t end) -> sig type included end
+(** This is the desugared version of {!Include_functor_named_type}. *)
+  module type MakeType = (X : sig type t end) -> sig type included = X.t end
+
+  type t
+
   module DUMMY__ : sig
-    type t
+    type nonrec t = t
   end
-  include module type of DUMMY__
 
   module STRUCT__MakeType : MakeType
   include module type of STRUCT__MakeType(DUMMY__)
@@ -564,7 +612,7 @@ end
 
 module Include_functor_named_type : sig
 (** This is a module where the functor is named and then included. *)
-  module type MakeType = (_ : sig type t end) -> sig type included end
+  module type MakeType = (X : sig type t end) -> sig type included = X.t end
   type t
   include functor MakeType
 end
@@ -593,3 +641,27 @@ module Anonymous_functor_desugared : sig
   include module type of (functor (T : sig type t end) -> struct type included end)(DUMMY__)
 end
 
+module Multiple_include_functors : sig
+(** Two [include functor]s in the same signature, with an item defined between
+    them. *)
+  module First (T : sig type t end) : sig type first = T.t end
+
+  module Second (T : sig type t type first type between end) : sig
+    type second = T.first
+    type third = T.between
+  end
+
+  type t
+  include functor module type of First
+  type between
+  include functor module type of Second
+end
+
+module Include_functor_not_last : sig
+(** An [include functor] that is not the last item of the signature. *)
+  module Make (T : sig type t end) : sig type included = T.t end
+
+  type t
+  include functor module type of Make
+  type after
+end

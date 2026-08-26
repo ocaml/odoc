@@ -10,5 +10,5 @@ This module is the desugared version from above
 type t
 ```
 ```ocaml
-type included = Make(DUMMY__).included
+type included = t
 ```

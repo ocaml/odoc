@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <title>
+   Include_functor_argument_shapes (Oxcaml.Include_functor_argument_shapes)
+  </title><meta charset="utf-8"/><link rel="stylesheet" href="odoc.css"/>
+  <meta name="generator" content="odoc %%VERSION%%"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <script src="highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+ </head>
+ <body class="odoc">
+  <nav class="odoc-nav"><a href="Oxcaml.html">Up</a> – 
+   <a href="index.html">Index</a> &#x00BB; <a href="Oxcaml.html">Oxcaml</a>
+    &#x00BB; Include_functor_argument_shapes
+  </nav>
+  <header class="odoc-preamble">
+   <h1>Module 
+    <code><span>Oxcaml.Include_functor_argument_shapes</span></code>
+   </h1>
+  </header>
+  <div class="odoc-content">
+   <div class="odoc-spec">
+    <div class="spec module-type anchored" id="module-type-Arg">
+     <a href="#module-type-Arg" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <span class="keyword">type</span> 
+       <a href="Oxcaml-Include_functor_argument_shapes-module-type-Arg.html">
+        Arg
+       </a>
+      </span>
+      <span> = <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Everything the expansion of the functor can inherit from its 
+      argument: types, including parameterised and anonymously parameterised
+       ones, submodules, and module types.
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-Make">
+     <a href="#module-Make" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-Include_functor_argument_shapes-Make.html">Make</a>
+      </span>
+      <span> (
+       <a
+        href="Oxcaml-Include_functor_argument_shapes-Make-argument-1-T.html">
+        T
+       </a> : 
+       <a href="Oxcaml-Include_functor_argument_shapes-module-type-Arg.html">
+        Arg
+       </a>) : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t">
+     <a href="#type-t" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t</span></code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-p">
+     <a href="#type-p" class="anchor"></a>
+     <code><span><span class="keyword">type</span> <span>'a p</span></span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-anon">
+     <a href="#type-anon" class="anchor"></a>
+     <code><span><span class="keyword">type</span> <span>_ anon</span></span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-X">
+     <a href="#module-X" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-Include_functor_argument_shapes-X.html">X</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module-type anchored" id="module-type-S">
+     <a href="#module-type-S" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <span class="keyword">type</span> 
+       <a href="Oxcaml-Include_functor_argument_shapes-module-type-S.html">S
+       </a>
+      </span>
+      <span> = <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-include">
+    <details open="open">
+     <summary class="spec include">
+      <code>
+       <span><span class="keyword">include functor</span> 
+        <span class="keyword">module</span> <span class="keyword">type</span>
+         <span class="keyword">of</span> 
+        <a href="Oxcaml-Include_functor_argument_shapes-Make.html">Make</a>
+       </span>
+      </code>
+     </summary>
+     <div class="odoc-spec">
+      <div class="spec type anchored" id="type-included">
+       <a href="#type-included" class="anchor"></a>
+       <code><span><span class="keyword">type</span> included</span></code>
+      </div>
+      <div class="spec-doc">
+       <p>No parameters, so the alias odoc puts in the synthetic module
+         is a bare <code>type t = t</code>.
+       </p>
+      </div>
+     </div>
+     <div class="odoc-spec">
+      <div class="spec type anchored" id="type-applied">
+       <a href="#type-applied" class="anchor"></a>
+       <code><span><span class="keyword">type</span> applied</span></code>
+      </div>
+      <div class="spec-doc">
+       <p>A named parameter, which the alias threads through as 
+        <code>type 'a p = 'a p</code>.
+       </p>
+      </div>
+     </div>
+     <div class="odoc-spec">
+      <div class="spec type anchored" id="type-anonymous">
+       <a href="#type-anonymous" class="anchor"></a>
+       <code><span><span class="keyword">type</span> anonymous</span></code>
+      </div>
+      <div class="spec-doc">
+       <p>An anonymous parameter: <code>_</code> gives the alias no name
+         to mention on the right, so one is invented, as 
+        <code>type 'a0 anon = 'a0 anon</code>.
+       </p>
+      </div>
+     </div>
+     <div class="odoc-spec">
+      <div class="spec type anchored" id="type-from_module">
+       <a href="#type-from_module" class="anchor"></a>
+       <code><span><span class="keyword">type</span> from_module</span>
+       </code>
+      </div>
+      <div class="spec-doc">
+       <p>Reached through a submodule of the argument, aliased as 
+        <code>module X = X</code>.
+       </p>
+      </div>
+     </div>
+     <div class="odoc-spec">
+      <div class="spec module-type anchored" id="module-type-Reexported">
+       <a href="#module-type-Reexported" class="anchor"></a>
+       <code>
+        <span><span class="keyword">module</span> 
+         <span class="keyword">type</span> 
+         <a
+          href="Oxcaml-Include_functor_argument_shapes-module-type-Reexported.html"
+          >Reexported
+         </a>
+        </span>
+        <span> = <span class="keyword">sig</span> ... 
+         <span class="keyword">end</span>
+        </span>
+       </code>
+      </div>
+      <div class="spec-doc">
+       <p>A module type of the argument, aliased as a path to it.</p>
+      </div>
+     </div>
+    </details>
+   </div>
+  </div>
+ </body>
+</html>

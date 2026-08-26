@@ -15,7 +15,7 @@ Oxcaml_impl\.Include_functor
 .fi 
 .br 
 .ti +2
-This module demonstrates the include functor functionality
+This module demonstrates the include functor functionality\. Make uses its argument, so included has to come out equal to t rather than abstract\.
 .nf 
 .sp 
 \f[CB]type\fR t
