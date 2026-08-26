@@ -11972,7 +11972,6 @@
    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-X.html.gen
    Oxcaml-Include_functor_argument_shapes-X.html.gen
    Oxcaml-Include_functor_argument_shapes-module-type-S.html.gen
-   Oxcaml-Include_functor_argument_shapes-module-type-Reexported.html.gen
    Oxcaml-Include_functor_desugared.html.gen
    Oxcaml-Include_functor_desugared-Make.html.gen
    Oxcaml-Include_functor_desugared-Make-argument-1-T.html.gen
@@ -12185,14 +12184,6 @@
    (diff
     Oxcaml-Include_functor_argument_shapes-module-type-S.html
     Oxcaml-Include_functor_argument_shapes-module-type-S.html.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
-    Oxcaml-Include_functor_argument_shapes-module-type-Reexported.html
-    Oxcaml-Include_functor_argument_shapes-module-type-Reexported.html.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12714,7 +12705,6 @@
    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-X.md.gen
    Oxcaml-Include_functor_argument_shapes-X.md.gen
    Oxcaml-Include_functor_argument_shapes-module-type-S.md.gen
-   Oxcaml-Include_functor_argument_shapes-module-type-Reexported.md.gen
    Oxcaml-Include_functor_desugared.md.gen
    Oxcaml-Include_functor_desugared-Make.md.gen
    Oxcaml-Include_functor_desugared-Make-argument-1-T.md.gen
@@ -12919,14 +12909,6 @@
    (diff
     Oxcaml-Include_functor_argument_shapes-module-type-S.md
     Oxcaml-Include_functor_argument_shapes-module-type-S.md.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
-    Oxcaml-Include_functor_argument_shapes-module-type-Reexported.md
-    Oxcaml-Include_functor_argument_shapes-module-type-Reexported.md.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)

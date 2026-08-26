@@ -20,4 +20,4 @@ This module demonstrates the include functor functionality\. Make uses its argum
 .sp 
 \f[CB]type\fR t
 .sp 
-\f[CB]type\fR included
+\f[CB]type\fR included = t

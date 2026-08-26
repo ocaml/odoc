@@ -10,5 +10,5 @@ This module demonstrates the `include functor` functionality. `Make` uses its ar
 type t
 ```
 ```ocaml
-type included
+type included = t
 ```

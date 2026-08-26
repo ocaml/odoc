@@ -13,14 +13,14 @@ module Second (T : sig ... end) : sig ... end
 type t
 ```
 ```ocaml
-type first
+type first = t
 ```
 ```ocaml
 type between
 ```
 ```ocaml
-type second = t
+type second = first
 ```
 ```ocaml
-type third
+type third = between
 ```

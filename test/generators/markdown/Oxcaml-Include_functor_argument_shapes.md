@@ -25,26 +25,26 @@ module X : sig ... end
 module type S = sig ... end
 ```
 ```ocaml
-type included
+type included = t
 ```
 No parameters, so the alias odoc puts in the synthetic module is a bare `type t = t`.
 
 ```ocaml
-type applied
+type applied = int p
 ```
 A named parameter, which the alias threads through as `type 'a p = 'a p`.
 
 ```ocaml
-type anonymous
+type anonymous = bool anon
 ```
 An anonymous parameter: `_` gives the alias no name to mention on the right, so one is invented, as `type 'a0 anon = 'a0 anon`.
 
 ```ocaml
-type from_module
+type from_module = X.v
 ```
 Reached through a submodule of the argument, aliased as `module X = X`.
 
 ```ocaml
-module type Reexported = sig ... end
+module type Reexported = S
 ```
 A module type of the argument, aliased as a path to it.

@@ -10,5 +10,5 @@ This is a module where the functor is named and then included.
 type t
 ```
 ```ocaml
-type included
+type included = t
 ```

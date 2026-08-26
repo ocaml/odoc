@@ -10,5 +10,5 @@ Module which defines a functor and includes it via `module type of`
 type t
 ```
 ```ocaml
-type included
+type included = t
 ```

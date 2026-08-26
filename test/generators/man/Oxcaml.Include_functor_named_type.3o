@@ -42,4 +42,4 @@ This is a module where the functor is named and then included\.
 .sp 
 \f[CB]type\fR t
 .sp 
-\f[CB]type\fR included
+\f[CB]type\fR included = t
