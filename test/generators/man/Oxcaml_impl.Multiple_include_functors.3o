@@ -22,8 +22,10 @@ Two include functors in the same structure, with an item defined between them\.
 .sp 
 \f[CB]type\fR t
 .sp 
+\f[CB]type\fR first
+.sp 
 \f[CB]type\fR between
 .sp 
-\f[CB]type\fR second = BODY__15\.first
+\f[CB]type\fR second = t
 .sp 
 \f[CB]type\fR third

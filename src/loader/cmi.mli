@@ -131,4 +131,11 @@ val read_label_modalities :
 
 val generate_wrapper_module : Paths.Identifier.Signature.t -> prefix:string -> hidden:bool -> Paths.Identifier.Module.t * Paths.Path.Module.t
 
-val generate_wrapper_module_sig : Paths.Identifier.Signature.t -> include_functors:Odoc_model.Lang.Include.t list -> (Paths.Identifier.Module.t * Paths.Path.Module.t) -> hidden:bool -> Odoc_model.Lang.Signature.item list -> Odoc_model.Lang.Signature.item list
+val wrapper_module :
+  Paths.Identifier.Module.t * Paths.Path.Module.t ->
+  hidden:bool ->
+  Odoc_model.Lang.Signature.item list ->
+  Odoc_model.Lang.Signature.item
+(** [wrapper_module w ~hidden items] is the synthetic module an
+    [include functor] applies its functor to: a hidden module holding [items],
+    which are the items that precede the include. *)

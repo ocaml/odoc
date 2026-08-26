@@ -10,5 +10,8 @@ An `include functor` that is not the last item of the structure.
 type t
 ```
 ```ocaml
+type included
+```
+```ocaml
 type after = string
 ```
