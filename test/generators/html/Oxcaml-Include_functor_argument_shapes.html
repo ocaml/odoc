@@ -124,7 +124,9 @@
      <div class="odoc-spec">
       <div class="spec type anchored" id="type-included">
        <a href="#type-included" class="anchor"></a>
-       <code><span><span class="keyword">type</span> included</span></code>
+       <code><span><span class="keyword">type</span> included</span>
+        <span> = <a href="#type-t">t</a></span>
+       </code>
       </div>
       <div class="spec-doc">
        <p>No parameters, so the alias odoc puts in the synthetic module
@@ -135,7 +137,9 @@
      <div class="odoc-spec">
       <div class="spec type anchored" id="type-applied">
        <a href="#type-applied" class="anchor"></a>
-       <code><span><span class="keyword">type</span> applied</span></code>
+       <code><span><span class="keyword">type</span> applied</span>
+        <span> = <span>int <a href="#type-p">p</a></span></span>
+       </code>
       </div>
       <div class="spec-doc">
        <p>A named parameter, which the alias threads through as 
@@ -146,7 +150,9 @@
      <div class="odoc-spec">
       <div class="spec type anchored" id="type-anonymous">
        <a href="#type-anonymous" class="anchor"></a>
-       <code><span><span class="keyword">type</span> anonymous</span></code>
+       <code><span><span class="keyword">type</span> anonymous</span>
+        <span> = <span>bool <a href="#type-anon">anon</a></span></span>
+       </code>
       </div>
       <div class="spec-doc">
        <p>An anonymous parameter: <code>_</code> gives the alias no name
@@ -159,6 +165,10 @@
       <div class="spec type anchored" id="type-from_module">
        <a href="#type-from_module" class="anchor"></a>
        <code><span><span class="keyword">type</span> from_module</span>
+        <span> = 
+         <a href="Oxcaml-Include_functor_argument_shapes-X.html#type-v">X.v
+         </a>
+        </span>
        </code>
       </div>
       <div class="spec-doc">
@@ -172,14 +182,12 @@
        <a href="#module-type-Reexported" class="anchor"></a>
        <code>
         <span><span class="keyword">module</span> 
-         <span class="keyword">type</span> 
-         <a
-          href="Oxcaml-Include_functor_argument_shapes-module-type-Reexported.html"
-          >Reexported
-         </a>
+         <span class="keyword">type</span> Reexported
         </span>
-        <span> = <span class="keyword">sig</span> ... 
-         <span class="keyword">end</span>
+        <span> = 
+         <a href="Oxcaml-Include_functor_argument_shapes-module-type-S.html">
+          S
+         </a>
         </span>
        </code>
       </div>

@@ -5,5 +5,5 @@
 type t = float
 ```
 ```ocaml
-type myt = float
+type myt = t
 ```

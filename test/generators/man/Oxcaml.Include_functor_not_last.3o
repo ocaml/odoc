@@ -20,6 +20,6 @@ An include functor that is not the last item of the signature\.
 .sp 
 \f[CB]type\fR t
 .sp 
-\f[CB]type\fR included
+\f[CB]type\fR included = t
 .sp 
 \f[CB]type\fR after

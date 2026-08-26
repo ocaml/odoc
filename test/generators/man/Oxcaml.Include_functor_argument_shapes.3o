@@ -58,40 +58,35 @@ Everything the expansion of the functor can inherit from its argument: types, in
 .br 
 \f[CB]end\fR
 .sp 
-\f[CB]type\fR included
+\f[CB]type\fR included = t
 .fi 
 .br 
 .ti +2
 No parameters, so the alias odoc puts in the synthetic module is a bare type t = t\.
 .nf 
 .sp 
-\f[CB]type\fR applied
+\f[CB]type\fR applied = int p
 .fi 
 .br 
 .ti +2
 A named parameter, which the alias threads through as type 'a p = 'a p\.
 .nf 
 .sp 
-\f[CB]type\fR anonymous
+\f[CB]type\fR anonymous = bool anon
 .fi 
 .br 
 .ti +2
 An anonymous parameter: _ gives the alias no name to mention on the right, so one is invented, as type 'a0 anon = 'a0 anon\.
 .nf 
 .sp 
-\f[CB]type\fR from_module
+\f[CB]type\fR from_module = X\.v
 .fi 
 .br 
 .ti +2
 Reached through a submodule of the argument, aliased as module X = X\.
 .nf 
 .sp 
-\f[CB]module\fR \f[CB]type\fR Reexported = \f[CB]sig\fR
-.br 
-.ti +2
-\f[CB]type\fR u
-.br 
-\f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR Reexported = S
 .fi 
 .br 
 .ti +2

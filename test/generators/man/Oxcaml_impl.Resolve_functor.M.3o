@@ -13,4 +13,4 @@ Oxcaml_impl\.Resolve_functor\.M
 .nf 
 \f[CB]type\fR t = float
 .sp 
-\f[CB]type\fR myt = float
+\f[CB]type\fR myt = t

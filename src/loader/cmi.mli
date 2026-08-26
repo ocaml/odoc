@@ -137,5 +137,7 @@ val wrapper_module :
   Odoc_model.Lang.Signature.item list ->
   Odoc_model.Lang.Signature.item
 (** [wrapper_module w ~hidden items] is the synthetic module an
-    [include functor] applies its functor to: a hidden module holding [items],
-    which are the items that precede the include. *)
+    [include functor] applies its functor to.  Its items are aliases of
+    [items], the items that precede the include, so that whatever the functor's
+    expansion inherits from its argument resolves back to them rather than to
+    the (hidden) name of the wrapper. *)
