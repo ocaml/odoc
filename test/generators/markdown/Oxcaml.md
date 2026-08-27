@@ -543,11 +543,6 @@ val mode_stateless : int @ stateless -> unit
 Statefulness mode.
 
 ```ocaml
-val mode_observing : int @ observing -> unit
-```
-Statefulness mode.
-
-```ocaml
 val mode_stateful : int -> unit
 ```
 Statefulness mode (identity when `portability` is at its default, not rendered).

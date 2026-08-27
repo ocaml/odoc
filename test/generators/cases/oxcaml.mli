@@ -407,9 +407,6 @@ val mode_local_unforkable : int @ local unforkable -> unit
 val mode_stateless : int @ stateless -> unit
 (** Statefulness mode. *)
 
-val mode_observing : int @ observing -> unit
-(** Statefulness mode. *)
-
 val mode_stateful : int @ stateful -> unit
 (** Statefulness mode (identity when [portability] is at its default, not rendered). *)
 

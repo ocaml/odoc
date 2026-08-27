@@ -958,13 +958,6 @@ Fork mode (identity for a local argument, not rendered)\.
 Statefulness mode\.
 .nf 
 .sp 
-\f[CB]val\fR mode_observing : int @ observing \f[CB]\->\fR unit
-.fi 
-.br 
-.ti +2
-Statefulness mode\.
-.nf 
-.sp 
 \f[CB]val\fR mode_stateful : int \f[CB]\->\fR unit
 .fi 
 .br 
