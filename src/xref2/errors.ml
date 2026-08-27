@@ -263,7 +263,7 @@ let rec kind_of_error : Tools_error.any -> kind option = function
       match kind_of_module_type_cpath cp with
       | None -> kind_of_error (e :> Tools_error.any)
       | x -> x)
-  | `Lookup_failure `Root (_, name) ->
+  | `Lookup_failure (`Root (_, name)) ->
       Some (`Root (ModuleName.to_string name))
   | `Lookup_failure_root name -> Some (`Root (ModuleName.to_string name))
   | `Parent (`Parent_sig e) -> kind_of_error (e :> Tools_error.any)
@@ -286,8 +286,7 @@ let kind_of_error ~what = function
   | None -> (
       match what with
       | `Include (Component.Include.Alias cp) -> kind_of_module_cpath cp
-      | `Module `Root (_, name) ->
-          Some (`Root (ModuleName.to_string name))
+      | `Module (`Root (_, name)) -> Some (`Root (ModuleName.to_string name))
       | _ -> None)
 
 open Paths

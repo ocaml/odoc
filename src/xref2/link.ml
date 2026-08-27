@@ -60,10 +60,7 @@ let ambiguous_label_warning label_name labels =
 (** Raise a warning when a label explicitly set by the user collides. This
     warning triggers even if one of the colliding labels have been automatically
     generated. *)
-let check_ambiguous_label ~loc env
-    ( attrs,
-      (`Label (_, label_name) as id),
-      _ ) =
+let check_ambiguous_label ~loc env (attrs, (`Label (_, label_name) as id), _) =
   if attrs.Comment.heading_label_explicit then
     (* Looking for an identical identifier but a different location. *)
     let conflicting (`Label (id', comp)) =

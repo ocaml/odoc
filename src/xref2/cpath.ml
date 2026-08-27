@@ -225,8 +225,7 @@ and is_resolved_parent_hidden :
 
 and is_module_type_hidden : module_type -> bool = function
   | `Resolved r -> is_resolved_module_type_hidden r
-  | `Identifier (`ModuleType (_, t), b) ->
-      b || ModuleTypeName.is_hidden t
+  | `Identifier (`ModuleType (_, t), b) -> b || ModuleTypeName.is_hidden t
   | `Local (_, b) -> b
   | `Substituted p -> is_module_type_hidden p
   | `DotMT (p, _) -> is_module_hidden p
@@ -295,8 +294,7 @@ let rec resolved_module_of_resolved_module_reference :
 
 and resolved_module_of_resolved_signature_reference :
     Reference.Resolved.Signature.t -> Resolved.module_ = function
-  | `Identifier (#Identifier.Module.t as i) ->
-      `Gpath (`Identifier i)
+  | `Identifier (#Identifier.Module.t as i) -> `Gpath (`Identifier i)
   | (`Alias _ | `Module _ | `Hidden _) as r' ->
       resolved_module_of_resolved_module_reference r'
   | `ModuleType (_, n) ->

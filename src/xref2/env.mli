@@ -126,8 +126,7 @@ val lookup_by_name : 'a scope -> string -> t -> 'a maybe_ambiguous
     [Error (`Ambiguous _)] when two or more elements match the given scope and
     name. *)
 
-val lookup_by_id :
-  'a scope -> [< Identifier.t ] -> t -> 'a option
+val lookup_by_id : 'a scope -> [< Identifier.t ] -> t -> 'a option
 (** Like [lookup_by_name] but use an identifier as key. *)
 
 val s_any : Component.Element.any scope

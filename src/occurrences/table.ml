@@ -113,31 +113,26 @@ module Strip = struct
     | `ClassType (p, name) -> Mk.class_type (strip_sig_path p, name)
 
   and strip_datatype_path : DataType.t -> DataType.t =
-   fun x ->
-    match x with `Type (p, name) -> Mk.type_ (strip_sig_path p, name)
+   fun x -> match x with `Type (p, name) -> Mk.type_ (strip_sig_path p, name)
 
   and strip_field_parent_path : FieldParent.t -> FieldParent.t =
    fun x ->
     match x with
     | #Signature.t as v -> (strip_sig_path v :> FieldParent.t)
-    | #DataType.t as v ->
-        (strip_datatype_path v :> FieldParent.t)
+    | #DataType.t as v -> (strip_datatype_path v :> FieldParent.t)
 
   and strip_unboxed_field_parent_path :
       UnboxedFieldParent.t -> UnboxedFieldParent.t =
    fun x ->
     match x with
-    | #DataType.t as v ->
-        (strip_datatype_path v :> UnboxedFieldParent.t)
+    | #DataType.t as v -> (strip_datatype_path v :> UnboxedFieldParent.t)
 
   and strip_label_parent_path : LabelParent.t -> LabelParent.t =
    fun x ->
     match x with
     | #Signature.t as v -> (strip_sig_path v :> LabelParent.t)
-    | #DataType.t as v ->
-        (strip_datatype_path v :> LabelParent.t)
-    | #ClassSignature.t as v ->
-        (strip_class_sig_path v :> LabelParent.t)
+    | #DataType.t as v -> (strip_datatype_path v :> LabelParent.t)
+    | #ClassSignature.t as v -> (strip_class_sig_path v :> LabelParent.t)
     | `Page _ | `LeafPage _ -> x
 
   and strip : t -> t =
@@ -158,11 +153,10 @@ module Strip = struct
     | `Value (p, name) -> Mk.value (strip_sig_path p, name)
     | `ExtensionDecl (p, name, args) ->
         Mk.extension_decl (strip_sig_path p, (name, args))
-    | `Constructor (p, name) ->
-        Mk.constructor (strip_datatype_path p, name)
-    | ( `AssetFile (_, _)
-       | `SourceLocationMod _ | `SourceLocation _ | `Page _ | `LeafPage _
-       | `SourcePage _ | `SourceLocationInternal _ ) ->
+    | `Constructor (p, name) -> Mk.constructor (strip_datatype_path p, name)
+    | `AssetFile (_, _)
+    | `SourceLocationMod _ | `SourceLocation _ | `Page _ | `LeafPage _
+    | `SourcePage _ | `SourceLocationInternal _ ->
         x
 
   let rec strip_table tbl =

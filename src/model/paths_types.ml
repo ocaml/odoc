@@ -149,8 +149,7 @@ module Identifier = struct
     | page ]
   (** @canonical Odoc_model.Paths.Identifier.NonSrc.t *)
 
-  type any =
-    [ non_src | source_page | source_location | asset_file ]
+  type any = [ non_src | source_page | source_location | asset_file ]
   (** @canonical Odoc_model.Paths.Identifier.t *)
 
   type path_module = [ module_ | functor_parameter | functor_result ]
@@ -168,11 +167,7 @@ module Identifier = struct
   (** @canonical Odoc_model.Paths.Identifier.Path.ClassType.t *)
 
   type path_any =
-    [ path_module
-    | module_type
-    | path_type
-    | path_class_type
-    | value ]
+    [ path_module | module_type | path_type | path_class_type | value ]
   (** @canonical Odoc_model.Paths.Identifier.Path.t *)
 
   type fragment_module = path_module
@@ -185,8 +180,7 @@ module Identifier = struct
 
   type reference_type = path_type
 
-  type reference_constructor =
-    [ constructor | extension | exception_ ]
+  type reference_constructor = [ constructor | extension | exception_ ]
 
   type reference_field = field
 

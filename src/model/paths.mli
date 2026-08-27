@@ -33,24 +33,18 @@ module Identifier : sig
 
   module Any : IdSig with type t = Id.any
 
-  module RootModule :
-    IdSig with type t = Id.root_module
+  module RootModule : IdSig with type t = Id.root_module
 
-  module Signature :
-    IdSig with type t = Id.signature
+  module Signature : IdSig with type t = Id.signature
 
-  module ClassSignature :
-    IdSig with type t = Id.class_signature
+  module ClassSignature : IdSig with type t = Id.class_signature
 
-  module LabelParent :
-    IdSig with type t = Id.label_parent
+  module LabelParent : IdSig with type t = Id.label_parent
 
   module Module : IdSig with type t = Id.module_
 
   module FunctorParameter : sig
-    include
-      IdSig
-        with type t = Id.functor_parameter
+    include IdSig with type t = Id.functor_parameter
 
     val functor_arg_pos : t -> int
     (** Gets the index in which the functor argument is, in the argument list.
@@ -58,15 +52,13 @@ module Identifier : sig
         can have the same name. *)
   end
 
-  module ModuleType :
-    IdSig with type t = Id.module_type
+  module ModuleType : IdSig with type t = Id.module_type
 
   module Type : IdSig with type t = Id.type_
 
   module Class : IdSig with type t = Id.class_
 
-  module ClassType :
-    IdSig with type t = Id.class_type
+  module ClassType : IdSig with type t = Id.class_type
 
   module DataType : sig
     type t = Id.datatype
@@ -160,20 +152,15 @@ module Identifier : sig
   end
 
   module Path : sig
-    module Module :
-      IdSig with type t = Id.path_module
+    module Module : IdSig with type t = Id.path_module
 
-    module ModuleType :
-      IdSig with type t = Id.path_module_type
+    module ModuleType : IdSig with type t = Id.path_module_type
 
-    module Type :
-      IdSig with type t = Id.path_type
+    module Type : IdSig with type t = Id.path_type
 
     module Value : IdSig with type t = Id.path_value
 
-    module ClassType :
-      IdSig
-        with type t = Id.path_class_type
+    module ClassType : IdSig with type t = Id.path_class_type
 
     type t = Id.path_any
   end
@@ -250,12 +237,10 @@ module Identifier : sig
     val implementation : string -> [> `Implementation of ModuleName.t ]
 
     val module_ :
-      Signature.t * ModuleName.t ->
-      [> `Module of Signature.t * ModuleName.t ]
+      Signature.t * ModuleName.t -> [> `Module of Signature.t * ModuleName.t ]
 
     val parameter :
-      Signature.t * ModuleName.t ->
-      [> `Parameter of Signature.t * ModuleName.t ]
+      Signature.t * ModuleName.t -> [> `Parameter of Signature.t * ModuleName.t ]
 
     val result : Signature.t -> [> `Result of Signature.t ]
 
@@ -279,8 +264,7 @@ module Identifier : sig
       [> `Constructor of DataType.t * ConstructorName.t ]
 
     val field :
-      FieldParent.t * FieldName.t ->
-      [> `Field of FieldParent.t * FieldName.t ]
+      FieldParent.t * FieldName.t -> [> `Field of FieldParent.t * FieldName.t ]
 
     val unboxed_field :
       UnboxedFieldParent.t * UnboxedFieldName.t ->
@@ -315,8 +299,7 @@ module Identifier : sig
       [> `InstanceVariable of ClassSignature.t * InstanceVariableName.t ]
 
     val label :
-      LabelParent.t * LabelName.t ->
-      [> `Label of LabelParent.t * LabelName.t ]
+      LabelParent.t * LabelName.t -> [> `Label of LabelParent.t * LabelName.t ]
 
     val source_location :
       SourcePage.t * DefName.t ->

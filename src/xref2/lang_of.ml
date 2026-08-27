@@ -83,8 +83,7 @@ module Path = struct
       Odoc_model.Paths.Path.ModuleType.t =
     match p with
     | `Substituted x -> `SubstitutedMT (module_type map x)
-    | `Identifier
-        ((#Odoc_model.Paths.Identifier.ModuleType.t as y), b) ->
+    | `Identifier ((#Odoc_model.Paths.Identifier.ModuleType.t as y), b) ->
         `Identifier (y, b)
     | `Local (id, b) ->
         `Identifier
@@ -100,8 +99,7 @@ module Path = struct
   and type_ map (p : Cpath.type_) : Odoc_model.Paths.Path.Type.t =
     match p with
     | `Substituted x -> `SubstitutedT (type_ map x)
-    | `Identifier
-        ((#Odoc_model.Paths.Identifier.Path.Type.t as y), b) ->
+    | `Identifier ((#Odoc_model.Paths.Identifier.Path.Type.t as y), b) ->
         `Identifier (y, b)
     | `Unbox x -> `Unbox (type_ map x)
     | `Local (id, b) -> `Identifier (Component.TypeMap.find id map.path_type, b)
@@ -116,9 +114,7 @@ module Path = struct
       =
     match p with
     | `Substituted x -> `SubstitutedCT (class_type map x)
-    | `Identifier
-        ((#Odoc_model.Paths.Identifier.Path.ClassType.t as y), b)
-      ->
+    | `Identifier ((#Odoc_model.Paths.Identifier.Path.ClassType.t as y), b) ->
         `Identifier (y, b)
     | `Local (id, b) ->
         `Identifier (Component.TypeMap.find id map.path_class_type, b)

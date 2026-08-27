@@ -70,12 +70,9 @@ let render_path : Path.t -> string =
 
 module Path = struct
   type nonsrc =
-    [ Identifier.Page.t
-    | Identifier.Signature.t
-    | Identifier.ClassSignature.t ]
+    [ Identifier.Page.t | Identifier.Signature.t | Identifier.ClassSignature.t ]
 
-  type any =
-    [ nonsrc | Identifier.SourcePage.t | Identifier.AssetFile.t ]
+  type any = [ nonsrc | Identifier.SourcePage.t | Identifier.AssetFile.t ]
 
   type kind =
     [ `Module
@@ -290,7 +287,8 @@ module Anchor = struct
         let page = Path.from_identifier (p :> Path.any) in
         { page; kind = `LeafPage; anchor = "" }
     (* For all these identifiers, page names and anchors are the same *)
-    | `Parameter _ | `Result _ | `ModuleType _ | `Class _ | `ClassType _ as p ->
+    | (`Parameter _ | `Result _ | `ModuleType _ | `Class _ | `ClassType _) as p
+      ->
         anchorify_path @@ Path.from_identifier p
     | `Type (parent, type_name) ->
         let page = Path.from_identifier (parent :> Path.any) in
@@ -365,8 +363,7 @@ module Anchor = struct
            grand-parent. *)
         match parent with
         | `Type (gp, _) -> mk ~kind:`Section gp str_name
-        | #Path.nonsrc as p ->
-            mk ~kind:`Section (p :> Path.any) str_name)
+        | #Path.nonsrc as p -> mk ~kind:`Section (p :> Path.any) str_name)
     | `SourceLocation (parent, loc) ->
         let page = Path.from_identifier (parent :> Path.any) in
         { page; kind = `SourceAnchor; anchor = DefName.to_string loc }
@@ -424,8 +421,7 @@ let from_path page =
 
 let from_identifier ~stop_before x =
   match x with
-  | #Path.any as p when not stop_before ->
-      from_path @@ Path.from_identifier p
+  | #Path.any as p when not stop_before -> from_path @@ Path.from_identifier p
   | p -> Anchor.from_identifier p
 
 let from_asset_identifier p = from_path @@ Path.from_identifier p

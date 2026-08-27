@@ -165,8 +165,7 @@ module Identifier = struct
           (p : class_signature :> label_parent)
       | `Constructor (p, _) -> (p : datatype :> label_parent)
       | `Field (p, _) -> (p : field_parent :> label_parent)
-      | `UnboxedField (p, _) ->
-          (p : unboxed_field_parent :> label_parent)
+      | `UnboxedField (p, _) -> (p : unboxed_field_parent :> label_parent)
 
   let label_parent n = label_parent_aux (n :> Id.non_src)
 
@@ -475,8 +474,8 @@ module Identifier = struct
     let implementation = mk (fun s -> `Implementation (ModuleName.make_std s))
 
     let module_ :
-        Signature.t * ModuleName.t ->
-        [> `Module of Signature.t * ModuleName.t ] =
+        Signature.t * ModuleName.t -> [> `Module of Signature.t * ModuleName.t ]
+        =
       mk (fun (p, n) -> `Module (p, n))
 
     let parameter :
@@ -497,8 +496,8 @@ module Identifier = struct
       mk (fun (p, n) -> `Class (p, n))
 
     let class_type :
-        Signature.t * TypeName.t ->
-        [> `ClassType of Signature.t * TypeName.t ] =
+        Signature.t * TypeName.t -> [> `ClassType of Signature.t * TypeName.t ]
+        =
       mk (fun (p, n) -> `ClassType (p, n))
 
     let type_ :
@@ -513,8 +512,8 @@ module Identifier = struct
       mk (fun (p, n) -> `Constructor (p, n))
 
     let field :
-        FieldParent.t * FieldName.t ->
-        [> `Field of FieldParent.t * FieldName.t ] =
+        FieldParent.t * FieldName.t -> [> `Field of FieldParent.t * FieldName.t ]
+        =
       mk (fun (p, n) -> `Field (p, n))
 
     let unboxed_field :
@@ -538,8 +537,7 @@ module Identifier = struct
       mk (fun (p, n) -> `Exception (p, n))
 
     let value :
-        Signature.t * ValueName.t -> [> `Value of Signature.t * ValueName.t ]
-        =
+        Signature.t * ValueName.t -> [> `Value of Signature.t * ValueName.t ] =
       mk (fun (p, n) -> `Value (p, n))
 
     let method_ :
@@ -553,8 +551,8 @@ module Identifier = struct
       mk (fun (p, n) -> `InstanceVariable (p, n))
 
     let label :
-        LabelParent.t * LabelName.t ->
-        [> `Label of LabelParent.t * LabelName.t ] =
+        LabelParent.t * LabelName.t -> [> `Label of LabelParent.t * LabelName.t ]
+        =
       mk (fun (p, n) -> `Label (p, n))
 
     let source_location :
@@ -612,14 +610,11 @@ module Path = struct
    fun ~weak_canonical_test x ->
     let open Paths_types.Resolved_path in
     let rec inner : Paths_types.Resolved_path.any -> bool = function
-      | `Identifier `ModuleType (_, m)
-        when Names.ModuleTypeName.is_hidden m ->
-          true
-      | `Identifier `Type (_, t) when Names.TypeName.is_hidden t ->
-          true
-      | `Identifier `Module (_, m) when Names.ModuleName.is_hidden m
+      | `Identifier (`ModuleType (_, m)) when Names.ModuleTypeName.is_hidden m
         ->
           true
+      | `Identifier (`Type (_, t)) when Names.TypeName.is_hidden t -> true
+      | `Identifier (`Module (_, m)) when Names.ModuleName.is_hidden m -> true
       | `Identifier id -> Identifier.is_hidden id
       | `Canonical (_, `Resolved _) -> false
       | `Canonical (x, _) ->

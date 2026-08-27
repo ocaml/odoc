@@ -2000,8 +2000,7 @@ module Of_Lang = struct
 
   let find_any_module i ident_map =
     match i with
-    | `Root _ | `Module _ as id ->
-        Maps.Module.find id ident_map.modules
+    | (`Root _ | `Module _) as id -> Maps.Module.find id ident_map.modules
     | #Paths.Identifier.FunctorParameter.t as id ->
         Maps.FunctorParameter.find id ident_map.functor_parameters
     | _ -> raise Not_found
