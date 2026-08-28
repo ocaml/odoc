@@ -34,6 +34,8 @@
 - Compress the contents of `.odoc` and `.odocl` files, which makes them several
   times smaller (@jonludlam, #1486)
 - Fix bug in hidden name check that sometimes exposed hidden items (@jonludlam, #1484)
+- Fix includes being re-expanded in dependent modules, which could lose type
+  equations; also makes `.odoc` files smaller, particularly on OxCaml (@jonludlam, #1481)
 
 ### Performance
 - Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #1487)
