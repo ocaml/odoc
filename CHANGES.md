@@ -12,6 +12,9 @@
 - Support for OxCaml modes (@art-w, #1454)
 - Fix OxCaml with-bounds for arbitrary types (@art-w, #1466)
 
+### Performance
+- Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
+
 ### Fixed
 - Fix optional arguments rendering as `?arg:???` in modules without an mli on
   OCaml 5.5 (@jonludlam, #1489)
