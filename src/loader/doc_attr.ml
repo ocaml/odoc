@@ -150,14 +150,99 @@ let mk_alert_payload ~loc name p =
   let span = read_location loc in
   Location_.at span elt
 
+(* The same doc-comment text is often attached to many definitions (OxCaml's
+   ppx_template can produce tens of thousands of copies of one comment), so
+   parses are memoized by raw text. The parsed AST bakes in absolute source
+   locations, so a cached parse is only reused when it is location-
+   insensitive: it produced no warnings and contains no headings, references
+   or [{!modules ...}], whose locations feed warnings and ambiguous-heading
+   detection during linking. Anything else is re-parsed per occurrence. *)
+
+let rec inline_element_needs_own_location
+    (x : Odoc_parser.Ast.inline_element) =
+  match x with
+  | `Reference _ -> true
+  | `Styled (_, xs) ->
+      List.exists
+        (fun e -> inline_element_needs_own_location (Odoc_parser.Loc.value e))
+        xs
+  | `Space _ | `Word _ | `Code_span _ | `Raw_markup _ | `Link _
+  | `Math_span _ ->
+      false
+
+let rec nestable_block_element_needs_own_location
+    (x : Odoc_parser.Ast.nestable_block_element) =
+  match x with
+  | `Paragraph xs ->
+      List.exists
+        (fun e -> inline_element_needs_own_location (Odoc_parser.Loc.value e))
+        xs
+  | `Modules _ -> true
+  | `Media (_, href, _, _) -> (
+      match Odoc_parser.Loc.value href with
+      | `Reference _ -> true
+      | `Link _ -> false)
+  | `List (_, _, yss) ->
+      List.exists
+        (List.exists (fun e ->
+             nestable_block_element_needs_own_location (Odoc_parser.Loc.value e)))
+        yss
+  | `Table ((grid, _), _) ->
+      List.exists
+        (List.exists (fun (cell, _) ->
+             List.exists
+               (fun e ->
+                 nestable_block_element_needs_own_location
+                   (Odoc_parser.Loc.value e))
+               cell))
+        grid
+  | `Code_block _ | `Verbatim _ | `Math_block _ -> false
+
+let tag_needs_own_location (x : Odoc_parser.Ast.tag) =
+  match x with
+  | `Deprecated c | `Param (_, c) | `Raise (_, c) | `Return c
+  | `See (_, _, c) | `Before (_, c) | `Children_order c | `Toc_status c
+  | `Order_category c | `Short_title c ->
+      List.exists
+        (fun e ->
+          nestable_block_element_needs_own_location (Odoc_parser.Loc.value e))
+        c
+  | `Author _ | `Since _ | `Version _ | `Canonical _ | `Inline | `Open
+  | `Closed | `Hidden ->
+      false
+
+let block_element_needs_own_location (x : Odoc_parser.Ast.block_element) =
+  match x with
+  | `Heading _ -> true
+  | `Tag t -> tag_needs_own_location t
+  | #Odoc_parser.Ast.nestable_block_element as x ->
+      nestable_block_element_needs_own_location x
+
+let ast_needs_own_location (ast : Odoc_parser.Ast.t) =
+  List.exists
+    (fun e -> block_element_needs_own_location (Odoc_parser.Loc.value e))
+    ast
+
+let doc_cache : (string, Odoc_parser.Ast.t) Hashtbl.t = Hashtbl.create 256
+
 let attached ~warnings_tag internal_tags parent attrs =
   let rec loop acc_docs acc_alerts = function
     | attr :: rest -> (
         match parse_attribute attr with
         | Some (`Doc (str, loc)) ->
             let ast_docs =
-              Odoc_parser.parse_comment ~location:(pad_loc loc) ~text:str
-              |> Error.raise_parser_warnings
+              match Hashtbl.find_opt doc_cache str with
+              | Some cached -> cached
+              | None ->
+                  let parsed =
+                    Odoc_parser.parse_comment ~location:(pad_loc loc) ~text:str
+                  in
+                  let ast = Error.raise_parser_warnings parsed in
+                  (match Odoc_parser.warnings parsed with
+                  | [] when not (ast_needs_own_location ast) ->
+                      Hashtbl.replace doc_cache str ast
+                  | _ -> ());
+                  ast
             in
             loop (List.rev_append ast_docs acc_docs) acc_alerts rest
         | Some (`Alert (name, p, loc)) ->
