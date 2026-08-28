@@ -219,6 +219,77 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
             Errors.report ~what:(`Module_path cp) ~tools_error:e `Resolve;
             p)
 
+(* Comment.docs produced by Doc_attr can be huge in ppx_template-heavy code
+   (Container_intf in OxCaml's base has ~155K doc-comment instances), and the vast
+   majority of them are plain prose that has nothing for this module to do:
+   no references to resolve, no headings to check for ambiguity, no
+   {!modules ...} lists to resolve. Rebuilding such a doc word-by-word via
+   the List.map below is pure overhead, so we short-circuit and return the
+   input unchanged whenever it contains none of the constructs that this
+   pass actually touches. *)
+let rec comment_inline_element_needs_resolving (x : Comment.inline_element) =
+  match x with
+  | `Reference _ -> true
+  | `Styled (_, xs) ->
+      List.exists
+        (fun e -> comment_inline_element_needs_resolving e.Location_.value)
+        xs
+  | `Space | `Word _ | `Code_span _ | `Math_span _ | `Raw_markup _ | `Link _ ->
+      false
+
+let rec comment_nestable_block_element_needs_resolving
+    (x : Comment.nestable_block_element) =
+  match x with
+  | `Paragraph elts ->
+      List.exists
+        (fun e -> comment_inline_element_needs_resolving e.Location_.value)
+        elts
+  | `List (_, yss) ->
+      List.exists
+        (List.exists (fun e ->
+             comment_nestable_block_element_needs_resolving e.Location_.value))
+        yss
+  | `Table { data; _ } ->
+      List.exists
+        (List.exists (fun (cell, _) ->
+             List.exists
+               (fun e ->
+                 comment_nestable_block_element_needs_resolving
+                   e.Location_.value)
+               cell))
+        data
+  | `Modules _ -> true
+  | `Media (`Reference _, _, _) -> true
+  | `Media (`Link _, _, _) -> false
+  | `Code_block _ | `Verbatim _ | `Math_block _ -> false
+
+let comment_tag_needs_resolving (x : Comment.tag) =
+  match x with
+  | `Raise (`Reference _, _) -> true
+  | `Raise (`Code_span _, c)
+  | `Deprecated c
+  | `Param (_, c)
+  | `Return c
+  | `See (_, _, c)
+  | `Before (_, c) ->
+      List.exists
+        (fun e ->
+          comment_nestable_block_element_needs_resolving e.Location_.value)
+        c
+  | `Author _ | `Since _ | `Version _ | `Alert _ -> false
+
+let comment_block_element_needs_resolving (x : Comment.block_element) =
+  match x with
+  | #Comment.nestable_block_element as x ->
+      comment_nestable_block_element_needs_resolving x
+  | `Heading _ -> true
+  | `Tag t -> comment_tag_needs_resolving t
+
+let doc_needs_resolving (d : Comment.docs) =
+  List.exists
+    (fun e -> comment_block_element_needs_resolving e.Location_.value)
+    d.Comment.elements
+
 let rec comment_inline_element :
     loc:_ ->
     Env.t ->
@@ -399,16 +470,18 @@ and with_location : type a.
   { value; location = loc }
 
 and comment_docs env parent d =
-  {
-    Comment.elements =
-      List.rev_map
-        (with_location
-           (comment_block_element env d.Comment.warnings_tag
-              (parent :> Id.LabelParent.t)))
-        d.Comment.elements
-      |> List.rev;
-    warnings_tag = d.warnings_tag;
-  }
+  if not (doc_needs_resolving d) then d
+  else
+    {
+      Comment.elements =
+        List.rev_map
+          (with_location
+             (comment_block_element env d.Comment.warnings_tag
+                (parent :> Id.LabelParent.t)))
+          d.Comment.elements
+        |> List.rev;
+      warnings_tag = d.warnings_tag;
+    }
 
 and comment env parent = function
   | `Stop -> `Stop
