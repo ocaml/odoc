@@ -613,6 +613,9 @@ let rec read_parsetree_core_type (ct : Parsetree.core_type) =
   (* TODO: no good representation available atm *)
   | Ptyp_of_kind _ | Ptyp_repr _ | Ptyp_extension _ -> Any
   | Ptyp_open (_, ct) -> read_parsetree_core_type ct
+  | Ptyp_newlayout (_, ct) ->
+      (* layout-variable binder; odoc currently ignores the layout vars *)
+      read_parsetree_core_type ct
 
 and read_jkind_annotation (jk : Parsetree.jkind_annotation) =
   let open Kind in
