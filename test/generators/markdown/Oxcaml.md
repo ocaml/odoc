@@ -265,11 +265,6 @@ Should render as `float64 & (immediate mod portable)`.
 ## Kind abbreviations
 
 ```ocaml
-kind_ missing_documentation = value mod portable
-```
-TODO: The above kind abbreviation uses `(** *)` which are not captured by the OxCaml parser, so its documentation is currently missing. The following `kind_` declarations use an explicit `@@ocaml.doc` to side-step this issue.
-
-```ocaml
 kind_ my_abbrev = value_or_null mod non_null global
 ```
 Declares a kind abbreviation named `my_abbrev`.

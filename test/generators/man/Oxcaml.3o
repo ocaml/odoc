@@ -382,12 +382,6 @@ Should render as float64 & (immediate mod portable)\.
 \fB9 Kind abbreviations\fR
 .in 
 .sp 
-\f[CB]kind_\fR missing_documentation = value \f[CB]mod\fR portable
-.sp 
-.fi 
-TODO: The above kind abbreviation uses (** *) which are not captured by the OxCaml parser, so its documentation is currently missing\. The following kind_ declarations use an explicit @@ocaml\.doc to side-step this issue\.
-.nf 
-.sp 
 \f[CB]kind_\fR my_abbrev = value_or_null \f[CB]mod\fR non_null global
 .fi 
 .br 

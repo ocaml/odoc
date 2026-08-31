@@ -115,9 +115,6 @@ Unboxed types have a trailing hash '\#'
 \label{Oxcaml--type-t_inner_mod}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}inner\_\allowbreak{}mod : float64 \& (immediate \ocamltag{keyword}{mod} portable)}\begin{ocamlindent}Should render as \ocamlinlinecode{float64 \& (immediate mod portable)}.\end{ocamlindent}%
 \medbreak
 \subsection{Kind abbreviations\label{Oxcaml--kind-abbreviations_2}}%
-\label{Oxcaml--kind-missing_documentation}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} missing\_\allowbreak{}documentation = value \ocamltag{keyword}{mod} portable}\\
-TODO: The above kind abbreviation uses \ocamlinlinecode{(** *)} which are not captured by the OxCaml parser, so its documentation is currently missing. The following \ocamlinlinecode{kind\_\allowbreak{}} declarations use an explicit \ocamlinlinecode{@@ocaml.\allowbreak{}doc} to side-step this issue.
-
 \label{Oxcaml--kind-my_abbrev}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} my\_\allowbreak{}abbrev = value\_\allowbreak{}or\_\allowbreak{}null \ocamltag{keyword}{mod} non\_\allowbreak{}null global}\begin{ocamlindent}Declares a kind abbreviation named \ocamlinlinecode{my\_\allowbreak{}abbrev}.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--type-t_abbrev}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}abbrev : \hyperref[Oxcaml--kind-my_abbrev]{\ocamlinlinecode{my\_\allowbreak{}abbrev}} \ocamltag{keyword}{mod} immutable}\begin{ocamlindent}A type with an abbreviated kind. The use of \ocamlinlinecode{my\_\allowbreak{}abbrev} should link to its definition. References to the kind abbreviation resolve too, both unqualified \hyperref[Oxcaml--kind-my_abbrev]{\ocamlinlinecode{\ocamlinlinecode{my\_\allowbreak{}abbrev}}[p\pageref*{Oxcaml--kind-my_abbrev}]} and qualified \hyperref[Oxcaml--kind-my_abbrev]{\ocamlinlinecode{\ocamlinlinecode{my\_\allowbreak{}abbrev}}[p\pageref*{Oxcaml--kind-my_abbrev}]}.\end{ocamlindent}%
