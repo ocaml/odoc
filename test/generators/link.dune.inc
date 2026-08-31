@@ -11653,6 +11653,8 @@
    Oxcaml-F_nested.html.gen
    Oxcaml-F_nested-argument-1-X.html.gen
    Oxcaml-F_nested-Nested.html.gen
+   Oxcaml-X_shadowing.html.gen
+   Oxcaml-M_inc.html.gen
    Oxcaml-module-type-S.html.gen
    Oxcaml-M1.html.gen
    Oxcaml-M2.html.gen
@@ -11807,6 +11809,18 @@
   (package odoc)
   (action
    (diff Oxcaml-F_nested-Nested.html Oxcaml-F_nested-Nested.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-X_shadowing.html Oxcaml-X_shadowing.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M_inc.html Oxcaml-M_inc.html.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12332,6 +12346,8 @@
    Oxcaml.Arg_kind.3o.gen
    Oxcaml.F_nested.3o.gen
    Oxcaml.F_nested.Nested.3o.gen
+   Oxcaml.X_shadowing.3o.gen
+   Oxcaml.M_inc.3o.gen
    Oxcaml.M1.3o.gen
    Oxcaml.M2.3o.gen
    Oxcaml.M3.3o.gen
@@ -12420,6 +12436,18 @@
   (package odoc)
   (action
    (diff Oxcaml.F_nested.Nested.3o Oxcaml.F_nested.Nested.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.X_shadowing.3o Oxcaml.X_shadowing.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.M_inc.3o Oxcaml.M_inc.3o.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12689,6 +12717,8 @@
    Oxcaml-F_nested.md.gen
    Oxcaml-F_nested-argument-1-X.md.gen
    Oxcaml-F_nested-Nested.md.gen
+   Oxcaml-X_shadowing.md.gen
+   Oxcaml-M_inc.md.gen
    Oxcaml-module-type-S.md.gen
    Oxcaml-M1.md.gen
    Oxcaml-M2.md.gen
@@ -12837,6 +12867,18 @@
   (package odoc)
   (action
    (diff Oxcaml-F_nested-Nested.md Oxcaml-F_nested-Nested.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-X_shadowing.md Oxcaml-X_shadowing.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M_inc.md Oxcaml-M_inc.md.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
