@@ -165,16 +165,8 @@ type t_inner_mod : float64 & (immediate mod portable)
 
 (** {1 Kind abbreviations} *)
 
-kind_ missing_documentation = value mod portable
-(** BROKEN: this [(** ... *)] comment on a [kind_] declaration is dropped by
-    the OxCaml parser, so it does not render.  *)
-
-(** TODO: The above kind abbreviation uses [(** *)] which are not captured by
-    the OxCaml parser, so its documentation is currently missing. The following
-    [kind_] declarations use an explicit [@@ocaml.doc] to side-step this issue. *)
-
 kind_ my_abbrev = value_or_null mod non_null global
-[@@ocaml.doc "Declares a kind abbreviation named [my_abbrev]."]
+(** Declares a kind abbreviation named [my_abbrev]. *)
 
 type t_abbrev : my_abbrev mod immutable
 (** A type with an abbreviated kind. The use of [my_abbrev] should link to its
@@ -182,14 +174,14 @@ type t_abbrev : my_abbrev mod immutable
     unqualified {!my_abbrev} and qualified {!kind:my_abbrev}. *)
 
 kind_ my_derived = my_abbrev mod portable
-[@@ocaml.doc
-  "A kind abbreviation defined in terms of another one; the use of [my_abbrev] \
-   in this definition should also link to its definition."]
+(** A kind abbreviation defined in terms of another one; the use of [my_abbrev]
+    in this definition should also link to its definition. *)
 
 type t_derived : my_derived
 (** A type whose kind is the derived abbreviation. *)
 
-kind_ my_abstract [@@ocaml.doc "An abstract kind abbreviation (no manifest)."]
+kind_ my_abstract
+(** An abstract kind abbreviation (no manifest). *)
 
 type t_abstract : my_abstract
 (** A type with an abstract abbreviated kind. *)
@@ -217,7 +209,7 @@ type ('a : M_kinds.mod_kind) qualified_param
 
 module type S_kind = sig
   kind_ functor_kind = value mod portable
-  [@@ocaml.doc "A kind declared in a module type."]
+  (** A kind declared in a module type. *)
 end
 
 module F_kind (X : S_kind) : S_kind
@@ -230,24 +222,23 @@ type t_functor_app : F_kind(Arg_kind).functor_kind
     crashing. *)
 
 module F_nested (X : S_kind) : sig
-  kind_ abstract_kind [@@ocaml.doc "An abstract kind."]
+  kind_ abstract_kind
+  (** An abstract kind. *)
 
   module Nested : sig
     kind_ custom_kind_abbrev = X.functor_kind mod contended
-    [@@ocaml.doc "A nested kind extending the functor argument's kind."]
+    (** A nested kind extending the functor argument's kind. *)
   end
 end
 
 kind_ functor_abbrev = F_nested(Arg_kind).abstract_kind
-[@@ocaml.doc
-  "A kind abbreviation defined through a functor-application path. The manifest \
-   is rendered but the functor-application path isn't a link."]
+(** A kind abbreviation defined through a functor-application path. The manifest
+    is rendered but the functor-application path isn't a link. *)
 
 kind_ nested_functor_abbrev = F_nested(Arg_kind).Nested.custom_kind_abbrev
-[@@ocaml.doc
-  "A kind abbreviation defined through a \
-   functor-application-then-nested-module path. The manifest is rendered but \
-   the functor-application path isn't a link."]
+(** A kind abbreviation defined through a functor-application-then-nested-module
+    path. The manifest is rendered but the functor-application path isn't a
+    link. *)
 
 (** {1 Zero alloc} *)
 
