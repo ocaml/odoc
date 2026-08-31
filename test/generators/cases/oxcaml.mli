@@ -549,6 +549,8 @@ module Include_functor_argument_shapes : sig
     type _ anon
     module X : sig type v end
     module type S
+    val via_module_type_include : unit
+    val via_module_include : unit
   end
 
   module Make (T : Arg) : sig
@@ -572,11 +574,23 @@ module Include_functor_argument_shapes : sig
     (** A module type of the argument, aliased as a path to it. *)
   end
 
+  (**/**)
+  module type To_include_module_type = sig
+    val via_module_type_include : unit
+  end
+
+  module To_include_module : sig
+    val via_module_include : unit
+  end
+  (**/**)
+
   type t
   type 'a p
   type _ anon
   module X : sig type v end
   module type S = sig type u end
+  include To_include_module_type
+  include module type of To_include_module
 
   include functor module type of Make
 end

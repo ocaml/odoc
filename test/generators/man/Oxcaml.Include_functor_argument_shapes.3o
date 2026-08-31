@@ -33,6 +33,12 @@ Oxcaml\.Include_functor_argument_shapes
 .sp 
 .ti +2
 \f[CB]module\fR \f[CB]type\fR S
+.sp 
+.ti +2
+\f[CB]val\fR via_module_type_include : unit
+.sp 
+.ti +2
+\f[CB]val\fR via_module_include : unit
 .br 
 \f[CB]end\fR
 .fi 
@@ -57,6 +63,10 @@ Everything the expansion of the functor can inherit from its argument: types, in
 \f[CB]type\fR u
 .br 
 \f[CB]end\fR
+.sp 
+\f[CB]val\fR via_module_type_include : unit
+.sp 
+\f[CB]val\fR via_module_include : unit
 .sp 
 \f[CB]type\fR included = t
 .fi 

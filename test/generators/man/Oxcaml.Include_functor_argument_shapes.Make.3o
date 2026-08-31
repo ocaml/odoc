@@ -38,6 +38,12 @@ Oxcaml\.Include_functor_argument_shapes\.Make
 .sp 
 .ti +2
 \f[CB]module\fR \f[CB]type\fR S
+.sp 
+.ti +2
+\f[CB]val\fR via_module_type_include : unit
+.sp 
+.ti +2
+\f[CB]val\fR via_module_include : unit
 .br 
 \f[CB]end\fR
 .sp 

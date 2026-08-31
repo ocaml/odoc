@@ -25,6 +25,12 @@ module X : sig ... end
 module type S = sig ... end
 ```
 ```ocaml
+val via_module_type_include : unit
+```
+```ocaml
+val via_module_include : unit
+```
+```ocaml
 type included = t
 ```
 No parameters, so the alias odoc puts in the synthetic module is a bare `type t = t`.
