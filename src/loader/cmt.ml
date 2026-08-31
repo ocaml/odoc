@@ -612,6 +612,23 @@ and read_open env parent o =
   let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature signature) in
   Open.{expansion; doc}
 
+#if defined OXCAML
+and scope_structure_item env item =
+  match item.str_desc with
+  | Tstr_jkind jkd ->
+      { env with
+        ident_env =
+          Env.add_kind_abbreviation_to_scope env.ident_env jkd.jkind_id }
+  | Tstr_include incl ->
+      { env with
+        ident_env =
+          Env.add_signature_kind_abbreviations_to_scope env.ident_env
+            (Odoc_model.Compat.signature incl.incl_type) }
+  | _ -> env
+#else
+and scope_structure_item env _item = env
+#endif
+
 and read_structure :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->
       _ * 'tags =
@@ -627,13 +644,14 @@ and read_structure :
     in
     Doc_attr.extract_top_comment internal_tags ~warnings_tag:env.warnings_tag ~classify parent str.str_items
   in
-  let items =
+  let items, _ =
     List.fold_left
-      (fun items item ->
-        List.rev_append (read_structure_item env parent item) items)
-      [] items
-    |> List.rev
+      (fun (items, env) item ->
+        ( List.rev_append (read_structure_item env parent item) items,
+          scope_structure_item env item ))
+      ([], env) items
   in
+  let items = List.rev items in
   match doc_post with
   | { elements = [] ; _} ->
     ({ Signature.items; compiled = false; removed = []; doc }, tags)

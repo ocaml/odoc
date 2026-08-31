@@ -153,6 +153,19 @@ Unboxed types have a trailing hash '\#'
 \medbreak
 \label{Oxcaml--kind-nested_functor_abbrev}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} nested\_\allowbreak{}functor\_\allowbreak{}abbrev = F\_\allowbreak{}nested(Arg\_\allowbreak{}kind).\allowbreak{}Nested.\allowbreak{}custom\_\allowbreak{}kind\_\allowbreak{}abbrev}\begin{ocamlindent}A kind abbreviation defined through a functor-application-then-nested-module path. The manifest is rendered but the functor-application path isn't a link.\end{ocamlindent}%
 \medbreak
+\label{Oxcaml--kind-to_be_shadowed}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} to\_\allowbreak{}be\_\allowbreak{}shadowed = value \ocamltag{keyword}{mod} portable}\begin{ocamlindent}Shadowed below by a kind abbreviation of the same name.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--module-X_shadowing}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-X_shadowing]{\ocamlinlinecode{X\_\allowbreak{}shadowing}}}\label{Oxcaml-X_shadowing}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-X_shadowing--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t : \hyperref[Oxcaml--kind-to_be_shadowed]{\ocamlinlinecode{to\_\allowbreak{}be\_\allowbreak{}shadowed}}}\begin{ocamlindent}Uses the outer \ocamlinlinecode{to\_\allowbreak{}be\_\allowbreak{}shadowed}, declared before the one below, so the link should point outside this module.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml-X_shadowing--kind-to_be_shadowed}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} to\_\allowbreak{}be\_\allowbreak{}shadowed = value\_\allowbreak{}or\_\allowbreak{}null \ocamltag{keyword}{mod} non\_\allowbreak{}null global}\begin{ocamlindent}Shadows the outer \ocamlinlinecode{to\_\allowbreak{}be\_\allowbreak{}shadowed}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{Oxcaml--module-M_inc}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M_inc]{\ocamlinlinecode{M\_\allowbreak{}inc}}}\label{Oxcaml-M_inc}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-M_inc--kind-inc_kind}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} inc\_\allowbreak{}kind = value \ocamltag{keyword}{mod} portable}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[Oxcaml-M_inc]{\ocamlinlinecode{M\_\allowbreak{}inc}}\label{Oxcaml-M_inc--kind-inc_kind}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} inc\_\allowbreak{}kind = value \ocamltag{keyword}{mod} portable}\\
+\label{Oxcaml--type-t_inc}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}inc : \hyperref[Oxcaml--kind-inc_kind]{\ocamlinlinecode{inc\_\allowbreak{}kind}}}\\
 \subsection{Zero alloc\label{Oxcaml--zero-alloc}}%
 \label{Oxcaml--val-add}\ocamlcodefragment{\ocamltag{keyword}{val} add : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc]}\begin{ocamlindent}Zero allocation bindings have an extension attribute attached. See https://oxcaml.org/documentation/miscellaneous-extensions/zero\_alloc\_check/\end{ocamlindent}%
 \medbreak

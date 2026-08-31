@@ -1530,7 +1530,7 @@ and read_kind_abbreviation_from_types env parent id (jkd : Types.jkind_declarati
 #endif
 
 and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
-  let rec loop (acc,shadowed) items =
+  let rec loop env (acc,shadowed) items =
     let open Signature in
     let open Odoc_model.Compat in
     let open Include in
@@ -1545,10 +1545,10 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
           | `Value (_, n) -> { shadowed with s_values = (Odoc_model.Names.parenthesise (Ident.name id), n) :: shadowed.s_values }
           else shadowed
         in
-          loop (vd :: acc, shadowed) rest
+          loop env (vd :: acc, shadowed) rest
     | Sig_type(id, _, _, _) :: rest
         when Btype.is_row_name (Ident.name id) ->
-        loop (acc, shadowed) rest
+        loop env (acc, shadowed) rest
     | Sig_type(id, decl, rec_status, _)::rest ->
         let decl = read_type_declaration env parent id decl in
         let shadowed =
@@ -1559,7 +1559,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
             { shadowed with s_types = (Ident.name id, name) :: shadowed.s_types }
           else shadowed
         in
-        loop (Type (read_type_rec_status rec_status, decl)::acc, shadowed) rest
+        loop env (Type (read_type_rec_status rec_status, decl)::acc, shadowed) rest
 #if defined OXCAML
     | Sig_jkind(id, jkd, _)::rest ->
         let ka = read_kind_abbreviation_from_types env parent id jkd in
@@ -1571,7 +1571,11 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
             { shadowed with s_kind_abbreviations = (Ident.name id, name) :: shadowed.s_kind_abbreviations }
           else shadowed
         in
-        loop (KindAbbreviation ka :: acc, shadowed) rest
+        let env =
+          { env with
+            ident_env = Env.add_kind_abbreviation_to_scope env.ident_env id }
+        in
+        loop env (KindAbbreviation ka :: acc, shadowed) rest
 #endif
     | Sig_typext (id, ext, Text_first, _) :: rest ->
         let rec inner_loop inner_acc = function
@@ -1581,15 +1585,15 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
               let ext =
                 read_type_extension env parent id ext (List.rev inner_acc)
               in
-                loop (TypExt ext :: acc, shadowed) rest
+                loop env (TypExt ext :: acc, shadowed) rest
         in
           inner_loop [] rest
     | Sig_typext (id, ext, Text_next, _) :: rest ->
         let ext = read_type_extension env parent id ext [] in
-          loop (TypExt ext :: acc, shadowed) rest
+          loop env (TypExt ext :: acc, shadowed) rest
     | Sig_typext (id, ext, Text_exception, _) :: rest ->
         let exn = read_exception env parent id ext in
-          loop (Exception exn :: acc, shadowed) rest
+          loop env (Exception exn :: acc, shadowed) rest
     | Sig_module (id, _, md, rec_status, _)::rest ->
           let md = read_module_declaration env parent id md in
           let shadowed =
@@ -1605,7 +1609,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
 { shadowed with s_modules = (Ident.name id, name) :: shadowed.s_modules }
             else shadowed
           in
-            loop (Module (read_module_rec_status rec_status, md)::acc, shadowed) rest
+            loop env (Module (read_module_rec_status rec_status, md)::acc, shadowed) rest
     | Sig_modtype(id, mtd, _) :: rest ->
           let mtd = read_module_type_declaration env parent id mtd in
           let shadowed =
@@ -1620,7 +1624,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
               { shadowed with s_module_types = (Ident.name id, name) :: shadowed.s_module_types }
             else shadowed
           in
-            loop (ModuleType mtd :: acc, shadowed) rest
+            loop env (ModuleType mtd :: acc, shadowed) rest
 #if OCAML_VERSION < (5,1,0)
     | Sig_class(id, cl, rec_status, _) :: Sig_class_type _
       :: Sig_type _ :: Sig_type _ :: rest ->
@@ -1641,7 +1645,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
             { shadowed with s_classes = (Ident.name id, name) :: shadowed.s_classes }
             else shadowed
           in
-            loop (Class (read_type_rec_status rec_status, cl)::acc, shadowed) rest
+            loop env (Class (read_type_rec_status rec_status, cl)::acc, shadowed) rest
 #if OCAML_VERSION < (5,1,0)
     | Sig_class_type(id, cltyp, rec_status, _)::Sig_type _::Sig_type _::rest ->
 #else
@@ -1659,7 +1663,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
 { shadowed with s_class_types = (Ident.name id, name) :: shadowed.s_class_types }
           else shadowed
         in
-        loop (ClassType (read_type_rec_status rec_status, cltyp)::acc, shadowed) rest
+        loop env (ClassType (read_type_rec_status rec_status, cltyp)::acc, shadowed) rest
     (* Skip all of the hidden sig items *)
 
 
@@ -1670,7 +1674,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
 
     | [] -> ({items = List.rev acc; compiled=false; removed = []; doc = empty_doc env }, shadowed)
   in
-    loop ([],{s_modules=[]; s_module_types=[]; s_values=[];s_types=[]; s_kind_abbreviations=[]; s_classes=[]; s_class_types=[]}) items
+    loop env ([],{s_modules=[]; s_module_types=[]; s_values=[];s_types=[]; s_kind_abbreviations=[]; s_classes=[]; s_class_types=[]}) items
 
 and read_signature env parent (items : Odoc_model.Compat.signature) =
   let e' = Env.handle_signature_type_items parent items env.ident_env in

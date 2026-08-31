@@ -1020,6 +1020,79 @@
      </p>
     </div>
    </div>
+   <div class="odoc-spec">
+    <div class="spec type kind-abbreviation anchored"
+     id="kind-to_be_shadowed">
+     <a href="#kind-to_be_shadowed" class="anchor"></a>
+     <code>
+      <span><span class="keyword">kind_</span> to_be_shadowed = value
+        <span class="keyword">mod</span> portable
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Shadowed below by a kind abbreviation of the same name.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-X_shadowing">
+     <a href="#module-X_shadowing" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-X_shadowing.html">X_shadowing</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-M_inc">
+     <a href="#module-M_inc" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-M_inc.html">M_inc</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-include">
+    <details open="open">
+     <summary class="spec include">
+      <code>
+       <span><span class="keyword">include</span> 
+        <span class="keyword">module</span> <span class="keyword">type</span>
+         <span class="keyword">of</span> 
+        <a href="Oxcaml-M_inc.html">M_inc</a>
+       </span>
+      </code>
+     </summary>
+     <div class="odoc-spec">
+      <div class="spec type kind-abbreviation anchored" id="kind-inc_kind">
+       <a href="#kind-inc_kind" class="anchor"></a>
+       <code>
+        <span><span class="keyword">kind_</span> inc_kind = value 
+         <span class="keyword">mod</span> portable
+        </span>
+       </code>
+      </div>
+     </div>
+    </details>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_inc">
+     <a href="#type-t_inc" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_inc : 
+       <a href="#kind-inc_kind">inc_kind</a>
+      </span>
+     </code>
+    </div>
+   </div>
    <h2 id="zero-alloc"><a href="#zero-alloc" class="anchor"></a>Zero alloc
    </h2>
    <div class="odoc-spec">
