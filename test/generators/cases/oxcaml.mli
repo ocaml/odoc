@@ -240,6 +240,26 @@ kind_ nested_functor_abbrev = F_nested(Arg_kind).Nested.custom_kind_abbrev
     path. The manifest is rendered but the functor-application path isn't a
     link. *)
 
+kind_ to_be_shadowed = value mod portable
+(** Shadowed below by a kind abbreviation of the same name. *)
+
+module X_shadowing : sig
+  type t : to_be_shadowed
+  (** Uses the outer [to_be_shadowed], declared before the one below, so the
+      link should point outside this module. *)
+
+  kind_ to_be_shadowed = value_or_null mod non_null global
+  (** Shadows the outer [to_be_shadowed]. *)
+end
+
+module M_inc : sig
+  kind_ inc_kind = value mod portable
+end
+
+include module type of M_inc
+
+type t_inc : inc_kind
+
 (** {1 Zero alloc} *)
 
 val add : bool -> int -> int -> int [@@zero_alloc]
