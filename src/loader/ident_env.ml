@@ -20,6 +20,8 @@ open Names
 module Id = Paths.Identifier
 module P = Paths.Path
 
+module StringMap = Map.Make(String)
+
 module LocHashtbl = Hashtbl.Make(struct
     type t = Location.t
     let equal l1 l2 = l1 = l2
@@ -39,6 +41,7 @@ type t =
     classes : Id.Class.t Ident.tbl;
     class_types : Id.ClassType.t Ident.tbl;
     kind_abbreviations : Id.KindAbbreviation.t Ident.tbl;
+    kind_abbreviations_in_scope : Id.KindAbbreviation.t StringMap.t;
     loc_to_ident : Id.t LocHashtbl.t;
     shadowed : Ident.t list;
   }
@@ -56,6 +59,7 @@ let empty () =
     classes = Ident.empty;
     class_types = Ident.empty;
     kind_abbreviations = Ident.empty;
+    kind_abbreviations_in_scope = StringMap.empty;
     loc_to_ident = LocHashtbl.create 100;
     shadowed = [];
   }
@@ -701,9 +705,15 @@ let find_kind_abbreviation_identifier env id =
   Ident.find_same id env.kind_abbreviations
 
 let find_kind_abbreviation env name =
-  match Ident.find_name name env.kind_abbreviations with
-  | _id, identifier -> Some identifier
-  | exception Not_found -> None
+  StringMap.find_opt name env.kind_abbreviations_in_scope
+
+let add_kind_abbreviation_to_scope env (identifier : Id.KindAbbreviation.t) =
+  let `KindAbbreviation (_, name) = identifier in
+  let kind_abbreviations_in_scope =
+    StringMap.add (TypeName.to_string_unsafe name) identifier
+      env.kind_abbreviations_in_scope
+  in
+  { env with kind_abbreviations_in_scope }
 
 let find_constructor_identifier env id =
   Ident.find_same id env.constructors

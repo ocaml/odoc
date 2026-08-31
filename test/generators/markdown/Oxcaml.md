@@ -349,6 +349,23 @@ kind_ nested_functor_abbrev = F_nested(Arg_kind).Nested.custom_kind_abbrev
 ```
 A kind abbreviation defined through a functor-application-then-nested-module path. The manifest is rendered but the functor-application path isn't a link.
 
+```ocaml
+kind_ to_be_shadowed = value mod portable
+```
+Shadowed below by a kind abbreviation of the same name.
+
+```ocaml
+module X_shadowing : sig ... end
+```
+```ocaml
+module M_inc : sig ... end
+```
+```ocaml
+kind_ inc_kind = value mod portable
+```
+```ocaml
+type t_inc : inc_kind
+```
 
 ## Zero alloc
 

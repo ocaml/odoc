@@ -1063,7 +1063,7 @@ and read_open env parent o =
 
 and read_items env parent items =
   List.fold_left
-    (fun acc item ->
+    (fun (acc, env) item ->
       match item.sig_desc with
 #if defined OXCAML
       | Tsig_include ({ incl_kind = (Tincl_functor _ | Tincl_gen_functor _);
@@ -1072,11 +1072,14 @@ and read_items env parent items =
         let wrapper = generate_wrapper_module parent ~prefix:"BODY" ~hidden in
         let wrapper_module = wrapper_module wrapper ~hidden (List.rev acc) in
         let items = read_include_functor env parent (snd wrapper) incl in
-        List.rev_append items (wrapper_module :: acc)
+        ( List.rev_append items (wrapper_module :: acc),
+          Cmi.scope_kind_abbreviations env items )
 #endif
-      | _ -> List.rev_append (read_signature_item env parent item) acc)
-    [] items
-  |> List.rev
+      | _ ->
+        let items = read_signature_item env parent item in
+        (List.rev_append items acc, Cmi.scope_kind_abbreviations env items))
+    ([], env) items
+  |> fst |> List.rev
 
 and read_signature :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->

@@ -85,6 +85,7 @@ val read_signature : env ->
                      Paths.Identifier.Signature.t ->
                      Odoc_model.Compat.signature -> Odoc_model.Lang.Signature.t
 
+val scope_kind_abbreviations : env -> Odoc_model.Lang.Signature.item list -> env
 
 val read_extension_constructor : env ->
                        Paths.Identifier.Signature.t ->
