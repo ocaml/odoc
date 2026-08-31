@@ -1,0 +1,27 @@
+
+.TH X_shadowing 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.X_shadowing
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml\.X_shadowing\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t : to_be_shadowed
+.fi 
+.br 
+.ti +2
+Uses the outer to_be_shadowed, declared before the one below, so the link should point outside this module\.
+.nf 
+.sp 
+\f[CB]kind_\fR to_be_shadowed = value_or_null \f[CB]mod\fR non_null global
+.fi 
+.br 
+.ti +2
+Shadows the outer to_be_shadowed\.
+.nf 
+
