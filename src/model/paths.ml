@@ -445,6 +445,7 @@ module Identifier = struct
     module Module = Map.Make (Module)
     module ModuleType = Map.Make (ModuleType)
     module Type = Map.Make (Type)
+    module KindAbbreviation = Map.Make (KindAbbreviation)
     module Class = Map.Make (Class)
     module ClassType = Map.Make (ClassType)
     module Label = Map.Make (Label)

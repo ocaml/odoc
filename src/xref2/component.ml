@@ -6,6 +6,12 @@ module ModuleMap = Map.Make (struct
   let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
 end)
 
+module KindAbbreviationMap = Map.Make (struct
+  type t = Ident.kind_abbreviation
+
+  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
+end)
+
 module TypeMap = Map.Make (struct
   type t = Ident.type_
 
@@ -163,6 +169,15 @@ and Extension : sig
   }
 end =
   Extension
+
+and KindAbbreviation : sig
+  type t = {
+    source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    doc : CComment.docs;
+    manifest : Odoc_model.Lang.Kind.t option;
+  }
+end =
+  KindAbbreviation
 
 and Exception : sig
   type t = {
@@ -335,7 +350,7 @@ and Signature : sig
     | ModuleTypeSubstitution of Ident.module_type * ModuleTypeSubstitution.t
     | Type of Ident.type_ * recursive * TypeDecl.t Delayed.t
     | TypeSubstitution of Ident.type_ * TypeDecl.t
-    | KindAbbreviation of Odoc_model.Lang.KindAbbreviation.t
+    | KindAbbreviation of Ident.kind_abbreviation * KindAbbreviation.t
     | Exception of Ident.exception_ * Exception.t
     | TypExt of Extension.t
     | Value of Ident.value * Value.t Delayed.t
@@ -810,10 +825,8 @@ module Fmt = struct
       | TypeSubstitution (id, t) ->
           Format.fprintf ppf "@[<v 2>type %a :=%a@]" ident_fmt id (type_decl c)
             t
-      | KindAbbreviation ka ->
-          Format.fprintf ppf "@[<v 2>kind_ %s@]"
-            (Odoc_model.Paths.Identifier.name
-               ka.Odoc_model.Lang.KindAbbreviation.id)
+      | KindAbbreviation (id, _) ->
+          Format.fprintf ppf "@[<v 2>kind_ %a@]" ident_fmt id
       | Exception (id, e) ->
           Format.fprintf ppf "@[<v 2>exception %a %a@]" ident_fmt id
             (exception_ c) e
@@ -1877,6 +1890,7 @@ module LocalIdents = struct
     modules : Paths.Identifier.Module.t list;
     module_types : Paths.Identifier.ModuleType.t list;
     types : Paths.Identifier.Type.t list;
+    kind_abbreviations : Paths.Identifier.KindAbbreviation.t list;
     classes : Paths.Identifier.Class.t list;
     class_types : Paths.Identifier.ClassType.t list;
   }
@@ -1886,6 +1900,7 @@ module LocalIdents = struct
       modules = [];
       module_types = [];
       types = [];
+      kind_abbreviations = [];
       classes = [];
       class_types = [];
     }
@@ -1907,7 +1922,12 @@ module LocalIdents = struct
             { ids with module_types = id :: ids.module_types }
         | Type (_, t) -> { ids with types = t.TypeDecl.id :: ids.types }
         | TypeSubstitution t -> { ids with types = t.TypeDecl.id :: ids.types }
-        | KindAbbreviation _ -> ids
+        | KindAbbreviation ka ->
+            {
+              ids with
+              kind_abbreviations =
+                ka.KindAbbreviation.id :: ids.kind_abbreviations;
+            }
         | Class (_, c) -> { ids with classes = c.Class.id :: ids.classes }
         | ClassType (_, c) ->
             { ids with class_types = c.ClassType.id :: ids.class_types }
@@ -1927,6 +1947,8 @@ module Of_Lang = struct
     module_types : Ident.module_type Paths.Identifier.Maps.ModuleType.t;
     functor_parameters : Ident.module_ Paths.Identifier.Maps.FunctorParameter.t;
     types : Ident.type_ Paths.Identifier.Maps.Type.t;
+    kind_abbreviations :
+      Ident.kind_abbreviation Paths.Identifier.Maps.KindAbbreviation.t;
     path_types : Ident.type_ Paths.Identifier.Maps.Path.Type.t;
     path_class_types : Ident.type_ Paths.Identifier.Maps.Path.ClassType.t;
     classes : Ident.type_ Paths.Identifier.Maps.Class.t;
@@ -1940,6 +1962,7 @@ module Of_Lang = struct
       module_types = ModuleType.empty;
       functor_parameters = FunctorParameter.empty;
       types = Type.empty;
+      kind_abbreviations = KindAbbreviation.empty;
       path_types = Path.Type.empty;
       path_class_types = Path.ClassType.empty;
       classes = Class.empty;
@@ -1959,6 +1982,14 @@ module Of_Lang = struct
             Maps.Path.Type.add (i :> Path.Type.t) id path_types ))
         (map.types, map.path_types)
         ids.LocalIdents.types
+    in
+    let kind_abbreviations_new =
+      List.fold_left
+        (fun acc i ->
+          Maps.KindAbbreviation.add i
+            (Ident.Of_Identifier.kind_abbreviation i)
+            acc)
+        map.kind_abbreviations ids.LocalIdents.kind_abbreviations
     in
     let classes_new, path_class_types_new =
       List.fold_left
@@ -1997,6 +2028,7 @@ module Of_Lang = struct
     let module_types = module_types_new in
     let functor_parameters = map.functor_parameters in
     let types = types_new in
+    let kind_abbreviations = kind_abbreviations_new in
     let classes = classes_new in
     let class_types = class_types_new in
     let path_types = path_types_new in
@@ -2006,6 +2038,7 @@ module Of_Lang = struct
       module_types;
       functor_parameters;
       types;
+      kind_abbreviations;
       classes;
       class_types;
       path_types;
@@ -2528,6 +2561,14 @@ module Of_Lang = struct
       res;
     }
 
+  and kind_abbreviation ident_map k =
+    let open Odoc_model.Lang.KindAbbreviation in
+    {
+      KindAbbreviation.source_loc = k.source_loc;
+      doc = docs ident_map k.doc;
+      manifest = k.manifest;
+    }
+
   and exception_ ident_map e =
     let open Odoc_model.Lang.Exception in
     let args = type_decl_constructor_argument ident_map e.args in
@@ -2830,7 +2871,12 @@ module Of_Lang = struct
              let id = Identifier.Maps.Type.find t.id ident_map.types in
              let t' = type_decl ident_map t in
              Signature.TypeSubstitution (id, t')
-         | KindAbbreviation t -> Signature.KindAbbreviation t
+         | KindAbbreviation t ->
+             let id =
+               Identifier.Maps.KindAbbreviation.find t.id
+                 ident_map.kind_abbreviations
+             in
+             Signature.KindAbbreviation (id, kind_abbreviation ident_map t)
          | Module (r, m) ->
              let id =
                Identifier.Maps.Module.find

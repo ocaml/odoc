@@ -7,6 +7,8 @@ type maps = {
   module_type : Identifier.ModuleType.t Component.ModuleTypeMap.t;
   functor_parameter : (Ident.module_ * Identifier.FunctorParameter.t) list;
   type_ : Identifier.Type.t Component.TypeMap.t;
+  kind_abbreviation :
+    Identifier.KindAbbreviation.t Component.KindAbbreviationMap.t;
   path_type : Identifier.Path.Type.t Component.TypeMap.t;
   class_ : (Ident.type_ * Identifier.Class.t) list;
   class_type : (Ident.type_ * Identifier.ClassType.t) list;
@@ -34,6 +36,7 @@ let empty () =
     module_type = Component.ModuleTypeMap.empty;
     functor_parameter = [];
     type_ = Component.TypeMap.empty;
+    kind_abbreviation = Component.KindAbbreviationMap.empty;
     path_type = Component.TypeMap.empty;
     class_ = [];
     class_type = [];
@@ -309,6 +312,17 @@ module ExtractIDs = struct
           map.path_type;
     }
 
+  and kind_abbreviation parent map id =
+    let identifier =
+      Identifier.Mk.kind_abbreviation
+        (parent, Ident.Name.typed_kind_abbreviation id)
+    in
+    {
+      map with
+      kind_abbreviation =
+        Component.KindAbbreviationMap.add id identifier map.kind_abbreviation;
+    }
+
   and module_ parent map id =
     let name = Ident.Name.module_ id in
     let typed_name =
@@ -397,10 +411,11 @@ module ExtractIDs = struct
           inner rest (type_decl parent map id)
       | Class (id, _, _) :: rest -> inner rest (class_ parent map id)
       | ClassType (id, _, _) :: rest -> inner rest (class_type parent map id)
+      | KindAbbreviation (id, _) :: rest ->
+          inner rest (kind_abbreviation parent map id)
       | Exception (_, _) :: rest
       | Value (_, _) :: rest
       | TypExt _ :: rest
-      | KindAbbreviation _ :: rest
       | Comment _ :: rest ->
           inner rest map
       | Include i :: rest -> inner rest (include_ parent map i)
@@ -454,24 +469,15 @@ let rec signature_items id map items =
           (ModuleSubstitution (module_substitution map parent id m) :: acc)
     | TypeSubstitution (id, t) :: rest ->
         inner rest (TypeSubstitution (type_decl map parent id t) :: acc)
-    | KindAbbreviation t :: rest ->
-        let `KindAbbreviation (_, name) =
-          t.Odoc_model.Lang.KindAbbreviation.id
+    | KindAbbreviation (id', ka) :: rest ->
+        let name =
+          TypeName.to_string (Ident.Name.typed_kind_abbreviation id')
         in
-        if
-          List.mem_assoc
-            (TypeName.to_string name)
-            map.shadowed.s_kind_abbreviations
-        then inner rest acc
+        if List.mem_assoc name map.shadowed.s_kind_abbreviations then
+          inner rest acc
         else
-          let t =
-            {
-              t with
-              Odoc_model.Lang.KindAbbreviation.id =
-                Identifier.Mk.kind_abbreviation (id, name);
-            }
-          in
-          inner rest (KindAbbreviation t :: acc)
+          inner rest
+            (KindAbbreviation (kind_abbreviation map parent id' ka) :: acc)
     | Class (id, r, c) :: rest ->
         inner rest (Class (r, class_ map parent id c) :: acc)
     | ClassType (id, r, c) :: rest ->
@@ -1159,6 +1165,15 @@ and functor_parameter map f : Odoc_model.Lang.FunctorParameter.parameter =
       module_type_expr map
         (identifier :> Odoc_model.Paths.Identifier.Signature.t)
         f.expr;
+  }
+
+and kind_abbreviation map parent id' (ka : Component.KindAbbreviation.t) :
+    Odoc_model.Lang.KindAbbreviation.t =
+  {
+    id = Component.KindAbbreviationMap.find id' map.kind_abbreviation;
+    source_loc = ka.source_loc;
+    doc = docs (parent :> Identifier.LabelParent.t) ka.doc;
+    manifest = ka.manifest;
   }
 
 and exception_ map parent id (e : Component.Exception.t) :

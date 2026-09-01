@@ -9,7 +9,7 @@ type module_type = [ `FModuleType of ModuleTypeName.t * ModuleType.t ]
 type datatype = [ `FType of TypeName.t * TypeDecl.t ]
 
 type kind_abbreviation =
-  [ `FKindAbbreviation of TypeName.t * Odoc_model.Lang.KindAbbreviation.t ]
+  [ `FKindAbbreviation of TypeName.t * KindAbbreviation.t ]
 
 type class_ =
   [ `FClass of TypeName.t * Class.t | `FClassType of TypeName.t * ClassType.t ]

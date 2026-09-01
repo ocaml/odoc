@@ -196,6 +196,8 @@ module Identifier : sig
 
     module Type : Map.S with type key = Type.t
 
+    module KindAbbreviation : Map.S with type key = KindAbbreviation.t
+
     module Class : Map.S with type key = Class.t
 
     module ClassType : Map.S with type key = ClassType.t
