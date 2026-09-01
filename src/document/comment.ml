@@ -39,6 +39,8 @@ module Reference = struct
     | `ModuleType (r, s) ->
         render_resolved (r :> t) ^ "." ^ ModuleTypeName.to_string s
     | `Type (r, s) -> render_resolved (r :> t) ^ "." ^ TypeName.to_string s
+    | `KindAbbreviation (r, s) ->
+        render_resolved (r :> t) ^ "." ^ TypeName.to_string s
     | `Constructor (r, s) ->
         render_resolved (r :> t) ^ "." ^ ConstructorName.to_string s
     | `PolyConstructor (r, s) ->

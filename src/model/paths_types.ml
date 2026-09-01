@@ -184,6 +184,8 @@ module Identifier = struct
 
   type reference_type = path_type
 
+  type reference_kind_abbreviation = kind_abbreviation
+
   type reference_constructor = [ constructor | extension | exception_ ]
 
   type reference_field = field
@@ -863,6 +865,11 @@ and Resolved_reference : sig
   type asset = [ `Identifier of Identifier.asset_file ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Asset.t *)
 
+  type kind_abbreviation =
+    [ `Identifier of Identifier.reference_kind_abbreviation
+    | `KindAbbreviation of signature * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Reference.Resolved.KindAbbreviation.t *)
+
   type any =
     [ `Identifier of Identifier.any
     | `Alias of Resolved_path.module_ * module_
@@ -871,6 +878,7 @@ and Resolved_reference : sig
     | `Hidden of module_
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
+    | `KindAbbreviation of signature * TypeName.t
     | `Constructor of datatype * ConstructorName.t
     | `PolyConstructor of datatype * ConstructorName.t
     | `Field of field_parent * FieldName.t

@@ -516,6 +516,24 @@ Shadowed below by a kind abbreviation of the same name\.
 .sp 
 \f[CB]type\fR t_inc : inc_kind
 .sp 
+\f[CB]module\fR \f[CB]type\fR S_param = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]kind_\fR param_kind = value \f[CB]mod\fR portable
+.sp 
+.ti +2
+\f[CB]type\fR ('a : param_kind) t
+.fi 
+.br 
+.ti +4
+A kind-constrained type parameter inside a signature expansion; the use should link to param_kind\.
+.nf 
+
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR M_param : S_param
+.sp 
 .in 3
 \fB10 Zero alloc\fR
 .in 

@@ -260,6 +260,16 @@ include module type of M_inc
 
 type t_inc : inc_kind
 
+module type S_param = sig
+  kind_ param_kind = value mod portable
+
+  type ('a : param_kind) t
+  (** A kind-constrained type parameter inside a signature expansion; the use
+      should link to [param_kind]. *)
+end
+
+module M_param : S_param
+
 (** {1 Zero alloc} *)
 
 val add : bool -> int -> int -> int [@@zero_alloc]

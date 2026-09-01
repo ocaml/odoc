@@ -484,7 +484,12 @@ module General_paths = struct
           C
             ( "`Value",
               ((x1 :> rr), x2),
-              Pair (resolved_reference, Names.valuename) ))
+              Pair (resolved_reference, Names.valuename) )
+      | `KindAbbreviation (x1, x2) ->
+          C
+            ( "`KindAbbreviation",
+              ((x1 :> rr), x2),
+              Pair (resolved_reference, Names.typename) ))
 
   let resolved_fragment_root : Paths.Fragment.Resolved.root t =
     Variant

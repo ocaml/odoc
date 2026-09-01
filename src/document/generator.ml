@@ -105,9 +105,11 @@ module Make (Syntax : SYNTAX) = struct
 
     let from_identifier ?text : Identifier.t -> _ =
      fun id ->
-      let href = Url.from_identifier ~stop_before:false id in
       let label = match text with Some t -> t | None -> Identifier.name id in
-      resolved href [ inline @@ Text label ]
+      if Identifier.is_hidden id then unresolved [ inline @@ Text label ]
+      else
+        let href = Url.from_identifier ~stop_before:false id in
+        resolved href [ inline @@ Text label ]
 
     let rec from_path : Path.t -> text =
      fun path ->
@@ -1436,6 +1438,12 @@ module Make (Syntax : SYNTAX) = struct
       | `ModuleType (_, name) when ModuleTypeName.is_hidden name -> true
       | _ -> false
 
+    let internal_kind_abbreviation t =
+      let open Lang.KindAbbreviation in
+      match t.id with
+      | `KindAbbreviation (_, name) when TypeName.is_hidden name -> true
+      | _ -> false
+
     let internal_module_substitution t =
       let open Lang.ModuleSubstitution in
       match t.id with
@@ -1459,6 +1467,8 @@ module Make (Syntax : SYNTAX) = struct
             | Type (_, t) when internal_type t -> loop rest acc_items
             | Value v when internal_value v -> loop rest acc_items
             | ModuleType m when internal_module_type m -> loop rest acc_items
+            | KindAbbreviation t when internal_kind_abbreviation t ->
+                loop rest acc_items
             | ModuleSubstitution m when internal_module_substitution m ->
                 loop rest acc_items
             | ModuleTypeSubstitution m when internal_module_type_substitution m

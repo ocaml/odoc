@@ -152,4 +152,8 @@ end
 
 include Shadowing_source
 
+(* Uses the included [dup], which the local [dup] below shadows. The shadowed
+   declaration is not rendered, so this must not link to it. *)
+type t_dup : dup
+
 kind_ dup = value_or_null mod non_null

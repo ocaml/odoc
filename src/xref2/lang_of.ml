@@ -455,12 +455,23 @@ let rec signature_items id map items =
     | TypeSubstitution (id, t) :: rest ->
         inner rest (TypeSubstitution (type_decl map parent id t) :: acc)
     | KindAbbreviation t :: rest ->
-        let name =
-          Odoc_model.Paths.Identifier.name t.Odoc_model.Lang.KindAbbreviation.id
+        let `KindAbbreviation (_, name) =
+          t.Odoc_model.Lang.KindAbbreviation.id
         in
-        if List.mem_assoc name map.shadowed.s_kind_abbreviations then
-          inner rest acc
-        else inner rest (KindAbbreviation t :: acc)
+        if
+          List.mem_assoc
+            (TypeName.to_string name)
+            map.shadowed.s_kind_abbreviations
+        then inner rest acc
+        else
+          let t =
+            {
+              t with
+              Odoc_model.Lang.KindAbbreviation.id =
+                Identifier.Mk.kind_abbreviation (id, name);
+            }
+          in
+          inner rest (KindAbbreviation t :: acc)
     | Class (id, r, c) :: rest ->
         inner rest (Class (r, class_ map parent id c) :: acc)
     | ClassType (id, r, c) :: rest ->

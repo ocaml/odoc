@@ -46,7 +46,7 @@ val mark_type_extension : Types.type_expr list ->
                           Types.extension_constructor list ->
                           Types.type_expr list
 
-val read_type_parameter : bool -> Types.Variance.t ->
+val read_type_parameter : Ident_env.t -> bool -> Types.Variance.t ->
                           Types.type_expr -> Odoc_model.Lang.TypeDecl.param
 
 val mark_class_declaration : Types.class_declaration -> unit

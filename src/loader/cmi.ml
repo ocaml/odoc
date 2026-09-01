@@ -1166,14 +1166,14 @@ let read_injectivity var =
 #endif
   inj
 
-let read_type_parameter abstr var param =
+let read_type_parameter env abstr var param =
   let open TypeDecl in
   let name = name_of_type param in
   let desc =
     if name = "_" then Any
     else Var name
   in
-  let kind = jkind_of_type_desc (Env.empty ()) (Compat.get_desc param) in
+  let kind = jkind_of_type_desc env (Compat.get_desc param) in
   let variance =
     if not (abstr || aliasable param) then None
     else begin
@@ -1246,7 +1246,7 @@ let read_type_declaration env parent id decl =
 #endif
   in
   let params =
-    List.map2 (read_type_parameter abstr) decl.type_variance params
+    List.map2 (read_type_parameter env.ident_env abstr) decl.type_variance params
   in
   let private_ = (decl.type_private = Private) in
   let kind =
@@ -1285,7 +1285,7 @@ let read_type_extension env parent id ext rest =
   in
   let constructors = first :: rest in
   let type_params =
-    List.map (read_type_parameter false Variance.null) type_params
+    List.map (read_type_parameter env.ident_env false Variance.null) type_params
   in
   let private_ = (ext.ext_private = Private) in
     { parent; type_path; type_params;
@@ -1395,7 +1395,7 @@ let read_class_type_declaration env parent id cltd =
     mark_class_type_declaration cltd;
     let params =
       List.map2
-        (read_type_parameter false)
+        (read_type_parameter env.ident_env false)
         cltd.clty_variance cltd.clty_params
     in
     let expr =
@@ -1433,7 +1433,7 @@ let read_class_declaration env parent id cld =
     mark_class_declaration cld;
     let params =
       List.map2
-        (read_type_parameter false)
+        (read_type_parameter env.ident_env false)
         cld.cty_variance cld.cty_params
     in
     let type_ =
@@ -1531,6 +1531,10 @@ and read_kind_abbreviation_from_types env parent id (jkd : Types.jkind_declarati
     Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container
       jkd.jkind_attributes
   in
+  (* TODO: [jkd.jkind_manifest] holds the manifest in normalised typed form,
+     so rendering it would print the expansion rather than the source. Until
+     that is converted, a concrete abbreviation read from a [.cmi] is
+     indistinguishable from an abstract one. *)
   { id = identifier; source_loc; doc; manifest = None }
 #endif
 

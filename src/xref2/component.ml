@@ -1696,7 +1696,7 @@ module Fmt = struct
           (model_resolved_reference c)
           (parent :> t)
           (ModuleTypeName.to_string name)
-    | `Type (parent, name) ->
+    | `Type (parent, name) | `KindAbbreviation (parent, name) ->
         Format.fprintf ppf "%a.%s"
           (model_resolved_reference c)
           (parent :> t)
