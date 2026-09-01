@@ -166,7 +166,7 @@ let read_type_extension env parent tyext =
   in
   let type_params =
     List.map
-      (Cmi.read_type_parameter false Types.Variance.null)
+      (Cmi.read_type_parameter env.ident_env false Types.Variance.null)
       type_params
   in
   let private_ = (tyext.tyext_private = Private) in
@@ -378,7 +378,7 @@ let read_class_declaration env parent cld =
     in
     let params =
       List.map
-        (Cmi.read_type_parameter false Types.Variance.null)
+        (Cmi.read_type_parameter env.ident_env false Types.Variance.null)
         clparams
     in
     let type_ = read_class_expr env (id :> Identifier.ClassSignature.t) clparams cld.ci_expr in

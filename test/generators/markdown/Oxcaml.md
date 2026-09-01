@@ -366,6 +366,12 @@ kind_ inc_kind = value mod portable
 ```ocaml
 type t_inc : inc_kind
 ```
+```ocaml
+module type S_param = sig ... end
+```
+```ocaml
+module M_param : S_param
+```
 
 ## Zero alloc
 
