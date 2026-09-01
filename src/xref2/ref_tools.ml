@@ -390,10 +390,10 @@ module KA = struct
     env_lookup_by_name Env.s_kind_abbreviation name env
     >>= fun (`KindAbbreviation (id, _)) -> Ok (`Identifier (id :> Identifier.t))
 
-  let in_signature _env ((_, _, sg) : signature_lookup_result) name :
+  let in_signature _env ((parent, _, sg) : signature_lookup_result) name :
       t ref_result =
     find Find.kind_abbreviation_in_sig sg TypeName.to_string name >>= function
-    | `FKindAbbreviation id -> Ok (`Identifier (id :> Identifier.t))
+    | `FKindAbbreviation (name, _) -> Ok (`KindAbbreviation (parent, name))
 end
 
 module L = struct

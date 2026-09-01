@@ -164,8 +164,14 @@ Unboxed types have a trailing hash '\#'
 \label{Oxcaml--module-M_inc}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M_inc]{\ocamlinlinecode{M\_\allowbreak{}inc}}}\label{Oxcaml-M_inc}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-M_inc--kind-inc_kind}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} inc\_\allowbreak{}kind = value \ocamltag{keyword}{mod} portable}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
-\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[Oxcaml-M_inc]{\ocamlinlinecode{M\_\allowbreak{}inc}}\label{Oxcaml-M_inc--kind-inc_kind}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} inc\_\allowbreak{}kind = value \ocamltag{keyword}{mod} portable}\\
+\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[Oxcaml-M_inc]{\ocamlinlinecode{M\_\allowbreak{}inc}}\label{Oxcaml--kind-inc_kind}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} inc\_\allowbreak{}kind = value \ocamltag{keyword}{mod} portable}\\
 \label{Oxcaml--type-t_inc}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}inc : \hyperref[Oxcaml--kind-inc_kind]{\ocamlinlinecode{inc\_\allowbreak{}kind}}}\\
+\label{Oxcaml--module-type-S_param}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[Oxcaml-module-type-S_param]{\ocamlinlinecode{S\_\allowbreak{}param}}}\label{Oxcaml-module-type-S_param}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-module-type-S_param--kind-param_kind}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} param\_\allowbreak{}kind = value \ocamltag{keyword}{mod} portable}\\
+\label{Oxcaml-module-type-S_param--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} ('a : \hyperref[Oxcaml-module-type-S_param--kind-param_kind]{\ocamlinlinecode{param\_\allowbreak{}kind}}) t}\begin{ocamlindent}A kind-constrained type parameter inside a signature expansion; the use should link to \ocamlinlinecode{param\_\allowbreak{}kind}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{Oxcaml--module-M_param}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M_param]{\ocamlinlinecode{M\_\allowbreak{}param}}}\ocamlcodefragment{ : \hyperref[Oxcaml-module-type-S_param]{\ocamlinlinecode{S\_\allowbreak{}param}}}\\
 \subsection{Zero alloc\label{Oxcaml--zero-alloc}}%
 \label{Oxcaml--val-add}\ocamlcodefragment{\ocamltag{keyword}{val} add : bool \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int \ocamltag{arrow}{$\rightarrow$} int [@@zero\_\allowbreak{}alloc]}\begin{ocamlindent}Zero allocation bindings have an extension attribute attached. See https://oxcaml.org/documentation/miscellaneous-extensions/zero\_alloc\_check/\end{ocamlindent}%
 \medbreak
@@ -582,4 +588,5 @@ Some axes have a default value that is implied by another axis; the implied valu
 \input{Oxcaml.F_kind.tex}
 \input{Oxcaml.Arg_kind.tex}
 \input{Oxcaml.F_nested.tex}
+\input{Oxcaml.M_param.tex}
 \input{Oxcaml.M1.tex}

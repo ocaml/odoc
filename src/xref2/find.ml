@@ -8,7 +8,7 @@ type module_type = [ `FModuleType of ModuleTypeName.t * ModuleType.t ]
 type datatype = [ `FType of TypeName.t * TypeDecl.t ]
 
 type kind_abbreviation =
-  [ `FKindAbbreviation of Odoc_model.Paths.Identifier.KindAbbreviation.t ]
+  [ `FKindAbbreviation of TypeName.t * Odoc_model.Lang.KindAbbreviation.t ]
 
 type core_type = [ `CoreType of TypeName.t ]
 
@@ -134,11 +134,13 @@ let type_in_sig sg name =
 
 let kind_abbreviation_in_sig sg name =
   find_in_sig sg (function
-    | Signature.KindAbbreviation ka
-      when TypeName.to_string name
-           = Odoc_model.Paths.Identifier.name
-               ka.Odoc_model.Lang.KindAbbreviation.id ->
-        Some (`FKindAbbreviation ka.Odoc_model.Lang.KindAbbreviation.id)
+    | Signature.KindAbbreviation ka ->
+        let `KindAbbreviation (_, ka_name) =
+          ka.Odoc_model.Lang.KindAbbreviation.id
+        in
+        if TypeName.equal_modulo_shadowing ka_name name then
+          Some (`FKindAbbreviation (ka_name, ka))
+        else None
     | _ -> None)
 
 type removed_type =

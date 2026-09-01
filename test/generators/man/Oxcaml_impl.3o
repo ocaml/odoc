@@ -168,4 +168,6 @@ Multiple modes on argument and return\.
 .sp 
 \f[CB]module\fR Shadowing_source : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .sp 
+\f[CB]type\fR t_dup : dup
+.sp 
 \f[CB]kind_\fR dup = value_or_null \f[CB]mod\fR non_null
