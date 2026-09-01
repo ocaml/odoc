@@ -2,6 +2,8 @@
 
 module ModuleMap : Map.S with type key = Ident.module_
 
+module KindAbbreviationMap : Map.S with type key = Ident.kind_abbreviation
+
 module TypeMap : Map.S with type key = Ident.type_
 
 module ModuleTypeMap : Map.S with type key = Ident.module_type
@@ -154,6 +156,14 @@ and Extension : sig
     type_params : TypeDecl.param list;
     private_ : bool;
     constructors : Constructor.t list;
+  }
+end
+
+and KindAbbreviation : sig
+  type t = {
+    source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    doc : CComment.docs;
+    manifest : Odoc_model.Lang.Kind.t option;
   }
 end
 
@@ -310,7 +320,7 @@ and Signature : sig
     | ModuleTypeSubstitution of Ident.module_type * ModuleTypeSubstitution.t
     | Type of Ident.type_ * recursive * TypeDecl.t Delayed.t
     | TypeSubstitution of Ident.type_ * TypeDecl.t
-    | KindAbbreviation of Odoc_model.Lang.KindAbbreviation.t
+    | KindAbbreviation of Ident.kind_abbreviation * KindAbbreviation.t
     | Exception of Ident.exception_ * Exception.t
     | TypExt of Extension.t
     | Value of Ident.value * Value.t Delayed.t
