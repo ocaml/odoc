@@ -13,6 +13,9 @@
 - Fix resolving functor through `module type of` (@Leonidas-from-XIV, #1471)
 - Fix odoc_driver's detection of `stdlib` when it is in `$prefix/lib64`, requires ocamlfind >= 1.9.8 (@katrinafyi, #1477, #1474)
 
+### Fixed
+- Allow to break link into multiline (@Tim-ats-d, #1439)
+
 # 3.2.1
 
 ### Fixed

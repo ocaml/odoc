@@ -57,11 +57,17 @@ Quick reference for the odoc language!
       {@text[
       Here is a link: {:https://www.example.com}.
 
-      You can also click {{:https://www.example.com}here}.]}}
+      You can also click {{:https://www.example.com}here}.
+
+      Multi lines links are also supported: {:https://www.example.com/\
+        a-very\
+        long-path/}]}}
     {td
       Here is a link: {:https://www.example.com}.
 
-      You can also click {{:https://www.example.com}here}.}}
+      You can also click {{:https://www.example.com}here}.
+
+      Multi lines links are also supported: {:https://www.example.com/a-very-long-path/}.}}
   {tr
     {th {{!odoc_for_authors.links_and_references}References} }
     {td

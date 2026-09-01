@@ -545,9 +545,17 @@ A link to a URL may be put into the text as follows:
 (** See {{: https://ocaml.org/ }the OCaml website} for news about OCaml *)
 ]}
 
-This will render as a link to [https://ocaml.org/] with the text "the OCaml website"
+This will render as a link to [https://ocaml.org/] with the text "the OCaml website".
 
-References are links to other elements, e.g., comments might wish to refer to 
+Link can also be spread accross lines:
+{[
+{{: https://github.com/ocaml/\
+   odoc/issues/ }Issues opened on Odoc}
+]}
+
+Use a backslash to mark line breaks. When a backslash is followed by whitespace, both are removed.
+
+References are links to other elements, e.g., comments might wish to refer to
 a module or type elsewhere as follows:
 
 {[
