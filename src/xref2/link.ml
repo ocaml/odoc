@@ -635,6 +635,14 @@ and signature_items :
         | TypeSubstitution t ->
             let env' = Env.open_type_substitution t env in
             (TypeSubstitution (type_decl env id t) :: items, env')
+        | KindAbbreviation t ->
+            std
+            @@ KindAbbreviation
+                 {
+                   t with
+                   Odoc_model.Lang.KindAbbreviation.manifest =
+                     Option.map (resolve_kind env) t.manifest;
+                 }
         | ModuleType mt -> std @@ ModuleType (module_type env mt)
         | ModuleTypeSubstitution mts ->
             let env' = Env.open_module_type_substitution mts env in
@@ -1051,7 +1059,28 @@ and type_decl_equation env parent t =
         (type_expression env parent [] tex1, type_expression env parent [] tex2))
       t.constraints
   in
-  { t with manifest; constraints }
+  let params =
+    List.map
+      (fun (p : TypeDecl.param) -> { p with kind = resolve_kind env p.kind })
+      t.params
+  in
+  { t with params; manifest; constraints; kind = resolve_kind env t.kind }
+
+and resolve_kind env (k : Odoc_model.Lang.Kind.t) : Odoc_model.Lang.Kind.t =
+  let open Odoc_model.Lang.Kind in
+  match k with
+  | Default | Abbreviation (_, None) | Abbreviation (_, Some (`Resolved _)) -> k
+  | Abbreviation (name, Some r) -> (
+      match
+        Odoc_model.Error.unpack_warnings (Ref_tools.resolve_reference env r)
+        |> fst
+      with
+      | Ok (r', _) -> Abbreviation (name, Some (`Resolved r'))
+      | Error _ -> k)
+  | Mod (b, m) -> Mod (resolve_kind env b, m)
+  | With (b, ty, m) -> With (resolve_kind env b, ty, m)
+  | Kind_of ty -> Kind_of ty
+  | Product ks -> Product (List.map (resolve_kind env) ks)
 
 and type_decl_field env parent f =
   let open TypeDecl.Field in
@@ -1215,7 +1244,9 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
             let p = Lang_of.(Path.resolved_class_type (empty ()) cp') in
             Class (`Resolved p, ts)
         | _ -> Class (path', ts))
-  | Poly (strs, t) -> Poly (strs, type_expression env parent visited t)
+  | Poly (strs, t) ->
+      let strs = List.map (fun (s, k) -> (s, resolve_kind env k)) strs in
+      Poly (strs, type_expression env parent visited t)
   | Quote t -> Quote (type_expression env parent visited t)
   | Splice t -> Splice (type_expression env parent visited t)
   | Package p -> Package (type_expression_package env parent visited p)

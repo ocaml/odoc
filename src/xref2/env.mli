@@ -59,6 +59,9 @@ val add_module :
 
 val add_type : Identifier.Type.t -> Component.TypeDecl.t -> t -> t
 
+val add_kind_abbreviation :
+  Identifier.KindAbbreviation.t -> Odoc_model.Lang.KindAbbreviation.t -> t -> t
+
 val add_module_type :
   Identifier.Path.ModuleType.t -> Component.ModuleType.t -> t -> t
 
@@ -138,6 +141,8 @@ val s_module_type : Component.Element.module_type scope
 val s_type : Component.Element.type_ scope
 
 val s_datatype : Component.Element.datatype scope
+
+val s_kind_abbreviation : Component.Element.kind_abbreviation scope
 
 val s_class : Component.Element.class_ scope
 

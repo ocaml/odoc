@@ -67,6 +67,11 @@ module Identifier : sig
 
   module Type : IdSig with type t = Id.type_ and type t_pv = Id.type_pv
 
+  module KindAbbreviation :
+    IdSig
+      with type t = Id.kind_abbreviation
+       and type t_pv = Id.kind_abbreviation_pv
+
   module Class : IdSig with type t = Id.class_ and type t_pv = Id.class_pv
 
   module ClassType :
@@ -300,6 +305,10 @@ module Identifier : sig
 
     val type_ :
       Signature.t * TypeName.t -> [> `Type of Signature.t * TypeName.t ] id
+
+    val kind_abbreviation :
+      Signature.t * TypeName.t ->
+      [> `KindAbbreviation of Signature.t * TypeName.t ] id
 
     val core_type : string -> [> `CoreType of TypeName.t ] id
 

@@ -69,6 +69,7 @@ let ref_kind_of_element = function
   | `Module _ -> "module"
   | `ModuleType _ -> "module-type"
   | `Type _ -> "type"
+  | `KindAbbreviation _ -> "kind"
   | `Value _ -> "val"
   | `Label _ -> "section"
   | `Class _ -> "class"
@@ -378,6 +379,21 @@ module V = struct
   let in_signature _env ((parent, _, sg) : signature_lookup_result) name =
     find Find.value_in_sig sg ValueName.to_string name >>= function
     | `FValue (name, _) -> Ok (`Value (parent, name))
+end
+
+module KA = struct
+  (** Kind abbreviation *)
+
+  type t = Resolved.t
+
+  let in_env env name : t ref_result =
+    env_lookup_by_name Env.s_kind_abbreviation name env
+    >>= fun (`KindAbbreviation (id, _)) -> Ok (`Identifier (id :> Identifier.t))
+
+  let in_signature _env ((_, _, sg) : signature_lookup_result) name :
+      t ref_result =
+    find Find.kind_abbreviation_in_sig sg TypeName.to_string name >>= function
+    | `FKindAbbreviation id -> Ok (`Identifier (id :> Identifier.t))
 end
 
 module L = struct
@@ -978,6 +994,7 @@ let resolve_reference :
             identifier ?text id
         | `Class (id, _) -> identifier id
         | `ClassType (id, _) -> identifier id
+        | `KindAbbreviation (id, _) -> identifier id
         | `Constructor (id, _) -> identifier id
         | `Exception (id, _) -> identifier id
         | `Extension (id, _, _) -> identifier id
@@ -998,6 +1015,10 @@ let resolve_reference :
     | `Type (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
         T.in_signature env p name >>= resolved_type_lookup
+    | `Root (name, `TKindAbbreviation) -> KA.in_env env name >>= resolved1
+    | `KindAbbreviation (parent, name) ->
+        resolve_signature_reference env parent >>= fun p ->
+        KA.in_signature env p name >>= resolved1
     | `Root (name, `TClass) -> CL.in_env env name >>= resolved2
     | `Class (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->

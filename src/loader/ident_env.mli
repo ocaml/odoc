@@ -72,6 +72,16 @@ val find_exception_identifier : t -> Ident.t -> Paths.Identifier.Exception.t
 
 val find_type_identifier : t -> Ident.t -> Paths.Identifier.Type.t
 
+val find_kind_abbreviation_identifier :
+  t -> Ident.t -> Paths.Identifier.KindAbbreviation.t
+
+val find_kind_abbreviation :
+  t -> string -> Paths.Identifier.KindAbbreviation.t option
+
+val add_kind_abbreviation_to_scope : t -> Ident.t -> t
+
+val add_signature_kind_abbreviations_to_scope : t -> Compat.signature -> t
+
 val find_class_identifier : t -> Ident.t -> Paths.Identifier.Class.t
 
 val ident_is_global_or_predef : Ident.t -> bool
