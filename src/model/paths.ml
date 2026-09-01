@@ -1063,6 +1063,10 @@ module Reference = struct
           match parent_signature_identifier p with
           | None -> None
           | Some p -> Some (Identifier.Mk.value (p, q)))
+      | `KindAbbreviation (p, q) -> (
+          match parent_signature_identifier p with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.kind_abbreviation (p, q)))
       | `Method (p, q) -> (
           match parent_class_signature_identifier p with
           | None -> None
