@@ -1003,8 +1003,9 @@ and rename_bound_idents s sg =
         (Open { expansion = { expansion with items; removed = [] }; doc } :: sg)
         rest
   | (Comment _ as item) :: rest -> rename_bound_idents s (item :: sg) rest
-  | (KindAbbreviation _ as item) :: rest ->
-      rename_bound_idents s (item :: sg) rest
+  | KindAbbreviation (id, ka) :: rest ->
+      let id' = Ident.Rename.kind_abbreviation id in
+      rename_bound_idents s (KindAbbreviation (id', ka) :: sg) rest
 
 and removed_items s items =
   let open Component.Signature in

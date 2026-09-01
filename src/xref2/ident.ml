@@ -10,6 +10,8 @@ type module_type = [ `LModuleType of ModuleTypeName.t * int ]
 
 type type_ = [ `LType of TypeName.t * int ]
 
+type kind_abbreviation = [ `LKindAbbreviation of TypeName.t * int ]
+
 type constructor = [ `LConstructor of ConstructorName.t * int ]
 
 type field = [ `LField of FieldName.t * int ]
@@ -34,6 +36,7 @@ type any =
   [ module_
   | module_type
   | type_
+  | kind_abbreviation
   | constructor
   | field
   | unboxed_field
@@ -56,6 +59,7 @@ let int_of_any : any -> int = function
   | `LConstructor (_, i)
   | `LMethod (_, i)
   | `LType (_, i)
+  | `LKindAbbreviation (_, i)
   | `LValue (_, i)
   | `LInstanceVariable (_, i)
   | `LField (_, i)
@@ -73,6 +77,11 @@ module Of_Identifier = struct
    fun t ->
     let i = fresh_int () in
     match t with `Type (_, n) -> `LType (n, i)
+
+  let kind_abbreviation : KindAbbreviation.t -> kind_abbreviation =
+   fun k ->
+    let i = fresh_int () in
+    match k with `KindAbbreviation (_, n) -> `LKindAbbreviation (n, i)
 
   let module_ : Module.t -> module_ = function
     | `Module (_, n) | `Root (_, n) ->
@@ -129,6 +138,9 @@ module Name = struct
   let unsafe_type : type_ -> string = function
     | `LType (n, _) -> TypeName.to_string_unsafe n
 
+  let typed_kind_abbreviation : kind_abbreviation -> TypeName.t = function
+    | `LKindAbbreviation (n, _) -> n
+
   let module_type : module_type -> string = function
     | `LModuleType (n, _) -> ModuleTypeName.to_string n
 
@@ -177,6 +189,9 @@ module Rename = struct
   let type_ : type_ -> type_ = function
     | `LType (n, _) -> `LType (n, fresh_int ())
 
+  let kind_abbreviation : kind_abbreviation -> kind_abbreviation = function
+    | `LKindAbbreviation (n, _) -> `LKindAbbreviation (n, fresh_int ())
+
   let exception_ : exception_ -> exception_ = function
     | `LException (n, _) -> `LException (n, fresh_int ())
 
@@ -195,6 +210,7 @@ let fmt_aux (id : any) : string * int =
   | `LModule (n, i) -> (ModuleName.to_string n, i)
   | `LModuleType (n, i) -> (ModuleTypeName.to_string n, i)
   | `LType (n, i) -> (TypeName.to_string n, i)
+  | `LKindAbbreviation (n, i) -> (TypeName.to_string n, i)
   | `LConstructor (n, i) -> (ConstructorName.to_string n, i)
   | `LField (n, i) -> (FieldName.to_string n, i)
   | `LUnboxedField (n, i) -> (UnboxedFieldName.to_string n, i)
