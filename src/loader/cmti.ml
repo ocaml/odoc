@@ -1002,7 +1002,7 @@ and read_include env parent incl =
   match Odoc_model.Lang.umty_of_mty expr with
   | Some uexpr ->
     let decl = Include.ModuleType uexpr in
-    [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
+    [Include {parent; doc; decl; expansion; expanded = false; status; strengthened=None; loc }]
   | None ->
     content.items
 
@@ -1025,7 +1025,7 @@ and read_include_functor env parent wrapper incl =
   let functor_ : Module.t = {id; source_loc=None; doc; type_=ModuleType expr; canonical=None; hidden} in
   let decl = Functor {target = Path (`Apply (functor_path, wrapper)); original_ref = ModuleType expr} in
   [ Signature.Module (Ordinary, functor_);
-    Include {parent; doc; decl; expansion; status; strengthened=None; loc } ]
+    Include {parent; doc; decl; expansion; expanded=false; status; strengthened=None; loc } ]
 #endif
 
 and read_open env parent o =
