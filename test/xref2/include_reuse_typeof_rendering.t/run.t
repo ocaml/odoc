@@ -38,10 +38,10 @@ render as aliases in any case.
         (sig :
           include S with [t(params ) = X.t]
             (sig :
-              type u
+              type u = X0.u
               val v : u
-              module type H = sig val h : int end
-              module Make : (X/29 : H) -> sig val mk : X.t end
+              module type H = X0.H
+              module Make = X0.Make
              end)
          end)
     end

@@ -450,9 +450,7 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
         in
         { i.expansion with content = expansion_sg }
   in
-  let expansion =
-    if i.expansion.content.compiled then i.expansion else get_expansion ()
-  in
+  let expansion = if i.expanded then i.expansion else get_expansion () in
   let items, env' = signature_items env i.parent expansion.content.items in
   let expansion =
     {
@@ -460,7 +458,10 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
       content = { expansion.content with items; compiled = true };
     }
   in
-  ({ i with decl = include_decl env i.parent i.decl; expansion }, env')
+  let decl = include_decl env i.parent i.decl in
+  (* expanded=true: the expansion is authoritative and is not re-derived
+     from the decl in dependent modules. *)
+  ({ i with decl; expansion; expanded = true }, env')
 
 and simple_expansion :
     Env.t ->

@@ -351,6 +351,7 @@ and Include : sig
     status : [ `Default | `Inline | `Closed | `Open ];
     shadowed : Odoc_model.Lang.Include.shadowed;
     expansion_ : Signature.t;
+    expanded : bool;
     decl : decl;
     loc : Odoc_model.Location_.span;
   }
