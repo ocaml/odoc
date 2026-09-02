@@ -20,6 +20,8 @@
 - Fix odoc_driver's detection of `stdlib` when it is in `$prefix/lib64`, requires ocamlfind >= 1.9.8 (@katrinafyi, #1477, #1474)
 - Fix loss of items bound by extended opens (`open struct ... end`) following a top-of-file docstring (@jonludlam, #1482)
 - Fix resolution of paths through the bindings of an extended open (@jonludlam, #1482)
+- Don't let an unrelated `@canonical` tag halt the search for a self-canonical
+  module, which lost the expansion of the module it named (@jonludlam, #1483)
 
 ### Performance
 - Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #1487)
