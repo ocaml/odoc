@@ -245,12 +245,17 @@ let extract_top_comment internal_tags ~warnings_tag ~classify parent items =
     | None -> `Return
   in
   let rec extract_tail_alerts acc = function
-    (* Accumulate the alerts after the top-comment. Stop at the next comment. *)
+    (* Accumulate the alerts after the top-comment. Stop at the next comment.
+       [`Skip] items (open statements, unrecognised attributes) are preserved
+       in the returned items list -- dropping them silently loses [open
+       struct ... end] declarations that follow the top docstring. *)
     | hd :: tl as items -> (
         match classify hd with
         | `Text _ | `Return -> (items, acc)
         | `Alert alert -> extract_tail_alerts (alert :: acc) tl
-        | `Skip -> extract_tail_alerts acc tl)
+        | `Skip ->
+            let items, alerts = extract_tail_alerts acc tl in
+            (hd :: items, alerts))
     | [] -> ([], acc)
   and extract = function
     (* Extract the first comment and accumulate the alerts before and after
