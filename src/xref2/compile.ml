@@ -460,7 +460,15 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
   in
   let decl = include_decl env i.parent i.decl in
   (* expanded=true: the expansion is authoritative and is not re-derived
-     from the decl in dependent modules. *)
+     from the decl in dependent modules, so an inline Signature decl is
+     redundant; strip it. *)
+  let decl =
+    match decl with
+    | Include.ModuleType (Signature _) ->
+        Include.ModuleType
+          (Signature { items = []; compiled = true; removed = []; doc = i.doc })
+    | _ -> decl
+  in
   ({ i with decl; expansion; expanded = true }, env')
 
 and simple_expansion :
