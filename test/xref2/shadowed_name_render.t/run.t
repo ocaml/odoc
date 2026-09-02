@@ -37,12 +37,12 @@ the internal disambiguated name:
 
   $ grep -A4 'val</span> equal' html/Test/N/index.html
         <span><span class="keyword">val</span> equal : 
-                                                         
-         <span>
-          <span class="xref-unresolved">
-           M.{t}1/shadowed/(6136b1bde48b84021ec2033e9708772d)
+         <span>int <span class="arrow">&#45;&gt;</span></span> 
+         <span>int <span class="arrow">&#45;&gt;</span></span> bool
+        </span>
+       </code>
 
 Nothing anywhere in the output should contain the internal form:
 
   $ grep -rl 'shadowed/(' html/ || echo "no internal names leaked"
-  html/Test/N/index.html
+  no internal names leaked

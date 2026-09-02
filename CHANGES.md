@@ -33,6 +33,7 @@
 - Unresolved @canonical tags no longer abort the search for canonical paths (@jonludlam, #1483)
 - Compress the contents of `.odoc` and `.odocl` files, which makes them several
   times smaller (@jonludlam, #1486)
+- Fix bug in hidden name check that sometimes exposed hidden items (@jonludlam, #1484)
 
 ### Performance
 - Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #1487)
