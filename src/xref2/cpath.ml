@@ -252,6 +252,11 @@ and is_resolved_type_hidden : Resolved.type_ -> bool = function
   | `CanonicalType (_, `Resolved _) -> false
   | `CanonicalType (p, _) -> is_resolved_type_hidden p
   | `Unbox p -> is_resolved_type_hidden p
+  (* A shadowed or otherwise hidden name makes the path hidden even when its
+     parent is visible - as in [Odoc_model.Paths.Path.Resolved.is_hidden]. *)
+  | `Type (_, n) | `Class (_, n) | `ClassType (_, n) when TypeName.is_hidden n
+    ->
+      true
   | `Type (p, _) | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
 
