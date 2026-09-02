@@ -1337,13 +1337,14 @@ and handle_canonical_module_real env p2 =
                    If not, check for an alias chain with us as canonical in it... *)
                 let rec check m =
                   match m.Component.Module.canonical with
-                  | Some p ->
-                      p = p2
-                      (* The canonical path is the same one we're trying to resolve *)
-                  | None -> (
+                  | Some p when p = p2 -> true
+                  | _ -> (
+                      (* An unrelated canonical tag - Dune tags every alias with
+                         [Lib.M], even ones [lib.ml] doesn't re-export - mustn't
+                         stop the search: a module further down the chain may
+                         still be the one we're looking for. *)
                       match m.type_ with
                       | Component.Module.Alias (p, _) -> (
-                          (* Format.eprintf "Going to resolve %a\n%!" Component.Fmt.module_path p; *)
                           match resolve_module env p with
                           | Ok (rp, _) -> (
                               match lookup_module env rp with

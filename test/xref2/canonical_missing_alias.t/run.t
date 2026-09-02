@@ -115,21 +115,21 @@ takes precedence over it, so the library author can correct it from
   $ odoc link -I . main.odoc
   $ odoc html-generate --indent -o html main.odocl
 
-`Main.Private.Zone_alias` should still be documented - it must not lose its
-expansion just because it is now the canonical destination of the module it is
-an alias of. But its page has gone:
+`Main.Private.Zone_alias` is still documented - it must not lose its expansion
+just because it is now the canonical destination of the module it is an alias
+of:
 
   $ find html/Main -name index.html | sort
   html/Main/Foo/index.html
+  html/Main/Private/Zone_alias/index.html
   html/Main/Private/index.html
   html/Main/index.html
 
-and while the reference now names the right module, it is rendered as plain
-text rather than a link to it:
+and the reference resolves, and links to it:
 
   $ grep -A4 'val</span> f' html/Main/Foo/index.html
         <span><span class="keyword">val</span> f : 
-         <span>Private.Zone_alias.t <span class="arrow">&#45;&gt;</span></span>
-          int
-        </span>
-       </code>
+         <span>
+          <a href="../Private/Zone_alias/index.html#type-t">
+           Private.Zone_alias.t
+          </a> <span class="arrow">&#45;&gt;</span>
