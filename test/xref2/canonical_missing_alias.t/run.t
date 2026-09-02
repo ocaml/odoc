@@ -92,7 +92,7 @@ generates can't be changed, but a canonical tag in the module's own preamble
 takes precedence over it, so the library author can correct it from
 `main__Zone.mli`:
 
-  $ sed -i '1i (** @canonical Main.Private.Zone_alias *)\n' main__Zone.mli
+  $ printf '(** @canonical Main.Private.Zone_alias *)\n\n' | cat - main__Zone.mli > t && mv t main__Zone.mli
   $ cat main__Zone.mli
   (** @canonical Main.Private.Zone_alias *)
   
