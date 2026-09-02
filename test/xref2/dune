@@ -44,7 +44,8 @@
   expansion
   github_issue_1066
   github_issue_1431
-  include_module_type_of_preamble)
+  include_module_type_of_preamble
+  open_struct_items)
  (enabled_if
   (>= %{ocaml_version} 4.08.0)))
 
