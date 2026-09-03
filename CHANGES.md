@@ -9,6 +9,8 @@
 - Fix OxCaml with-bounds for arbitrary types (@art-w, #1466)
 
 ### Fixed
+- Fix optional arguments rendering as `?arg:???` in modules without an mli on
+  OCaml 5.5 (@jonludlam, #1489)
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)
 - Fix resolving functor through `module type of` (@Leonidas-from-XIV, #1471)
 - Fix odoc_driver's detection of `stdlib` when it is in `$prefix/lib64`, requires ocamlfind >= 1.9.8 (@katrinafyi, #1477, #1474)

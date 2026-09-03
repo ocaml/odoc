@@ -14,7 +14,7 @@ stop odoc from recognising the [option] beneath it.
 The labels should be [Optional]; [RawOptional] renders as [?force:???]:
 
   $ odoc_print test.odocl | jq -c '.. | .["Arrow"]? | select(.) | .[0]'
-  {"Some":{"RawOptional":"force"}}
+  {"Some":{"Optional":"force"}}
   "None"
-  {"Some":{"RawOptional":"force"}}
+  {"Some":{"Optional":"force"}}
   "None"

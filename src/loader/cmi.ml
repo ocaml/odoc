@@ -98,6 +98,11 @@ let opt_iter f = function
   | None -> ()
   | Some x -> f x
 
+(* From OCaml 5.5, the argument types of inferred arrows are wrapped in a
+   trivial [Tpoly] node. Look through it when unwrapping optional arguments. *)
+let strip_trivial_poly typ =
+  match Compat.get_desc typ with Tpoly (typ, []) -> typ | _ -> typ
+
 let read_label lbl =
   let open TypeExpr in
 #if defined OXCAML
@@ -799,7 +804,7 @@ and read_type_expr_modal env implied_modes typ =
           let lbl,arg =
             match lbl with
             | Some (Optional s) -> (
-              match Compat.get_desc arg with
+              match Compat.get_desc (strip_trivial_poly arg) with
               | Tconstr(_option, [arg], _) ->
                 lbl, read_type_expr env arg (* Unwrap option if possible *)
               | _ ->
@@ -1384,7 +1389,7 @@ let rec read_class_type env parent params =
       let lbl, arg =
         match lbl with
         | Some (Optional s) -> (
-          match Compat.get_desc arg with
+          match Compat.get_desc (strip_trivial_poly arg) with
           | Tconstr(_option, [arg], _) ->
             lbl, read_type_expr env arg (* Unwrap option if possible *)
           | _ ->
