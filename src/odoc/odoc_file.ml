@@ -28,10 +28,31 @@ type content =
 
 type t = { content : content; warnings : Odoc_model.Error.t list }
 
+(* Marshalling goes through [Compat], which routes it via the compiler's own
+   [Compression] module where that exists: payloads are zstd-compressed when
+   the running compiler was built with zstd support, and fall back to plain
+   Marshal otherwise. *)
+let compression_supported = Compat.compression_supported
+let output_value oc v = Compat.marshal_to_channel oc v
+let input_value ic = Compat.unmarshal_from_channel ic
+
 (** Written at the top of the files. Checked when loading. *)
 let magic = "ODOC"
 
-let magic_version = "%%VERSION%%"
+(* A compressed payload can only be read back by a compiler with zstd support,
+   so the version records which format was written: an odoc without it reports
+   the mismatch here rather than failing in the unmarshaller with "compressed
+   object, cannot decompress". *)
+let magic_version_uncompressed = "%%VERSION%%"
+
+let magic_version =
+  magic_version_uncompressed ^ if compression_supported then "-zstd" else ""
+
+(* An uncompressed payload can be read whether or not this odoc would write
+   one, so accept it too rather than rejecting a file we can perfectly well
+   read. The converse isn't true, which is what the version distinguishes. *)
+let readable_version version =
+  version = magic_version || version = magic_version_uncompressed
 
 (** Exceptions while saving are allowed to leak. *)
 let save_ file f =
@@ -52,8 +73,8 @@ let save_ file f =
 
 let save_unit file (root : Root.t) (t : t) =
   save_ file (fun oc ->
-      Marshal.to_channel oc root [];
-      Marshal.to_channel oc t [])
+      output_value oc root;
+      output_value oc t)
 
 let save_page file ~warnings page =
   let dir = Fs.File.dirname file in
@@ -112,7 +133,7 @@ let load_ file f =
   in
   let check_version ic len =
     let actual_magic = really_input_string ic len in
-    if actual_magic = magic_version then Ok ()
+    if readable_version actual_magic then Ok ()
     else
       let msg =
         Printf.sprintf "%s has invalid version %S, expected %S\n%!" file
@@ -134,19 +155,19 @@ let load_ file f =
 
 let load file =
   load_ file (fun ic ->
-      let _root = Marshal.from_channel ic in
-      Ok (Marshal.from_channel ic))
+      let _root = input_value ic in
+      Ok (input_value ic))
 
 (** The root is saved separately in the files to support this function. *)
 let load_root file =
   load_ file (fun ic ->
-      let root = Marshal.from_channel ic in
+      let root = input_value ic in
       Ok root)
 
-let save_index dst idx = save_ dst (fun oc -> Marshal.to_channel oc idx [])
+let save_index dst idx = save_ dst (fun oc -> output_value oc idx)
 
-let load_index file = load_ file (fun ic -> Ok (Marshal.from_channel ic))
+let load_index file = load_ file (fun ic -> Ok (input_value ic))
 
-let save_sidebar dst idx = save_ dst (fun oc -> Marshal.to_channel oc idx [])
+let save_sidebar dst idx = save_ dst (fun oc -> output_value oc idx)
 
-let load_sidebar file = load_ file (fun ic -> Ok (Marshal.from_channel ic))
+let load_sidebar file = load_ file (fun ic -> Ok (input_value ic))

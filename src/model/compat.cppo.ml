@@ -259,3 +259,22 @@ let compunit_name x = x
 let required_compunit_names x = List.map Ident.name x.Cmo_format.cu_required_globals
 
 #endif
+
+(* Marshalling through the compiler's own [Compression] module (the mechanism
+   it uses for .cmt/.cmti files): payloads are zstd-compressed when the running
+   compiler was built with zstd support, and fall back to plain Marshal
+   otherwise. [Compression] only exists from OCaml 5.1 and is absent from
+   OxCaml; there we use Marshal directly. *)
+#if OCAML_VERSION >= (5, 1, 0) && not (defined OXCAML)
+
+let compression_supported = Compression.compression_supported
+let marshal_to_channel oc v = Compression.output_value oc v
+let unmarshal_from_channel ic = Compression.input_value ic
+
+#else
+
+let compression_supported = false
+let marshal_to_channel oc v = Marshal.to_channel oc v []
+let unmarshal_from_channel ic = Marshal.from_channel ic
+
+#endif

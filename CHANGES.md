@@ -26,6 +26,8 @@
 - Fix loss of items bound by extended opens (`open struct ... end`) following a top-of-file docstring (@jonludlam, #1482)
 - Fix resolution of paths through the bindings of an extended open (@jonludlam, #1482)
 - Unresolved @canonical tags no longer abort the search for canonical paths (@jonludlam, #1483)
+- Compress the contents of `.odoc` and `.odocl` files, which makes them several
+  times smaller (@jonludlam, #1486)
 
 ### Performance
 - Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #1487)
