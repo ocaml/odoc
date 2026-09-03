@@ -617,7 +617,7 @@ and read_include_functor env parent wrapper incl =
     | _ ->
       let mty = read_module_expr env parent container incl.incl_mod in
       let hidden = true in
-      let id, path = Cmi.generate_wrapper_module parent ~prefix:"INCLUDE" ~hidden in
+      let id, path = Cmti.generate_wrapper_module parent ~prefix:"INCLUDE" ~hidden in
       let m : Module.t = {id; source_loc=None; doc; type_=ModuleType mty; canonical=None; hidden} in
       ([Signature.Module (Ordinary, m)], path, ModuleType mty)
   in
@@ -639,8 +639,8 @@ and read_items env parent items =
 #if defined OXCAML
       | Tstr_include ({ incl_kind = (Tincl_functor _ | Tincl_gen_functor _); _ } as incl) ->
         let hidden = true in
-        let wrapper = Cmi.generate_wrapper_module parent ~prefix:"BODY" ~hidden in
-        let wrapper_module = Cmi.wrapper_module wrapper ~hidden (List.rev acc) in
+        let wrapper = Cmti.generate_wrapper_module parent ~prefix:"BODY" ~hidden in
+        let wrapper_module = Cmti.wrapper_module wrapper ~hidden (List.rev acc) in
         let items = read_include_functor env parent (snd wrapper) incl in
         List.rev_append items (wrapper_module :: acc)
 #endif
