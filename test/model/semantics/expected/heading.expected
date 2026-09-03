@@ -58,7 +58,7 @@ Foo}
 
 }
 --- output ---
-{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-"]},[{"`Word":"Foo"},"`Space"]]}],"warnings":["File \"f.ml\", line 2, characters 0-0:\nBlank line is not allowed in '{2 ...}' (section heading)."]}
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-"]},[{"`Word":"Foo\n\n"}]]}],"warnings":["File \"f.ml\", line 2, characters 0-0:\nBlank line is not allowed in '{2 ...}' (section heading)."]}
 --- input ---
 {2 [foo]}
 --- output ---
@@ -80,11 +80,11 @@ baz]}
 --- input ---
 {2 {e foo bar}}
 --- output ---
-{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-bar"]},[{"`Styled":["`Emphasis",[{"`Word":"foo"},"`Space",{"`Word":"bar"}]]}]]}],"warnings":[]}
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-bar"]},[{"`Styled":["`Emphasis",[{"`Word":"foo bar"}]]}]]}],"warnings":[]}
 --- input ---
 {2 foo bar}
 --- output ---
-{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-bar"]},[{"`Word":"foo"},"`Space",{"`Word":"bar"}]]}],"warnings":[]}
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-bar"]},[{"`Word":"foo bar"}]]}],"warnings":[]}
 --- input ---
 {2 {2 Foo}}
 --- output ---
@@ -100,7 +100,7 @@ baz]}
 --- input ---
 foo {2 Bar}
 --- output ---
-{"value":[{"`Paragraph":[{"`Word":"foo"},"`Space"]},{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"bar"]},[{"`Word":"Bar"}]]}],"warnings":["File \"f.ml\", line 1, characters 4-6:\n'{2 ...}' (section heading) should begin on its own line.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+{"value":[{"`Paragraph":[{"`Word":"foo "}]},{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"bar"]},[{"`Word":"Bar"}]]}],"warnings":["File \"f.ml\", line 1, characters 4-6:\n'{2 ...}' (section heading) should begin on its own line.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
 --- input ---
 {2 Foo}
 bar
@@ -118,11 +118,11 @@ foo
 --- input ---
 {2 :foo Bar}
 --- output ---
-{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},":foo-bar"]},[{"`Word":":foo"},"`Space",{"`Word":"Bar"}]]}],"warnings":[]}
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},":foo-bar"]},[{"`Word":":foo Bar"}]]}],"warnings":[]}
 --- input ---
 {2: foo Bar}
 --- output ---
-{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-bar"]},[{"`Word":"foo"},"`Space",{"`Word":"Bar"}]]}],"warnings":["File \"f.ml\", line 1, characters 0-3:\nHeading label should not be empty."]}
+{"value":[{"`Heading":[{"heading_level":"`Subsection","heading_label_explicit":"false"},{"`Label":[{"`Page":["None","f.ml"]},"foo-bar"]},[{"`Word":"foo Bar"}]]}],"warnings":["File \"f.ml\", line 1, characters 0-3:\nHeading label should not be empty."]}
 --- input ---
 {2:foo}
 --- output ---

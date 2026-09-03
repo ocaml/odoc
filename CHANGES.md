@@ -19,6 +19,8 @@
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
+- Store comment text as one node per run of words rather than one per word,
+  which makes `.odoc` and `.odocl` files substantially smaller (@jonludlam, #1487)
 
 ### Fixed
 - Fix optional arguments rendering as `?arg:???` in modules without an mli on

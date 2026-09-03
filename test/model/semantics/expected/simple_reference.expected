@@ -17,7 +17,7 @@ bar{!foo}
 --- input ---
 bar {!foo}
 --- output ---
-{"value":[{"`Paragraph":[{"`Word":"bar"},"`Space",{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+{"value":[{"`Paragraph":[{"`Word":"bar "},{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
 --- input ---
 {!foo}bar
 --- output ---
@@ -25,7 +25,7 @@ bar {!foo}
 --- input ---
 {!foo} bar
 --- output ---
-{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]},"`Space",{"`Word":"bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+{"value":[{"`Paragraph":[{"`Reference":[{"`Root":["foo","`TUnknown"]},[]]},{"`Word":" bar"}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
 --- input ---
 {!val:foo}
 --- output ---

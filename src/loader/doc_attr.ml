@@ -237,7 +237,9 @@ let attached ~warnings_tag internal_tags parent attrs =
                   let parsed =
                     Odoc_parser.parse_comment ~location:(pad_loc loc) ~text:str
                   in
-                  let ast = Error.raise_parser_warnings parsed in
+                  let ast =
+                    Semantics.merge_ast (Error.raise_parser_warnings parsed)
+                  in
                   (match Odoc_parser.warnings parsed with
                   | [] when not (ast_needs_own_location ast) ->
                       Hashtbl.replace doc_cache str ast

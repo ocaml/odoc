@@ -6,7 +6,7 @@ Normal use
   > EOF
   $ odoc compile --parent-id pkg --output-dir _odoc index.mld
   $ odoc_print _odoc/pkg/page-index.odoc | jq .frontmatter.short_title -c
-  {"Some":[{"`Word":"First"},"`Space",{"`Word":"try"}]}
+  {"Some":[{"`Word":"First"},{"`Space":" "},{"`Word":"try"}]}
 
 With inline content
 
@@ -16,7 +16,7 @@ With inline content
   > EOF
   $ odoc compile --parent-id pkg --output-dir _odoc index.mld
   $ odoc_print _odoc/pkg/page-index.odoc | jq .frontmatter.short_title -c
-  {"Some":[{"`Word":"with"},"`Space",{"`Code_span":"code"},"`Space",{"`Word":"and"},"`Space",{"`Styled":["`Emphasis",[{"`Word":"emphasized"}]]},"`Space",{"`Word":"content"}]}
+  {"Some":[{"`Word":"with"},{"`Space":" "},{"`Code_span":"code"},{"`Space":" "},{"`Word":"and"},{"`Space":" "},{"`Styled":["`Emphasis",[{"`Word":"emphasized"}]]},{"`Space":" "},{"`Word":"content"}]}
 
 With reference or link
 
@@ -26,7 +26,7 @@ With reference or link
   > EOF
   $ odoc compile --parent-id pkg --output-dir _odoc index.mld
   $ odoc_print _odoc/pkg/page-index.odoc | jq .frontmatter.short_title -c
-  {"Some":[{"`Word":"with"},"`Space","`Space",{"`Word":"and"},"`Space"]}
+  {"Some":[{"`Word":"with"},{"`Space":" "},{"`Space":" "},{"`Word":"and"},{"`Space":" "}]}
 
 With other block
 

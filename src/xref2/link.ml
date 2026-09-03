@@ -234,7 +234,8 @@ let rec comment_inline_element_needs_resolving (x : Comment.inline_element) =
       List.exists
         (fun e -> comment_inline_element_needs_resolving e.Location_.value)
         xs
-  | `Space | `Word _ | `Code_span _ | `Math_span _ | `Raw_markup _ | `Link _ ->
+  | `Space _ | `Word _ | `Code_span _ | `Math_span _ | `Raw_markup _ | `Link _
+    ->
       false
 
 let rec comment_nestable_block_element_needs_resolving
