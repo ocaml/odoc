@@ -38,6 +38,93 @@ let opt_map f = function
   | None -> None
   | Some x -> Some (f x)
 
+let generate_wrapper_module =
+  let wrapper_counter = ref 0 in
+  fun parent ~prefix ~hidden ->
+    incr wrapper_counter;
+    let dummy_id =
+      let dummy_name =
+        let sep = match hidden with | true -> "__" | false -> "_" in
+        let name = Printf.sprintf "%s%s%d" prefix sep !wrapper_counter in
+        match hidden with
+        | false -> Odoc_model.Names.ModuleName.make_std name
+        | true -> Odoc_model.Names.ModuleName.hidden_of_string name
+      in
+      Identifier.Mk.module_ (parent, dummy_name)
+    in
+    let dummy_path = `Identifier (dummy_id, hidden) in
+    (dummy_id, dummy_path)
+
+let no_doc : Odoc_model.Comment.docs = { elements = []; warnings_tag = None }
+
+(* [include functor F] is modelled as the application of [F] to a synthetic,
+   hidden module holding the items that precede the include.
+
+   That module's items are *aliases* of the real ones rather than copies: the
+   expansion of [F(BODY__n)] refers to the functor argument, so a copy would
+   leave the expansion mentioning [BODY__n.t], a hidden path, which the
+   generator renders as an abstract [type t].  With an alias, [BODY__n.t]
+   reduces to the enclosing signature's own [t] and is rendered, and linked, as
+   such. *)
+let wrapper_items dummy_id items =
+  let module Id = Identifier in
+  let name id = Id.name id in
+  let parent = (dummy_id : Id.Module.t :> Id.Signature.t) in
+  (* Anonymous parameters ([_]) have to be named so that the alias can pass
+     them on to the item it aliases. *)
+  let alias_params params =
+    List.split
+      (List.mapi
+         (fun i (p : TypeDecl.param) ->
+           let v = match p.desc with Var v -> v | Any -> Printf.sprintf "a%d" i in
+           ({ p with TypeDecl.desc = TypeDecl.Var v }, TypeExpr.Var v))
+         params)
+  in
+  let rec wrapper_item item acc =
+    match (item : Signature.item) with
+    | Type (rec_, td) ->
+      let params, args = alias_params td.equation.params in
+      let manifest =
+        Some (TypeExpr.Constr (`Identifier ((td.id :> Id.Path.Type.t), false), args))
+      in
+      let equation =
+        { td.equation with TypeDecl.Equation.params; manifest; constraints = []; private_ = false }
+      in
+      let id = Id.Mk.type_ (parent, Odoc_model.Names.TypeName.make_std (name td.id)) in
+      Signature.Type (rec_, { td with TypeDecl.id; equation; representation = None; canonical = None; source_loc = None }) :: acc
+    | Module (rec_, m) ->
+      let id = Id.Mk.module_ (parent, Odoc_model.Names.ModuleName.make_std (name m.id)) in
+      let type_ = Module.Alias (`Identifier ((m.id :> Id.Path.Module.t), false), None) in
+      Signature.Module (rec_, { m with Module.id; type_; canonical = None; hidden = false; source_loc = None }) :: acc
+    | ModuleType mt ->
+      let id = Id.Mk.module_type (parent, Odoc_model.Names.ModuleTypeName.make_std (name mt.id)) in
+      let expr =
+        Some (ModuleType.Path { p_path = `Identifier ((mt.id :> Id.Path.ModuleType.t), false); p_expansion = None })
+      in
+      Signature.ModuleType { mt with ModuleType.id; expr; canonical = None; source_loc = None } :: acc
+    | Include incl ->
+      (* The items an [include] brings in are visible to the functor too. *)
+      List.fold_left (fun acc item -> wrapper_item item acc) acc incl.Include.expansion.content.items
+    | Value _ | ModuleSubstitution _ | ModuleTypeSubstitution _ | Open _
+    | TypeSubstitution _ | TypExt _ | Exception _ | Comment _ ->
+      (* Nothing in the expansion of [F(BODY__n)] can refer to these. *)
+      acc
+    | Class _ | ClassType _ ->
+      (* A class type of the argument can be referred to from the expansion,
+         but odoc does not chase class type aliases the way it chases type
+         manifests, so aliasing them here would not help: such a reference is
+         left printing the (hidden) name of the synthetic module. *)
+      acc
+  in
+  List.rev (List.fold_left (fun acc item -> wrapper_item item acc) [] items)
+
+let wrapper_module (dummy_id, _dummy_path) ~hidden items =
+  let items = wrapper_items dummy_id items in
+  let sig_ : Signature.t = { items; compiled = true; removed = []; doc = no_doc } in
+  let type_ : Module.decl = ModuleType (Signature sig_) in
+  let module_ : Module.t = {id=dummy_id; source_loc=None; doc=no_doc; type_; canonical=None; hidden} in
+  Signature.Module (Ordinary, module_)
+
 let read_label = Cmi.read_label
 
 let rec read_core_type env container ctyp =
@@ -930,7 +1017,7 @@ and read_include_functor env parent wrapper incl =
   let expr = read_module_type env include_parent include_container incl.incl_mod in
   let expansion = { content; shadowed; } in
   let hidden = true in
-  let id, functor_path = Cmi.generate_wrapper_module parent ~prefix:"INCLUDE" ~hidden in
+  let id, functor_path = generate_wrapper_module parent ~prefix:"INCLUDE" ~hidden in
   let functor_ : Module.t = {id; source_loc=None; doc; type_=ModuleType expr; canonical=None; hidden} in
   let decl = Functor {target = Path (`Apply (functor_path, wrapper)); original_ref = ModuleType expr} in
   [ Signature.Module (Ordinary, functor_);
@@ -952,8 +1039,8 @@ and read_items env parent items =
       | Tsig_include ({ incl_kind = (Tincl_functor _ | Tincl_gen_functor _);
                         incl_mod = { mty_desc = (Tmty_typeof _ | Tmty_ident _); _ }; _ } as incl, _) ->
         let hidden = true in
-        let wrapper = Cmi.generate_wrapper_module parent ~prefix:"BODY" ~hidden in
-        let wrapper_module = Cmi.wrapper_module wrapper ~hidden (List.rev acc) in
+        let wrapper = generate_wrapper_module parent ~prefix:"BODY" ~hidden in
+        let wrapper_module = wrapper_module wrapper ~hidden (List.rev acc) in
         let items = read_include_functor env parent (snd wrapper) incl in
         List.rev_append items (wrapper_module :: acc)
 #endif
