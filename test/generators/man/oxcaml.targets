@@ -12,7 +12,15 @@ Oxcaml.Include_functor.3o
 Oxcaml.Include_functor.Make.3o
 Oxcaml.Include_functor_argument_shapes.3o
 Oxcaml.Include_functor_argument_shapes.Make.3o
+Oxcaml.Include_functor_argument_shapes.Make.class-output_class_via_type.3o
+Oxcaml.Include_functor_argument_shapes.Make.class-output_class_via_name.3o
+Oxcaml.Include_functor_argument_shapes.class-class_type.3o
+Oxcaml.Include_functor_argument_shapes.class-class_.3o
 Oxcaml.Include_functor_argument_shapes.X.3o
+Oxcaml.Include_functor_argument_shapes.class-output_class_via_type.3o
+Oxcaml.Include_functor_argument_shapes.class-output_class_via_name.3o
+Oxcaml.Include_functor_argument_shapes.Aliased.3o
+Oxcaml.Include_functor_argument_shapes.Aliased.To_include_module.3o
 Oxcaml.Include_functor_desugared.3o
 Oxcaml.Include_functor_desugared.Make.3o
 Oxcaml.Include_functor_named_type_desugared.3o
