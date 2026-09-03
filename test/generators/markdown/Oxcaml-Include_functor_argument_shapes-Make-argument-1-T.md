@@ -22,3 +22,9 @@ val via_module_type_include : unit
 ```ocaml
 val via_module_include : unit
 ```
+```ocaml
+class class_type : object ... end
+```
+```ocaml
+class class_ : class_type
+```

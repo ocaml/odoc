@@ -419,10 +419,14 @@ Some axes have a default value that is implied by another axis; the implied valu
 \label{Oxcaml-Include_functor_argument_shapes-module-type-Arg--module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} S}\\
 \label{Oxcaml-Include_functor_argument_shapes-module-type-Arg--val-via_module_type_include}\ocamlcodefragment{\ocamltag{keyword}{val} via\_\allowbreak{}module\_\allowbreak{}type\_\allowbreak{}include : unit}\\
 \label{Oxcaml-Include_functor_argument_shapes-module-type-Arg--val-via_module_include}\ocamlcodefragment{\ocamltag{keyword}{val} via\_\allowbreak{}module\_\allowbreak{}include : unit}\\
+\label{Oxcaml-Include_functor_argument_shapes-module-type-Arg--class-class_type}\ocamlcodefragment{\ocamltag{keyword}{class} \hyperref[Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_type]{\ocamlinlinecode{class\_\allowbreak{}type}}}\ocamlcodefragment{ : \ocamltag{keyword}{object} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{Oxcaml-Include_functor_argument_shapes-module-type-Arg--class-class_}\ocamlcodefragment{\ocamltag{keyword}{class} \hyperref[Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_]{\ocamlinlinecode{class\_\allowbreak{}}}}\ocamlcodefragment{ : \hyperref[Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_type]{\ocamlinlinecode{class\_\allowbreak{}type}}}\\
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}Everything the expansion of the functor can inherit from its argument: types, including parameterised and anonymously parameterised ones, submodules, and module types.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml-Include_functor_argument_shapes--module-Make}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-Include_functor_argument_shapes-Make]{\ocamlinlinecode{Make}}}\ocamlcodefragment{ (\hyperref[Oxcaml-Include_functor_argument_shapes-Make-argument-1-T]{\ocamlinlinecode{T}} : \hyperref[Oxcaml-Include_functor_argument_shapes-module-type-Arg]{\ocamlinlinecode{Arg}}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{Oxcaml-Include_functor_argument_shapes--class-class_type}\ocamlcodefragment{\ocamltag{keyword}{class} \hyperref[Oxcaml-Include_functor_argument_shapes-class-class_type]{\ocamlinlinecode{class\_\allowbreak{}type}}}\ocamlcodefragment{ : \ocamltag{keyword}{object} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{Oxcaml-Include_functor_argument_shapes--class-class_}\ocamlcodefragment{\ocamltag{keyword}{class} \hyperref[Oxcaml-Include_functor_argument_shapes-class-class_]{\ocamlinlinecode{class\_\allowbreak{}}}}\ocamlcodefragment{ : \hyperref[Oxcaml-Include_functor_argument_shapes-class-class_type]{\ocamlinlinecode{class\_\allowbreak{}type}}}\\
 \label{Oxcaml-Include_functor_argument_shapes--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
 \label{Oxcaml-Include_functor_argument_shapes--type-p}\ocamlcodefragment{\ocamltag{keyword}{type} 'a p}\\
 \label{Oxcaml-Include_functor_argument_shapes--type-anon}\ocamlcodefragment{\ocamltag{keyword}{type} \_\allowbreak{} anon}\\
@@ -443,6 +447,12 @@ Some axes have a default value that is implied by another axis; the implied valu
 \label{Oxcaml-Include_functor_argument_shapes--type-from_module}\ocamlcodefragment{\ocamltag{keyword}{type} from\_\allowbreak{}module = \hyperref[Oxcaml-Include_functor_argument_shapes-X--type-v]{\ocamlinlinecode{X.\allowbreak{}v}}}\begin{ocamlindent}Reached through a submodule of the argument, aliased as \ocamlinlinecode{module X = X}.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml-Include_functor_argument_shapes--module-type-Reexported}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} Reexported = \hyperref[Oxcaml-Include_functor_argument_shapes-module-type-S]{\ocamlinlinecode{S}}}\begin{ocamlindent}A module type of the argument, aliased as a path to it.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml-Include_functor_argument_shapes--class-output_class_via_type}\ocamlcodefragment{\ocamltag{keyword}{class} \hyperref[Oxcaml-Include_functor_argument_shapes-class-output_class_via_type]{\ocamlinlinecode{output\_\allowbreak{}class\_\allowbreak{}via\_\allowbreak{}type}}}\ocamlcodefragment{ : \hyperref[xref-unresolved]{\ocamlinlinecode{BODY\_\allowbreak{}\_\allowbreak{}3.\allowbreak{}class\_\allowbreak{}type}}}\begin{ocamlindent}A class whose type comes from an explicitely named class type\end{ocamlindent}%
+\medbreak
+\label{Oxcaml-Include_functor_argument_shapes--class-output_class_via_name}\ocamlcodefragment{\ocamltag{keyword}{class} \hyperref[Oxcaml-Include_functor_argument_shapes-class-output_class_via_name]{\ocamlinlinecode{output\_\allowbreak{}class\_\allowbreak{}via\_\allowbreak{}name}}}\ocamlcodefragment{ : \hyperref[xref-unresolved]{\ocamlinlinecode{BODY\_\allowbreak{}\_\allowbreak{}3.\allowbreak{}class\_\allowbreak{}}}}\begin{ocamlindent}A class whose type comes from the name of a class\end{ocamlindent}%
+\medbreak
+\label{Oxcaml-Include_functor_argument_shapes--module-Aliased}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-Include_functor_argument_shapes-Aliased]{\ocamlinlinecode{Aliased}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\begin{ocamlindent}The input module itself. It should contain everything from the top level module\end{ocamlindent}%
 \medbreak
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\

@@ -10,6 +10,12 @@ Everything the expansion of the functor can inherit from its argument: types, in
 module Make (T : Arg) : sig ... end
 ```
 ```ocaml
+class class_type : object ... end
+```
+```ocaml
+class class_ : class_type
+```
+```ocaml
 type t
 ```
 ```ocaml
@@ -54,3 +60,18 @@ Reached through a submodule of the argument, aliased as `module X = X`.
 module type Reexported = S
 ```
 A module type of the argument, aliased as a path to it.
+
+```ocaml
+class output_class_via_type : BODY__3.class_type
+```
+A class whose type comes from an explicitely named class type
+
+```ocaml
+class output_class_via_name : BODY__3.class_
+```
+A class whose type comes from the name of a class
+
+```ocaml
+module Aliased : sig ... end
+```
+The input module itself. It should contain everything from the top level module

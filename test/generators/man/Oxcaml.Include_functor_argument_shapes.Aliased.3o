@@ -1,0 +1,43 @@
+
+.TH Aliased 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.Include_functor_argument_shapes\.Aliased
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Include_functor_argument_shapes\.Aliased\fR
+.in 
+.sp 
+.fi 
+The input module itself\. It should contain everything from the top level module
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR Arg = Arg
+.fi 
+.br 
+.ti +2
+Everything the expansion of the functor can inherit from its argument: types, including parameterised and anonymously parameterised ones, submodules, and module types\.
+.nf 
+.sp 
+\f[CB]module\fR Make = Make
+.sp 
+\f[CB]module\fR \f[CB]type\fR To_include_module_type = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]val\fR via_module_type_include : unit
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR To_include_module : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR t = t
+.sp 
+\f[CB]type\fR 'a p = \f[CB]'a\fR p
+.sp 
+\f[CB]type\fR 'a0 anon = \f[CB]'a0\fR anon
+.sp 
+\f[CB]module\fR X = X
+.sp 
+\f[CB]module\fR \f[CB]type\fR S = S

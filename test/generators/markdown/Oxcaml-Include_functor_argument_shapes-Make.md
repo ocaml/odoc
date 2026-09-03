@@ -34,3 +34,18 @@ Reached through a submodule of the argument, aliased as `module X = X`.
 module type Reexported = T.S
 ```
 A module type of the argument, aliased as a path to it.
+
+```ocaml
+class output_class_via_type : T.class_type
+```
+A class whose type comes from an explicitely named class type
+
+```ocaml
+class output_class_via_name : T.class_
+```
+A class whose type comes from the name of a class
+
+```ocaml
+module Aliased = T
+```
+The input module itself. It should contain everything from the top level module

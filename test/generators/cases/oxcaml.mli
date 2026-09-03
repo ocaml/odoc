@@ -551,6 +551,12 @@ module Include_functor_argument_shapes : sig
     module type S
     val via_module_type_include : unit
     val via_module_include : unit
+
+    class class_type : object 
+      val content : int
+    end
+
+    class class_ : class_type
   end
 
   module Make (T : Arg) : sig
@@ -572,6 +578,16 @@ module Include_functor_argument_shapes : sig
 
     module type Reexported = T.S
     (** A module type of the argument, aliased as a path to it. *)
+
+    class output_class_via_type : T.class_type
+    (** A class whose type comes from an explicitely named class type *)
+
+    class output_class_via_name : T.class_
+    (** A class whose type comes from the name of a class *)
+
+    module Aliased = T
+    (** The input module itself. It should contain everything from the top
+        level module *)
   end
 
   (**/**)
@@ -583,6 +599,12 @@ module Include_functor_argument_shapes : sig
     val via_module_include : unit
   end
   (**/**)
+
+  class class_type : object
+    val content : int
+  end
+
+  class class_ : class_type
 
   type t
   type 'a p
