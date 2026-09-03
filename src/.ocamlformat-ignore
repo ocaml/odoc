@@ -14,6 +14,6 @@ syntax_highlighter/syntax_highlighter.ml
 model/*.cppo.ml
 odoc/*.cppo.ml
 html_support_files/*.ml
-xref2/shape_tools.*
+xref2/shape_*
 odoc/classify.cppo.ml
 
