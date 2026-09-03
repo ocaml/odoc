@@ -52,6 +52,20 @@ let lookup_module map : Ident.module_ -> _ = function
 
 module Opt = Component.Opt
 
+(* Hash-cons converted resolved module paths so that structurally equal paths
+   become physically shared. Marshal preserves physical sharing, so this is what
+   keeps repetitive alias chains small both on disk and in memory. *)
+module HC = Odoc_model.Paths.Path.Resolved.Module.Hashtbl
+
+let hashcons_tbl : Odoc_model.Paths.Path.Resolved.Module.t HC.t = HC.create 1024
+
+let hashcons p =
+  match HC.find_opt hashcons_tbl p with
+  | Some p' -> p'
+  | None ->
+      HC.add hashcons_tbl p p;
+      p
+
 module Path = struct
   let rec module_ map (p : Cpath.module_) : Odoc_model.Paths.Path.Module.t =
     match p with
@@ -125,6 +139,10 @@ module Path = struct
     | `Class _ | `ClassType _ -> failwith "Probably shouldn't happen"
 
   and resolved_module map (p : Cpath.Resolved.module_) :
+      Odoc_model.Paths.Path.Resolved.Module.t =
+    hashcons (resolved_module_inner map p)
+
+  and resolved_module_inner map (p : Cpath.Resolved.module_) :
       Odoc_model.Paths.Path.Resolved.Module.t =
     match p with
     | `Local id ->

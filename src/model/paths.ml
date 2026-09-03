@@ -728,6 +728,18 @@ module Path = struct
 
       let is_hidden m =
         is_resolved_hidden (m : t :> Paths_types.Resolved_path.any)
+
+      (* Same policy as [Identifier.equal]/[Identifier.hash] - see the comment
+         there for why [Hashtbl.hash] is too shallow for these spines. *)
+      let equal x y = x == y || x = y
+      let hash x = Hashtbl.hash_param 256 256 x
+
+      module Hashtbl = Hashtbl.Make (struct
+        type nonrec t = t
+
+        let equal = equal
+        let hash = hash
+      end)
     end
 
     module ModuleType = struct

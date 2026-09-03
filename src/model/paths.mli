@@ -333,6 +333,12 @@ module rec Path : sig
 
       val is_hidden : t -> weak_canonical_test:bool -> bool
 
+      val equal : t -> t -> bool
+
+      val hash : t -> int
+
+      module Hashtbl : Hashtbl.S with type key = t
+
       (* val identifier : t -> Identifier.Path.Module.t *)
 
       (* val root : t -> string option *)

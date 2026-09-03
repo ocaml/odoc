@@ -5,4 +5,3 @@ size.
   $ odoc compile chain.cmti
   $ odoc link chain.odoc -I .
   $ find . -name chain.odocl -size +100000c 
-  ./chain.odocl
