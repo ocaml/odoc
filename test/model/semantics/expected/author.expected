@@ -96,7 +96,7 @@ foo
 --- input ---
 foo @author Bar
 --- output ---
-{"value":[{"`Paragraph":[{"`Word":"foo"},"`Space"]},{"`Tag":{"`Author":"Bar"}}],"warnings":["File \"f.ml\", line 1, characters 4-15:\n'@author' should begin on its own line.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+{"value":[{"`Paragraph":[{"`Word":"foo "}]},{"`Tag":{"`Author":"Bar"}}],"warnings":["File \"f.ml\", line 1, characters 4-15:\n'@author' should begin on its own line.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
 --- input ---
 [@author Foo]
 --- output ---
@@ -117,24 +117,24 @@ foo @author Bar
 --- input ---
 - foo @author Bar
 --- output ---
-{"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"foo"},"`Space"]},{"`Paragraph":[{"`Word":"@author"},"`Space",{"`Word":" Bar"}]}]]]}],"warnings":["File \"f.ml\", line 1, characters 6-17:\n'@author' is not allowed in '-' (bulleted list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+{"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"foo "}]},{"`Paragraph":[{"`Word":"@author  Bar"}]}]]]}],"warnings":["File \"f.ml\", line 1, characters 6-17:\n'@author' is not allowed in '-' (bulleted list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
 --- input ---
 - @author Foo
 --- output ---
-{"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"@author"},"`Space",{"`Word":" Foo"}]}]]]}],"warnings":["File \"f.ml\", line 1, characters 2-13:\n'@author' is not allowed in '-' (bulleted list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+{"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"@author  Foo"}]}]]]}],"warnings":["File \"f.ml\", line 1, characters 2-13:\n'@author' is not allowed in '-' (bulleted list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
 --- input ---
 {ul {li foo @author Bar}}
 --- output ---
-{"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"foo"},"`Space"]},{"`Paragraph":[{"`Word":"@author"},"`Space",{"`Word":" Bar}}"}]}]]]}],"warnings":["File \"f.ml\", line 1, characters 12-25:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml\", line 1, characters 25-25:\nEnd of text is not allowed in '{li ...}' (list item).\nSuggestion: add '}'.","File \"f.ml\", line 1, characters 25-25:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: add '}'.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+{"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"foo "}]},{"`Paragraph":[{"`Word":"@author  Bar}}"}]}]]]}],"warnings":["File \"f.ml\", line 1, characters 12-25:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml\", line 1, characters 25-25:\nEnd of text is not allowed in '{li ...}' (list item).\nSuggestion: add '}'.","File \"f.ml\", line 1, characters 25-25:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: add '}'.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
 --- input ---
 {ul {li @author Foo}}
 --- output ---
-{"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"@author"},"`Space",{"`Word":" Foo}}"}]}]]]}],"warnings":["File \"f.ml\", line 1, characters 8-21:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml\", line 1, characters 21-21:\nEnd of text is not allowed in '{li ...}' (list item).\nSuggestion: add '}'.","File \"f.ml\", line 1, characters 21-21:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: add '}'.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+{"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"@author  Foo}}"}]}]]]}],"warnings":["File \"f.ml\", line 1, characters 8-21:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml\", line 1, characters 21-21:\nEnd of text is not allowed in '{li ...}' (list item).\nSuggestion: add '}'.","File \"f.ml\", line 1, characters 21-21:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: add '}'.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
 --- input ---
 {ul {li foo
 @author Bar}}
 --- output ---
-{"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"foo"}]},{"`Paragraph":[{"`Word":"@author"},"`Space",{"`Word":" Bar}}"}]}]]]}],"warnings":["File \"f.ml\", line 2, characters 0-13:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml\", line 2, characters 13-13:\nEnd of text is not allowed in '{li ...}' (list item).\nSuggestion: add '}'.","File \"f.ml\", line 2, characters 13-13:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: add '}'.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+{"value":[{"`List":["`Unordered",[[{"`Paragraph":[{"`Word":"foo"}]},{"`Paragraph":[{"`Word":"@author  Bar}}"}]}]]]}],"warnings":["File \"f.ml\", line 2, characters 0-13:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.","File \"f.ml\", line 2, characters 13-13:\nEnd of text is not allowed in '{li ...}' (list item).\nSuggestion: add '}'.","File \"f.ml\", line 2, characters 13-13:\nEnd of text is not allowed in '{ul ...}' (bulleted list).\nSuggestion: add '}'.","File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
 --- input ---
 {ul @author Foo}
 --- output ---

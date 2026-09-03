@@ -3,4 +3,4 @@
 
 Doc of `c2`.
 
-Doc of `ct`, part 2\.
+Doc of `ct`, part 2.

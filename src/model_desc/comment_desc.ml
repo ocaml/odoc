@@ -6,7 +6,7 @@ open Paths_desc
 let ignore_loc x = x.Location_.value
 
 type general_inline_element =
-  [ `Space
+  [ `Space of string
   | `Word of string
   | `Code_span of string
   | `Math_span of string
@@ -72,7 +72,7 @@ let rec inline_element : general_inline_element t =
   in
   Variant
     (function
-    | `Space -> C0 "`Space"
+    | `Space s -> C ("`Space", s, string)
     | `Word x -> C ("`Word", x, string)
     | `Code_span x -> C ("`Code_span", x, string)
     | `Math_span x -> C ("`Math_span", x, string)

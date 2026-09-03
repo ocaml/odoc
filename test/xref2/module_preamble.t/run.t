@@ -95,8 +95,9 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
     <div class="odoc-content">
      <h3 id="an-heading"><a href="#an-heading" class="anchor"></a>An heading
      </h3>
-     <p>This paragraph is not part of the preamble. It'll be rendered in
-       the &quot;content&quot;.
+     <p>
+      This paragraph is not part of the preamble. It'll be rendered in the
+      &quot;content&quot;.
      </p>
      <div class="odoc-spec">
       <div class="spec type anchored" id="type-t">

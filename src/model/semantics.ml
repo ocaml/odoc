@@ -128,7 +128,7 @@ let leaf_inline_element :
  fun element ->
   match element with
   | { value = `Word _ | `Code_span _ | `Math_span _; _ } as element -> element
-  | { value = `Space _; _ } -> Location.same element `Space
+  | { value = `Space s; _ } -> Location.same element (`Space s)
   | { value = `Raw_markup (target, s); location } -> (
       match target with
       | Some invalid_target
@@ -144,6 +144,97 @@ let leaf_inline_element :
           Error.raise_warning (default_raw_markup_target_not_supported location);
           Location.same element (`Code_span s)
       | Some target -> Location.same element (`Raw_markup (target, s)))
+
+(* Rebuild [elt] only if the merge changed something *)
+let same elt content content' mk =
+  if content' == content then elt
+  else { elt with Location_.value = mk content' }
+
+(* Merge runs of [`Word]/[`Space] into one [`Word] *)
+let rec merge_ast_inline_elements elements =
+  let flush run acc =
+    match run with
+    | [] -> acc
+    | [ single ] -> single :: acc
+    | _ ->
+        let text_of { Location_.value; _ } =
+          match value with `Word w -> w | `Space s -> s | _ -> assert false
+        in
+        let value = `Word (String.concat ~sep:"" (List.rev_map text_of run)) in
+        let location =
+          Location.span (List.rev_map (fun e -> e.Location_.location) run)
+        in
+        { Location_.value; location } :: acc
+  in
+  let rec loop run acc = function
+    | [] -> List.rev (flush run acc)
+    | ({ Location_.value = `Word _ | `Space _; _ } as elt) :: tl ->
+        loop (elt :: run) acc tl
+    | elt :: tl -> loop [] (merge_ast_inline_element elt :: flush run acc) tl
+  in
+  let merged = loop [] [] elements in
+  let unchanged =
+    try List.for_all2 ( == ) merged elements with Invalid_argument _ -> false
+  in
+  if unchanged then elements else merged
+
+and merge_ast_inline_element elt =
+  let same content mk =
+    same elt content (merge_ast_inline_elements content) mk
+  in
+  match elt.Location_.value with
+  | `Styled (style, content) -> same content (fun c -> `Styled (style, c))
+  | `Reference (kind, target, content) ->
+      same content (fun c -> `Reference (kind, target, c))
+  | `Link (target, content) -> same content (fun c -> `Link (target, c))
+  | _ -> elt
+
+let rec merge_ast_nestable elt =
+  match elt.Location_.value with
+  | `Paragraph content ->
+      same elt content (merge_ast_inline_elements content) (fun c ->
+          `Paragraph c)
+  | `List (kind, weight, items) ->
+      let items = List.map (List.map merge_ast_nestable) items in
+      { elt with Location_.value = `List (kind, weight, items) }
+  | `Table ((grid, align), weight) ->
+      let grid =
+        List.map
+          (List.map (fun (cell, kind) ->
+               (List.map merge_ast_nestable cell, kind)))
+          grid
+      in
+      { elt with Location_.value = `Table ((grid, align), weight) }
+  | `Code_block _ | `Verbatim _ | `Modules _ | `Math_block _ | `Media _ -> elt
+
+(* Internal tags are skipped: they parse their payload word by word. *)
+let merge_ast (ast : Ast.t) : Ast.t =
+  let nestables = List.map merge_ast_nestable in
+  let tag : Ast.tag -> Ast.tag = function
+    | `Deprecated content -> `Deprecated (nestables content)
+    | `Param (s, content) -> `Param (s, nestables content)
+    | `Raise (s, content) -> `Raise (s, nestables content)
+    | `Return content -> `Return (nestables content)
+    | `See (kind, s, content) -> `See (kind, s, nestables content)
+    | `Before (s, content) -> `Before (s, nestables content)
+    | (`Author _ | `Since _ | `Version _ | #Ast.internal_tag) as t -> t
+  in
+  List.map
+    (fun elt ->
+      match elt.Location_.value with
+      | `Heading (level, label, content) ->
+          same elt content (merge_ast_inline_elements content) (fun c ->
+              `Heading (level, label, c))
+      | `Tag t -> { elt with Location_.value = `Tag (tag t) }
+      | #Ast.nestable_block_element as v ->
+          let nested = merge_ast_nestable { elt with Location_.value = v } in
+          if nested.Location_.value == v then elt
+          else
+            {
+              elt with
+              Location_.value = (nested.Location_.value :> Ast.block_element);
+            })
+    ast
 
 type surrounding =
   [ `Link of
@@ -352,6 +443,23 @@ let generate_heading_label : Comment.inline_element with_location list -> string
            Bytes.set result index c);
     Bytes.unsafe_to_string result
   in
+  (* Whitespace runs inside a merged [`Word] stood for a single [`Space], so
+     become a single hyphen. Code spans keep the per-character version. *)
+  let hyphenate_word_runs s =
+    let b = Buffer.create (String.length s) in
+    let in_ws = ref false in
+    Stdlib.String.iter
+      (fun c ->
+        match c with
+        | ' ' | '\t' | '\r' | '\n' ->
+            if not !in_ws then Buffer.add_char b '-';
+            in_ws := true
+        | c ->
+            Buffer.add_char b (Astring.Char.Ascii.lowercase c);
+            in_ws := false)
+      s;
+    Buffer.contents b
+  in
 
   let strip_locs li = List.map (fun ele -> ele.Location.value) li in
   (* Perhaps this should be done using a [Buffer.t]; we can switch to that as
@@ -361,8 +469,8 @@ let generate_heading_label : Comment.inline_element with_location list -> string
     | element :: more ->
         let anchor =
           match (element : Comment.inline_element) with
-          | `Space -> anchor ^ "-"
-          | `Word w -> anchor ^ Astring.String.Ascii.lowercase w
+          | `Space _ -> anchor ^ "-"
+          | `Word w -> anchor ^ hyphenate_word_runs w
           | `Code_span c | `Math_span c ->
               anchor ^ replace_spaces_with_hyphens_and_lowercase c
           | `Raw_markup _ ->
@@ -576,7 +684,7 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
       in
       let lines =
         let do_ parse loc els =
-          let els = nestable_block_elements els in
+          let els = List.map nestable_block_element els in
           match parse loc els with
           | Ok res -> Some res
           | Error e ->
@@ -603,7 +711,7 @@ let ast_to_comment ~internal_tags ~tags_allowed ~parent_of_sections
     (ast : Ast.t) alerts =
   Error.catch_warnings (fun () ->
       let status = { tags_allowed; parent_of_sections } in
-      let ast, tags = strip_internal_tags ast in
+      let ast, tags = strip_internal_tags (merge_ast ast) in
       let elts =
         top_level_block_elements status ast |> append_alerts_to_comment alerts
       in

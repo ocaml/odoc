@@ -57,11 +57,7 @@ When there is one frontmatter, it is extracted from the content:
         },
         [
           {
-            "`Word": "One"
-          },
-          "`Space",
-          {
-            "`Word": "frontmatter"
+            "`Word": "One frontmatter"
           }
         ]
       ]
@@ -112,11 +108,7 @@ When there is more than one children order, we raise a warning and keep only the
         },
         [
           {
-            "`Word": "Two"
-          },
-          "`Space",
-          {
-            "`Word": "frontmatters"
+            "`Word": "Two frontmatters"
           }
         ]
       ]

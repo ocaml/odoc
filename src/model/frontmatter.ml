@@ -77,7 +77,7 @@ let parse_children_order loc (co : tag_payload) =
     | [] -> Ok (Location_.at loc (Children_order (List.rev acc)))
     | ({ Location_.value = `Word word; _ } as w) :: tl ->
         parse_words ({ w with value = parse_child word } :: acc) tl
-    | { Location_.value = `Space; _ } :: tl -> parse_words acc tl
+    | { Location_.value = `Space _; _ } :: tl -> parse_words acc tl
     | { location; _ } :: _ ->
         Error
           (Error.make "Only words are accepted when specifying children order"

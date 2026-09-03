@@ -64,7 +64,9 @@ as they are both referencing items that won't be expanded.
                   []
                 ]
               },
-              "`Space",
+              {
+                "`Space": " "
+              },
               {
                 "`Reference": [
                   {

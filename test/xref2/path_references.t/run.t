@@ -33,27 +33,27 @@ Helper that extracts references in a compact way. Headings help to interpret the
   $ jq_references() { jq -c '.. | objects | if has("`Reference") then . elif has("`Heading") then [ .. | .["`Word"]? | select(.) ] else empty end'; }
 
   $ odoc_print ./h/pkg/page-foo.odocl | jq_references
-  ["Title","for","foo"]
-  ["Page","foo"]
+  ["Title for foo"]
+  ["Page foo"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
-  ["Page","subdir/bar"]
+  ["Page subdir/bar"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Root":["bar","`TUnknown"]},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
-  ["Page","dup"]
+  ["Page dup"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"dup"]}}},[]]}
-  ["Page","subdir/dup"]
+  ["Page subdir/dup"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"dup"]}}},[]]}
-  ["Module","Test"]
+  ["Module Test"]
   {"`Reference":[{"`Any_path":["`TCurrentPackage",["Test"]]},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"libname"]}},"Test"]}}},[]]}
   {"`Reference":[{"`Any_path":["`TRelativePath",["Test"]]},[]]}
@@ -64,48 +64,48 @@ Helper that extracts references in a compact way. Headings help to interpret the
   {"`Reference":[{"`Resolved":{"`Identifier":{"`AssetFile":[{"`Page":["None","pkg"]},"img.png"]}}},[]]}
 
   $ odoc_print ./h/pkg/subdir/page-bar.odocl | jq_references
-  ["Title","for","subdir/bar"]
-  ["Page","foo"]
+  ["Title for subdir/bar"]
+  ["Page foo"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
-  ["Page","subdir/bar"]
+  ["Page subdir/bar"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
-  ["Page","dup"]
+  ["Page dup"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"dup"]}}},[]]}
-  ["Page","subdir/dup"]
+  ["Page subdir/dup"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"dup"]}}},[]]}
-  ["Module","Test"]
+  ["Module Test"]
   {"`Reference":[{"`Any_path":["`TCurrentPackage",["libname","Test"]]},[]]}
   {"`Reference":[{"`Any_path":["`TAbsolutePath",["pkg","libname","Test"]]},[]]}
   {"`Reference":[{"`Any_path":["`TRelativePath",["Test"]]},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"libname"]}},"Test"]}}},[]]}
 
   $ odoc_print ./h/pkg/libname/test.odocl | jq_references
-  ["Page","foo"]
+  ["Page foo"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"foo"]}}},[]]}
-  ["Page","subdir/bar"]
+  ["Page subdir/bar"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"bar"]}}},[]]}
   {"`Reference":[{"`Root":["bar","`TUnknown"]},[]]}
-  ["Page","dup"]
+  ["Page dup"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":["None","pkg"]}},"dup"]}}},[]]}
-  ["Page","subdir/dup"]
+  ["Page subdir/dup"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"dup"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`LeafPage":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"subdir"]}},"dup"]}}},[]]}
-  ["Module","Test"]
+  ["Module Test"]
   {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"libname"]}},"Test"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"libname"]}},"Test"]}}},[]]}
   {"`Reference":[{"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"libname"]}},"Test"]}}},[]]}

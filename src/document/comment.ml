@@ -148,9 +148,26 @@ module Reference = struct
             [ inline @@ Inline.Link link ])
 end
 
+(* Merged word runs keep the source whitespace, which isn't significant
+   inline, so collapse each run to a single space for rendering. *)
+let collapse_whitespace s =
+  let b = Buffer.create (Stdlib.String.length s) in
+  let in_ws = ref false in
+  Stdlib.String.iter
+    (fun c ->
+      match c with
+      | ' ' | '\t' | '\n' | '\r' ->
+          if not !in_ws then Buffer.add_char b ' ';
+          in_ws := true
+      | c ->
+          Buffer.add_char b c;
+          in_ws := false)
+    s;
+  Buffer.contents b
+
 let leaf_inline_element : Comment.leaf_inline_element -> Inline.one = function
-  | `Space -> inline @@ Text " "
-  | `Word s -> inline @@ Text s
+  | `Space s -> inline @@ Text (collapse_whitespace s)
+  | `Word s -> inline @@ Text (collapse_whitespace s)
   | `Code_span s -> inline @@ Source (source_of_code s)
   | `Math_span s -> inline @@ Math s
   | `Raw_markup (target, s) -> inline @@ Raw_markup (target, s)
