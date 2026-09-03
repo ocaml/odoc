@@ -16,6 +16,7 @@ type resolver = {
   lookup_page : path_query -> (Lang.Page.t, lookup_error) result;
   lookup_asset : path_query -> (Lang.Asset.t, lookup_error) result;
   lookup_impl : string -> Lang.Implementation.t option;
+  shape_reducer : Shape_reducer.t;
 }
 
 type root =
@@ -188,6 +189,8 @@ let is_linking env = env.linking
 let set_resolver t resolver = { t with resolver = Some resolver }
 
 let has_resolver t = match t.resolver with None -> false | _ -> true
+
+let resolver t = t.resolver
 
 let id t = t.id
 

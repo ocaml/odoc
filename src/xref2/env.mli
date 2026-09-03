@@ -15,6 +15,7 @@ type resolver = {
   lookup_page : path_query -> (Lang.Page.t, lookup_error) result;
   lookup_asset : path_query -> (Lang.Asset.t, lookup_error) result;
   lookup_impl : string -> Lang.Implementation.t option;
+  shape_reducer : Shape_reducer.t;
 }
 
 type root =
@@ -43,6 +44,8 @@ val with_recorded_lookups : t -> (t -> 'a) -> LookupTypeSet.t * 'a
 val set_resolver : t -> resolver -> t
 
 val has_resolver : t -> bool
+
+val resolver : t -> resolver option
 
 val id : t -> int
 
