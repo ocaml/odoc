@@ -40,7 +40,8 @@ let save_ file f =
   if len > 255 then
     failwith
       (Printf.sprintf
-         "Magic version string %S is too long, must be <= 255 characters" magic);
+         "Magic version string %S is too long, must be <= 255 characters"
+         magic_version);
 
   Fs.Directory.mkdir_p (Fs.File.dirname file);
   Io_utils.with_open_out_bin (Fs.File.to_string file) (fun oc ->
