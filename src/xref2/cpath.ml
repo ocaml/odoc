@@ -342,7 +342,11 @@ and unresolve_module_path : module_ -> module_ = function
 
 and unresolve_resolved_module_type_path : Resolved.module_type -> module_type =
   function
-  | (`Local _ | `Gpath _) as p -> `Resolved p
+  (* As in [unresolve_resolved_module_path], a local identifier unresolves to
+     the unresolved [`Local]. Returning [`Resolved p] here would leave the path
+     unchanged, so a caller unresolving an invalidated path would loop. *)
+  | `Local x -> `Local (x, false)
+  | `Gpath _ as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_module_type_path x
   | `ModuleType (p, n) -> `DotMT (unresolve_resolved_parent_path p, n)
   | `SubstT (_, m) -> unresolve_resolved_module_type_path m

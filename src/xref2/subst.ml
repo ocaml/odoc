@@ -26,6 +26,7 @@ let identity =
     class_type = TypeMap.empty;
     type_replacement = TypeMap.empty;
     path_invalidating_modules = [];
+    path_invalidating_module_types = [];
     unresolve_opaque_paths = false;
   }
 
@@ -76,6 +77,12 @@ let unresolve_opaque_paths s = { s with unresolve_opaque_paths = true }
 
 let path_invalidate_module id t =
   { t with path_invalidating_modules = id :: t.path_invalidating_modules }
+
+let path_invalidate_module_type id t =
+  {
+    t with
+    path_invalidating_module_types = id :: t.path_invalidating_module_types;
+  }
 
 let add_module id p rp t =
   { t with module_ = ModuleMap.add id (`Prefixed (p, rp)) t.module_ }
@@ -298,6 +305,7 @@ and resolved_module_type_path :
  fun s p ->
   match p with
   | `Local id -> (
+      if List.mem id s.path_invalidating_module_types then raise Invalidated;
       if ModuleTypeMap.mem id s.module_type_replacement then
         Replaced (ModuleTypeMap.find id s.module_type_replacement)
       else
@@ -1061,5 +1069,8 @@ and apply_sig_map_items s items =
   List.rev_map (apply_sig_map_item s) items |> List.rev
 
 and apply_sig_map s items removed =
-  let dont_recompile = List.length s.path_invalidating_modules = 0 in
+  let dont_recompile =
+    List.length s.path_invalidating_modules = 0
+    && List.length s.path_invalidating_module_types = 0
+  in
   (apply_sig_map_items s items, removed_items s removed, dont_recompile)

@@ -16,8 +16,7 @@ Module `C` then includes them both, causing further shadowing.
   include module type of struct include A end
     (sig :
       module type {B}1/shadowed/(CCCC) = A.B
-      include {B}1/shadowed/(CCCC)
-        (sig : module {A}1/shadowed/(AAAA) = A.A end)
+      include A.B (sig : module {A}1/shadowed/(AAAA) = A.A end)
       include sig
         module A : 
           sig
@@ -29,7 +28,7 @@ Module `C` then includes them both, causing further shadowing.
   include module type of struct include B end
     (sig :
       module type B = B.B
-      include B (sig : module {A}1/shadowed/(BBBB) = B.A end)
+      include B.B (sig : module {A}1/shadowed/(BBBB) = B.A end)
       include sig
         module A : 
           sig

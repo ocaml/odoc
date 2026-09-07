@@ -18,6 +18,8 @@
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)
 - Fix resolving functor through `module type of` (@Leonidas-from-XIV, #1471)
 - Fix odoc_driver's detection of `stdlib` when it is in `$prefix/lib64`, requires ocamlfind >= 1.9.8 (@katrinafyi, #1477, #1474)
+- Fix broken links to some module type aliases, which pointed at a page that is
+  never generated for them (@jonludlam, #1485)
 
 ### Performance
 - Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #1487)
