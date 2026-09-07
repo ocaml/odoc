@@ -365,10 +365,8 @@ module Identifier = struct
   module NonSrc = struct
     type t = Paths_types.Identifier.non_src
 
-    (* [==] guard as in [equal] above: [( = )] alone never checks pointers. *)
-    let equal x y = x == y || x = y
-
-    let hash x = Hashtbl.hash_param 256 256 x
+    let equal = equal
+    let hash = hash
   end
 
   module SourcePage = struct
@@ -729,10 +727,10 @@ module Path = struct
       let is_hidden m =
         is_resolved_hidden (m : t :> Paths_types.Resolved_path.any)
 
-      (* Same policy as [Identifier.equal]/[Identifier.hash] - see the comment
-         there for why [Hashtbl.hash] is too shallow for these spines. *)
-      let equal x y = x == y || x = y
-      let hash x = Hashtbl.hash_param 256 256 x
+      (* [Identifier.equal]/[Identifier.hash] are polymorphic; the same policy
+         works for resolved-path spines. *)
+      let equal = Identifier.equal
+      let hash = Identifier.hash
 
       module Hashtbl = Hashtbl.Make (struct
         type nonrec t = t
