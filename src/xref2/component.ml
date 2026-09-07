@@ -376,6 +376,7 @@ and Include : sig
     status : [ `Default | `Inline | `Closed | `Open ];
     shadowed : Odoc_model.Lang.Include.shadowed;
     expansion_ : Signature.t;
+    expanded : bool;
     decl : decl;
     loc : Odoc_model.Location_.span;
   }
@@ -2639,6 +2640,7 @@ module Of_Lang = struct
       doc = docs ident_map i.doc;
       shadowed = i.expansion.shadowed;
       expansion_ = apply_sig_map ident_map i.expansion.content;
+      expanded = i.expanded;
       status = i.status;
       strengthened = option module_path ident_map i.strengthened;
       decl;

@@ -600,7 +600,7 @@ and read_include env parent incl =
   match decl_modty with
   | Some m ->
     let decl = ModuleType m in
-    [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
+    [Include {parent; doc; decl; expansion; expanded = false; status; strengthened=None; loc }]
   | _ ->
     content.items
 

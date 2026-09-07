@@ -680,6 +680,7 @@ and include_ parent map i =
         shadowed;
         content = signature parent { map with shadowed } i.expansion_;
       };
+    expanded = i.expanded;
     status = i.status;
     strengthened = Opt.map (Path.module_ map) i.strengthened;
     loc = i.loc;

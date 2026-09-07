@@ -917,7 +917,7 @@ and read_include env parent incl =
   | Some uexpr ->
 #endif
     let decl = Include.ModuleType uexpr in
-    [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
+    [Include {parent; doc; decl; expansion; expanded = false; status; strengthened=None; loc }]
   | _ ->
     (* TODO: Handle [include functor] *)
     content.items
