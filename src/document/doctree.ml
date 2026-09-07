@@ -322,14 +322,15 @@ module PageTitle : sig
 
   val render_src_title : Source_page.t -> Item.t list
 end = struct
+  let prefixed_title ~source_anchor name s =
+    let level = 0 and label = None in
+    let title =
+      Types.inline (Text (s ^ " ")) :: Codefmt.code (Codefmt.txt name)
+    in
+    [ Types.Item.Heading { level; label; title; source_anchor } ]
+
   let format_title ~source_anchor kind name preamble =
-    let mk title =
-      let level = 0 and label = None in
-      [ Types.Item.Heading { level; label; title; source_anchor } ]
-    in
-    let prefix s =
-      mk (Types.inline (Text (s ^ " ")) :: Codefmt.code (Codefmt.txt name))
-    in
+    let prefix = prefixed_title ~source_anchor name in
     match kind with
     | `Module -> (prefix "Module", preamble)
     | `Parameter _ -> (prefix "Parameter", preamble)
@@ -349,9 +350,10 @@ end = struct
     | Some p -> Printf.sprintf "%s.%s" p.name name
 
   let render_title ?source_anchor (p : Page.t) =
-    format_title ~source_anchor p.url.kind
-      (make_name_from_path p.url)
-      p.preamble
+    let name = make_name_from_path p.url in
+    if p.library_parameter then
+      (prefixed_title ~source_anchor name "Library parameter", p.preamble)
+    else format_title ~source_anchor p.url.kind name p.preamble
 
   let render_src_title (p : Source_page.t) =
     format_title ~source_anchor:None p.url.kind (make_name_from_path p.url) []

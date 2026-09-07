@@ -60,7 +60,8 @@ and Cpath : sig
     | `Forward of string
     | `Dot of module_ * ModuleName.t
     | `Module of Resolved.parent * ModuleName.t (* Like dot, but typed *)
-    | `Apply of module_ * module_ ]
+    | `Apply of module_ * module_
+    | `ApplyParam of module_ * module_ * module_ ]
 
   and module_type =
     [ `Resolved of Resolved.module_type
@@ -147,7 +148,8 @@ let rec is_module_substituted : module_ -> bool = function
   | `Identifier _ -> false
   | `Local _ -> false
   | `Substituted _ -> true
-  | `Dot (a, _) | `Apply (a, _) -> is_module_substituted a
+  | `Dot (a, _) | `Apply (a, _) | `ApplyParam (a, _, _) ->
+      is_module_substituted a
   | `Forward _ -> false
   | `Root _ -> false
   | `Module (a, _) -> is_resolved_parent_substituted a
@@ -184,12 +186,14 @@ let rec is_module_forward : module_ -> bool = function
   | `Root _ -> false
   | `Identifier _ -> false
   | `Local _ -> false
-  | `Substituted p | `Dot (p, _) | `Apply (p, _) -> is_module_forward p
+  | `Substituted p | `Dot (p, _) | `Apply (p, _) | `ApplyParam (p, _, _) ->
+      is_module_forward p
   | `Module (_, _) -> false
 
 let rec is_module_hidden : module_ -> bool = function
   | `Resolved r -> is_resolved_module_hidden ~weak_canonical_test:false r
-  | `Substituted p | `Dot (p, _) | `Apply (p, _) -> is_module_hidden p
+  | `Substituted p | `Dot (p, _) | `Apply (p, _) | `ApplyParam (p, _, _) ->
+      is_module_hidden p
   | `Identifier (_, b) -> b
   | `Local (_, b) -> b
   | `Forward _ -> false
@@ -354,6 +358,11 @@ and unresolve_module_path : module_ -> module_ = function
   | `Dot (p, x) -> `Dot (unresolve_module_path p, x)
   | `Module (p, x) -> `Dot (unresolve_resolved_parent_path p, x)
   | `Apply (x, y) -> `Apply (unresolve_module_path x, unresolve_module_path y)
+  | `ApplyParam (i, p, a) ->
+      `ApplyParam
+        ( unresolve_module_path i,
+          unresolve_module_path p,
+          unresolve_module_path a )
 
 and unresolve_resolved_module_type_path : Resolved.module_type -> module_type =
   function

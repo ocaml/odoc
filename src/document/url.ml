@@ -58,6 +58,13 @@ let render_path : Path.t -> string =
     | `DotV (p, s) -> dot p (ValueName.to_string s)
     | `Apply (p1, p2) ->
         render_path (p1 :> Path.t) ^ "(" ^ render_path (p2 :> Path.t) ^ ")"
+    | `ApplyParam (p1, p2, p3) ->
+        render_path (p1 :> Path.t)
+        ^ "["
+        ^ render_path (p2 :> Path.t)
+        ^ ":"
+        ^ render_path (p3 :> Path.t)
+        ^ "]"
     | `Resolved rp -> render_resolved rp
     | `Substituted m -> render_path (m :> Path.t)
     | `SubstitutedMT m -> render_path (m :> Path.t)

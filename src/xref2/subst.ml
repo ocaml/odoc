@@ -278,6 +278,8 @@ and module_path : t -> Cpath.module_ -> Cpath.module_ =
   | `Dot (p', str) -> `Dot (module_path s p', str)
   | `Module (p', str) -> `Module (resolved_parent_path s p', str)
   | `Apply (p1, p2) -> `Apply (module_path s p1, module_path s p2)
+  | `ApplyParam (i, p, a) ->
+      `ApplyParam (module_path s i, module_path s p, module_path s a)
   | `Local (id, b) -> (
       match
         try Some (ModuleMap.find (id :> Ident.module_) s.module_)

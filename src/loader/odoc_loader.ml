@@ -42,6 +42,45 @@ exception Not_an_interface
 
 exception Make_root_error of string
 
+let no_parameterisation =
+  {
+    Odoc_model.Lang.Compilation_unit.Parameterisation.is_parameter = false;
+    parameters = [];
+    argument_for = None;
+  }
+
+#if defined OXCAML
+let parameterisation_of_cmi ~cmi_kind ~cmi_params =
+  let root name = `Root (Odoc_model.Names.ModuleName.make_std name) in
+  let param p = root (Global_module.Parameter_name.to_string p) in
+  let is_parameter, argument_for =
+    match (cmi_kind : Cmi_format.kind) with
+    | Parameter -> (true, None)
+    | Normal { cmi_arg_for; _ } -> (false, Option.map param cmi_arg_for)
+  in
+  {
+    Odoc_model.Lang.Compilation_unit.Parameterisation.is_parameter;
+    parameters = List.map param cmi_params;
+    argument_for;
+  }
+
+let read_cmt_and_parameterisation filename =
+  let cmi, cmt = Cmt_format.read filename in
+  let parameterisation =
+    match cmi with
+    | Some cmi ->
+        parameterisation_of_cmi ~cmi_kind:cmi.Cmi_format.cmi_kind
+          ~cmi_params:cmi.Cmi_format.cmi_params
+    | None -> no_parameterisation
+  in
+  match cmt with
+  | Some cmt -> (parameterisation, cmt)
+  | None -> raise (Cmt_format.Error (Cmt_format.Not_a_typedtree filename))
+#else
+let read_cmt_and_parameterisation filename =
+  (no_parameterisation, Cmt_format.read_cmt filename)
+#endif
+
 let read_cmt_infos source_id ~filename root digest imports () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error _ -> raise Corrupted
@@ -56,7 +95,7 @@ let read_cmt_infos source_id ~filename root digest imports () =
       | _ -> raise Not_an_implementation)
 
 let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical content =
+    ?canonical ?(parameterisation = no_parameterisation) content =
   let open Odoc_model.Lang.Compilation_unit in
   let interface, digest =
     match interface with
@@ -93,13 +132,14 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     linked = false;
     canonical;
     source_loc = None;
+    parameterisation;
   }
 
 let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical sg =
+    ?canonical ?parameterisation sg =
   let content = Odoc_model.Lang.Compilation_unit.Module sg in
   make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ?canonical content
+    ?canonical ?parameterisation content
 
 #if defined OXCAML
 let unit_name_as_string = Compilation_unit.name_as_string
@@ -110,7 +150,7 @@ let name_to_string x = x
 #endif
 
 let read_cmti ~make_root ~parent ~filename ~warnings_tag () =
-  let cmt_info = Cmt_format.read_cmt filename in
+  let parameterisation, cmt_info = read_cmt_and_parameterisation filename in
   match cmt_info.cmt_annots with
   | Interface intf -> (
       match cmt_info.cmt_interface_digest with
@@ -141,15 +181,15 @@ let read_cmti ~make_root ~parent ~filename ~warnings_tag () =
 #else
           let imports = cmt_info.cmt_imports in
 #endif
-          compilation_unit_of_sig ~make_root ~imports
-            ~interface ~sourcefile ~name ~id ?canonical sg)
+          compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
+            ~name ~id ?canonical ~parameterisation sg)
   | _ -> raise Not_an_interface
 
 let read_cmt ~make_root ~parent ~filename ~warnings_tag () =
-  match Cmt_format.read_cmt filename with
+  match read_cmt_and_parameterisation filename with
   | exception Cmi_format.Error (Not_an_interface _) ->
       raise Not_an_implementation
-  | cmt_info -> (
+  | parameterisation, cmt_info -> (
       let name = cmt_info.cmt_modname |> unit_name_as_string in
       let sourcefile =
         ( cmt_info.cmt_sourcefile,
@@ -213,7 +253,7 @@ let read_cmt ~make_root ~parent ~filename ~warnings_tag () =
             Cmt.read_implementation parent name ~warnings_tag impl
           in
           compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
-            ~name ~id ?canonical sg
+            ~name ~id ?canonical ~parameterisation sg
       | _ -> raise Not_an_implementation)
 
 #if defined OXCAML
@@ -257,8 +297,15 @@ let read_cmi ~make_root ~parent ~filename ~warnings_tag () =
              compilation_unit_of_import_info info_opt)
       in
       let interface = interface |> Option.map snd in
+      let parameterisation =
+        parameterisation_of_cmi ~cmi_kind:cmi_info.Cmi_format.cmi_kind
+          ~cmi_params:cmi_info.Cmi_format.cmi_params
+      in
+#else
+      let parameterisation = no_parameterisation in
 #endif
-      compilation_unit_of_sig ~make_root ~imports ~interface ~name ~id sg
+      compilation_unit_of_sig ~make_root ~imports ~interface ~name ~id
+        ~parameterisation sg
   | _ -> raise Corrupted
 
 let read_impl ~make_root ~filename ~source_id () =

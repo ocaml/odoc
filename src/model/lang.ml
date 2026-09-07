@@ -539,6 +539,14 @@ module rec Compilation_unit : sig
 
   type content = Module of Signature.t | Pack of Packed.t
 
+  module Parameterisation : sig
+    type t = {
+      is_parameter : bool;
+      parameters : Path.Module.t list;
+      argument_for : Path.Module.t option;
+    }
+  end
+
   type t = {
     id : Identifier.RootModule.t;
     root : Root.t;
@@ -552,6 +560,7 @@ module rec Compilation_unit : sig
     linked : bool;  (** Whether this unit has been linked. *)
     source_loc : Identifier.SourceLocation.t option;
     canonical : Path.Module.t option;
+    parameterisation : Parameterisation.t;
   }
 end =
   Compilation_unit

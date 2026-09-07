@@ -709,8 +709,31 @@ let is_shadowed
     List.mem id env.shadowed
 module Path = struct
 
+let module_of_id id = `Root (ModuleName.of_ident id)
+
+#if defined OXCAML
+  let rec read_global_name (n : Global_module.Name.t) : Paths.Path.Module.t =
+    (* OxCaml parameterized library application "Lib[Param:Impl][P2:I2]" *)
+    let base = `Root (ModuleName.make_std n.head) in
+    List.fold_left
+      (fun acc (arg : Global_module.Name.argument) ->
+        let param =
+          `Root
+            (ModuleName.make_std
+               (Global_module.Parameter_name.to_string arg.param))
+        in
+        `ApplyParam (acc, param, read_global_name arg.value))
+      base n.args
+
+  let module_of_id id =
+    match Ident.to_global id with
+    | Some ({ Global_module.Name.args = _ :: _; _ } as n) -> read_global_name n
+    | _ -> module_of_id id
+#endif
+
   let read_module_ident env id =
-    if ident_is_global_or_predef id then `Root (ModuleName.of_ident id)
+    if ident_is_global_or_predef id then
+      module_of_id id
     else
       try find_module env id
       with Not_found -> assert false

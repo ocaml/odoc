@@ -41,6 +41,8 @@ module Tools_error = struct
       `Lookup_failure of Identifier.Path.Module.t
       (* Could not find the module in the environment *)
     | `Lookup_failure_root of ModuleName.t (* Could not find the root module *)
+    | `ParameterizedInstance
+      (* Instances of parameterized libraries have no expansion *)
     | `Parent of parent_lookup_error ]
 
   and simple_module_type_expr_of_module_error =
@@ -209,6 +211,9 @@ module Tools_error = struct
         Format.fprintf fmt "Lookup failure (value): %a" (model_identifier c)
           (m :> Odoc_model.Paths.Identifier.t)
     | `ApplyNotFunctor -> Format.fprintf fmt "Apply module is not a functor"
+    | `ParameterizedInstance ->
+        Format.fprintf fmt
+          "Instance of a parameterized library has no expansion"
     | `Class_replaced -> Format.fprintf fmt "Class replaced"
     | `Parent p -> pp fmt (p :> any)
     | `Parent_sig e -> Format.fprintf fmt "Parent_sig: %a" pp (e :> any)
@@ -242,6 +247,10 @@ let rec kind_of_module_cpath = function
   | `Root name -> Some (`Root (ModuleName.to_string name))
   | `Substituted p' | `Dot (p', _) -> kind_of_module_cpath p'
   | `Apply (a, b) -> (
+      match kind_of_module_cpath a with
+      | Some _ as a -> a
+      | None -> kind_of_module_cpath b)
+  | `ApplyParam (a, _param, b) -> (
       match kind_of_module_cpath a with
       | Some _ as a -> a
       | None -> kind_of_module_cpath b)

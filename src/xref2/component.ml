@@ -1264,6 +1264,9 @@ module Fmt = struct
         Format.fprintf ppf "%a.%a" (resolved_parent_path c) p ModuleName.fmt n
     | `Apply (p1, p2) ->
         Format.fprintf ppf "%a(%a)" (module_path c) p1 (module_path c) p2
+    | `ApplyParam (i, p, a) ->
+        Format.fprintf ppf "%a[%a:%a]" (module_path c) i (module_path c) p
+          (module_path c) a
     | `Identifier (id, b) ->
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
     | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
@@ -1434,6 +1437,13 @@ module Fmt = struct
     | `Apply (func, arg) ->
         Format.fprintf ppf "%a(%a)" (model_path c)
           (func :> path)
+          (model_path c)
+          (arg :> path)
+    | `ApplyParam (inst, param, arg) ->
+        Format.fprintf ppf "%a[%a:%a]" (model_path c)
+          (inst :> path)
+          (model_path c)
+          (param :> path)
           (model_path c)
           (arg :> path)
     | `Substituted m ->
@@ -2114,6 +2124,11 @@ module Of_Lang = struct
     | `Dot (path', x) -> `Dot (module_path ident_map path', x)
     | `Apply (p1, p2) ->
         `Apply (module_path ident_map p1, module_path ident_map p2)
+    | `ApplyParam (p1, p2, p3) ->
+        `ApplyParam
+          ( module_path ident_map p1,
+            module_path ident_map p2,
+            module_path ident_map p3 )
     | `Forward str -> `Forward str
     | `Root str -> `Root str
 
