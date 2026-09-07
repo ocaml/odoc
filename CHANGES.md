@@ -14,7 +14,7 @@
 - Fix odoc_driver's detection of `stdlib` when it is in `$prefix/lib64`, requires ocamlfind >= 1.9.8 (@katrinafyi, #1477, #1474)
 
 ### Performance
-- Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #XXXX)
+- Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #1487)
 
 # 3.2.1
 
