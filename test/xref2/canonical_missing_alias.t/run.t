@@ -54,19 +54,23 @@ module under a different name, so `Main.Zone` never exists:
 
 
 Build it the way Dune does: the alias module first, with `-no-alias-deps`, and
-everything else with `-open Main__`.
+everything else with `-open Main__`. This is a function because we run the
+exact same steps again after fixing the canonical tag below.
 
-  $ ocamlc -c -bin-annot -no-alias-deps -w -49 main__.ml
-  $ ocamlc -c -bin-annot -no-alias-deps main__Zone.mli
-  $ ocamlc -c -bin-annot -no-alias-deps -open Main__ main__Foo.mli
-  $ ocamlc -c -bin-annot -no-alias-deps -open Main__ main.ml
+  $ build () {
+  >   ocamlc -c -bin-annot -no-alias-deps -w -49 main__.ml
+  >   ocamlc -c -bin-annot -no-alias-deps main__Zone.mli
+  >   ocamlc -c -bin-annot -no-alias-deps -open Main__ main__Foo.mli
+  >   ocamlc -c -bin-annot -no-alias-deps -open Main__ main.ml
+  >   odoc compile -I . main__Zone.cmti
+  >   odoc compile -I . main__.cmt
+  >   odoc compile -I . main__Foo.cmti
+  >   odoc compile -I . main.cmt
+  >   odoc link -I . main.odoc
+  >   odoc html-generate --indent -o html main.odocl
+  > }
 
-  $ odoc compile -I . main__Zone.cmti
-  $ odoc compile -I . main__.cmt
-  $ odoc compile -I . main__Foo.cmti
-  $ odoc compile -I . main.cmt
-  $ odoc link -I . main.odoc
-  $ odoc html-generate --indent -o html main.odocl
+  $ build
 
 `Main.Private.Zone_alias` is documented, since it's an alias of a hidden
 module and so gets expanded:
@@ -103,17 +107,7 @@ takes precedence over it, so the library author can correct it from
 
 
   $ rm -rf html *.cm* *.odoc *.odocl
-  $ ocamlc -c -bin-annot -no-alias-deps -w -49 main__.ml
-  $ ocamlc -c -bin-annot -no-alias-deps main__Zone.mli
-  $ ocamlc -c -bin-annot -no-alias-deps -open Main__ main__Foo.mli
-  $ ocamlc -c -bin-annot -no-alias-deps -open Main__ main.ml
-
-  $ odoc compile -I . main__Zone.cmti
-  $ odoc compile -I . main__.cmt
-  $ odoc compile -I . main__Foo.cmti
-  $ odoc compile -I . main.cmt
-  $ odoc link -I . main.odoc
-  $ odoc html-generate --indent -o html main.odocl
+  $ build
 
 `Main.Private.Zone_alias` is still documented - it must not lose its expansion
 just because it is now the canonical destination of the module it is an alias
