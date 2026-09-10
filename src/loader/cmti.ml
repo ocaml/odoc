@@ -109,12 +109,16 @@ let wrapper_items dummy_id items =
     | TypeSubstitution _ | TypExt _ | Exception _ | Comment _ ->
       (* Nothing in the expansion of [F(BODY__n)] can refer to these. *)
       acc
-    | Class _ | ClassType _ ->
-      (* A class type of the argument can be referred to from the expansion,
-         but odoc does not chase class type aliases the way it chases type
-         manifests, so aliasing them here would not help: such a reference is
-         left printing the (hidden) name of the synthetic module. *)
-      acc
+    | Class (rec_, cls) ->
+      let id = Id.Mk.class_ (parent, Odoc_model.Names.TypeName.make_std (name cls.id)) in
+      let type_ = Class.ClassType (ClassType.Constr (`Identifier ((cls.id :> Id.Path.ClassType.t), false), [])) in
+      let cls = { cls with id; type_ } in
+      Signature.Class (rec_, cls) :: acc
+    | ClassType (rec_, clsty) ->
+      let id = Id.Mk.class_type (parent, Odoc_model.Names.TypeName.make_std (name clsty.id)) in
+      let expr = ClassType.Constr (`Identifier ((clsty.id :> Id.Path.ClassType.t), false), []) in
+      let clsty = { clsty with id; expr } in
+      Signature.ClassType (rec_, clsty) :: acc
   in
   List.rev (List.fold_left (fun acc item -> wrapper_item item acc) [] items)
 

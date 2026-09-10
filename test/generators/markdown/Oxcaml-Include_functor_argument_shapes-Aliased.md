@@ -18,6 +18,12 @@ module type To_include_module_type = sig ... end
 module To_include_module : sig ... end
 ```
 ```ocaml
+class class_type : class_type
+```
+```ocaml
+class class_ : class_
+```
+```ocaml
 type t = t
 ```
 ```ocaml
