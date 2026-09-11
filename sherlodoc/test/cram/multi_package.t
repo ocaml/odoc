@@ -1,6 +1,6 @@
   $ ODOCLS=$(find ../docs/odoc/ -name '*.odocl'  | grep -v "__" | sort)
   $ echo "$ODOCLS" | awk 'END { print NR }'
-  16
+  20
   $ export SHERLODOC_DB=db.bin
   $ export SHERLODOC_FORMAT=marshal
   $ sherlodoc index --index-docstring=false $ODOCLS
@@ -86,6 +86,7 @@ Partial name search:
   204 val Html_f.Make.Unsafe.string_attrib : string -> string wrap -> 'a attrib
   206 type Svg_types.commastrings = string list
   206 type Svg_types.spacestrings = string list
+  210 type Svg_types.semicolonstrings = string list
   226 val Svg_f.Make_with_wrapped_functions.Unsafe.string_attrib : string -> string wrap -> 'a attrib
   227 val Html_f.Make_with_wrapped_functions.Unsafe.string_attrib : string -> string wrap -> 'a attrib
   269 val Tyxml_xml.string_of_uri : (uri, string) W.ft
@@ -102,7 +103,6 @@ Partial name search:
   284 val Svg_f.Make.Xml.string_of_uri : (uri, string) W.ft
   285 val Html_f.Make.Xml.string_of_uri : (uri, string) W.ft
   288 val Tyxml_svg.Xml.uri_of_string : (string, uri) W.ft
-  289 val Svg_f.Make.uri_of_string : (string, uri) Xml.W.ft
   $ sherlodoc search --print-cost "base strin"
   415 val Svg_f.Wrapped_functions.string_of_dominant_baseline : ([< Svg_types.dominant_baseline ], string) Xml.W.ft
   417 val Svg_f.Wrapped_functions.string_of_alignment_baseline : ([< Svg_types.alignment_baseline ], string) Xml.W.ft
@@ -114,6 +114,7 @@ Partial name search:
   204 val Xml_print.string_of_number : float -> string
   206 type Svg_types.commastrings = string list
   206 type Svg_types.spacestrings = string list
+  210 type Svg_types.semicolonstrings = string list
   232 val Tyxml_svg.Unsafe.string_attrib : string -> string wrap -> 'a attrib
   233 val Tyxml_html.Unsafe.string_attrib : string -> string wrap -> 'a attrib
   238 val Svg_f.Make.Unsafe.string_attrib : string -> string wrap -> 'a attrib
@@ -134,7 +135,6 @@ Partial name search:
   313 val Tyxml_svg.Xml.string_of_uri : (uri, string) W.ft
   314 val Svg_f.Make.string_of_uri : (uri, string) Xml.W.ft
   314 val Svg_f.Make.Xml.uri_of_string : (string, uri) W.ft
-  314 val Tyxml_html.Xml.string_of_uri : (uri, string) W.ft
   $ sherlodoc search --print-cost "base tring"
   450 val Svg_f.Wrapped_functions.string_of_dominant_baseline : ([< Svg_types.dominant_baseline ], string) Xml.W.ft
   452 val Svg_f.Wrapped_functions.string_of_alignment_baseline : ([< Svg_types.alignment_baseline ], string) Xml.W.ft
