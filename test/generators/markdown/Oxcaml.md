@@ -265,6 +265,16 @@ Should render as `float64 & (immediate mod portable)`.
 ## Kind abbreviations
 
 ```ocaml
+kind_ plain_value = value
+```
+A manifest that is exactly `value`. It must still render after the `=`, unlike a `value` annotation on a type, which is the default and is dropped.
+
+```ocaml
+type t_plain_value : plain_value
+```
+A use of the `value` abbreviation.
+
+```ocaml
 kind_ my_abbrev = value_or_null mod non_null global
 ```
 Declares a kind abbreviation named `my_abbrev`.

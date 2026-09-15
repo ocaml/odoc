@@ -521,6 +521,10 @@ module rec Reference : sig
       type t = Paths_types.Resolved_reference.type_
     end
 
+    module KindAbbreviation : sig
+      type t = Paths_types.Resolved_reference.kind_abbreviation
+    end
+
     module Constructor : sig
       type t = Paths_types.Resolved_reference.constructor
     end

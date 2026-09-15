@@ -165,6 +165,14 @@ type t_inner_mod : float64 & (immediate mod portable)
 
 (** {1 Kind abbreviations} *)
 
+kind_ plain_value = value
+(** A manifest that is exactly [value]. It must still render after the [=],
+    unlike a [value] annotation on a type, which is the default and is
+    dropped. *)
+
+type t_plain_value : plain_value
+(** A use of the [value] abbreviation. *)
+
 kind_ my_abbrev = value_or_null mod non_null global
 (** Declares a kind abbreviation named [my_abbrev]. *)
 
