@@ -544,6 +544,7 @@ module LangUtils = struct
             let cast p = (p :> Odoc_model.Paths.Path.Resolved.t) in 
             match p with
             | `Apply (p1, p2) -> Format.fprintf ppf "%a(%a)" resolved_path (cast p1) resolved_path (cast p2)
+            | `ApplyParam (p1, p2, p3) -> Format.fprintf ppf "%a[%a:%a]" resolved_path (cast p1) resolved_path (cast p2) resolved_path (cast p3)
             | `Identifier p -> Format.fprintf ppf "global(%a)" identifier p
             | `Alias (dest, src) -> Format.fprintf ppf "(%a -> %a)" path (src :> Odoc_model.Paths.Path.t) resolved_path (cast dest)
             | `AliasModuleType (path, realpath) -> Format.fprintf ppf "(%a -> %a)" resolved_path (cast path) resolved_path (cast realpath)

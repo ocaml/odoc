@@ -622,6 +622,7 @@ module Path = struct
           inner (p1 : module_type :> any) || inner (p2 : module_ :> any)
       | `Module (p, _) -> inner (p : module_ :> any)
       | `Apply (p, _) -> inner (p : module_ :> any)
+      | `ApplyParam (p, _, _) -> inner (p : module_ :> any)
       | `ModuleType (_, m) when Names.ModuleTypeName.is_hidden m -> true
       | `ModuleType (p, _) -> inner (p : module_ :> any)
       | `Type (_, t) when Names.TypeName.is_hidden t -> true
@@ -716,6 +717,7 @@ module Path = struct
       | `Canonical (_, `Resolved p) -> parent_module_identifier p
       | `Canonical (p, _) -> parent_module_identifier p
       | `Apply (m, _) -> parent_module_identifier m
+      | `ApplyParam (m, _, _) -> parent_module_identifier m
       | `Alias (dest, `Resolved src) ->
           if is_resolved_hidden ~weak_canonical_test:false (dest :> t) then
             parent_module_identifier src
@@ -777,6 +779,7 @@ module Path = struct
       | `Canonical (_, `Resolved p) -> identifier (p :> t)
       | `Canonical (p, _) -> identifier (p :> t)
       | `Apply (m, _) -> identifier (m :> t)
+      | `ApplyParam (m, _, _) -> identifier (m :> t)
       | `Type (m, n) -> parent m (fun p -> Identifier.Mk.type_ (p, n))
       | `Value (m, n) -> parent m (fun p -> Identifier.Mk.value (p, n))
       | `ModuleType (m, n) ->
