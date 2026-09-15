@@ -1117,6 +1117,10 @@ module Reference = struct
       type t = Paths_types.Resolved_reference.type_
     end
 
+    module KindAbbreviation = struct
+      type t = Paths_types.Resolved_reference.kind_abbreviation
+    end
+
     module Constructor = struct
       type t = Paths_types.Resolved_reference.constructor
     end

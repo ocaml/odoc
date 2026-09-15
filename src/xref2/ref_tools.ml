@@ -384,11 +384,11 @@ end
 module KA = struct
   (** Kind abbreviation *)
 
-  type t = Resolved.t
+  type t = Resolved.KindAbbreviation.t
 
   let in_env env name : t ref_result =
     env_lookup_by_name Env.s_kind_abbreviation name env
-    >>= fun (`KindAbbreviation (id, _)) -> Ok (`Identifier (id :> Identifier.t))
+    >>= fun (`KindAbbreviation (id, _)) -> Ok (`Identifier id)
 
   let in_signature _env ((parent, _, sg) : signature_lookup_result) name :
       t ref_result =

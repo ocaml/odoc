@@ -529,14 +529,17 @@ let read_parsetree_modes (modes : Parsetree.modes) =
     let (Parsetree.Mode s) = m.txt in s)
     modes
 
-let rec kind_signature_reference : Longident.t -> Paths.Reference.Signature.t =
-  function
-  | Longident.Lident m -> `Root (m, `TUnknown)
-  | Longident.Ldot (p, m) -> `Dot (kind_label_parent_reference p, m)
-  | Longident.Lapply _ -> `Root ("_", `TUnknown)
+let rec kind_signature_reference :
+    Longident.t -> Paths.Reference.Signature.t option = function
+  | Longident.Lident m -> Some (`Root (m, `TUnknown))
+  | Longident.Ldot (p, m) ->
+      Option.map (fun p -> `Dot (p, m)) (kind_label_parent_reference p)
+  | Longident.Lapply _ -> None
 
 and kind_label_parent_reference x =
-  (kind_signature_reference x :>  Paths.Reference.LabelParent.t)
+  Option.map
+    (fun r -> (r : Paths.Reference.Signature.t :> Paths.Reference.LabelParent.t))
+    (kind_signature_reference x)
 
 let read_kind_abbreviation env (lid : Longident.t) =
   let name = Format.asprintf "%a" Pprintast.longident lid in
@@ -547,7 +550,9 @@ let read_kind_abbreviation env (lid : Longident.t) =
           (fun id -> `Resolved (`Identifier (id :> Identifier.t)))
           (Env.find_kind_abbreviation env n)
     | Longident.Ldot (prefix, n) ->
-        Some (`KindAbbreviation (kind_signature_reference prefix, TypeName.make_std n))
+        Option.map
+          (fun prefix -> `KindAbbreviation (prefix, TypeName.make_std n))
+          (kind_signature_reference prefix)
     | Longident.Lapply _ -> None
   in
   Kind.Abbreviation (name, reference)
@@ -623,7 +628,7 @@ let rec read_parsetree_core_type env (ct : Parsetree.core_type) =
             let kind =
               match jk with
               | None -> Kind.Default
-              | Some jk -> read_jkind_annotation env jk
+              | Some jk -> read_kind_manifest env jk
             in
             (name.txt, kind))
           vars
@@ -647,28 +652,28 @@ let rec read_parsetree_core_type env (ct : Parsetree.core_type) =
       (* layout-variable binder; odoc currently ignores the layout vars *)
       read_parsetree_core_type env ct
 
-and read_jkind_annotation env (jk : Parsetree.jkind_annotation) =
+and read_kind_manifest env (jk : Parsetree.jkind_annotation) =
   let open Kind in
   match jk.pjka_desc with
   | Pjk_default -> Default
   | Pjk_abbreviation (s, _) -> read_kind_abbreviation env s.txt
   | Pjk_mod (jk', modes) ->
-    Mod (read_jkind_annotation env jk', read_parsetree_modes modes)
+    Mod (read_kind_manifest env jk', read_parsetree_modes modes)
   | Pjk_with (jk', cty, modalities) ->
     let ty = read_parsetree_core_type env cty in
     let modalities = List.map (fun (m : Parsetree.modality Location.loc) ->
       let (Parsetree.Modality s) = m.txt in s) modalities in
-    With (read_jkind_annotation env jk', ty, modalities)
+    With (read_kind_manifest env jk', ty, modalities)
   | Pjk_kind_of cty ->
     Kind_of (read_parsetree_core_type env cty)
   | Pjk_product jks ->
-    Product (List.map (read_jkind_annotation env) jks)
+    Product (List.map (read_kind_manifest env) jks)
 
 let read_jkind_annotation env = function
   | None -> Kind.Default
   | Some { Parsetree.pjka_desc = Pjk_abbreviation ({ txt = Longident.Lident "value"; _ }, _); _ } ->
     Kind.Default
-  | Some jk -> read_jkind_annotation env jk
+  | Some jk -> read_kind_manifest env jk
 
 let jkind_of_type_desc env te =
   match  te with

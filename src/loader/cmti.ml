@@ -515,9 +515,7 @@ let read_kind_abbreviation env parent (jkd : Typedtree.jkind_declaration) =
       jkd.jkind_attributes
   in
   let manifest =
-    match jkd.jkind_annotation with
-    | None -> None
-    | Some _ as annot -> Some (Cmi.read_jkind_annotation env.ident_env annot)
+    opt_map (Cmi.read_kind_manifest env.ident_env) jkd.jkind_annotation
   in
   { id; source_loc; doc; manifest }
 #endif
