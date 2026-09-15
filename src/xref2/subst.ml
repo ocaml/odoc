@@ -243,10 +243,7 @@ let rec resolved_module_path :
   | `Apply (p1, p2) ->
       `Apply (resolved_module_path s p1, resolved_module_path s p2)
   | `ApplyParam (p1, p2, p3) ->
-      `ApplyParam
-        ( resolved_module_path s p1,
-          resolved_module_path s p2,
-          resolved_module_path s p3 )
+      `ApplyParam (resolved_module_path s p1, p2, resolved_module_path s p3)
   | `Substituted p -> `Substituted (resolved_module_path s p)
   | `Module (p, n) -> `Module (resolved_parent_path s p, n)
   | `Alias (p1, p2, p3opt) ->
@@ -296,8 +293,7 @@ and module_path : t -> Cpath.module_ -> Cpath.module_ =
   | `Dot (p', str) -> `Dot (module_path s p', str)
   | `Module (p', str) -> `Module (resolved_parent_path s p', str)
   | `Apply (p1, p2) -> `Apply (module_path s p1, module_path s p2)
-  | `ApplyParam (i, p, a) ->
-      `ApplyParam (module_path s i, module_path s p, module_path s a)
+  | `ApplyParam (i, p, a) -> `ApplyParam (module_path s i, p, module_path s a)
   | `Local (id, b) -> (
       match
         try Some (ModuleMap.find (id :> Ident.module_) s.module_)
