@@ -214,6 +214,8 @@ using [Both_ab]'s [B_param]):
   > let x = Both_a1_b1.make 1
   > let y = Both_a2_b1.make 2
   > let combos : Both_a1_b1.combined * Both_a2_b1.combined = (x, y)
+  > 
+  > include Both_a1_b1
   > EOF
 
 Everything builds and odoc generates documentation for all the libraries:
@@ -496,6 +498,58 @@ rather than through the internal wrapper modules:
     Both_ab[A_param:A1][B_param:B1].combined
     * Both_ab[A_param:A2][B_param:B1].combined
   ```
+  ```ocaml
+  type combined = Both_ab[A_param:A1][B_param:B1].combined = {
+    a : A1.t;
+    b : B1.u;
+  }
+  ```
+  ```ocaml
+  val make : int -> combined
+  ```
+  ```ocaml
+  val demo_a1 : Only_a[A_param:A1].wrapped
+  ```
+  ```ocaml
+  val demo_a_of_b : Only_a[A_param:A_of_b].wrapped
+  ```
+  ```ocaml
+  module Nested = Both_ab[A_param:A1][B_param:B1].Nested
+  ```
+  ```ocaml
+  val nested : Only_a[A_param:A1].Inner.i
+  ```
+  ```ocaml
+  module type Sig = Both_ab[A_param:A1][B_param:B1].Sig
+  ```
+  ```ocaml
+  val packed : (module Only_a[A_param:A1].S) option
+  ```
+
+Checking the resolved links:
+
+  $ odoc html-generate --indent -o links $(find _build -iname 'both_ab.odocl')
+  $ link() {
+  >   sed 's/^ *//; s/ *$//' $2  \
+  >   | awk -v t="$1" '$0==t{print h} {h=$0}' \
+  >   | sed -n 's|^<a href="\(.*\)">$|\1|p' | sed 's/@[0-9a-f]*/@HASH/g' | sort -u
+  > }
+  $ link 'Only_a[A_param:A1].wrapped' 'links/both_ab@*/Both_ab/index.html'
+  ../../only_a@HASH/Only_a/index.html#type-wrapped
+  $ link 'Only_a[A_param:A1].Inner' 'links/both_ab@*/Both_ab/index.html'
+  ../../only_a@HASH/Only_a/Inner/index.html
+  $ link 'Only_a[A_param:A1].Inner.i' 'links/both_ab@*/Both_ab/index.html'
+  ../../only_a@HASH/Only_a/Inner/index.html#type-i
+  $ link 'Only_a[A_param:A1].S' 'links/both_ab@*/Both_ab/index.html'
+  ../../only_a@HASH/Only_a/module-type-S/index.html
+  $ link 'Only_a[A_param:A_of_b].wrapped' 'links/both_ab@*/Both_ab/index.html'
+  ../../only_a@HASH/Only_a/index.html#type-wrapped
+
+Chained instances link too:
+
+  $ odoc html-generate --indent -o links $(find _build -iname 'final.odocl')
+  $ link 'Both_ab[A_param:A1][B_param:B1].combined' 'links/final@*/Final/index.html'
+  ../../both_ab@HASH/Both_ab/index.html#type-combined
 
 The page of a library parameter keeps the url derived from its identifier, so
 the sidebar marks it as the current unit and keeps its children, exactly like a
