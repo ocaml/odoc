@@ -27,6 +27,7 @@ let identity =
     type_replacement = TypeMap.empty;
     path_invalidating_modules = [];
     unresolve_opaque_paths = false;
+    root = [];
   }
 
 let pp fmt s =
@@ -79,6 +80,13 @@ let path_invalidate_module id t =
 
 let add_module id p rp t =
   { t with module_ = ModuleMap.add id (`Prefixed (p, rp)) t.module_ }
+
+let add_root name p rp t = { t with root = (name, (p, rp)) :: t.root }
+
+let root_name_of_identifier (i : Odoc_model.Paths.Identifier.Path.Module.t) =
+  match i with
+  | `Root (_, name) -> Some (Odoc_model.Names.ModuleName.to_string name)
+  | _ -> None
 
 let add_module_type id p rp t =
   {
@@ -226,9 +234,19 @@ let rec resolved_module_path :
       | Some (`Prefixed (_p, rp)) -> rp
       | Some `Substituted -> `Substituted p
       | None -> p)
+  | `Gpath (`Identifier i) -> (
+      match root_name_of_identifier i with
+      | Some name -> (
+          match List.assoc_opt name s.root with Some (_, rp) -> rp | None -> p)
+      | None -> p)
   | `Gpath _ -> p
   | `Apply (p1, p2) ->
       `Apply (resolved_module_path s p1, resolved_module_path s p2)
+  | `ApplyParam (p1, p2, p3) ->
+      `ApplyParam
+        ( resolved_module_path s p1,
+          resolved_module_path s p2,
+          resolved_module_path s p3 )
   | `Substituted p -> `Substituted (resolved_module_path s p)
   | `Module (p, n) -> `Module (resolved_parent_path s p, n)
   | `Alias (p1, p2, p3opt) ->
@@ -289,9 +307,18 @@ and module_path : t -> Cpath.module_ -> Cpath.module_ =
       | Some (`Renamed x) -> `Local (x, b)
       | Some `Substituted -> `Substituted p
       | None -> `Local (id, b))
-  | `Identifier _ -> p
+  | `Identifier (i, _) -> (
+      match root_name_of_identifier i with
+      | Some name -> (
+          match List.assoc_opt name s.root with Some (p', _) -> p' | None -> p)
+      | None -> p)
   | `Substituted p -> `Substituted (module_path s p)
-  | `Root _ -> p
+  | `Root name -> (
+      match
+        List.assoc_opt (Odoc_model.Names.ModuleName.to_string name) s.root
+      with
+      | Some (p', _) -> p'
+      | None -> p)
 
 and resolved_module_type_path :
     t ->

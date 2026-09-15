@@ -159,6 +159,11 @@ module Path = struct
     | `Module (p, n) -> `Module (resolved_parent map p, n)
     | `Canonical (r, m) -> `Canonical (resolved_module map r, m)
     | `Apply (m1, m2) -> `Apply (resolved_module map m1, resolved_module map m2)
+    | `ApplyParam (m1, m2, m3) ->
+        `ApplyParam
+          ( resolved_module map m1,
+            resolved_module map m2,
+            resolved_module map m3 )
     | `Alias (m1, m2, _) -> `Alias (resolved_module map m1, module_ map m2)
     | `OpaqueModule m -> `OpaqueModule (resolved_module map m)
 

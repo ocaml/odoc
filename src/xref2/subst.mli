@@ -14,6 +14,9 @@ val path_invalidate_module : Ident.module_ -> t -> t
 val add_module :
   Ident.module_ -> Cpath.module_ -> Cpath.Resolved.module_ -> t -> t
 
+val add_root : string -> Cpath.module_ -> Cpath.Resolved.module_ -> t -> t
+(** Substitute a root module (a library parameter) by a path. *)
+
 val add_module_type :
   Ident.module_type -> Cpath.module_type -> Cpath.Resolved.module_type -> t -> t
 
