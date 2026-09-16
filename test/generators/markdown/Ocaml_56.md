@@ -1,7 +1,7 @@
 
 # Module `Ocaml_56`
 
-Features introduced in OCaml 5\.6.
+Features introduced in OCaml 5.6.
 
 ```ocaml
 type ext
