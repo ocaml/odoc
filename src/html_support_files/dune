@@ -28,7 +28,8 @@
     -o
     odoc_html_support_files.ml
     -m
-    plain))))
+    plain
+    --silent))))
 
 (library
  (name odoc_html_support_files)
