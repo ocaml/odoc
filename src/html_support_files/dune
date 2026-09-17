@@ -26,7 +26,7 @@
     -e
     woff2
     -o
-    odoc_html_support_files.ml
+    %{target}
     -m
     plain
     --silent))))
