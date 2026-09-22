@@ -185,7 +185,7 @@ Check line numbers for errors in a '.mld' file.
   File "line_numbers.mld", line 8, characters 0-12:
   Warning: '{Bad Markup}': bad markup.
   Suggestion: did you mean '{!Bad Markup}' or '[Bad Markup]'?
-  File "line_numbers.mld", line 32, characters 0-1:
+  File "line_numbers.mld", line 32, characters 1-1:
   Warning: '{': bad markup.
   Suggestion: escape the brace with '\{'.
   File "line_numbers.mld", line 16, characters 0-11:
