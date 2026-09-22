@@ -22,7 +22,7 @@
 ((output
   (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (code_span [])))))))
  (warnings
-  ( "File \"f.ml\", line 1, characters 3-3:\
+  ( "File \"f.ml\", line 1, character 3:\
    \nEnd of text is not allowed in '[...]' (code).")))
 --- input ---
 [{b
@@ -30,7 +30,7 @@
 ((output
   (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (code_span {b)))))))
  (warnings
-  ( "File \"f.ml\", line 1, characters 3-3:\
+  ( "File \"f.ml\", line 1, character 3:\
    \nEnd of text is not allowed in '[...]' (code).")))
 --- input ---
 [\{]
@@ -119,5 +119,5 @@ bar]
 ((output
   (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (code_span foo)))))))
  (warnings
-  ( "File \"f.ml\", line 1, characters 4-4:\
+  ( "File \"f.ml\", line 1, character 4:\
    \nEnd of text is not allowed in '[...]' (code).")))

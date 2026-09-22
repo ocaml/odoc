@@ -119,7 +119,7 @@
  (warnings
   ( "File \"f.ml\", line 1, characters 0-6:\
    \nOpen bracket '{{:' is never closed."
-    "File \"f.ml\", line 1, characters 6-6:\
+    "File \"f.ml\", line 1, character 6:\
    \nEnd of text is not allowed in '{{:...} ...}' (external link).")))
 --- input ---
 {:foo}

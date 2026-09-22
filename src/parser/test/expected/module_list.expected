@@ -52,7 +52,7 @@ Bar}
 --- output ---
 ((output (((f.ml (1 0) (1 10)) (modules ()))))
  (warnings
-  ( "File \"f.ml\", line 1, characters 10-10:\
+  ( "File \"f.ml\", line 1, character 10:\
    \nEnd of text is not allowed in '{!modules ...}'."
     "File \"f.ml\", line 1, characters 0-10:\
    \n'{!modules ...}' should not be empty.")))

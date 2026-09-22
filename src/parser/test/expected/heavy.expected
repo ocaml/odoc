@@ -69,7 +69,7 @@
   (((f.ml (1 0) (1 16))
     (table (syntax heavy) (grid ((row ((data ()))))) (align "no alignment")))))
  (warnings
-  ( "File \"f.ml\", line 1, characters 16-16:\
+  ( "File \"f.ml\", line 1, character 16:\
    \nEnd of text is not allowed in table.\
    \nSuggestion: add '}'.")))
 --- input ---
