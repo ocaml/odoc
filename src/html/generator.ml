@@ -594,7 +594,8 @@ module Breadcrumbs = struct
             in
             let name = inline_nolink content in
             let breadcrumb = { href; name; kind = url.page.kind } in
-            if url.page = current_url then Some (`Current breadcrumb)
+            if Url.Path.equal url.page current_url then
+              Some (`Current breadcrumb)
             else Some (`Parent (breadcrumb, children))
         | _ -> None
       in
