@@ -530,30 +530,64 @@ rather than through the internal wrapper modules:
   val packed : (module Only_a[A_param:A1].S) option
   ```
 
-Checking the resolved links:
+Each part of an instance path links on its own: the parameterized library, the
+parameter it fills, the argument filling it, and the item itself:
 
   $ odoc html-generate --indent -o links $(find _build -iname 'both_ab.odocl')
-  $ link() {
-  >   sed 's/^ *//; s/ *$//' $2  \
-  >   | awk -v t="$1" '$0==t{print h} {h=$0}' \
-  >   | sed -n 's|^<a href="\(.*\)">$|\1|p' | sed 's/@[0-9a-f]*/@HASH/g' | sort -u
-  > }
-  $ link 'Only_a[A_param:A1].wrapped' 'links/both_ab@*/Both_ab/index.html'
-  ../../only_a@HASH/Only_a/index.html#type-wrapped
-  $ link 'Only_a[A_param:A1].Inner' 'links/both_ab@*/Both_ab/index.html'
-  ../../only_a@HASH/Only_a/Inner/index.html
-  $ link 'Only_a[A_param:A1].Inner.i' 'links/both_ab@*/Both_ab/index.html'
-  ../../only_a@HASH/Only_a/Inner/index.html#type-i
-  $ link 'Only_a[A_param:A1].S' 'links/both_ab@*/Both_ab/index.html'
-  ../../only_a@HASH/Only_a/module-type-S/index.html
-  $ link 'Only_a[A_param:A_of_b].wrapped' 'links/both_ab@*/Both_ab/index.html'
-  ../../only_a@HASH/Only_a/index.html#type-wrapped
-
-Chained instances link too:
-
   $ odoc html-generate --indent -o links $(find _build -iname 'final.odocl')
-  $ link 'Both_ab[A_param:A1][B_param:B1].combined' 'links/final@*/Final/index.html'
-  ../../both_ab@HASH/Both_ab/index.html#type-combined
+  $ both=$(ls links/both_ab@*/Both_ab/index.html)
+  $ final=$(ls links/final@*/Final/index.html)
+  $ links() {
+  >   tr '\n' ' ' < $2 | sed 's|<div class="odoc-spec">|\n|g' | grep -F "id=\"$1\"" \
+  >   | sed 's|<a |\n<a |g' \
+  >   | sed -n 's|^<a href="\([^"]*\)"[^>]*> *\([^<]*[^< ]\) *</a>.*|\2 -> \1|p' \
+  >   | sed 's/@[0-9a-f]*/@HASH/g'
+  > }
+  $ links val-demo_a1 $both
+  Only_a -> ../../only_a@HASH/Only_a/index.html
+  A_param -> ../../a_param@HASH/A_param/index.html
+  A1 -> ../../a1@HASH/A1/index.html
+  wrapped -> ../../only_a@HASH/Only_a/index.html#type-wrapped
+
+A nested item keeps every step separate:
+
+  $ links val-nested $both
+  Only_a -> ../../only_a@HASH/Only_a/index.html
+  A_param -> ../../a_param@HASH/A_param/index.html
+  A1 -> ../../a1@HASH/A1/index.html
+  Inner -> ../../only_a@HASH/Only_a/Inner/index.html
+  i -> ../../only_a@HASH/Only_a/Inner/index.html#type-i
+
+Module and module type paths behave the same:
+
+  $ links module-Nested $both
+  Only_a -> ../../only_a@HASH/Only_a/index.html
+  A_param -> ../../a_param@HASH/A_param/index.html
+  A1 -> ../../a1@HASH/A1/index.html
+  Inner -> ../../only_a@HASH/Only_a/Inner/index.html
+  $ links module-type-Sig $both
+  Only_a -> ../../only_a@HASH/Only_a/index.html
+  A_param -> ../../a_param@HASH/A_param/index.html
+  A1 -> ../../a1@HASH/A1/index.html
+  S -> ../../only_a@HASH/Only_a/module-type-S/index.html
+
+An argument that is itself a parameterized library links to its own page:
+
+  $ links val-demo_a_of_b $both
+  Only_a -> ../../only_a@HASH/Only_a/index.html
+  A_param -> ../../a_param@HASH/A_param/index.html
+  A_of_b -> ../../a_of_b@HASH/A_of_b/index.html
+  wrapped -> ../../only_a@HASH/Only_a/index.html#type-wrapped
+
+A chained instance links each parameter and argument in turn:
+
+  $ links val-x $final
+  Both_ab -> ../../both_ab@HASH/Both_ab/index.html
+  A_param -> ../../a_param@HASH/A_param/index.html
+  A1 -> ../../a1@HASH/A1/index.html
+  B_param -> ../../b_param@HASH/B_param/index.html
+  B1 -> ../../b1@HASH/B1/index.html
+  combined -> ../../both_ab@HASH/Both_ab/index.html#type-combined
 
 The page of a library parameter keeps the url derived from its identifier, so
 the sidebar marks it as the current unit and keeps its children, exactly like a
