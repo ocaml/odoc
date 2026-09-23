@@ -222,6 +222,10 @@ Everything builds and odoc generates documentation for all the libraries:
 
   $ dune build @doc-private 2>&1
 
+(Using the `@doc-private` target as it works with older versions of dune, where
+the documentation for the implementation of parameters wasn't generated, as it
+didn't distinguish them from virtual module implementations.)
+
 Render to markdown for inspection:
 
   $ for f in $(find _build -name '*.odocl' | sort); do
