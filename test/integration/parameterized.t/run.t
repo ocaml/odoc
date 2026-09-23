@@ -216,11 +216,20 @@ using [Both_ab]'s [B_param]):
   > let combos : Both_a1_b1.combined * Both_a2_b1.combined = (x, y)
   > 
   > include Both_a1_b1
+  > 
+  > (** See {!Both_a1_b1.combined} and {!Both_a1_b1.make}. *)
+  > let documented = 0
   > EOF
 
-Everything builds and odoc generates documentation for all the libraries:
+Everything builds and odoc generates documentation for all the libraries. The
+reference warnings are expected as dune currently doesn't pass `--open` for its
+wrapper file where the instantiated libraries are defined.
 
   $ dune build @doc-private 2>&1
+  File "final/final.ml", line 7, characters 35-53:
+  Warning: Failed to resolve reference unresolvedroot(Both_a1_b1).make Couldn't find "Both_a1_b1"
+  File "final/final.ml", line 7, characters 8-30:
+  Warning: Failed to resolve reference unresolvedroot(Both_a1_b1).combined Couldn't find "Both_a1_b1"
 
 (Using the `@doc-private` target as it works with older versions of dune, where
 the documentation for the implementation of parameters wasn't generated, as it
@@ -529,6 +538,10 @@ rather than through the internal wrapper modules:
   ```ocaml
   val packed : (module Only_a[A_param:A1].S) option
   ```
+  ```ocaml
+  val documented : int
+  ```
+  See `Both_a1_b1.combined` and `Both_a1_b1.make`.
 
 Checking the resolved links:
 
@@ -554,6 +567,18 @@ Chained instances link too:
   $ odoc html-generate --indent -o links $(find _build -iname 'final.odocl')
   $ link 'Both_ab[A_param:A1][B_param:B1].combined' 'links/final@*/Final/index.html'
   ../../both_ab@HASH/Both_ab/index.html#type-combined
+
+The instantiations of parameterised libs only exist in the wrapper that dune
+generates, which is currently not passed to odoc with `--open`.  Hence
+references to an instance don't resolve, so they render as plain code with no
+link:
+
+  $ final=$(ls links/final@*/Final/index.html)
+  $ sed 's/^ *//' $final | tr -d '\n' \
+  >   | grep -o '<code>Both_a1_b1[^<]*</code>' \
+  >   | sed 's/@[0-9a-f]*/@HASH/g'
+  <code>Both_a1_b1.combined</code>
+  <code>Both_a1_b1.make</code>
 
 The page of a library parameter keeps the url derived from its identifier, so
 the sidebar marks it as the current unit and keeps its children, exactly like a
