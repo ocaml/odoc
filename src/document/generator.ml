@@ -128,6 +128,80 @@ module Make (Syntax : SYNTAX) = struct
       | `Resolved rp -> href_of_resolved rp
       | _ -> None
 
+    let link_of_resolved rp txt =
+      let path = (`Resolved rp : Path.t) in
+      if Paths.Path.is_hidden path then unresolved txt
+      else
+        match href_of_resolved rp with
+        | Some href -> resolved href txt
+        | None -> O.elt txt
+
+    let rec segmented_instance : Path.Resolved.t -> text option =
+     fun rp ->
+      let part r =
+        match segmented_instance r with
+        | Some text -> text
+        | None ->
+            link_of_resolved r
+              [ inline @@ Text (Url.render_path (`Resolved r)) ]
+      in
+      let member parent name =
+        match segmented_instance (parent :> Path.Resolved.t) with
+        | None -> None
+        | Some prefix ->
+            Some
+              (prefix ++ O.txt "."
+              ++ link_of_resolved rp [ inline @@ Text name ])
+      in
+      match rp with
+      | `ApplyParam (i, p, a) ->
+          Some
+            (part (i :> Path.Resolved.t)
+            ++ O.txt "["
+            ++ part (p :> Path.Resolved.t)
+            ++ O.txt ":"
+            ++ part (a :> Path.Resolved.t)
+            ++ O.txt "]")
+      | `Module (parent, name) -> member parent (ModuleName.to_string name)
+      | `ModuleType (parent, name) ->
+          member parent (ModuleTypeName.to_string name)
+      | `Type (parent, name) -> member parent (TypeName.to_string name)
+      | `Value (parent, name) -> member parent (ValueName.to_string name)
+      | `Class (parent, name) | `ClassType (parent, name) ->
+          member parent (TypeName.to_string name)
+      | `Alias (dest, `Resolved src) ->
+          if Paths.Path.Resolved.(is_hidden (src :> t)) then
+            segmented_instance (dest :> Path.Resolved.t)
+          else segmented_instance (src :> Path.Resolved.t)
+      | `Alias (dest, src) ->
+          if Paths.Path.is_hidden (src :> Path.t) then
+            segmented_instance (dest :> Path.Resolved.t)
+          else None
+      | `AliasModuleType (p1, p2) ->
+          if Paths.Path.Resolved.(is_hidden (p2 :> t)) then
+            segmented_instance (p1 :> Path.Resolved.t)
+          else segmented_instance (p2 :> Path.Resolved.t)
+      | `Canonical (_, `Resolved p) -> segmented_instance (p :> Path.Resolved.t)
+      | `CanonicalModuleType (_, `Resolved p) ->
+          segmented_instance (p :> Path.Resolved.t)
+      | `CanonicalType (_, `Resolved p) ->
+          segmented_instance (p :> Path.Resolved.t)
+      | `Canonical (p, _)
+      | `Hidden p
+      | `Substituted p
+      | `OpaqueModule p
+      | `Subst (_, p) ->
+          segmented_instance (p :> Path.Resolved.t)
+      | `CanonicalModuleType (p, _)
+      | `SubstitutedMT p
+      | `OpaqueModuleType p
+      | `SubstT (_, p) ->
+          segmented_instance (p :> Path.Resolved.t)
+      | `CanonicalType (p, _) | `SubstitutedT p ->
+          segmented_instance (p :> Path.Resolved.t)
+      | `SubstitutedCT p -> segmented_instance (p :> Path.Resolved.t)
+      | _ -> None
+
     let rec from_path : Path.t -> text =
      fun path ->
       match path with
@@ -164,10 +238,13 @@ module Make (Syntax : SYNTAX) = struct
           let txt = Url.render_path path in
           unresolved [ inline @@ Text txt ]
       | `Resolved rp -> (
-          let txt = [ inline @@ Text (Url.render_path path) ] in
-          match href_of_resolved rp with
-          | Some href -> resolved href txt
-          | None -> O.elt txt)
+          match segmented_instance rp with
+          | Some text -> text
+          | None -> (
+              let txt = [ inline @@ Text (Url.render_path path) ] in
+              match href_of_resolved rp with
+              | Some href -> resolved href txt
+              | None -> O.elt txt))
 
     let dot prefix suffix = prefix ^ "." ^ suffix
 
