@@ -3,6 +3,7 @@ open Odoc_model.Paths
 module Path : sig
   type kind =
     [ `Module
+    | `LibraryParameter
     | `Page
     | `LeafPage
     | `ModuleType
@@ -47,6 +48,10 @@ module Path : sig
       is a tuple of directory-type elements and filename-type elements. If the
       [is_dir] function can return [`Always], the caller must be prepared to
       handle the case where the filename part is empty. *)
+
+  val equal : t -> t -> bool
+  (** Whether two paths denote the same page. Kinds that render identically,
+      such as [`Module] and [`LibraryParameter], are considered equal. *)
 
   val is_prefix : t -> t -> bool
   (** [is_prefix p1 p2] tells whether [p1] is a prefix of [p2]. It considers

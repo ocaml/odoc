@@ -87,7 +87,7 @@ let prepare_preamble comment items =
 let make_expansion_page ~source_anchor url comments items =
   let comment = List.concat comments in
   let preamble, items = prepare_preamble comment items in
-  { Page.preamble; items; url; source_anchor; library_parameter = false }
+  { Page.preamble; items; url; source_anchor }
 
 include Generator_signatures
 
@@ -2067,6 +2067,11 @@ module Make (Syntax : SYNTAX) = struct
 
     let compilation_unit (t : Odoc_model.Lang.Compilation_unit.t) =
       let url = Url.Path.from_identifier t.id in
+      let url =
+        if t.parameterisation.is_parameter then
+          { url with Url.Path.kind = `LibraryParameter }
+        else url
+      in
       let unit_doc, items =
         match t.content with
         | Module sign -> signature sign
@@ -2075,8 +2080,7 @@ module Make (Syntax : SYNTAX) = struct
       let items = parameterisation_items t.parameterisation @ items in
       let source_anchor = source_anchor t.source_loc in
       let page = make_expansion_page ~source_anchor url [ unit_doc ] items in
-      Document.Page
-        { page with Page.library_parameter = t.parameterisation.is_parameter }
+      Document.Page page
 
     let page (t : Odoc_model.Lang.Page.t) =
       (*let name =
@@ -2086,8 +2090,7 @@ module Make (Syntax : SYNTAX) = struct
       let url = Url.Path.from_identifier t.name in
       let preamble, items = Sectioning.docs t.content.elements in
       let source_anchor = None in
-      Document.Page
-        { Page.preamble; items; url; source_anchor; library_parameter = false }
+      Document.Page { Page.preamble; items; url; source_anchor }
 
     let implementation (v : Odoc_model.Lang.Implementation.t) syntax_info
         source_code =
