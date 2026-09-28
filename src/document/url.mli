@@ -49,10 +49,6 @@ module Path : sig
       [is_dir] function can return [`Always], the caller must be prepared to
       handle the case where the filename part is empty. *)
 
-  val equal : t -> t -> bool
-  (** Whether two paths denote the same page. Kinds that render identically,
-      such as [`Module] and [`LibraryParameter], are considered equal. *)
-
   val is_prefix : t -> t -> bool
   (** [is_prefix p1 p2] tells whether [p1] is a prefix of [p2]. It considers
       [index] pages as their parent: [dir/page-index] is a prefix of
