@@ -39,6 +39,8 @@
 
 ### Performance
 - Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #1487)
+- Strip expanded include decls from .odoc files, reducing link memory and file size,
+  particularly on ppx_template-heavy code in OxCaml (@jonludlam, #1481)
 
 # 3.2.1
 

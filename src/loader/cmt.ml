@@ -593,7 +593,7 @@ and read_include env parent incl =
   match decl_modty with
   | Some m ->
     let decl = ModuleType m in
-    [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
+    [Include {parent; doc; decl; expansion; expanded = false; status; strengthened=None; loc }]
   | None ->
     content.items
 
@@ -622,7 +622,7 @@ and read_include_functor env parent wrapper incl =
       ([Signature.Module (Ordinary, m)], path, ModuleType mty)
   in
   let decl = Functor {target = Path (`Apply (functor_path, wrapper)); original_ref} in
-  bound @ [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
+  bound @ [Include {parent; doc; decl; expansion; expanded=false; status; strengthened=None; loc }]
 #endif
 
 and read_open env parent o =
