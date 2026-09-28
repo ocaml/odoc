@@ -26,9 +26,10 @@
     -e
     woff2
     -o
-    odoc_html_support_files.ml
+    %{target}
     -m
-    plain))))
+    plain
+    --silent))))
 
 (library
  (name odoc_html_support_files)
