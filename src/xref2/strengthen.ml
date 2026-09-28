@@ -22,19 +22,31 @@ let rec signature :
     Signature.t ->
     Signature.t =
  fun prefix ?canonical sg ->
-  let sg', strengthened_modules = sig_items prefix ?canonical sg in
+  let sg', strengthened_modules, strengthened_module_types =
+    sig_items prefix ?canonical sg
+  in
   let substs =
     List.fold_left
       (fun s mid -> Subst.path_invalidate_module (mid :> Ident.module_) s)
       Subst.identity strengthened_modules
   in
+  (* A strengthened module type, like a strengthened module, is replaced by a
+     path back to the prefix and so no longer has an expansion of its own.
+     Invalidate paths pointing at it too, so they are re-resolved through that
+     path to the module type that does. *)
+  let substs =
+    List.fold_left
+      (fun s mtid ->
+        Subst.path_invalidate_module_type (mtid :> Ident.module_type) s)
+      substs strengthened_module_types
+  in
   Subst.signature substs sg'
 
 and sig_items prefix ?canonical sg =
   let open Signature in
-  let items, ids =
+  let items, ids, mtids =
     List.fold_left
-      (fun (items, s) item ->
+      (fun (items, s, mts) item ->
         match item with
         | Module (id, r, m) ->
             let name = Ident.Name.typed_module id in
@@ -44,7 +56,7 @@ and sig_items prefix ?canonical sg =
               | None -> None
             in
             let m' () = module_ ?canonical (`Dot (prefix, name)) (get m) in
-            (Module (id, r, put m') :: items, id :: s)
+            (Module (id, r, put m') :: items, id :: s, mts)
         | ModuleType (id, mt) ->
             ( ModuleType
                 ( id,
@@ -53,7 +65,8 @@ and sig_items prefix ?canonical sg =
                         (`DotMT (prefix, Ident.Name.typed_module_type id))
                         (get mt)) )
               :: items,
-              s )
+              s,
+              id :: mts )
         | Type (id, r, t) ->
             ( Type
                 ( id,
@@ -63,17 +76,18 @@ and sig_items prefix ?canonical sg =
                         (`DotT (prefix, Ident.Name.typed_type id))
                         (get t)) )
               :: items,
-              s )
+              s,
+              mts )
         | Include i ->
-            let i', strengthened = include_ prefix i in
-            (Include i' :: items, strengthened @ s)
+            let i', strengthened, strengthened_mts = include_ prefix i in
+            (Include i' :: items, strengthened @ s, strengthened_mts @ mts)
         | Exception _ | TypExt _ | Value _ | Class _ | ClassType _
         | ModuleSubstitution _ | TypeSubstitution _ | ModuleTypeSubstitution _
         | Comment _ | Open _ ->
-            (item :: items, s))
-      ([], []) sg.items
+            (item :: items, s, mts))
+      ([], [], []) sg.items
   in
-  ({ sg with items = List.rev items }, ids)
+  ({ sg with items = List.rev items }, ids, mtids)
 
 and module_ :
     ?canonical:Odoc_model.Paths.Path.Module.t ->
@@ -117,7 +131,14 @@ and type_decl : Cpath.type_ -> TypeDecl.t -> TypeDecl.t =
   in
   { t with equation }
 
-and include_ : Cpath.module_ -> Include.t -> Include.t * Ident.module_ list =
+and include_ :
+    Cpath.module_ ->
+    Include.t ->
+    Include.t * Ident.module_ list * Ident.module_type list =
  fun path i ->
-  let expansion_, strengthened = sig_items path i.expansion_ in
-  ({ i with expansion_; strengthened = Some path }, strengthened)
+  let expansion_, strengthened, strengthened_mts =
+    sig_items path i.expansion_
+  in
+  ( { i with expansion_; strengthened = Some path },
+    strengthened,
+    strengthened_mts )
