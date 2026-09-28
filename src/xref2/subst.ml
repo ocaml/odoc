@@ -27,7 +27,7 @@ let identity =
     type_replacement = TypeMap.empty;
     path_invalidating_modules = [];
     unresolve_opaque_paths = false;
-    root = [];
+    library_parameters = [];
   }
 
 let pp fmt s =
@@ -81,12 +81,25 @@ let path_invalidate_module id t =
 let add_module id p rp t =
   { t with module_ = ModuleMap.add id (`Prefixed (p, rp)) t.module_ }
 
-let add_root name p rp t = { t with root = (name, (p, rp)) :: t.root }
+let add_library_parameter id p rp t =
+  { t with library_parameters = (id, (p, rp)) :: t.library_parameters }
 
-let root_name_of_identifier (i : Odoc_model.Paths.Identifier.Path.Module.t) =
+let find_library_parameter s (i : Odoc_model.Paths.Identifier.Path.Module.t) =
   match i with
-  | `Root (_, name) -> Some (Odoc_model.Names.ModuleName.to_string name)
+  | `LibraryParameter _ as i ->
+      List.find_opt
+        (fun (id, _) -> Odoc_model.Paths.Identifier.LibraryParameter.equal id i)
+        s.library_parameters
+      |> Option.map snd
   | _ -> None
+
+(** Unresolved paths only carry the name of the root module. *)
+let find_library_parameter_by_name s name =
+  List.find_opt
+    (fun (`LibraryParameter (_, name'), _) ->
+      Odoc_model.Names.ModuleName.equal name name')
+    s.library_parameters
+  |> Option.map snd
 
 let add_module_type id p rp t =
   {
@@ -235,10 +248,7 @@ let rec resolved_module_path :
       | Some `Substituted -> `Substituted p
       | None -> p)
   | `Gpath (`Identifier i) -> (
-      match root_name_of_identifier i with
-      | Some name -> (
-          match List.assoc_opt name s.root with Some (_, rp) -> rp | None -> p)
-      | None -> p)
+      match find_library_parameter s i with Some (_, rp) -> rp | None -> p)
   | `Gpath _ -> p
   | `Apply (p1, p2) ->
       `Apply (resolved_module_path s p1, resolved_module_path s p2)
@@ -304,15 +314,10 @@ and module_path : t -> Cpath.module_ -> Cpath.module_ =
       | Some `Substituted -> `Substituted p
       | None -> `Local (id, b))
   | `Identifier (i, _) -> (
-      match root_name_of_identifier i with
-      | Some name -> (
-          match List.assoc_opt name s.root with Some (p', _) -> p' | None -> p)
-      | None -> p)
+      match find_library_parameter s i with Some (p', _) -> p' | None -> p)
   | `Substituted p -> `Substituted (module_path s p)
   | `Root name -> (
-      match
-        List.assoc_opt (Odoc_model.Names.ModuleName.to_string name) s.root
-      with
+      match find_library_parameter_by_name s name with
       | Some (p', _) -> p'
       | None -> p)
 

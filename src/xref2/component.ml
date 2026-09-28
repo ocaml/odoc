@@ -483,7 +483,10 @@ and Substitution : sig
     module_type_replacement : ModuleType.expr ModuleTypeMap.t;
     path_invalidating_modules : Ident.module_ list;
     unresolve_opaque_paths : bool;
-    root : (string * (Cpath.module_ * Cpath.Resolved.module_)) list;
+    library_parameters :
+      (Odoc_model.Paths.Identifier.LibraryParameter.t
+      * (Cpath.module_ * Cpath.Resolved.module_))
+      list;
         (** Substitution of root modules, used for instances of parameterized
             libraries: the library parameter is replaced by the argument. *)
   }
@@ -693,6 +696,8 @@ module Fmt = struct
     match p with
     | `Root (_, unit_name) ->
         wrap c "root" (fun _ -> ModuleName.fmt) ppf unit_name
+    | `LibraryParameter (_, unit_name) ->
+        wrap c "libparam" (fun _ -> ModuleName.fmt) ppf unit_name
     | `Module (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (parent :> id)
@@ -2025,7 +2030,8 @@ module Of_Lang = struct
 
   let find_any_module i ident_map =
     match i with
-    | (`Root _ | `Module _) as id -> Maps.Module.find id ident_map.modules
+    | (`Root _ | `LibraryParameter _ | `Module _) as id ->
+        Maps.Module.find id ident_map.modules
     | #Paths.Identifier.FunctorParameter.t as id ->
         Maps.FunctorParameter.find id ident_map.functor_parameters
     | _ -> raise Not_found

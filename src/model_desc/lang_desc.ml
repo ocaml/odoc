@@ -767,7 +767,6 @@ and compilation_unit_parameterisation =
   let open Lang.Compilation_unit.Parameterisation in
   Record
     [
-      F ("is_parameter", (fun t -> t.is_parameter), bool);
       F ("parameters", (fun t -> (t.parameters :> Paths.Path.t list)), List path);
       F
         ( "argument_for",

@@ -548,7 +548,6 @@ module rec Compilation_unit : sig
 
   module Parameterisation : sig
     type t = {
-      is_parameter : bool;
       parameters : Path.Module.t list;
       argument_for : Path.Module.t option;
     }

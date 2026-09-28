@@ -451,7 +451,7 @@ and original_path_module_identifier :
       match original_path_parent_identifier sg with
       | Some sg' -> Some (`Module (sg', name))
       | None -> None)
-  | `Root _ -> Some (`Gpath (`Identifier id))
+  | `Root _ | `LibraryParameter _ -> Some (`Gpath (`Identifier id))
   | _ ->
       None
 

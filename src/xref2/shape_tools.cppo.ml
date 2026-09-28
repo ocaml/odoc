@@ -48,6 +48,9 @@ let rec shape_of_id env :
     | `Class (parent, name) -> proj parent Kind.Class (TypeName.to_string_unsafe name)
     | `ClassType (parent, name) ->
         proj parent Kind.Class_type (TypeName.to_string_unsafe name)
+    | `LibraryParameter _ ->
+        (* A library parameter has no implementation, hence no shape. *)
+        None
     | `Page _ | `LeafPage _ | `Label _
     | `Constructor _ | `Field _ | `UnboxedField _ | `Method _ | `InstanceVariable _ | `Parameter _
       ->

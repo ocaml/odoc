@@ -91,8 +91,9 @@ let add_page (dir : in_progress) page =
 let add_module (dir : in_progress) m =
   let _, dir_content =
     match m.Lang.Compilation_unit.id with
-    | `Root (Some parent, _) -> get_or_create dir parent
-    | `Root (None, _) -> dir
+    | `Root (Some parent, _) | `LibraryParameter (Some parent, _) ->
+        get_or_create dir parent
+    | `Root (None, _) | `LibraryParameter (None, _) -> dir
   in
   let skel = Skeleton.from_unit m in
   RMH.replace dir_content.modules m.id skel

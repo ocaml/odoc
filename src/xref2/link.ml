@@ -571,7 +571,6 @@ let rec unit env t =
     let open Compilation_unit.Parameterisation in
     let p = t.parameterisation in
     {
-      p with
       parameters = List.map (module_path env) p.parameters;
       argument_for = Option.map (module_path env) p.argument_for;
     }

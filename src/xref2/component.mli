@@ -462,7 +462,10 @@ and Substitution : sig
     module_type_replacement : ModuleType.expr ModuleTypeMap.t;
     path_invalidating_modules : Ident.module_ list;
     unresolve_opaque_paths : bool;
-    root : (string * (Cpath.module_ * Cpath.Resolved.module_)) list;
+    library_parameters :
+      (Odoc_model.Paths.Identifier.LibraryParameter.t
+      * (Cpath.module_ * Cpath.Resolved.module_))
+      list;
   }
 end
 

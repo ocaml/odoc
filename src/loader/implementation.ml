@@ -256,7 +256,7 @@ let anchor_of_identifier id =
     | `Constructor (parent, name) ->
         let anchor = anchor `Constructor (ConstructorName.to_string name) in
         continue anchor parent
-    | `Root _ ->
+    | `Root _ | `LibraryParameter _ ->
         (* We do not need to include the "container" root module in the anchor
            to have unique anchors. *)
         acc

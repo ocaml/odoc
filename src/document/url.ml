@@ -134,6 +134,15 @@ module Path = struct
         let kind = `Module in
         let name = ModuleName.to_string unit_name in
         mk ?parent kind name
+    | `LibraryParameter (parent, unit_name) ->
+        let parent =
+          match parent with
+          | Some p -> Some (from_identifier (p :> any))
+          | None -> None
+        in
+        let kind = `LibraryParameter in
+        let name = ModuleName.to_string unit_name in
+        mk ?parent kind name
     | `Page (parent, page_name) ->
         let parent =
           match parent with
@@ -220,21 +229,12 @@ module Path = struct
     in
     inner [] l
 
-  let rec equal url1 url2 =
-    String.equal (string_of_kind url1.kind) (string_of_kind url2.kind)
-    && String.equal url1.name url2.name
-    &&
-    match (url1.parent, url2.parent) with
-    | None, None -> true
-    | Some p1, Some p2 -> equal p1 p2
-    | None, Some _ | Some _, None -> false
-
   let rec is_prefix (url1 : t) (url2 : t) =
     match url1 with
     | { kind = `LeafPage; parent = None; name = "index" } -> true
     | { kind = `LeafPage; parent = Some p; name = "index" } -> is_prefix p url2
     | _ -> (
-        if equal url1 url2 then true
+        if url1 = url2 then true
         else
           match url2 with
           | { parent = Some parent; _ } -> is_prefix url1 parent
@@ -305,6 +305,9 @@ module Anchor = struct
     | `Root _ as p ->
         let page = Path.from_identifier (p :> Path.any) in
         { page; kind = `Module; anchor = "" }
+    | `LibraryParameter _ as p ->
+        let page = Path.from_identifier (p :> Path.any) in
+        { page; kind = `LibraryParameter; anchor = "" }
     | `Page _ as p ->
         let page = Path.from_identifier (p :> Path.any) in
         { page; kind = `Page; anchor = "" }

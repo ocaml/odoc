@@ -90,6 +90,11 @@ module General_paths = struct
               ( "`Root",
                 ((parent :> id_t option), name),
                 Pair (Option identifier, Names.modulename) )
+        | `LibraryParameter (parent, name) ->
+            C
+              ( "`LibraryParameter",
+                ((parent :> id_t option), name),
+                Pair (Option identifier, Names.modulename) )
         | `Module (parent, name) ->
             C
               ( "`Module",

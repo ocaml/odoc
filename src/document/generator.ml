@@ -2144,11 +2144,6 @@ module Make (Syntax : SYNTAX) = struct
 
     let compilation_unit (t : Odoc_model.Lang.Compilation_unit.t) =
       let url = Url.Path.from_identifier t.id in
-      let url =
-        if t.parameterisation.is_parameter then
-          { url with Url.Path.kind = `LibraryParameter }
-        else url
-      in
       let unit_doc, items =
         match t.content with
         | Module sign -> signature sign

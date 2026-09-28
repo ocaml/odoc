@@ -75,7 +75,7 @@ module Of_Identifier = struct
     match t with `Type (_, n) -> `LType (n, i)
 
   let module_ : Module.t -> module_ = function
-    | `Module (_, n) | `Root (_, n) ->
+    | `Module (_, n) | `Root (_, n) | `LibraryParameter (_, n) ->
         let i = fresh_int () in
         `LModule (n, i)
     | `Parameter (_, n) ->

@@ -1555,7 +1555,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
               match identifier with
               | `Module (_, n) -> n 
               | `Parameter (_, n) -> n
-              | `Root (_, n) -> n
+              | `Root (_, n) | `LibraryParameter (_, n) -> n
             in
 { shadowed with s_modules = (Ident.name id, name) :: shadowed.s_modules }
             else shadowed
@@ -1633,13 +1633,10 @@ and read_signature env parent (items : Odoc_model.Compat.signature) =
   fst @@ read_signature_noenv env parent items
 
 
-let read_interface root name ~warnings_tag intf =
-  let id =
-    Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name)
-  in
+let read_interface (id : Identifier.RootModule.t) ~warnings_tag intf =
   let items =
     read_signature
       { ident_env = Env.empty (); warnings_tag }
-      id intf
+      (id :> Identifier.Signature.t) intf
   in
   (id, items)

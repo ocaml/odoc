@@ -876,11 +876,11 @@ and read_module_declaration env parent md =
   let hidden =
 #if OCAML_VERSION >= (4,10,0)
     match canonical, mid with
-    | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
+    | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n) | `LibraryParameter (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | _,_ -> false
 #else
     match canonical, mid with
-    | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
+    | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n) | `LibraryParameter (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | _ -> false
 #endif
   in
@@ -1074,14 +1074,11 @@ and read_signature :
   | _ ->
     ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; removed = []; doc }, tags)
 
-let read_interface root name ~warnings_tag intf =
-  let id =
-    Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name)
-  in
+let read_interface (id : Identifier.RootModule.t) ~warnings_tag intf =
   let sg, canonical =
     read_signature Odoc_model.Semantics.Expect_canonical
       { ident_env = Env.empty (); warnings_tag }
-      id intf
+      (id :> Identifier.Signature.t) intf
   in
   let canonical =
     match canonical with

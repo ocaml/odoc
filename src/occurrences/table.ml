@@ -47,7 +47,7 @@ let add ?(quantity = 1) tbl id =
     | `Class (parent, _) -> do_ parent
     | `Value (parent, _) -> do_ parent
     | `ClassType (parent, _) -> do_ parent
-    | `Root _ -> incr tbl id
+    | `Root _ | `LibraryParameter _ -> incr tbl id
     | `SourcePage _ | `Page _ | `LeafPage _ | `SourceLocation _ | `Label _
     | `SourceLocationMod _ | `Result _ | `AssetFile _
     | `SourceLocationInternal _ ->
@@ -78,7 +78,8 @@ let rec get t id =
   | `Class (parent, _) -> do_ parent
   | `Value (parent, _) -> do_ parent
   | `ClassType (parent, _) -> do_ parent
-  | `Root _ -> ( try Some (H.find t id) with Not_found -> None)
+  | `Root _ | `LibraryParameter _ -> (
+      try Some (H.find t id) with Not_found -> None)
   | `SourcePage _ | `Page _ | `LeafPage _ | `SourceLocation _ | `Label _
   | `SourceLocationMod _ | `Result _ | `AssetFile _ | `SourceLocationInternal _
     ->
@@ -101,6 +102,7 @@ module Strip = struct
    fun x ->
     match x with
     | `Root (_, name) -> Mk.root (None, name)
+    | `LibraryParameter (_, name) -> Mk.library_parameter (None, name)
     | `Module (p, name) -> Mk.module_ (strip_sig_path p, name)
     | `Parameter (p, name) -> Mk.parameter (strip_sig_path p, name)
     | `Result p -> Mk.result (strip_sig_path p)
