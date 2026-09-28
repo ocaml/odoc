@@ -567,6 +567,30 @@
   (>= %{ocaml_version} 5.5)))
 
 (rule
+ (target ocaml_56.cmti)
+ (package odoc)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/ocaml_56.mli}))
+ (enabled_if
+  (>= %{ocaml_version} 5.6)))
+
+(rule
+ (target ocaml_56.odoc)
+ (package odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:ocaml_56.cmti}))
+ (enabled_if
+  (>= %{ocaml_version} 5.6)))
+
+(rule
+ (target ocaml_56.odocl)
+ (package odoc)
+ (action
+  (run odoc link -o %{target} %{dep:ocaml_56.odoc}))
+ (enabled_if
+  (>= %{ocaml_version} 5.6)))
+
+(rule
  (target ocamlary.cmti)
  (package odoc)
  (action
@@ -7624,6 +7648,166 @@
    (diff ocaml_55.targets ocaml_55.targets.gen))
   (enabled_if
    (>= %{ocaml_version} 5.5))))
+
+(subdir
+ html
+ (rule
+  (targets Ocaml_56.html.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../ocaml_56.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_56.html Ocaml_56.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ html
+ (rule
+  (target ocaml_56.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    ocaml_56.targets.gen
+    (run odoc html-targets -o . %{dep:../ocaml_56.odocl} --flat)))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff ocaml_56.targets ocaml_56.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ latex
+ (rule
+  (targets Ocaml_56.tex.gen)
+  (package odoc)
+  (action
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../ocaml_56.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_56.tex Ocaml_56.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ latex
+ (rule
+  (target ocaml_56.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    ocaml_56.targets.gen
+    (run odoc latex-targets -o . %{dep:../ocaml_56.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff ocaml_56.targets ocaml_56.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ man
+ (rule
+  (targets Ocaml_56.3o.gen)
+  (package odoc)
+  (action
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../ocaml_56.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_56.3o Ocaml_56.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ man
+ (rule
+  (target ocaml_56.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    ocaml_56.targets.gen
+    (run odoc man-targets -o . %{dep:../ocaml_56.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff ocaml_56.targets ocaml_56.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ markdown
+ (rule
+  (targets Ocaml_56.md.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../ocaml_56.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_56.md Ocaml_56.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ markdown
+ (rule
+  (target ocaml_56.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    ocaml_56.targets.gen
+    (run odoc markdown-targets -o . %{dep:../ocaml_56.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff ocaml_56.targets ocaml_56.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
 
 (subdir
  html

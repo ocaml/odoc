@@ -20,6 +20,8 @@ jobs:
           - "5.3"
           - "5.4"
           - "5.5"
+          # trunk version, update when 5.6.0 is released
+          - "ocaml-compiler.5.6"
         include:
           - os: ubuntu-latest
             ocaml-compiler: "5.3"

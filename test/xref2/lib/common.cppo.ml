@@ -34,6 +34,8 @@ let cmti_of_string s =
 #elif defined OXCAML
     ~sourcefile:""
     dummy_compilation_unit
+#elif OCAML_VERSION >= (5,6,0)
+    Unit_info.(make ~source_file:"" Intf "")
 #endif
     env p;;
 
