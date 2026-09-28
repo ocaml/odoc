@@ -35,6 +35,8 @@ module Identifier : sig
 
   module RootModule : IdSig with type t = Id.root_module
 
+  module LibraryParameter : IdSig with type t = Id.library_parameter
+
   module Signature : IdSig with type t = Id.signature
 
   module ClassSignature : IdSig with type t = Id.class_signature
@@ -233,6 +235,10 @@ module Identifier : sig
     val root :
       ContainerPage.t option * ModuleName.t ->
       [> `Root of ContainerPage.t option * ModuleName.t ]
+
+    val library_parameter :
+      ContainerPage.t option * ModuleName.t ->
+      [> `LibraryParameter of ContainerPage.t option * ModuleName.t ]
 
     val implementation : string -> [> `Implementation of ModuleName.t ]
 

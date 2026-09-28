@@ -32,11 +32,13 @@ module Identifier = struct
     | source_page
     | asset_file
     | `Root of container_page option * ModuleName.t
+    | `LibraryParameter of container_page option * ModuleName.t
     | `Implementation of ModuleName.t ]
   (** @canonical Odoc_model.Paths.Identifier.OdocId.t *)
 
   type signature =
     [ `Root of container_page option * ModuleName.t
+    | `LibraryParameter of container_page option * ModuleName.t
     | `Module of signature * ModuleName.t
     | `Parameter of signature * ModuleName.t
     | `Result of signature
@@ -62,7 +64,14 @@ module Identifier = struct
   type label_parent = [ field_parent | page | class_signature ]
   (** @canonical Odoc_model.Paths.Identifier.LabelParent.t *)
 
-  type root_module = [ `Root of container_page option * ModuleName.t ]
+  type library_parameter =
+    [ `LibraryParameter of container_page option * ModuleName.t ]
+  (** An OxCaml library parameter: a root module whose implementation is
+      supplied when a parameterised library is instantiated.
+      @canonical Odoc_model.Paths.Identifier.LibraryParameter.t *)
+
+  type root_module =
+    [ `Root of container_page option * ModuleName.t | library_parameter ]
   (** @canonical Odoc_model.Paths.Identifier.RootModule.t *)
 
   type module_ =
