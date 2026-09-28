@@ -27,7 +27,7 @@ module Identifier = struct
   let rec name_aux : t -> string =
    fun x ->
     match x with
-    | `Root (_, name) -> ModuleName.to_string name
+    | `Root (_, name) | `LibraryParameter (_, name) -> ModuleName.to_string name
     | `Page (_, name) -> PageName.to_string name
     | `LeafPage (_, name) -> PageName.to_string name
     | `Module (_, name) -> ModuleName.to_string name
@@ -58,7 +58,7 @@ module Identifier = struct
   let rec is_hidden : t -> bool =
    fun x ->
     match x with
-    | `Root (_, name) -> ModuleName.is_hidden name
+    | `Root (_, name) | `LibraryParameter (_, name) -> ModuleName.is_hidden name
     | `Page (_, _) -> false
     | `LeafPage (_, _) -> false
     | `Module (_, name) -> ModuleName.is_hidden name
@@ -87,7 +87,8 @@ module Identifier = struct
   let rec full_name_aux : t -> string list =
    fun x ->
     match x with
-    | `Root (_, name) -> [ ModuleName.to_string name ]
+    | `Root (_, name) | `LibraryParameter (_, name) ->
+        [ ModuleName.to_string name ]
     | `Page (None, name) -> [ PageName.to_string name ]
     | `Page (Some parent, name) ->
         PageName.to_string name :: full_name_aux (parent :> t)
@@ -146,7 +147,7 @@ module Identifier = struct
     fun (n : non_src) ->
       match n with
       | `Result i -> label_parent_aux (i :> non_src)
-      | `Root _ as p -> (p :> label_parent)
+      | (`Root _ | `LibraryParameter _) as p -> (p :> label_parent)
       | `Page _ as p -> (p :> label_parent)
       | `LeafPage _ as p -> (p :> label_parent)
       | `Module (p, _)
@@ -244,6 +245,13 @@ module Identifier = struct
     let compare = compare
   end
 
+  module LibraryParameter = struct
+    type t = Id.library_parameter
+    let equal = equal
+    let hash = hash
+    let compare = compare
+  end
+
   module Module = struct
     type t = Id.module_
     let equal = equal
@@ -260,7 +268,9 @@ module Identifier = struct
     let functor_arg_pos (`Parameter (p, _)) =
       let rec inner_sig = function
         | `Result p -> 1 + inner_sig p
-        | `Module _ | `ModuleType _ | `Root _ | `Parameter _ -> 1
+        | `Module _ | `ModuleType _ | `Root _ | `LibraryParameter _
+        | `Parameter _ ->
+            1
       in
       inner_sig p
   end
@@ -468,6 +478,11 @@ module Identifier = struct
         ContainerPage.t option * ModuleName.t ->
         [> `Root of ContainerPage.t option * ModuleName.t ] =
       mk (fun (p, n) -> `Root (p, n))
+
+    let library_parameter :
+        ContainerPage.t option * ModuleName.t ->
+        [> `LibraryParameter of ContainerPage.t option * ModuleName.t ] =
+      mk (fun (p, n) -> `LibraryParameter (p, n))
 
     let implementation = mk (fun s -> `Implementation (ModuleName.make_std s))
 

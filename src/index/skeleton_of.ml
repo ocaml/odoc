@@ -75,7 +75,7 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
     match id with
     | `LeafPage (_, name) -> Format.fprintf fmt "'%s'" (PageName.to_string name)
     | `Page (_, name) -> Format.fprintf fmt "'%s/'" (PageName.to_string name)
-    | `Root (_, name) ->
+    | `Root (_, name) | `LibraryParameter (_, name) ->
         Format.fprintf fmt "'module-%s'" (ModuleName.to_string name)
     | _ -> Format.fprintf fmt "'unsupported'"
   in
@@ -123,7 +123,8 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
               Astring.String.equal (PageName.to_string name) c
           | (_, { Location_.value = Page c; _ }), `LeafPage (_, name) ->
               Astring.String.equal (PageName.to_string name) c
-          | (_, { Location_.value = Module c; _ }), `Root (_, name) ->
+          | ( (_, { Location_.value = Module c; _ }),
+              (`Root (_, name) | `LibraryParameter (_, name)) ) ->
               Astring.String.equal (ModuleName.to_string name) c
           | _ -> false
         in
