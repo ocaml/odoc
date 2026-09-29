@@ -207,7 +207,7 @@ let prefix_signature (path, sg) =
         | Open o -> Open (Subst.open_ sub o)
         | Comment c -> Comment c
         | KindAbbreviation (id, ka) ->
-            KindAbbreviation (Ident.Rename.kind_abbreviation id, ka))
+            KindAbbreviation (id, Subst.kind_abbreviation sub ka))
       sg.items
   in
   { sg with items }

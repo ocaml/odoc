@@ -135,9 +135,8 @@ let type_in_sig sg name =
 let kind_abbreviation_in_sig sg name =
   find_in_sig sg (function
     | Signature.KindAbbreviation (id, ka)
-      when TypeName.equal_modulo_shadowing
-             (N.typed_kind_abbreviation id)
-             name ->
+      when TypeName.equal_modulo_shadowing (N.typed_kind_abbreviation id) name
+      ->
         Some (`FKindAbbreviation (N.typed_kind_abbreviation id, ka))
     | _ -> None)
 

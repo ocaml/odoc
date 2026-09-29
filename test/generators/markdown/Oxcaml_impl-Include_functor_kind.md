@@ -4,7 +4,7 @@
 ```ocaml
 module Make (T : sig ... end) : sig ... end
 ```
-A kind abbreviation reaching the functor through its argument. `T.k` is rendered as plain text: kind annotations hold references, which are not substituted when the functor is applied.
+A kind abbreviation reaching the functor through its argument. `T.k` is rendered as plain text: it is a reference through the parameter, which the wrapper the functor is applied to does not bind.
 
 ```ocaml
 kind_ k = value mod portable
