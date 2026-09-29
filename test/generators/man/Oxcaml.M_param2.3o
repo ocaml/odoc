@@ -1,13 +1,16 @@
 
-.TH M_param 3 "" "Odoc" "OCaml Library"
+.TH M_param2 3 "" "Odoc" "OCaml Library"
 .SH Name
-Oxcaml\.M_param
+Oxcaml\.M_param2
 .SH Synopsis
 .sp 
 .in 2
-\fBModule Oxcaml\.M_param\fR
+\fBModule Oxcaml\.M_param2\fR
 .in 
 .sp 
+.fi 
+Each instantiation renders its own copy of param_kind, so both uses should link to the copy on their own page rather than to S_param's\.
+.nf 
 .SH Documentation
 .sp 
 .nf 

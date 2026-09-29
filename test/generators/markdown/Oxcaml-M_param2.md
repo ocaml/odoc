@@ -1,5 +1,7 @@
 
-# Module type `Oxcaml.S_param`
+# Module `Oxcaml.M_param2`
+
+Each instantiation renders its own copy of `param_kind`, so both uses should link to the copy on their own page rather than to `S_param`'s.
 
 ```ocaml
 kind_ param_kind = value mod portable
