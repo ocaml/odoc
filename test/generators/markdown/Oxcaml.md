@@ -385,6 +385,11 @@ module type S_param = sig ... end
 ```ocaml
 module M_param : S_param
 ```
+```ocaml
+module M_param2 : S_param
+```
+Each instantiation renders its own copy of `param_kind`, so both uses should link to the copy on their own page rather than to `S_param`'s.
+
 
 ## Zero alloc
 

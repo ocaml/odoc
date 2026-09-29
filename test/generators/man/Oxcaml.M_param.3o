@@ -17,6 +17,13 @@ Oxcaml\.M_param
 .fi 
 .br 
 .ti +2
-A kind-constrained type parameter inside a signature expansion; the use should link to param_kind\.
+A kind-constrained type parameter inside a signature expansion\.
+.nf 
+.sp 
+\f[CB]type\fR t_direct : param_kind
+.fi 
+.br 
+.ti +2
+A kind annotation inside a signature expansion\.
 .nf 
 
