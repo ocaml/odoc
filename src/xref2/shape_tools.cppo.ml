@@ -48,9 +48,14 @@ let rec shape_of_id env :
     | `Class (parent, name) -> proj parent Kind.Class (TypeName.to_string_unsafe name)
     | `ClassType (parent, name) ->
         proj parent Kind.Class_type (TypeName.to_string_unsafe name)
+#if defined OXCAML
+    | `KindAbbreviation (parent, name) ->
+        proj parent Kind.Jkind (TypeName.to_string_unsafe name)
+#else
+    | `KindAbbreviation _ -> None
+#endif
     | `Page _ | `LeafPage _ | `Label _
     | `Constructor _ | `Field _ | `UnboxedField _ | `Method _ | `InstanceVariable _ | `Parameter _
-    | `KindAbbreviation _
       ->
         (* Not represented in shapes. *)
         None
