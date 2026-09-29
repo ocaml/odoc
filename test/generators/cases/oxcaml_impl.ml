@@ -127,8 +127,8 @@ end
 
 module Include_functor_kind = struct
 (** A kind abbreviation reaching the functor through its argument. [T.k] is
-    rendered as plain text: kind annotations hold references, which are not
-    substituted when the functor is applied. *)
+    rendered as plain text: it is a reference through the parameter, which the
+    wrapper the functor is applied to does not bind. *)
   module Make (T : sig kind_ k end) = struct
     type inherited : T.k
   end

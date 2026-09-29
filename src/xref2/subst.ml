@@ -23,6 +23,7 @@ let identity =
     module_type = ModuleTypeMap.empty;
     module_type_replacement = ModuleTypeMap.empty;
     type_ = TypeMap.empty;
+    kind_abbreviation = KindAbbreviationMap.empty;
     class_type = TypeMap.empty;
     type_replacement = TypeMap.empty;
     path_invalidating_modules = [];
@@ -148,6 +149,14 @@ let rename_module_type : Ident.module_type -> Ident.module_type -> t -> t =
 
 let rename_type : Ident.type_ -> Ident.type_ -> t -> t =
  fun id id' t -> { t with type_ = TypeMap.add id (`Renamed id') t.type_ }
+
+let rename_kind_abbreviation :
+    Ident.kind_abbreviation -> Ident.kind_abbreviation -> t -> t =
+ fun id id' t ->
+  {
+    t with
+    kind_abbreviation = KindAbbreviationMap.add id id' t.kind_abbreviation;
+  }
 
 let rename_class_type : Ident.type_ -> Ident.type_ -> t -> t =
  fun id id' t ->
@@ -617,7 +626,7 @@ and type_expr s t =
       match type_path s p with
       | Replaced (t, eq) ->
           let mk_var acc pexpr param =
-            match param.Odoc_model.Lang.TypeDecl.desc with
+            match param.Component.TypeDecl.desc with
             | Any -> acc
             | Var n -> (n, type_expr s pexpr) :: acc
           in
@@ -787,13 +796,32 @@ and type_decl_constructor_arg s a =
   | Tuple ts -> Tuple (List.map (fun (te, mods) -> (type_expr s te, mods)) ts)
   | Record fs -> Record (list type_decl_field s fs)
 
+and kind s (k : Component.Kind.t) : Component.Kind.t =
+  match k with
+  | Default | Abbreviation (_, Global _) | Kind_of _ -> k
+  | Abbreviation (name, Local id) -> (
+      match KindAbbreviationMap.find_opt id s.kind_abbreviation with
+      | Some id' -> Abbreviation (name, Local id')
+      | None -> k)
+  | Mod (b, m) -> Mod (kind s b, m)
+  | With (b, ty, m) -> With (kind s b, ty, m)
+  | Product ks -> Product (List.map (kind s) ks)
+
+and type_decl_param s (p : Component.TypeDecl.param) =
+  { p with kind = kind s p.kind }
+
+and kind_abbreviation s (ka : Component.KindAbbreviation.t) =
+  { ka with manifest = option_ kind s ka.manifest }
+
 and type_decl_equation s t =
   let open Component.TypeDecl.Equation in
   {
     t with
+    params = List.map (type_decl_param s) t.params;
     manifest = option_ type_expr s t.manifest;
     constraints =
       List.map (fun (x, y) -> (type_expr s x, type_expr s y)) t.constraints;
+    kind = kind s t.kind;
   }
 
 and exception_ s e =
@@ -1005,7 +1033,10 @@ and rename_bound_idents s sg =
   | (Comment _ as item) :: rest -> rename_bound_idents s (item :: sg) rest
   | KindAbbreviation (id, ka) :: rest ->
       let id' = Ident.Rename.kind_abbreviation id in
-      rename_bound_idents s (KindAbbreviation (id', ka) :: sg) rest
+      rename_bound_idents
+        (rename_kind_abbreviation id id' s)
+        (KindAbbreviation (id', ka) :: sg)
+        rest
 
 and removed_items s items =
   let open Component.Signature in
@@ -1060,7 +1091,7 @@ and apply_sig_map_item s item =
   | Include i -> Include (include_ s i)
   | Open o -> Open (open_ s o)
   | Comment c -> Comment c
-  | KindAbbreviation _ as item -> item
+  | KindAbbreviation (id, ka) -> KindAbbreviation (id, kind_abbreviation s ka)
 
 and apply_sig_map_items s items =
   List.rev_map (apply_sig_map_item s) items |> List.rev
