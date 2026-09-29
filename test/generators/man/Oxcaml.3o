@@ -388,14 +388,14 @@ Should render as float64 & (immediate mod portable)\.
 .fi 
 .br 
 .ti +2
-A manifest that is exactly value\. It must still render after the =, unlike a value annotation on a type, which is the default and is dropped\.
+An abbreviation for the value kind\.
 .nf 
 .sp 
 \f[CB]type\fR t_plain_value : plain_value
 .fi 
 .br 
 .ti +2
-A use of the value abbreviation\.
+A use of the plain_value abbreviation, which should render and link\.
 .nf 
 .sp 
 \f[CB]kind_\fR my_abbrev = value_or_null \f[CB]mod\fR non_null global

@@ -102,7 +102,7 @@ val read_jkind_annotation :
   Parsetree.jkind_annotation option ->
   Odoc_model.Lang.Kind.t
 
-val read_kind_manifest :
+val read_jkind :
   Ident_env.t -> Parsetree.jkind_annotation -> Odoc_model.Lang.Kind.t
 
 val read_modalities :

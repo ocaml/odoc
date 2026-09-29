@@ -22,6 +22,7 @@ open Odoc_model.Paths
 open Odoc_model.Lang
 open Odoc_model.Names
 
+module OCamlEnv = Env
 module Env = Ident_env
 module Paths = Odoc_model.Paths
 
@@ -628,7 +629,7 @@ let rec read_parsetree_core_type env (ct : Parsetree.core_type) =
             let kind =
               match jk with
               | None -> Kind.Default
-              | Some jk -> read_kind_manifest env jk
+              | Some jk -> read_jkind env jk
             in
             (name.txt, kind))
           vars
@@ -652,29 +653,35 @@ let rec read_parsetree_core_type env (ct : Parsetree.core_type) =
       (* layout-variable binder; odoc currently ignores the layout vars *)
       read_parsetree_core_type env ct
 
-and read_kind_manifest env (jk : Parsetree.jkind_annotation) =
+and read_jkind env (jk : Parsetree.jkind_annotation) =
   let open Kind in
   match jk.pjka_desc with
   | Pjk_default -> Default
   | Pjk_abbreviation (s, _) -> read_kind_abbreviation env s.txt
   | Pjk_mod (jk', modes) ->
-    Mod (read_kind_manifest env jk', read_parsetree_modes modes)
+    Mod (read_jkind env jk', read_parsetree_modes modes)
   | Pjk_with (jk', cty, modalities) ->
     let ty = read_parsetree_core_type env cty in
     let modalities = List.map (fun (m : Parsetree.modality Location.loc) ->
       let (Parsetree.Modality s) = m.txt in s) modalities in
-    With (read_kind_manifest env jk', ty, modalities)
+    With (read_jkind env jk', ty, modalities)
   | Pjk_kind_of cty ->
     Kind_of (read_parsetree_core_type env cty)
   | Pjk_product jks ->
-    Product (List.map (read_kind_manifest env) jks)
+    Product (List.map (read_jkind env) jks)
 
 let read_jkind_annotation env = function
   | None -> Kind.Default
-  | Some { Parsetree.pjka_desc = Pjk_abbreviation ({ txt = Longident.Lident "value"; _ }, _); _ }
-    when Option.is_none (Env.find_kind_abbreviation env "value") ->
-    Kind.Default
-  | Some jk -> read_kind_manifest env jk
+  | Some
+      {
+        Parsetree.pjka_desc =
+          Pjk_abbreviation ({ txt = Longident.Lident "value"; _ }, _);
+        pjka_loc = { loc_ghost = true; _ };
+      } ->
+      (* Inserted by the compiler on unannotated declarations, unlike a
+         [value] written by the user. *)
+      Kind.Default
+  | Some jk -> read_jkind env jk
 
 let jkind_of_type_desc env te =
   match  te with
@@ -1208,6 +1215,48 @@ let read_class_constraints env params =
   |> List.map (fun (left, right) ->
          Constraint { Constraint.left; right; doc = empty_doc env })
 
+#if defined OXCAML
+let read_jkind_of_types env (jkind : _ Types.jkind) =
+  let open Kind in
+  let desc = Jkind.get jkind in
+  match Jkind.Desc.get_const desc with
+  | None -> Default
+  | Some const ->
+      let reference : Paths.Reference.t option =
+        match desc.base with
+        | Layout _ -> None
+        | Kconstr (OCamlPath.Pident id) -> (
+            match Env.find_kind_abbreviation_identifier env.ident_env id with
+            | id -> Some (`Resolved (`Identifier (id :> Identifier.t)))
+            | exception Not_found -> None)
+        | Kconstr p -> (
+            match read_kind_abbreviation env.ident_env (Untypeast.lident_of_path p) with
+            | Abbreviation (_, r) -> r
+            | _ -> None)
+      in
+      let with_bounds =
+        match desc.with_bounds with
+        | No_with_bounds -> []
+        | With_bounds tys -> List.of_seq (With_bounds_types.to_seq tys)
+      in
+      let rec conv : Outcometree.out_jkind_const -> Kind.t = function
+        | Ojkind_const_default -> Default
+        | Ojkind_const_abbreviation (name, []) -> Abbreviation (name, reference)
+        | Ojkind_const_abbreviation (name, axes) ->
+            Abbreviation (String.concat " " (name :: axes), reference)
+        | Ojkind_const_mod (Some k, modes) -> Mod (conv k, modes)
+        | Ojkind_const_mod (None, modes) -> Mod (Default, modes)
+        | Ojkind_const_with (k, _, modalities) ->
+            let k = conv k in
+            let depth = with_depth k in
+            let ty, _ = List.nth with_bounds depth in
+            With (k, read_type_expr env ty, modalities)
+        | Ojkind_const_kind_of _ -> Default
+        | Ojkind_const_product ks -> Product (List.map conv ks)
+      and with_depth = function With (k, _, _) -> 1 + with_depth k | _ -> 0 in
+      conv (Jkind.Const.to_out_jkind_const OCamlEnv.empty const)
+#endif
+
 let read_type_declaration env parent id decl =
   let open TypeDecl in
   let id = Env.find_type_identifier env.ident_env id in
@@ -1257,7 +1306,9 @@ let read_type_declaration env parent id decl =
   let private_ = (decl.type_private = Private) in
   let kind =
 #if defined OXCAML
-    read_jkind_annotation env.ident_env decl.type_jkind.annotation
+    match decl.type_jkind.annotation, decl.type_manifest, decl.type_kind with
+    | None, None, Type_abstract _ -> read_jkind_of_types env decl.type_jkind
+    | annot, _, _ -> read_jkind_annotation env.ident_env annot
 #else
     Kind.Default
 #endif

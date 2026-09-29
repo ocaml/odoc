@@ -333,6 +333,8 @@ module Make (Syntax : SYNTAX) = struct
       ?needs_parentheses:bool -> Odoc_model.Lang.Kind.t -> text
 
     val with_kind_annotation : Odoc_model.Lang.Kind.t -> text -> text
+
+    val kind_is_default : Odoc_model.Lang.Kind.t -> bool
   end = struct
     let format_modes (modes : Odoc_model.Lang.Modes.t) =
       match modes with
@@ -498,10 +500,13 @@ module Make (Syntax : SYNTAX) = struct
           in
           enclose_parens_if_needed res
 
+    and kind_is_default = function
+      | Odoc_model.Lang.Kind.Default | Abbreviation ("value", None) -> true
+      | _ -> false
+
     and with_kind_annotation kind base =
-      match kind with
-      | Odoc_model.Lang.Kind.Default -> base
-      | k -> O.txt "(" ++ base ++ O.txt " : " ++ kind_annotation k ++ O.txt ")"
+      if kind_is_default kind then base
+      else O.txt "(" ++ base ++ O.txt " : " ++ kind_annotation kind ++ O.txt ")"
 
     and type_expr ?(needs_parentheses = false) (t : Odoc_model.Lang.TypeExpr.t)
         =
@@ -994,9 +999,8 @@ module Make (Syntax : SYNTAX) = struct
             Syntax.Type.handle_constructor_params (O.txt tyname) params
       in
       let kind_annot =
-        match t.equation.kind with
-        | Default -> O.noop
-        | k -> O.txt " : " ++ Type_expression.kind_annotation k
+        if Type_expression.kind_is_default t.equation.kind then O.noop
+        else O.txt " : " ++ Type_expression.kind_annotation t.equation.kind
       in
       let intro = keyword' ++ O.txt " " ++ tconstr ++ kind_annot in
       let constraints = format_constraints t.equation.constraints in

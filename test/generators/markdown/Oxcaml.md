@@ -270,12 +270,12 @@ module M_shadow_value : sig ... end
 ```ocaml
 kind_ plain_value = value
 ```
-A manifest that is exactly `value`. It must still render after the `=`, unlike a `value` annotation on a type, which is the default and is dropped.
+An abbreviation for the `value` kind.
 
 ```ocaml
 type t_plain_value : plain_value
 ```
-A use of the `value` abbreviation.
+A use of the `plain_value` abbreviation, which should render and link.
 
 ```ocaml
 kind_ my_abbrev = value_or_null mod non_null global
