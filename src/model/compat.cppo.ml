@@ -219,7 +219,7 @@ let shape_info_of_cmt_infos : Cmt_format.cmt_infos -> (shape * uid_to_loc) optio
     | Class cd -> cd.ci_id_name.loc
     | Class_type ctd -> ctd.ci_id_name.loc
 #if defined OXCAML
-    | Jkind _ -> Location.none  (* oxcaml: odoc ignores jkind declarations *)
+    | Jkind jkd -> jkd.jkind_loc
 #endif
   in
   fun x -> Option.map (fun s -> (s, Shape.Uid.Tbl.map x.cmt_uid_to_decl loc_of_declaration)) x.cmt_impl_shape
