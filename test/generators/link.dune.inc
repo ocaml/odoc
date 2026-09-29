@@ -11953,6 +11953,7 @@
    Oxcaml-F_with.html.gen
    Oxcaml-F_with-argument-1-X.html.gen
    Oxcaml-X_with.html.gen
+   Oxcaml-M_shadow_value.html.gen
    Oxcaml-M_kinds.html.gen
    Oxcaml-module-type-S_kind.html.gen
    Oxcaml-F_kind.html.gen
@@ -12069,6 +12070,12 @@
   (package odoc)
   (action
    (diff Oxcaml-X_with.html Oxcaml-X_with.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M_shadow_value.html Oxcaml-M_shadow_value.html.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12670,6 +12677,7 @@
    Oxcaml.M_with.3o.gen
    Oxcaml.F_with.3o.gen
    Oxcaml.X_with.3o.gen
+   Oxcaml.M_shadow_value.3o.gen
    Oxcaml.M_kinds.3o.gen
    Oxcaml.F_kind.3o.gen
    Oxcaml.Arg_kind.3o.gen
@@ -12736,6 +12744,12 @@
   (package odoc)
   (action
    (diff Oxcaml.X_with.3o Oxcaml.X_with.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.M_shadow_value.3o Oxcaml.M_shadow_value.3o.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -13045,6 +13059,7 @@
    Oxcaml-F_with.md.gen
    Oxcaml-F_with-argument-1-X.md.gen
    Oxcaml-X_with.md.gen
+   Oxcaml-M_shadow_value.md.gen
    Oxcaml-M_kinds.md.gen
    Oxcaml-module-type-S_kind.md.gen
    Oxcaml-F_kind.md.gen
@@ -13157,6 +13172,12 @@
   (package odoc)
   (action
    (diff Oxcaml-X_with.md Oxcaml-X_with.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M_shadow_value.md Oxcaml-M_shadow_value.md.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)

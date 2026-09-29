@@ -265,6 +265,9 @@ Should render as `float64 & (immediate mod portable)`.
 ## Kind abbreviations
 
 ```ocaml
+module M_shadow_value : sig ... end
+```
+```ocaml
 kind_ plain_value = value
 ```
 A manifest that is exactly `value`. It must still render after the `=`, unlike a `value` annotation on a type, which is the default and is dropped.

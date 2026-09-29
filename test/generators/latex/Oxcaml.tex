@@ -115,6 +115,11 @@ Unboxed types have a trailing hash '\#'
 \label{Oxcaml--type-t_inner_mod}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}inner\_\allowbreak{}mod : float64 \& (immediate \ocamltag{keyword}{mod} portable)}\begin{ocamlindent}Should render as \ocamlinlinecode{float64 \& (immediate mod portable)}.\end{ocamlindent}%
 \medbreak
 \subsection{Kind abbreviations\label{Oxcaml--kind-abbreviations_2}}%
+\label{Oxcaml--module-M_shadow_value}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M_shadow_value]{\ocamlinlinecode{M\_\allowbreak{}shadow\_\allowbreak{}value}}}\label{Oxcaml-M_shadow_value}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-M_shadow_value--kind-value}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} value = value \ocamltag{keyword}{mod} portable}\\
+\label{Oxcaml-M_shadow_value--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t : \hyperref[Oxcaml-M_shadow_value--kind-value]{\ocamlinlinecode{value}}}\begin{ocamlindent}\ocamlinlinecode{value} is the abbreviation above, not the built-in default, so it is rendered and linked rather than dropped.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
 \label{Oxcaml--kind-plain_value}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} plain\_\allowbreak{}value = value}\begin{ocamlindent}A manifest that is exactly \ocamlinlinecode{value}. It must still render after the \ocamlinlinecode{=}, unlike a \ocamlinlinecode{value} annotation on a type, which is the default and is dropped.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--type-t_plain_value}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}plain\_\allowbreak{}value : \hyperref[Oxcaml--kind-plain_value]{\ocamlinlinecode{plain\_\allowbreak{}value}}}\begin{ocamlindent}A use of the \ocamlinlinecode{value} abbreviation.\end{ocamlindent}%

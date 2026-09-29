@@ -165,6 +165,14 @@ type t_inner_mod : float64 & (immediate mod portable)
 
 (** {1 Kind abbreviations} *)
 
+module M_shadow_value : sig
+  kind_ value = value mod portable
+
+  type t : value
+  (** [value] is the abbreviation above, not the built-in default, so it is
+      rendered and linked rather than dropped. *)
+end
+
 kind_ plain_value = value
 (** A manifest that is exactly [value]. It must still render after the [=],
     unlike a [value] annotation on a type, which is the default and is

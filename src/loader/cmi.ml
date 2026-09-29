@@ -671,7 +671,8 @@ and read_kind_manifest env (jk : Parsetree.jkind_annotation) =
 
 let read_jkind_annotation env = function
   | None -> Kind.Default
-  | Some { Parsetree.pjka_desc = Pjk_abbreviation ({ txt = Longident.Lident "value"; _ }, _); _ } ->
+  | Some { Parsetree.pjka_desc = Pjk_abbreviation ({ txt = Longident.Lident "value"; _ }, _); _ }
+    when Option.is_none (Env.find_kind_abbreviation env "value") ->
     Kind.Default
   | Some jk -> read_kind_manifest env jk
 
