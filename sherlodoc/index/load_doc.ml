@@ -152,8 +152,8 @@ let rec categorize id =
   | `Parameter _ -> `ignore (* redundant with indexed signature *)
   | ( `InstanceVariable _ | `Method _ | `Field _ | `Result _ | `Label _ | `Type _
     | `KindAbbreviation _ | `Exception _ | `Class _ | `ClassType _ | `Value _
-    | `Constructor _ | `Extension _ | `ExtensionDecl _ | `Module _
-    | `UnboxedField _ ) as x ->
+    | `Constructor _ | `Extension _ | `ExtensionDecl _ | `Module _ | `UnboxedField _ ) as
+    x ->
       let parent = Identifier.label_parent x in
       categorize (parent :> Identifier.Any.t)
   | `AssetFile _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
