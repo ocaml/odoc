@@ -11658,6 +11658,7 @@
    Oxcaml-M_inc.html.gen
    Oxcaml-module-type-S_param.html.gen
    Oxcaml-M_param.html.gen
+   Oxcaml-M_param2.html.gen
    Oxcaml-module-type-S.html.gen
    Oxcaml-M1.html.gen
    Oxcaml-M2.html.gen
@@ -11842,6 +11843,12 @@
   (package odoc)
   (action
    (diff Oxcaml-M_param.html Oxcaml-M_param.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M_param2.html Oxcaml-M_param2.html.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12290,6 +12297,7 @@
    Oxcaml.Arg_kind.tex.gen
    Oxcaml.F_nested.tex.gen
    Oxcaml.M_param.tex.gen
+   Oxcaml.M_param2.tex.gen
    Oxcaml.M1.tex.gen)
   (package odoc)
   (action
@@ -12341,6 +12349,12 @@
   (alias runtest)
   (package odoc)
   (action
+   (diff Oxcaml.M_param2.tex Oxcaml.M_param2.tex.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
    (diff Oxcaml.M1.tex Oxcaml.M1.tex.gen))
   (enabled_if %{ocaml-config:ox})))
 
@@ -12378,6 +12392,7 @@
    Oxcaml.X_shadowing.3o.gen
    Oxcaml.M_inc.3o.gen
    Oxcaml.M_param.3o.gen
+   Oxcaml.M_param2.3o.gen
    Oxcaml.M1.3o.gen
    Oxcaml.M2.3o.gen
    Oxcaml.M3.3o.gen
@@ -12490,6 +12505,12 @@
   (package odoc)
   (action
    (diff Oxcaml.M_param.3o Oxcaml.M_param.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.M_param2.3o Oxcaml.M_param2.3o.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12764,6 +12785,7 @@
    Oxcaml-M_inc.md.gen
    Oxcaml-module-type-S_param.md.gen
    Oxcaml-M_param.md.gen
+   Oxcaml-M_param2.md.gen
    Oxcaml-module-type-S.md.gen
    Oxcaml-M1.md.gen
    Oxcaml-M2.md.gen
@@ -12942,6 +12964,12 @@
   (package odoc)
   (action
    (diff Oxcaml-M_param.md Oxcaml-M_param.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M_param2.md Oxcaml-M_param2.md.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)

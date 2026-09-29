@@ -542,13 +542,28 @@ Shadowed below by a kind abbreviation of the same name\.
 .fi 
 .br 
 .ti +4
-A kind-constrained type parameter inside a signature expansion; the use should link to param_kind\.
+A kind-constrained type parameter inside a signature expansion\.
+.nf 
+.sp 
+.ti +2
+\f[CB]type\fR t_direct : param_kind
+.fi 
+.br 
+.ti +4
+A kind annotation inside a signature expansion\.
 .nf 
 
 .br 
 \f[CB]end\fR
 .sp 
 \f[CB]module\fR M_param : S_param
+.sp 
+\f[CB]module\fR M_param2 : S_param
+.fi 
+.br 
+.ti +2
+Each instantiation renders its own copy of param_kind, so both uses should link to the copy on their own page rather than to S_param's\.
+.nf 
 .sp 
 .in 3
 \fB10 Zero alloc\fR
