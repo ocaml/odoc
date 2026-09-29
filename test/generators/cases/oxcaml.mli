@@ -168,18 +168,22 @@ type t_inner_mod : float64 & (immediate mod portable)
 module M_shadow_value : sig
   kind_ value = value mod portable
 
+  type t_unannotated
+
+  val poly_unannotated : 'a. 'a -> 'a
+  (** The compiler implicitly adds the default kind [value], but it should not
+      be confused with the kind abbreviation above. *)
+
   type t : value
-  (** [value] is the abbreviation above, not the built-in default, so it is
-      rendered and linked rather than dropped. *)
+  (** [value] here is the abbreviation above, not the built-in default, so it
+      is rendered and linked. *)
 end
 
 kind_ plain_value = value
-(** A manifest that is exactly [value]. It must still render after the [=],
-    unlike a [value] annotation on a type, which is the default and is
-    dropped. *)
+(** An abbreviation for the [value] kind. *)
 
 type t_plain_value : plain_value
-(** A use of the [value] abbreviation. *)
+(** A use of the [plain_value] abbreviation, which should render and link. *)
 
 kind_ my_abbrev = value_or_null mod non_null global
 (** Declares a kind abbreviation named [my_abbrev]. *)

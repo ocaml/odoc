@@ -116,13 +116,16 @@ Unboxed types have a trailing hash '\#'
 \medbreak
 \subsection{Kind abbreviations\label{Oxcaml--kind-abbreviations_2}}%
 \label{Oxcaml--module-M_shadow_value}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M_shadow_value]{\ocamlinlinecode{M\_\allowbreak{}shadow\_\allowbreak{}value}}}\label{Oxcaml-M_shadow_value}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-M_shadow_value--kind-value}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} value = value \ocamltag{keyword}{mod} portable}\\
-\label{Oxcaml-M_shadow_value--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t : \hyperref[Oxcaml-M_shadow_value--kind-value]{\ocamlinlinecode{value}}}\begin{ocamlindent}\ocamlinlinecode{value} is the abbreviation above, not the built-in default, so it is rendered and linked rather than dropped.\end{ocamlindent}%
+\label{Oxcaml-M_shadow_value--type-t_unannotated}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}unannotated}\\
+\label{Oxcaml-M_shadow_value--val-poly_unannotated}\ocamlcodefragment{\ocamltag{keyword}{val} poly\_\allowbreak{}unannotated : 'a.\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\begin{ocamlindent}The compiler implicitly adds the default kind \ocamlinlinecode{value}, but it should not be confused with the kind abbreviation above.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml-M_shadow_value--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t : \hyperref[Oxcaml-M_shadow_value--kind-value]{\ocamlinlinecode{value}}}\begin{ocamlindent}\ocamlinlinecode{value} here is the abbreviation above, not the built-in default, so it is rendered and linked.\end{ocamlindent}%
 \medbreak
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
-\label{Oxcaml--kind-plain_value}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} plain\_\allowbreak{}value = value}\begin{ocamlindent}A manifest that is exactly \ocamlinlinecode{value}. It must still render after the \ocamlinlinecode{=}, unlike a \ocamlinlinecode{value} annotation on a type, which is the default and is dropped.\end{ocamlindent}%
+\label{Oxcaml--kind-plain_value}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} plain\_\allowbreak{}value = value}\begin{ocamlindent}An abbreviation for the \ocamlinlinecode{value} kind.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--type-t_plain_value}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}plain\_\allowbreak{}value : \hyperref[Oxcaml--kind-plain_value]{\ocamlinlinecode{plain\_\allowbreak{}value}}}\begin{ocamlindent}A use of the \ocamlinlinecode{value} abbreviation.\end{ocamlindent}%
+\label{Oxcaml--type-t_plain_value}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}plain\_\allowbreak{}value : \hyperref[Oxcaml--kind-plain_value]{\ocamlinlinecode{plain\_\allowbreak{}value}}}\begin{ocamlindent}A use of the \ocamlinlinecode{plain\_\allowbreak{}value} abbreviation, which should render and link.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--kind-my_abbrev}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} my\_\allowbreak{}abbrev = value\_\allowbreak{}or\_\allowbreak{}null \ocamltag{keyword}{mod} non\_\allowbreak{}null global}\begin{ocamlindent}Declares a kind abbreviation named \ocamlinlinecode{my\_\allowbreak{}abbrev}.\end{ocamlindent}%
 \medbreak
