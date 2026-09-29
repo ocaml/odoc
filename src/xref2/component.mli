@@ -132,7 +132,7 @@ and TypeExpr : sig
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
     | Class of Cpath.class_type * t list
-    | Poly of (string * Odoc_model.Lang.Kind.t) list * t
+    | Poly of (string * Kind.t) list * t
     | Quote of t
     | Splice of t
     | Package of TypeExpr.Package.t
@@ -159,11 +159,25 @@ and Extension : sig
   }
 end
 
+and Kind : sig
+  type abbreviation =
+    | Local of Ident.kind_abbreviation
+    | Global of Odoc_model.Paths.Reference.t option
+
+  type t =
+    | Default
+    | Abbreviation of string * abbreviation
+    | Mod of t * string list
+    | With of t * Odoc_model.Lang.TypeExpr.t * Odoc_model.Lang.Modalities.t
+    | Kind_of of Odoc_model.Lang.TypeExpr.t
+    | Product of t list
+end
+
 and KindAbbreviation : sig
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
-    manifest : Odoc_model.Lang.Kind.t option;
+    manifest : Kind.t option;
   }
 end
 
@@ -289,7 +303,12 @@ and TypeDecl : sig
       | Extensible
   end
 
-  type param = Odoc_model.Lang.TypeDecl.param
+  type param = {
+    desc : Odoc_model.Lang.TypeDecl.param_desc;
+    variance : Odoc_model.Lang.TypeDecl.variance option;
+    injectivity : bool;
+    kind : Kind.t;
+  }
 
   module Equation : sig
     type t = {
@@ -297,7 +316,7 @@ and TypeDecl : sig
       private_ : bool;
       manifest : TypeExpr.t option;
       constraints : (TypeExpr.t * TypeExpr.t) list;
-      kind : Odoc_model.Lang.Kind.t;
+      kind : Kind.t;
     }
   end
 
@@ -468,6 +487,7 @@ and Substitution : sig
     module_ : subst_module ModuleMap.t;
     module_type : subst_module_type ModuleTypeMap.t;
     type_ : subst_type TypeMap.t;
+    kind_abbreviation : Ident.kind_abbreviation KindAbbreviationMap.t;
     class_type : subst_class_type TypeMap.t;
     type_replacement : (TypeExpr.t * TypeDecl.Equation.t) TypeMap.t;
     module_type_replacement : ModuleType.expr ModuleTypeMap.t;

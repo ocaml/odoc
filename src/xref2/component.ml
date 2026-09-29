@@ -141,7 +141,7 @@ and TypeExpr : sig
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
     | Class of Cpath.class_type * t list
-    | Poly of (string * Odoc_model.Lang.Kind.t) list * t
+    | Poly of (string * Kind.t) list * t
     | Quote of t
     | Splice of t
     | Package of TypeExpr.Package.t
@@ -170,11 +170,26 @@ and Extension : sig
 end =
   Extension
 
+and Kind : sig
+  type abbreviation =
+    | Local of Ident.kind_abbreviation
+    | Global of Odoc_model.Paths.Reference.t option
+
+  type t =
+    | Default
+    | Abbreviation of string * abbreviation
+    | Mod of t * string list
+    | With of t * Odoc_model.Lang.TypeExpr.t * Odoc_model.Lang.Modalities.t
+    | Kind_of of Odoc_model.Lang.TypeExpr.t
+    | Product of t list
+end =
+  Kind
+
 and KindAbbreviation : sig
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
-    manifest : Odoc_model.Lang.Kind.t option;
+    manifest : Kind.t option;
   }
 end =
   KindAbbreviation
@@ -304,7 +319,12 @@ and TypeDecl : sig
       | Extensible
   end
 
-  type param = Odoc_model.Lang.TypeDecl.param
+  type param = {
+    desc : Odoc_model.Lang.TypeDecl.param_desc;
+    variance : Odoc_model.Lang.TypeDecl.variance option;
+    injectivity : bool;
+    kind : Kind.t;
+  }
 
   module Equation : sig
     type t = {
@@ -312,7 +332,7 @@ and TypeDecl : sig
       private_ : bool;
       manifest : TypeExpr.t option;
       constraints : (TypeExpr.t * TypeExpr.t) list;
-      kind : Odoc_model.Lang.Kind.t;
+      kind : Kind.t;
     }
   end
 
@@ -494,6 +514,7 @@ and Substitution : sig
     module_ : subst_module ModuleMap.t;
     module_type : subst_module_type ModuleTypeMap.t;
     type_ : subst_type TypeMap.t;
+    kind_abbreviation : Ident.kind_abbreviation KindAbbreviationMap.t;
     class_type : subst_class_type TypeMap.t;
     type_replacement : (TypeExpr.t * TypeDecl.Equation.t) TypeMap.t;
     module_type_replacement : ModuleType.expr ModuleTypeMap.t;
@@ -1117,8 +1138,7 @@ module Fmt = struct
     fpp_list " * " "%a" (type_expr c) ppf ts
 
   and type_param ppf t =
-    let desc =
-      match t.Odoc_model.Lang.TypeDecl.desc with Any -> "_" | Var n -> n
+    let desc = match t.TypeDecl.desc with Any -> "_" | Var n -> n
     and variance =
       match t.variance with
       | Some Pos -> "+"
@@ -2348,10 +2368,37 @@ module Of_Lang = struct
       type_;
     }
 
+  and kind ident_map (k : Odoc_model.Lang.Kind.t) : Kind.t =
+    match k with
+    | Default -> Default
+    | Abbreviation (name, r) -> Abbreviation (name, kind_reference ident_map r)
+    | Mod (b, m) -> Mod (kind ident_map b, m)
+    | With (b, ty, m) -> With (kind ident_map b, ty, m)
+    | Kind_of ty -> Kind_of ty
+    | Product ks -> Product (List.map (kind ident_map) ks)
+
+  and kind_reference ident_map r =
+    match r with
+    | Some (`Resolved (`Identifier (`KindAbbreviation _ as id))) -> (
+        match
+          Maps.KindAbbreviation.find_opt id ident_map.kind_abbreviations
+        with
+        | Some ident -> Kind.Local ident
+        | None -> Kind.Global r)
+    | _ -> Kind.Global r
+
+  and type_decl_param ident_map (p : Odoc_model.Lang.TypeDecl.param) =
+    {
+      TypeDecl.desc = p.desc;
+      variance = p.variance;
+      injectivity = p.injectivity;
+      kind = kind ident_map p.kind;
+    }
+
   and type_equation ident_map teq =
     let open Odoc_model.Lang.TypeDecl.Equation in
     {
-      TypeDecl.Equation.params = teq.params;
+      TypeDecl.Equation.params = List.map (type_decl_param ident_map) teq.params;
       private_ = teq.private_;
       manifest = option type_expression ident_map teq.manifest;
       constraints =
@@ -2359,7 +2406,7 @@ module Of_Lang = struct
           (fun (x, y) ->
             (type_expression ident_map x, type_expression ident_map y))
           teq.constraints;
-      kind = teq.kind;
+      kind = kind ident_map teq.kind;
     }
 
   and type_expr_polyvar ident_map v =
@@ -2428,7 +2475,10 @@ module Of_Lang = struct
           (List.map (fun (l, t) -> (l, type_expression ident_map t)) ts)
     | Polymorphic_variant v ->
         Polymorphic_variant (type_expr_polyvar ident_map v)
-    | Poly (s, ts) -> Poly (s, type_expression ident_map ts)
+    | Poly (vars, ts) ->
+        Poly
+          ( List.map (fun (v, k) -> (v, kind ident_map k)) vars,
+            type_expression ident_map ts )
     | Alias (t, s) -> Alias (type_expression ident_map t, s)
     | Class (p, ts) ->
         Class
@@ -2544,7 +2594,7 @@ module Of_Lang = struct
     {
       Extension.type_path;
       doc = docs ident_map e.doc;
-      type_params = e.type_params;
+      type_params = List.map (type_decl_param ident_map) e.type_params;
       private_ = e.private_;
       constructors;
     }
@@ -2566,7 +2616,7 @@ module Of_Lang = struct
     {
       KindAbbreviation.source_loc = k.source_loc;
       doc = docs ident_map k.doc;
-      manifest = k.manifest;
+      manifest = Opt.map (kind ident_map) k.manifest;
     }
 
   and exception_ ident_map e =
@@ -2720,7 +2770,7 @@ module Of_Lang = struct
       Class.source_loc = c.source_loc;
       doc = docs ident_map c.doc;
       virtual_ = c.virtual_;
-      params = c.params;
+      params = List.map (type_decl_param ident_map) c.params;
       type_ = class_decl ident_map c.type_;
       expansion;
     }
@@ -2747,7 +2797,7 @@ module Of_Lang = struct
       ClassType.source_loc = t.source_loc;
       doc = docs ident_map t.doc;
       virtual_ = t.virtual_;
-      params = t.params;
+      params = List.map (type_decl_param ident_map) t.params;
       expr = class_type_expr ident_map t.expr;
       expansion;
     }
