@@ -382,6 +382,8 @@ Should render as float64 & (immediate mod portable)\.
 \fB9 Kind abbreviations\fR
 .in 
 .sp 
+\f[CB]module\fR M_shadow_value : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
 \f[CB]kind_\fR plain_value = value
 .fi 
 .br 
