@@ -280,11 +280,17 @@ module type S_param = sig
   kind_ param_kind = value mod portable
 
   type ('a : param_kind) t
-  (** A kind-constrained type parameter inside a signature expansion; the use
-      should link to [param_kind]. *)
+  (** A kind-constrained type parameter inside a signature expansion. *)
+
+  type t_direct : param_kind
+  (** A kind annotation inside a signature expansion. *)
 end
 
 module M_param : S_param
+
+module M_param2 : S_param
+(** Each instantiation renders its own copy of [param_kind], so both uses
+    should link to the copy on their own page rather than to [S_param]'s. *)
 
 (** {1 Zero alloc} *)
 
