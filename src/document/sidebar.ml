@@ -30,7 +30,9 @@ end = struct
           if valid_link then
             let target = Target.Internal (Target.Resolved url) in
             let attr =
-              if url.page = current_url && Astring.String.equal url.anchor ""
+              if
+                Url.Path.equal url.page current_url
+                && Astring.String.equal url.anchor ""
               then [ "current_unit" ]
               else []
             in

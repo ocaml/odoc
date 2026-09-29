@@ -38,6 +38,13 @@ let render_path : Path.t -> string =
         ^ "("
         ^ render_resolved (p :> Path.Resolved.t)
         ^ ")"
+    | `ApplyParam (rp, p, a) ->
+        render_resolved (rp :> t)
+        ^ "["
+        ^ render_resolved (p :> Path.Resolved.t)
+        ^ ":"
+        ^ render_resolved (a :> Path.Resolved.t)
+        ^ "]"
     | `ModuleType (p, s) ->
         render_resolved (p :> t) ^ "." ^ ModuleTypeName.to_string s
     | `Type (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
@@ -57,6 +64,13 @@ let render_path : Path.t -> string =
     | `DotV (p, s) -> dot p (ValueName.to_string s)
     | `Apply (p1, p2) ->
         render_path (p1 :> Path.t) ^ "(" ^ render_path (p2 :> Path.t) ^ ")"
+    | `ApplyParam (p1, p2, p3) ->
+        render_path (p1 :> Path.t)
+        ^ "["
+        ^ render_path (p2 :> Path.t)
+        ^ ":"
+        ^ render_path (p3 :> Path.t)
+        ^ "]"
     | `Resolved rp -> render_resolved rp
     | `Substituted m -> render_path (m :> Path.t)
     | `SubstitutedMT m -> render_path (m :> Path.t)
@@ -75,6 +89,7 @@ module Path = struct
 
   type kind =
     [ `Module
+    | `LibraryParameter
     | `Page
     | `LeafPage
     | `ModuleType
@@ -87,6 +102,7 @@ module Path = struct
   let string_of_kind : kind -> string = function
     | `Page -> "page"
     | `Module -> "module"
+    | `LibraryParameter -> "module"
     | `LeafPage -> "leaf-page"
     | `ModuleType -> "module-type"
     | `Parameter arg_num -> Printf.sprintf "argument-%d" arg_num
@@ -98,7 +114,8 @@ module Path = struct
   let pp_kind fmt kind = Format.fprintf fmt "%s" (string_of_kind kind)
 
   let pp_disambiguating_prefix fmt = function
-    | `Module | `Page | `LeafPage | `File | `SourcePage -> ()
+    | `Module | `LibraryParameter | `Page | `LeafPage | `File | `SourcePage ->
+        ()
     | kind -> Format.fprintf fmt "%s-" (string_of_kind kind)
 
   type t = { kind : kind; parent : t option; name : string }
@@ -203,12 +220,21 @@ module Path = struct
     in
     inner [] l
 
+  let rec equal url1 url2 =
+    String.equal (string_of_kind url1.kind) (string_of_kind url2.kind)
+    && String.equal url1.name url2.name
+    &&
+    match (url1.parent, url2.parent) with
+    | None, None -> true
+    | Some p1, Some p2 -> equal p1 p2
+    | None, Some _ | Some _, None -> false
+
   let rec is_prefix (url1 : t) (url2 : t) =
     match url1 with
     | { kind = `LeafPage; parent = None; name = "index" } -> true
     | { kind = `LeafPage; parent = Some p; name = "index" } -> is_prefix p url2
     | _ -> (
-        if url1 = url2 then true
+        if equal url1 url2 then true
         else
           match url2 with
           | { parent = Some parent; _ } -> is_prefix url1 parent

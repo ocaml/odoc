@@ -214,7 +214,8 @@ module rec Path : sig
     | `Substituted of module_
     | `Root of ModuleName.t
     | `Dot of module_ * ModuleName.t
-    | `Apply of module_ * module_ ]
+    | `Apply of module_ * module_
+    | `ApplyParam of module_ * module_ * module_ ]
   (** @canonical Odoc_model.Paths.Path.Module.t *)
 
   type module_type =
@@ -258,6 +259,7 @@ module rec Path : sig
     | `DotMT of module_ * ModuleTypeName.t
     | `DotV of module_ * ValueName.t
     | `Apply of module_ * module_
+    | `ApplyParam of module_ * module_ * module_
     | `Unbox of type_ ]
   (** @canonical Odoc_model.Paths.Path.t *)
 end =
@@ -272,6 +274,8 @@ and Resolved_path : sig
     | `Module of module_ * ModuleName.t
     | `Canonical of module_ * Path.module_  (** [`Canonical (mod, canonical)] *)
     | `Apply of module_ * module_  (** [`Apply (functor, argument)] *)
+    | `ApplyParam of module_ * module_ * module_
+      (** [`ApplyParam (instance, parameter, argument)] *)
     | `Alias of module_ * Path.module_  (** Resolved dest *)
     | `OpaqueModule of module_ ]
   (** @canonical Odoc_model.Paths.Path.Resolved.Module.t *)
@@ -319,6 +323,7 @@ and Resolved_path : sig
     | `Module of module_ * ModuleName.t
     | `Canonical of module_ * Path.module_
     | `Apply of module_ * module_
+    | `ApplyParam of module_ * module_ * module_
     | `Alias of module_ * Path.module_
     | `AliasModuleType of module_type * module_type
     | `OpaqueModule of module_

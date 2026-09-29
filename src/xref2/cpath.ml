@@ -14,6 +14,7 @@ module rec Resolved : sig
     | `Module of parent * ModuleName.t
     | `Canonical of module_ * Path.Module.t
     | `Apply of module_ * module_
+    | `ApplyParam of module_ * module_ * module_
     | `Alias of module_ * Cpath.module_ * module_ option
     | `OpaqueModule of module_ ]
 
@@ -59,7 +60,8 @@ and Cpath : sig
     | `Root of ModuleName.t
     | `Dot of module_ * ModuleName.t
     | `Module of Resolved.parent * ModuleName.t (* Like dot, but typed *)
-    | `Apply of module_ * module_ ]
+    | `Apply of module_ * module_
+    | `ApplyParam of module_ * module_ * module_ ]
 
   and module_type =
     [ `Resolved of Resolved.module_type
@@ -104,7 +106,11 @@ let rec is_resolved_module_substituted : Resolved.module_ -> bool = function
   | `Substituted _ -> true
   | `Gpath _ -> false
   | `Subst (_a, _) -> false (* is_resolved_module_type_substituted a*)
-  | `Hidden a | `Apply (a, _) | `Alias (a, _, _) | `Canonical (a, _) ->
+  | `Hidden a
+  | `Apply (a, _)
+  | `ApplyParam (a, _, _)
+  | `Alias (a, _, _)
+  | `Canonical (a, _) ->
       is_resolved_module_substituted a
   | `Module (a, _) -> is_resolved_parent_substituted a
   | `OpaqueModule a -> is_resolved_module_substituted a
@@ -146,7 +152,8 @@ let rec is_module_substituted : module_ -> bool = function
   | `Identifier _ -> false
   | `Local _ -> false
   | `Substituted _ -> true
-  | `Dot (a, _) | `Apply (a, _) -> is_module_substituted a
+  | `Dot (a, _) | `Apply (a, _) | `ApplyParam (a, _, _) ->
+      is_module_substituted a
   | `Root _ -> false
   | `Module (a, _) -> is_resolved_parent_substituted a
 
@@ -178,7 +185,8 @@ let is_class_type_substituted : class_type -> bool = function
 
 let rec is_module_hidden : module_ -> bool = function
   | `Resolved r -> is_resolved_module_hidden ~weak_canonical_test:false r
-  | `Substituted p | `Dot (p, _) | `Apply (p, _) -> is_module_hidden p
+  | `Substituted p | `Dot (p, _) | `Apply (p, _) | `ApplyParam (p, _, _) ->
+      is_module_hidden p
   | `Identifier (_, b) -> b
   | `Local (_, b) -> b
   | `Root _ -> false
@@ -200,6 +208,7 @@ and is_resolved_module_hidden :
     | `Alias (p1, `Resolved p2, _) -> inner p1 && inner p2
     | `Alias (p1, _p2, _) -> inner p1
     | `Apply (p1, p2) -> inner p1 || inner p2
+    | `ApplyParam (p1, _, p3) -> inner p1 || inner p3
     | `OpaqueModule m -> inner m
   in
   inner
@@ -331,6 +340,11 @@ let rec unresolve_resolved_module_path : Resolved.module_ -> module_ = function
   | `Canonical (m, _) -> unresolve_resolved_module_path m
   | `Apply (m, a) ->
       `Apply (unresolve_resolved_module_path m, unresolve_resolved_module_path a)
+  | `ApplyParam (i, p, a) ->
+      `ApplyParam
+        ( unresolve_resolved_module_path i,
+          unresolve_resolved_module_path p,
+          unresolve_resolved_module_path a )
   | `Alias (_, `Resolved m, _) -> unresolve_resolved_module_path m
   | `Alias (_, m, _) -> m
   | `OpaqueModule m -> unresolve_resolved_module_path m
@@ -344,6 +358,11 @@ and unresolve_module_path : module_ -> module_ = function
   | `Dot (p, x) -> `Dot (unresolve_module_path p, x)
   | `Module (p, x) -> `Dot (unresolve_resolved_parent_path p, x)
   | `Apply (x, y) -> `Apply (unresolve_module_path x, unresolve_module_path y)
+  | `ApplyParam (i, p, a) ->
+      `ApplyParam
+        ( unresolve_module_path i,
+          unresolve_module_path p,
+          unresolve_module_path a )
 
 and unresolve_resolved_module_type_path : Resolved.module_type -> module_type =
   function
@@ -406,6 +425,12 @@ let rec original_path_cpath : module_ -> module_ option = function
   | `Apply (p1, p2) -> (
       match (original_path_cpath p1, original_path_cpath p2) with
       | Some p1', Some p2' -> Some (`Apply (p1', p2'))
+      | _ -> None)
+  | `ApplyParam (p1, p2, p3) -> (
+      match
+        (original_path_cpath p1, original_path_cpath p2, original_path_cpath p3)
+      with
+      | Some p1', Some p2', Some p3' -> Some (`ApplyParam (p1', p2', p3'))
       | _ -> None)
   | `Identifier (i, _) -> (
       match original_path_module_identifier i with

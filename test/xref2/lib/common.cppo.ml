@@ -544,6 +544,7 @@ module LangUtils = struct
             let cast p = (p :> Odoc_model.Paths.Path.Resolved.t) in 
             match p with
             | `Apply (p1, p2) -> Format.fprintf ppf "%a(%a)" resolved_path (cast p1) resolved_path (cast p2)
+            | `ApplyParam (p1, p2, p3) -> Format.fprintf ppf "%a[%a:%a]" resolved_path (cast p1) resolved_path (cast p2) resolved_path (cast p3)
             | `Identifier p -> Format.fprintf ppf "global(%a)" identifier p
             | `Alias (dest, src) -> Format.fprintf ppf "(%a -> %a)" path (src :> Odoc_model.Paths.Path.t) resolved_path (cast dest)
             | `AliasModuleType (path, realpath) -> Format.fprintf ppf "(%a -> %a)" resolved_path (cast path) resolved_path (cast realpath)
@@ -579,6 +580,7 @@ module LangUtils = struct
             | `DotT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) TypeName.fmt s
             | `DotV (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ValueName.fmt s
             | `Apply (func,arg) -> Format.fprintf ppf "%a(%a)" path (func :> Odoc_model.Paths.Path.t) path (arg :> Odoc_model.Paths.Path.t)
+            | `ApplyParam (inst,param,arg) -> Format.fprintf ppf "%a[%a:%a]" path (inst :> Odoc_model.Paths.Path.t) path (param :> Odoc_model.Paths.Path.t) path (arg :> Odoc_model.Paths.Path.t)
             | `SubstitutedT _|`SubstitutedMT _|`Substituted _|`SubstitutedCT _|`Unbox _  -> Format.fprintf ppf "Unimplemented path"
 
         and model_fragment ppf (f : Odoc_model.Paths.Fragment.t) =
@@ -613,6 +615,8 @@ let my_compilation_unit id (s : Odoc_model.Lang.Signature.t) =
     ; linked = false
     ; canonical = None
     ; source_loc = None
+    ; parameterisation =
+        { is_parameter = false; parameters = []; argument_for = None }
 }
 
 let mkresolver () =
