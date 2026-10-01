@@ -136,15 +136,19 @@ module Make (Syntax : SYNTAX) = struct
         | Some href -> resolved href txt
         | None -> O.elt txt
 
+    let link_of_identifier id =
+      let txt = [ inline @@ Text (Identifier.name id) ] in
+      resolved (Url.from_identifier ~stop_before:false id) txt
+
+    let rec instance : Path.Resolved.Instance.t -> text = function
+      | `Identifier id -> link_of_identifier (id :> Identifier.t)
+      | `ApplyParam (i, p, a) ->
+          instance i ++ O.txt "["
+          ++ link_of_identifier (p :> Identifier.t)
+          ++ O.txt ":" ++ instance a ++ O.txt "]"
+
     let rec segmented_instance : Path.Resolved.t -> text option =
      fun rp ->
-      let part r =
-        match segmented_instance r with
-        | Some text -> text
-        | None ->
-            link_of_resolved r
-              [ inline @@ Text (Url.render_path (`Resolved r)) ]
-      in
       let member parent name =
         match segmented_instance (parent :> Path.Resolved.t) with
         | None -> None
@@ -154,14 +158,7 @@ module Make (Syntax : SYNTAX) = struct
               ++ link_of_resolved rp [ inline @@ Text name ])
       in
       match rp with
-      | `ApplyParam (i, p, a) ->
-          Some
-            (part (i :> Path.Resolved.t)
-            ++ O.txt "["
-            ++ part (p :> Path.Resolved.t)
-            ++ O.txt ":"
-            ++ part (a :> Path.Resolved.t)
-            ++ O.txt "]")
+      | `ApplyParam _ as i -> Some (instance i)
       | `Module (parent, name) -> member parent (ModuleName.to_string name)
       | `ModuleType (parent, name) ->
           member parent (ModuleTypeName.to_string name)
@@ -231,7 +228,7 @@ module Make (Syntax : SYNTAX) = struct
           link1 ++ O.txt "(" ++ link2 ++ O.txt ")"
       | `ApplyParam (p1, p2, p3) ->
           let link1 = from_path (p1 :> Path.t) in
-          let link2 = from_path (p2 :> Path.t) in
+          let link2 = unresolved [ inline @@ Text (ModuleName.to_string p2) ] in
           let link3 = from_path (p3 :> Path.t) in
           link1 ++ O.txt "[" ++ link2 ++ O.txt ":" ++ link3 ++ O.txt "]"
       | `Resolved _ when Paths.Path.is_hidden path ->

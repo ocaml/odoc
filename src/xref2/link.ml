@@ -104,10 +104,7 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
       should_reresolve (x :> t) || should_resolve (y :> Paths.Path.t)
   | `Apply (x, y) ->
       should_reresolve (x :> t) || should_reresolve (y :> Paths.Path.Resolved.t)
-  | `ApplyParam (x, y, z) ->
-      should_reresolve (x :> t)
-      || should_reresolve (y :> t)
-      || should_reresolve (z :> t)
+  | `ApplyParam _ -> false
   | `SubstT (x, y) -> should_reresolve (x :> t) || should_reresolve (y :> t)
   | `Alias (y, x) ->
       should_resolve (x :> Paths.Path.t) || should_reresolve (y :> t)

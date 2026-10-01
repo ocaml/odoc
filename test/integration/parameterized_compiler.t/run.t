@@ -133,29 +133,24 @@ with the argument `Q_impl` for `Q`.
 
 Dune always makes an instance from the main module of each library. Thus, dune
 never puts a hidden unit in an instance. But you can name a hidden unit in the
-source code, as `User` does.
+source code, as `User` does. Odoc does not hide the units of an instance. It
+shows each unit with the name from the source code.
 
-Odoc expands `Hidden_lib`, because `Hlib__y` is hidden. Odoc expands an alias
-to a hidden module in the same way. Odoc does not expand `Hidden`:
+Each part of an instance links to its own page: the library, the parameter and
+the argument. Each type from an instance
+links to the declaration of the type in the library:
 
   $ decls html/User/index.html
-  module Nested = [Lib[P:P_of_q[Q:Q_impl]] -> ../Lib/index.html]
-  module Passed = [Pass[P:P_impl] -> ../Pass/index.html]
-  module Hidden = [Lib[P:Hid__p_impl] -> ../Lib/index.html]
-  module [Hidden_lib -> Hidden_lib/index.html] : sig ... end
+  module Nested = [Lib -> ../Lib/index.html][ [P -> ../P/index.html]: [P_of_q -> ../P_of_q/index.html][ [Q -> ../Q/index.html]: [Q_impl -> ../Q_impl/index.html]]]
+  module Passed = [Pass -> ../Pass/index.html][ [P -> ../P/index.html]: [P_impl -> ../P_impl/index.html]]
+  module Hidden = [Lib -> ../Lib/index.html][ [P -> ../P/index.html]: [Hid__p_impl -> ../Hid__p_impl/index.html]]
+  module Hidden_lib = [Hlib__y -> ../Hlib__y/index.html][ [P -> ../P/index.html]: [P_impl -> ../P_impl/index.html]]
   type nested = [Nested.w -> ../Lib/index.html#type-w]
   type inner = [Nested.Inner.i -> ../Lib/Inner/index.html#type-i]
   type passed_implicit = [Passed.implicit -> ../Pass/index.html#type-implicit]
   type passed_inner = [Passed.Inner.i -> ../Lib/Inner/index.html#type-i]
-  type hidden = [Hidden.w -> Hidden/index.html#type-w]
-  type hidden_lib = [Hidden_lib.w -> Hidden_lib/index.html#type-w]
-
-FIXME: The link for `Hidden.w` goes to an expansion of `User.Hidden`. Odoc
-does not make this page:
-
-  $ ls html/User
-  Hidden_lib
-  index.html
+  type hidden = [Hidden.w -> ../Lib/index.html#type-w]
+  type hidden_lib = [Hidden_lib.w -> ../Hlib__y/index.html#type-w]
 
 The page of `Pass`:
 
