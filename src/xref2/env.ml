@@ -20,7 +20,7 @@ type resolver = {
 }
 
 type root =
-  | Resolved of (Root.t * Identifier.Module.t * Component.Module.t)
+  | Resolved of (Root.t * Identifier.RootModule.t * Component.Module.t)
   | Forward
 
 let unique_id =
@@ -437,7 +437,7 @@ let lookup_root_module name env =
         | Error `Not_found -> None
         | Ok (Found u) ->
             let m = module_of_unit u in
-            Some (Resolved (u.root, (u.id :> Identifier.Module.t), m)))
+            Some (Resolved (u.root, u.id, m)))
   in
   (match (env.recorder, result) with
   | Some r, Some Forward ->

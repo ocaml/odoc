@@ -710,22 +710,22 @@ let is_shadowed
 module Path = struct
 
 #if defined OXCAML
-  let rec read_global_name (n : Global_module.Name.t) : Paths.Path.Module.t =
+  let rec read_global_name (n : Global_module.Name.t) : Paths.Path.Instance.t =
     (* OxCaml parameterized library application "Lib[Param:Impl][P2:I2]" *)
     let base = `Root (ModuleName.make_std n.head) in
     List.fold_left
       (fun acc (arg : Global_module.Name.argument) ->
         let param =
-          `Root
-            (ModuleName.make_std
-               (Global_module.Parameter_name.to_string arg.param))
+          ModuleName.make_std
+            (Global_module.Parameter_name.to_string arg.param)
         in
         `ApplyParam (acc, param, read_global_name arg.value))
       base n.args
 
   let module_of_id id =
     match Ident.to_global id with
-    | Some ({ Global_module.Name.args = _ :: _; _ } as n) -> read_global_name n
+    | Some ({ Global_module.Name.args = _ :: _; _ } as n) ->
+        (read_global_name n :> Paths.Path.Module.t)
     | _ -> `Root (ModuleName.of_ident id)
 #else
   let module_of_id id = `Root (ModuleName.of_ident id)

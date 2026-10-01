@@ -637,7 +637,9 @@ module Path = struct
           inner (p1 : module_type :> any) || inner (p2 : module_ :> any)
       | `Module (p, _) -> inner (p : module_ :> any)
       | `Apply (p, _) -> inner (p : module_ :> any)
-      | `ApplyParam (p, _, _) -> inner (p : module_ :> any)
+      | `ApplyParam _ ->
+          (* Instances are of whole libraries, which are never hidden. *)
+          false
       | `ModuleType (_, m) when Names.ModuleTypeName.is_hidden m -> true
       | `ModuleType (p, _) -> inner (p : module_ :> any)
       | `Type (_, t) when Names.TypeName.is_hidden t -> true
@@ -691,10 +693,7 @@ module Path = struct
     | `Apply (p1, p2) ->
         is_path_hidden (p1 : module_ :> any)
         || is_path_hidden (p2 : module_ :> any)
-    | `ApplyParam (p1, p2, p3) ->
-        is_path_hidden (p1 : module_ :> any)
-        || is_path_hidden (p2 : module_ :> any)
-        || is_path_hidden (p3 : module_ :> any)
+    | `ApplyParam _ -> false
 
   module Resolved = struct
     type t = Paths_types.Resolved_path.any
@@ -732,7 +731,8 @@ module Path = struct
       | `Canonical (_, `Resolved p) -> parent_module_identifier p
       | `Canonical (p, _) -> parent_module_identifier p
       | `Apply (m, _) -> parent_module_identifier m
-      | `ApplyParam (m, _, _) -> parent_module_identifier m
+      | `ApplyParam (m, _, _) ->
+          parent_module_identifier (m :> Paths_types.Resolved_path.module_)
       | `Alias (dest, `Resolved src) ->
           if is_resolved_hidden ~weak_canonical_test:false (dest :> t) then
             parent_module_identifier src
@@ -740,6 +740,10 @@ module Path = struct
       | `Alias (dest, _src) -> parent_module_identifier dest
       | `Substituted m -> parent_module_identifier m
       | `OpaqueModule m -> parent_module_identifier m
+
+    module Instance = struct
+      type t = Paths_types.Resolved_path.instance
+    end
 
     module Module = struct
       type t = Paths_types.Resolved_path.module_
@@ -824,6 +828,10 @@ module Path = struct
       | `Unbox m -> identifier (m :> t)
 
     let is_hidden r = is_resolved_hidden ~weak_canonical_test:false r
+  end
+
+  module Instance = struct
+    type t = Paths_types.Path.instance
   end
 
   module Module = struct

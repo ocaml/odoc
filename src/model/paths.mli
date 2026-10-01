@@ -334,6 +334,10 @@ end
 (** Normal OCaml paths (i.e. the ones present in types) *)
 module rec Path : sig
   module Resolved : sig
+    module Instance : sig
+      type t = Paths_types.Resolved_path.instance
+    end
+
     module Module : sig
       type t = Paths_types.Resolved_path.module_
 
@@ -386,6 +390,10 @@ module rec Path : sig
     (** If the path points to a core type, no identifier can be generated *)
 
     val is_hidden : t -> bool
+  end
+
+  module Instance : sig
+    type t = Paths_types.Path.instance
   end
 
   module Module : sig

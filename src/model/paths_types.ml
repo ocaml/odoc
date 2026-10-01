@@ -217,6 +217,12 @@ module Identifier = struct
 end
 
 module rec Path : sig
+  type instance =
+    [ `Root of ModuleName.t | `ApplyParam of instance * ModuleName.t * instance ]
+  (** An instance of a parameterised library, [Lib[P:A]]: the library and the
+      argument are compilation units or themselves instances.
+      @canonical Odoc_model.Paths.Path.Instance.t *)
+
   type module_ =
     [ `Resolved of Resolved_path.module_
     | `Identifier of Identifier.path_module * bool
@@ -224,7 +230,8 @@ module rec Path : sig
     | `Root of ModuleName.t
     | `Dot of module_ * ModuleName.t
     | `Apply of module_ * module_
-    | `ApplyParam of module_ * module_ * module_ ]
+    | `ApplyParam of instance * ModuleName.t * instance
+      (** [`ApplyParam (instance, parameter, argument)] *) ]
   (** @canonical Odoc_model.Paths.Path.Module.t *)
 
   type module_type =
@@ -268,13 +275,19 @@ module rec Path : sig
     | `DotMT of module_ * ModuleTypeName.t
     | `DotV of module_ * ValueName.t
     | `Apply of module_ * module_
-    | `ApplyParam of module_ * module_ * module_
+    | `ApplyParam of instance * ModuleName.t * instance
     | `Unbox of type_ ]
   (** @canonical Odoc_model.Paths.Path.t *)
 end =
   Path
 
 and Resolved_path : sig
+  type instance =
+    [ `Identifier of Identifier.root_module
+    | `ApplyParam of instance * Identifier.library_parameter * instance ]
+  (** A resolved {!Path.instance}.
+      @canonical Odoc_model.Paths.Path.Resolved.Instance.t *)
+
   type module_ =
     [ `Identifier of Identifier.path_module
     | `Subst of module_type * module_
@@ -283,7 +296,7 @@ and Resolved_path : sig
     | `Module of module_ * ModuleName.t
     | `Canonical of module_ * Path.module_  (** [`Canonical (mod, canonical)] *)
     | `Apply of module_ * module_  (** [`Apply (functor, argument)] *)
-    | `ApplyParam of module_ * module_ * module_
+    | `ApplyParam of instance * Identifier.library_parameter * instance
       (** [`ApplyParam (instance, parameter, argument)] *)
     | `Alias of module_ * Path.module_  (** Resolved dest *)
     | `OpaqueModule of module_ ]
@@ -332,7 +345,7 @@ and Resolved_path : sig
     | `Module of module_ * ModuleName.t
     | `Canonical of module_ * Path.module_
     | `Apply of module_ * module_
-    | `ApplyParam of module_ * module_ * module_
+    | `ApplyParam of instance * Identifier.library_parameter * instance
     | `Alias of module_ * Path.module_
     | `AliasModuleType of module_type * module_type
     | `OpaqueModule of module_

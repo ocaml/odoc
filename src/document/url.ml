@@ -40,9 +40,7 @@ let render_path : Path.t -> string =
         ^ ")"
     | `ApplyParam (rp, p, a) ->
         render_resolved (rp :> t)
-        ^ "["
-        ^ render_resolved (p :> Path.Resolved.t)
-        ^ ":"
+        ^ "[" ^ Identifier.name p ^ ":"
         ^ render_resolved (a :> Path.Resolved.t)
         ^ "]"
     | `ModuleType (p, s) ->
@@ -66,9 +64,7 @@ let render_path : Path.t -> string =
         render_path (p1 :> Path.t) ^ "(" ^ render_path (p2 :> Path.t) ^ ")"
     | `ApplyParam (p1, p2, p3) ->
         render_path (p1 :> Path.t)
-        ^ "["
-        ^ render_path (p2 :> Path.t)
-        ^ ":"
+        ^ "[" ^ ModuleName.to_string p2 ^ ":"
         ^ render_path (p3 :> Path.t)
         ^ "]"
     | `Resolved rp -> render_resolved rp

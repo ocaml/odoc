@@ -238,8 +238,8 @@ module General_paths = struct
       | `ApplyParam (x1, x2, x3) ->
           C
             ( "`ApplyParam",
-              ((x1 :> p), (x2 :> p), (x3 :> p)),
-              Triple (path, path, path) )
+              ((x1 :> p), x2, (x3 :> p)),
+              Triple (path, Names.modulename, path) )
       | `Substituted m -> C ("`Substituted", (m :> p), path)
       | `SubstitutedMT m -> C ("`SubstitutedMT", (m :> p), path)
       | `SubstitutedT m -> C ("`SubstitutedT", (m :> p), path)
@@ -269,8 +269,8 @@ module General_paths = struct
       | `ApplyParam (x1, x2, x3) ->
           C
             ( "`ApplyParam",
-              ((x1 :> rp), (x2 :> rp), (x3 :> rp)),
-              Triple (resolved_path, resolved_path, resolved_path) )
+              ((x1 :> rp), (x2 :> id_t), (x3 :> rp)),
+              Triple (resolved_path, identifier, resolved_path) )
       | `Alias (dest, src) ->
           C ("`Alias", ((dest :> rp), (src :> p)), Pair (resolved_path, path))
       | `AliasModuleType (x1, x2) ->
