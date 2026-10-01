@@ -20,5 +20,5 @@
   (> %{ocaml_version} 4.14.0)))
 
 (cram
- (applies_to parameterized)
+ (applies_to parameterized parameterized_compiler)
  (enabled_if %{ocaml-config:ox}))
