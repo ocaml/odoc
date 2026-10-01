@@ -3,6 +3,6 @@
 
 ```ocaml
 type refcounted = {
-  mutable readers : int;
+  mutable readers : int [@atomic];
 }
 ```
