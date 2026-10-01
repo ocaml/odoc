@@ -157,7 +157,7 @@ module Make (Syntax : SYNTAX) = struct
           link1 ++ O.txt "(" ++ link2 ++ O.txt ")"
       | `ApplyParam (p1, p2, p3) ->
           let link1 = from_path (p1 :> Path.t) in
-          let link2 = from_path (p2 :> Path.t) in
+          let link2 = unresolved [ inline @@ Text (ModuleName.to_string p2) ] in
           let link3 = from_path (p3 :> Path.t) in
           link1 ++ O.txt "[" ++ link2 ++ O.txt ":" ++ link3 ++ O.txt "]"
       | `Resolved _ when Paths.Path.is_hidden path ->

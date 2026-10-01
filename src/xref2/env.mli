@@ -19,7 +19,7 @@ type resolver = {
 }
 
 type root =
-  | Resolved of (Root.t * Identifier.Module.t * Component.Module.t)
+  | Resolved of (Root.t * Identifier.RootModule.t * Component.Module.t)
   | Forward
 
 type lookup_type =
