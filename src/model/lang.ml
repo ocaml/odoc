@@ -237,6 +237,7 @@ and TypeDecl : sig
       mutable_ : bool;
       type_ : TypeExpr.t;
       modalities : Modalities.t;
+      atomic : bool;
     }
   end
 

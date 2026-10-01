@@ -1052,6 +1052,12 @@ let is_mutable = Types.is_mutable
 let is_mutable ld = ld = Mutable
 #endif
 
+let has_atomic attributes =
+  List.exists
+    (fun { Parsetree.attr_name = { txt = attribute_name; _ }; _ } ->
+      String.equal attribute_name "atomic")
+    attributes
+
 let read_label_declaration env parent ld =
   let open TypeDecl.Field in
   let name = Ident.name ld.ld_id in
@@ -1063,7 +1069,8 @@ let read_label_declaration env parent ld =
   let mutable_ = is_mutable ld.ld_mutable in
   let type_ = read_type_expr env ld.ld_type in
   let modalities = read_label_modalities ld in
-  {id; doc; mutable_; type_; modalities}
+  let atomic = has_atomic ld.ld_attributes in
+  { id; doc; mutable_; type_; modalities; atomic }
 
 let read_constructor_declaration_arguments env parent arg =
   let open TypeDecl.Constructor in

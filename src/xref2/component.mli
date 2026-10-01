@@ -246,6 +246,7 @@ and TypeDecl : sig
       mutable_ : bool;
       type_ : TypeExpr.t;
       modalities : Odoc_model.Lang.Modalities.t;
+      atomic : bool;
     }
   end
 
