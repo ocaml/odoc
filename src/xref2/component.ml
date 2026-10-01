@@ -256,6 +256,7 @@ and TypeDecl : sig
       mutable_ : bool;
       type_ : TypeExpr.t;
       modalities : Odoc_model.Lang.Modalities.t;
+      atomic : bool;
     }
   end
 
@@ -2285,6 +2286,7 @@ module Of_Lang = struct
       mutable_ = f.mutable_;
       type_;
       modalities = f.modalities;
+      atomic = f.atomic;
     }
 
   and type_decl_unboxed_field ident_map f =
