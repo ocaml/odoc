@@ -47,6 +47,54 @@
   (>= %{ocaml_version} 4.04)))
 
 (rule
+ (target annotations.cmti)
+ (package odoc)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/annotations.mli}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
+ (target annotations.odoc)
+ (package odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:annotations.cmti}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
+ (target annotations.odocl)
+ (package odoc)
+ (action
+  (run odoc link -o %{target} %{dep:annotations.odoc}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
+ (target annotations_impl.cmt)
+ (package odoc)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/annotations_impl.ml}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
+ (target annotations_impl.odoc)
+ (package odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:annotations_impl.cmt}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
+ (target annotations_impl.odocl)
+ (package odoc)
+ (action
+  (run odoc link -o %{target} %{dep:annotations_impl.odoc}))
+ (enabled_if
+  (>= %{ocaml_version} 4.04)))
+
+(rule
  (target bugs.cmt)
  (package odoc)
  (action
@@ -1237,6 +1285,354 @@
   (package odoc)
   (action
    (diff alias.targets alias.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ html
+ (rule
+  (targets Annotations.html.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../annotations.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Annotations.html Annotations.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ html
+ (rule
+  (target annotations.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    annotations.targets.gen
+    (run odoc html-targets -o . %{dep:../annotations.odocl} --flat)))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff annotations.targets annotations.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ latex
+ (rule
+  (targets Annotations.tex.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    latex-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../annotations.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Annotations.tex Annotations.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ latex
+ (rule
+  (target annotations.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    annotations.targets.gen
+    (run odoc latex-targets -o . %{dep:../annotations.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff annotations.targets annotations.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ man
+ (rule
+  (targets Annotations.3o.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    man-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../annotations.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Annotations.3o Annotations.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ man
+ (rule
+  (target annotations.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    annotations.targets.gen
+    (run odoc man-targets -o . %{dep:../annotations.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff annotations.targets annotations.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ markdown
+ (rule
+  (targets Annotations.md.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../annotations.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Annotations.md Annotations.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ markdown
+ (rule
+  (target annotations.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    annotations.targets.gen
+    (run odoc markdown-targets -o . %{dep:../annotations.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff annotations.targets annotations.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ html
+ (rule
+  (targets Annotations_impl.html.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../annotations_impl.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Annotations_impl.html Annotations_impl.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ html
+ (rule
+  (target annotations_impl.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    annotations_impl.targets.gen
+    (run odoc html-targets -o . %{dep:../annotations_impl.odocl} --flat)))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff annotations_impl.targets annotations_impl.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ latex
+ (rule
+  (targets Annotations_impl.tex.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    latex-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../annotations_impl.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Annotations_impl.tex Annotations_impl.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ latex
+ (rule
+  (target annotations_impl.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    annotations_impl.targets.gen
+    (run odoc latex-targets -o . %{dep:../annotations_impl.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff annotations_impl.targets annotations_impl.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ man
+ (rule
+  (targets Annotations_impl.3o.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    man-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../annotations_impl.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Annotations_impl.3o Annotations_impl.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ man
+ (rule
+  (target annotations_impl.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    annotations_impl.targets.gen
+    (run odoc man-targets -o . %{dep:../annotations_impl.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff annotations_impl.targets annotations_impl.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ markdown
+ (rule
+  (targets Annotations_impl.md.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../annotations_impl.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Annotations_impl.md Annotations_impl.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 4.04))))
+
+(subdir
+ markdown
+ (rule
+  (target annotations_impl.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    annotations_impl.targets.gen
+    (run odoc markdown-targets -o . %{dep:../annotations_impl.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 4.04)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff annotations_impl.targets annotations_impl.targets.gen))
   (enabled_if
    (>= %{ocaml_version} 4.04))))
 
