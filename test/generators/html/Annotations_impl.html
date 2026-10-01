@@ -24,7 +24,9 @@
      <ol>
       <li id="type-refcounted.readers" class="def record field anchored">
        <a href="#type-refcounted.readers" class="anchor"></a>
-       <code><span><span class="keyword">mutable</span> readers : int;</span>
+       <code>
+        <span><span class="keyword">mutable</span> readers : int [@atomic];
+        </span>
        </code>
       </li>
      </ol><code><span>}</span></code>
