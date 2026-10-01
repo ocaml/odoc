@@ -14,6 +14,6 @@ Annotations_impl
 \f[CB]type\fR refcounted = {
 .br 
 .ti +2
-\f[CB]mutable\fR readers : int;
+\f[CB]mutable\fR readers : int [@atomic];
 .br 
 }

@@ -1,6 +1,6 @@
 \section{Module \ocamlinlinecode{Annotations}}\label{Annotations}%
 \label{Annotations--type-refcounted}\ocamlcodefragment{\ocamltag{keyword}{type} refcounted = \{}\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{\ocamltag{keyword}{mutable} readers : int;\allowbreak{}}\label{Annotations--type-refcounted.readers}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{\ocamltag{keyword}{mutable} readers : int [@atomic];\allowbreak{}}\label{Annotations--type-refcounted.readers}\\
 \end{ocamltabular}%
 \\
 \ocamlcodefragment{\}}\\
