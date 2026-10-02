@@ -20,7 +20,7 @@ let json_of_args (args : Odoc_model.Lang.TypeDecl.Constructor.argument) =
               (List.map
                  (fun {
                         Odoc_model.Lang.TypeDecl.Field.id;
-                        mutable_;
+                        mutability;
                         type_;
                         doc = _;
                         modalities = _;
@@ -28,7 +28,11 @@ let json_of_args (args : Odoc_model.Lang.TypeDecl.Constructor.argument) =
                    `Object
                      [
                        ("name", `String (Odoc_model.Paths.Identifier.name id));
-                       ("mutable", `Bool mutable_);
+                       ( "mutable",
+                         `Bool
+                           (match mutability with
+                           | Immutable -> false
+                           | _ -> true) );
                        ("type", `String (Text.of_type type_));
                      ])
                  fl) );

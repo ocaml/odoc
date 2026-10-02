@@ -332,12 +332,21 @@ and include_t =
 
 (** {3 TypeDecl} *)
 and typedecl_field =
+  let mutability =
+    let open Lang.TypeDecl in
+    Variant
+      (function
+      | Immutable -> C0 "immutable"
+      | Mutable -> C0 "mutable"
+      | Atomically_mutable -> C0 "atomically_mutable")
+  in
+
   let open Lang.TypeDecl.Field in
   Record
     [
       F ("id", (fun t -> t.id), identifier);
       F ("doc", (fun t -> t.doc), docs);
-      F ("mutable_", (fun t -> t.mutable_), bool);
+      F ("mutability", (fun t -> t.mutability), mutability);
       F ("type_", (fun t -> t.type_), typeexpr_t);
       F ("modalities", (fun t -> t.modalities), List string);
     ]
