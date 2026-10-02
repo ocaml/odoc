@@ -346,12 +346,6 @@ let read_type_parameter (ctyp, var_and_injectivity)  =
   in
     {desc; variance; injectivity; kind}
 
-let has_atomic attributes =
-  List.exists
-    (fun { Parsetree.attr_name = { txt = attribute_name; _ }; _ } ->
-      String.equal attribute_name "atomic")
-    attributes
-
 #if defined OXCAML
 
 let is_mutable = Types.is_mutable
@@ -383,7 +377,7 @@ let read_label_declaration env parent label_parent ld =
   let mutable_ = is_mutable ld.ld_mutable in
   let type_ = read_core_type env label_parent ld.ld_type in
   let modalities = read_typedtree_label_modalities ld in
-  let atomic = has_atomic ld.ld_attributes in
+  let atomic = Cmi.has_atomic ld.ld_attributes in
   { id; doc; mutable_; type_; modalities; atomic }
 
 

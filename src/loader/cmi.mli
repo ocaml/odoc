@@ -24,6 +24,8 @@ type env = {
   warnings_tag : string option (** Used to suppress warnings *)
 }
 
+val has_atomic : Parsetree.attribute list -> bool
+
 val read_interface :
   Odoc_model.Paths.Identifier.ContainerPage.t option ->
   string ->
