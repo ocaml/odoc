@@ -15,6 +15,7 @@
   (@Leonidas-from-XIV, #1452)
 - Point to exact character when parsing the reference syntax fails
   (@Leonidas-from-XIV, #1494)
+- Support for atomic annotation (@ElectreAAS, #1496)
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
