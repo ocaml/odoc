@@ -79,7 +79,12 @@ module Entry = struct
     in
     let kind =
       Entry.Field
-        { mutable_ = field.mutable_; type_ = field.type_; parent_type }
+        {
+          mutable_ =
+            (match field.mutability with Immutable -> false | _ -> true);
+          type_ = field.type_;
+          parent_type;
+        }
     in
     Entry.entry ~id:field.id ~doc:field.doc.elements ~kind
 

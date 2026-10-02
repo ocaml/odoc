@@ -243,10 +243,9 @@ and TypeDecl : sig
     type t = {
       name : string;
       doc : CComment.docs;
-      mutable_ : bool;
+      mutability : Odoc_model.Lang.TypeDecl.mutability;
       type_ : TypeExpr.t;
       modalities : Odoc_model.Lang.Modalities.t;
-      atomic : bool;
     }
   end
 
