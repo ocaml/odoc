@@ -32,6 +32,64 @@
      </ol><code><span>}</span></code>
     </div>
    </div>
+   <div class="odoc-spec">
+    <div class="spec exception anchored" id="exception-Atomic_exn">
+     <a href="#exception-Atomic_exn" class="anchor"></a>
+     <code><span><span class="keyword">exception</span> </span>
+      <span><span class="exception">Atomic_exn</span> 
+       <span class="keyword">of</span> 
+      </span><span>{</span>
+     </code>
+     <ol>
+      <li id=".value" class="def record field anchored">
+       <a href="#.value" class="anchor"></a>
+       <code>
+        <span><span class="keyword">mutable</span> value : int [@atomic];
+        </span>
+       </code>
+      </li>
+     </ol><code><span>}</span></code>
+    </div>
+    <div class="spec-doc">
+     <p>
+      This exception has a record with an atomic annotation that should
+      appear
+     </p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-with_annot">
+     <a href="#type-with_annot" class="anchor"></a>
+     <code><span><span class="keyword">type</span> with_annot</span>
+      <span> = </span>
+     </code>
+     <ol>
+      <li id="type-with_annot.Atomic_constr" class="def variant constructor
+       anchored"><a href="#type-with_annot.Atomic_constr" class="anchor"></a>
+       <code><span>| </span>
+        <span><span class="constructor">Atomic_constr</span> 
+         <span class="keyword">of</span> 
+        </span><span>{</span>
+       </code>
+       <ol>
+        <li id="type-with_annot.value" class="def record field anchored">
+         <a href="#type-with_annot.value" class="anchor"></a>
+         <code>
+          <span><span class="keyword">mutable</span> value : int [@atomic];
+          </span>
+         </code>
+        </li>
+       </ol><code><span>}</span></code>
+      </li>
+     </ol>
+    </div>
+    <div class="spec-doc">
+     <p>
+      The annotation should appear on anonymous records in constructors as
+      well
+     </p>
+    </div>
+   </div>
   </div>
  </body>
 </html>
