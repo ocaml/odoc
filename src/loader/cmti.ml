@@ -359,6 +359,7 @@ let read_constructor_argument arg =
 #else
 
 let is_mutable ld = ld = Mutable
+
 let read_typedtree_label_modalities _ld = []
 let read_constructor_argument arg = arg, []
 
@@ -368,12 +369,17 @@ let read_label_declaration env parent label_parent ld =
   let open TypeDecl.Field in
   let open Odoc_model.Names in
   let name = Ident.name ld.ld_id in
-  let id = Identifier.Mk.field(parent, FieldName.make_std name) in
-  let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent ld.ld_attributes in
+  let id = Identifier.Mk.field (parent, FieldName.make_std name) in
+  let doc =
+    Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent
+      ld.ld_attributes
+  in
   let mutable_ = is_mutable ld.ld_mutable in
   let type_ = read_core_type env label_parent ld.ld_type in
   let modalities = read_typedtree_label_modalities ld in
-  {id; doc; mutable_; type_; modalities}
+  let atomic = Cmi.has_atomic ld.ld_attributes in
+  { id; doc; mutable_; type_; modalities; atomic }
+
 
 let read_unboxed_label_declaration env parent label_parent ld =
   let open TypeDecl.UnboxedField in

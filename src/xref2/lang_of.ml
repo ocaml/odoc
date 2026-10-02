@@ -949,6 +949,7 @@ and type_decl_field :
     mutable_ = f.mutable_;
     type_ = type_expr map (parent :> Identifier.LabelParent.t) f.type_;
     modalities = f.modalities;
+    atomic = f.atomic;
   }
 
 and type_decl_unboxed_field :
