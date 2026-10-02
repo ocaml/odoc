@@ -346,6 +346,12 @@ let read_type_parameter (ctyp, var_and_injectivity)  =
   in
     {desc; variance; injectivity; kind}
 
+let has_atomic attributes =
+  List.exists
+    (fun { Parsetree.attr_name = { txt = attribute_name; _ }; _ } ->
+      String.equal attribute_name "atomic")
+    attributes
+
 #if defined OXCAML
 
 let is_mutable = Types.is_mutable
@@ -359,12 +365,6 @@ let read_constructor_argument arg =
 #else
 
 let is_mutable ld = ld = Mutable
-
-let has_atomic attributes =
-  List.exists
-    (fun { Parsetree.attr_name = { txt = attribute_name; _ }; _ } ->
-      String.equal attribute_name "atomic")
-    attributes
 
 let read_typedtree_label_modalities _ld = []
 let read_constructor_argument arg = arg, []
