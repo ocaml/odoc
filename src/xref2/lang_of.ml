@@ -946,10 +946,9 @@ and type_decl_field :
   {
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) f.doc;
-    mutable_ = f.mutable_;
+    mutability = f.mutability;
     type_ = type_expr map (parent :> Identifier.LabelParent.t) f.type_;
     modalities = f.modalities;
-    atomic = f.atomic;
   }
 
 and type_decl_unboxed_field :

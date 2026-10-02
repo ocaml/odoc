@@ -348,8 +348,6 @@ let read_type_parameter (ctyp, var_and_injectivity)  =
 
 #if defined OXCAML
 
-let is_mutable = Types.is_mutable
-
 let read_typedtree_label_modalities ld =
   Cmi.read_modalities ld.ld_mutable ld.ld_modalities.moda_modalities
 
@@ -357,8 +355,6 @@ let read_constructor_argument arg =
   arg.ca_type, Cmi.read_modalities Immutable arg.ca_modalities.moda_modalities
 
 #else
-
-let is_mutable ld = ld = Mutable
 
 let read_typedtree_label_modalities _ld = []
 let read_constructor_argument arg = arg, []
@@ -374,11 +370,10 @@ let read_label_declaration env parent label_parent ld =
     Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent
       ld.ld_attributes
   in
-  let mutable_ = is_mutable ld.ld_mutable in
+  let mutability = Cmi.mutability ld.ld_mutable ld.ld_attributes in
   let type_ = read_core_type env label_parent ld.ld_type in
   let modalities = read_typedtree_label_modalities ld in
-  let atomic = Cmi.has_atomic ld.ld_attributes in
-  { id; doc; mutable_; type_; modalities; atomic }
+  { id; doc; mutability; type_; modalities; }
 
 
 let read_unboxed_label_declaration env parent label_parent ld =
@@ -387,7 +382,10 @@ let read_unboxed_label_declaration env parent label_parent ld =
   let name = Ident.name ld.ld_id in
   let id = Identifier.Mk.unboxed_field(parent, UnboxedFieldName.make_std name) in
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent ld.ld_attributes in
-  let mutable_ = is_mutable ld.ld_mutable in
+  let mutable_ = match Cmi.mutability ld.ld_mutable ld.ld_attributes with
+    | Immutable -> false
+    | Atomically_mutable | Mutable -> true
+  in
   let type_ = read_core_type env label_parent ld.ld_type in
     {id; doc; mutable_; type_}
 

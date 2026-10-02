@@ -1047,16 +1047,24 @@ let read_value_description ({ident_env ; warnings_tag} as env) parent id vd =
   Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities }
 
 #if defined OXCAML
-let is_mutable = Types.is_mutable
+let mutability mutable_ _attributes =
+  match mutable_ with
+  | Types.Immutable -> TypeDecl.Immutable
+  | Mutable {atomic = Atomic; _ } -> Atomically_mutable
+  | Mutable {atomic=Nonatomic; _} -> Mutable
 #else
-let is_mutable ld = ld = Mutable
+let mutability mutable_ attributes =
+  match mutable_ with
+  | Immutable -> TypeDecl.Immutable
+  | Mutable -> (
+      match List.exists
+            (fun { Parsetree.attr_name = { txt = attribute_name; _ }; _ } ->
+              String.equal attribute_name "atomic"
+              || String.equal attribute_name "ocaml.atomic")
+            attributes with
+      | true -> Atomically_mutable
+      | false -> Mutable)
 #endif
-
-let has_atomic attributes =
-  List.exists
-    (fun { Parsetree.attr_name = { txt = attribute_name; _ }; _ } ->
-      String.equal attribute_name "atomic")
-    attributes
 
 let read_label_declaration env parent ld =
   let open TypeDecl.Field in
@@ -1066,11 +1074,10 @@ let read_label_declaration env parent ld =
     Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag
       (parent :> Identifier.LabelParent.t) ld.ld_attributes
   in
-  let mutable_ = is_mutable ld.ld_mutable in
+  let mutability = mutability ld.ld_mutable ld.ld_attributes in
   let type_ = read_type_expr env ld.ld_type in
   let modalities = read_label_modalities ld in
-  let atomic = has_atomic ld.ld_attributes in
-  { id; doc; mutable_; type_; modalities; atomic }
+  { id; doc; mutability; type_; modalities; }
 
 let read_constructor_declaration_arguments env parent arg =
   let open TypeDecl.Constructor in

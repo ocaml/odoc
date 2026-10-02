@@ -253,10 +253,9 @@ and TypeDecl : sig
     type t = {
       name : string;
       doc : CComment.docs;
-      mutable_ : bool;
+      mutability : Odoc_model.Lang.TypeDecl.mutability;
       type_ : TypeExpr.t;
       modalities : Odoc_model.Lang.Modalities.t;
-      atomic : bool;
     }
   end
 
@@ -1072,8 +1071,10 @@ module Fmt = struct
 
   and type_decl_field c ppf t =
     let open TypeDecl.Field in
-    let mutable_ = if t.mutable_ then "mutable " else "" in
-    fpf ppf "%s%s : %a" mutable_ t.name (type_expr c) t.type_
+    let mutable_kw =
+      match t.mutability with Immutable -> "" | _ -> "mutable "
+    in
+    fpf ppf "%s%s : %a" mutable_kw t.name (type_expr c) t.type_
 
   and type_decl_unboxed_field c ppf t =
     let open TypeDecl.UnboxedField in
@@ -2282,10 +2283,9 @@ module Of_Lang = struct
     {
       TypeDecl.Field.name = Paths.Identifier.name f.id;
       doc = docs ident_map f.doc;
-      mutable_ = f.mutable_;
+      mutability = f.mutability;
       type_;
       modalities = f.modalities;
-      atomic = f.atomic;
     }
 
   and type_decl_unboxed_field ident_map f =

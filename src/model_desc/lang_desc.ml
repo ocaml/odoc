@@ -329,15 +329,30 @@ and include_t =
       F ("status", (fun t -> t.status), inline_status);
       F ("expansion", (fun t -> t.expansion), include_expansion);
     ]
+(* 
+and typedecl_variance =
+  let open Lang.TypeDecl in
+  Variant
+    (function Pos -> C0 "Pos" | Neg -> C0 "Neg" | Bivariant -> C0 "Bivariant")
+*)
 
 (** {3 TypeDecl} *)
 and typedecl_field =
+  let mutability =
+    let open Lang.TypeDecl in
+    Variant
+      (function
+      | Immutable -> C0 "immutable"
+      | Mutable -> C0 "mutable"
+      | Atomically_mutable -> C0 "atomically_mutable")
+  in
+
   let open Lang.TypeDecl.Field in
   Record
     [
       F ("id", (fun t -> t.id), identifier);
       F ("doc", (fun t -> t.doc), docs);
-      F ("mutable_", (fun t -> t.mutable_), bool);
+      F ("mutability", (fun t -> t.mutability), mutability);
       F ("type_", (fun t -> t.type_), typeexpr_t);
       F ("modalities", (fun t -> t.modalities), List string);
     ]
