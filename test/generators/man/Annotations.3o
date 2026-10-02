@@ -17,3 +17,33 @@ Annotations
 \f[CB]mutable\fR readers : int [@atomic];
 .br 
 }
+.sp 
+\f[CB]exception\fR \f[CB]Atomic_exn\fR \f[CB]of\fR {
+.br 
+.ti +2
+\f[CB]mutable\fR value : int [@atomic];
+.br 
+}
+.fi 
+.br 
+.ti +2
+This exception has a record with an atomic annotation that should appear
+.nf 
+.sp 
+\f[CB]type\fR with_annot = 
+.br 
+.ti +2
+| \f[CB]Atomic_constr\fR \f[CB]of\fR {
+.br 
+.ti +6
+\f[CB]mutable\fR value : int [@atomic];
+.br 
+.ti +4
+}
+.br 
+.fi 
+.br 
+.ti +2
+The annotation should appear on anonymous records in constructors as well
+.nf 
+
