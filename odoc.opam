@@ -48,7 +48,7 @@ depends: [
   "ocaml" {>= "4.08.0" & < "5.6"}
   "tyxml" {>= "4.4.0"}
   "fmt"
-  "crunch" {>= "1.4.1"}
+  "crunch" {>= "3.3.0"}
   "ocamlfind" {>= "1.9.8" & with-test}
   "yojson" {>= "2.1.0" & with-test}
   "sexplib0" {with-test}
