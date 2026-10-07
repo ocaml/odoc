@@ -456,15 +456,25 @@ end = struct
 end
 
 module Compile_asset = struct
-  let compile_asset parent_id name output_dir =
-    Odoc_odoc.Asset.compile ~parent_id ~name ~output_dir
+  let compile_asset parent_id name output_dir output_file =
+    Odoc_odoc.Asset.compile ~parent_id ~name ~output_dir ~output_file
 
   let output_dir =
-    let doc = "Output file directory. " in
+    let doc = "Output file directory. Not needed when $(b,-o) is given." in
     Arg.(
-      required
+      value
       & opt (some string) None
       & info ~docs ~docv:"PATH" ~doc [ "output-dir" ])
+
+  let output_file =
+    let doc =
+      "Output file path, which takes precedence over the path computed from \
+       $(b,--parent-id) and $(b,--output-dir). The location of the file is \
+       then independent of the asset's identifier, which $(b,--parent-id) \
+       still sets."
+    in
+    Arg.(
+      value & opt (some string) None & info ~docs ~docv:"PATH.odoc" ~doc [ "o" ])
 
   let cmd =
     let asset_name =
@@ -483,7 +493,7 @@ module Compile_asset = struct
     in
     Term.(
       const handle_error
-      $ (const compile_asset $ parent_id $ asset_name $ output_dir))
+      $ (const compile_asset $ parent_id $ asset_name $ output_dir $ output_file))
 
   let info ~docs =
     let man =

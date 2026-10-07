@@ -43,6 +43,15 @@ computed from --parent-id and --output-dir:
   page-renamed.odoc
   unit.odoc
 
+compile-asset also takes -o:
+
+  $ odoc compile-asset --parent-id pkg --name img.png -o custom/asset-img.png.odoc
+  $ ls custom
+  asset-img.png.odoc
+  impl-unit.odoc
+  page-renamed.odoc
+  unit.odoc
+
 Either -o or --output-dir must be passed with --parent-id:
 
   $ odoc compile --parent-id pkg file.mld
