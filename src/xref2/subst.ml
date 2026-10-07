@@ -27,6 +27,7 @@ let identity =
     type_replacement = TypeMap.empty;
     path_invalidating_modules = [];
     unresolve_opaque_paths = false;
+    library_parameters = [];
   }
 
 let pp fmt s =
@@ -79,6 +80,26 @@ let path_invalidate_module id t =
 
 let add_module id p rp t =
   { t with module_ = ModuleMap.add id (`Prefixed (p, rp)) t.module_ }
+
+let add_library_parameter id p rp t =
+  { t with library_parameters = (id, (p, rp)) :: t.library_parameters }
+
+let find_library_parameter s (i : Odoc_model.Paths.Identifier.Path.Module.t) =
+  match i with
+  | `LibraryParameter _ as i ->
+      List.find_opt
+        (fun (id, _) -> Odoc_model.Paths.Identifier.LibraryParameter.equal id i)
+        s.library_parameters
+      |> Option.map snd
+  | _ -> None
+
+(** Unresolved paths only carry the name of the root module. *)
+let find_library_parameter_by_name s name =
+  List.find_opt
+    (fun (`LibraryParameter (_, name'), _) ->
+      Odoc_model.Names.ModuleName.equal name name')
+    s.library_parameters
+  |> Option.map snd
 
 let add_module_type id p rp t =
   {
@@ -226,6 +247,8 @@ let rec resolved_module_path :
       | Some (`Prefixed (_p, rp)) -> rp
       | Some `Substituted -> `Substituted p
       | None -> p)
+  | `Gpath (`Identifier i) -> (
+      match find_library_parameter s i with Some (_, rp) -> rp | None -> p)
   | `Gpath _ -> p
   | `Apply (p1, p2) ->
       `Apply (resolved_module_path s p1, resolved_module_path s p2)
@@ -278,6 +301,7 @@ and module_path : t -> Cpath.module_ -> Cpath.module_ =
   | `Dot (p', str) -> `Dot (module_path s p', str)
   | `Module (p', str) -> `Module (resolved_parent_path s p', str)
   | `Apply (p1, p2) -> `Apply (module_path s p1, module_path s p2)
+  | `ApplyParam _ -> p
   | `Local (id, b) -> (
       match
         try Some (ModuleMap.find (id :> Ident.module_) s.module_)
@@ -287,9 +311,13 @@ and module_path : t -> Cpath.module_ -> Cpath.module_ =
       | Some (`Renamed x) -> `Local (x, b)
       | Some `Substituted -> `Substituted p
       | None -> `Local (id, b))
-  | `Identifier _ -> p
+  | `Identifier (i, _) -> (
+      match find_library_parameter s i with Some (p', _) -> p' | None -> p)
   | `Substituted p -> `Substituted (module_path s p)
-  | `Root _ -> p
+  | `Root name -> (
+      match find_library_parameter_by_name s name with
+      | Some (p', _) -> p'
+      | None -> p)
 
 and resolved_module_type_path :
     t ->

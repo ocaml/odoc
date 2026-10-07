@@ -41,6 +41,8 @@ module Tools_error = struct
       `Lookup_failure of Identifier.Path.Module.t
       (* Could not find the module in the environment *)
     | `Lookup_failure_root of ModuleName.t (* Could not find the root module *)
+    | `NotALibraryParameter of ModuleName.t
+      (* The parameter of an instance [Lib[P:A]] is not a library parameter *)
     | `Parent of parent_lookup_error ]
 
   and simple_module_type_expr_of_module_error =
@@ -209,6 +211,8 @@ module Tools_error = struct
         Format.fprintf fmt "Lookup failure (value): %a" (model_identifier c)
           (m :> Odoc_model.Paths.Identifier.t)
     | `ApplyNotFunctor -> Format.fprintf fmt "Apply module is not a functor"
+    | `NotALibraryParameter name ->
+        Format.fprintf fmt "%a is not a library parameter" ModuleName.fmt name
     | `Class_replaced -> Format.fprintf fmt "Class replaced"
     | `Parent p -> pp fmt (p :> any)
     | `Parent_sig e -> Format.fprintf fmt "Parent_sig: %a" pp (e :> any)
@@ -238,6 +242,13 @@ end
 
 type kind = [ `OpaqueModule | `Root of string ]
 
+let rec kind_of_instance : Paths.Path.Instance.t -> _ = function
+  | `Root name -> Some (`Root (ModuleName.to_string name))
+  | `ApplyParam (a, _, b) -> (
+      match kind_of_instance a with
+      | Some _ as a -> a
+      | None -> kind_of_instance b)
+
 let rec kind_of_module_cpath = function
   | `Root name -> Some (`Root (ModuleName.to_string name))
   | `Substituted p' | `Dot (p', _) -> kind_of_module_cpath p'
@@ -245,6 +256,7 @@ let rec kind_of_module_cpath = function
       match kind_of_module_cpath a with
       | Some _ as a -> a
       | None -> kind_of_module_cpath b)
+  | `ApplyParam _ as i -> kind_of_instance i
   | _ -> None
 
 let rec kind_of_module_type_cpath = function
@@ -263,7 +275,7 @@ let rec kind_of_error : Tools_error.any -> kind option = function
       match kind_of_module_type_cpath cp with
       | None -> kind_of_error (e :> Tools_error.any)
       | x -> x)
-  | `Lookup_failure (`Root (_, name)) ->
+  | `Lookup_failure (`Root (_, name) | `LibraryParameter (_, name)) ->
       Some (`Root (ModuleName.to_string name))
   | `Lookup_failure_root name -> Some (`Root (ModuleName.to_string name))
   | `Parent (`Parent_sig e) -> kind_of_error (e :> Tools_error.any)
@@ -286,7 +298,8 @@ let kind_of_error ~what = function
   | None -> (
       match what with
       | `Include (Component.Include.Alias cp) -> kind_of_module_cpath cp
-      | `Module (`Root (_, name)) -> Some (`Root (ModuleName.to_string name))
+      | `Module (`Root (_, name) | `LibraryParameter (_, name)) ->
+          Some (`Root (ModuleName.to_string name))
       | _ -> None)
 
 open Paths

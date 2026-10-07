@@ -147,7 +147,7 @@ let rec categorize id =
   let open Odoc_model.Paths in
   match id with
   | `Root _ | `Page _ | `LeafPage _ -> `definition
-  | `ModuleType _ -> `declaration
+  | `ModuleType _ | `LibraryParameter _ -> `declaration
   | `Parameter _ -> `ignore (* redundant with indexed signature *)
   | ( `InstanceVariable _ | `Method _ | `Field _ | `Result _ | `Label _ | `Type _
     | `Exception _ | `Class _ | `ClassType _ | `Value _ | `Constructor _ | `Extension _

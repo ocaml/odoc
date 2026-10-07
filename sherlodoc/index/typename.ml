@@ -10,7 +10,8 @@ let rec show_ident_long h (r : Identifier.t) =
 
 and show_signature h sig_ =
   match sig_ with
-  | `Root (_, name) -> Format.fprintf h "%s" (ModuleName.to_string name)
+  | `Root (_, name) | `LibraryParameter (_, name) ->
+      Format.fprintf h "%s" (ModuleName.to_string name)
   | `Module (pt, mdl) ->
       Format.fprintf h "%a.%s" show_signature pt (ModuleName.to_string mdl)
   | `Parameter (_, p) -> Format.fprintf h "%s" (ModuleName.to_string p)

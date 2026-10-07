@@ -3,6 +3,7 @@ open Odoc_model.Paths
 module Path : sig
   type kind =
     [ `Module
+    | `LibraryParameter
     | `Page
     | `LeafPage
     | `ModuleType

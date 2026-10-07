@@ -14,6 +14,15 @@ val path_invalidate_module : Ident.module_ -> t -> t
 val add_module :
   Ident.module_ -> Cpath.module_ -> Cpath.Resolved.module_ -> t -> t
 
+val add_library_parameter :
+  Odoc_model.Paths.Identifier.LibraryParameter.t ->
+  Cpath.module_ ->
+  Cpath.Resolved.module_ ->
+  t ->
+  t
+(** Substitute a library parameter by a path, when instantiating a parameterised
+    library. *)
+
 val add_module_type :
   Ident.module_type -> Cpath.module_type -> Cpath.Resolved.module_type -> t -> t
 

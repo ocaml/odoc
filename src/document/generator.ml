@@ -95,11 +95,109 @@ module Make (Syntax : SYNTAX) = struct
   module Link : sig
     val from_path : Paths.Path.t -> text
 
+    val href_of_path : Paths.Path.t -> Url.t option
+
     val from_fragment : Paths.Fragment.leaf -> text
 
     val render_fragment_any : Paths.Fragment.t -> string
   end = struct
     open Paths
+
+    let href_of_resolved rp =
+      (* If the path is pointing to an opaque module or module type
+         there won't be a page generated - so we stop before; at
+         the parent page, and link instead to the anchor representing
+         the declaration of the opaque module(_type) *)
+      let stop_before =
+        match rp with
+        | `OpaqueModule _ | `OpaqueModuleType _ -> true
+        | _ -> false
+      in
+      match Paths.Path.Resolved.identifier rp with
+      | Some id -> Some (Url.from_identifier ~stop_before id)
+      | None -> None
+
+    let rec href_of_path : Path.t -> Url.t option =
+     fun path ->
+      match path with
+      | `Substituted m -> href_of_path (m :> Path.t)
+      | `SubstitutedMT m -> href_of_path (m :> Path.t)
+      | `SubstitutedT m -> href_of_path (m :> Path.t)
+      | `SubstitutedCT m -> href_of_path (m :> Path.t)
+      | `Resolved _ when Paths.Path.is_hidden path -> None
+      | `Resolved rp -> href_of_resolved rp
+      | _ -> None
+
+    let link_of_resolved rp txt =
+      let path = (`Resolved rp : Path.t) in
+      if Paths.Path.is_hidden path then unresolved txt
+      else
+        match href_of_resolved rp with
+        | Some href -> resolved href txt
+        | None -> O.elt txt
+
+    let link_of_identifier id =
+      let txt = [ inline @@ Text (Identifier.name id) ] in
+      resolved (Url.from_identifier ~stop_before:false id) txt
+
+    let rec instance : Path.Resolved.Instance.t -> text = function
+      | `Identifier id -> link_of_identifier (id :> Identifier.t)
+      | `ApplyParam (i, p, a) ->
+          instance i ++ O.txt "["
+          ++ link_of_identifier (p :> Identifier.t)
+          ++ O.txt ":" ++ instance a ++ O.txt "]"
+
+    let rec segmented_instance : Path.Resolved.t -> text option =
+     fun rp ->
+      let member parent name =
+        match segmented_instance (parent :> Path.Resolved.t) with
+        | None -> None
+        | Some prefix ->
+            Some
+              (prefix ++ O.txt "."
+              ++ link_of_resolved rp [ inline @@ Text name ])
+      in
+      match rp with
+      | `ApplyParam _ as i -> Some (instance i)
+      | `Module (parent, name) -> member parent (ModuleName.to_string name)
+      | `ModuleType (parent, name) ->
+          member parent (ModuleTypeName.to_string name)
+      | `Type (parent, name) -> member parent (TypeName.to_string name)
+      | `Value (parent, name) -> member parent (ValueName.to_string name)
+      | `Class (parent, name) | `ClassType (parent, name) ->
+          member parent (TypeName.to_string name)
+      | `Alias (dest, `Resolved src) ->
+          if Paths.Path.Resolved.(is_hidden (src :> t)) then
+            segmented_instance (dest :> Path.Resolved.t)
+          else segmented_instance (src :> Path.Resolved.t)
+      | `Alias (dest, src) ->
+          if Paths.Path.is_hidden (src :> Path.t) then
+            segmented_instance (dest :> Path.Resolved.t)
+          else None
+      | `AliasModuleType (p1, p2) ->
+          if Paths.Path.Resolved.(is_hidden (p2 :> t)) then
+            segmented_instance (p1 :> Path.Resolved.t)
+          else segmented_instance (p2 :> Path.Resolved.t)
+      | `Canonical (_, `Resolved p) -> segmented_instance (p :> Path.Resolved.t)
+      | `CanonicalModuleType (_, `Resolved p) ->
+          segmented_instance (p :> Path.Resolved.t)
+      | `CanonicalType (_, `Resolved p) ->
+          segmented_instance (p :> Path.Resolved.t)
+      | `Canonical (p, _)
+      | `Hidden p
+      | `Substituted p
+      | `OpaqueModule p
+      | `Subst (_, p) ->
+          segmented_instance (p :> Path.Resolved.t)
+      | `CanonicalModuleType (p, _)
+      | `SubstitutedMT p
+      | `OpaqueModuleType p
+      | `SubstT (_, p) ->
+          segmented_instance (p :> Path.Resolved.t)
+      | `CanonicalType (p, _) | `SubstitutedT p ->
+          segmented_instance (p :> Path.Resolved.t)
+      | `SubstitutedCT p -> segmented_instance (p :> Path.Resolved.t)
+      | _ -> None
 
     let rec from_path : Path.t -> text =
      fun path ->
@@ -128,25 +226,22 @@ module Make (Syntax : SYNTAX) = struct
           let link1 = from_path (p1 :> Path.t) in
           let link2 = from_path (p2 :> Path.t) in
           link1 ++ O.txt "(" ++ link2 ++ O.txt ")"
+      | `ApplyParam (p1, p2, p3) ->
+          let link1 = from_path (p1 :> Path.t) in
+          let link2 = unresolved [ inline @@ Text (ModuleName.to_string p2) ] in
+          let link3 = from_path (p3 :> Path.t) in
+          link1 ++ O.txt "[" ++ link2 ++ O.txt ":" ++ link3 ++ O.txt "]"
       | `Resolved _ when Paths.Path.is_hidden path ->
           let txt = Url.render_path path in
           unresolved [ inline @@ Text txt ]
       | `Resolved rp -> (
-          (* If the path is pointing to an opaque module or module type
-             there won't be a page generated - so we stop before; at
-             the parent page, and link instead to the anchor representing
-             the declaration of the opaque module(_type) *)
-          let stop_before =
-            match rp with
-            | `OpaqueModule _ | `OpaqueModuleType _ -> true
-            | _ -> false
-          in
-          let txt = [ inline @@ Text (Url.render_path path) ] in
-          match Paths.Path.Resolved.identifier rp with
-          | Some id ->
-              let href = Url.from_identifier ~stop_before id in
-              resolved href txt
-          | None -> O.elt txt)
+          match segmented_instance rp with
+          | Some text -> text
+          | None -> (
+              let txt = [ inline @@ Text (Url.render_path path) ] in
+              match href_of_resolved rp with
+              | Some href -> resolved href txt
+              | None -> O.elt txt))
 
     let dot prefix suffix = prefix ^ "." ^ suffix
 
@@ -1987,6 +2082,63 @@ module Make (Syntax : SYNTAX) = struct
       in
       List.map f t
 
+    let parameterisation_items
+        (p : Odoc_model.Lang.Compilation_unit.Parameterisation.t) =
+      let text s : Inline.t = [ inline (Inline.Text s) ] in
+      let link (path : Paths.Path.Module.t) : Inline.t =
+        let path = (path :> Paths.Path.t) in
+        let content = O.code (O.txt (Url.render_path path)) in
+        match Link.href_of_path path with
+        | Some href ->
+            [
+              inline
+                (Inline.Link
+                   {
+                     target = Internal (Resolved href);
+                     content;
+                     tooltip = None;
+                   });
+            ]
+        | None -> content
+      in
+      let para parts =
+        Item.Text [ block (Block.Paragraph (List.concat parts)) ]
+      in
+      let implements =
+        match p.argument_for with
+        | None -> []
+        | Some path ->
+            [
+              para
+                [
+                  text "Implements the library parameter "; link path; text ".";
+                ];
+            ]
+      in
+      let parameters =
+        match p.parameters with
+        | [] -> []
+        | parameters ->
+            let decl_of_parameter (path : Paths.Path.Module.t) =
+              let path = (path :> Paths.Path.t) in
+              let content =
+                O.documentedSrc (O.keyword "parameter " ++ Link.from_path path)
+              in
+              Item.Declaration
+                {
+                  content;
+                  anchor = None;
+                  attr = [ "parameter" ];
+                  doc = [];
+                  source_anchor = None;
+                }
+            in
+            mk_heading ~label:"library-parameters" "Library parameters"
+            :: List.map decl_of_parameter parameters
+            @ [ mk_heading ~label:"signature" "Signature" ]
+      in
+      implements @ parameters
+
     let compilation_unit (t : Odoc_model.Lang.Compilation_unit.t) =
       let url = Url.Path.from_identifier t.id in
       let unit_doc, items =
@@ -1994,6 +2146,7 @@ module Make (Syntax : SYNTAX) = struct
         | Module sign -> signature sign
         | Pack packed -> ([], pack packed)
       in
+      let items = parameterisation_items t.parameterisation @ items in
       let source_anchor = source_anchor t.source_loc in
       let page = make_expansion_page ~source_anchor url [ unit_doc ] items in
       Document.Page page

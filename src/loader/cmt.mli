@@ -17,8 +17,7 @@
 val cmt_builddir : string ref
 
 val read_implementation :
-  Odoc_model.Paths.Identifier.ContainerPage.t option ->
-  string ->
+  Odoc_model.Paths.Identifier.RootModule.t ->
   warnings_tag:string option ->
   Typedtree.structure ->
   Odoc_model.Paths.Identifier.RootModule.t

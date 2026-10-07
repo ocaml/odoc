@@ -48,6 +48,9 @@ let rec shape_of_id env :
     | `Class (parent, name) -> proj parent Kind.Class (TypeName.to_string_unsafe name)
     | `ClassType (parent, name) ->
         proj parent Kind.Class_type (TypeName.to_string_unsafe name)
+    | `LibraryParameter _ ->
+        (* A library parameter has no implementation, hence no shape. *)
+        None
     | `Page _ | `LeafPage _ | `Label _
     | `Constructor _ | `Field _ | `UnboxedField _ | `Method _ | `InstanceVariable _ | `Parameter _
       ->
@@ -80,6 +83,7 @@ let rec shape_of_module_path env : _ -> Shape.t option =
         >>= fun parent ->
         shape_of_module_path env (arg :> Odoc_model.Paths.Path.Module.t)
         >>= fun arg -> Some (Shape.app parent ~arg)
+    | `ApplyParam _ -> None
     | `Identifier (id, _) ->
         shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
     | `Substituted m ->
@@ -107,7 +111,8 @@ let rec shape_of_kind_path env kind :
     | `Unbox t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
     | `Dot _
     | `Root _
-    | `Apply _ -> None
+    | `Apply _
+    | `ApplyParam _ -> None
     
 module MkId = Identifier.Mk
 

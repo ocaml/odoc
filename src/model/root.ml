@@ -88,11 +88,12 @@ let to_string t =
               (p :> Paths.Identifier.OdocId.t)
               Names.PageName.fmt name
         | None -> Format.fprintf fmt "%a" Names.PageName.fmt name)
-    | `Root (Some parent, name) ->
+    | `Root (Some parent, name) | `LibraryParameter (Some parent, name) ->
         Format.fprintf fmt "%a::%a" pp
           (parent :> Paths.Identifier.OdocId.t)
           Names.ModuleName.fmt name
-    | `Root (None, name) -> Format.fprintf fmt "%a" Names.ModuleName.fmt name
+    | `Root (None, name) | `LibraryParameter (None, name) ->
+        Format.fprintf fmt "%a" Names.ModuleName.fmt name
     | `Implementation name ->
         Format.fprintf fmt "impl(%a)" Names.ModuleName.fmt name
     | `AssetFile (parent, name) ->

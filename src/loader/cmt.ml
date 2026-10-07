@@ -502,7 +502,7 @@ and read_module_binding env parent mb =
   let canonical = match canonical with | None -> None | Some s -> Some (Doc_attr.conv_canonical_module s) in
   let hidden =
     match canonical, mid with
-    | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
+    | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n) | `LibraryParameter (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | Some _, _ -> false
   in
   Some {id; source_loc; doc; type_; canonical; hidden; }
@@ -670,14 +670,11 @@ and read_structure :
   | _ ->
     ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; removed = []; doc }, tags)
 
-let read_implementation root name ~warnings_tag impl =
-  let id =
-    Identifier.Mk.root (root, Odoc_model.Names.ModuleName.make_std name)
-  in
+let read_implementation (id : Identifier.RootModule.t) ~warnings_tag impl =
   let sg, canonical =
     read_structure Odoc_model.Semantics.Expect_canonical
       { ident_env = Env.empty (); warnings_tag }
-      id impl
+      (id :> Identifier.Signature.t) impl
   in
   let canonical =
     match canonical with
