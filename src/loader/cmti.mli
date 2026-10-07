@@ -84,3 +84,11 @@ val wrapper_module :
     the items that precede the include, so that whatever the functor's expansion
     inherits from its argument resolves back to them rather than to the (hidden)
     name of the wrapper. *)
+
+#if defined OXCAML
+val read_kind_abbreviation :
+  Cmi.env ->
+  Paths.Identifier.Signature.t ->
+  Typedtree.jkind_declaration ->
+  Odoc_model.Lang.KindAbbreviation.t
+#endif

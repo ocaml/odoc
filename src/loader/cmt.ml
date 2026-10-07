@@ -166,7 +166,7 @@ let read_type_extension env parent tyext =
   in
   let type_params =
     List.map
-      (Cmi.read_type_parameter false Types.Variance.null)
+      (Cmi.read_type_parameter env.ident_env false Types.Variance.null)
       type_params
   in
   let private_ = (tyext.tyext_private = Private) in
@@ -378,7 +378,7 @@ let read_class_declaration env parent cld =
     in
     let params =
       List.map
-        (Cmi.read_type_parameter false Types.Variance.null)
+        (Cmi.read_type_parameter env.ident_env false Types.Variance.null)
         clparams
     in
     let type_ = read_class_expr env (id :> Identifier.ClassSignature.t) clparams cld.ci_expr in
@@ -566,7 +566,8 @@ and read_structure_item env parent item =
         let cltyps = List.map (fun (_, _, clty) -> clty) cltyps in
           Cmti.read_class_type_declarations env parent cltyps
 #if defined OXCAML
-    | Tstr_jkind _ -> []
+    | Tstr_jkind jkd ->
+        [ KindAbbreviation (Cmti.read_kind_abbreviation env parent jkd) ]
 #endif
     | Tstr_attribute attr ->
       let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -634,7 +635,7 @@ and read_open env parent o =
 
 and read_items env parent items =
   List.fold_left
-    (fun acc item ->
+    (fun (acc, env) item ->
       match item.str_desc with
 #if defined OXCAML
       | Tstr_include ({ incl_kind = (Tincl_functor _ | Tincl_gen_functor _); _ } as incl) ->
@@ -642,11 +643,14 @@ and read_items env parent items =
         let wrapper = Cmti.generate_wrapper_module parent ~prefix:"BODY" ~hidden in
         let wrapper_module = Cmti.wrapper_module wrapper ~hidden (List.rev acc) in
         let items = read_include_functor env parent (snd wrapper) incl in
-        List.rev_append items (wrapper_module :: acc)
+        ( List.rev_append items (wrapper_module :: acc),
+          Cmi.scope_kind_abbreviations env items )
 #endif
-      | _ -> List.rev_append (read_structure_item env parent item) acc)
-    [] items
-  |> List.rev
+      | _ ->
+        let items = read_structure_item env parent item in
+        (List.rev_append items acc, Cmi.scope_kind_abbreviations env items))
+    ([], env) items
+  |> fst |> List.rev
 
 and read_structure :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->

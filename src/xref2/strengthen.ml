@@ -69,7 +69,7 @@ and sig_items prefix ?canonical sg =
             (Include i' :: items, strengthened @ s)
         | Exception _ | TypExt _ | Value _ | Class _ | ClassType _
         | ModuleSubstitution _ | TypeSubstitution _ | ModuleTypeSubstitution _
-        | Comment _ | Open _ ->
+        | KindAbbreviation _ | Comment _ | Open _ ->
             (item :: items, s))
       ([], []) sg.items
   in
@@ -96,7 +96,7 @@ and type_decl : Cpath.type_ -> TypeDecl.t -> TypeDecl.t =
     let open TypeDecl.Equation in
     let constr_params =
       List.map
-        (fun { Odoc_model.Lang.TypeDecl.desc; _ } ->
+        (fun { TypeDecl.desc; _ } ->
           match desc with
           | Odoc_model.Lang.TypeDecl.Var x -> TypeExpr.Var x
           | Any -> Any)

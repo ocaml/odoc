@@ -1,0 +1,23 @@
+
+.TH Include_functor_kind 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_impl\.Include_functor_kind
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml_impl\.Include_functor_kind\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR Make (T : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+A kind abbreviation reaching the functor through its argument\. T\.k is rendered as plain text: it is a reference through the parameter, which the wrapper the functor is applied to does not bind\.
+.nf 
+.sp 
+\f[CB]kind_\fR k = value \f[CB]mod\fR portable
+.sp 
+\f[CB]type\fR inherited : T\.k

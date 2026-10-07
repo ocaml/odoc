@@ -41,6 +41,7 @@ let add ?(quantity = 1) tbl id =
     | `UnboxedField (parent, _) -> do_ parent
     | `Extension (parent, _) -> do_ parent
     | `Type (parent, _) -> do_ parent
+    | `KindAbbreviation (parent, _) -> do_ parent
     | `Constructor (parent, _) -> do_ parent
     | `Exception (parent, _) -> do_ parent
     | `ExtensionDecl (parent, _, _) -> do_ parent
@@ -73,6 +74,7 @@ let rec get t id =
   | `Extension (parent, _) -> do_ parent
   | `ExtensionDecl (parent, _, _) -> do_ parent
   | `Type (parent, _) -> do_ parent
+  | `KindAbbreviation (parent, _) -> do_ parent
   | `Constructor (parent, _) -> do_ parent
   | `Exception (parent, _) -> do_ parent
   | `Class (parent, _) -> do_ parent
@@ -154,6 +156,8 @@ module Strip = struct
     | `ExtensionDecl (p, name, args) ->
         Mk.extension_decl (strip_sig_path p, (name, args))
     | `Constructor (p, name) -> Mk.constructor (strip_datatype_path p, name)
+    | `KindAbbreviation (p, name) ->
+        Mk.kind_abbreviation (strip_sig_path p, name)
     | `AssetFile (_, _)
     | `SourceLocationMod _ | `SourceLocation _ | `Page _ | `LeafPage _
     | `SourcePage _ | `SourceLocationInternal _ ->

@@ -46,7 +46,7 @@ val mark_type_extension : Types.type_expr list ->
                           Types.extension_constructor list ->
                           Types.type_expr list
 
-val read_type_parameter : bool -> Types.Variance.t ->
+val read_type_parameter : Ident_env.t -> bool -> Types.Variance.t ->
                           Types.type_expr -> Odoc_model.Lang.TypeDecl.param
 
 val mark_class_declaration : Types.class_declaration -> unit
@@ -85,6 +85,7 @@ val read_signature : env ->
                      Paths.Identifier.Signature.t ->
                      Odoc_model.Compat.signature -> Odoc_model.Lang.Signature.t
 
+val scope_kind_abbreviations : env -> Odoc_model.Lang.Signature.item list -> env
 
 val read_extension_constructor : env ->
                        Paths.Identifier.Signature.t ->
@@ -97,8 +98,12 @@ val read_exception : env ->
 
 #if defined OXCAML
 val read_jkind_annotation :
+  Ident_env.t ->
   Parsetree.jkind_annotation option ->
   Odoc_model.Lang.Kind.t
+
+val read_jkind :
+  Ident_env.t -> Parsetree.jkind_annotation -> Odoc_model.Lang.Kind.t
 
 val read_modalities :
   Types.mutability ->

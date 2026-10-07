@@ -6,7 +6,15 @@
    (../odoc_print/odoc_print.exe as odoc_print))))
 
 (cram
+ (applies_to
+  (:standard \ oxcaml_kind))
  (package odoc)
  (enabled_if
   (>= %{ocaml_version} 4.14.0))
+ (deps %{bin:odoc} %{bin:odoc_print}))
+
+(cram
+ (applies_to oxcaml_kind)
+ (package odoc)
+ (enabled_if %{ocaml-config:ox})
  (deps %{bin:odoc} %{bin:odoc_print}))
