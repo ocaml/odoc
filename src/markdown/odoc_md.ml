@@ -40,7 +40,7 @@ let mk_page input_s id elements =
     frontmatter;
   }
 
-let run input_s parent_id_opt odoc_dir =
+let run input_s parent_id_opt odoc_dir output_file =
   (* Construct the id of this page *)
   let page_name = Filename.basename input_s |> Filename.chop_extension in
   let parent_id =
@@ -58,11 +58,24 @@ let run input_s parent_id_opt odoc_dir =
 
   let output =
     let fname = "page-" ^ page_name ^ ".odoc" in
-    match parent_id_opt with
-    | None -> Fpath.(v odoc_dir / fname)
-    | Some parent_id_str -> Fpath.(v odoc_dir // v parent_id_str / fname)
+    match (output_file, odoc_dir) with
+    | Some f, _ -> Ok (Fpath.v f)
+    | None, Some odoc_dir -> (
+        match parent_id_opt with
+        | None -> Ok Fpath.(v odoc_dir / fname)
+        | Some parent_id_str -> Ok Fpath.(v odoc_dir // v parent_id_str / fname)
+        )
+    | None, None -> Error (`Msg "Either -o or --output-dir must be given.")
   in
-  Odoc_odoc.Odoc_file.save_page output ~warnings page
+  match output with
+  | Error (`Msg m) ->
+      Printf.eprintf "%s\n%!" m;
+      exit 1
+  | Ok output ->
+      Odoc_odoc.Fs.Directory.mkdir_p
+        (Odoc_odoc.Fs.Directory.of_string
+           (Fpath.to_string (Fpath.parent output)));
+      Odoc_odoc.Odoc_file.save_page output ~warnings page
 
 open Cmdliner
 
@@ -81,14 +94,21 @@ let parent_id =
 let output_dir =
   let doc =
     "Output file directory. The output file will be put in the parent-id path \
-     below this."
+     below this. Not needed when $(b,-o) is given."
   in
-  Arg.(
-    required & opt (some string) None & info ~docv:"PATH" ~doc [ "output-dir" ])
+  Arg.(value & opt (some string) None & info ~docv:"PATH" ~doc [ "output-dir" ])
+
+let output_file =
+  let doc =
+    "Output file path, which takes precedence over the path computed from \
+     $(b,--parent-id) and $(b,--output-dir). The location of the file is then \
+     independent of the page's identifier, which $(b,--parent-id) still sets."
+  in
+  Arg.(value & opt (some string) None & info ~docv:"PATH.odoc" ~doc [ "o" ])
 
 let cmd =
   let doc = "Compile a markdown file to an odoc page-*.odoc file." in
   let info = Cmd.info "odoc-md" ~doc in
-  Cmd.v info Term.(const run $ input $ parent_id $ output_dir)
+  Cmd.v info Term.(const run $ input $ parent_id $ output_dir $ output_file)
 
 let () = Cmdliner.(exit @@ Cmd.eval cmd)

@@ -1,0 +1,12 @@
+(env
+ (_
+  (binaries
+   (../odoc_print/odoc_print.exe as odoc_print))))
+
+; odoc-md needs cmarkit, which needs OCaml 4.14.
+
+(cram
+ (package odoc-md)
+ (deps %{bin:odoc-md} %{bin:odoc_print})
+ (enabled_if
+  (>= %{ocaml_version} 4.14.0)))

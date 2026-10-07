@@ -58,6 +58,12 @@ jobs:
           opam install --deps-only --with-test ./odoc.opam ./odoc-parser.opam \
             ${{ matrix.test-sherlodoc && './sherlodoc.opam' }}
 
+      # odoc-md needs cmarkit, which is not a dep of odoc.opam or
+      # odoc-parser.opam, and which requires OCaml >= 4.14.
+      - name: Install cmarkit
+        if: matrix.ocaml-compiler != '4.11' && matrix.ocaml-compiler != '4.12'
+        run: opam install cmarkit
+
       - name: dune runtest
         if: matrix.test-sherlodoc == true
         # Run all tests
@@ -65,8 +71,9 @@ jobs:
 
       - name: dune runtest
         if: matrix.test-sherlodoc != true
-        # Run the tests for odoc and odoc-parser only
-        run: opam exec -- dune runtest -p odoc,odoc-parser
+        # Run the tests for odoc and odoc-parser only. odoc-md is included
+        # because some odoc tests (test/parent_id) invoke its binary.
+        run: opam exec -- dune runtest -p odoc,odoc-parser,odoc-md
 
       - name: Send coverage stats to Coveralls
         if: matrix.send-coverage == true
