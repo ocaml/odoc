@@ -1633,6 +1633,10 @@ let delimited_tag () =
     let not_at_start_of_line = test "foo @deprecated{bar}"
 
     let since_unchanged = test "@since{1.0}"
+
+    let reference_after_brace = test "@return{!foo} bar"
+
+    let bold_after_brace = test "@deprecated{b foo}"
   end in
   ()
 

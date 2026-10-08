@@ -232,6 +232,8 @@ let language_tag_char =
 let delim_char =
   ['a'-'z' 'A'-'Z' '0'-'9' '_' ]
 
+let delimited_tag_argument_char = _ # space_char # '}'
+
 let tag_unquoted_char = (_ # '=' # '"' # space_char # '[')
 let tag_unquoted_atom = tag_unquoted_char+
 
@@ -516,6 +518,43 @@ and token input = parse
 
   | "@hidden"
     { emit input (`Tag `Hidden) }
+
+  | "@deprecated{"
+    { emit input (`Begin_tag `Deprecated) }
+
+  | "@param{" horizontal_space* (delimited_tag_argument_char+ as name)
+    { emit input (`Begin_tag (`Param name)) }
+
+  | ("@raise" | "@raises") '{' horizontal_space*
+    (delimited_tag_argument_char+ as name)
+    { emit input (`Begin_tag (`Raise name)) }
+
+  | ("@return" | "@returns") '{'
+    { emit input (`Begin_tag `Return) }
+
+  | "@children_order{"
+    { emit input (`Begin_tag `Children_order) }
+
+  | "@toc_status{"
+    { emit input (`Begin_tag `Toc_status) }
+
+  | "@order_category{"
+    { emit input (`Begin_tag `Order_category) }
+
+  | "@short_title{"
+    { emit input (`Begin_tag `Short_title) }
+
+  | "@see{" horizontal_space* '<' ([^ '>']* as url) '>'
+    { emit input (`Begin_tag (`See (`Url, url))) }
+
+  | "@see{" horizontal_space* '\'' ([^ '\'']* as filename) '\''
+    { emit input (`Begin_tag (`See (`File, filename))) }
+
+  | "@see{" horizontal_space* '"' ([^ '"']* as name) '"'
+    { emit input (`Begin_tag (`See (`Document, name))) }
+
+  | "@before{" horizontal_space* (delimited_tag_argument_char+ as version)
+    { emit input (`Begin_tag (`Before version)) }
 
   | "]}"
     { emit input `Right_code_delimiter}

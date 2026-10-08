@@ -6,26 +6,44 @@ type section_heading = [ `Begin_section_heading of int * string option ]
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 type paragraph_style = [ `Left | `Center | `Right ]
 
-type tag =
-  [ `Tag of
-    [ `Author of string
-    | `Deprecated
-    | `Param of string
-    | `Raise of string
-    | `Return
-    | `See of [ `Url | `File | `Document ] * string
-    | `Since of string
-    | `Before of string
-    | `Version of string
-    | `Canonical of string
-    | `Children_order
-    | `Toc_status
-    | `Order_category
-    | `Short_title
-    | `Inline
-    | `Open
-    | `Closed
-    | `Hidden ] ]
+(* Tags whose content is a list of blocks. These can be delimited, as in
+   [@deprecated{...}], to span several blocks. *)
+type block_tag =
+  [ `Deprecated
+  | `Param of string
+  | `Raise of string
+  | `Return
+  | `See of [ `Url | `File | `Document ] * string
+  | `Before of string
+  | `Children_order
+  | `Toc_status
+  | `Order_category
+  | `Short_title ]
+
+type tag_kind =
+  [ block_tag
+  | `Author of string
+  | `Since of string
+  | `Version of string
+  | `Canonical of string
+  | `Inline
+  | `Open
+  | `Closed
+  | `Hidden ]
+
+type tag = [ `Tag of tag_kind | `Begin_tag of block_tag ]
+
+let block_tag_name : block_tag -> string = function
+  | `Deprecated -> "deprecated"
+  | `Param _ -> "param"
+  | `Raise _ -> "raise"
+  | `Return -> "return"
+  | `See _ -> "see"
+  | `Before _ -> "before"
+  | `Children_order -> "children_order"
+  | `Toc_status -> "toc_status"
+  | `Order_category -> "order_category"
+  | `Short_title -> "short_title"
 
 type media = [ `Audio | `Video | `Image ]
 type media_href = [ `Reference of string | `Link of string ]
@@ -151,6 +169,7 @@ let print : [< t ] -> string = function
   | `Tag `Open -> "'@open'"
   | `Tag `Closed -> "'@closed'"
   | `Tag `Hidden -> "'@hidden"
+  | `Begin_tag t -> Printf.sprintf "'@%s{'" (block_tag_name t)
   | `Raw_markup (None, _) -> "'{%...%}'"
   | `Raw_markup (Some target, _) -> "'{%" ^ target ^ ":...%}'"
   | `Simple_media (`Reference _, `Image) -> "{image!...}"
@@ -250,6 +269,7 @@ let describe : [< t | `Comment ] -> string = function
   | `Tag `Toc_status -> "'@toc_status"
   | `Tag `Order_category -> "'@order_category"
   | `Tag `Short_title -> "'@short_title"
+  | `Begin_tag t -> Printf.sprintf "'@%s{...}'" (block_tag_name t)
   | `Comment -> "top-level text"
 
 let describe_element = function
