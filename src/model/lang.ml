@@ -193,7 +193,15 @@ and Include : sig
     s_class_types : (string * Names.TypeName.t) list;
   }
 
-  type expansion = { shadowed : shadowed; content : Signature.t }
+  type expansion = {
+    shadowed : shadowed;
+    content : Signature.t;
+    authoritative : bool;
+        (** Set by [Compile]: from then on the expansion is used as is and never
+            re-derived from [decl], which may have been stripped. If
+            re-derivation failed, the loader's expansion is kept and still
+            marked authoritative. *)
+  }
 
   type functor_ref = Path of Path.Module.t | ModuleType of ModuleType.expr
 
@@ -213,7 +221,6 @@ and Include : sig
     status : [ `Inline | `Closed | `Open | `Default ];
     decl : decl;
     expansion : expansion;
-    expanded : bool;
   }
 end =
   Include
