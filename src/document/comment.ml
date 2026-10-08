@@ -237,9 +237,9 @@ let rec nestable_block_element :
  fun content ->
   match content with
   | `Paragraph p -> [ paragraph p ]
-  | `Code_block (lang_tag, code, outputs) ->
+  | `Code_block { meta; content = code; output = outputs } ->
       let lang_tag =
-        match lang_tag with None -> default_lang_tag | Some t -> t
+        match meta with None -> default_lang_tag | Some m -> m.language
       in
       let rest =
         match outputs with
