@@ -450,26 +450,35 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
         in
         { i.expansion with content = expansion_sg }
   in
-  let expansion = if i.expanded then i.expansion else get_expansion () in
+  let expansion =
+    if i.expansion.authoritative then i.expansion else get_expansion ()
+  in
   let items, env' = signature_items env i.parent expansion.content.items in
   let expansion =
     {
       expansion with
       content = { expansion.content with items; compiled = true };
+      authoritative = true;
     }
   in
   let decl = include_decl env i.parent i.decl in
-  (* expanded=true: the expansion is authoritative and is not re-derived
-     from the decl in dependent modules, so an inline Signature decl is
-     redundant; strip it. *)
+  (* The expansion is now authoritative and is not re-derived from the decl
+     in dependent modules, so an inline Signature decl is redundant; strip it
+     to save space on Marshal. *)
   let decl =
     match decl with
     | Include.ModuleType (Signature _) ->
         Include.ModuleType
-          (Signature { items = []; compiled = true; removed = []; doc = i.doc })
+          (Signature
+             {
+               items = [];
+               compiled = true;
+               removed = [];
+               doc = { elements = []; warnings_tag = None };
+             })
     | _ -> decl
   in
-  ({ i with decl; expansion; expanded = true }, env')
+  ({ i with decl; expansion }, env')
 
 and simple_expansion :
     Env.t ->
