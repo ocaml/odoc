@@ -300,6 +300,15 @@
  (action
   (progn
    (with-stdout-to
+    delimited_tag.actual
+    (run %{exe:odoc_parser_test_main.exe} delimited_tag))
+   (diff expected/delimited_tag.expected delimited_tag.actual))))
+
+(rule
+ (alias runtest)
+ (action
+  (progn
+   (with-stdout-to
     bad_markup.actual
     (run %{exe:odoc_parser_test_main.exe} bad_markup))
    (diff expected/bad_markup.expected bad_markup.actual))))

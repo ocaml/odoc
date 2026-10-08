@@ -1576,6 +1576,66 @@ let hidden () =
   end in
   ()
 
+let delimited_tag () =
+  let module Delimited_tag = struct
+    let basic = test "@deprecated{foo}"
+
+    let paragraphs = test "@deprecated{foo\n\nbar}"
+
+    let followed_by_paragraph = test "@deprecated{foo\n\nbar}\n\nbaz"
+
+    let followed_by_tag = test "@deprecated{foo\n\nbar}\n@return baz"
+
+    let followed_by_text = test "@deprecated{foo} bar"
+
+    let empty = test "@deprecated{}"
+
+    let unterminated = test "@deprecated{foo\n\nbar"
+
+    let space_before_brace = test "@deprecated {foo}"
+
+    let return = test "@return{foo\n\nbar}"
+
+    let returns = test "@returns{foo\n\nbar}"
+
+    let param = test "@param{foo bar\n\nbaz}"
+
+    let param_no_content = test "@param{foo}"
+
+    let param_brace_after_name = test "@param foo{bar}"
+
+    let raise = test "@raise{Foo bar\n\nbaz}"
+
+    let raises = test "@raises{Foo bar\n\nbaz}"
+
+    let see_url = test "@see{<foo> bar\n\nbaz}"
+
+    let see_file = test "@see{'foo' bar\n\nbaz}"
+
+    let see_document = test "@see{\"foo\" bar\n\nbaz}"
+
+    let before = test "@before{1.0 foo\n\nbar}"
+
+    let children_order = test "@children_order{foo\n\nbar}"
+
+    let short_title = test "@short_title{foo}"
+
+    let with_code_block = test "@deprecated{foo\n\n{[bar]}}"
+
+    let with_shorthand_list = test "@deprecated{- foo\n- bar\n\nbaz}"
+
+    let with_explicit_list = test "@deprecated{{ul {li foo}}\n\nbar}"
+
+    let with_nested_tag = test "@deprecated{foo\n@return bar}"
+
+    let in_explicit_list = test "{ul {li @deprecated{foo}}}"
+
+    let not_at_start_of_line = test "foo @deprecated{bar}"
+
+    let since_unchanged = test "@since{1.0}"
+  end in
+  ()
+
 let bad_markup () =
   let module Bad_markup = struct
     let left_brace = test "{"
