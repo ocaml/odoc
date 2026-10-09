@@ -72,6 +72,7 @@ let constraints =
     ("oxcaml_impl.ml", OxCaml);
     ("annotations.mli", Or (Min "5.5", OxCaml));
     ("annotations_impl.ml", Or (Min "5.5", OxCaml));
+    ("annotations_unsupported.mli", MaxNotOxCaml "5.4");
   ]
 
 let test_cases_dir = Fpath.v "cases"

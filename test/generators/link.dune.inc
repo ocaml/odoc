@@ -107,6 +107,42 @@
    %{ocaml-config:ox})))
 
 (rule
+ (target annotations_unsupported.cmti)
+ (package odoc)
+ (action
+  (run
+   ocamlc
+   -c
+   -bin-annot
+   -o
+   %{target}
+   %{dep:cases/annotations_unsupported.mli}))
+ (enabled_if
+  (and
+   (<= %{ocaml_version} 5.4)
+   (not %{ocaml-config:ox}))))
+
+(rule
+ (target annotations_unsupported.odoc)
+ (package odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:annotations_unsupported.cmti}))
+ (enabled_if
+  (and
+   (<= %{ocaml_version} 5.4)
+   (not %{ocaml-config:ox}))))
+
+(rule
+ (target annotations_unsupported.odocl)
+ (package odoc)
+ (action
+  (run odoc link -o %{target} %{dep:annotations_unsupported.odoc}))
+ (enabled_if
+  (and
+   (<= %{ocaml_version} 5.4)
+   (not %{ocaml-config:ox}))))
+
+(rule
  (target bugs.cmt)
  (package odoc)
  (action
@@ -1711,6 +1747,218 @@
    (or
     (>= %{ocaml_version} 5.5)
     %{ocaml-config:ox}))))
+
+(subdir
+ html
+ (rule
+  (targets Annotations_unsupported.html.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../annotations_unsupported.odocl}))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox}))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Annotations_unsupported.html Annotations_unsupported.html.gen))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox})))))
+
+(subdir
+ html
+ (rule
+  (target annotations_unsupported.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    annotations_unsupported.targets.gen
+    (run
+     odoc
+     html-targets
+     -o
+     .
+     %{dep:../annotations_unsupported.odocl}
+     --flat)))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox}))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff annotations_unsupported.targets annotations_unsupported.targets.gen))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox})))))
+
+(subdir
+ latex
+ (rule
+  (targets Annotations_unsupported.tex.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    latex-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../annotations_unsupported.odocl}))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox}))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Annotations_unsupported.tex Annotations_unsupported.tex.gen))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox})))))
+
+(subdir
+ latex
+ (rule
+  (target annotations_unsupported.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    annotations_unsupported.targets.gen
+    (run odoc latex-targets -o . %{dep:../annotations_unsupported.odocl})))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox}))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff annotations_unsupported.targets annotations_unsupported.targets.gen))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox})))))
+
+(subdir
+ man
+ (rule
+  (targets Annotations_unsupported.3o.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    man-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../annotations_unsupported.odocl}))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox}))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Annotations_unsupported.3o Annotations_unsupported.3o.gen))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox})))))
+
+(subdir
+ man
+ (rule
+  (target annotations_unsupported.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    annotations_unsupported.targets.gen
+    (run odoc man-targets -o . %{dep:../annotations_unsupported.odocl})))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox}))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff annotations_unsupported.targets annotations_unsupported.targets.gen))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox})))))
+
+(subdir
+ markdown
+ (rule
+  (targets Annotations_unsupported.md.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../annotations_unsupported.odocl}))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox}))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Annotations_unsupported.md Annotations_unsupported.md.gen))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox})))))
+
+(subdir
+ markdown
+ (rule
+  (target annotations_unsupported.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    annotations_unsupported.targets.gen
+    (run odoc markdown-targets -o . %{dep:../annotations_unsupported.odocl})))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox}))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff annotations_unsupported.targets annotations_unsupported.targets.gen))
+  (enabled_if
+   (and
+    (<= %{ocaml_version} 5.4)
+    (not %{ocaml-config:ox})))))
 
 (subdir
  html

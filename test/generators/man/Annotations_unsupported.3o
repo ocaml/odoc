@@ -1,0 +1,25 @@
+
+.TH Annotations_unsupported 3 "" "Odoc" "OCaml Library"
+.SH Name
+Annotations_unsupported
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Annotations_unsupported\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR refcounted = {
+.br 
+.ti +2
+\f[CB]mutable\fR readers : int;
+.br 
+}
+.fi 
+.br 
+.ti +2
+This type has an atomic annotation, but it is evaluated on an older compiler which does not support it, so it shouldn't be rendered\.
+.nf 
+

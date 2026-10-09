@@ -8,6 +8,7 @@ type enabledif =
   | MinMax of string * string
   | OxCaml
   | MinNotOxCaml of string
+  | MaxNotOxCaml of string
   | Or of enabledif * enabledif
 
 type test_case = {
@@ -40,7 +41,14 @@ module Dune = struct
         List
           [
             Atom "and";
-            List [ Atom ">="; Atom "%{ocaml_version}"; Atom v ];
+            render_enabledif' (Min v);
+            List [ Atom "not"; Atom "%{ocaml-config:ox}" ];
+          ]
+    | MaxNotOxCaml v ->
+        List
+          [
+            Atom "and";
+            render_enabledif' (Max v);
             List [ Atom "not"; Atom "%{ocaml-config:ox}" ];
           ]
     | Or (l, r) ->
