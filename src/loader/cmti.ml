@@ -361,6 +361,22 @@ let read_constructor_argument arg = arg, []
 
 #endif
 
+#if defined OXCAML
+let is_atomic ld =
+  match ld.ld_mutable with
+  | Types.Immutable -> false
+  | Mutable {atomic = Atomic; _ } -> true
+  | Mutable {atomic=Nonatomic; _} -> false
+#elif OCAML_VERSION >= (5, 5, 0)
+let is_atomic ld =
+  match ld.ld_atomic with
+  | Atomic -> true
+  | Nonatomic -> false
+#else
+(* older ocaml compilers don't support @atomic at all *)
+let is_atomic _ld = false
+#endif
+
 let read_label_declaration env parent label_parent ld =
   let open TypeDecl.Field in
   let open Odoc_model.Names in
@@ -370,11 +386,11 @@ let read_label_declaration env parent label_parent ld =
     Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent
       ld.ld_attributes
   in
-  let mutability = Cmi.mutability ld.ld_mutable ld.ld_attributes in
+  let atomic = is_atomic ld in
+  let mutability = Cmi.mutability ld.ld_mutable ~atomic in
   let type_ = read_core_type env label_parent ld.ld_type in
   let modalities = read_typedtree_label_modalities ld in
   { id; doc; mutability; type_; modalities; }
-
 
 let read_unboxed_label_declaration env parent label_parent ld =
   let open TypeDecl.UnboxedField in
@@ -382,7 +398,8 @@ let read_unboxed_label_declaration env parent label_parent ld =
   let name = Ident.name ld.ld_id in
   let id = Identifier.Mk.unboxed_field(parent, UnboxedFieldName.make_std name) in
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent ld.ld_attributes in
-  let mutable_ = match Cmi.mutability ld.ld_mutable ld.ld_attributes with
+  let atomic = is_atomic ld in
+  let mutable_ = match Cmi.mutability ld.ld_mutable ~atomic with
     | Immutable -> false
     | Atomically_mutable | Mutable -> true
   in

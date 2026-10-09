@@ -1047,23 +1047,33 @@ let read_value_description ({ident_env ; warnings_tag} as env) parent id vd =
   Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities }
 
 #if defined OXCAML
-let mutability mutable_ _attributes =
-  match mutable_ with
-  | Types.Immutable -> TypeDecl.Immutable
-  | Mutable {atomic = Atomic; _ } -> Atomically_mutable
-  | Mutable {atomic=Nonatomic; _} -> Mutable
+let is_atomic ld =
+  match ld.ld_mutable with
+  | Types.Immutable -> false
+  | Mutable {atomic = Atomic; _ } -> true
+  | Mutable {atomic=Nonatomic; _} -> false
+#elif OCAML_VERSION >= (5, 5, 0)
+let is_atomic ld =
+  match ld.ld_atomic with
+  | Atomic -> true
+  | Nonatomic -> false
 #else
-let mutability mutable_ attributes =
-  match mutable_ with
-  | Immutable -> TypeDecl.Immutable
-  | Mutable -> (
-      match List.exists
-            (fun { Parsetree.attr_name = { txt = attribute_name; _ }; _ } ->
-              String.equal attribute_name "atomic"
-              || String.equal attribute_name "ocaml.atomic")
-            attributes with
-      | true -> Atomically_mutable
-      | false -> Mutable)
+(* older ocaml compilers don't support @atomic at all *)
+let is_atomic _ld = false
+#endif
+
+#if defined OXCAML
+let mutability mutable_ ~atomic =
+  match mutable_, atomic with
+  | Types.Immutable, _ -> TypeDecl.Immutable
+  | Mutable _, true -> Atomically_mutable
+  | Mutable _, false -> Mutable
+#else
+let mutability mutable_ ~atomic =
+  match mutable_, atomic with
+  | Immutable, _ -> TypeDecl.Immutable
+  | Mutable, true -> Atomically_mutable
+  | Mutable, false -> Mutable
 #endif
 
 let read_label_declaration env parent ld =
@@ -1074,7 +1084,8 @@ let read_label_declaration env parent ld =
     Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag
       (parent :> Identifier.LabelParent.t) ld.ld_attributes
   in
-  let mutability = mutability ld.ld_mutable ld.ld_attributes in
+  let atomic = is_atomic ld in
+  let mutability = mutability ld.ld_mutable ~atomic in
   let type_ = read_type_expr env ld.ld_type in
   let modalities = read_label_modalities ld in
   { id; doc; mutability; type_; modalities; }
