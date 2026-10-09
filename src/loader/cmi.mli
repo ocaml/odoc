@@ -25,9 +25,9 @@ type env = {
 }
 
 #if defined OXCAML
-val mutability : Types.mutability -> Typedtree.attributes -> Odoc_model.Lang.TypeDecl.mutability
+val mutability : Types.mutability -> atomic:bool -> Odoc_model.Lang.TypeDecl.mutability
 #else
-val mutability : Asttypes.mutable_flag -> Typedtree.attributes -> Odoc_model.Lang.TypeDecl.mutability
+val mutability : Asttypes.mutable_flag -> atomic:bool -> Odoc_model.Lang.TypeDecl.mutability
 #endif
 
 val read_interface :
