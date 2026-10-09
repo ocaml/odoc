@@ -1047,9 +1047,33 @@ let read_value_description ({ident_env ; warnings_tag} as env) parent id vd =
   Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities }
 
 #if defined OXCAML
-let is_mutable = Types.is_mutable
+let is_atomic ld =
+  match ld.ld_mutable with
+  | Types.Immutable -> false
+  | Mutable {atomic = Atomic; _ } -> true
+  | Mutable {atomic=Nonatomic; _} -> false
+#elif OCAML_VERSION >= (5, 5, 0)
+let is_atomic ld =
+  match ld.ld_atomic with
+  | Atomic -> true
+  | Nonatomic -> false
 #else
-let is_mutable ld = ld = Mutable
+(* older ocaml compilers don't support @atomic at all *)
+let is_atomic _ld = false
+#endif
+
+#if defined OXCAML
+let mutability mutable_ ~atomic =
+  match mutable_, atomic with
+  | Types.Immutable, _ -> TypeDecl.Immutable
+  | Mutable _, true -> Atomically_mutable
+  | Mutable _, false -> Mutable
+#else
+let mutability mutable_ ~atomic =
+  match mutable_, atomic with
+  | Immutable, _ -> TypeDecl.Immutable
+  | Mutable, true -> Atomically_mutable
+  | Mutable, false -> Mutable
 #endif
 
 let read_label_declaration env parent ld =
@@ -1060,10 +1084,11 @@ let read_label_declaration env parent ld =
     Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag
       (parent :> Identifier.LabelParent.t) ld.ld_attributes
   in
-  let mutable_ = is_mutable ld.ld_mutable in
+  let atomic = is_atomic ld in
+  let mutability = mutability ld.ld_mutable ~atomic in
   let type_ = read_type_expr env ld.ld_type in
   let modalities = read_label_modalities ld in
-  {id; doc; mutable_; type_; modalities}
+  { id; doc; mutability; type_; modalities; }
 
 let read_constructor_declaration_arguments env parent arg =
   let open TypeDecl.Constructor in

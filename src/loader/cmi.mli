@@ -24,6 +24,12 @@ type env = {
   warnings_tag : string option (** Used to suppress warnings *)
 }
 
+#if defined OXCAML
+val mutability : Types.mutability -> atomic:bool -> Odoc_model.Lang.TypeDecl.mutability
+#else
+val mutability : Asttypes.mutable_flag -> atomic:bool -> Odoc_model.Lang.TypeDecl.mutability
+#endif
+
 val read_interface :
   Odoc_model.Paths.Identifier.ContainerPage.t option ->
   string ->

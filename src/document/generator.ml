@@ -609,16 +609,25 @@ module Make (Syntax : SYNTAX) = struct
     val format_constraints : (Lang.TypeExpr.t * Lang.TypeExpr.t) list -> text
   end = struct
     let record fields =
-      let field mutable_ id typ modalities =
+      let field mutability id typ modalities =
         let url = Url.from_identifier ~stop_before:true id in
         let name = Paths.Identifier.name id in
         let attrs = [ "def"; "record"; Url.Anchor.string_of_kind url.kind ] in
+        let mutable_kw =
+          match mutability with
+          | Lang.TypeDecl.Immutable -> O.noop
+          | _ -> O.keyword "mutable" ++ O.sp
+        in
+        let atomic_annot =
+          match mutability with
+          | Lang.TypeDecl.Atomically_mutable -> O.sp ++ O.txt "[@atomic]"
+          | _ -> O.noop
+        in
         let cell =
           O.code
-            ((if mutable_ then O.keyword "mutable" ++ O.txt " " else O.noop)
-            ++ O.txt name
+            (mutable_kw ++ O.txt name
             ++ O.txt Syntax.Type.annotation_separator
-            ++ type_expr typ
+            ++ type_expr typ ++ atomic_annot
             ++ Modalities.format modalities
             ++ O.txt Syntax.Type.Record.field_separator)
         in
@@ -629,7 +638,7 @@ module Make (Syntax : SYNTAX) = struct
         |> List.map (fun fld ->
                let open Odoc_model.Lang.TypeDecl.Field in
                let url, attrs, code =
-                 field fld.mutable_
+                 field fld.mutability
                    (fld.id :> Paths.Identifier.t)
                    fld.type_ fld.modalities
                in

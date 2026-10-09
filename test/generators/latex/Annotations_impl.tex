@@ -1,0 +1,22 @@
+\section{Module \ocamlinlinecode{Annotations\_\allowbreak{}impl}}\label{Annotations_impl}%
+\label{Annotations_impl--type-refcounted}\ocamlcodefragment{\ocamltag{keyword}{type} refcounted = \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{\ocamltag{keyword}{mutable} readers : int [@atomic];\allowbreak{}}\label{Annotations_impl--type-refcounted.readers}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+\label{Annotations_impl--exception-Atomic_exn}\ocamlcodefragment{\ocamltag{keyword}{exception} \ocamltag{exception}{Atomic\_\allowbreak{}exn} \ocamltag{keyword}{of} \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{\ocamltag{keyword}{mutable} value : int [@atomic];\allowbreak{}}\label{Annotations_impl--.value}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\begin{ocamlindent}This exception has a record with an atomic annotation that should appear\end{ocamlindent}%
+\medbreak
+\label{Annotations_impl--type-with_annot}\ocamlcodefragment{\ocamltag{keyword}{type} with\_\allowbreak{}annot = }\begin{ocamlindent}\ocamlcodefragment{| \ocamltag{constructor}{Atomic\_\allowbreak{}constr} \ocamltag{keyword}{of} \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{\ocamltag{keyword}{mutable} value : int [@atomic];\allowbreak{}}\label{Annotations_impl--type-with_annot.value}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\label{Annotations_impl--type-with_annot.Atomic_constr}\\
+\end{ocamlindent}%
+\begin{ocamlindent}The annotation should appear on anonymous records in constructors as well\end{ocamlindent}%
+\medbreak
+
+

@@ -230,11 +230,13 @@ end =
   Modes
 
 and TypeDecl : sig
+  type mutability = Immutable | Mutable | Atomically_mutable
+
   module Field : sig
     type t = {
       id : Identifier.Field.t;
       doc : Comment.docs;
-      mutable_ : bool;
+      mutability : mutability;
       type_ : TypeExpr.t;
       modalities : Modalities.t;
     }
