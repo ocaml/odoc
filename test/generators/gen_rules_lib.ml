@@ -8,6 +8,7 @@ type enabledif =
   | MinMax of string * string
   | OxCaml
   | MinNotOxCaml of string
+  | Or of enabledif * enabledif
 
 type test_case = {
   input : Fpath.t;
@@ -24,50 +25,31 @@ module Dune = struct
 
   let arg_list args = List.map (fun x -> Atom x) args
 
+  let rec render_enabledif' = function
+    | Min v -> List [ Atom ">="; Atom "%{ocaml_version}"; Atom v ]
+    | Max v -> List [ Atom "<="; Atom "%{ocaml_version}"; Atom v ]
+    | MinMax (min, max) ->
+        List
+          [
+            Atom "and";
+            List [ Atom ">="; Atom "%{ocaml_version}"; Atom min ];
+            List [ Atom "<="; Atom "%{ocaml_version}"; Atom max ];
+          ]
+    | OxCaml -> Atom "%{ocaml-config:ox}"
+    | MinNotOxCaml v ->
+        List
+          [
+            Atom "and";
+            List [ Atom ">="; Atom "%{ocaml_version}"; Atom v ];
+            List [ Atom "not"; Atom "%{ocaml-config:ox}" ];
+          ]
+    | Or (l, r) ->
+        let l = render_enabledif' l in
+        let r = render_enabledif' r in
+        List [ Atom "or"; l; r ]
+
   let render_enabledif = function
-    | Some (Min v) ->
-        [
-          List
-            [
-              Atom "enabled_if";
-              List [ Atom ">="; Atom "%{ocaml_version}"; Atom v ];
-            ];
-        ]
-    | Some (Max v) ->
-        [
-          List
-            [
-              Atom "enabled_if";
-              List [ Atom "<="; Atom "%{ocaml_version}"; Atom v ];
-            ];
-        ]
-    | Some (MinMax (min, max)) ->
-        [
-          List
-            [
-              Atom "enabled_if";
-              List
-                [
-                  Atom "and";
-                  List [ Atom ">="; Atom "%{ocaml_version}"; Atom min ];
-                  List [ Atom "<="; Atom "%{ocaml_version}"; Atom max ];
-                ];
-            ];
-        ]
-    | Some OxCaml -> [ List [ Atom "enabled_if"; Atom "%{ocaml-config:ox}" ] ]
-    | Some (MinNotOxCaml v) ->
-        [
-          List
-            [
-              Atom "enabled_if";
-              List
-                [
-                  Atom "and";
-                  List [ Atom ">="; Atom "%{ocaml_version}"; Atom v ];
-                  List [ Atom "not"; Atom "%{ocaml-config:ox}" ];
-                ];
-            ];
-        ]
+    | Some expr -> [ List [ Atom "enabled_if"; render_enabledif' expr ] ]
     | None -> []
 
   let run cmd = List (Atom "run" :: arg_list cmd)
