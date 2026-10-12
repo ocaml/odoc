@@ -177,14 +177,14 @@ let escape_link link =
     | `Escaping | `Char -> ()
   in
   let last_state =
-    String.fold_left
+    Astring.String.fold_left
       (fun state chr ->
         match (state, chr) with
         | `Char, '\\' -> `Backslash
         | `Char, _ ->
             Buffer.add_char buf chr;
             `Char
-        | (`Backslash | `Escaping), _ when Char.Ascii.is_white chr -> `Escaping
+        | (`Backslash | `Escaping), (' ' | '\t' .. '\r') -> `Escaping
         | ((`Backslash | `Escaping) as state), _ ->
             add_backslash state;
             Buffer.add_char buf chr;
