@@ -627,8 +627,9 @@ module Make (Syntax : SYNTAX) = struct
           O.code
             (mutable_kw ++ O.txt name
             ++ O.txt Syntax.Type.annotation_separator
-            ++ type_expr typ ++ atomic_annot
+            ++ type_expr typ
             ++ Modalities.format modalities
+            ++ atomic_annot
             ++ O.txt Syntax.Type.Record.field_separator)
         in
         (url, attrs, cell)
