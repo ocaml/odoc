@@ -43,6 +43,9 @@
 ### Performance
 - Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #1487)
 
+### Fixed
+- Allow to break link into multiline (@Tim-ats-d, #1439)
+
 # 3.2.1
 
 ### Fixed
