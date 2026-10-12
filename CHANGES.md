@@ -16,6 +16,7 @@
 - Point to exact character when parsing the reference syntax fails
   (@Leonidas-from-XIV, #1494)
 - Support for OCaml 5.6 (@jonludlam, #1472)
+- Allow to break link into multiple lines (@Tim-ats-d, #1439)
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
@@ -42,9 +43,6 @@
 
 ### Performance
 - Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #1487)
-
-### Fixed
-- Allow to break link into multiline (@Tim-ats-d, #1439)
 
 # 3.2.1
 
