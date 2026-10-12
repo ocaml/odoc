@@ -26,7 +26,7 @@ Given both directories, [odoc compile] should take the [Inner] with the digest
 
   $ odoc compile --output-dir h --parent-id z -I h/x -I h/y z/z.cmti
   $ odoc_print --short --show-root-parents h/z/z.odoc
-  type z = y/Inner.t
+  type z = x/Inner.t
   $ odoc compile --output-dir h --parent-id z -I h/y -I h/x z/z.cmti
   $ odoc_print --short --show-root-parents h/z/z.odoc
   type z = x/Inner.t
@@ -36,11 +36,11 @@ unresolved: [Inner.t]. [y/Inner.t] would be wrong.
 
   $ odoc compile --output-dir h --parent-id z -I h/y z/z.cmti
   $ odoc_print --short --show-root-parents h/z/z.odoc
-  type z = y/Inner.t
+  type z = Inner.t
 
 With [--long-paths], [odoc_print] also says whether the path was resolved. It
 should be [unresolvedroot(Inner).t]; [resolved(root(y/Inner).t)] would be
 wrong. ([z/0] is the type's identifier.)
 
   $ odoc_print --short --show-root-parents --long-paths h/z/z.odoc
-  type z/0 = resolved(root(y/Inner).t)
+  type z/0 = unresolvedroot(Inner).t
