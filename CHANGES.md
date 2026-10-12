@@ -29,6 +29,8 @@
   which makes `.odoc` and `.odocl` files substantially smaller (@jonludlam, #1487)
 
 ### Fixed
+- `odoc compile` resolves an import only to a unit with the digest the import
+  records (@jonludlam, #1502)
 - Fix optional arguments rendering as `?arg:???` in modules without an mli on
   OCaml 5.5 (@jonludlam, #1489)
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)
