@@ -4,8 +4,12 @@ let to_string e =
   let { location; message } = e in
   let location_string =
     if location.start.line = location.end_.line then
-      Printf.sprintf "line %i, characters %i-%i" location.start.line
-        location.start.column location.end_.column
+      if location.start.column <> location.end_.column then
+        Printf.sprintf "line %i, characters %i-%i" location.start.line
+          location.start.column location.end_.column
+      else
+        Printf.sprintf "line %i, character %i" location.start.line
+          location.start.column
     else
       Printf.sprintf "line %i, character %i to line %i, character %i"
         location.start.line location.start.column location.end_.line

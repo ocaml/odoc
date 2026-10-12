@@ -49,6 +49,14 @@ val read_value_description :
   Typedtree.value_description ->
   Odoc_model.Lang.Signature.item
 
+#if OCAML_VERSION >= (5,6,0)
+val read_primitive_description :
+  Cmi.env ->
+  Paths.Identifier.Signature.t ->
+  Typedtree.primitive_description ->
+  Odoc_model.Lang.Signature.item
+#endif
+
 val read_type_declarations :
   Cmi.env ->
   Paths.Identifier.Signature.t ->
@@ -67,3 +75,20 @@ val read_class_type_declarations :
   Paths.Identifier.Signature.t ->
   Typedtree.class_type Typedtree.class_infos list ->
   Odoc_model.Lang.Signature.item list
+
+val generate_wrapper_module :
+  Paths.Identifier.Signature.t ->
+  prefix:string ->
+  hidden:bool ->
+  Paths.Identifier.Module.t * Paths.Path.Module.t
+
+val wrapper_module :
+  Paths.Identifier.Module.t * Paths.Path.Module.t ->
+  hidden:bool ->
+  Odoc_model.Lang.Signature.item list ->
+  Odoc_model.Lang.Signature.item
+(** [wrapper_module w ~hidden items] is the synthetic module an
+    [include functor] applies its functor to. Its items are aliases of [items],
+    the items that precede the include, so that whatever the functor's expansion
+    inherits from its argument resolves back to them rather than to the (hidden)
+    name of the wrapper. *)

@@ -38,9 +38,103 @@ let opt_map f = function
   | None -> None
   | Some x -> Some (f x)
 
+let generate_wrapper_module =
+  let wrapper_counter = ref 0 in
+  fun parent ~prefix ~hidden ->
+    incr wrapper_counter;
+    let dummy_id =
+      let dummy_name =
+        let sep = match hidden with | true -> "__" | false -> "_" in
+        let name = Printf.sprintf "%s%s%d" prefix sep !wrapper_counter in
+        match hidden with
+        | false -> Odoc_model.Names.ModuleName.make_std name
+        | true -> Odoc_model.Names.ModuleName.hidden_of_string name
+      in
+      Identifier.Mk.module_ (parent, dummy_name)
+    in
+    let dummy_path = `Identifier (dummy_id, hidden) in
+    (dummy_id, dummy_path)
+
+let no_doc : Odoc_model.Comment.docs = { elements = []; warnings_tag = None }
+
+(* [include functor F] is modelled as the application of [F] to a synthetic,
+   hidden module holding the items that precede the include.
+
+   That module's items are *aliases* of the real ones rather than copies: the
+   expansion of [F(BODY__n)] refers to the functor argument, so a copy would
+   leave the expansion mentioning [BODY__n.t], a hidden path, which the
+   generator renders as an abstract [type t].  With an alias, [BODY__n.t]
+   reduces to the enclosing signature's own [t] and is rendered, and linked, as
+   such. *)
+let wrapper_items dummy_id items =
+  let module Id = Identifier in
+  let name id = Id.name id in
+  let parent = (dummy_id : Id.Module.t :> Id.Signature.t) in
+  (* Anonymous parameters ([_]) have to be named so that the alias can pass
+     them on to the item it aliases. *)
+  let alias_params params =
+    List.split
+      (List.mapi
+         (fun i (p : TypeDecl.param) ->
+           let v = match p.desc with Var v -> v | Any -> Printf.sprintf "a%d" i in
+           ({ p with TypeDecl.desc = TypeDecl.Var v }, TypeExpr.Var v))
+         params)
+  in
+  let rec wrapper_item item acc =
+    match (item : Signature.item) with
+    | Type (rec_, td) ->
+      let params, args = alias_params td.equation.params in
+      let manifest =
+        Some (TypeExpr.Constr (`Identifier ((td.id :> Id.Path.Type.t), false), args))
+      in
+      let equation =
+        { td.equation with TypeDecl.Equation.params; manifest; constraints = []; private_ = false }
+      in
+      let id = Id.Mk.type_ (parent, Odoc_model.Names.TypeName.make_std (name td.id)) in
+      Signature.Type (rec_, { td with TypeDecl.id; equation; representation = None; canonical = None; source_loc = None }) :: acc
+    | Module (rec_, m) ->
+      let id = Id.Mk.module_ (parent, Odoc_model.Names.ModuleName.make_std (name m.id)) in
+      let type_ = Module.Alias (`Identifier ((m.id :> Id.Path.Module.t), false), None) in
+      Signature.Module (rec_, { m with Module.id; type_; canonical = None; hidden = false; source_loc = None }) :: acc
+    | ModuleType mt ->
+      let id = Id.Mk.module_type (parent, Odoc_model.Names.ModuleTypeName.make_std (name mt.id)) in
+      let expr =
+        Some (ModuleType.Path { p_path = `Identifier ((mt.id :> Id.Path.ModuleType.t), false); p_expansion = None })
+      in
+      Signature.ModuleType { mt with ModuleType.id; expr; canonical = None; source_loc = None } :: acc
+    | Include incl ->
+      (* The items an [include] brings in are visible to the functor too. *)
+      List.fold_left (fun acc item -> wrapper_item item acc) acc incl.Include.expansion.content.items
+    | Value _ | ModuleSubstitution _ | ModuleTypeSubstitution _ | Open _
+    | TypeSubstitution _ | TypExt _ | Exception _ | Comment _ ->
+      (* Nothing in the expansion of [F(BODY__n)] can refer to these. *)
+      acc
+    | Class (rec_, cls) ->
+      let id = Id.Mk.class_ (parent, Odoc_model.Names.TypeName.make_std (name cls.id)) in
+      let type_ = Class.ClassType (ClassType.Constr (`Identifier ((cls.id :> Id.Path.ClassType.t), false), [])) in
+      let cls = { cls with id; type_ } in
+      Signature.Class (rec_, cls) :: acc
+    | ClassType (rec_, clsty) ->
+      let id = Id.Mk.class_type (parent, Odoc_model.Names.TypeName.make_std (name clsty.id)) in
+      let expr = ClassType.Constr (`Identifier ((clsty.id :> Id.Path.ClassType.t), false), []) in
+      let clsty = { clsty with id; expr } in
+      Signature.ClassType (rec_, clsty) :: acc
+  in
+  List.rev (List.fold_left (fun acc item -> wrapper_item item acc) [] items)
+
+let wrapper_module (dummy_id, _dummy_path) ~hidden items =
+  let items = wrapper_items dummy_id items in
+  let sig_ : Signature.t = { items; compiled = true; removed = []; doc = no_doc } in
+  let type_ : Module.decl = ModuleType (Signature sig_) in
+  let module_ : Module.t = {id=dummy_id; source_loc=None; doc=no_doc; type_; canonical=None; hidden} in
+  Signature.Module (Ordinary, module_)
+
 let read_label = Cmi.read_label
 
 let rec read_core_type env container ctyp =
+  read_core_type_modal env Cmi.legacy_modes container ctyp
+
+and read_core_type_modal env modes container ctyp =
   let open TypeExpr in
     match ctyp.ctyp_desc with
 #if defined OXCAML
@@ -59,8 +153,11 @@ let rec read_core_type env container ctyp =
 #endif
         let lbl = read_label lbl in
         let arg = read_core_type env container arg in
-        let res = read_core_type env container res in
-          Arrow(lbl, arg, res)
+        let arg_modes, res_modes, modes =
+          Cmi.read_arrow_modes modes ctyp.ctyp_type
+        in
+        let res = read_core_type_modal env modes container res in
+          Arrow(lbl, (arg, arg_modes), (res, res_modes))
     | Ttyp_tuple typs ->
 #if OCAML_VERSION >= (5,4,0) || defined OXCAML
         let typs = List.map (fun (lbl,x) -> lbl, read_core_type env container x) typs in
@@ -163,6 +260,9 @@ let rec read_core_type env container ctyp =
     | Ttyp_call_pos -> Constr(Env.Path.read_type env.ident_env Predef.path_lexing_position, [])
     | Ttyp_of_kind _ -> assert false
     | Ttyp_repr _ -> Any  (* oxcaml: representation annotations are ignored *)
+    | Ttyp_newlayout (_, ct) ->
+        (* oxcaml: layout-variable binder; odoc ignores the layout vars *)
+        read_core_type env container ct
 #elif OCAML_VERSION >= (5,5,0)
   | Ttyp_functor (lbl, id, pkg, ret_type) ->
     let lbl = read_label lbl in
@@ -200,13 +300,63 @@ let read_value_description env parent vd =
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container vd.val_attributes in
   let type_ = read_core_type env container vd.val_desc in
   let value =
+#if OCAML_VERSION >= (5,6,0)
+    (* Since 5.6 externals have their own node, so a [val] is never one. *)
+    Value.Abstract
+#else
     match vd.val_prim with
     | [] -> Value.Abstract
     | primitives -> External primitives
+#endif
   in
   let ext_attrs = Doc_attr.attrs_of_value_description vd.val_val in
   let modalities = Cmi.read_value_descr_modalities vd.val_val in
   Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities }
+
+#if OCAML_VERSION >= (5,6,0)
+(* Since 5.6 (RFC 44) [external] declarations have their own Typedtree node,
+   because they can now also be written as an alias of an existing primitive:
+   [external x : t = M.y], or [external x = M.y] with the type left implicit.
+   An alias carries no primitive strings of its own, so recover them from the
+   resolved [Types.value_description] the way the .cmi reader does. *)
+let read_primitive_description env parent pd =
+  let open Signature in
+  let id = Env.find_value_identifier env.ident_env pd.prim_id in
+  let source_loc = None in
+  let container =
+    (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container
+      pd.prim_attributes
+  in
+  let type_ =
+    match pd.prim_kind with
+    | Tprim_decl (core_type, _) | Tprim_alias (Some core_type, _, _) ->
+        read_core_type env container core_type
+    | Tprim_alias (None, _, _) ->
+        (* No type written at the declaration site: use the inferred one. *)
+        Cmi.mark_type_expr pd.prim_val.val_type;
+        Cmi.read_type_expr env pd.prim_val.val_type
+  in
+  let value =
+    match pd.prim_kind with
+    | Tprim_decl (_, primitives) -> Value.External primitives
+    | Tprim_alias _ -> (
+        match pd.prim_val.val_kind with
+        | Val_prim desc ->
+            let open Primitive in
+            Value.External
+              (desc.prim_name
+              :: (match desc.prim_native_name with
+                 | "" -> []
+                 | name -> [ name ]))
+        | _ -> Value.Abstract)
+  in
+  let ext_attrs = Doc_attr.attrs_of_value_description pd.prim_val in
+  let modalities = Cmi.read_value_descr_modalities pd.prim_val in
+  Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities }
+#endif
 
 let read_type_parameter (ctyp, var_and_injectivity)  =
   let open TypeDecl in
@@ -586,28 +736,33 @@ let rec read_with_constraint env global_parent parent (_, frag, constr) =
     | Twith_type decl ->
         let frag = Env.Fragment.read_type frag.Location.txt in
         let eq = read_type_equation env parent decl in
-          TypeEq(frag, eq)
+          Some (TypeEq(frag, eq))
     | Twith_module(p, _) ->
         let frag = Env.Fragment.read_module frag.Location.txt in
         let eq = read_module_equation env p in
-          ModuleEq(frag, eq)
+          Some (ModuleEq(frag, eq))
     | Twith_typesubst decl ->
         let frag = Env.Fragment.read_type frag.Location.txt in
         let eq = read_type_equation env parent decl in
-          TypeSubst(frag, eq)
+          Some (TypeSubst(frag, eq))
     | Twith_modsubst(p, _) ->
         let frag = Env.Fragment.read_module frag.Location.txt in
         let p = Env.Path.read_module env.ident_env p in
-          ModuleSubst(frag, p)
+          Some (ModuleSubst(frag, p))
 #if OCAML_VERSION >= (4,13,0)
     | Twith_modtype mty ->
         let frag = Env.Fragment.read_module_type frag.Location.txt in
         let mty = read_module_type env global_parent parent mty in
-        ModuleTypeEq(frag, mty)
+        Some (ModuleTypeEq(frag, mty))
     | Twith_modtypesubst mty ->
         let frag = Env.Fragment.read_module_type frag.Location.txt in
         let mty = read_module_type env global_parent parent mty in
-        ModuleTypeSubst(frag, mty)
+        Some (ModuleTypeSubst(frag, mty))
+#endif
+#if defined OXCAML
+    (* oxcaml: [with kind] constraints have no representation in odoc's
+       model, so they are dropped. *)
+    | Twith_jkind _ | Twith_jkindsubst _ -> None
 #endif
 
 and read_module_type env parent label_parent mty =
@@ -671,7 +826,7 @@ and read_module_type env parent label_parent mty =
 #endif
     | Tmty_with(body, subs) -> (
       let body = read_module_type env parent label_parent body in
-      let subs = List.map (read_with_constraint env parent label_parent) subs in
+      let subs = List.filter_map (read_with_constraint env parent label_parent) subs in
       match Odoc_model.Lang.umty_of_mty body with
       | Some w_expr ->
           With {w_substitutions=subs; w_expansion=None; w_expr }
@@ -770,11 +925,11 @@ and read_module_declaration env parent md =
   let canonical = match canonical with | None -> None | Some s -> Some (Doc_attr.conv_canonical_module s) in
   let hidden =
 #if OCAML_VERSION >= (4,10,0)
-    match canonical, mid.iv with
+    match canonical, mid with
     | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | _,_ -> false
 #else
-    match canonical, mid.iv with
+    match canonical, mid with
     | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | _ -> false
 #endif
@@ -804,6 +959,10 @@ and read_signature_item env parent item =
     match item.sig_desc with
     | Tsig_value vd ->
         [read_value_description env parent vd]
+#if OCAML_VERSION >= (5,6,0)
+    | Tsig_primitive pd ->
+        [read_primitive_description env parent pd]
+#endif
     | Tsig_type (rec_flag, decls) ->
       let rec_flag =
         match rec_flag with
@@ -893,20 +1052,35 @@ and read_include env parent incl =
   let include_parent = Identifier.fresh_include_parent parent in
   let include_container = (include_parent :> Identifier.LabelParent.t) in
   let expr = read_module_type env include_parent include_container incl.incl_mod in
-  let umty = Odoc_model.Lang.umty_of_mty expr in 
-  let expansion = { content; shadowed; } in
-#if defined OXCAML
-  match umty, incl.incl_kind with
-  | Some uexpr, Tincl_structure ->
-#else
-  match umty with
+  let expansion = { content; shadowed; authoritative = false } in
+  match Odoc_model.Lang.umty_of_mty expr with
   | Some uexpr ->
-#endif
     let decl = Include.ModuleType uexpr in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
-  | _ ->
-    (* TODO: Handle [include functor] *)
+  | None ->
     content.items
+
+#if defined OXCAML
+(* [include functor F] applies [F] to [wrapper], a synthetic module holding
+   everything defined before the include.  A signature never has a path to [F]
+   -- only its module type -- so [F] is bound to a module to obtain one. *)
+and read_include_functor env parent wrapper incl =
+  let open Include in
+  let loc = Doc_attr.read_location incl.incl_loc in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
+  let doc, status = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_status container incl.incl_attributes in
+  let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
+  let include_parent = Identifier.fresh_include_parent parent in
+  let include_container = (include_parent :> Identifier.LabelParent.t) in
+  let expr = read_module_type env include_parent include_container incl.incl_mod in
+  let expansion = { content; shadowed; authoritative = false } in
+  let hidden = true in
+  let id, functor_path = generate_wrapper_module parent ~prefix:"INCLUDE" ~hidden in
+  let functor_ : Module.t = {id; source_loc=None; doc; type_=ModuleType expr; canonical=None; hidden} in
+  let decl = Functor {target = Path (`Apply (functor_path, wrapper)); original_ref = ModuleType expr} in
+  [ Signature.Module (Ordinary, functor_);
+    Include {parent; doc; decl; expansion; status; strengthened=None; loc } ]
+#endif
 
 and read_open env parent o =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -914,6 +1088,23 @@ and read_open env parent o =
   let signature = o.open_bound_items in
   let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature signature) in
   { expansion; doc }
+
+and read_items env parent items =
+  List.fold_left
+    (fun acc item ->
+      match item.sig_desc with
+#if defined OXCAML
+      | Tsig_include ({ incl_kind = (Tincl_functor _ | Tincl_gen_functor _);
+                        incl_mod = { mty_desc = (Tmty_typeof _ | Tmty_ident _); _ }; _ } as incl, _) ->
+        let hidden = true in
+        let wrapper = generate_wrapper_module parent ~prefix:"BODY" ~hidden in
+        let wrapper_module = wrapper_module wrapper ~hidden (List.rev acc) in
+        let items = read_include_functor env parent (snd wrapper) incl in
+        List.rev_append items (wrapper_module :: acc)
+#endif
+      | _ -> List.rev_append (read_signature_item env parent item) acc)
+    [] items
+  |> List.rev
 
 and read_signature :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->
@@ -930,13 +1121,7 @@ and read_signature :
     in
     Doc_attr.extract_top_comment internal_tags ~warnings_tag:env.warnings_tag ~classify parent sg.sig_items
   in
-  let items =
-    List.fold_left
-      (fun items item ->
-        List.rev_append (read_signature_item env parent item) items)
-      [] items
-    |> List.rev
-  in
+  let items = read_items env parent items in
   match doc_post with
   | {elements=[]; _} ->
     ({ Signature.items; compiled = false; removed = []; doc }, tags)

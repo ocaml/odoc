@@ -1,0 +1,21 @@
+
+.TH Anonymous_functor 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_impl\.Anonymous_functor
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml_impl\.Anonymous_functor\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t
+.fi 
+.br 
+.ti +2
+The functor is defined inline, so there is no path for odoc to apply: it has to bind the functor to a module first, as it does for every include functor in a signature\.
+.nf 
+.sp 
+\f[CB]type\fR included = t

@@ -69,7 +69,7 @@ module General_paths = struct
   let rec identifier : Paths.Identifier.t t =
     Variant
       (fun x ->
-        match x.iv with
+        match x with
         | `Page (parent, name) ->
             C
               ( "`Page",
@@ -220,7 +220,6 @@ module General_paths = struct
       | `Identifier (x1, x2) ->
           C ("`Identifier", ((x1 :> id_t), x2), Pair (identifier, bool))
       | `Root x -> C ("`Root", x, Names.modulename)
-      | `Forward x -> C ("`Forward", x, string)
       | `Dot (x1, x2) ->
           C ("`Dot", ((x1 :> p), x2), Pair (path, Names.modulename))
       | `DotT (x1, x2) ->
@@ -533,7 +532,7 @@ let root = Root.t
 let modulename = Names.modulename
 
 (* Indirection seems to be required to make the type open. *)
-let identifier : [< Paths.Identifier.t_pv ] Paths.Identifier.id Type_desc.t =
+let identifier : [< Paths.Identifier.t ] Type_desc.t =
   Indirect ((fun n -> (n :> Paths.Identifier.t)), General_paths.identifier)
 
 let resolved_path : [< Paths.Path.Resolved.t ] Type_desc.t =

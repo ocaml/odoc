@@ -1,0 +1,14 @@
+
+.TH X 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.Include_functor_argument_shapes\.X
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Include_functor_argument_shapes\.X\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR v

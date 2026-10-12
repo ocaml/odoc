@@ -31,7 +31,7 @@ The rendered headings
       <a href="A/index.html" title="A">with text</a> in title
   --
      <h2 id="an-url--and-with-text-in-a-title">
-      <a href="#an-url--and-with-text-in-a-title" class="anchor"></a>An
-       url <a href="http://ocaml.org">http://ocaml.org</a> and 
+      <a href="#an-url--and-with-text-in-a-title" class="anchor"></a>An url 
+      <a href="http://ocaml.org">http://ocaml.org</a> and 
       <a href="http://ocaml.org">with text</a> in a title
 

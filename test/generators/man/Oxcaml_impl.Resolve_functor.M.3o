@@ -1,0 +1,16 @@
+
+.TH M 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_impl\.Resolve_functor\.M
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Resolve_functor\.M\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t = float
+.sp 
+\f[CB]type\fR myt = t

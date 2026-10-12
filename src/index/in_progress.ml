@@ -32,7 +32,7 @@ let empty_t dir_id =
 
 let get_parent id : container_page option =
   let id :> page = id in
-  match id.iv with
+  match id with
   | `Page (Some parent, _) -> Some parent
   | `LeafPage (Some parent, _) -> Some parent
   | `Page (None, _) | `LeafPage (None, _) -> None
@@ -77,9 +77,9 @@ let rec get_or_create (dir : in_progress) (id : container_page) : in_progress =
 let add_page (dir : in_progress) page =
   let id =
     match page.Lang.Page.name with
-    | { iv = #Id.ContainerPage.t_pv; _ } as id ->
+    | #Id.ContainerPage.t as id ->
         Id.Mk.leaf_page (Some id, PageName.make_std "index")
-    | { iv = #Id.LeafPage.t_pv; _ } as id -> id
+    | #Id.LeafPage.t as id -> id
   in
   let _, dir_content =
     match get_parent id with
@@ -90,7 +90,7 @@ let add_page (dir : in_progress) page =
 
 let add_module (dir : in_progress) m =
   let _, dir_content =
-    match m.Lang.Compilation_unit.id.iv with
+    match m.Lang.Compilation_unit.id with
     | `Root (Some parent, _) -> get_or_create dir parent
     | `Root (None, _) -> dir
   in
@@ -100,7 +100,7 @@ let add_module (dir : in_progress) m =
 let add_implementation (dir : in_progress) (i : Lang.Implementation.t) =
   match i.id with
   | None -> ()
-  | Some ({ iv = `SourcePage (parent, _); _ } as id) ->
+  | Some (`SourcePage (parent, _) as id) ->
       let _, dir_content = get_or_create dir parent in
       SPH.replace dir_content.implementations id i
 

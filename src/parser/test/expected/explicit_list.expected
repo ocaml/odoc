@@ -87,7 +87,7 @@ bar}}
 --- output ---
 ((output (((f.ml (1 0) (1 3)) (unordered heavy ()))))
  (warnings
-  ( "File \"f.ml\", line 1, characters 3-3:\
+  ( "File \"f.ml\", line 1, character 3:\
    \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
    \nSuggestion: add '}'."
     "File \"f.ml\", line 1, characters 0-3:\
@@ -119,10 +119,10 @@ bar}}
     (unordered heavy
      ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
  (warnings
-  ( "File \"f.ml\", line 1, characters 11-11:\
+  ( "File \"f.ml\", line 1, character 11:\
    \nEnd of text is not allowed in '{li ...}' (list item).\
    \nSuggestion: add '}'."
-    "File \"f.ml\", line 1, characters 11-11:\
+    "File \"f.ml\", line 1, character 11:\
    \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
    \nSuggestion: add '}'.")))
 --- input ---
@@ -133,10 +133,10 @@ bar}}
     (unordered heavy
      ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo)))))))))))
  (warnings
-  ( "File \"f.ml\", line 1, characters 10-10:\
+  ( "File \"f.ml\", line 1, character 10:\
    \nEnd of text is not allowed in '{- ...}' (list item).\
    \nSuggestion: add '}'."
-    "File \"f.ml\", line 1, characters 10-10:\
+    "File \"f.ml\", line 1, character 10:\
    \nEnd of text is not allowed in '{ul ...}' (bulleted list).\
    \nSuggestion: add '}'.")))
 --- input ---

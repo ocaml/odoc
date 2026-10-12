@@ -164,8 +164,8 @@ let rec substitute_vars vars t =
   | Var s -> ( try List.assoc s vars with Not_found -> t)
   | Any -> Any
   | Alias (t, str) -> Alias (substitute_vars vars t, str)
-  | Arrow (lbl, t1, t2) ->
-      Arrow (lbl, substitute_vars vars t1, substitute_vars vars t2)
+  | Arrow (lbl, (t1, m1), (t2, m2)) ->
+      Arrow (lbl, (substitute_vars vars t1, m1), (substitute_vars vars t2, m2))
   | Tuple ts ->
       Tuple (List.map (fun (lbl, ty) -> (lbl, substitute_vars vars ty)) ts)
   | Unboxed_tuple ts ->
@@ -289,7 +289,6 @@ and module_path : t -> Cpath.module_ -> Cpath.module_ =
       | None -> `Local (id, b))
   | `Identifier _ -> p
   | `Substituted p -> `Substituted (module_path s p)
-  | `Forward _ -> p
   | `Root _ -> p
 
 and resolved_module_type_path :
@@ -609,7 +608,8 @@ and type_expr s t =
   | Var s -> Var s
   | Any -> Any
   | Alias (t, str) -> Alias (type_expr s t, str)
-  | Arrow (lbl, t1, t2) -> Arrow (lbl, type_expr s t1, type_expr s t2)
+  | Arrow (lbl, (t1, m1), (t2, m2)) ->
+      Arrow (lbl, (type_expr s t1, m1), (type_expr s t2, m2))
   | Tuple ts -> Tuple (List.map (fun (lbl, ty) -> (lbl, type_expr s ty)) ts)
   | Unboxed_tuple ts ->
       Unboxed_tuple (List.map (fun (l, t) -> (l, type_expr s t)) ts)
@@ -759,6 +759,7 @@ and module_decl s t =
 and include_decl s t =
   match t with
   | Include.Alias p -> Include.Alias (module_path s p)
+  | Functor p -> Functor (module_path s p)
   | ModuleType t -> ModuleType (u_module_type_expr s t)
 
 and module_ s t =

@@ -11,6 +11,11 @@ type sections_allowed = [ `All | `No_titles | `None ]
 type alerts =
   [ `Tag of [ `Alert of string * string option ] ] Location_.with_location list
 
+val merge_ast : Odoc_parser.Ast.t -> Odoc_parser.Ast.t
+(** Merge runs of [`Word]/[`Space] into single [`Word]s. Idempotent; the loader
+    applies it before its parse cache so that repeated comments share the merged
+    nodes. *)
+
 val ast_to_comment :
   internal_tags:'tags handle_internal_tags ->
   tags_allowed:bool ->

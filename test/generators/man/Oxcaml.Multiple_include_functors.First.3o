@@ -1,0 +1,33 @@
+
+.TH First 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.Multiple_include_functors\.First
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Multiple_include_functors\.First\fR
+.in 
+.sp 
+.fi 
+Two include functors in the same signature, with an item defined between them\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Parameters\fR
+.in 
+.sp 
+\f[CB]module\fR T : \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR
+.sp 
+.in 3
+\fB2 Signature\fR
+.in 
+.sp 
+\f[CB]type\fR first = T\.t

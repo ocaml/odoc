@@ -1,0 +1,14 @@
+
+.TH To_include_module 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.Include_functor_argument_shapes\.Aliased\.To_include_module
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Aliased\.To_include_module\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR via_module_include : unit

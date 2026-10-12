@@ -389,6 +389,19 @@ and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
   | ModuleType expr ->
       if is_elidable_with_module_type_u expr then ModuleType expr
       else ModuleType (u_module_type_expr env id expr)
+  | Functor { target = Path target; original_ref = Path original_ref } ->
+      Functor
+        {
+          target = Path (module_path env target);
+          original_ref = Path (module_path env original_ref);
+        }
+  | Functor { target = Path p; original_ref = ModuleType mt } ->
+      Functor
+        {
+          target = Path (module_path env p);
+          original_ref = ModuleType (module_type_expr env id mt);
+        }
+  | Functor { target = ModuleType _ } -> assert false
   | Alias p -> Alias (module_path env p)
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
@@ -410,7 +423,7 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
     match
       let open Odoc_utils.ResultMonad in
       match decl with
-      | Alias p ->
+      | Alias p | Functor p ->
           Tools.expansion_of_module_path env ~strengthen:true p >>= fun exp ->
           Tools.assert_not_functor exp
       | ModuleType mty -> Tools.signature_of_u_module_type_expr env mty
@@ -438,16 +451,34 @@ and include_ : Env.t -> Include.t -> Include.t * Env.t =
         { i.expansion with content = expansion_sg }
   in
   let expansion =
-    if i.expansion.content.compiled then i.expansion else get_expansion ()
+    if i.expansion.authoritative then i.expansion else get_expansion ()
   in
   let items, env' = signature_items env i.parent expansion.content.items in
   let expansion =
     {
       expansion with
       content = { expansion.content with items; compiled = true };
+      authoritative = true;
     }
   in
-  ({ i with decl = include_decl env i.parent i.decl; expansion }, env')
+  let decl = include_decl env i.parent i.decl in
+  (* The expansion is now authoritative and is not re-derived from the decl
+     in dependent modules, so an inline Signature decl is redundant; strip it
+     to save space on Marshal. *)
+  let decl =
+    match decl with
+    | Include.ModuleType (Signature _) ->
+        Include.ModuleType
+          (Signature
+             {
+               items = [];
+               compiled = true;
+               removed = [];
+               doc = { elements = []; warnings_tag = None };
+             })
+    | _ -> decl
+  in
+  ({ i with decl; expansion }, env')
 
 and simple_expansion :
     Env.t ->
@@ -757,7 +788,7 @@ and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->
   let open TypeDecl in
   let container =
-    match t.id.iv with `Type (parent, _) -> (parent :> Id.LabelParent.t)
+    match t.id with `Type (parent, _) -> (parent :> Id.LabelParent.t)
   in
   let equation = type_decl_equation env container t.equation in
   let representation =
@@ -887,14 +918,14 @@ and handle_arrow :
     Env.t ->
     Id.Id.label_parent ->
     TypeExpr.label option ->
-    TypeExpr.t ->
-    TypeExpr.t ->
+    TypeExpr.with_modes ->
+    TypeExpr.with_modes ->
     TypeExpr.t =
- fun env parent lbl t1 t2 ->
-  let t2' = type_expression env parent t2 in
+ fun env parent lbl (t1, m1) (t2, m2) ->
+  let t2' = (type_expression env parent t2, m2) in
   match lbl with
   | Some (Optional _ | Label _) | None ->
-      Arrow (lbl, type_expression env parent t1, t2')
+      Arrow (lbl, (type_expression env parent t1, m1), t2')
   | Some (RawOptional s) -> (
       (* s is definitely an option type, but not _obviously_ so. *)
       match Component.Of_Lang.(type_expression (empty ()) t1) with
@@ -916,10 +947,14 @@ and handle_arrow :
           in
           match find_option p with
           | Some t1 ->
-              Arrow (Some (Optional s), type_expression env parent t1, t2')
+              Arrow (Some (Optional s), (type_expression env parent t1, m1), t2')
           | None ->
-              Arrow (Some (RawOptional s), type_expression env parent t1, t2'))
-      | _ -> Arrow (Some (RawOptional s), type_expression env parent t1, t2'))
+              Arrow
+                (Some (RawOptional s), (type_expression env parent t1, m1), t2')
+          )
+      | _ ->
+          Arrow (Some (RawOptional s), (type_expression env parent t1, m1), t2')
+      )
 
 and type_expression : Env.t -> Id.LabelParent.t -> _ -> _ =
  fun env parent texpr ->

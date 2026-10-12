@@ -1,0 +1,21 @@
+
+.TH Anonymous_functor 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.Anonymous_functor
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml\.Anonymous_functor\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR t
+.fi 
+.br 
+.ti +2
+In this test case the functor is defined inline
+.nf 
+.sp 
+\f[CB]type\fR included

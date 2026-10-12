@@ -1,0 +1,148 @@
+
+.TH Include_functor_argument_shapes 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.Include_functor_argument_shapes
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml\.Include_functor_argument_shapes\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR Arg = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.sp 
+.ti +2
+\f[CB]type\fR 'a p
+.sp 
+.ti +2
+\f[CB]type\fR _ anon
+.sp 
+.ti +2
+\f[CB]module\fR X : \f[CB]sig\fR
+.br 
+.ti +4
+\f[CB]type\fR v
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]module\fR \f[CB]type\fR S
+.sp 
+.ti +2
+\f[CB]val\fR via_module_type_include : unit
+.sp 
+.ti +2
+\f[CB]val\fR via_module_include : unit
+.sp 
+.ti +2
+\f[CB]class\fR class_type : \f[CB]object\fR
+.br 
+.ti +4
+\f[CB]val\fR content : int
+.br 
+.ti +2
+\f[CB]end\fR
+.sp 
+.ti +2
+\f[CB]class\fR class_ : \f[CB]object\fR
+.br 
+.ti +4
+\f[CB]val\fR content : int
+.br 
+.ti +2
+\f[CB]end\fR
+.br 
+\f[CB]end\fR
+.fi 
+.br 
+.ti +2
+Everything the expansion of the functor can inherit from its argument: types, including parameterised and anonymously parameterised ones, submodules, and module types\.
+.nf 
+.sp 
+\f[CB]module\fR Make (T : Arg) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]class\fR class_type : \f[CB]object\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]class\fR class_ : class_type
+.sp 
+\f[CB]type\fR t
+.sp 
+\f[CB]type\fR 'a p
+.sp 
+\f[CB]type\fR _ anon
+.sp 
+\f[CB]module\fR X : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR S = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR u
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]val\fR via_module_type_include : unit
+.sp 
+\f[CB]val\fR via_module_include : unit
+.sp 
+\f[CB]type\fR included = t
+.fi 
+.br 
+.ti +2
+No parameters, so the alias odoc puts in the synthetic module is a bare type t = t\.
+.nf 
+.sp 
+\f[CB]type\fR applied = int p
+.fi 
+.br 
+.ti +2
+A named parameter, which the alias threads through as type 'a p = 'a p\.
+.nf 
+.sp 
+\f[CB]type\fR anonymous = bool anon
+.fi 
+.br 
+.ti +2
+An anonymous parameter: _ gives the alias no name to mention on the right, so one is invented, as type 'a0 anon = 'a0 anon\.
+.nf 
+.sp 
+\f[CB]type\fR from_module = X\.v
+.fi 
+.br 
+.ti +2
+Reached through a submodule of the argument, aliased as module X = X\.
+.nf 
+.sp 
+\f[CB]module\fR \f[CB]type\fR Reexported = S
+.fi 
+.br 
+.ti +2
+A module type of the argument, aliased as a path to it\.
+.nf 
+.sp 
+\f[CB]class\fR output_class_via_type : BODY__3\.class_type
+.fi 
+.br 
+.ti +2
+A class whose type comes from an explicitely named class type
+.nf 
+.sp 
+\f[CB]class\fR output_class_via_name : BODY__3\.class_
+.fi 
+.br 
+.ti +2
+A class whose type comes from the name of a class
+.nf 
+.sp 
+\f[CB]module\fR Aliased : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+The input module itself\. It should contain everything from the top level module
+.nf 
+

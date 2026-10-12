@@ -1,0 +1,14 @@
+
+.TH class_type 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.Include_functor_argument_shapes\.class_type
+.SH Synopsis
+.sp 
+.in 2
+\fBClass Include_functor_argument_shapes\.class_type\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR content : int

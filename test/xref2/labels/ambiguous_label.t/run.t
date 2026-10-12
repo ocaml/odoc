@@ -44,10 +44,10 @@ References should resolve to the first occurence of the ambiguous label. It is
 not possible to use the internal label name in references:
 
   $ odoc_print test.odocl | jq -c '.. | .["`Reference"]? | select(.)'
-  [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]}}},[{"`Word":"Should"},"`Space",{"`Word":"resolve"},"`Space",{"`Word":"to"},"`Space",{"`Word":"the"},"`Space",{"`Word":"first"},"`Space",{"`Word":"label"}]]
-  [{"`Root":["example_2","`TUnknown"]},[{"`Word":"Shouldn't"},"`Space",{"`Word":"resolve"}]]
+  [{"`Resolved":{"`Identifier":{"`Label":[{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]},"example"]}}},[{"`Word":"Should resolve to the first label"}]]
+  [{"`Root":["example_2","`TUnknown"]},[{"`Word":"Shouldn't resolve"}]]
 
 A second module has a reference to the ambiguous label:
 
   $ odoc_print test_2.odocl | jq -c '.. | .["`Reference"]? | select(.)'
-  [{"`Resolved":{"`Label":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]}},"example"]}},[{"`Word":"Should"},"`Space",{"`Word":"resolve"},"`Space",{"`Word":"to"},"`Space",{"`Word":"the"},"`Space",{"`Word":"first"},"`Space",{"`Word":"label"}]]
+  [{"`Resolved":{"`Label":[{"`Identifier":{"`Root":[{"Some":{"`Page":["None","test"]}},"Test"]}},"example"]}},[{"`Word":"Should resolve to the first label"}]]

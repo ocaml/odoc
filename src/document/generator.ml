@@ -112,7 +112,6 @@ module Make (Syntax : SYNTAX) = struct
       | `SubstitutedCT m -> from_path (m :> Path.t)
       | `Unbox t -> from_path (t :> Path.t)
       | `Root root -> unresolved [ inline @@ Text (ModuleName.to_string root) ]
-      | `Forward root -> unresolved [ inline @@ Text root ] (* FIXME *)
       | `Dot (prefix, suffix) ->
           let link = from_path (prefix :> Path.t) in
           link ++ O.txt ("." ^ ModuleName.to_string suffix)
@@ -280,7 +279,7 @@ module Make (Syntax : SYNTAX) = struct
     let info_of_info : Lang.Source_info.annotation -> Source_page.info option =
       function
       | Definition id -> (
-          match id.iv with
+          match id with
           | `SourceLocation (_, def) -> Some (Anchor (DefName.to_string def))
           | `SourceLocationInternal (_, local) ->
               Some (Anchor (LocalName.to_string local))
@@ -325,6 +324,11 @@ module Make (Syntax : SYNTAX) = struct
 
     val with_kind_annotation : Odoc_model.Lang.Kind.t -> text -> text
   end = struct
+    let format_modes (modes : Odoc_model.Lang.Modes.t) =
+      match modes with
+      | [] -> O.noop
+      | ms -> O.txt " @ " ++ O.txt (String.concat ~sep:" " ms)
+
     let rec te_variant (t : Odoc_model.Lang.TypeExpr.Polymorphic_variant.t) =
       let style_arguments ~constant arguments =
         (* Multiple arguments in a polymorphic variant constructor correspond
@@ -494,35 +498,26 @@ module Make (Syntax : SYNTAX) = struct
           enclose_parens_if_needed
             (type_expr ~needs_parentheses:true te
             ++ O.txt " " ++ O.keyword "as" ++ O.txt " '" ++ O.txt alias)
-      | Arrow (None, src, dst) ->
-          let res =
-            O.span
-              ((O.box_hv @@ type_expr ~needs_parentheses:true src)
-              ++ O.txt " " ++ Syntax.Type.arrow)
-            ++ O.sp ++ type_expr dst
-            (* ++ O.end_hv *)
+      | Arrow (lbl, (src, src_modes), (dst, dst_modes)) ->
+          let src =
+            (O.box_hv @@ type_expr ~needs_parentheses:true src)
+            ++ format_modes src_modes
           in
-          enclose_parens_if_needed res
-      | Arrow (Some (RawOptional _ as lbl), _src, dst) ->
-          let res =
-            O.span
-              (O.box_hv
-              @@ label lbl ++ O.txt ":"
-                 ++ tag "error" (O.txt "???")
-                 ++ O.txt " " ++ Syntax.Type.arrow)
-            ++ O.sp ++ type_expr dst
+          let labelized_src =
+            match lbl with
+            | None -> src
+            | Some (RawOptional _ as lbl) ->
+                O.box_hv
+                @@ label lbl ++ O.txt ":"
+                   ++ tag "error" (O.txt "???")
+                   ++ format_modes src_modes
+            | Some lbl -> O.box_hv @@ (label lbl ++ O.txt ":" ++ O.cut ++ src)
           in
-          enclose_parens_if_needed res
-      | Arrow (Some lbl, src, dst) ->
-          let res =
-            O.span
-              ((O.box_hv
-               @@ label lbl ++ O.txt ":" ++ O.cut
-                  ++ (O.box_hv @@ type_expr ~needs_parentheses:true src))
-              ++ O.txt " " ++ Syntax.Type.arrow)
-            ++ O.sp ++ type_expr dst
-          in
-          enclose_parens_if_needed res
+          enclose_parens_if_needed
+            (O.span (labelized_src ++ O.txt " " ++ Syntax.Type.arrow)
+            ++ O.sp
+            ++ type_expr ~needs_parentheses:(dst_modes <> []) dst
+            ++ format_modes dst_modes)
       | Tuple lst -> tuple ~needs_parentheses ~boxed:true lst
       | Unboxed_tuple lst -> tuple ~needs_parentheses ~boxed:false lst
       | Constr (path, args) ->
@@ -549,7 +544,7 @@ module Make (Syntax : SYNTAX) = struct
             match lbl with None -> O.noop | Some lbl -> label lbl ++ O.txt ":"
           in
           let name =
-            match m_arg.id.iv with
+            match m_arg.id with
             | `Parameter (_, name) -> ModuleName.to_string name
           in
           let dst = type_expr dst in
@@ -1053,7 +1048,7 @@ module Make (Syntax : SYNTAX) = struct
     val value : Lang.Value.t -> Item.t
   end = struct
     let rec arity_of_type_expr = function
-      | Lang.TypeExpr.Arrow (_lbl, _arg, curried) ->
+      | Lang.TypeExpr.Arrow (_lbl, _arg, (curried, _modes)) ->
           1 + arity_of_type_expr curried
       | _ -> 0
 
@@ -1387,37 +1382,37 @@ module Make (Syntax : SYNTAX) = struct
   end = struct
     let internal_module m =
       let open Lang.Module in
-      match m.id.iv with
+      match m.id with
       | `Module (_, name) when ModuleName.is_hidden name -> true
       | _ -> false
 
     let internal_type t =
       let open Lang.TypeDecl in
-      match t.id.iv with
+      match t.id with
       | `Type (_, name) when TypeName.is_hidden name -> true
       | _ -> false
 
     let internal_value v =
       let open Lang.Value in
-      match v.id.iv with
+      match v.id with
       | `Value (_, name) when ValueName.is_hidden name -> true
       | _ -> false
 
     let internal_module_type t =
       let open Lang.ModuleType in
-      match t.id.iv with
+      match t.id with
       | `ModuleType (_, name) when ModuleTypeName.is_hidden name -> true
       | _ -> false
 
     let internal_module_substitution t =
       let open Lang.ModuleSubstitution in
-      match t.id.iv with
+      match t.id with
       | `Module (_, name) when ModuleName.is_hidden name -> true
       | _ -> false
 
     let internal_module_type_substitution t =
       let open Lang.ModuleTypeSubstitution in
-      match t.id.iv with
+      match t.id with
       | `ModuleType (_, name) when ModuleTypeName.is_hidden name -> true
       | _ -> false
 
@@ -1916,8 +1911,10 @@ module Make (Syntax : SYNTAX) = struct
     and include_ (t : Odoc_model.Lang.Include.t) =
       let decl_hidden =
         match t.decl with
-        | Alias p -> Paths.Path.(is_hidden (p :> t))
-        | ModuleType mty -> umty_hidden mty
+        | Alias p | Functor { original_ref = Path p; _ } ->
+            Paths.Path.(is_hidden (p :> t))
+        | Functor { original_ref = ModuleType mty; _ } -> mty_hidden mty
+        | ModuleType umty -> umty_hidden umty
       in
       let status = if decl_hidden then `Inline else t.status in
 
@@ -1925,14 +1922,22 @@ module Make (Syntax : SYNTAX) = struct
       let summary =
         if decl_hidden then O.render (O.keyword "include" ++ O.txt " ...")
         else
+          let include_kw =
+            match t.decl with
+            | Odoc_model.Lang.Include.Alias _ | ModuleType _ ->
+                O.keyword "include"
+            | Functor _ -> O.keyword "include functor"
+          in
           let include_decl =
             match t.decl with
-            | Odoc_model.Lang.Include.Alias mod_path ->
+            | Odoc_model.Lang.Include.Alias mod_path
+            | Functor { original_ref = Path mod_path; _ } ->
                 Link.from_path (mod_path :> Paths.Path.t)
+            | Functor { original_ref = ModuleType mt; _ } -> mty mt
             | ModuleType mt -> umty mt
           in
           O.render
-            (O.keyword "include" ++ O.txt " " ++ include_decl
+            (include_kw ++ O.txt " " ++ include_decl
             ++ if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop)
       in
       let content = { Include.content; status; summary } in
@@ -1995,7 +2000,7 @@ module Make (Syntax : SYNTAX) = struct
 
     let page (t : Odoc_model.Lang.Page.t) =
       (*let name =
-          match t.name.iv with `Page (_, name) | `LeafPage (_, name) -> name
+          match t.name with `Page (_, name) | `LeafPage (_, name) -> name
         in*)
       (*let title = Odoc_model.Names.PageName.to_string name in*)
       let url = Url.Path.from_identifier t.name in

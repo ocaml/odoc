@@ -15,6 +15,7 @@ type resolver = {
   lookup_page : path_query -> (Lang.Page.t, lookup_error) result;
   lookup_asset : path_query -> (Lang.Asset.t, lookup_error) result;
   lookup_impl : string -> Lang.Implementation.t option;
+  shape_reducer : Shape_reducer.t;
 }
 
 type root =
@@ -43,6 +44,8 @@ val with_recorded_lookups : t -> (t -> 'a) -> LookupTypeSet.t * 'a
 val set_resolver : t -> resolver -> t
 
 val has_resolver : t -> bool
+
+val resolver : t -> resolver option
 
 val id : t -> int
 
@@ -123,8 +126,7 @@ val lookup_by_name : 'a scope -> string -> t -> 'a maybe_ambiguous
     [Error (`Ambiguous _)] when two or more elements match the given scope and
     name. *)
 
-val lookup_by_id :
-  'a scope -> [< Identifier.t_pv ] Paths.Identifier.id -> t -> 'a option
+val lookup_by_id : 'a scope -> [< Identifier.t ] -> t -> 'a option
 (** Like [lookup_by_name] but use an identifier as key. *)
 
 val s_any : Component.Element.any scope

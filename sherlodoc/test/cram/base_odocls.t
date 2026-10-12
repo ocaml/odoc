@@ -2,7 +2,11 @@
   html_f.odocl
   html_sigs.odocl
   html_types.odocl
+  page-api.odocl
+  page-functors.odocl
   page-index.odocl
+  page-jsx.odocl
+  page-ppx.odocl
   svg_f.odocl
   svg_sigs.odocl
   svg_types.odocl
@@ -20,7 +24,11 @@
   html_f.odocl
   html_sigs.odocl
   html_types.odocl
+  page-api.odocl
+  page-functors.odocl
   page-index.odocl
+  page-jsx.odocl
+  page-ppx.odocl
   svg_f.odocl
   svg_sigs.odocl
   svg_types.odocl

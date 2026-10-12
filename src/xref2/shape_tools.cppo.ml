@@ -10,7 +10,7 @@ type t = Shape.t * Odoc_model.Paths.Identifier.SourceLocation.t Shape.Uid.Map.t
 
 (** Project an identifier into a shape. *)
 let rec shape_of_id env :
-    [< Identifier.NonSrc.t_pv ] Identifier.id -> Shape.t option =
+    [< Identifier.NonSrc.t ] -> Shape.t option =
   let proj parent kind name =
     let item = Shape.Item.make name kind in
     match shape_of_id env (parent :> Identifier.NonSrc.t) with
@@ -19,7 +19,7 @@ let rec shape_of_id env :
   in
   fun id ->
     if Identifier.is_hidden id then None else 
-    match id.iv with
+    match id with
     | `Root (_, name) -> (
         match Env.lookup_impl (ModuleName.to_string_unsafe name) env with
         | Some impl -> (
@@ -73,7 +73,6 @@ let rec shape_of_module_path env : _ -> Shape.t option =
             | Some (shape, _) -> Some shape
             | None -> None)
         | _ -> None)
-    | `Forward _ -> None
     | `Dot (parent, name) ->
         proj (parent :> Odoc_model.Paths.Path.Module.t) Kind.Module (ModuleName.to_string_unsafe name)
     | `Apply (parent, arg) ->
@@ -106,7 +105,6 @@ let rec shape_of_kind_path env kind :
     | `Identifier (id, _) -> shape_of_id env (id :> Odoc_model.Paths.Identifier.NonSrc.t)
     | `Substituted t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
     | `Unbox t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
-    | `Forward _
     | `Dot _
     | `Root _
     | `Apply _ -> None
@@ -125,54 +123,10 @@ let unit_of_uid uid =
   | Local_opaque_item _ -> None
 #endif
 
-#if OCAML_VERSION >= (5,2,0)
-let rec traverse_aliases = function
-   | Shape_reduce.Resolved uid -> Some uid
-   | Approximated id -> id
-   | Resolved_alias (_,x) -> traverse_aliases x
-   | _ -> None
-#endif
-
 let lookup_shape : Env.t -> Shape.t -> Identifier.SourceLocation.t option =
  fun env query ->
-#if OCAML_VERSION < (5,2,0)
-  let module Reduce = Shape.Make_reduce (struct
-    type env = unit
-    let fuel = 10
-    let read_unit_shape ~unit_name =
-      match Env.lookup_impl unit_name env with
-      | Some impl -> (
-          match impl.shape_info with
-          | Some (shape, _) -> Some shape
-          | None -> None)
-      | _ -> None
-    let find_shape _ _ = raise Not_found
-  end) in
-  let result = try Some (Reduce.reduce () query) with Not_found -> None in
-  result >>= fun result ->
-  result.uid >>= fun uid ->
-#else
-  let module Reduce = Shape_reduce.Make(struct
-    let fuel = 10
-    let read_unit_shape ~unit_name =
-      match Env.lookup_impl unit_name env with
-      | Some impl -> (
-          match impl.shape_info with
-          | Some (shape, _) -> Some shape
-          | None -> None)
-       | _ -> None
-#if defined OXCAML
-    let fuel () = Misc.Maybe_bounded.of_int 10
-    let fuel_for_compilation_units () = Misc.Maybe_bounded.Unbounded
-    let max_shape_reduce_steps_per_variable () = Misc.Maybe_bounded.Unbounded
-    let max_compilation_unit_depth () = Misc.Maybe_bounded.Unbounded
-    let projection_rules_for_merlin_enabled = true
-    let read_unit_shape ~diagnostics:_ ~unit_name = read_unit_shape ~unit_name
-#endif
-  end) in
-  let result = try Some (Reduce.reduce_for_uid Ocaml_env.empty query) with Not_found -> None in
-  result >>= traverse_aliases >>= fun uid ->
-#endif
+  Env.resolver env >>= fun resolver ->
+  Shape_reducer.reduce_for_uid resolver.Env.shape_reducer query >>= fun uid ->
   unit_of_uid uid >>= fun unit_name ->
   match Env.lookup_impl unit_name env with
   | Some { shape_info ; id = Some id ; _} -> (

@@ -98,7 +98,7 @@
  (warnings
   ( "File \"f.ml\", line 1, characters 0-11:\
    \nOpen bracket '{{image!' is never closed."
-    "File \"f.ml\", line 1, characters 11-11:\
+    "File \"f.ml\", line 1, character 11:\
    \nEnd of text is not allowed in '{{image!...} ...}' (image-reference)."
     "File \"f.ml\", line 1, characters 11-10:\
    \n'{{image!...} ...}' (image-reference) should not be empty.")))
@@ -120,7 +120,7 @@
  (warnings
   ( "File \"f.ml\", line 1, characters 0-11:\
    \nOpen bracket '{{video!' is never closed."
-    "File \"f.ml\", line 1, characters 11-11:\
+    "File \"f.ml\", line 1, character 11:\
    \nEnd of text is not allowed in '{{video!...} ...}' (video-reference)."
     "File \"f.ml\", line 1, characters 11-10:\
    \n'{{video!...} ...}' (video-reference) should not be empty.")))
@@ -142,7 +142,7 @@
  (warnings
   ( "File \"f.ml\", line 1, characters 0-11:\
    \nOpen bracket '{{audio!' is never closed."
-    "File \"f.ml\", line 1, characters 11-11:\
+    "File \"f.ml\", line 1, character 11:\
    \nEnd of text is not allowed in '{{audio!...} ...}' (audio-reference)."
     "File \"f.ml\", line 1, characters 11-10:\
    \n'{{audio!...} ...}' (audio-reference) should not be empty.")))
@@ -162,7 +162,7 @@
   (((f.ml (1 0) (1 16))
     (simple ((f.ml (1 8) (1 11)) (Reference foo)) bar image))))
  (warnings
-  ( "File \"f.ml\", line 1, characters 16-16:\
+  ( "File \"f.ml\", line 1, character 16:\
    \nEnd of text is not allowed in '{{image!...} ...}' (image-reference).")))
 --- input ---
 {{image!foo} bar 

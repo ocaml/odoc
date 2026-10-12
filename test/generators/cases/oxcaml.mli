@@ -88,6 +88,57 @@ type 'a t_with : immediate with 'a
 type 'a t_with_modalities : immutable_data with 'a @@ portable contended
 (** Kind annotation with a [with] constraint and modalities. *)
 
+type ('k, 'cmp) comparator
+(** Helper used in the [with] constraints below. *)
+
+type ('k, 'v, 'cmp) t_with_constr
+  : immutable_data with 'k with 'v with ('k, 'cmp) comparator
+(** A [with] constraint whose right-hand side is a parameterized type
+    constructor (as found in [base]'s [Map] module). *)
+
+type 'a t_with_app : immutable_data with 'a list
+(** A [with] constraint whose right-hand side applies a type constructor. *)
+
+type 'a t_with_arrow : immutable_data with ('a -> 'a)
+(** A [with] constraint whose right-hand side is an arrow type. *)
+
+type 'a t_with_arrow_modes : immutable_data with ('a -> 'a @ local)
+(** A [with] constraint whose right-hand side is an arrow type carrying a
+    mode. *)
+
+type 'a t_with_tuple : immutable_data with ('a * int)
+(** A [with] constraint whose right-hand side is a tuple type. *)
+
+module M_with : sig
+  type 'a t : immutable_data
+end
+(** Helper module used in the [with] constraint below. *)
+
+type 'a t_with_dot : immutable_data with 'a M_with.t
+(** A [with] constraint referring to a type through a module path
+    ([M.t]). *)
+
+module type Arg_with = sig
+  type s
+end
+
+module F_with (X : Arg_with) : sig
+  type 'a t : immutable_data
+end
+(** Helper functor used in the [with] constraint below. *)
+
+module X_with : Arg_with
+
+type 'a t_with_functor : immutable_data with 'a F_with(X_with).t
+(** A [with] constraint referring to a type through a functor application
+    ([F(X).t]). *)
+
+type 'a t_with_variant : immutable_data with [ `Foo of 'a | `Bar ]
+(** A [with] constraint whose right-hand side is a polymorphic variant. *)
+
+type 'a t_with_object : immutable_data with < foo : 'a >
+(** A [with] constraint whose right-hand side is an object type. *)
+
 (** {1 Kind annotations on type aliases} *)
 
 type t_alias : immediate = int
@@ -280,3 +331,373 @@ module M3 : sig @@ contended
 end
 (** [contended] modality applied to all definitions in the module, except the
     ones which have already specified this axis. *)
+
+(** {1 Modes} *)
+
+val mode_arg : int @ local -> int
+(** Mode on a function argument. *)
+
+val mode_ret : int -> int @ local
+(** Mode on a function return. *)
+
+val mode_both : int @ local -> int @ local
+(** Modes on both argument and return. *)
+
+val mode_multi : string @ local once -> string @ local unique
+(** Multiple modes on argument and return. *)
+
+val mode_multi_flipped : string @ once local -> string @ unique local
+(** Same as [mode_multi], to show that modes order is normalized. *)
+
+val mode_labeled : x:int @ local -> int
+(** Mode on a labeled argument. *)
+
+val mode_optional : ?x:int @ local -> unit -> int
+(** Mode on an optional argument. *)
+
+val mode_higher_order : ('a -> 'b) @ local -> 'a -> 'b
+(** Mode on a higher-order function argument. *)
+
+val mode_arrow_result : int -> (int -> int) @ local
+(** Mode on a result that is itself an arrow. The arrow must be parenthesized so
+    the mode does not appear to bind to the inner return type. *)
+
+(** {2 Curry-implied result modes}
+
+    Closing over an argument constrains the partial-application closure across
+    several axes, not just locality. When the result mode is the one currying
+    implies from the argument, it is suppressed (as the compiler does). *)
+
+val curry_once : (int -> int) @ once -> int -> int
+(** [once] argument: the implied [once] result mode is suppressed. *)
+
+val curry_portable : (int -> int) @ portable -> int -> int
+(** [portable] argument: the implied result mode is suppressed. *)
+
+val curry_contended : (int -> int) @ contended -> int -> int
+(** [contended] argument: the implied result mode is suppressed. *)
+
+(** {2 Result modes that are kept}
+
+    A result mode is only suppressed when it is exactly the one currying
+    implies. An explicit mode on a different axis is kept (and the arrow result
+    is parenthesized). *)
+
+val keep_portable : int @ local -> (int -> int) @ portable
+(** [portable] on the result is not implied by a [local] argument, so it is kept. *)
+
+val keep_once : int @ local -> (int -> int) @ once
+(** [once] on the result is not implied by a [local] argument, so it is kept. *)
+
+val keep_over_once : (int -> int) @ once -> (int -> int) @ portable
+(** The curry-implied [once] is suppressed, but the explicit [portable] is kept. *)
+
+val keep_over_local : (int -> int) @ local -> (int -> int) @ portable
+(** The curry-implied [local] is suppressed, but the explicit [portable] is kept. *)
+
+val keep_portable_over_nonportable : (int -> int) @ nonportable -> (int -> int) @ portable
+(** The [nonportable] argument mode is the default and dropped, while the
+    explicit [portable] result, not implied by currying, is kept. *)
+
+(** {2 All mode axes} *)
+
+val mode_global : int @ global -> unit
+(** Locality mode (legacy, not rendered). *)
+
+val mode_local : int @ local -> unit
+(** Locality mode. *)
+
+val mode_aliased : int @ aliased -> unit
+(** Uniqueness mode (legacy, not rendered). *)
+
+val mode_unique : int @ unique -> unit
+(** Uniqueness mode. *)
+
+val mode_many : int @ many -> unit
+(** Linearity mode (legacy, not rendered). *)
+
+val mode_once : int @ once -> unit
+(** Linearity mode. *)
+
+val mode_portable : int @ portable -> unit
+(** Portability mode. *)
+
+val mode_shareable : int @ shareable -> unit
+(** Portability mode (intermediate value). *)
+
+val mode_nonportable : int @ nonportable -> unit
+(** Portability mode (legacy, not rendered). *)
+
+val mode_uncontended : int @ uncontended -> unit
+(** Contention mode (legacy, not rendered). *)
+
+val mode_shared : int @ shared -> unit
+(** Contention mode. *)
+
+val mode_contended : int @ contended -> unit
+(** Contention mode. *)
+
+val mode_yielding : int @ yielding -> unit
+(** Yield mode. *)
+
+val mode_unyielding : int @ unyielding -> unit
+(** Yield mode (legacy, not rendered). *)
+
+val mode_forkable : int @ forkable -> unit
+(** Fork mode (identity on a non-[local] argument, not rendered). *)
+
+val mode_local_forkable : int @ local forkable -> unit
+(** Fork mode, rendered because the argument is also [local]. *)
+
+val mode_unforkable : int @ unforkable -> unit
+(** Fork mode. *)
+
+val mode_local_unforkable : int @ local unforkable -> unit
+(** Fork mode (identity for a [local] argument, not rendered). *)
+
+val mode_stateless : int @ stateless -> unit
+(** Statefulness mode. *)
+
+val mode_stateful : int @ stateful -> unit
+(** Statefulness mode (identity when [portability] is at its default, not rendered). *)
+
+val mode_immutable : int @ immutable -> unit
+(** Visibility mode. *)
+
+val mode_read : int @ read -> unit
+(** Visibility mode. *)
+
+val mode_read_write : int @ read_write -> unit
+(** Visibility mode (legacy, not rendered). *)
+
+val mode_static : int @ static -> unit
+(** Staticity mode. *)
+
+val mode_dynamic : int @ dynamic -> unit
+(** Staticity mode (legacy, not rendered). *)
+
+(** {2 Cross-axis suppression}
+
+    Some axes have a default value that is implied by another axis; the implied
+    value is suppressed when rendering. *)
+
+val mode_local_yielding : int @ local yielding -> unit
+(** [yielding] is the default for [local], so it is not rendered. *)
+
+val mode_local_unyielding : int @ local unyielding -> unit
+(** [unyielding] is non-default for [local], so it is rendered. *)
+
+val mode_immutable_contended : int @ immutable contended -> unit
+(** [contended] is the default for [immutable], so it is not rendered. *)
+
+val mode_immutable_uncontended : int @ immutable uncontended -> unit
+(** [uncontended] is non-default for [immutable], so it is rendered. *)
+
+val mode_stateless_portable : int @ stateless portable -> unit
+(** [portable] is the default for [stateless], so it is not rendered. *)
+
+val mode_stateful_portable : int @ stateful portable -> unit
+(** [portable] is non-default for [stateful], so it is rendered. *)
+
+(** {2 Modes in type definitions} *)
+
+type mode_alias = int @ local -> int
+(** Type alias for an arrow with a mode on its argument. *)
+
+type mode_record = {
+  fn : int @ local -> int;  (** Record field whose type is an arrow with a mode. *)
+  fn_both : int @ local -> int @ local;  (** Arrow field with modes on both sides. *)
+  mutable mfn : int @ local -> int;  (** Mutable arrow field with a mode. *)
+}
+
+type mode_cstr =
+  | Mc_arrow of (int @ local -> int)
+      (** Constructor argument is a parenthesized arrow with a mode. *)
+  | Mc_nested of ((int @ local -> int) -> unit)
+      (** Nested arrow: higher-order with a mode on the inner argument. *)
+  | Mc_gadt : ('a @ once -> 'a) -> mode_cstr
+      (** GADT constructor *)
+
+(** {1 Include functor on signatures} *)
+
+module No_include_functor : sig
+(** Module without any [include functor] features, this is how things are done
+    in plain OCaml at the moment. *)
+  module Make (T : sig type t end) : sig type included end
+  module T : sig
+    type t
+  end
+
+  include module type of T
+  include module type of Make(T)
+end
+
+module Include_functor : sig
+(** Module which defines a functor and includes it via [module type of] *)
+  module Make (T : sig type t end) : sig type included = T.t end
+  type t
+  include functor module type of Make
+end
+
+module Include_functor_argument_shapes : sig
+(** Everything the expansion of the functor can inherit from its argument:
+    types, including parameterised and anonymously parameterised ones,
+    submodules, and module types. *)
+  module type Arg = sig
+    type t
+    type 'a p
+    type _ anon
+    module X : sig type v end
+    module type S
+    val via_module_type_include : unit
+    val via_module_include : unit
+
+    class class_type : object 
+      val content : int
+    end
+
+    class class_ : class_type
+  end
+
+  module Make (T : Arg) : sig
+    type included = T.t
+    (** No parameters, so the alias odoc puts in the synthetic module is a bare
+        [type t = t]. *)
+
+    type applied = int T.p
+    (** A named parameter, which the alias threads through as
+        [type 'a p = 'a p]. *)
+
+    type anonymous = bool T.anon
+    (** An anonymous parameter: [_] gives the alias no name to mention on the
+        right, so one is invented, as [type 'a0 anon = 'a0 anon]. *)
+
+    type from_module = T.X.v
+    (** Reached through a submodule of the argument, aliased as
+        [module X = X]. *)
+
+    module type Reexported = T.S
+    (** A module type of the argument, aliased as a path to it. *)
+
+    class output_class_via_type : T.class_type
+    (** A class whose type comes from an explicitely named class type *)
+
+    class output_class_via_name : T.class_
+    (** A class whose type comes from the name of a class *)
+
+    module Aliased = T
+    (** The input module itself. It should contain everything from the top
+        level module *)
+  end
+
+  (**/**)
+  module type To_include_module_type = sig
+    val via_module_type_include : unit
+  end
+
+  module To_include_module : sig
+    val via_module_include : unit
+  end
+  (**/**)
+
+  class class_type : object
+    val content : int
+  end
+
+  class class_ : class_type
+
+  type t
+  type 'a p
+  type _ anon
+  module X : sig type v end
+  module type S = sig type u end
+  include To_include_module_type
+  include module type of To_include_module
+
+  include functor module type of Make
+end
+
+module Include_functor_desugared : sig
+(** This module is the desugared version of {!Include_functor}: the synthetic
+    module aliases the preceding items rather than copying them, so that the
+    types the functor inherits from its argument resolve back to them. *)
+  module Make (T : sig type t end) : sig type included = T.t end
+
+  type t
+
+  module DUMMY__ : sig
+    type nonrec t = t
+  end
+
+  include module type of Make(DUMMY__)
+end
+
+module Include_functor_named_type_desugared : sig
+(** This is the desugared version of {!Include_functor_named_type}. *)
+  module type MakeType = (X : sig type t end) -> sig type included = X.t end
+
+  type t
+
+  module DUMMY__ : sig
+    type nonrec t = t
+  end
+
+  module STRUCT__MakeType : MakeType
+  include module type of STRUCT__MakeType(DUMMY__)
+end
+
+module Include_functor_named_type : sig
+(** This is a module where the functor is named and then included. *)
+  module type MakeType = (X : sig type t end) -> sig type included = X.t end
+  type t
+  include functor MakeType
+end
+
+module Include_functor_inline : sig
+(** This is a test case where the functor is named and included inline *)
+  module type Make = (_ : sig type t end) -> sig type included end
+  type t
+  include functor Make
+  (** @inline *)
+end
+
+module Anonymous_functor : sig
+(** In this test case the functor is defined inline *)
+  type t
+  include functor module type of functor (T : sig type t end) -> struct type included end
+end
+
+module Anonymous_functor_desugared : sig
+(** In this test case the functor is defined inline *)
+  module DUMMY__ : sig
+    type t
+  end
+  include module type of DUMMY__
+
+  include module type of (functor (T : sig type t end) -> struct type included end)(DUMMY__)
+end
+
+module Multiple_include_functors : sig
+(** Two [include functor]s in the same signature, with an item defined between
+    them. *)
+  module First (T : sig type t end) : sig type first = T.t end
+
+  module Second (T : sig type t type first type between end) : sig
+    type second = T.first
+    type third = T.between
+  end
+
+  type t
+  include functor module type of First
+  type between
+  include functor module type of Second
+end
+
+module Include_functor_not_last : sig
+(** An [include functor] that is not the last item of the signature. *)
+  module Make (T : sig type t end) : sig type included = T.t end
+
+  type t
+  include functor module type of Make
+  type after
+end

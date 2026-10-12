@@ -125,7 +125,10 @@ and TypeExpr : sig
     | Var of string
     | Any
     | Alias of t * string
-    | Arrow of label option * t * t
+    | Arrow of
+        label option
+        * (t * Odoc_model.Lang.Modes.t)
+        * (t * Odoc_model.Lang.Modes.t)
     | Tuple of (string option * t) list
     | Unboxed_tuple of (string option * t) list
     | Constr of Cpath.type_ * t list
@@ -364,7 +367,10 @@ end =
   Open
 
 and Include : sig
-  type decl = Alias of Cpath.module_ | ModuleType of ModuleType.U.expr
+  type decl =
+    | Alias of Cpath.module_
+    | ModuleType of ModuleType.U.expr
+    | Functor of Cpath.module_
 
   type t = {
     parent : Odoc_model.Paths.Identifier.Signature.t;
@@ -373,6 +379,7 @@ and Include : sig
     status : [ `Default | `Inline | `Closed | `Open ];
     shadowed : Odoc_model.Lang.Include.shadowed;
     expansion_ : Signature.t;
+    authoritative : bool;
     decl : decl;
     loc : Odoc_model.Location_.span;
   }
@@ -681,7 +688,7 @@ module Fmt = struct
     if c.short_paths then Ident.short_fmt ppf i else Ident.fmt ppf i
 
   let rec model_identifier c ppf (p : id) =
-    match p.iv with
+    match p with
     | `Root (_, unit_name) ->
         wrap c "root" (fun _ -> ModuleName.fmt) ppf unit_name
     | `Module (parent, name) ->
@@ -924,6 +931,7 @@ module Fmt = struct
     let open Include in
     function
     | Alias p -> Format.fprintf ppf "%a" (module_path c) p
+    | Functor p -> Format.fprintf ppf "functor %a" (module_path c) p
     | ModuleType mt -> Format.fprintf ppf "%a" (u_module_type_expr c) mt
 
   and value c ppf v =
@@ -1201,7 +1209,7 @@ module Fmt = struct
     | Var x -> Format.fprintf ppf "%s" x
     | Any -> Format.fprintf ppf "_"
     | Alias (x, y) -> Format.fprintf ppf "(alias %a %s)" (type_expr c) x y
-    | Arrow (l, t1, t2) ->
+    | Arrow (l, (t1, _), (t2, _)) ->
         Format.fprintf ppf "%a(%a) -> %a" type_expr_label l (type_expr c) t1
           (type_expr c) t2
     | Tuple ts -> Format.fprintf ppf "(%a)" (type_labeled_tuple c) ts
@@ -1265,7 +1273,6 @@ module Fmt = struct
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
     | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
     | `Substituted p -> wrap c "substituted" module_path ppf p
-    | `Forward s -> wrap c "forward" str ppf s
     | `Root r -> wrap c "unresolvedroot" str ppf (ModuleName.to_string r)
 
   and resolved_module_type_path :
@@ -1423,7 +1430,6 @@ module Fmt = struct
     | `Identifier (id, b) ->
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
     | `Root s -> wrap c "root" str ppf (ModuleName.to_string s)
-    | `Forward s -> wrap c "forward" str ppf s
     | `Dot (p, s) -> dot p (ModuleName.to_string s)
     | `DotMT (p, s) -> dot p (ModuleTypeName.to_string s)
     | `DotT (p, s) -> dot p (TypeName.to_string s)
@@ -1997,12 +2003,8 @@ module Of_Lang = struct
 
   let find_any_module i ident_map =
     match i with
-    | { Odoc_model.Paths.Identifier.iv = `Root _ | `Module _; _ } as id ->
-        Maps.Module.find id ident_map.modules
-    | {
-        Odoc_model.Paths.Identifier.iv = #Paths.Identifier.FunctorParameter.t_pv;
-        _;
-      } as id ->
+    | (`Root _ | `Module _) as id -> Maps.Module.find id ident_map.modules
+    | #Paths.Identifier.FunctorParameter.t as id ->
         Maps.FunctorParameter.find id ident_map.functor_parameters
     | _ -> raise Not_found
 
@@ -2111,7 +2113,6 @@ module Of_Lang = struct
     | `Dot (path', x) -> `Dot (module_path ident_map path', x)
     | `Apply (p1, p2) ->
         `Apply (module_path ident_map p1, module_path ident_map p2)
-    | `Forward str -> `Forward str
     | `Root str -> `Root str
 
   and module_type_path :
@@ -2362,8 +2363,11 @@ module Of_Lang = struct
     | Any -> Any
     | Constr (p, xs) ->
         Constr (type_path ident_map p, List.map (type_expression ident_map) xs)
-    | Arrow (lbl, t1, t2) ->
-        Arrow (lbl, type_expression ident_map t1, type_expression ident_map t2)
+    | Arrow (lbl, (t1, m1), (t2, m2)) ->
+        Arrow
+          ( lbl,
+            (type_expression ident_map t1, m1),
+            (type_expression ident_map t2, m2) )
     | Tuple ts ->
         Tuple
           (List.map (fun (lbl, ty) -> (lbl, type_expression ident_map ty)) ts)
@@ -2410,6 +2414,9 @@ module Of_Lang = struct
   and include_decl ident_map m =
     match m with
     | Odoc_model.Lang.Include.Alias p -> Include.Alias (module_path ident_map p)
+    | Functor { target = Path p; _ } ->
+        Include.Functor (module_path ident_map p)
+    | Functor { target = ModuleType _ } -> assert false
     | ModuleType s -> ModuleType (u_module_type_expr ident_map s)
 
   and simple_expansion ident_map
@@ -2640,6 +2647,7 @@ module Of_Lang = struct
       doc = docs ident_map i.doc;
       shadowed = i.expansion.shadowed;
       expansion_ = apply_sig_map ident_map i.expansion.content;
+      authoritative = i.expansion.authoritative;
       status = i.status;
       strengthened = option module_path ident_map i.strengthened;
       decl;

@@ -567,6 +567,30 @@
   (>= %{ocaml_version} 5.5)))
 
 (rule
+ (target ocaml_56.cmti)
+ (package odoc)
+ (action
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/ocaml_56.mli}))
+ (enabled_if
+  (>= %{ocaml_version} 5.6)))
+
+(rule
+ (target ocaml_56.odoc)
+ (package odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:ocaml_56.cmti}))
+ (enabled_if
+  (>= %{ocaml_version} 5.6)))
+
+(rule
+ (target ocaml_56.odocl)
+ (package odoc)
+ (action
+  (run odoc link -o %{target} %{dep:ocaml_56.odoc}))
+ (enabled_if
+  (>= %{ocaml_version} 5.6)))
+
+(rule
  (target ocamlary.cmti)
  (package odoc)
  (action
@@ -7628,6 +7652,166 @@
 (subdir
  html
  (rule
+  (targets Ocaml_56.html.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../ocaml_56.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_56.html Ocaml_56.html.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ html
+ (rule
+  (target ocaml_56.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    ocaml_56.targets.gen
+    (run odoc html-targets -o . %{dep:../ocaml_56.odocl} --flat)))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff ocaml_56.targets ocaml_56.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ latex
+ (rule
+  (targets Ocaml_56.tex.gen)
+  (package odoc)
+  (action
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../ocaml_56.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_56.tex Ocaml_56.tex.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ latex
+ (rule
+  (target ocaml_56.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    ocaml_56.targets.gen
+    (run odoc latex-targets -o . %{dep:../ocaml_56.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff ocaml_56.targets ocaml_56.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ man
+ (rule
+  (targets Ocaml_56.3o.gen)
+  (package odoc)
+  (action
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../ocaml_56.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_56.3o Ocaml_56.3o.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ man
+ (rule
+  (target ocaml_56.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    ocaml_56.targets.gen
+    (run odoc man-targets -o . %{dep:../ocaml_56.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff ocaml_56.targets ocaml_56.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ markdown
+ (rule
+  (targets Ocaml_56.md.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../ocaml_56.odocl}))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Ocaml_56.md Ocaml_56.md.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ markdown
+ (rule
+  (target ocaml_56.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    ocaml_56.targets.gen
+    (run odoc markdown-targets -o . %{dep:../ocaml_56.odocl})))
+  (enabled_if
+   (>= %{ocaml_version} 5.6)))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff ocaml_56.targets ocaml_56.targets.gen))
+  (enabled_if
+   (>= %{ocaml_version} 5.6))))
+
+(subdir
+ html
+ (rule
   (targets
    Ocamlary.html.gen
    Ocamlary-Empty.html.gen
@@ -11948,10 +12132,65 @@
  (rule
   (targets
    Oxcaml.html.gen
+   Oxcaml-M_with.html.gen
+   Oxcaml-module-type-Arg_with.html.gen
+   Oxcaml-F_with.html.gen
+   Oxcaml-F_with-argument-1-X.html.gen
+   Oxcaml-X_with.html.gen
    Oxcaml-module-type-S.html.gen
    Oxcaml-M1.html.gen
    Oxcaml-M2.html.gen
-   Oxcaml-M3.html.gen)
+   Oxcaml-M3.html.gen
+   Oxcaml-No_include_functor.html.gen
+   Oxcaml-No_include_functor-Make.html.gen
+   Oxcaml-No_include_functor-Make-argument-1-T.html.gen
+   Oxcaml-No_include_functor-T.html.gen
+   Oxcaml-Include_functor.html.gen
+   Oxcaml-Include_functor-Make.html.gen
+   Oxcaml-Include_functor-Make-argument-1-T.html.gen
+   Oxcaml-Include_functor_argument_shapes.html.gen
+   Oxcaml-Include_functor_argument_shapes-module-type-Arg.html.gen
+   Oxcaml-Include_functor_argument_shapes-module-type-Arg-X.html.gen
+   Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_type.html.gen
+   Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_.html.gen
+   Oxcaml-Include_functor_argument_shapes-Make.html.gen
+   Oxcaml-Include_functor_argument_shapes-Make-argument-1-T.html.gen
+   Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-X.html.gen
+   Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-class-class_type.html.gen
+   Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-class-class_.html.gen
+   Oxcaml-Include_functor_argument_shapes-Make-class-output_class_via_type.html.gen
+   Oxcaml-Include_functor_argument_shapes-Make-class-output_class_via_name.html.gen
+   Oxcaml-Include_functor_argument_shapes-class-class_type.html.gen
+   Oxcaml-Include_functor_argument_shapes-class-class_.html.gen
+   Oxcaml-Include_functor_argument_shapes-X.html.gen
+   Oxcaml-Include_functor_argument_shapes-module-type-S.html.gen
+   Oxcaml-Include_functor_argument_shapes-class-output_class_via_type.html.gen
+   Oxcaml-Include_functor_argument_shapes-class-output_class_via_name.html.gen
+   Oxcaml-Include_functor_argument_shapes-Aliased.html.gen
+   Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.html.gen
+   Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.html.gen
+   Oxcaml-Include_functor_desugared.html.gen
+   Oxcaml-Include_functor_desugared-Make.html.gen
+   Oxcaml-Include_functor_desugared-Make-argument-1-T.html.gen
+   Oxcaml-Include_functor_named_type_desugared.html.gen
+   Oxcaml-Include_functor_named_type_desugared-module-type-MakeType.html.gen
+   Oxcaml-Include_functor_named_type_desugared-module-type-MakeType-argument-1-X.html.gen
+   Oxcaml-Include_functor_named_type.html.gen
+   Oxcaml-Include_functor_named_type-module-type-MakeType.html.gen
+   Oxcaml-Include_functor_named_type-module-type-MakeType-argument-1-X.html.gen
+   Oxcaml-Include_functor_inline.html.gen
+   Oxcaml-Include_functor_inline-module-type-Make.html.gen
+   Oxcaml-Include_functor_inline-module-type-Make-argument-1-_.html.gen
+   Oxcaml-Anonymous_functor.html.gen
+   Oxcaml-Anonymous_functor_desugared.html.gen
+   Oxcaml-Multiple_include_functors.html.gen
+   Oxcaml-Multiple_include_functors-First.html.gen
+   Oxcaml-Multiple_include_functors-First-argument-1-T.html.gen
+   Oxcaml-Multiple_include_functors-Second.html.gen
+   Oxcaml-Multiple_include_functors-Second-argument-1-T.html.gen
+   Oxcaml-Include_functor_not_last.html.gen
+   Oxcaml-Include_functor_not_last-Make.html.gen
+   Oxcaml-Include_functor_not_last-Make-argument-1-T.html.gen)
   (package odoc)
   (action
    (run
@@ -11970,6 +12209,38 @@
   (package odoc)
   (action
    (diff Oxcaml.html Oxcaml.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M_with.html Oxcaml-M_with.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-module-type-Arg_with.html
+    Oxcaml-module-type-Arg_with.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_with.html Oxcaml-F_with.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_with-argument-1-X.html Oxcaml-F_with-argument-1-X.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-X_with.html Oxcaml-X_with.html.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -11994,6 +12265,400 @@
   (package odoc)
   (action
    (diff Oxcaml-M3.html Oxcaml-M3.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-No_include_functor.html Oxcaml-No_include_functor.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-No_include_functor-Make.html
+    Oxcaml-No_include_functor-Make.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-No_include_functor-Make-argument-1-T.html
+    Oxcaml-No_include_functor-Make-argument-1-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-No_include_functor-T.html
+    Oxcaml-No_include_functor-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-Include_functor.html Oxcaml-Include_functor.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor-Make.html
+    Oxcaml-Include_functor-Make.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor-Make-argument-1-T.html
+    Oxcaml-Include_functor-Make-argument-1-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes.html
+    Oxcaml-Include_functor_argument_shapes.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg.html
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg-X.html
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg-X.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_type.html
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_type.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_.html
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make.html
+    Oxcaml-Include_functor_argument_shapes-Make.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T.html
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-X.html
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-X.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-class-class_type.html
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-class-class_type.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-class-class_.html
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-class-class_.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make-class-output_class_via_type.html
+    Oxcaml-Include_functor_argument_shapes-Make-class-output_class_via_type.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make-class-output_class_via_name.html
+    Oxcaml-Include_functor_argument_shapes-Make-class-output_class_via_name.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-class-class_type.html
+    Oxcaml-Include_functor_argument_shapes-class-class_type.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-class-class_.html
+    Oxcaml-Include_functor_argument_shapes-class-class_.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-X.html
+    Oxcaml-Include_functor_argument_shapes-X.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-module-type-S.html
+    Oxcaml-Include_functor_argument_shapes-module-type-S.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-class-output_class_via_type.html
+    Oxcaml-Include_functor_argument_shapes-class-output_class_via_type.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-class-output_class_via_name.html
+    Oxcaml-Include_functor_argument_shapes-class-output_class_via_name.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Aliased.html
+    Oxcaml-Include_functor_argument_shapes-Aliased.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.html
+    Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.html
+    Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_desugared.html
+    Oxcaml-Include_functor_desugared.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_desugared-Make.html
+    Oxcaml-Include_functor_desugared-Make.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_desugared-Make-argument-1-T.html
+    Oxcaml-Include_functor_desugared-Make-argument-1-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type_desugared.html
+    Oxcaml-Include_functor_named_type_desugared.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type_desugared-module-type-MakeType.html
+    Oxcaml-Include_functor_named_type_desugared-module-type-MakeType.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type_desugared-module-type-MakeType-argument-1-X.html
+    Oxcaml-Include_functor_named_type_desugared-module-type-MakeType-argument-1-X.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type.html
+    Oxcaml-Include_functor_named_type.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type-module-type-MakeType.html
+    Oxcaml-Include_functor_named_type-module-type-MakeType.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type-module-type-MakeType-argument-1-X.html
+    Oxcaml-Include_functor_named_type-module-type-MakeType-argument-1-X.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_inline.html
+    Oxcaml-Include_functor_inline.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_inline-module-type-Make.html
+    Oxcaml-Include_functor_inline-module-type-Make.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_inline-module-type-Make-argument-1-_.html
+    Oxcaml-Include_functor_inline-module-type-Make-argument-1-_.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-Anonymous_functor.html Oxcaml-Anonymous_functor.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Anonymous_functor_desugared.html
+    Oxcaml-Anonymous_functor_desugared.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Multiple_include_functors.html
+    Oxcaml-Multiple_include_functors.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Multiple_include_functors-First.html
+    Oxcaml-Multiple_include_functors-First.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Multiple_include_functors-First-argument-1-T.html
+    Oxcaml-Multiple_include_functors-First-argument-1-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Multiple_include_functors-Second.html
+    Oxcaml-Multiple_include_functors-Second.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Multiple_include_functors-Second-argument-1-T.html
+    Oxcaml-Multiple_include_functors-Second-argument-1-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_not_last.html
+    Oxcaml-Include_functor_not_last.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_not_last-Make.html
+    Oxcaml-Include_functor_not_last-Make.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_not_last-Make-argument-1-T.html
+    Oxcaml-Include_functor_not_last-Make-argument-1-T.html.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -12016,7 +12681,11 @@
 (subdir
  latex
  (rule
-  (targets Oxcaml.tex.gen Oxcaml.M1.tex.gen)
+  (targets
+   Oxcaml.tex.gen
+   Oxcaml.F_with.tex.gen
+   Oxcaml.X_with.tex.gen
+   Oxcaml.M1.tex.gen)
   (package odoc)
   (action
    (run odoc latex-generate -o . --extra-suffix gen %{dep:../oxcaml.odocl}))
@@ -12026,6 +12695,18 @@
   (package odoc)
   (action
    (diff Oxcaml.tex Oxcaml.tex.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.F_with.tex Oxcaml.F_with.tex.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.X_with.tex Oxcaml.X_with.tex.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12054,7 +12735,42 @@
 (subdir
  man
  (rule
-  (targets Oxcaml.3o.gen Oxcaml.M1.3o.gen Oxcaml.M2.3o.gen Oxcaml.M3.3o.gen)
+  (targets
+   Oxcaml.3o.gen
+   Oxcaml.M_with.3o.gen
+   Oxcaml.F_with.3o.gen
+   Oxcaml.X_with.3o.gen
+   Oxcaml.M1.3o.gen
+   Oxcaml.M2.3o.gen
+   Oxcaml.M3.3o.gen
+   Oxcaml.No_include_functor.3o.gen
+   Oxcaml.No_include_functor.Make.3o.gen
+   Oxcaml.No_include_functor.T.3o.gen
+   Oxcaml.Include_functor.3o.gen
+   Oxcaml.Include_functor.Make.3o.gen
+   Oxcaml.Include_functor_argument_shapes.3o.gen
+   Oxcaml.Include_functor_argument_shapes.Make.3o.gen
+   Oxcaml.Include_functor_argument_shapes.Make.class-output_class_via_type.3o.gen
+   Oxcaml.Include_functor_argument_shapes.Make.class-output_class_via_name.3o.gen
+   Oxcaml.Include_functor_argument_shapes.class-class_type.3o.gen
+   Oxcaml.Include_functor_argument_shapes.class-class_.3o.gen
+   Oxcaml.Include_functor_argument_shapes.X.3o.gen
+   Oxcaml.Include_functor_argument_shapes.class-output_class_via_type.3o.gen
+   Oxcaml.Include_functor_argument_shapes.class-output_class_via_name.3o.gen
+   Oxcaml.Include_functor_argument_shapes.Aliased.3o.gen
+   Oxcaml.Include_functor_argument_shapes.Aliased.To_include_module.3o.gen
+   Oxcaml.Include_functor_desugared.3o.gen
+   Oxcaml.Include_functor_desugared.Make.3o.gen
+   Oxcaml.Include_functor_named_type_desugared.3o.gen
+   Oxcaml.Include_functor_named_type.3o.gen
+   Oxcaml.Include_functor_inline.3o.gen
+   Oxcaml.Anonymous_functor.3o.gen
+   Oxcaml.Anonymous_functor_desugared.3o.gen
+   Oxcaml.Multiple_include_functors.3o.gen
+   Oxcaml.Multiple_include_functors.First.3o.gen
+   Oxcaml.Multiple_include_functors.Second.3o.gen
+   Oxcaml.Include_functor_not_last.3o.gen
+   Oxcaml.Include_functor_not_last.Make.3o.gen)
   (package odoc)
   (action
    (run odoc man-generate -o . --extra-suffix gen %{dep:../oxcaml.odocl}))
@@ -12064,6 +12780,24 @@
   (package odoc)
   (action
    (diff Oxcaml.3o Oxcaml.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.M_with.3o Oxcaml.M_with.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.F_with.3o Oxcaml.F_with.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.X_with.3o Oxcaml.X_with.3o.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12082,6 +12816,220 @@
   (package odoc)
   (action
    (diff Oxcaml.M3.3o Oxcaml.M3.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.No_include_functor.3o Oxcaml.No_include_functor.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.No_include_functor.Make.3o
+    Oxcaml.No_include_functor.Make.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.No_include_functor.T.3o Oxcaml.No_include_functor.T.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.Include_functor.3o Oxcaml.Include_functor.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.Include_functor.Make.3o Oxcaml.Include_functor.Make.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_argument_shapes.3o
+    Oxcaml.Include_functor_argument_shapes.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_argument_shapes.Make.3o
+    Oxcaml.Include_functor_argument_shapes.Make.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_argument_shapes.Make.class-output_class_via_type.3o
+    Oxcaml.Include_functor_argument_shapes.Make.class-output_class_via_type.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_argument_shapes.Make.class-output_class_via_name.3o
+    Oxcaml.Include_functor_argument_shapes.Make.class-output_class_via_name.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_argument_shapes.class-class_type.3o
+    Oxcaml.Include_functor_argument_shapes.class-class_type.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_argument_shapes.class-class_.3o
+    Oxcaml.Include_functor_argument_shapes.class-class_.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_argument_shapes.X.3o
+    Oxcaml.Include_functor_argument_shapes.X.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_argument_shapes.class-output_class_via_type.3o
+    Oxcaml.Include_functor_argument_shapes.class-output_class_via_type.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_argument_shapes.class-output_class_via_name.3o
+    Oxcaml.Include_functor_argument_shapes.class-output_class_via_name.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_argument_shapes.Aliased.3o
+    Oxcaml.Include_functor_argument_shapes.Aliased.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_argument_shapes.Aliased.To_include_module.3o
+    Oxcaml.Include_functor_argument_shapes.Aliased.To_include_module.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_desugared.3o
+    Oxcaml.Include_functor_desugared.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_desugared.Make.3o
+    Oxcaml.Include_functor_desugared.Make.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_named_type_desugared.3o
+    Oxcaml.Include_functor_named_type_desugared.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_named_type.3o
+    Oxcaml.Include_functor_named_type.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_inline.3o
+    Oxcaml.Include_functor_inline.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml.Anonymous_functor.3o Oxcaml.Anonymous_functor.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Anonymous_functor_desugared.3o
+    Oxcaml.Anonymous_functor_desugared.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Multiple_include_functors.3o
+    Oxcaml.Multiple_include_functors.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Multiple_include_functors.First.3o
+    Oxcaml.Multiple_include_functors.First.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Multiple_include_functors.Second.3o
+    Oxcaml.Multiple_include_functors.Second.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_not_last.3o
+    Oxcaml.Include_functor_not_last.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml.Include_functor_not_last.Make.3o
+    Oxcaml.Include_functor_not_last.Make.3o.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -12106,10 +13054,65 @@
  (rule
   (targets
    Oxcaml.md.gen
+   Oxcaml-M_with.md.gen
+   Oxcaml-module-type-Arg_with.md.gen
+   Oxcaml-F_with.md.gen
+   Oxcaml-F_with-argument-1-X.md.gen
+   Oxcaml-X_with.md.gen
    Oxcaml-module-type-S.md.gen
    Oxcaml-M1.md.gen
    Oxcaml-M2.md.gen
-   Oxcaml-M3.md.gen)
+   Oxcaml-M3.md.gen
+   Oxcaml-No_include_functor.md.gen
+   Oxcaml-No_include_functor-Make.md.gen
+   Oxcaml-No_include_functor-Make-argument-1-T.md.gen
+   Oxcaml-No_include_functor-T.md.gen
+   Oxcaml-Include_functor.md.gen
+   Oxcaml-Include_functor-Make.md.gen
+   Oxcaml-Include_functor-Make-argument-1-T.md.gen
+   Oxcaml-Include_functor_argument_shapes.md.gen
+   Oxcaml-Include_functor_argument_shapes-module-type-Arg.md.gen
+   Oxcaml-Include_functor_argument_shapes-module-type-Arg-X.md.gen
+   Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_type.md.gen
+   Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_.md.gen
+   Oxcaml-Include_functor_argument_shapes-Make.md.gen
+   Oxcaml-Include_functor_argument_shapes-Make-argument-1-T.md.gen
+   Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-X.md.gen
+   Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-class-class_type.md.gen
+   Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-class-class_.md.gen
+   Oxcaml-Include_functor_argument_shapes-Make-class-output_class_via_type.md.gen
+   Oxcaml-Include_functor_argument_shapes-Make-class-output_class_via_name.md.gen
+   Oxcaml-Include_functor_argument_shapes-class-class_type.md.gen
+   Oxcaml-Include_functor_argument_shapes-class-class_.md.gen
+   Oxcaml-Include_functor_argument_shapes-X.md.gen
+   Oxcaml-Include_functor_argument_shapes-module-type-S.md.gen
+   Oxcaml-Include_functor_argument_shapes-class-output_class_via_type.md.gen
+   Oxcaml-Include_functor_argument_shapes-class-output_class_via_name.md.gen
+   Oxcaml-Include_functor_argument_shapes-Aliased.md.gen
+   Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.md.gen
+   Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.md.gen
+   Oxcaml-Include_functor_desugared.md.gen
+   Oxcaml-Include_functor_desugared-Make.md.gen
+   Oxcaml-Include_functor_desugared-Make-argument-1-T.md.gen
+   Oxcaml-Include_functor_named_type_desugared.md.gen
+   Oxcaml-Include_functor_named_type_desugared-module-type-MakeType.md.gen
+   Oxcaml-Include_functor_named_type_desugared-module-type-MakeType-argument-1-X.md.gen
+   Oxcaml-Include_functor_named_type.md.gen
+   Oxcaml-Include_functor_named_type-module-type-MakeType.md.gen
+   Oxcaml-Include_functor_named_type-module-type-MakeType-argument-1-X.md.gen
+   Oxcaml-Include_functor_inline.md.gen
+   Oxcaml-Include_functor_inline-module-type-Make.md.gen
+   Oxcaml-Include_functor_inline-module-type-Make-argument-1-_.md.gen
+   Oxcaml-Anonymous_functor.md.gen
+   Oxcaml-Anonymous_functor_desugared.md.gen
+   Oxcaml-Multiple_include_functors.md.gen
+   Oxcaml-Multiple_include_functors-First.md.gen
+   Oxcaml-Multiple_include_functors-First-argument-1-T.md.gen
+   Oxcaml-Multiple_include_functors-Second.md.gen
+   Oxcaml-Multiple_include_functors-Second-argument-1-T.md.gen
+   Oxcaml-Include_functor_not_last.md.gen
+   Oxcaml-Include_functor_not_last-Make.md.gen
+   Oxcaml-Include_functor_not_last-Make-argument-1-T.md.gen)
   (package odoc)
   (action
    (run
@@ -12126,6 +13129,36 @@
   (package odoc)
   (action
    (diff Oxcaml.md Oxcaml.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-M_with.md Oxcaml-M_with.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-module-type-Arg_with.md Oxcaml-module-type-Arg_with.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_with.md Oxcaml-F_with.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-F_with-argument-1-X.md Oxcaml-F_with-argument-1-X.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-X_with.md Oxcaml-X_with.md.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)
@@ -12150,6 +13183,396 @@
   (package odoc)
   (action
    (diff Oxcaml-M3.md Oxcaml-M3.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-No_include_functor.md Oxcaml-No_include_functor.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-No_include_functor-Make.md
+    Oxcaml-No_include_functor-Make.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-No_include_functor-Make-argument-1-T.md
+    Oxcaml-No_include_functor-Make-argument-1-T.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-No_include_functor-T.md Oxcaml-No_include_functor-T.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-Include_functor.md Oxcaml-Include_functor.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-Include_functor-Make.md Oxcaml-Include_functor-Make.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor-Make-argument-1-T.md
+    Oxcaml-Include_functor-Make-argument-1-T.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes.md
+    Oxcaml-Include_functor_argument_shapes.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg.md
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg-X.md
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg-X.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_type.md
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_type.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_.md
+    Oxcaml-Include_functor_argument_shapes-module-type-Arg-class-class_.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make.md
+    Oxcaml-Include_functor_argument_shapes-Make.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T.md
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-X.md
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-X.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-class-class_type.md
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-class-class_type.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-class-class_.md
+    Oxcaml-Include_functor_argument_shapes-Make-argument-1-T-class-class_.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make-class-output_class_via_type.md
+    Oxcaml-Include_functor_argument_shapes-Make-class-output_class_via_type.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Make-class-output_class_via_name.md
+    Oxcaml-Include_functor_argument_shapes-Make-class-output_class_via_name.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-class-class_type.md
+    Oxcaml-Include_functor_argument_shapes-class-class_type.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-class-class_.md
+    Oxcaml-Include_functor_argument_shapes-class-class_.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-X.md
+    Oxcaml-Include_functor_argument_shapes-X.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-module-type-S.md
+    Oxcaml-Include_functor_argument_shapes-module-type-S.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-class-output_class_via_type.md
+    Oxcaml-Include_functor_argument_shapes-class-output_class_via_type.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-class-output_class_via_name.md
+    Oxcaml-Include_functor_argument_shapes-class-output_class_via_name.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Aliased.md
+    Oxcaml-Include_functor_argument_shapes-Aliased.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.md
+    Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.md
+    Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_desugared.md
+    Oxcaml-Include_functor_desugared.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_desugared-Make.md
+    Oxcaml-Include_functor_desugared-Make.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_desugared-Make-argument-1-T.md
+    Oxcaml-Include_functor_desugared-Make-argument-1-T.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type_desugared.md
+    Oxcaml-Include_functor_named_type_desugared.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type_desugared-module-type-MakeType.md
+    Oxcaml-Include_functor_named_type_desugared-module-type-MakeType.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type_desugared-module-type-MakeType-argument-1-X.md
+    Oxcaml-Include_functor_named_type_desugared-module-type-MakeType-argument-1-X.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type.md
+    Oxcaml-Include_functor_named_type.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type-module-type-MakeType.md
+    Oxcaml-Include_functor_named_type-module-type-MakeType.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_named_type-module-type-MakeType-argument-1-X.md
+    Oxcaml-Include_functor_named_type-module-type-MakeType-argument-1-X.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_inline.md
+    Oxcaml-Include_functor_inline.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_inline-module-type-Make.md
+    Oxcaml-Include_functor_inline-module-type-Make.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_inline-module-type-Make-argument-1-_.md
+    Oxcaml-Include_functor_inline-module-type-Make-argument-1-_.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml-Anonymous_functor.md Oxcaml-Anonymous_functor.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Anonymous_functor_desugared.md
+    Oxcaml-Anonymous_functor_desugared.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Multiple_include_functors.md
+    Oxcaml-Multiple_include_functors.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Multiple_include_functors-First.md
+    Oxcaml-Multiple_include_functors-First.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Multiple_include_functors-First-argument-1-T.md
+    Oxcaml-Multiple_include_functors-First-argument-1-T.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Multiple_include_functors-Second.md
+    Oxcaml-Multiple_include_functors-Second.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Multiple_include_functors-Second-argument-1-T.md
+    Oxcaml-Multiple_include_functors-Second-argument-1-T.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_not_last.md
+    Oxcaml-Include_functor_not_last.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_not_last-Make.md
+    Oxcaml-Include_functor_not_last-Make.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml-Include_functor_not_last-Make-argument-1-T.md
+    Oxcaml-Include_functor_not_last-Make-argument-1-T.md.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -12175,7 +13598,26 @@
   (targets
    Oxcaml_impl.html.gen
    Oxcaml_impl-To_be_included.html.gen
-   Oxcaml_impl-Including.html.gen)
+   Oxcaml_impl-Including.html.gen
+   Oxcaml_impl-Include_functor.html.gen
+   Oxcaml_impl-Include_functor-Make.html.gen
+   Oxcaml_impl-Include_functor-Make-argument-1-T.html.gen
+   Oxcaml_impl-Include_functor_desugared.html.gen
+   Oxcaml_impl-Include_functor_desugared-Make.html.gen
+   Oxcaml_impl-Include_functor_desugared-Make-argument-1-T.html.gen
+   Oxcaml_impl-Resolve_functor.html.gen
+   Oxcaml_impl-Resolve_functor-F.html.gen
+   Oxcaml_impl-Resolve_functor-F-argument-1-I.html.gen
+   Oxcaml_impl-Resolve_functor-M.html.gen
+   Oxcaml_impl-Multiple_include_functors.html.gen
+   Oxcaml_impl-Multiple_include_functors-First.html.gen
+   Oxcaml_impl-Multiple_include_functors-First-argument-1-T.html.gen
+   Oxcaml_impl-Multiple_include_functors-Second.html.gen
+   Oxcaml_impl-Multiple_include_functors-Second-argument-1-T.html.gen
+   Oxcaml_impl-Include_functor_not_last.html.gen
+   Oxcaml_impl-Include_functor_not_last-Make.html.gen
+   Oxcaml_impl-Include_functor_not_last-Make-argument-1-T.html.gen
+   Oxcaml_impl-Anonymous_functor.html.gen)
   (package odoc)
   (action
    (run
@@ -12206,6 +13648,158 @@
   (package odoc)
   (action
    (diff Oxcaml_impl-Including.html Oxcaml_impl-Including.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor.html
+    Oxcaml_impl-Include_functor.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor-Make.html
+    Oxcaml_impl-Include_functor-Make.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor-Make-argument-1-T.html
+    Oxcaml_impl-Include_functor-Make-argument-1-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_desugared.html
+    Oxcaml_impl-Include_functor_desugared.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_desugared-Make.html
+    Oxcaml_impl-Include_functor_desugared-Make.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_desugared-Make-argument-1-T.html
+    Oxcaml_impl-Include_functor_desugared-Make-argument-1-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Resolve_functor.html
+    Oxcaml_impl-Resolve_functor.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Resolve_functor-F.html
+    Oxcaml_impl-Resolve_functor-F.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Resolve_functor-F-argument-1-I.html
+    Oxcaml_impl-Resolve_functor-F-argument-1-I.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Resolve_functor-M.html
+    Oxcaml_impl-Resolve_functor-M.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Multiple_include_functors.html
+    Oxcaml_impl-Multiple_include_functors.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Multiple_include_functors-First.html
+    Oxcaml_impl-Multiple_include_functors-First.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Multiple_include_functors-First-argument-1-T.html
+    Oxcaml_impl-Multiple_include_functors-First-argument-1-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Multiple_include_functors-Second.html
+    Oxcaml_impl-Multiple_include_functors-Second.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Multiple_include_functors-Second-argument-1-T.html
+    Oxcaml_impl-Multiple_include_functors-Second-argument-1-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_not_last.html
+    Oxcaml_impl-Include_functor_not_last.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_not_last-Make.html
+    Oxcaml_impl-Include_functor_not_last-Make.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_not_last-Make-argument-1-T.html
+    Oxcaml_impl-Include_functor_not_last-Make-argument-1-T.html.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Anonymous_functor.html
+    Oxcaml_impl-Anonymous_functor.html.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -12270,7 +13864,20 @@
   (targets
    Oxcaml_impl.3o.gen
    Oxcaml_impl.To_be_included.3o.gen
-   Oxcaml_impl.Including.3o.gen)
+   Oxcaml_impl.Including.3o.gen
+   Oxcaml_impl.Include_functor.3o.gen
+   Oxcaml_impl.Include_functor.Make.3o.gen
+   Oxcaml_impl.Include_functor_desugared.3o.gen
+   Oxcaml_impl.Include_functor_desugared.Make.3o.gen
+   Oxcaml_impl.Resolve_functor.3o.gen
+   Oxcaml_impl.Resolve_functor.F.3o.gen
+   Oxcaml_impl.Resolve_functor.M.3o.gen
+   Oxcaml_impl.Multiple_include_functors.3o.gen
+   Oxcaml_impl.Multiple_include_functors.First.3o.gen
+   Oxcaml_impl.Multiple_include_functors.Second.3o.gen
+   Oxcaml_impl.Include_functor_not_last.3o.gen
+   Oxcaml_impl.Include_functor_not_last.Make.3o.gen
+   Oxcaml_impl.Anonymous_functor.3o.gen)
   (package odoc)
   (action
    (run
@@ -12299,6 +13906,106 @@
   (package odoc)
   (action
    (diff Oxcaml_impl.Including.3o Oxcaml_impl.Including.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_impl.Include_functor.3o Oxcaml_impl.Include_functor.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl.Include_functor.Make.3o
+    Oxcaml_impl.Include_functor.Make.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl.Include_functor_desugared.3o
+    Oxcaml_impl.Include_functor_desugared.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl.Include_functor_desugared.Make.3o
+    Oxcaml_impl.Include_functor_desugared.Make.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_impl.Resolve_functor.3o Oxcaml_impl.Resolve_functor.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl.Resolve_functor.F.3o
+    Oxcaml_impl.Resolve_functor.F.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl.Resolve_functor.M.3o
+    Oxcaml_impl.Resolve_functor.M.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl.Multiple_include_functors.3o
+    Oxcaml_impl.Multiple_include_functors.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl.Multiple_include_functors.First.3o
+    Oxcaml_impl.Multiple_include_functors.First.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl.Multiple_include_functors.Second.3o
+    Oxcaml_impl.Multiple_include_functors.Second.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl.Include_functor_not_last.3o
+    Oxcaml_impl.Include_functor_not_last.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl.Include_functor_not_last.Make.3o
+    Oxcaml_impl.Include_functor_not_last.Make.3o.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl.Anonymous_functor.3o
+    Oxcaml_impl.Anonymous_functor.3o.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir
@@ -12324,7 +14031,26 @@
   (targets
    Oxcaml_impl.md.gen
    Oxcaml_impl-To_be_included.md.gen
-   Oxcaml_impl-Including.md.gen)
+   Oxcaml_impl-Including.md.gen
+   Oxcaml_impl-Include_functor.md.gen
+   Oxcaml_impl-Include_functor-Make.md.gen
+   Oxcaml_impl-Include_functor-Make-argument-1-T.md.gen
+   Oxcaml_impl-Include_functor_desugared.md.gen
+   Oxcaml_impl-Include_functor_desugared-Make.md.gen
+   Oxcaml_impl-Include_functor_desugared-Make-argument-1-T.md.gen
+   Oxcaml_impl-Resolve_functor.md.gen
+   Oxcaml_impl-Resolve_functor-F.md.gen
+   Oxcaml_impl-Resolve_functor-F-argument-1-I.md.gen
+   Oxcaml_impl-Resolve_functor-M.md.gen
+   Oxcaml_impl-Multiple_include_functors.md.gen
+   Oxcaml_impl-Multiple_include_functors-First.md.gen
+   Oxcaml_impl-Multiple_include_functors-First-argument-1-T.md.gen
+   Oxcaml_impl-Multiple_include_functors-Second.md.gen
+   Oxcaml_impl-Multiple_include_functors-Second-argument-1-T.md.gen
+   Oxcaml_impl-Include_functor_not_last.md.gen
+   Oxcaml_impl-Include_functor_not_last-Make.md.gen
+   Oxcaml_impl-Include_functor_not_last-Make-argument-1-T.md.gen
+   Oxcaml_impl-Anonymous_functor.md.gen)
   (package odoc)
   (action
    (run
@@ -12353,6 +14079,154 @@
   (package odoc)
   (action
    (diff Oxcaml_impl-Including.md Oxcaml_impl-Including.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_impl-Include_functor.md Oxcaml_impl-Include_functor.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor-Make.md
+    Oxcaml_impl-Include_functor-Make.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor-Make-argument-1-T.md
+    Oxcaml_impl-Include_functor-Make-argument-1-T.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_desugared.md
+    Oxcaml_impl-Include_functor_desugared.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_desugared-Make.md
+    Oxcaml_impl-Include_functor_desugared-Make.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_desugared-Make-argument-1-T.md
+    Oxcaml_impl-Include_functor_desugared-Make-argument-1-T.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_impl-Resolve_functor.md Oxcaml_impl-Resolve_functor.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Resolve_functor-F.md
+    Oxcaml_impl-Resolve_functor-F.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Resolve_functor-F-argument-1-I.md
+    Oxcaml_impl-Resolve_functor-F-argument-1-I.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Resolve_functor-M.md
+    Oxcaml_impl-Resolve_functor-M.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Multiple_include_functors.md
+    Oxcaml_impl-Multiple_include_functors.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Multiple_include_functors-First.md
+    Oxcaml_impl-Multiple_include_functors-First.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Multiple_include_functors-First-argument-1-T.md
+    Oxcaml_impl-Multiple_include_functors-First-argument-1-T.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Multiple_include_functors-Second.md
+    Oxcaml_impl-Multiple_include_functors-Second.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Multiple_include_functors-Second-argument-1-T.md
+    Oxcaml_impl-Multiple_include_functors-Second-argument-1-T.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_not_last.md
+    Oxcaml_impl-Include_functor_not_last.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_not_last-Make.md
+    Oxcaml_impl-Include_functor_not_last-Make.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Include_functor_not_last-Make-argument-1-T.md
+    Oxcaml_impl-Include_functor_not_last-Make-argument-1-T.md.gen))
+  (enabled_if %{ocaml-config:ox}))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_impl-Anonymous_functor.md
+    Oxcaml_impl-Anonymous_functor.md.gen))
   (enabled_if %{ocaml-config:ox})))
 
 (subdir

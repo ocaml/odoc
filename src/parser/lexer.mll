@@ -521,13 +521,7 @@ and token input = parse
     { emit input `Right_code_delimiter}
 
   | '{'
-    { try bad_markup_recovery (Lexing.lexeme_start lexbuf) input lexbuf
-      with Failure _ ->
-        warning
-          input
-          (Parse_error.bad_markup
-            "{" ~suggestion:"escape the brace with '\\{'.");
-        emit input (`Word "{") }
+    { bad_markup_recovery (Lexing.lexeme_start lexbuf) input lexbuf }
 
   | ']'
     { warning input Parse_error.unpaired_right_bracket;
@@ -721,6 +715,14 @@ and bad_markup_recovery start_offset input = parse
         ~start_offset
         (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
       emit input (`Code_span text) ~start_offset}
+  | ""
+    {
+      warning
+        input
+        (Parse_error.bad_markup
+          "{" ~suggestion:"escape the brace with '\\{'.");
+      emit input (`Word "{")
+    }
 
 (* Based on OCaml's parsing/lexer.mll
    We're missing a bunch of cases here, and can add them

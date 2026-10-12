@@ -120,7 +120,10 @@ and TypeExpr : sig
     | Var of string
     | Any
     | Alias of t * string
-    | Arrow of label option * t * t
+    | Arrow of
+        label option
+        * (t * Odoc_model.Lang.Modes.t)
+        * (t * Odoc_model.Lang.Modes.t)
     | Tuple of (string option * t) list
     | Unboxed_tuple of (string option * t) list
     | Constr of Cpath.type_ * t list
@@ -336,7 +339,10 @@ and Open : sig
 end
 
 and Include : sig
-  type decl = Alias of Cpath.module_ | ModuleType of ModuleType.U.expr
+  type decl =
+    | Alias of Cpath.module_
+    | ModuleType of ModuleType.U.expr
+    | Functor of Cpath.module_
 
   type t = {
     parent : Odoc_model.Paths.Identifier.Signature.t;
@@ -345,6 +351,7 @@ and Include : sig
     status : [ `Default | `Inline | `Closed | `Open ];
     shadowed : Odoc_model.Lang.Include.shadowed;
     expansion_ : Signature.t;
+    authoritative : bool;
     decl : decl;
     loc : Odoc_model.Location_.span;
   }

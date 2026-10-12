@@ -28,20 +28,53 @@ type content =
 
 type t = { content : content; warnings : Odoc_model.Error.t list }
 
+(* Marshalling goes through [Compat], which routes it via the compiler's own
+   [Compression] module where that exists: payloads are zstd-compressed when
+   the running compiler was built with zstd support, and fall back to plain
+   Marshal otherwise. *)
+let compression_supported = Compat.compression_supported
+let output_value oc v = Compat.marshal_to_channel oc v
+let input_value ic = Compat.unmarshal_from_channel ic
+
 (** Written at the top of the files. Checked when loading. *)
-let magic = "odoc-%%VERSION%%"
+let magic = "ODOC"
+
+(* A compressed payload can only be read back by a compiler with zstd support,
+   so the version records which format was written: an odoc without it reports
+   the mismatch here rather than failing in the unmarshaller with "compressed
+   object, cannot decompress". *)
+let magic_version_uncompressed = "%%VERSION%%"
+
+let magic_version =
+  magic_version_uncompressed ^ if compression_supported then "-zstd" else ""
+
+(* An uncompressed payload can be read whether or not this odoc would write
+   one, so accept it too rather than rejecting a file we can perfectly well
+   read. The converse isn't true, which is what the version distinguishes. *)
+let readable_version version =
+  version = magic_version || version = magic_version_uncompressed
 
 (** Exceptions while saving are allowed to leak. *)
 let save_ file f =
+  let len = String.length magic_version in
+  (* Sanity check, see similar check in load_ *)
+  if len > 255 then
+    failwith
+      (Printf.sprintf
+         "Magic version string %S is too long, must be <= 255 characters"
+         magic_version);
+
   Fs.Directory.mkdir_p (Fs.File.dirname file);
   Io_utils.with_open_out_bin (Fs.File.to_string file) (fun oc ->
       output_string oc magic;
+      output_binary_int oc len;
+      output_string oc magic_version;
       f oc)
 
 let save_unit file (root : Root.t) (t : t) =
   save_ file (fun oc ->
-      Marshal.to_channel oc root [];
-      Marshal.to_channel oc t [])
+      output_value oc root;
+      output_value oc t)
 
 let save_page file ~warnings page =
   let dir = Fs.File.dirname file in
@@ -78,19 +111,41 @@ let save_unit file ~warnings m =
 
 let load_ file f =
   let file = Fs.File.to_string file in
-  (if Sys.file_exists file then Ok file
-   else Error (`Msg (Printf.sprintf "File does not exist")))
-  >>= fun file ->
-  Io_utils.with_open_in_bin file @@ fun ic ->
-  try
+
+  let check_exists () =
+    if Sys.file_exists file then Ok ()
+    else Error (`Msg (Printf.sprintf "File %s does not exist" file))
+  in
+
+  let check_magic ic =
     let actual_magic = really_input_string ic (String.length magic) in
-    if actual_magic = magic then f ic
+    if actual_magic = magic then Ok ()
+    else
+      Error
+        (`Msg
+           (Printf.sprintf "%s has invalid magic %S, expected %S\n%!" file
+              actual_magic magic))
+  in
+  let version_length ic () =
+    let len = input_binary_int ic in
+    if len > 0 && len <= 255 then Ok len
+    else Error (`Msg (Printf.sprintf "%s has invalid version length" file))
+  in
+  let check_version ic len =
+    let actual_magic = really_input_string ic len in
+    if readable_version actual_magic then Ok ()
     else
       let msg =
-        Printf.sprintf "%s: invalid magic number %S, expected %S\n%!" file
-          actual_magic magic
+        Printf.sprintf "%s has invalid version %S, expected %S\n%!" file
+          actual_magic magic_version
       in
       Error (`Msg msg)
+  in
+
+  check_exists () >>= fun () ->
+  Io_utils.with_open_in_bin file @@ fun ic ->
+  try
+    check_magic ic >>= version_length ic >>= check_version ic >>= fun () -> f ic
   with exn ->
     let msg =
       Printf.sprintf "Error while unmarshalling %S: %s\n%!" file
@@ -100,19 +155,19 @@ let load_ file f =
 
 let load file =
   load_ file (fun ic ->
-      let _root = Marshal.from_channel ic in
-      Ok (Marshal.from_channel ic))
+      let _root = input_value ic in
+      Ok (input_value ic))
 
 (** The root is saved separately in the files to support this function. *)
 let load_root file =
   load_ file (fun ic ->
-      let root = Marshal.from_channel ic in
+      let root = input_value ic in
       Ok root)
 
-let save_index dst idx = save_ dst (fun oc -> Marshal.to_channel oc idx [])
+let save_index dst idx = save_ dst (fun oc -> output_value oc idx)
 
-let load_index file = load_ file (fun ic -> Ok (Marshal.from_channel ic))
+let load_index file = load_ file (fun ic -> Ok (input_value ic))
 
-let save_sidebar dst idx = save_ dst (fun oc -> Marshal.to_channel oc idx [])
+let save_sidebar dst idx = save_ dst (fun oc -> output_value oc idx)
 
-let load_sidebar file = load_ file (fun ic -> Ok (Marshal.from_channel ic))
+let load_sidebar file = load_ file (fun ic -> Ok (input_value ic))

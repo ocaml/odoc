@@ -11,6 +11,7 @@
   152 type Html_types.b_attrib = [ common ]
   152 type Html_types.i_attrib = [ common ]
   152 type Html_types.p_attrib = [ common ]
+  152 type Html_types.s_attrib = [ common ]
   152 type Html_types.u_attrib = [ common ]
   153 type Html_types.br_attrib = [ common ]
   153 type Html_types.dd_attrib = [ common ]
@@ -29,6 +30,7 @@
   153 type Html_types.tr_attrib = [ common ]
   153 type Html_types.ul_attrib = [ common ]
   154 type Tyxml_svg.Xml.attrib = Tyxml_xml.attrib
+  154 type Html_types.bdi_attrib = [ common ]
   154 type Html_types.bdo_attrib = [ common ]
   154 type Html_types.dfn_attrib = [ common ]
   154 type Html_types.div_attrib = [ common ]
@@ -46,6 +48,7 @@
   155 type Html_types.abbr_attrib = [ common ]
   155 type Html_types.cite_attrib = [ common ]
   155 type Html_types.code_attrib = [ common ]
+  155 type Html_types.data_attrib = [ common ]
   155 type Html_types.head_attrib = [ common ]
   155 type Html_types.main_attrib = [ common ]
   155 type Html_types.mark_attrib = [ common ]
@@ -62,6 +65,7 @@
   157 type Html_types.header_attrib = [ common ]
   157 type Html_types.hgroup_attrib = [ common ]
   157 type Html_types.legend_attrib = [ common ]
+  157 type Html_types.search_attrib = [ common ]
   157 type Html_types.strong_attrib = [ common ]
   158 type Html_types.address_attrib = [ common ]
   158 type Html_types.article_attrib = [ common ]
@@ -71,15 +75,13 @@
   158 type Html_types.summary_attrib = [ common ]
   159 type Html_types.datalist_attrib = [ common ]
   159 type Html_types.noscript_attrib = [ common ]
-  159 type Html_types.template_attrib = [ common ]
   160 type Html_types.q_attrib = [ common | `Cite ]
   161 type Html_types.figcaption_attrib = [ common ]
   162 type Html_types.col_attrib = [ common | `Span ]
   162 type Html_types.map_attrib = [ common | `Name ]
   162 type Html_types.svg_attrib = Svg_types.svg_attr
-  165 type Html_types.dialog_attrib = [ common | `Open ]
+  163 type Html_types.slot_attrib = [ common | `Name ]
   166 type Html_types.li_attrib = [ common | `Int_Value ]
-  166 type Html_types.details_attrib = [ common | `Open ]
   167 type Html_types.html_attrib = [ common | `Manifest ]
   167 type Html_types.table_attrib = [ common | `Summary ]
   167 type Html_types.colgroup_attrib = [ common | `Span ]
@@ -89,20 +91,18 @@
   169 type +'a Html_f.Make_with_wrapped_functions.attrib = Xml.attrib
   171 type Html_types.audio_attrib = [ common | media_attrib ]
   173 type Html_types.base_attrib = [ common | `Href | `Target ]
-  174 type Html_types.ol_attrib = [ common | `Reversed | `Start ]
   174 type Html_types.del_attrib = [ common | `Cite | `Datetime ]
   174 type Html_types.ins_attrib = [ common | `Cite | `Datetime ]
+  174 type Html_types.details_attrib = [ common | `Open | `Name ]
   176 type Html_types.canvas_attrib = [ common | `Width | `Height ]
   177 type Html_types.menu_attrib = [ common | `Label | `Menu_Type ]
   177 type Html_types.label_attrib = [ common | `Label_for | `Form ]
+  177 type Html_types.dialog_attrib = [ common | `Open | `Closedby ]
   177 type Svg_f.Make_with_wrapped_functions.Xml.attrib = Xml.attrib
   178 type Html_types.time_attrib = [ common | `Datetime | `Pubdate ]
   178 type Html_types.param_attrib = [ common | `Name | `Text_Value ]
   178 type Html_f.Make_with_wrapped_functions.Xml.attrib = Xml.attrib
   180 type Html_types.optgroup_attrib = [ common | `Disabled | `Label ]
-  186 type Html_types.td_attrib = [ common | `Colspan | `Headers | `Rowspan ]
-  186 val Tyxml_svg.Unsafe.int_attrib : string -> int wrap -> 'a attrib
-  186 val Tyxml_svg.Unsafe.uri_attrib : string -> uri wrap -> 'a attrib
   $ sherlodoc search --print-cost --no-rhs "group"
   186 type Html_types.hgroup
   190 type Html_types.colgroup
@@ -111,11 +111,11 @@
   198 type Html_types.colgroup_content
   201 type Html_types.optgroup_content
   202 type Html_types.colgroup_content_fun
-  205 type Html_types.optgroup_content_fun
   207 type Html_types.colgroup_attrib
   220 type Html_types.optgroup_attrib
   225 type Html_types.hgroup_content
-  229 type Html_types.hgroup_content_fun
+  225 type Html_types.optgroup_content_fun
+  254 type Html_types.hgroup_content_fun
   319 val Tyxml_html.a_mediagroup
   325 val Html_f.Make.a_mediagroup
   328 val Tyxml_html.a_radiogroup
@@ -280,6 +280,7 @@ Partial name search:
   204 val Html_f.Make.Unsafe.string_attrib : string -> string wrap -> 'a attrib
   206 type Svg_types.commastrings = string list
   206 type Svg_types.spacestrings = string list
+  210 type Svg_types.semicolonstrings = string list
   226 val Svg_f.Make_with_wrapped_functions.Unsafe.string_attrib : string -> string wrap -> 'a attrib
   227 val Html_f.Make_with_wrapped_functions.Unsafe.string_attrib : string -> string wrap -> 'a attrib
   269 val Tyxml_xml.string_of_uri : (uri, string) W.ft
@@ -296,12 +297,12 @@ Partial name search:
   284 val Svg_f.Make.Xml.string_of_uri : (uri, string) W.ft
   285 val Html_f.Make.Xml.string_of_uri : (uri, string) W.ft
   288 val Tyxml_svg.Xml.uri_of_string : (string, uri) W.ft
-  289 val Svg_f.Make.uri_of_string : (string, uri) Xml.W.ft
   $ sherlodoc search --print-cost "tring"
   201 type Svg_types.strings = string list
   204 val Xml_print.string_of_number : float -> string
   206 type Svg_types.commastrings = string list
   206 type Svg_types.spacestrings = string list
+  210 type Svg_types.semicolonstrings = string list
   232 val Tyxml_svg.Unsafe.string_attrib : string -> string wrap -> 'a attrib
   233 val Tyxml_html.Unsafe.string_attrib : string -> string wrap -> 'a attrib
   238 val Svg_f.Make.Unsafe.string_attrib : string -> string wrap -> 'a attrib
@@ -322,4 +323,3 @@ Partial name search:
   313 val Tyxml_svg.Xml.string_of_uri : (uri, string) W.ft
   314 val Svg_f.Make.string_of_uri : (uri, string) Xml.W.ft
   314 val Svg_f.Make.Xml.uri_of_string : (string, uri) W.ft
-  314 val Tyxml_html.Xml.string_of_uri : (uri, string) W.ft

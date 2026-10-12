@@ -537,8 +537,16 @@ let build_compile_env_for_unit
   and lookup_page _ = Error `Not_found
   and lookup_asset _ = Error `Not_found
   and lookup_impl = lookup_impl ap in
+  let shape_reducer = Odoc_xref2.Shape_reducer.make ~lookup_impl in
   let resolver =
-    { Env.open_units; lookup_unit; lookup_page; lookup_impl; lookup_asset }
+    {
+      Env.open_units;
+      lookup_unit;
+      lookup_page;
+      lookup_impl;
+      lookup_asset;
+      shape_reducer;
+    }
   in
   Env.env_of_unit m ~linking:false resolver
 
@@ -564,7 +572,15 @@ let build ?(imports_map = StringMap.empty) ?hierarchy_roots
   and lookup_page = lookup_page ap ~pages ~hierarchy
   and lookup_asset = lookup_asset ~pages ~hierarchy
   and lookup_impl = lookup_impl ap in
-  { Env.open_units; lookup_unit; lookup_page; lookup_impl; lookup_asset }
+  let shape_reducer = Odoc_xref2.Shape_reducer.make ~lookup_impl in
+  {
+    Env.open_units;
+    lookup_unit;
+    lookup_page;
+    lookup_impl;
+    lookup_asset;
+    shape_reducer;
+  }
 
 let build_compile_env_for_impl t i =
   let imports_map =

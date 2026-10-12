@@ -1,0 +1,30 @@
+
+.TH F 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_impl\.Resolve_functor\.F
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Resolve_functor\.F\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+.sp 
+.in 3
+\fB1 Parameters\fR
+.in 
+.sp 
+\f[CB]module\fR I : \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR
+.sp 
+.in 3
+\fB2 Signature\fR
+.in 
+.sp 
+\f[CB]type\fR myt = I\.t

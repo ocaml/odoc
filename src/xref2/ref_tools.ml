@@ -393,11 +393,7 @@ module L = struct
     let rec find = function
       | hd :: tl -> (
           match Odoc_model.Location_.value hd with
-          | `Heading
-              ( _,
-                ({ Odoc_model.Paths.Identifier.iv = `Label (_, name'); _ } as
-                 label),
-                content )
+          | `Heading (_, (`Label (_, name') as label), content)
             when name = LabelName.to_string name' ->
               Ok (`Identifier label, content)
           | _ -> find tl)
@@ -455,7 +451,7 @@ module ED = struct
     match te.constructors with
     | [] -> assert false
     | c :: _ ->
-        let id_parent = match id.iv with `Extension (p, _) -> p in
+        let id_parent = match id with `Extension (p, _) -> p in
         Ok
           (`Identifier
              (Identifier.Mk.extension_decl

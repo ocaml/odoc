@@ -1,12 +1,6 @@
 let init =
   let initialized = ref false in
-  fun () ->
-    if !initialized then ()
-    else
-      let prefix = Opam.prefix () in
-      let env_camllib = Fpath.(v prefix / "lib" / "ocaml" |> to_string) in
-      let config = Fpath.(v prefix / "lib" / "findlib.conf" |> to_string) in
-      Findlib.init ~config ~env_camllib ()
+  fun () -> if !initialized then () else Findlib.init ()
 
 let all () =
   init ();

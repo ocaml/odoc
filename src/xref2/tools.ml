@@ -383,30 +383,21 @@ let simplify_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
   | _ -> m
 
 let rec handle_apply env func_path arg_path m =
-  let rec find_functor mty =
-    match mty with
-    | Component.ModuleType.Functor (Named arg, expr) ->
-        Ok (arg.Component.FunctorParameter.id, expr)
-    | Component.ModuleType.Path { p_path; _ } -> (
-        match resolve_module_type env p_path with
-        | Ok (_, { Component.ModuleType.expr = Some mty'; _ }) ->
-            find_functor mty'
-        | _ -> Error `OpaqueModule)
-    | _ -> Error `ApplyNotFunctor
-  in
-  module_type_expr_of_module env m >>= fun mty' ->
-  find_functor mty' >>= fun (arg_id, result) ->
-  let new_module = { m with Component.Module.type_ = ModuleType result } in
-  let substitution = `Substituted arg_path in
-
-  let path = `Apply (func_path, arg_path) in
-  let subst =
-    Subst.add_module
-      (arg_id :> Ident.module_)
-      (`Resolved substitution) substitution Subst.identity
-  in
-  let subst = Subst.unresolve_opaque_paths subst in
-  Ok (path, Subst.module_ subst new_module)
+  expansion_of_module env m
+  |> map_error (fun e -> (e :> simple_module_type_expr_of_module_error))
+  >>= function
+  | Signature _ | Functor (Unit, _) -> Error `ApplyNotFunctor
+  | Functor (Named arg, result) ->
+      let new_module = { m with Component.Module.type_ = ModuleType result } in
+      let substitution = `Substituted arg_path in
+      let path = `Apply (func_path, arg_path) in
+      let subst =
+        Subst.add_module
+          (arg.id :> Ident.module_)
+          (`Resolved substitution) substitution Subst.identity
+      in
+      let subst = Subst.unresolve_opaque_paths subst in
+      Ok (path, Subst.module_ subst new_module)
 
 and add_canonical_path :
     Component.Module.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
@@ -743,19 +734,17 @@ and lookup_type_gpath :
   let res =
     match p with
     | `CoreType _ as c -> Ok c
-    | `Identifier ({ iv = `Type _; _ } as i) ->
+    | `Identifier (`Type _ as i) ->
         of_option ~error:(`Lookup_failureT i)
           (Env.(lookup_by_id s_datatype) i env)
-        >>= fun (`Type ({ iv = `Type (_, name); _ }, t)) ->
-        Ok (`FType (name, t))
-    | `Identifier ({ iv = `Class _; _ } as i) ->
+        >>= fun (`Type (`Type (_, name), t)) -> Ok (`FType (name, t))
+    | `Identifier (`Class _ as i) ->
         of_option ~error:(`Lookup_failureT i) (Env.(lookup_by_id s_class) i env)
-        >>= fun (`Class ({ iv = `Class (_, name); _ }, t)) ->
-        Ok (`FClass (name, t))
-    | `Identifier ({ iv = `ClassType _; _ } as i) ->
+        >>= fun (`Class (`Class (_, name), t)) -> Ok (`FClass (name, t))
+    | `Identifier (`ClassType _ as i) ->
         of_option ~error:(`Lookup_failureT i)
           (Env.(lookup_by_id s_class_type) i env)
-        >>= fun (`ClassType ({ iv = `ClassType (_, name); _ }, t)) ->
+        >>= fun (`ClassType (`ClassType (_, name), t)) ->
         Ok (`FClassType (name, t))
     | `CanonicalType (t1, _) -> lookup_type_gpath env t1
     | `Type (p, id) -> do_type p id
@@ -783,10 +772,9 @@ and lookup_value_gpath :
   in
   let res =
     match p with
-    | `Identifier ({ iv = `Value _; _ } as i) ->
+    | `Identifier (`Value _ as i) ->
         of_option ~error:(`Lookup_failureV i) (Env.(lookup_by_id s_value) i env)
-        >>= fun (`Value ({ iv = `Value (_, name); _ }, t)) ->
-        Ok (`FValue (name, t))
+        >>= fun (`Value (`Value (_, name), t)) -> Ok (`FValue (name, t))
     | `Value (p, id) -> do_value p id
   in
   res
@@ -810,14 +798,13 @@ and lookup_class_type_gpath :
   in
   let res =
     match p with
-    | `Identifier ({ iv = `Class _; _ } as i) ->
+    | `Identifier (`Class _ as i) ->
         of_option ~error:(`Lookup_failureT i) (Env.(lookup_by_id s_class) i env)
-        >>= fun (`Class ({ iv = `Class (_, name); _ }, t)) ->
-        Ok (`FClass (name, t))
-    | `Identifier ({ iv = `ClassType _; _ } as i) ->
+        >>= fun (`Class (`Class (_, name), t)) -> Ok (`FClass (name, t))
+    | `Identifier (`ClassType _ as i) ->
         of_option ~error:(`Lookup_failureT i)
           (Env.(lookup_by_id s_class_type) i env)
-        >>= fun (`ClassType ({ iv = `ClassType (_, name); _ }, t)) ->
+        >>= fun (`ClassType (`ClassType (_, name), t)) ->
         Ok (`FClassType (name, t))
     | `Class (p, id) -> do_type p id
     | `ClassType (p, id) -> do_type p id
@@ -962,9 +949,6 @@ and resolve_module : Env.t -> Cpath.module_ -> resolve_module_result =
         | Some Env.Forward ->
             Error (`Parent (`Parent_sig `UnresolvedForwardPath))
         | None -> Error (`Lookup_failure_root r))
-    | `Forward f ->
-        resolve_module env (`Root (ModuleName.make_std f))
-        |> map_error (fun e -> `Parent (`Parent_module e))
   in
   LookupAndResolveMemo.memoize resolve env' id
 
@@ -1353,13 +1337,14 @@ and handle_canonical_module_real env p2 =
                    If not, check for an alias chain with us as canonical in it... *)
                 let rec check m =
                   match m.Component.Module.canonical with
-                  | Some p ->
-                      p = p2
-                      (* The canonical path is the same one we're trying to resolve *)
-                  | None -> (
+                  | Some p when p = p2 -> true
+                  | _ -> (
+                      (* An unrelated canonical tag - Dune tags every alias with
+                         [Lib.M], even ones [lib.ml] doesn't re-export - mustn't
+                         stop the search: a module further down the chain may
+                         still be the one we're looking for. *)
                       match m.type_ with
                       | Component.Module.Alias (p, _) -> (
-                          (* Format.eprintf "Going to resolve %a\n%!" Component.Fmt.module_path p; *)
                           match resolve_module env p with
                           | Ok (rp, _) -> (
                               match lookup_module env rp with
@@ -1534,8 +1519,6 @@ and module_type_expr_of_module_decl :
       | Ok (_, m) ->
           let m = Component.Delayed.get m in
           module_type_expr_of_module env m
-      | Error _ when Cpath.is_module_forward path ->
-          Error `UnresolvedForwardPath
       | Error e -> Error (`UnresolvedPath (`Module (path, e))))
   | Component.Module.ModuleType expr -> Ok expr
 
@@ -1567,7 +1550,6 @@ and expansion_of_module_path :
           in
           Ok (Signature sg)
       | Functor _ as f -> Ok f)
-  | Error _ when Cpath.is_module_forward path -> Error `UnresolvedForwardPath
   | Error e -> Error (`UnresolvedPath (`Module (path, e)))
 
 and handle_signature_with_subs :
@@ -1808,7 +1790,7 @@ and fragmap :
   let map_include_decl decl subst =
     let open Component.Include in
     match decl with
-    | Alias p ->
+    | Alias p | Functor p ->
         expansion_of_module_path env ~strengthen:true p >>= assert_not_functor
         >>= fun sg ->
         fragmap env subst sg >>= fun sg -> Ok (ModuleType (Signature sg))
@@ -2210,10 +2192,7 @@ and resolve_module_fragment :
         match expansion_of_module env m' with
         | Ok (_m : expansion) -> f'
         | Error `OpaqueModule -> `OpaqueModule f'
-        | Error
-            ( `UnresolvedForwardPath | `UnresolvedPath _
-            | `UnresolvedOriginalPath _ ) ->
-            f'
+        | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> f'
       in
       Some (fixup_module_cfrag f'')
 
@@ -2239,9 +2218,7 @@ and resolve_module_type_fragment :
       let f'' =
         match expansion_of_module_type env m' with
         | Ok (_m : expansion) -> f'
-        | Error
-            ( `UnresolvedForwardPath | `UnresolvedPath _ | `OpaqueModule
-            | `UnresolvedOriginalPath _ ) ->
+        | Error (`UnresolvedForwardPath | `UnresolvedPath _ | `OpaqueModule) ->
             f'
       in
       Some (fixup_module_type_cfrag f'')
@@ -2325,28 +2302,21 @@ and class_signature_of_class_type :
 let resolve_module_path env p =
   resolve_module env p >>= fun (p, m) ->
   match p with
-  | `Gpath (`Identifier { iv = `Root _; _ })
-  | `Hidden (`Gpath (`Identifier { iv = `Root _; _ })) ->
+  | `Gpath (`Identifier (`Root _)) | `Hidden (`Gpath (`Identifier (`Root _))) ->
       Ok p
   | _ -> (
       let m = Component.Delayed.get m in
       match expansion_of_module_cached env p m with
       | Ok _ -> Ok p
       | Error `OpaqueModule -> Ok (`OpaqueModule p)
-      | Error
-          ( `UnresolvedForwardPath | `UnresolvedPath _
-          | `UnresolvedOriginalPath _ ) ->
-          Ok p)
+      | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> Ok p)
 
 let resolve_module_type_path env p =
   resolve_module_type env p >>= fun (p, mt) ->
   match expansion_of_module_type env mt with
   | Ok _ -> Ok p
   | Error `OpaqueModule -> Ok (`OpaqueModuleType p)
-  | Error
-      (`UnresolvedForwardPath | `UnresolvedPath _ | `UnresolvedOriginalPath _)
-    ->
-      Ok p
+  | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> Ok p
 
 let resolve_type_path env p = resolve_type env p >>= fun (p, _) -> Ok p
 

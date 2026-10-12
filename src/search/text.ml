@@ -72,7 +72,7 @@ module Of_comments = struct
     | `Code_span s -> s
     | `Word w -> w
     | `Math_span m -> m
-    | `Space -> " "
+    | `Space s -> s
     | `Reference (_, c) -> link_content c
     | `Link (_, c) -> link_content c
     | `Styled (_, b) -> inlines b

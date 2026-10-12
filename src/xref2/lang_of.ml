@@ -52,6 +52,20 @@ let lookup_module map : Ident.module_ -> _ = function
 
 module Opt = Component.Opt
 
+(* Hash-cons converted resolved module paths so that structurally equal paths
+   become physically shared. Marshal preserves physical sharing, so this is what
+   keeps repetitive alias chains small both on disk and in memory. *)
+module HC = Odoc_model.Paths.Path.Resolved.Module.Hashtbl
+
+let hashcons_tbl : Odoc_model.Paths.Path.Resolved.Module.t HC.t = HC.create 1024
+
+let hashcons p =
+  match HC.find_opt hashcons_tbl p with
+  | Some p' -> p'
+  | None ->
+      HC.add hashcons_tbl p p;
+      p
+
 module Path = struct
   let rec module_ map (p : Cpath.module_) : Odoc_model.Paths.Path.Module.t =
     match p with
@@ -65,7 +79,7 @@ module Path = struct
         let hidden =
           b
           ||
-          match m.iv with
+          match m with
           | `Module (_, n) -> Odoc_model.Names.ModuleName.is_hidden n
           | _ -> false
         in
@@ -74,7 +88,6 @@ module Path = struct
     | `Resolved x -> `Resolved (resolved_module map x)
     | `Root x -> `Root x
     | `Dot (p, s) -> `Dot (module_ map p, s)
-    | `Forward s -> `Forward s
     | `Apply (m1, m2) -> `Apply (module_ map m1, module_ map m2)
     | `Module (`Module p, n) -> `Dot (`Resolved (resolved_module map p), n)
     | `Module (_, _) -> failwith "Probably shouldn't happen"
@@ -83,8 +96,7 @@ module Path = struct
       Odoc_model.Paths.Path.ModuleType.t =
     match p with
     | `Substituted x -> `SubstitutedMT (module_type map x)
-    | `Identifier
-        (({ iv = #Odoc_model.Paths.Identifier.ModuleType.t_pv; _ } as y), b) ->
+    | `Identifier ((#Odoc_model.Paths.Identifier.ModuleType.t as y), b) ->
         `Identifier (y, b)
     | `Local (id, b) ->
         `Identifier
@@ -100,8 +112,7 @@ module Path = struct
   and type_ map (p : Cpath.type_) : Odoc_model.Paths.Path.Type.t =
     match p with
     | `Substituted x -> `SubstitutedT (type_ map x)
-    | `Identifier
-        (({ iv = #Odoc_model.Paths.Identifier.Path.Type.t_pv; _ } as y), b) ->
+    | `Identifier ((#Odoc_model.Paths.Identifier.Path.Type.t as y), b) ->
         `Identifier (y, b)
     | `Unbox x -> `Unbox (type_ map x)
     | `Local (id, b) -> `Identifier (Component.TypeMap.find id map.path_type, b)
@@ -116,9 +127,7 @@ module Path = struct
       =
     match p with
     | `Substituted x -> `SubstitutedCT (class_type map x)
-    | `Identifier
-        (({ iv = #Odoc_model.Paths.Identifier.Path.ClassType.t_pv; _ } as y), b)
-      ->
+    | `Identifier ((#Odoc_model.Paths.Identifier.Path.ClassType.t as y), b) ->
         `Identifier (y, b)
     | `Local (id, b) ->
         `Identifier (Component.TypeMap.find id map.path_class_type, b)
@@ -129,6 +138,10 @@ module Path = struct
     | `Class _ | `ClassType _ -> failwith "Probably shouldn't happen"
 
   and resolved_module map (p : Cpath.Resolved.module_) :
+      Odoc_model.Paths.Path.Resolved.Module.t =
+    hashcons (resolved_module_inner map p)
+
+  and resolved_module_inner map (p : Cpath.Resolved.module_) :
       Odoc_model.Paths.Path.Resolved.Module.t =
     match p with
     | `Local id ->
@@ -651,6 +664,9 @@ and include_decl :
   (* Don't start shadowing within any signatures *)
   match d with
   | Alias p -> Alias (Path.module_ map p)
+  | Functor p ->
+      let target = Lang.Include.Path (Path.module_ map p) in
+      Functor { target; original_ref = target }
   | ModuleType mty ->
       let include_parent = Identifier.fresh_include_parent identifier in
       ModuleType (u_module_type_expr map include_parent mty)
@@ -666,6 +682,7 @@ and include_ parent map i =
       {
         shadowed;
         content = signature parent { map with shadowed } i.expansion_;
+        authoritative = i.authoritative;
       };
     status = i.status;
     strengthened = Opt.map (Path.module_ map) i.strengthened;
@@ -1039,8 +1056,8 @@ and type_expr map (parent : Identifier.LabelParent.t) (t : Component.TypeExpr.t)
     | Var s -> Var s
     | Any -> Any
     | Alias (t, str) -> Alias (type_expr map parent t, str)
-    | Arrow (lbl, t1, t2) ->
-        Arrow (lbl, type_expr map parent t1, type_expr map parent t2)
+    | Arrow (lbl, (t1, m1), (t2, m2)) ->
+        Arrow (lbl, (type_expr map parent t1, m1), (type_expr map parent t2, m2))
     | Tuple ts ->
         Tuple (List.map (fun (lbl, ty) -> (lbl, type_expr map parent ty)) ts)
     | Unboxed_tuple ts ->

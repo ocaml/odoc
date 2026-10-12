@@ -27,11 +27,11 @@ let content_for_hidden_modules =
   let sentence =
     [
       `Word "This";
-      `Space;
+      `Space " ";
       `Word "module";
-      `Space;
+      `Space " ";
       `Word "is";
-      `Space;
+      `Space " ";
       `Word "hidden.";
     ]
   in

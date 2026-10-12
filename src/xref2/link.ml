@@ -60,10 +60,7 @@ let ambiguous_label_warning label_name labels =
 (** Raise a warning when a label explicitly set by the user collides. This
     warning triggers even if one of the colliding labels have been automatically
     generated. *)
-let check_ambiguous_label ~loc env
-    ( attrs,
-      ({ Odoc_model.Paths.Identifier.iv = `Label (_, label_name); _ } as id),
-      _ ) =
+let check_ambiguous_label ~loc env (attrs, (`Label (_, label_name) as id), _) =
   if attrs.Comment.heading_label_explicit then
     (* Looking for an identical identifier but a different location. *)
     let conflicting (`Label (id', comp)) =
@@ -90,15 +87,6 @@ let expansion_needed self target =
   self_canonical || hidden_alias
 
 exception Loop
-
-let rec is_forward : Paths.Path.Module.t -> bool = function
-  | `Resolved _ -> false
-  | `Root _ -> false
-  | `Forward _ -> true
-  | `Identifier _ -> false
-  | `Dot (p, _) -> is_forward p
-  | `Apply (p1, p2) -> is_forward p1 || is_forward p2
-  | `Substituted s -> is_forward s
 
 let rec should_reresolve : Paths.Path.Resolved.t -> bool =
  fun p ->
@@ -227,10 +215,81 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
         | Ok p' ->
             let result = Tools.reresolve_module env p' in
             `Resolved Lang_of.(Path.resolved_module (empty ()) result)
-        | Error _ when is_forward p -> p
         | Error e ->
             Errors.report ~what:(`Module_path cp) ~tools_error:e `Resolve;
             p)
+
+(* Comment.docs produced by Doc_attr can be huge in ppx_template-heavy code
+   (Container_intf in OxCaml's base has ~155K doc-comment instances), and the vast
+   majority of them are plain prose that has nothing for this module to do:
+   no references to resolve, no headings to check for ambiguity, no
+   {!modules ...} lists to resolve. Rebuilding such a doc word-by-word via
+   the List.map below is pure overhead, so we short-circuit and return the
+   input unchanged whenever it contains none of the constructs that this
+   pass actually touches. *)
+let rec comment_inline_element_needs_resolving (x : Comment.inline_element) =
+  match x with
+  | `Reference _ -> true
+  | `Styled (_, xs) ->
+      List.exists
+        (fun e -> comment_inline_element_needs_resolving e.Location_.value)
+        xs
+  | `Space _ | `Word _ | `Code_span _ | `Math_span _ | `Raw_markup _ | `Link _
+    ->
+      false
+
+let rec comment_nestable_block_element_needs_resolving
+    (x : Comment.nestable_block_element) =
+  match x with
+  | `Paragraph elts ->
+      List.exists
+        (fun e -> comment_inline_element_needs_resolving e.Location_.value)
+        elts
+  | `List (_, yss) ->
+      List.exists
+        (List.exists (fun e ->
+             comment_nestable_block_element_needs_resolving e.Location_.value))
+        yss
+  | `Table { data; _ } ->
+      List.exists
+        (List.exists (fun (cell, _) ->
+             List.exists
+               (fun e ->
+                 comment_nestable_block_element_needs_resolving
+                   e.Location_.value)
+               cell))
+        data
+  | `Modules _ -> true
+  | `Media (`Reference _, _, _) -> true
+  | `Media (`Link _, _, _) -> false
+  | `Code_block _ | `Verbatim _ | `Math_block _ -> false
+
+let comment_tag_needs_resolving (x : Comment.tag) =
+  match x with
+  | `Raise (`Reference _, _) -> true
+  | `Raise (`Code_span _, c)
+  | `Deprecated c
+  | `Param (_, c)
+  | `Return c
+  | `See (_, _, c)
+  | `Before (_, c) ->
+      List.exists
+        (fun e ->
+          comment_nestable_block_element_needs_resolving e.Location_.value)
+        c
+  | `Author _ | `Since _ | `Version _ | `Alert _ -> false
+
+let comment_block_element_needs_resolving (x : Comment.block_element) =
+  match x with
+  | #Comment.nestable_block_element as x ->
+      comment_nestable_block_element_needs_resolving x
+  | `Heading _ -> true
+  | `Tag t -> comment_tag_needs_resolving t
+
+let doc_needs_resolving (d : Comment.docs) =
+  List.exists
+    (fun e -> comment_block_element_needs_resolving e.Location_.value)
+    d.Comment.elements
 
 let rec comment_inline_element :
     loc:_ ->
@@ -412,16 +471,18 @@ and with_location : type a.
   { value; location = loc }
 
 and comment_docs env parent d =
-  {
-    Comment.elements =
-      List.rev_map
-        (with_location
-           (comment_block_element env d.Comment.warnings_tag
-              (parent :> Id.LabelParent.t)))
-        d.Comment.elements
-      |> List.rev;
-    warnings_tag = d.warnings_tag;
-  }
+  if not (doc_needs_resolving d) then d
+  else
+    {
+      Comment.elements =
+        List.rev_map
+          (with_location
+             (comment_block_element env d.Comment.warnings_tag
+                (parent :> Id.LabelParent.t)))
+          d.Comment.elements
+        |> List.rev;
+      warnings_tag = d.warnings_tag;
+    }
 
 and comment env parent = function
   | `Stop -> `Stop
@@ -442,7 +503,7 @@ let warn_on_hidden_representation (id : Id.Type.t)
         is_hidden (p :> Paths.Path.t)
         || List.exists (fun t -> internal_typ_exp t) ts
     | Poly (_, t) | Alias (t, _) -> internal_typ_exp t
-    | Arrow (_, t, t2) -> internal_typ_exp t || internal_typ_exp t2
+    | Arrow (_, (t, _), (t2, _)) -> internal_typ_exp t || internal_typ_exp t2
     | Tuple ts -> List.exists (fun (_, t) -> internal_typ_exp t) ts
     | Class (_, ts) -> List.exists (fun t -> internal_typ_exp t) ts
     | _ -> false
@@ -707,6 +768,10 @@ and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
   match decl with
   | ModuleType expr when is_elidable_with_module_type_u expr -> ModuleType expr
   | ModuleType expr -> ModuleType (u_module_type_expr env id expr)
+  | Functor ({ target = Path p; _ } as f) ->
+      let target = Path (module_path env p) in
+      Functor { f with target }
+  | Functor mt -> Functor mt
   | Alias p -> Alias (module_path env p)
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
@@ -1141,11 +1206,11 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
   match texpr with
   | Var _ | Any -> texpr
   | Alias (t, str) -> Alias (type_expression env parent visited t, str)
-  | Arrow (lbl, t1, t2) ->
+  | Arrow (lbl, (t1, m1), (t2, m2)) ->
       Arrow
         ( lbl,
-          type_expression env parent visited t1,
-          type_expression env parent visited t2 )
+          (type_expression env parent visited t1, m1),
+          (type_expression env parent visited t2, m2) )
   | Tuple ts ->
       Tuple
         (List.map

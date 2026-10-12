@@ -45,7 +45,7 @@ let rec path_of_id output_dir id =
   match id with
   | None -> Fpath.v output_dir
   | Some id -> (
-      match (id : Paths.Identifier.ContainerPage.t).iv with
+      match (id : Paths.Identifier.ContainerPage.t) with
       | `Page (parent, p) ->
           let d = path_of_id output_dir parent in
           Fpath.(d / PageName.to_string p))
@@ -88,8 +88,8 @@ let resolve_parent_page resolver f =
     | Module_child _ -> Error (`Msg "Expecting page as parent")
   in
   let extract_parent = function
-    | { Paths.Identifier.iv = `Page _; _ } as container -> Ok container
-    | { Paths.Identifier.iv = `LeafPage _; _ } ->
+    | `Page _ as container -> Ok container
+    | `LeafPage _ ->
         Error (`Msg "Specified parent is not a parent of this file")
   in
   parse_parent_child_reference f >>= fun r ->
@@ -208,8 +208,8 @@ let name_of_output ~prefix output =
 let page_name_of_output output = name_of_output ~prefix:"page-" output
 
 let is_index_page = function
-  | { Paths.Identifier.iv = `Page _; _ } -> false
-  | { iv = `LeafPage (_, p); _ } ->
+  | `Page _ -> false
+  | `LeafPage (_, p) ->
       Astring.String.equal (Names.PageName.to_string p) "index"
 
 let has_children_order { Frontmatter.children_order; _ } =

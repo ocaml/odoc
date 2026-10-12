@@ -213,7 +213,7 @@ since mesozoic
 ```ocaml
 val changing : unit
 ```
-This value has had changes in 1\.0.0, 1\.1.0, and 1\.2.0.
+This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
 before 1\.0.0 before 1.0.0
 before 1\.1.0 before 1.1.0
@@ -370,7 +370,7 @@ type poly_variant = [
 ```
 This comment is for `poly_variant`.
 
-Wow\! It was a polymorphic variant\!
+Wow! It was a polymorphic variant\!
 
 ```ocaml
 type (_, _) full_gadt = 
@@ -381,7 +381,7 @@ type (_, _) full_gadt =
 ```
 This comment is for `full_gadt`.
 
-Wow\! It was a GADT\!
+Wow! It was a GADT\!
 
 ```ocaml
 type 'a partial_gadt = 
@@ -391,7 +391,7 @@ type 'a partial_gadt =
 ```
 This comment is for `partial_gadt`.
 
-Wow\! It was a mixed GADT\!
+Wow! It was a mixed GADT\!
 
 ```ocaml
 type alias = variant

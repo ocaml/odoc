@@ -210,6 +210,9 @@ let shape_info_of_cmt_infos : Cmt_format.cmt_infos -> (shape * uid_to_loc) optio
     let open Typedtree in
     function
     | Value v -> v.val_loc
+#if OCAML_VERSION >= (5,6,0)
+    | Primitive p -> p.prim_loc
+#endif
     | Value_binding vb -> vb.vb_pat.pat_loc
     | Type t -> t.typ_loc
     | Constructor c -> c.cd_loc
@@ -257,5 +260,24 @@ let required_compunit_names x = List.map compunit_name x.Cmo_format.cu_required_
 
 let compunit_name x = x
 let required_compunit_names x = List.map Ident.name x.Cmo_format.cu_required_globals
+
+#endif
+
+(* Marshalling through the compiler's own [Compression] module (the mechanism
+   it uses for .cmt/.cmti files): payloads are zstd-compressed when the running
+   compiler was built with zstd support, and fall back to plain Marshal
+   otherwise. [Compression] only exists from OCaml 5.1 and is absent from
+   OxCaml; there we use Marshal directly. *)
+#if OCAML_VERSION >= (5, 1, 0) && not (defined OXCAML)
+
+let compression_supported = Compression.compression_supported
+let marshal_to_channel oc v = Compression.output_value oc v
+let unmarshal_from_channel ic = Compression.input_value ic
+
+#else
+
+let compression_supported = false
+let marshal_to_channel oc v = Marshal.to_channel oc v []
+let unmarshal_from_channel ic = Marshal.from_channel ic
 
 #endif

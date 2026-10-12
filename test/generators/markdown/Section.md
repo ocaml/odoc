@@ -34,4 +34,4 @@ val foo : unit
 
 ## *This* `section` **title** has markup
 
-But links are impossible thanks to the parser, so we never have trouble rendering a section title in a table of contents \- no link will be nested inside another link.
+But links are impossible thanks to the parser, so we never have trouble rendering a section title in a table of contents - no link will be nested inside another link.

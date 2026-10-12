@@ -288,11 +288,27 @@ and include_shadowed =
       F ("s_class_types", (fun t -> List.map fst t.s_class_types), List string);
     ]
 
+and include_functor_ref =
+  let open Lang.Include in
+  Variant
+    (function
+    | Path p -> C ("Path", (p :> Paths.Path.t), path)
+    | ModuleType e -> C ("ModuleType", e, moduletype_expr))
+
+and include_functor_t =
+  let open Lang.Include in
+  Record
+    [
+      F ("target", (fun t -> t.target), include_functor_ref);
+      F ("original_ref", (fun t -> t.original_ref), include_functor_ref);
+    ]
+
 and include_decl =
   let open Lang.Include in
   Variant
     (function
     | Alias p -> C ("Alias", (p :> Paths.Path.t), path)
+    | Functor f -> C ("Functor", f, include_functor_t)
     | ModuleType e -> C ("ModuleType", e, moduletype_u_expr))
 
 and include_expansion =
@@ -683,7 +699,10 @@ and typeexpr_t =
         C
           ( "Arrow",
             (x1, x2, x3),
-            Triple (Option typeexpr_label, typeexpr_t, typeexpr_t) )
+            Triple
+              ( Option typeexpr_label,
+                Pair (typeexpr_t, List string),
+                Pair (typeexpr_t, List string) ) )
     | Tuple x -> C ("Tuple", x, List (Pair (Option string, typeexpr_t)))
     | Unboxed_tuple x ->
         C ("Unboxed_tuple", x, List (Pair (Option string, typeexpr_t)))

@@ -22,6 +22,7 @@ module OCamlPath = Path
 
 open Odoc_model.Paths
 open Odoc_model.Lang
+module Names = Odoc_model.Names
 
 module Env = Ident_env
 
@@ -44,7 +45,7 @@ let rec read_pattern env parent doc id_attrs pat =
 #if OCAML_VERSION < (5,2,0)
     | Tpat_var(id, _) ->
 #elif defined OXCAML
-    | Tpat_var(id, _, _uid, _, _) ->
+    | Tpat_var { id; _ } ->
 #else
     | Tpat_var(id, _, _uid) ->
 #endif
@@ -58,7 +59,7 @@ let rec read_pattern env parent doc id_attrs pat =
 #if OCAML_VERSION < (5,2, 0)
     | Tpat_alias(pat, id, _) ->
 #elif defined OXCAML
-    | Tpat_alias(pat, id, _, _, _, _, _) ->
+    | Tpat_alias { pattern = pat; id; _ } ->
 #elif OCAML_VERSION < (5,4,0)
     | Tpat_alias(pat, id, _,_) ->
 #else
@@ -120,6 +121,7 @@ let rec read_pattern env parent doc id_attrs pat =
 #if defined OXCAML
     | Tpat_unboxed_unit -> []
     | Tpat_unboxed_bool _ -> []
+    | Tpat_fun_layout _ -> []
 #endif
 
 let read_value_binding env parent id_attrs vb =
@@ -288,10 +290,13 @@ let rec read_class_field env parent cf =
         | Tcfk_concrete(_, expr) ->
             (* Types of concrete methods in class implementation begin
                with the object as first (implicit) argument, so we
-               must keep only the type after the first arrow. *)
+               must keep only the type after the first arrow. That
+               arrow's modes are always legacy, since a method type
+               cannot carry a mode annotation. *)
             let type_ =
               match Cmi.read_type_expr env expr.exp_type with
-              | Arrow (_, _, t) -> t
+              | Arrow (_, _, (t, [])) -> t
+              | Arrow (_, _, (_, _ :: _)) -> invalid_arg "unexpected modes on method"
               | t -> t
             in
             false, type_
@@ -496,7 +501,7 @@ and read_module_binding env parent mb =
   in
   let canonical = match canonical with | None -> None | Some s -> Some (Doc_attr.conv_canonical_module s) in
   let hidden =
-    match canonical, mid.iv with
+    match canonical, mid with
     | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | Some _, _ -> false
   in
@@ -524,8 +529,13 @@ and read_structure_item env parent item =
     | Tstr_eval _ -> []
     | Tstr_value(_, vbs) ->
         read_value_bindings env parent vbs
+#if OCAML_VERSION >= (5,6,0)
+    | Tstr_primitive pd ->
+        [Cmti.read_primitive_description env parent pd]
+#else
     | Tstr_primitive vd ->
         [Cmti.read_value_description env parent vd]
+#endif
     | Tstr_type (rec_flag, decls) ->
       let rec_flag =
         match rec_flag with
@@ -575,16 +585,8 @@ and read_include env parent incl =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, status = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_status container incl.incl_attributes in
   let decl_modty =
-#if defined OXCAML
-    match unwrap_module_expr_desc incl.incl_mod.mod_desc, incl.incl_kind with
-    | _, (Tincl_functor _ | Tincl_gen_functor _) ->
-      (* TODO: Handle [include functor] *)
-      None
-    | Tmod_ident(p, _), Tincl_structure ->
-#else
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
     | Tmod_ident(p, _) ->
-#endif
       let p = Env.Path.read_module env.ident_env p in
       Some (ModuleType.U.TypeOf (ModuleType.StructInclude p, p))
     | _ ->
@@ -592,13 +594,41 @@ and read_include env parent incl =
       umty_of_mty mty
   in
   let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
-  let expansion = { content; shadowed; } in
+  let expansion = { content; shadowed; authoritative = false } in
   match decl_modty with
   | Some m ->
     let decl = ModuleType m in
     [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
-  | _ ->
+  | None ->
     content.items
+
+#if defined OXCAML
+(* [include functor F] applies [F] to [wrapper], a synthetic module holding
+   everything defined before the include.  [F] itself need not be a path -- it
+   can be an anonymous functor -- in which case it is bound to a module so that
+   there is something to apply. *)
+and read_include_functor env parent wrapper incl =
+  let open Include in
+  let loc = Doc_attr.read_location incl.incl_loc in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
+  let doc, status = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_status container incl.incl_attributes in
+  let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
+  let expansion = { content; shadowed; authoritative = false } in
+  let bound, functor_path, original_ref =
+    match unwrap_module_expr_desc incl.incl_mod.mod_desc with
+    | Tmod_ident (p, _) ->
+      let p = Env.Path.read_module env.ident_env p in
+      ([], p, Path p)
+    | _ ->
+      let mty = read_module_expr env parent container incl.incl_mod in
+      let hidden = true in
+      let id, path = Cmti.generate_wrapper_module parent ~prefix:"INCLUDE" ~hidden in
+      let m : Module.t = {id; source_loc=None; doc; type_=ModuleType mty; canonical=None; hidden} in
+      ([Signature.Module (Ordinary, m)], path, ModuleType mty)
+  in
+  let decl = Functor {target = Path (`Apply (functor_path, wrapper)); original_ref} in
+  bound @ [Include {parent; doc; decl; expansion; status; strengthened=None; loc }]
+#endif
 
 and read_open env parent o =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -606,6 +636,22 @@ and read_open env parent o =
   let signature = o.open_bound_items in
   let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature signature) in
   Open.{expansion; doc}
+
+and read_items env parent items =
+  List.fold_left
+    (fun acc item ->
+      match item.str_desc with
+#if defined OXCAML
+      | Tstr_include ({ incl_kind = (Tincl_functor _ | Tincl_gen_functor _); _ } as incl) ->
+        let hidden = true in
+        let wrapper = Cmti.generate_wrapper_module parent ~prefix:"BODY" ~hidden in
+        let wrapper_module = Cmti.wrapper_module wrapper ~hidden (List.rev acc) in
+        let items = read_include_functor env parent (snd wrapper) incl in
+        List.rev_append items (wrapper_module :: acc)
+#endif
+      | _ -> List.rev_append (read_structure_item env parent item) acc)
+    [] items
+  |> List.rev
 
 and read_structure :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->
@@ -622,13 +668,7 @@ and read_structure :
     in
     Doc_attr.extract_top_comment internal_tags ~warnings_tag:env.warnings_tag ~classify parent str.str_items
   in
-  let items =
-    List.fold_left
-      (fun items item ->
-        List.rev_append (read_structure_item env parent item) items)
-      [] items
-    |> List.rev
-  in
+  let items = read_items env parent items in
   match doc_post with
   | { elements = [] ; _} ->
     ({ Signature.items; compiled = false; removed = []; doc }, tags)

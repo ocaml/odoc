@@ -98,7 +98,7 @@ end = struct
                   | Some t -> t
                   | None ->
                       let name =
-                        match entry.id.iv with
+                        match entry.id with
                         | `LeafPage (Some parent, name)
                           when Astring.String.equal
                                  (Names.PageName.to_string name)

@@ -82,8 +82,9 @@ let searchable_type_of_constructor args res =
   | TypeDecl.Constructor.Tuple args -> begin
       match args with
       | _ :: _ :: _ ->
-          TypeExpr.Arrow (None, Tuple (List.map (fun (x, _mods) -> None, x) args), res)
-      | [ (arg, _) ] -> TypeExpr.Arrow (None, arg, res)
+          TypeExpr.Arrow
+            (None, (Tuple (List.map (fun (x, _mods) -> None, x) args), []), (res, []))
+      | [ (arg, _) ] -> TypeExpr.Arrow (None, (arg, []), (res, []))
       | _ -> res
     end
   | TypeDecl.Constructor.Record fields ->
@@ -91,12 +92,12 @@ let searchable_type_of_constructor args res =
         (fun res field ->
            let open TypeDecl.Field in
            let field_name = Odoc_model.Paths.Identifier.name field.id in
-           TypeExpr.Arrow (Some (Label field_name), field.type_, res))
+           TypeExpr.Arrow (Some (Label field_name), (field.type_, []), (res, [])))
         res
         fields
 
 let searchable_type_of_record parent_type type_ =
-  Odoc_model.Lang.TypeExpr.Arrow (None, parent_type, type_)
+  Odoc_model.Lang.TypeExpr.Arrow (None, (parent_type, []), (type_, []))
 
 let convert_kind ~db (Odoc_index.Entry.{ kind; _ } as entry) =
   match kind with
@@ -144,21 +145,21 @@ let register_kind ~db elt =
 
 let rec categorize id =
   let open Odoc_model.Paths in
-  match id.Identifier.iv with
+  match id with
   | `Root _ | `Page _ | `LeafPage _ -> `definition
   | `ModuleType _ -> `declaration
   | `Parameter _ -> `ignore (* redundant with indexed signature *)
   | ( `InstanceVariable _ | `Method _ | `Field _ | `Result _ | `Label _ | `Type _
     | `Exception _ | `Class _ | `ClassType _ | `Value _ | `Constructor _ | `Extension _
     | `ExtensionDecl _ | `Module _ | `UnboxedField _ ) as x ->
-      let parent = Identifier.label_parent { id with iv = x } in
+      let parent = Identifier.label_parent x in
       categorize (parent :> Identifier.Any.t)
   | `AssetFile _ | `SourceLocationMod _ | `SourceLocation _ | `SourcePage _
   | `SourceLocationInternal _ ->
       `ignore (* unclear what to do with those *)
 
 let categorize Odoc_index.Entry.{ id; _ } =
-  match id.iv with
+  match id with
   | `ModuleType (parent, _) ->
       (* A module type itself is not *from* a module type, but it might be if one
        of its parents is a module type. *)

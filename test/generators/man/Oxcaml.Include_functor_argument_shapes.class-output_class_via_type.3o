@@ -1,0 +1,17 @@
+
+.TH output_class_via_type 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.Include_functor_argument_shapes\.output_class_via_type
+.SH Synopsis
+.sp 
+.in 2
+\fBClass Include_functor_argument_shapes\.output_class_via_type\fR
+.in 
+.sp 
+.fi 
+A class whose type comes from an explicitely named class type
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR content : int

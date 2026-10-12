@@ -38,6 +38,9 @@ module Env = struct
     | Tsig_exception _ | Tsig_modsubst _ | Tsig_open _ | Tsig_include _
     | Tsig_class _ | Tsig_class_type _ | Tsig_attribute _ ->
         ()
+#if OCAML_VERSION >= (5,6,0)
+    | Tsig_primitive _ -> ()
+#endif
 #if defined OXCAML
     | Tsig_jkind _ -> ()
 #endif
@@ -203,13 +206,13 @@ let anchor_of_identifier id =
     let anchor kind name =
       Printf.sprintf "%s-%s" (Anchor.string_of_kind kind) name
     in
-    match id.iv with
+    match id with
     | `InstanceVariable (parent, name) ->
         let anchor = anchor `Val (InstanceVariableName.to_string name) in
         continue anchor parent
     | `Parameter (parent, name) as iv ->
         let arg_num =
-          Identifier.FunctorParameter.functor_arg_pos { id with iv }
+          Identifier.FunctorParameter.functor_arg_pos iv
         in
         let kind = `Parameter arg_num in
         let anchor = anchor kind (ModuleName.to_string name) in

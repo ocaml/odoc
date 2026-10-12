@@ -34,6 +34,8 @@ let cmti_of_string s =
 #elif defined OXCAML
     ~sourcefile:""
     dummy_compilation_unit
+#elif OCAML_VERSION >= (5,6,0)
+    Unit_info.(make ~source_file:"" Intf "")
 #endif
     env p;;
 
@@ -386,7 +388,7 @@ module LangUtils = struct
                 let rec inner = function
                     | Odoc_model.Lang.Signature.Module (_, m) :: rest -> begin
                         let id = m.Odoc_model.Lang.Module.id in
-                        match id.iv with
+                        match id with
                         | `Module (_, mname') ->
                             if ModuleName.to_string mname' = mname
                             then m
@@ -413,7 +415,7 @@ module LangUtils = struct
         type 'a fmt = Format.formatter -> 'a -> unit
 
         open Paths
-        val identifier : [< Identifier.t_pv] Paths.Identifier.id fmt
+        val identifier : [< Identifier.t] fmt
 
         open Lang
 
@@ -574,7 +576,6 @@ module LangUtils = struct
             | `Resolved rp -> Format.fprintf ppf "resolved[%a]" resolved_path (rp :> Odoc_model.Paths.Path.Resolved.t)
             | `Identifier (i,b) -> Format.fprintf ppf "identifier(%a,%b)" identifier i b
             | `Root s -> Format.fprintf ppf "%a" ModuleName.fmt s
-            | `Forward s -> Format.fprintf ppf "%s" s
             | `Dot (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ModuleName.fmt s
             | `DotMT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ModuleTypeName.fmt s
             | `DotT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) TypeName.fmt s
@@ -617,16 +618,23 @@ let my_compilation_unit id (s : Odoc_model.Lang.Signature.t) =
 }
 
 let mkresolver () =
-  Odoc_odoc.Resolver.create
- ~roots:None     ~important_digests:false
-    ~directories:(List.map Odoc_odoc.Fs.Directory.of_string
-#if OCAML_VERSION >= (5,2,0)
-  (let paths = Load_path.get_paths () in
-   List.filter (fun s -> s <> "") (paths.visible @ paths.hidden))
-#else
-    (Load_path.get_paths () |> List.filter (fun s -> s <> ""))
+  let str_dirs =
+#if defined OXCAML
+    let paths = Load_path.get_paths () in
+    let visible = List.map (fun (v : Clflags.visible_include) -> v.path) paths.visible in
+    visible @ paths.hidden
+#elif OCAML_VERSION >= (5,2,0)
+    let paths = Load_path.get_paths () in
+    paths.visible @ paths.hidden
+#else 
+    Load_path.get_paths ()
 #endif
-    ) ~open_modules:[]
+  in
+  let nonempty_str_dirs = List.filter (fun s -> s <> "") str_dirs in
+  let directories = List.map Odoc_odoc.Fs.Directory.of_string nonempty_str_dirs in
+  Odoc_odoc.Resolver.create
+    ~roots:None ~important_digests:false
+    ~directories ~open_modules:[]
 
 let warnings_options =
   { Odoc_model.Error.warn_error = false; print_warnings = true; warnings_tag = None }

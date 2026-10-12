@@ -74,6 +74,10 @@ let find_in_sig sg f =
         match inner f i.Include.expansion_.items with
         | Some _ as x -> x
         | None -> inner f tl)
+    | Signature.Open o :: tl -> (
+        match inner f o.Open.expansion.items with
+        | Some _ as x -> x
+        | None -> inner f tl)
     | hd :: tl -> ( match f hd with Some _ as x -> x | None -> inner f tl)
     | [] -> None
   in
@@ -83,6 +87,7 @@ let filter_in_sig sg f =
   let rec inner f = function
     | Signature.Include i :: tl ->
         inner f i.Include.expansion_.items @ inner f tl
+    | Signature.Open o :: tl -> inner f o.Open.expansion.items @ inner f tl
     | hd :: tl -> (
         match f hd with Some x -> x :: inner f tl | None -> inner f tl)
     | [] -> []

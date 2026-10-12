@@ -31,9 +31,7 @@ module Tools_error = struct
       (* The module signature depends upon a forward path *)
     | `UnresolvedPath of
       [ `Module of Cpath.module_ * simple_module_lookup_error
-      | `ModuleType of Cpath.module_type * simple_module_type_lookup_error ]
-      (* The path to the module or module type could not be resolved *)
-    | `UnresolvedOriginalPath of Cpath.module_ * simple_module_lookup_error ]
+      | `ModuleType of Cpath.module_type * simple_module_type_lookup_error ] ]
 
   and simple_module_lookup_error =
     [ `Local of Env.t * Ident.module_
@@ -189,11 +187,6 @@ module Tools_error = struct
         Format.fprintf fmt "Unresolved module type path %a (%a)"
           (module_type_path c) p pp
           (e :> any)
-    | `UnresolvedOriginalPath (p, e) ->
-        Format.fprintf fmt "Unresolved original module path %a (%a)"
-          Component.Fmt.(module_path default)
-          p pp
-          (e :> any)
     | `LocalMT (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `Local (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `LocalType (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
@@ -270,7 +263,7 @@ let rec kind_of_error : Tools_error.any -> kind option = function
       match kind_of_module_type_cpath cp with
       | None -> kind_of_error (e :> Tools_error.any)
       | x -> x)
-  | `Lookup_failure { iv = `Root (_, name); _ } ->
+  | `Lookup_failure (`Root (_, name)) ->
       Some (`Root (ModuleName.to_string name))
   | `Lookup_failure_root name -> Some (`Root (ModuleName.to_string name))
   | `Parent (`Parent_sig e) -> kind_of_error (e :> Tools_error.any)
@@ -293,8 +286,7 @@ let kind_of_error ~what = function
   | None -> (
       match what with
       | `Include (Component.Include.Alias cp) -> kind_of_module_cpath cp
-      | `Module { Odoc_model.Paths.Identifier.iv = `Root (_, name); _ } ->
-          Some (`Root (ModuleName.to_string name))
+      | `Module (`Root (_, name)) -> Some (`Root (ModuleName.to_string name))
       | _ -> None)
 
 open Paths

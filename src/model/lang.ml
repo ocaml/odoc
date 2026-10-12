@@ -193,10 +193,25 @@ and Include : sig
     s_class_types : (string * Names.TypeName.t) list;
   }
 
-  type expansion = { shadowed : shadowed; content : Signature.t }
+  type expansion = {
+    shadowed : shadowed;
+    content : Signature.t;
+    authoritative : bool;
+        (** Set by [Compile]: from then on the expansion is used as is and never
+            re-derived from [decl], which may have been stripped. If
+            re-derivation failed, the loader's expansion is kept and still
+            marked authoritative. *)
+  }
+
+  type functor_ref = Path of Path.Module.t | ModuleType of ModuleType.expr
+
+  type functor_t = { target : functor_ref; original_ref : functor_ref }
 
   (* Explicitly unexpanded decl *)
-  type decl = Alias of Path.Module.t | ModuleType of ModuleType.U.expr
+  type decl =
+    | Alias of Path.Module.t
+    | ModuleType of ModuleType.U.expr
+    | Functor of functor_t
 
   type t = {
     loc : Location_.span;
@@ -216,6 +231,11 @@ and Modalities : sig
   type t = string list
 end =
   Modalities
+
+and Modes : sig
+  type t = string list
+end =
+  Modes
 
 and TypeDecl : sig
   module Field : sig
@@ -496,7 +516,7 @@ and TypeExpr : sig
     | Var of string
     | Any
     | Alias of t * string
-    | Arrow of label option * t * t
+    | Arrow of label option * with_modes * with_modes
     | Tuple of (string option * t) list
     | Unboxed_tuple of (string option * t) list
     | Constr of Path.Type.t * t list
@@ -508,6 +528,8 @@ and TypeExpr : sig
     | Splice of t
     | Package of TypeExpr.Package.t
     | Arrow_functor of label option * Module.t * t
+
+  and with_modes = t * Modes.t
 end =
   TypeExpr
 
@@ -632,7 +654,12 @@ let extract_signature_doc (s : Signature.t) =
     (* A signature that starts with an include may inherits the
        top-comment from the expansion. *)
     | { Include.status = `Inline; _ } -> true
-    | { decl = Alias p; _ } -> Paths.Path.is_hidden (p :> Path.t)
+    | { decl = Functor { original_ref = Path p }; _ } | { decl = Alias p; _ } ->
+        Paths.Path.is_hidden (p :> Path.t)
+    | { decl = Functor { original_ref = ModuleType _ }; _ } ->
+        (* [include functor module type of ...]: nothing to be hidden behind,
+           so the enclosing signature does not inherit the top comment. *)
+        false
     | { decl = ModuleType expr; _ } -> uexpr_considered_hidden expr
   in
   match (s.doc, s.items) with

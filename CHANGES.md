@@ -1,10 +1,47 @@
 # Unreleased
 
 ### Added
+- Drop the cached `ikey`/`ihash` fields from identifiers (@jonludlam, #1479)
+- Remove the `'a Identifier.id` record wrapper (@jonludlam, #1479)
+- Hash-cons resolved module paths, so repeated paths are shared again in
+  `.odoc`/`.odocl` files (@jonludlam, #1479)
 - Support for OxCaml unboxed named types (@art-w, #1407)
 - Support for OxCaml zero alloc definitions (@Leonidas-from-XIV, #1422, #1444)
-- Remove requirement for ppx_expect in tests (@jonludlam, #1445)
 - Support for OxCaml modalities (@art-w, #1420)
+- Support OxCaml 5.2.0minus39 (@jonludlam, #1469)
+- Support for OxCaml modes (@art-w, #1454)
+- Fix OxCaml with-bounds for arbitrary types (@art-w, #1466)
+- Display items included via `include functor` as included via the functor
+  (@Leonidas-from-XIV, #1452)
+- Point to exact character when parsing the reference syntax fails
+  (@Leonidas-from-XIV, #1494)
+- Support for OCaml 5.6 (@jonludlam, #1472)
+
+### Performance
+- Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
+
+### Performance
+- Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
+- Store comment text as one node per run of words rather than one per word,
+  which makes `.odoc` and `.odocl` files substantially smaller (@jonludlam, #1487)
+
+### Fixed
+- Fix optional arguments rendering as `?arg:???` in modules without an mli on
+  OCaml 5.5 (@jonludlam, #1489)
+- Remove requirement for ppx_expect in tests (@jonludlam, #1445)
+- Fix resolving functor through `module type of` (@Leonidas-from-XIV, #1471)
+- Fix odoc_driver's detection of `stdlib` when it is in `$prefix/lib64`, requires ocamlfind >= 1.9.8 (@katrinafyi, #1477, #1474)
+- Fix loss of items bound by extended opens (`open struct ... end`) following a top-of-file docstring (@jonludlam, #1482)
+- Fix resolution of paths through the bindings of an extended open (@jonludlam, #1482)
+- Unresolved @canonical tags no longer abort the search for canonical paths (@jonludlam, #1483)
+- Compress the contents of `.odoc` and `.odocl` files, which makes them several
+  times smaller (@jonludlam, #1486)
+- Fix bug in hidden name check that sometimes exposed hidden items (@jonludlam, #1484)
+- Fix includes being re-expanded in dependent modules, which could lose type
+  equations; also makes `.odoc` files smaller, particularly on OxCaml (@jonludlam, #1481)
+
+### Performance
+- Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #1487)
 
 ### Fixed
 - Allow to break link into multiline (@Tim-ats-d, #1439)

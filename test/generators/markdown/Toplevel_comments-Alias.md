@@ -3,7 +3,7 @@
 
 Doc of `Alias`.
 
-Doc of `T`, part 2\.
+Doc of `T`, part 2.
 
 ```ocaml
 type t

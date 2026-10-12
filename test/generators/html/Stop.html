@@ -22,16 +22,18 @@
      <code><span><span class="keyword">val</span> foo : int</span></code>
     </div><div class="spec-doc"><p>This is normal commented text.</p></div>
    </div>
-   <p>The next value is <code>bar</code>, and it should be missing from
-     the documentation. There is also an entire module, <code>M</code>
-    , which should also be hidden. It contains a nested stop comment,
-     but that stop comment should not turn documentation back on in this
-     outer module, because stop comments respect scope.
+   <p>The next value is <code>bar</code>
+    , and it should be missing from the documentation. There is also an
+    entire module, <code>M</code>
+    , which should also be hidden. It contains a nested stop comment, but
+    that stop comment should not turn documentation back on in this outer
+    module, because stop comments respect scope.
    </p><p>Documentation is on again.</p>
-   <p>Now, we have a nested module, and it has a stop comment between
-     its two items. We want to see that the first item is displayed, 
-    but the second is missing, and the stop comment disables documenation
-     only in that module, and not in this outer module.
+   <p>
+    Now, we have a nested module, and it has a stop comment between its two
+    items. We want to see that the first item is displayed, but the second is
+    missing, and the stop comment disables documenation only in that module,
+    and not in this outer module.
    </p>
    <div class="odoc-spec">
     <div class="spec module anchored" id="module-N">
@@ -52,9 +54,9 @@
     </div>
    </div>
    <p>The first comment can also be a stop-comment. The test case 
-    <code>stop_first_comment.mli</code> is testing the same thing but
-     at the toplevel. We should see <code>bar</code> inside 
-    <a href="Stop-O.html"><code>O</code></a>.
+    <code>stop_first_comment.mli</code>
+     is testing the same thing but at the toplevel. We should see 
+    <code>bar</code> inside <a href="Stop-O.html"><code>O</code></a>.
    </p>
    <div class="odoc-spec">
     <div class="spec module anchored" id="module-O">

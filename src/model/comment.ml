@@ -15,7 +15,7 @@ type media = [ `Image | `Audio | `Video ]
 type raw_markup_target = string
 
 type leaf_inline_element =
-  [ `Space
+  [ `Space of string
   | `Word of string
   | `Code_span of string
   | `Math_span of string
@@ -155,7 +155,7 @@ let to_string (l : link_content) =
     | `Code_span s -> s
     | `Word w -> w
     | `Math_span m -> m
-    | `Space -> " "
+    | `Space s -> s
     | `Styled (_, is) -> s_of_is is
     | `Raw_markup (_, r) -> r
   and s_of_is is =

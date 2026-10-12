@@ -17,7 +17,7 @@ Another paragraph in section.
 
 This is another section.
 
-Another paragraph in section 2\.
+Another paragraph in section 2.
 
 
 ### Subsection
@@ -33,6 +33,6 @@ Yet another paragraph in subsection.
 
 This is another subsection.
 
-Another paragraph in subsection 2\.
+Another paragraph in subsection 2.
 
-Yet another paragraph in subsection 2\.
+Yet another paragraph in subsection 2.
