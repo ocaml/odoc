@@ -209,7 +209,7 @@ let text_align = function
 
 let cell_kind = function `Header -> Html.th | `Data -> Html.td
 
-let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
+let rec block ?(inline_paragraph=false) ~config ~resolve (l : Block.t) : flow Html.elt list =
   let as_flow x = (x : phrasing Html.elt list :> flow Html.elt list) in
   let one (t : Block.one) =
     let mk_block ?(extra_class = []) mk content =
@@ -234,7 +234,7 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
     | Inline i ->
         if t.attr = [] then as_flow @@ inline ~config ~resolve i
         else mk_block Html.span (inline ~config ~resolve i)
-    | Paragraph i -> mk_block Html.p (inline ~config ~resolve i)
+    | Paragraph i -> if inline_paragraph then mk_block Html.span (inline ~config ~resolve i)  else mk_block Html.p (inline ~config ~resolve i)
     | List (typ, l) ->
         let mk = match typ with Ordered -> Html.ol | Unordered -> Html.ul in
         mk_block mk (List.map (fun x -> Html.li (block ~config ~resolve x)) l)
@@ -250,7 +250,9 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
               : phrasing Html.elt list
               :> flow Html.elt list)
           in
-          let def = block ~config ~resolve i.Description.definition in
+          let def =
+            block ~inline_paragraph:(i.attr = ["raises"])  ~config ~resolve i.Description.definition
+          in
           Html.li ~a (term @ (Html.txt " " :: def))
         in
         mk_block Html.ul (List.map item l)
