@@ -618,7 +618,7 @@ let lookup_page t target_name =
   | Ok p -> Some p
   | Error `Not_found -> None
 
-let resolve_import t target_name =
+let resolve_import t target_name digest =
   let rec loop = function
     | [] -> None
     | path :: tl -> (
@@ -626,7 +626,9 @@ let resolve_import t target_name =
         | Error _ -> loop tl
         | Ok root -> (
             match root.Odoc_model.Root.file with
-            | Compilation_unit _ -> Some root
-            | Impl _ | Page _ | Asset _ -> loop tl))
+            | Compilation_unit _
+              when Digest.compare root.Odoc_model.Root.digest digest = 0 ->
+                Some root
+            | Compilation_unit _ | Impl _ | Page _ | Asset _ -> loop tl))
   in
   loop (Accessible_paths.find t.ap target_name)
