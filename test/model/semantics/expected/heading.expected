@@ -179,7 +179,7 @@ foo
 issues/\
                 865\  }this issue}
 --- output ---
-{"value":[{"`Paragraph":[{"`Link":["https://github.com/ocaml/odoc/issues/865\\",[{"`Word":"this"},"`Space",{"`Word":"issue"}]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
+{"value":[{"`Paragraph":[{"`Link":["https://github.com/ocaml/odoc/issues/865\\",[{"`Word":"this issue"}]]}]}],"warnings":["File \"f.ml.mld\":\nPages (.mld files) should start with a heading."]}
 --- input ---
 {2 {!foo}}
 --- output ---
