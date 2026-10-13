@@ -16,12 +16,9 @@ library it means.
 
 The client's own alias [Html] is looked up by name along the whole search
 path, which has the [Content__Html] of both libraries. So [odoc link] should
-warn once that the lookup is ambiguous. FIXME: the warning is printed twice.
+warn once that the lookup is ambiguous.
 
   $ odoc link -I h/pkg/client -L client:h/pkg/client -L server:h/pkg/server h/pkg/client/content.odoc
-  File "Content__Html":
-  Ambiguous lookup. Possible files: Content__Html
-  Content__Html
   File "Content__Html":
   Ambiguous lookup. Possible files: Content__Html
   Content__Html

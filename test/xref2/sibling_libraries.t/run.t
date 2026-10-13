@@ -30,15 +30,9 @@ Both libraries are in the reference scope of every unit, with [-L]. The
   File "Content__Html":
   Ambiguous lookup. Possible files: Content__Html
   Content__Html
-  File "Content__Html":
-  Ambiguous lookup. Possible files: Content__Html
-  Content__Html
   File "Content":
   Ambiguous lookup. Possible files: Content
   Content
-  File "Content__Html":
-  Ambiguous lookup. Possible files: Content__Html
-  Content__Html
   File "Content__Html":
   Ambiguous lookup. Possible files: Content__Html
   Content__Html
@@ -85,9 +79,6 @@ each library, one by plain name, and a submodule of each.
   File "Content__Html":
   Ambiguous lookup. Possible files: Content__Html
   Content__Html
-  File "Content":
-  Ambiguous lookup. Possible files: Content
-  Content
   File "Content":
   Ambiguous lookup. Possible files: Content
   Content
