@@ -29,12 +29,8 @@ Both libraries are in the reference scope of every unit, with [-L]. The
   > done
   File "Content__Html":
   Ambiguous lookup. Possible units: pkg/client/Content__Html, pkg/server/Content__Html
-  File "Content__Html":
-  Ambiguous lookup. Possible units: pkg/client/Content__Html, pkg/server/Content__Html
   File "Content":
   Ambiguous lookup. Possible units: pkg/client/Content, pkg/server/Content
-  File "Content__Html":
-  Ambiguous lookup. Possible units: pkg/client/Content__Html, pkg/server/Content__Html
   File "Content__Html":
   Ambiguous lookup. Possible units: pkg/client/Content__Html, pkg/server/Content__Html
   File "Content":
@@ -77,8 +73,6 @@ each library, one by plain name, and a submodule of each.
   Ambiguous lookup. Possible units: pkg/client/Content, pkg/server/Content
   File "Content__Html":
   Ambiguous lookup. Possible units: pkg/client/Content__Html, pkg/server/Content__Html
-  File "Content":
-  Ambiguous lookup. Possible units: pkg/client/Content, pkg/server/Content
   File "Content":
   Ambiguous lookup. Possible units: pkg/client/Content, pkg/server/Content
   File "Content":

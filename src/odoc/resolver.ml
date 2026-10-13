@@ -364,6 +364,22 @@ let lookup_page_by_name ap target_name =
   | Some (p, _) -> Ok p
   | None -> Error `Not_found
 
+(* The unit [id] names, if exactly one file on the search path holds a unit
+   with that identifier. Units compiled without [--parent-id] can share an
+   identifier. Then the identifier does not say which unit it means, and the
+   result is [None]. *)
+let lookup_unit_by_id ap (id : Odoc_model.Paths.Identifier.RootModule.t) =
+  let (`Root (_, name) | `LibraryParameter (_, name)) = id in
+  load_units_from_name ap (Odoc_model.Names.ModuleName.to_string name)
+  |> List.filter_map (function
+       | Odoc_file.Unit_content m
+         when Odoc_model.Paths.Identifier.RootModule.equal m.id id ->
+           Some m
+       | _ -> None)
+  |> function
+  | [ m ] -> Some m
+  | [] | _ :: _ :: _ -> None
+
 (** Lookup an implementation. *)
 let lookup_impl ap target_name =
   let target_name = "impl-" ^ Astring.String.Ascii.uncapitalize target_name in
@@ -559,6 +575,7 @@ let build_compile_env_for_unit
     {
       Env.open_units;
       lookup_unit;
+      lookup_unit_by_id = lookup_unit_by_id ap;
       lookup_page;
       lookup_impl;
       lookup_asset;
@@ -593,6 +610,7 @@ let build ?(imports_map = StringMap.empty) ?hierarchy_roots
   {
     Env.open_units;
     lookup_unit;
+    lookup_unit_by_id = lookup_unit_by_id extended_ap;
     lookup_page;
     lookup_impl;
     lookup_asset;
