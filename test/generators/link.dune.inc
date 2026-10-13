@@ -53,7 +53,7 @@
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/annotations.mli}))
  (enabled_if
   (or
-   (>= %{ocaml_version} 5.5)
+   (>= %{ocaml_version} 5.4)
    %{ocaml-config:ox})))
 
 (rule
@@ -63,7 +63,7 @@
   (run odoc compile -o %{target} %{dep:annotations.cmti}))
  (enabled_if
   (or
-   (>= %{ocaml_version} 5.5)
+   (>= %{ocaml_version} 5.4)
    %{ocaml-config:ox})))
 
 (rule
@@ -73,7 +73,7 @@
   (run odoc link -o %{target} %{dep:annotations.odoc}))
  (enabled_if
   (or
-   (>= %{ocaml_version} 5.5)
+   (>= %{ocaml_version} 5.4)
    %{ocaml-config:ox})))
 
 (rule
@@ -83,7 +83,7 @@
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/annotations_impl.ml}))
  (enabled_if
   (or
-   (>= %{ocaml_version} 5.5)
+   (>= %{ocaml_version} 5.4)
    %{ocaml-config:ox})))
 
 (rule
@@ -93,7 +93,7 @@
   (run odoc compile -o %{target} %{dep:annotations_impl.cmt}))
  (enabled_if
   (or
-   (>= %{ocaml_version} 5.5)
+   (>= %{ocaml_version} 5.4)
    %{ocaml-config:ox})))
 
 (rule
@@ -103,7 +103,7 @@
   (run odoc link -o %{target} %{dep:annotations_impl.odoc}))
  (enabled_if
   (or
-   (>= %{ocaml_version} 5.5)
+   (>= %{ocaml_version} 5.4)
    %{ocaml-config:ox})))
 
 (rule
@@ -119,7 +119,7 @@
    %{dep:cases/annotations_unsupported.mli}))
  (enabled_if
   (and
-   (<= %{ocaml_version} 5.4)
+   (< %{ocaml_version} 5.4)
    (not %{ocaml-config:ox}))))
 
 (rule
@@ -129,7 +129,7 @@
   (run odoc compile -o %{target} %{dep:annotations_unsupported.cmti}))
  (enabled_if
   (and
-   (<= %{ocaml_version} 5.4)
+   (< %{ocaml_version} 5.4)
    (not %{ocaml-config:ox}))))
 
 (rule
@@ -139,7 +139,7 @@
   (run odoc link -o %{target} %{dep:annotations_unsupported.odoc}))
  (enabled_if
   (and
-   (<= %{ocaml_version} 5.4)
+   (< %{ocaml_version} 5.4)
    (not %{ocaml-config:ox}))))
 
 (rule
@@ -196,7 +196,7 @@
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/bugs_pre_410.ml}))
  (enabled_if
-  (<= %{ocaml_version} 4.09)))
+  (< %{ocaml_version} 4.10)))
 
 (rule
  (target bugs_pre_410.odoc)
@@ -204,7 +204,7 @@
  (action
   (run odoc compile -o %{target} %{dep:bugs_pre_410.cmt}))
  (enabled_if
-  (<= %{ocaml_version} 4.09)))
+  (< %{ocaml_version} 4.10)))
 
 (rule
  (target bugs_pre_410.odocl)
@@ -212,7 +212,7 @@
  (action
   (run odoc link -o %{target} %{dep:bugs_pre_410.odoc}))
  (enabled_if
-  (<= %{ocaml_version} 4.09)))
+  (< %{ocaml_version} 4.10)))
 
 (rule
  (target class.cmti)
@@ -1378,7 +1378,7 @@
     %{dep:../annotations.odocl}))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1387,7 +1387,7 @@
    (diff Annotations.html Annotations.html.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1401,7 +1401,7 @@
     (run odoc html-targets -o . %{dep:../annotations.odocl} --flat)))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1410,7 +1410,7 @@
    (diff annotations.targets annotations.targets.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1429,7 +1429,7 @@
     %{dep:../annotations.odocl}))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1438,7 +1438,7 @@
    (diff Annotations.tex Annotations.tex.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1452,7 +1452,7 @@
     (run odoc latex-targets -o . %{dep:../annotations.odocl})))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1461,7 +1461,7 @@
    (diff annotations.targets annotations.targets.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1480,7 +1480,7 @@
     %{dep:../annotations.odocl}))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1489,7 +1489,7 @@
    (diff Annotations.3o Annotations.3o.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1503,7 +1503,7 @@
     (run odoc man-targets -o . %{dep:../annotations.odocl})))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1512,7 +1512,7 @@
    (diff annotations.targets annotations.targets.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1531,7 +1531,7 @@
     %{dep:../annotations.odocl}))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1540,7 +1540,7 @@
    (diff Annotations.md Annotations.md.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1554,7 +1554,7 @@
     (run odoc markdown-targets -o . %{dep:../annotations.odocl})))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1563,7 +1563,7 @@
    (diff annotations.targets annotations.targets.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1584,7 +1584,7 @@
     %{dep:../annotations_impl.odocl}))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1593,7 +1593,7 @@
    (diff Annotations_impl.html Annotations_impl.html.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1607,7 +1607,7 @@
     (run odoc html-targets -o . %{dep:../annotations_impl.odocl} --flat)))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1616,7 +1616,7 @@
    (diff annotations_impl.targets annotations_impl.targets.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1635,7 +1635,7 @@
     %{dep:../annotations_impl.odocl}))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1644,7 +1644,7 @@
    (diff Annotations_impl.tex Annotations_impl.tex.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1658,7 +1658,7 @@
     (run odoc latex-targets -o . %{dep:../annotations_impl.odocl})))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1667,7 +1667,7 @@
    (diff annotations_impl.targets annotations_impl.targets.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1686,7 +1686,7 @@
     %{dep:../annotations_impl.odocl}))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1695,7 +1695,7 @@
    (diff Annotations_impl.3o Annotations_impl.3o.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1709,7 +1709,7 @@
     (run odoc man-targets -o . %{dep:../annotations_impl.odocl})))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1718,7 +1718,7 @@
    (diff annotations_impl.targets annotations_impl.targets.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1737,7 +1737,7 @@
     %{dep:../annotations_impl.odocl}))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1746,7 +1746,7 @@
    (diff Annotations_impl.md Annotations_impl.md.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1760,7 +1760,7 @@
     (run odoc markdown-targets -o . %{dep:../annotations_impl.odocl})))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox})))
  (rule
   (alias runtest)
@@ -1769,7 +1769,7 @@
    (diff annotations_impl.targets annotations_impl.targets.gen))
   (enabled_if
    (or
-    (>= %{ocaml_version} 5.5)
+    (>= %{ocaml_version} 5.4)
     %{ocaml-config:ox}))))
 
 (subdir
@@ -1790,7 +1790,7 @@
     %{dep:../annotations_unsupported.odocl}))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
@@ -1799,7 +1799,7 @@
    (diff Annotations_unsupported.html Annotations_unsupported.html.gen))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox})))))
 
 (subdir
@@ -1819,7 +1819,7 @@
      --flat)))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
@@ -1828,7 +1828,7 @@
    (diff annotations_unsupported.targets annotations_unsupported.targets.gen))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox})))))
 
 (subdir
@@ -1847,7 +1847,7 @@
     %{dep:../annotations_unsupported.odocl}))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
@@ -1856,7 +1856,7 @@
    (diff Annotations_unsupported.tex Annotations_unsupported.tex.gen))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox})))))
 
 (subdir
@@ -1870,7 +1870,7 @@
     (run odoc latex-targets -o . %{dep:../annotations_unsupported.odocl})))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
@@ -1879,7 +1879,7 @@
    (diff annotations_unsupported.targets annotations_unsupported.targets.gen))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox})))))
 
 (subdir
@@ -1898,7 +1898,7 @@
     %{dep:../annotations_unsupported.odocl}))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
@@ -1907,7 +1907,7 @@
    (diff Annotations_unsupported.3o Annotations_unsupported.3o.gen))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox})))))
 
 (subdir
@@ -1921,7 +1921,7 @@
     (run odoc man-targets -o . %{dep:../annotations_unsupported.odocl})))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
@@ -1930,7 +1930,7 @@
    (diff annotations_unsupported.targets annotations_unsupported.targets.gen))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox})))))
 
 (subdir
@@ -1949,7 +1949,7 @@
     %{dep:../annotations_unsupported.odocl}))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
@@ -1958,7 +1958,7 @@
    (diff Annotations_unsupported.md Annotations_unsupported.md.gen))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox})))))
 
 (subdir
@@ -1972,7 +1972,7 @@
     (run odoc markdown-targets -o . %{dep:../annotations_unsupported.odocl})))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox}))))
  (rule
   (alias runtest)
@@ -1981,7 +1981,7 @@
    (diff annotations_unsupported.targets annotations_unsupported.targets.gen))
   (enabled_if
    (and
-    (<= %{ocaml_version} 5.4)
+    (< %{ocaml_version} 5.4)
     (not %{ocaml-config:ox})))))
 
 (subdir
@@ -2386,14 +2386,14 @@
     .
     %{dep:../bugs_pre_410.odocl}))
   (enabled_if
-   (<= %{ocaml_version} 4.09)))
+   (< %{ocaml_version} 4.10)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Bugs_pre_410.html Bugs_pre_410.html.gen))
   (enabled_if
-   (<= %{ocaml_version} 4.09))))
+   (< %{ocaml_version} 4.10))))
 
 (subdir
  html
@@ -2405,14 +2405,14 @@
     bugs_pre_410.targets.gen
     (run odoc html-targets -o . %{dep:../bugs_pre_410.odocl} --flat)))
   (enabled_if
-   (<= %{ocaml_version} 4.09)))
+   (< %{ocaml_version} 4.10)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff bugs_pre_410.targets bugs_pre_410.targets.gen))
   (enabled_if
-   (<= %{ocaml_version} 4.09))))
+   (< %{ocaml_version} 4.10))))
 
 (subdir
  latex
@@ -2429,14 +2429,14 @@
     gen
     %{dep:../bugs_pre_410.odocl}))
   (enabled_if
-   (<= %{ocaml_version} 4.09)))
+   (< %{ocaml_version} 4.10)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Bugs_pre_410.tex Bugs_pre_410.tex.gen))
   (enabled_if
-   (<= %{ocaml_version} 4.09))))
+   (< %{ocaml_version} 4.10))))
 
 (subdir
  latex
@@ -2448,14 +2448,14 @@
     bugs_pre_410.targets.gen
     (run odoc latex-targets -o . %{dep:../bugs_pre_410.odocl})))
   (enabled_if
-   (<= %{ocaml_version} 4.09)))
+   (< %{ocaml_version} 4.10)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff bugs_pre_410.targets bugs_pre_410.targets.gen))
   (enabled_if
-   (<= %{ocaml_version} 4.09))))
+   (< %{ocaml_version} 4.10))))
 
 (subdir
  man
@@ -2472,14 +2472,14 @@
     gen
     %{dep:../bugs_pre_410.odocl}))
   (enabled_if
-   (<= %{ocaml_version} 4.09)))
+   (< %{ocaml_version} 4.10)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Bugs_pre_410.3o Bugs_pre_410.3o.gen))
   (enabled_if
-   (<= %{ocaml_version} 4.09))))
+   (< %{ocaml_version} 4.10))))
 
 (subdir
  man
@@ -2491,14 +2491,14 @@
     bugs_pre_410.targets.gen
     (run odoc man-targets -o . %{dep:../bugs_pre_410.odocl})))
   (enabled_if
-   (<= %{ocaml_version} 4.09)))
+   (< %{ocaml_version} 4.10)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff bugs_pre_410.targets bugs_pre_410.targets.gen))
   (enabled_if
-   (<= %{ocaml_version} 4.09))))
+   (< %{ocaml_version} 4.10))))
 
 (subdir
  markdown
@@ -2515,14 +2515,14 @@
     gen
     %{dep:../bugs_pre_410.odocl}))
   (enabled_if
-   (<= %{ocaml_version} 4.09)))
+   (< %{ocaml_version} 4.10)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Bugs_pre_410.md Bugs_pre_410.md.gen))
   (enabled_if
-   (<= %{ocaml_version} 4.09))))
+   (< %{ocaml_version} 4.10))))
 
 (subdir
  markdown
@@ -2534,14 +2534,14 @@
     bugs_pre_410.targets.gen
     (run odoc markdown-targets -o . %{dep:../bugs_pre_410.odocl})))
   (enabled_if
-   (<= %{ocaml_version} 4.09)))
+   (< %{ocaml_version} 4.10)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff bugs_pre_410.targets bugs_pre_410.targets.gen))
   (enabled_if
-   (<= %{ocaml_version} 4.09))))
+   (< %{ocaml_version} 4.10))))
 
 (subdir
  html

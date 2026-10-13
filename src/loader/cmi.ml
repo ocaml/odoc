@@ -1072,7 +1072,7 @@ let is_atomic ld =
   | Types.Immutable -> false
   | Mutable {atomic = Atomic; _ } -> true
   | Mutable {atomic=Nonatomic; _} -> false
-#elif OCAML_VERSION >= (5, 5, 0)
+#elif OCAML_VERSION >= (5, 4, 0)
 let is_atomic ld =
   match ld.ld_atomic with
   | Atomic -> true
