@@ -3,12 +3,17 @@ open Odoc_utils
 type sexp = Sexplib0.Sexp.t = Atom of string | List of sexp list
 
 type enabledif =
+  (* Minimum version, bound included *)
   | Min of string
-  | Max of string
-  | MinMax of string * string
+  (* Maximum version, bound excluded *)
+  | Before of string
+  (* Any version of OxCaml *)
   | OxCaml
-  | MinNotOxCaml of string
-  | MaxNotOxCaml of string
+  (* Minimum version, but not OxCaml *)
+  | MinExcludingOxCaml of string
+  (* Maximum version, but not OxCaml *)
+  | BeforeExcludingOxCaml of string
+  (* [Or l r] when either [l] or [r] match *)
   | Or of enabledif * enabledif
 
 type test_case = {
@@ -28,27 +33,20 @@ module Dune = struct
 
   let rec render_enabledif' = function
     | Min v -> List [ Atom ">="; Atom "%{ocaml_version}"; Atom v ]
-    | Max v -> List [ Atom "<"; Atom "%{ocaml_version}"; Atom v ]
-    | MinMax (min, max) ->
-        List
-          [
-            Atom "and";
-            render_enabledif' (Min min);
-            render_enabledif' (Max max);
-          ]
+    | Before v -> List [ Atom "<"; Atom "%{ocaml_version}"; Atom v ]
     | OxCaml -> Atom "%{ocaml-config:ox}"
-    | MinNotOxCaml v ->
+    | MinExcludingOxCaml v ->
         List
           [
             Atom "and";
             render_enabledif' (Min v);
             List [ Atom "not"; Atom "%{ocaml-config:ox}" ];
           ]
-    | MaxNotOxCaml v ->
+    | BeforeExcludingOxCaml v ->
         List
           [
             Atom "and";
-            render_enabledif' (Max v);
+            render_enabledif' (Before v);
             List [ Atom "not"; Atom "%{ocaml-config:ox}" ];
           ]
     | Or (l, r) ->

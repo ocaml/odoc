@@ -62,8 +62,8 @@ let constraints =
     ("ocamlary.mli", Min "4.14");
     ("recent.mli", Min "5.4");
     ("labels.mli", Min "4.09");
-    ("recent_impl.ml", MinNotOxCaml "4.09");
-    ("bugs_pre_410.ml", Max "4.10");
+    ("recent_impl.ml", MinExcludingOxCaml "4.09");
+    ("bugs_pre_410.ml", Before "4.10");
     ("module_type_subst.mli", Min "4.13");
     ("class_comments.mli", Min "4.08");
     ("functor_ml.ml", Min "4.14");
@@ -73,7 +73,7 @@ let constraints =
     ("oxcaml_impl.ml", OxCaml);
     ("annotations.mli", Or (Min "5.4", OxCaml));
     ("annotations_impl.ml", Or (Min "5.4", OxCaml));
-    ("annotations_unsupported.mli", MaxNotOxCaml "5.4");
+    ("annotations_unsupported.mli", BeforeExcludingOxCaml "5.4");
   ]
 
 let test_cases_dir = Fpath.v "cases"
