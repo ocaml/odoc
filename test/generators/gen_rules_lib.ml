@@ -28,13 +28,13 @@ module Dune = struct
 
   let rec render_enabledif' = function
     | Min v -> List [ Atom ">="; Atom "%{ocaml_version}"; Atom v ]
-    | Max v -> List [ Atom "<="; Atom "%{ocaml_version}"; Atom v ]
+    | Max v -> List [ Atom "<"; Atom "%{ocaml_version}"; Atom v ]
     | MinMax (min, max) ->
         List
           [
             Atom "and";
-            List [ Atom ">="; Atom "%{ocaml_version}"; Atom min ];
-            List [ Atom "<="; Atom "%{ocaml_version}"; Atom max ];
+            render_enabledif' (Min min);
+            render_enabledif' (Max max);
           ]
     | OxCaml -> Atom "%{ocaml-config:ox}"
     | MinNotOxCaml v ->
