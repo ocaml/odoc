@@ -218,10 +218,20 @@ let anchor_of_identifier id =
         let anchor = anchor kind (ModuleName.to_string name) in
         continue anchor parent
     | `Module (parent, name) ->
-        let anchor = anchor `Module (ModuleName.to_string name) in
+        let kind =
+          match ModuleName.substituted_index name with
+          | Some n -> `ModuleSubst n
+          | None -> `Module
+        in
+        let anchor = anchor kind (ModuleName.to_string name) in
         continue anchor parent
     | `ModuleType (parent, name) ->
-        let anchor = anchor `ModuleType (ModuleTypeName.to_string name) in
+        let kind =
+          match ModuleTypeName.substituted_index name with
+          | Some n -> `ModuleTypeSubst n
+          | None -> `ModuleType
+        in
+        let anchor = anchor kind (ModuleTypeName.to_string name) in
         continue anchor parent
     | `Method (parent, name) ->
         let anchor = anchor `Method (MethodName.to_string name) in
@@ -237,7 +247,12 @@ let anchor_of_identifier id =
     | `Result parent -> anchor_of_identifier acc (parent :> Identifier.t)
     | `SourceLocationInternal _ -> assert false
     | `Type (parent, name) ->
-        let anchor = anchor `Type (TypeName.to_string name) in
+        let kind =
+          match TypeName.substituted_index name with
+          | Some n -> `TypeSubst n
+          | None -> `Type
+        in
+        let anchor = anchor kind (TypeName.to_string name) in
         continue anchor parent
     | `Label _ -> assert false
     | `Exception (parent, name) ->

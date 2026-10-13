@@ -37,11 +37,14 @@ shown with the name it was written with, and a use of a substitution names
 it too:
 
   $ tr '\n' ' ' < html/Test/index.html | sed -e 's/<[^>]*>//g' -e 's/&#45;&gt;/->/g' | tr -s ' ' | awk '{ gsub(/ (type|val) /, "\n&"); print }' | grep -E '^ (type|val) ' | sed -e 's/^ //' -e 's/ *$//'
+  type 'a t = | Empty | Leaf of 'a
   type 'a t_float = | Empty_f | Leaf_f of 'a
-  type 'a {t}4/shadowed/(3a1cabc1458465344e4a131fdb0463a2)
-  type 'a {u}5/shadowed/(3a1cabc1458465344e4a131fdb0463a2)
-  type 'a {v}6/shadowed/(3a1cabc1458465344e4a131fdb0463a2) := 'a list
-  val first : 'a {t}1/shadowed/(3a1cabc1458465344e4a131fdb0463a2) -> 'a {u}2/shadowed/(3a1cabc1458465344e4a131fdb0463a2) -> 'a list -> unit
+  type 'a u
+  type 'a v = 'a list
+  type 'a t := 'a t
+  type 'a u := 'a u
+  type 'a v := 'a v
+  val first : 'a t -> 'a u -> 'a v -> unit
   type 'a t := 'a t_float
   type 'a u := 'a t_float
   type 'a v := 'a t_float
@@ -52,26 +55,34 @@ each use links to the substitution in scope where it's written: [first] to
 the first substitutions, [first_float] to the second.
 
   $ grep -o 'id="type-[^"]*"' html/Test/index.html
+  id="type-t"
+  id="type-t.Empty"
+  id="type-t.Leaf"
   id="type-t_float"
   id="type-t_float.Empty_f"
   id="type-t_float.Leaf_f"
-  id="type-{t}4/shadowed/(3a1cabc1458465344e4a131fdb0463a2)"
-  id="type-{u}5/shadowed/(3a1cabc1458465344e4a131fdb0463a2)"
-  id="type-{v}6/shadowed/(3a1cabc1458465344e4a131fdb0463a2)"
-  id="type-t"
   id="type-u"
   id="type-v"
+  id="type-subst-t"
+  id="type-subst-u"
+  id="type-subst-v"
+  id="type-subst-2-t"
+  id="type-subst-2-u"
+  id="type-subst-2-v"
   $ for v in first first_float; do echo "$v:"; sed -n "/id=\"val-$v\"/,/<\/div>/p" html/Test/index.html | grep -o 'href="#type-[^"]*"' | grep -v "val-"; done
   first:
+  href="#type-subst-t"
+  href="#type-subst-u"
+  href="#type-subst-v"
   first_float:
-  href="#type-t"
-  href="#type-u"
-  href="#type-v"
+  href="#type-subst-2-t"
+  href="#type-subst-2-u"
+  href="#type-subst-2-v"
 
 Nothing in the output, anchors included, uses the internal form:
 
   $ grep -c 'shadowed/(' html/Test/index.html || true
-  11
+  0
 
 When a signature is included, its substitutions are applied, and only to
 the items they were written for, not to a real item of the same name
@@ -127,13 +138,11 @@ substitutions of a name leave the name to the last one:
   $ ocamlc -c -bin-annot refs_order.mli
   $ odoc compile refs_order.cmti
   $ odoc link refs_order.odoc
-  File "refs_order.mli", line 2, characters 8-17:
-  Warning: Failed to resolve reference unresolvedroot(offset) Couldn't find "offset"
   $ odoc html-generate --indent -o html refs_order.odocl
   $ for v in fwd after_real repeated; do echo "$v:" $(awk "/id=\"val-$v\"/ { f = 1 } f && /spec-doc/ { g = 1 } g { print } g && /<\/p>/ { exit }" html/Refs_order/index.html | grep -o 'href="[^"]*"'); done
-  fwd:
+  fwd: href="#type-subst-offset"
   after_real: href="#type-t"
-  repeated: href="#type-u"
+  repeated: href="#type-subst-2-u"
 
 References to substitutions in a signature that is included are resolved
 where it is included, after its substitutions have been applied:
@@ -149,7 +158,7 @@ where it is included, after its substitutions have been applied:
   Failed to resolve reference unresolvedroot(M) Couldn't find "M"
   $ odoc html-generate --indent -o html refs_include.odocl
   $ for p in module-type-S I; do for v in x m; do echo "$p $v:" $(awk "/id=\"val-$v\"/ { f = 1 } f && /spec-doc/ { g = 1 } g { print } g && /<\/p>/ { exit }" html/Refs_include/$p/index.html | grep -o 'href="[^"]*"'); done; done
-  module-type-S x: href="#type-t"
+  module-type-S x: href="#type-subst-t"
   module-type-S m: href="../Base/index.html" href="../Base/index.html#type-b"
   I x: href="#type-t"
   I m:
@@ -160,11 +169,9 @@ rather than to a type substitution:
   $ ocamlc -c -bin-annot refs_class.mli
   $ odoc compile refs_class.cmti
   $ odoc link refs_class.odoc
-  File "refs_class.mli", line 6, characters 8-12:
-  Warning: Reference to 'k' is ambiguous. Please specify its kind: class-k, type-k.
   $ odoc html-generate --indent -o html refs_class.odocl
   $ awk '/id="val-after"/ { f = 1 } f && /spec-doc/ { g = 1 } g { print } g && /<\/p>/ { exit }' html/Refs_class/index.html | grep -o 'href="[^"]*"'
-  href="#type-k"
+  href="class-k/index.html"
 
 Substitutions aren't part of a unit's interface, so an [--open]ed unit's
 substitutions are not in scope:
@@ -188,10 +195,10 @@ In source pages, each substitution has an anchor of its own:
   $ odoc html-generate-source --impl impl-source.odocl -o html source.ml
   $ grep -o 'id="module-type-S[^"]*"' html/src/source.ml.html
   id="module-type-S"
-  id="module-type-S.type-{t}1/shadowed/(src-source.ml)"
   id="module-type-S.type-t"
-  id="module-type-S.module-type-{T}2/shadowed/(src-source.ml)"
+  id="module-type-S.type-subst-t"
   id="module-type-S.module-type-T"
-  id="module-type-S.module-type-T.type-q"
-  id="module-type-S.module-{M}3/shadowed/(src-source.ml)"
+  id="module-type-S.module-type-subst-T"
+  id="module-type-S.module-type-subst-T.type-q"
   id="module-type-S.module-M"
+  id="module-type-S.module-subst-M"

@@ -41,6 +41,15 @@ module type Name = sig
 
   val shadowed_of_ident : Ident.t -> t
 
+  val substituted_of_string : string -> int -> t
+  (** [substituted_of_string name n] is the name of the [n]th (from 1) local
+      substitution called [name] in a signature, e.g. [type t := ...]. It's
+      distinct from every other name, so it can't collide with a real [t], but
+      it isn't hidden and it's displayed as [name]. *)
+
+  val substituted_index : t -> int option
+  (** [Some n] for a name made by [substituted_of_string _ n]. *)
+
   val equal_modulo_shadowing : t -> t -> bool
 
   val equal : t -> t -> bool
