@@ -18,6 +18,8 @@
 - Support for OCaml 5.6 (@jonludlam, #1472)
 - Allow to break link into multiple lines (@Tim-ats-d, #1439)
 - Support for atomic annotation (@ElectreAAS, #1496)
+- `{!modules: ...}` lists accept path references such as
+  `{!modules: /lib/Module}` (@jonludlam, #1503)
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
