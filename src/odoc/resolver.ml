@@ -252,10 +252,27 @@ let load_units_from_name =
     | Some (n, unit) -> if n = name then Some unit else None
     | None -> None
   in
+  let same_unit a b =
+    let root_of
+        ( Odoc_file.Unit_content { root; _ }
+        | Page_content { root; _ }
+        | Impl_content { root; _ }
+        | Asset_content { root; _ } ) =
+      root
+    in
+    (root_of a).Odoc_model.Root.id = (root_of b).id
+  in
   fun ap target_name ->
+    let units = do_load ap target_name in
     match check_self target_name with
-    | Some unit -> [ unit ]
-    | None -> do_load ap target_name
+    | None -> units
+    | Some self ->
+        (* The unit being compiled or linked stands for its own file, which may
+           be stale or not written yet. It does not hide the other units of its
+           name, which may be what a name written elsewhere means. *)
+        if List.exists (same_unit self) units then
+          List.map (fun u -> if same_unit self u then self else u) units
+        else self :: units
 
 let rec find_map f = function
   | [] -> None
@@ -346,6 +363,17 @@ let lookup_page_by_name ap target_name =
   match find_map is_page units with
   | Some (p, _) -> Ok p
   | None -> Error `Not_found
+
+(* The unit [id] names. An identifier says which unit it means, so there is
+   nothing to choose between, whichever libraries hold a unit of that name. *)
+let lookup_unit_by_id ap (id : Odoc_model.Paths.Identifier.RootModule.t) =
+  let (`Root (_, name)) = id in
+  load_units_from_name ap (Odoc_model.Names.ModuleName.to_string name)
+  |> List.find_map (function
+       | Odoc_file.Unit_content m
+         when Odoc_model.Paths.Identifier.RootModule.equal m.id id ->
+           Some m
+       | _ -> None)
 
 (** Lookup an implementation. *)
 let lookup_impl ap target_name =
@@ -542,6 +570,7 @@ let build_compile_env_for_unit
     {
       Env.open_units;
       lookup_unit;
+      lookup_unit_by_id = lookup_unit_by_id ap;
       lookup_page;
       lookup_impl;
       lookup_asset;
@@ -576,6 +605,7 @@ let build ?(imports_map = StringMap.empty) ?hierarchy_roots
   {
     Env.open_units;
     lookup_unit;
+    lookup_unit_by_id = lookup_unit_by_id extended_ap;
     lookup_page;
     lookup_impl;
     lookup_asset;

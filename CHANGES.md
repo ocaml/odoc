@@ -28,6 +28,11 @@
   which makes `.odoc` and `.odocl` files substantially smaller (@jonludlam, #1487)
 
 ### Fixed
+- `odoc link` looks up a unit that an identifier names as that unit, not by
+  its name, which could find a same-named unit of another library
+  (@jonludlam, #1495)
+- The unit being compiled or linked no longer hides the other units of its
+  name, which a name written in another library may mean (@jonludlam, #1495)
 - Fix optional arguments rendering as `?arg:???` in modules without an mli on
   OCaml 5.5 (@jonludlam, #1489)
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)

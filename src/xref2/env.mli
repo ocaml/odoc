@@ -12,6 +12,9 @@ type lookup_error = [ `Not_found ]
 type resolver = {
   open_units : string list;
   lookup_unit : path_query -> (lookup_unit_result, lookup_error) result;
+  lookup_unit_by_id : Identifier.RootModule.t -> Lang.Compilation_unit.t option;
+      (** Finds the unit an identifier names, wherever it is on the search path.
+          There is nothing to choose between, so no ambiguity. *)
   lookup_page : path_query -> (Lang.Page.t, lookup_error) result;
   lookup_asset : path_query -> (Lang.Asset.t, lookup_error) result;
   lookup_impl : string -> Lang.Implementation.t option;
