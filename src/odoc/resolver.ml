@@ -252,10 +252,27 @@ let load_units_from_name =
     | Some (n, unit) -> if n = name then Some unit else None
     | None -> None
   in
+  let same_unit a b =
+    let root_of
+        ( Odoc_file.Unit_content { root; _ }
+        | Page_content { root; _ }
+        | Impl_content { root; _ }
+        | Asset_content { root; _ } ) =
+      root
+    in
+    (root_of a).Odoc_model.Root.id = (root_of b).id
+  in
   fun ap target_name ->
+    let units = do_load ap target_name in
     match check_self target_name with
-    | Some unit -> [ unit ]
-    | None -> do_load ap target_name
+    | None -> units
+    | Some self ->
+        (* The unit being compiled or linked stands for its own file, which may
+           be stale or not written yet. It does not hide the other units of its
+           name, which may be what a name written elsewhere means. *)
+        if List.exists (same_unit self) units then
+          List.map (fun u -> if same_unit self u then self else u) units
+        else self :: units
 
 let rec find_map f = function
   | [] -> None

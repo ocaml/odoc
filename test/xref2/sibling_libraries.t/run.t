@@ -33,9 +33,15 @@ Both libraries are in the reference scope of every unit, with [-L]. The
   File "Content":
   Ambiguous lookup. Possible files: Content
   Content
+  File "Content":
+  Ambiguous lookup. Possible files: Content
+  Content
   File "Content__Html":
   Ambiguous lookup. Possible files: Content__Html
   Content__Html
+  File "Content":
+  Ambiguous lookup. Possible files: Content
+  Content
   File "Content":
   Ambiguous lookup. Possible files: Content
   Content
@@ -51,7 +57,7 @@ directory searched that wins.
 
   $ roots() { odoc_print $1 | jq -c '[.. | objects | .["`Root"]? | select(type == "array") | select(.[0] | type == "object") | .[0].Some["`Page"][1] + "/" + .[1]] | unique'; }
   $ roots h/pkg/client/content.odocl
-  ["client/Content","server/Content__Html"]
+  ["client/Content","server/Content","server/Content__Html"]
   $ roots h/pkg/client/wrap.odocl
   ["client/Wrap","server/Content"]
   $ roots h/pkg/server/content.odocl
