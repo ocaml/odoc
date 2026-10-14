@@ -119,8 +119,8 @@ let resolve_imports resolver imports =
              a previous build, associating the wrong digest with this
              import and breaking incremental rebuilds. *)
           unresolved
-      | Unresolved (name, Some _) as unresolved -> (
-          match Resolver.resolve_import resolver name with
+      | Unresolved (name, Some digest) as unresolved -> (
+          match Resolver.resolve_import resolver name digest with
           | Some root -> Resolved (root, Names.ModuleName.make_std name)
           | None -> unresolved))
     imports
