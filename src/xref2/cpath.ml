@@ -182,7 +182,8 @@ let rec is_module_hidden : module_ -> bool = function
   | `Substituted p | `Dot (p, _) | `Apply (p, _) -> is_module_hidden p
   | `Identifier (id, b) -> b || Identifier.is_hidden id
   | `Local (_, b) -> b
-  | `Root _ | `ApplyParam _ -> false
+  | `Root n -> ModuleName.is_hidden n
+  | `ApplyParam _ -> false
   | `Module (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
 
 and is_resolved_module_hidden :
