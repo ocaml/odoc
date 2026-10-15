@@ -227,7 +227,7 @@ and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
   | `SubstT (p1, p2) ->
       is_resolved_module_type_hidden p1 || is_resolved_module_type_hidden p2
   | `AliasModuleType (p1, p2) ->
-      is_resolved_module_type_hidden p1 || is_resolved_module_type_hidden p2
+      is_resolved_module_type_hidden p1 && is_resolved_module_type_hidden p2
   | `CanonicalModuleType (_, `Resolved _) -> false
   | `CanonicalModuleType (p, _) -> is_resolved_module_type_hidden p
   | `OpaqueModuleType m -> is_resolved_module_type_substituted m
