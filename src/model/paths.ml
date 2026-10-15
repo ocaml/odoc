@@ -636,7 +636,8 @@ module Path = struct
       | `Subst (p1, p2) ->
           inner (p1 : module_type :> any) || inner (p2 : module_ :> any)
       | `Module (p, _) -> inner (p : module_ :> any)
-      | `Apply (p, _) -> inner (p : module_ :> any)
+      | `Apply (p1, p2) ->
+          inner (p1 : module_ :> any) || inner (p2 : module_ :> any)
       | `ApplyParam _ ->
           (* Instances are of whole libraries, which are never hidden. *)
           false
