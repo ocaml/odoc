@@ -224,6 +224,7 @@ and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
   | `Local _ -> false
   | `Gpath p -> Odoc_model.Paths.Path.Resolved.(is_hidden (p :> t))
   | `Substituted p -> is_resolved_module_type_hidden p
+  | `ModuleType (_, n) when ModuleTypeName.is_hidden n -> true
   | `ModuleType (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
   | `SubstT (p1, p2) ->
       is_resolved_module_type_hidden p1 || is_resolved_module_type_hidden p2
