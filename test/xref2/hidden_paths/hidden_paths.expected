@@ -11,9 +11,9 @@ Subst, weak canonical test         model=false cpath=false
 Unresolved paths:
 Identifier (hidden name)           model=true  cpath=true 
 Root (hidden name)                 model=true  cpath=true 
-Dot (visible, hidden name)         model=true  cpath=false  DIFFERENT
+Dot (visible, hidden name)         model=true  cpath=true 
 Apply (hidden, visible)            model=true  cpath=true 
 Apply (visible, hidden)            model=true  cpath=false  DIFFERENT
-DotMT (visible, hidden name)       model=true  cpath=false  DIFFERENT
-DotT (visible, hidden name)        model=true  cpath=false  DIFFERENT
+DotMT (visible, hidden name)       model=true  cpath=true 
+DotT (visible, hidden name)        model=true  cpath=true 
 Identifier (hidden class)          model=true  cpath=true 
