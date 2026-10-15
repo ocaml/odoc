@@ -7,7 +7,7 @@ AliasModuleType (hidden, visible)  model=false cpath=false
 OpaqueModuleType (hidden)          model=true  cpath=true 
 Class (visible, hidden name)       model=true  cpath=true 
 Identifier (hidden class)          model=true  cpath=true 
-Subst, weak canonical test         model=false cpath=true   DIFFERENT
+Subst, weak canonical test         model=false cpath=false
 Unresolved paths:
 Identifier (hidden name)           model=true  cpath=false  DIFFERENT
 Root (hidden name)                 model=true  cpath=false  DIFFERENT
