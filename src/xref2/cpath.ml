@@ -231,7 +231,7 @@ and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
       is_resolved_module_type_hidden p1 && is_resolved_module_type_hidden p2
   | `CanonicalModuleType (_, `Resolved _) -> false
   | `CanonicalModuleType (p, _) -> is_resolved_module_type_hidden p
-  | `OpaqueModuleType m -> is_resolved_module_type_substituted m
+  | `OpaqueModuleType m -> is_resolved_module_type_hidden m
 
 and is_type_hidden : type_ -> bool = function
   | `Resolved r -> is_resolved_type_hidden r
