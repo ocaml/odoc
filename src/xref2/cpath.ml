@@ -179,7 +179,8 @@ let is_class_type_substituted : class_type -> bool = function
 
 let rec is_module_hidden : module_ -> bool = function
   | `Resolved r -> is_resolved_module_hidden ~weak_canonical_test:false r
-  | `Substituted p | `Dot (p, _) | `Apply (p, _) -> is_module_hidden p
+  | `Dot (p, n) -> ModuleName.is_hidden n || is_module_hidden p
+  | `Substituted p | `Apply (p, _) -> is_module_hidden p
   | `Identifier (id, b) -> b || Identifier.is_hidden id
   | `Local (_, b) -> b
   | `Root n -> ModuleName.is_hidden n
@@ -219,7 +220,7 @@ and is_module_type_hidden : module_type -> bool = function
   | `Identifier (`ModuleType (_, t), b) -> b || ModuleTypeName.is_hidden t
   | `Local (_, b) -> b
   | `Substituted p -> is_module_type_hidden p
-  | `DotMT (p, _) -> is_module_hidden p
+  | `DotMT (p, n) -> ModuleTypeName.is_hidden n || is_module_hidden p
   | `ModuleType (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
 
 and is_resolved_module_type_hidden :
@@ -245,7 +246,7 @@ and is_type_hidden : type_ -> bool = function
   | `Identifier (`Class (_, t), b) -> b || TypeName.is_hidden t
   | `Local (_, b) -> b
   | `Substituted p -> is_type_hidden (p :> type_)
-  | `DotT (p, _) -> is_module_hidden p
+  | `DotT (p, n) -> TypeName.is_hidden n || is_module_hidden p
   | `Unbox p -> is_type_hidden p
   | `Type (p, _) | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
@@ -284,7 +285,7 @@ and is_class_type_hidden : class_type -> bool = function
   | `Identifier (id, b) -> b || Identifier.is_hidden id
   | `Local (_, b) -> b
   | `Substituted p -> is_class_type_hidden p
-  | `DotT (p, _) -> is_module_hidden p
+  | `DotT (p, n) -> TypeName.is_hidden n || is_module_hidden p
   | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
 
