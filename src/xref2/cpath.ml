@@ -180,7 +180,8 @@ let is_class_type_substituted : class_type -> bool = function
 let rec is_module_hidden : module_ -> bool = function
   | `Resolved r -> is_resolved_module_hidden ~weak_canonical_test:false r
   | `Dot (p, n) -> ModuleName.is_hidden n || is_module_hidden p
-  | `Substituted p | `Apply (p, _) -> is_module_hidden p
+  | `Apply (p1, p2) -> is_module_hidden p1 || is_module_hidden p2
+  | `Substituted p -> is_module_hidden p
   | `Identifier (id, b) -> b || Identifier.is_hidden id
   | `Local (_, b) -> b
   | `Root n -> ModuleName.is_hidden n
