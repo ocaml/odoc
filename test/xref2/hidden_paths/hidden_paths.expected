@@ -10,7 +10,7 @@ Identifier (hidden class)          model=true  cpath=true
 Subst, weak canonical test         model=false cpath=false
 Unresolved paths:
 Identifier (hidden name)           model=true  cpath=true 
-Root (hidden name)                 model=true  cpath=false  DIFFERENT
+Root (hidden name)                 model=true  cpath=true 
 Dot (visible, hidden name)         model=true  cpath=false  DIFFERENT
 Apply (hidden, visible)            model=true  cpath=true 
 Apply (visible, hidden)            model=true  cpath=false  DIFFERENT
