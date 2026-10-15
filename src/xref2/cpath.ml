@@ -203,7 +203,7 @@ and is_resolved_module_hidden :
     | `Subst (p1, p2) ->
         is_resolved_module_type_hidden ~weak_canonical_test p1 || inner p2
     | `Alias (p1, `Resolved p2, _) -> inner p1 && inner p2
-    | `Alias (p1, _p2, _) -> inner p1
+    | `Alias (p1, p2, _) -> inner p1 && is_module_hidden p2
     | `Apply (p1, p2) -> inner p1 || inner p2
     | `OpaqueModule m -> inner m
   in

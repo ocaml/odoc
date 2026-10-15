@@ -1,5 +1,5 @@
 Resolved paths:
-Alias (hidden, visible unresolved) model=false cpath=true   DIFFERENT
+Alias (hidden, visible unresolved) model=false cpath=false
 Apply (hidden, visible)            model=true  cpath=true 
 Apply (visible, hidden)            model=true  cpath=true 
 ModuleType (visible, hidden name)  model=true  cpath=true 
