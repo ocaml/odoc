@@ -2,7 +2,7 @@ Resolved paths:
 Alias (hidden, visible unresolved) model=false cpath=true   DIFFERENT
 Apply (hidden, visible)            model=true  cpath=true 
 Apply (visible, hidden)            model=false cpath=true   DIFFERENT
-ModuleType (visible, hidden name)  model=true  cpath=false  DIFFERENT
+ModuleType (visible, hidden name)  model=true  cpath=true 
 AliasModuleType (hidden, visible)  model=false cpath=false
 OpaqueModuleType (hidden)          model=true  cpath=true 
 Class (visible, hidden name)       model=false cpath=true   DIFFERENT
