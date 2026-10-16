@@ -1,5 +1,6 @@
 # Unreleased
 
+
 ### Added
 - Drop the cached `ikey`/`ihash` fields from identifiers (@jonludlam, #1479)
 - Remove the `'a Identifier.id` record wrapper (@jonludlam, #1479)
