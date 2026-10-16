@@ -226,7 +226,7 @@ let rec resolved_module_path :
       | Some (`Prefixed (_p, rp)) -> rp
       | Some `Substituted -> `Substituted p
       | None -> p)
-  | `Gpath _ -> p
+  | `Identifier _ -> p
   | `Apply (p1, p2) ->
       `Apply (resolved_module_path s p1, resolved_module_path s p2)
   | `Substituted p -> `Substituted (resolved_module_path s p)
@@ -305,7 +305,7 @@ and resolved_module_type_path :
         | `Prefixed (_p, rp) -> Not_replaced rp
         | `Renamed x -> Not_replaced (`Local x)
         | exception Not_found -> Not_replaced (`Local id))
-  | `Gpath _ -> Not_replaced p
+  | `Identifier _ -> Not_replaced p
   | `Substituted p ->
       resolved_module_type_path s p |> map_replaced (fun p -> `Substituted p)
   | `ModuleType (p, n) ->
@@ -382,7 +382,7 @@ and resolved_type_path :
       | Not_replaced t1' -> Not_replaced (`CanonicalType (t1', t2))
       | x -> x)
   | `Unbox t -> resolved_type_path s t |> map_replaced (fun p -> `Unbox p)
-  | `Gpath _ -> Not_replaced p
+  | `Identifier _ -> Not_replaced p
   | `Substituted p ->
       resolved_type_path s p |> map_replaced (fun p -> `Substituted p)
   | `Type (p, n) -> Not_replaced (`Type (resolved_parent_path s p, n))
@@ -422,7 +422,7 @@ and resolved_class_type_path :
       | Some (`Prefixed (_p, rp)) -> rp
       | Some (`Renamed x) -> `Local x
       | None -> `Local id)
-  | `Gpath _ -> p
+  | `Identifier _ -> p
   | `Substituted p -> `Substituted (resolved_class_type_path s p)
   | `ClassType (p, n) -> `ClassType (resolved_parent_path s p, n)
   | `Class (p, n) -> `Class (resolved_parent_path s p, n)

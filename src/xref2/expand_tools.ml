@@ -17,7 +17,7 @@ let handle_expansion env id expansion =
         let env' =
           Env.add_module identifier (Component.Delayed.put_val m) m.doc env
         in
-        let rp = `Gpath (`Identifier identifier) in
+        let rp = `Identifier identifier in
         let p = `Resolved rp in
         let subst =
           Subst.add_module (arg.id :> Ident.module_) p rp Subst.identity
