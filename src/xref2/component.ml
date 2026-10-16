@@ -484,6 +484,12 @@ and Substitution : sig
     module_type_replacement : ModuleType.expr ModuleTypeMap.t;
     path_invalidating_modules : Ident.module_ list;
     unresolve_opaque_paths : bool;
+    library_parameters :
+      (Odoc_model.Paths.Identifier.LibraryParameter.t
+      * (Cpath.module_ * Cpath.Resolved.module_))
+      list;
+        (** Substitution of root modules, used for instances of parameterized
+            libraries: the library parameter is replaced by the argument. *)
   }
 end =
   Substitution
@@ -691,6 +697,8 @@ module Fmt = struct
     match p with
     | `Root (_, unit_name) ->
         wrap c "root" (fun _ -> ModuleName.fmt) ppf unit_name
+    | `LibraryParameter (_, unit_name) ->
+        wrap c "libparam" (fun _ -> ModuleName.fmt) ppf unit_name
     | `Module (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (parent :> id)
@@ -1271,6 +1279,7 @@ module Fmt = struct
         Format.fprintf ppf "%a.%a" (resolved_parent_path c) p ModuleName.fmt n
     | `Apply (p1, p2) ->
         Format.fprintf ppf "%a(%a)" (module_path c) p1 (module_path c) p2
+    | `ApplyParam _ as i -> model_path c ppf (i :> path)
     | `Identifier (id, b) ->
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
     | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
@@ -1441,6 +1450,11 @@ module Fmt = struct
           (func :> path)
           (model_path c)
           (arg :> path)
+    | `ApplyParam (inst, param, arg) ->
+        Format.fprintf ppf "%a[%a:%a]" (model_path c)
+          (inst :> path)
+          ModuleName.fmt param (model_path c)
+          (arg :> path)
     | `Substituted m ->
         wrap c "substituted" model_path ppf (m :> Odoc_model.Paths.Path.t)
     | `SubstitutedMT m ->
@@ -1499,6 +1513,13 @@ module Fmt = struct
     | `Apply (funct, arg) ->
         Format.fprintf ppf "%a(%a)" (model_resolved_path c)
           (funct :> t)
+          (model_resolved_path c)
+          (arg :> t)
+    | `ApplyParam (inst, param, arg) ->
+        Format.fprintf ppf "%a[%a:%a]" (model_resolved_path c)
+          (inst :> t)
+          (model_identifier c)
+          (param :> id)
           (model_resolved_path c)
           (arg :> t)
     | `Canonical (p1, p2) ->
@@ -2005,7 +2026,8 @@ module Of_Lang = struct
 
   let find_any_module i ident_map =
     match i with
-    | (`Root _ | `Module _) as id -> Maps.Module.find id ident_map.modules
+    | (`Root _ | `LibraryParameter _ | `Module _) as id ->
+        Maps.Module.find id ident_map.modules
     | #Paths.Identifier.FunctorParameter.t as id ->
         Maps.FunctorParameter.find id ident_map.functor_parameters
     | _ -> raise Not_found
@@ -2021,6 +2043,7 @@ module Of_Lang = struct
         | `Identifier _ -> `Gpath p)
     | `Module (p, name) -> `Module (`Module (recurse p), name)
     | `Apply (p1, p2) -> `Apply (recurse p1, recurse p2)
+    | `ApplyParam _ -> (* Instances are of units, never local. *) `Gpath p
     | `Alias (p1, p2) -> `Alias (recurse p1, module_path ident_map p2, None)
     | `Subst (p1, p2) ->
         `Subst (resolved_module_type_path ident_map p1, recurse p2)
@@ -2115,6 +2138,7 @@ module Of_Lang = struct
     | `Dot (path', x) -> `Dot (module_path ident_map path', x)
     | `Apply (p1, p2) ->
         `Apply (module_path ident_map p1, module_path ident_map p2)
+    | `ApplyParam (p1, p2, p3) -> `ApplyParam (p1, p2, p3)
     | `Root str -> `Root str
 
   and module_type_path :

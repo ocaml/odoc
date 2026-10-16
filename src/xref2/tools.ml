@@ -399,6 +399,29 @@ let rec handle_apply env func_path arg_path m =
       let subst = Subst.unresolve_opaque_paths subst in
       Ok (path, Subst.module_ subst new_module)
 
+(** Instance of a parameterized library: [Lib[Param:Arg]]. The signature of the
+    instance is the signature of [Lib] where the library parameter [Param] is
+    replaced by [Arg]. *)
+and handle_apply_param env param_id
+    (arg : Odoc_model.Paths.Path.Resolved.Instance.t) m =
+  expansion_of_module env m
+  |> map_error (fun e -> (e :> simple_module_type_expr_of_module_error))
+  >>= function
+  | Functor _ -> Error `ApplyNotFunctor
+  | Signature sg ->
+      let new_module =
+        { m with Component.Module.type_ = ModuleType (Signature sg) }
+      in
+      let substitution =
+        `Substituted (`Gpath (arg :> Odoc_model.Paths.Path.Resolved.Module.t))
+      in
+      let subst =
+        Subst.add_library_parameter param_id (`Resolved substitution)
+          substitution Subst.identity
+      in
+      let subst = Subst.unresolve_opaque_paths subst in
+      Ok (Subst.module_ subst new_module)
+
 and add_canonical_path :
     Component.Module.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
  fun m p ->
@@ -555,6 +578,13 @@ and lookup_module_gpath :
         functor_module
       |> map_error (fun e -> `Parent (`Parent_expr e))
       >>= fun (_, m) -> Ok (Component.Delayed.put_val m)
+  | `ApplyParam (inst, param_id, arg) ->
+      lookup_module_gpath env (inst :> Odoc_model.Paths.Path.Resolved.Module.t)
+      >>= fun inst_module ->
+      let inst_module = Component.Delayed.get inst_module in
+      handle_apply_param env param_id arg inst_module
+      |> map_error (fun e -> `Parent (`Parent_expr e))
+      >>= fun m -> Ok (Component.Delayed.put_val m)
   | `Module (parent, name) ->
       let find_in_sg sg sub =
         match Find.careful_module_in_sig sg name with
@@ -913,6 +943,10 @@ and resolve_module : Env.t -> Cpath.module_ -> resolve_module_result =
         |> map_error (fun e -> (e :> simple_module_lookup_error))
         >>= fun (parent_sig, sub) ->
         handle_module_lookup env id parent parent_sig sub
+    | `ApplyParam (inst, param, arg) ->
+        resolve_instance env (`ApplyParam (inst, param, arg)) >>= fun i ->
+        let p = (i :> Odoc_model.Paths.Path.Resolved.Module.t) in
+        lookup_module_gpath env p >>= fun m -> Ok (`Gpath p, m)
     | `Apply (m1, m2) -> (
         let func = resolve_module env m1 in
         let arg = resolve_module env m2 in
@@ -951,6 +985,31 @@ and resolve_module : Env.t -> Cpath.module_ -> resolve_module_result =
         | None -> Error (`Lookup_failure_root r))
   in
   LookupAndResolveMemo.memoize resolve env' id
+
+(** The library, parameters and arguments of an instance are all compilation
+    units, named by their root module. They are resolved to their identifiers
+    alone: the units are never hidden, nor have a canonical path, as instances
+    are always of whole libraries. *)
+and resolve_instance env :
+    Odoc_model.Paths.Path.Instance.t ->
+    (Odoc_model.Paths.Path.Resolved.Instance.t, _) result = function
+  | `Root name -> resolve_root_unit env name >>= fun id -> Ok (`Identifier id)
+  | `ApplyParam (inst, param, arg) ->
+      resolve_instance env inst >>= fun inst ->
+      resolve_library_parameter env param >>= fun param ->
+      resolve_instance env arg >>= fun arg ->
+      Ok (`ApplyParam (inst, param, arg))
+
+and resolve_root_unit env name =
+  match Env.lookup_root_module name env with
+  | Some (Env.Resolved (_, id, _)) -> Ok id
+  | Some Env.Forward -> Error (`Parent (`Parent_sig `UnresolvedForwardPath))
+  | None -> Error (`Lookup_failure_root name)
+
+and resolve_library_parameter env name =
+  resolve_root_unit env name >>= function
+  | `LibraryParameter _ as id -> Ok id
+  | `Root _ -> Error (`NotALibraryParameter name)
 
 and resolve_module_type :
     Env.t -> Cpath.module_type -> resolve_module_type_result =
@@ -1151,6 +1210,7 @@ and reresolve_module_gpath :
       `Apply
         ( reresolve_module_gpath env functor_path,
           reresolve_module_gpath env argument_path )
+  | `ApplyParam _ -> path
   | `Module (parent, name) -> `Module (reresolve_module_gpath env parent, name)
   | `Alias (p1, p2) ->
       let dest' = reresolve_module_gpath env p1 in
@@ -1206,7 +1266,7 @@ and strip_canonical_gpath :
   | `Subst (x, y) -> `Subst (x, strip_canonical_gpath ~c y)
   | `Hidden x -> `Hidden (strip_canonical_gpath ~c x)
   | `OpaqueModule x -> `OpaqueModule (strip_canonical_gpath ~c x)
-  | `Apply _ | `Module _ | `Identifier _ -> path
+  | `Apply _ | `ApplyParam _ | `Module _ | `Identifier _ -> path
   | `Substituted x -> `Substituted (strip_canonical_gpath ~c x)
 
 and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
@@ -2302,7 +2362,8 @@ and class_signature_of_class_type :
 let resolve_module_path env p =
   resolve_module env p >>= fun (p, m) ->
   match p with
-  | `Gpath (`Identifier (`Root _)) | `Hidden (`Gpath (`Identifier (`Root _))) ->
+  | `Gpath (`Identifier (`Root _ | `LibraryParameter _))
+  | `Hidden (`Gpath (`Identifier (`Root _ | `LibraryParameter _))) ->
       Ok p
   | _ -> (
       let m = Component.Delayed.get m in

@@ -35,6 +35,8 @@ module Identifier : sig
 
   module RootModule : IdSig with type t = Id.root_module
 
+  module LibraryParameter : IdSig with type t = Id.library_parameter
+
   module Signature : IdSig with type t = Id.signature
 
   module ClassSignature : IdSig with type t = Id.class_signature
@@ -234,6 +236,10 @@ module Identifier : sig
       ContainerPage.t option * ModuleName.t ->
       [> `Root of ContainerPage.t option * ModuleName.t ]
 
+    val library_parameter :
+      ContainerPage.t option * ModuleName.t ->
+      [> `LibraryParameter of ContainerPage.t option * ModuleName.t ]
+
     val implementation : string -> [> `Implementation of ModuleName.t ]
 
     val module_ :
@@ -328,6 +334,10 @@ end
 (** Normal OCaml paths (i.e. the ones present in types) *)
 module rec Path : sig
   module Resolved : sig
+    module Instance : sig
+      type t = Paths_types.Resolved_path.instance
+    end
+
     module Module : sig
       type t = Paths_types.Resolved_path.module_
 
@@ -380,6 +390,10 @@ module rec Path : sig
     (** If the path points to a core type, no identifier can be generated *)
 
     val is_hidden : t -> bool
+  end
+
+  module Instance : sig
+    type t = Paths_types.Path.instance
   end
 
   module Module : sig

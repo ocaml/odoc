@@ -32,11 +32,13 @@ module Identifier = struct
     | source_page
     | asset_file
     | `Root of container_page option * ModuleName.t
+    | `LibraryParameter of container_page option * ModuleName.t
     | `Implementation of ModuleName.t ]
   (** @canonical Odoc_model.Paths.Identifier.OdocId.t *)
 
   type signature =
     [ `Root of container_page option * ModuleName.t
+    | `LibraryParameter of container_page option * ModuleName.t
     | `Module of signature * ModuleName.t
     | `Parameter of signature * ModuleName.t
     | `Result of signature
@@ -62,7 +64,14 @@ module Identifier = struct
   type label_parent = [ field_parent | page | class_signature ]
   (** @canonical Odoc_model.Paths.Identifier.LabelParent.t *)
 
-  type root_module = [ `Root of container_page option * ModuleName.t ]
+  type library_parameter =
+    [ `LibraryParameter of container_page option * ModuleName.t ]
+  (** An OxCaml library parameter: a root module whose implementation is
+      supplied when a parameterised library is instantiated.
+      @canonical Odoc_model.Paths.Identifier.LibraryParameter.t *)
+
+  type root_module =
+    [ `Root of container_page option * ModuleName.t | library_parameter ]
   (** @canonical Odoc_model.Paths.Identifier.RootModule.t *)
 
   type module_ =
@@ -208,13 +217,21 @@ module Identifier = struct
 end
 
 module rec Path : sig
+  type instance =
+    [ `Root of ModuleName.t | `ApplyParam of instance * ModuleName.t * instance ]
+  (** An instance of a parameterised library, [Lib[P:A]]: the library and the
+      argument are compilation units or themselves instances.
+      @canonical Odoc_model.Paths.Path.Instance.t *)
+
   type module_ =
     [ `Resolved of Resolved_path.module_
     | `Identifier of Identifier.path_module * bool
     | `Substituted of module_
     | `Root of ModuleName.t
     | `Dot of module_ * ModuleName.t
-    | `Apply of module_ * module_ ]
+    | `Apply of module_ * module_
+    | `ApplyParam of instance * ModuleName.t * instance
+      (** [`ApplyParam (instance, parameter, argument)] *) ]
   (** @canonical Odoc_model.Paths.Path.Module.t *)
 
   type module_type =
@@ -258,12 +275,19 @@ module rec Path : sig
     | `DotMT of module_ * ModuleTypeName.t
     | `DotV of module_ * ValueName.t
     | `Apply of module_ * module_
+    | `ApplyParam of instance * ModuleName.t * instance
     | `Unbox of type_ ]
   (** @canonical Odoc_model.Paths.Path.t *)
 end =
   Path
 
 and Resolved_path : sig
+  type instance =
+    [ `Identifier of Identifier.root_module
+    | `ApplyParam of instance * Identifier.library_parameter * instance ]
+  (** A resolved {!Path.instance}.
+      @canonical Odoc_model.Paths.Path.Resolved.Instance.t *)
+
   type module_ =
     [ `Identifier of Identifier.path_module
     | `Subst of module_type * module_
@@ -272,6 +296,8 @@ and Resolved_path : sig
     | `Module of module_ * ModuleName.t
     | `Canonical of module_ * Path.module_  (** [`Canonical (mod, canonical)] *)
     | `Apply of module_ * module_  (** [`Apply (functor, argument)] *)
+    | `ApplyParam of instance * Identifier.library_parameter * instance
+      (** [`ApplyParam (instance, parameter, argument)] *)
     | `Alias of module_ * Path.module_  (** Resolved dest *)
     | `OpaqueModule of module_ ]
   (** @canonical Odoc_model.Paths.Path.Resolved.Module.t *)
@@ -319,6 +345,7 @@ and Resolved_path : sig
     | `Module of module_ * ModuleName.t
     | `Canonical of module_ * Path.module_
     | `Apply of module_ * module_
+    | `ApplyParam of instance * Identifier.library_parameter * instance
     | `Alias of module_ * Path.module_
     | `AliasModuleType of module_type * module_type
     | `OpaqueModule of module_

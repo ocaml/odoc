@@ -104,6 +104,7 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
       should_reresolve (x :> t) || should_resolve (y :> Paths.Path.t)
   | `Apply (x, y) ->
       should_reresolve (x :> t) || should_reresolve (y :> Paths.Path.Resolved.t)
+  | `ApplyParam _ -> false
   | `SubstT (x, y) -> should_reresolve (x :> t) || should_reresolve (y :> t)
   | `Alias (y, x) ->
       should_resolve (x :> Paths.Path.t) || should_reresolve (y :> t)
@@ -563,7 +564,15 @@ let rec unit env t =
       | Pack _ as p -> p
   in
   let source_loc = source_loc env t.id t.source_loc in
-  { t with content; linked = true; source_loc }
+  let parameterisation =
+    let open Compilation_unit.Parameterisation in
+    let p = t.parameterisation in
+    {
+      parameters = List.map (module_path env) p.parameters;
+      argument_for = Option.map (module_path env) p.argument_for;
+    }
+  in
+  { t with content; linked = true; source_loc; parameterisation }
 
 and value_ env parent t =
   let open Value in

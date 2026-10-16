@@ -332,6 +332,7 @@ end = struct
     in
     match kind with
     | `Module -> (prefix "Module", preamble)
+    | `LibraryParameter -> (prefix "Library parameter", preamble)
     | `Parameter _ -> (prefix "Parameter", preamble)
     | `ModuleType -> (prefix "Module type", preamble)
     | `ClassType -> (prefix "Class type", preamble)

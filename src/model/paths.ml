@@ -27,7 +27,7 @@ module Identifier = struct
   let rec name_aux : t -> string =
    fun x ->
     match x with
-    | `Root (_, name) -> ModuleName.to_string name
+    | `Root (_, name) | `LibraryParameter (_, name) -> ModuleName.to_string name
     | `Page (_, name) -> PageName.to_string name
     | `LeafPage (_, name) -> PageName.to_string name
     | `Module (_, name) -> ModuleName.to_string name
@@ -58,7 +58,7 @@ module Identifier = struct
   let rec is_hidden : t -> bool =
    fun x ->
     match x with
-    | `Root (_, name) -> ModuleName.is_hidden name
+    | `Root (_, name) | `LibraryParameter (_, name) -> ModuleName.is_hidden name
     | `Page (_, _) -> false
     | `LeafPage (_, _) -> false
     | `Module (_, name) -> ModuleName.is_hidden name
@@ -87,7 +87,8 @@ module Identifier = struct
   let rec full_name_aux : t -> string list =
    fun x ->
     match x with
-    | `Root (_, name) -> [ ModuleName.to_string name ]
+    | `Root (_, name) | `LibraryParameter (_, name) ->
+        [ ModuleName.to_string name ]
     | `Page (None, name) -> [ PageName.to_string name ]
     | `Page (Some parent, name) ->
         PageName.to_string name :: full_name_aux (parent :> t)
@@ -146,7 +147,7 @@ module Identifier = struct
     fun (n : non_src) ->
       match n with
       | `Result i -> label_parent_aux (i :> non_src)
-      | `Root _ as p -> (p :> label_parent)
+      | (`Root _ | `LibraryParameter _) as p -> (p :> label_parent)
       | `Page _ as p -> (p :> label_parent)
       | `LeafPage _ as p -> (p :> label_parent)
       | `Module (p, _)
@@ -244,6 +245,13 @@ module Identifier = struct
     let compare = compare
   end
 
+  module LibraryParameter = struct
+    type t = Id.library_parameter
+    let equal = equal
+    let hash = hash
+    let compare = compare
+  end
+
   module Module = struct
     type t = Id.module_
     let equal = equal
@@ -260,7 +268,9 @@ module Identifier = struct
     let functor_arg_pos (`Parameter (p, _)) =
       let rec inner_sig = function
         | `Result p -> 1 + inner_sig p
-        | `Module _ | `ModuleType _ | `Root _ | `Parameter _ -> 1
+        | `Module _ | `ModuleType _ | `Root _ | `LibraryParameter _
+        | `Parameter _ ->
+            1
       in
       inner_sig p
   end
@@ -469,6 +479,11 @@ module Identifier = struct
         [> `Root of ContainerPage.t option * ModuleName.t ] =
       mk (fun (p, n) -> `Root (p, n))
 
+    let library_parameter :
+        ContainerPage.t option * ModuleName.t ->
+        [> `LibraryParameter of ContainerPage.t option * ModuleName.t ] =
+      mk (fun (p, n) -> `LibraryParameter (p, n))
+
     let implementation = mk (fun s -> `Implementation (ModuleName.make_std s))
 
     let module_ :
@@ -622,6 +637,9 @@ module Path = struct
           inner (p1 : module_type :> any) || inner (p2 : module_ :> any)
       | `Module (p, _) -> inner (p : module_ :> any)
       | `Apply (p, _) -> inner (p : module_ :> any)
+      | `ApplyParam _ ->
+          (* Instances are of whole libraries, which are never hidden. *)
+          false
       | `ModuleType (_, m) when Names.ModuleTypeName.is_hidden m -> true
       | `ModuleType (p, _) -> inner (p : module_ :> any)
       | `Type (_, t) when Names.TypeName.is_hidden t -> true
@@ -675,6 +693,7 @@ module Path = struct
     | `Apply (p1, p2) ->
         is_path_hidden (p1 : module_ :> any)
         || is_path_hidden (p2 : module_ :> any)
+    | `ApplyParam _ -> false
 
   module Resolved = struct
     type t = Paths_types.Resolved_path.any
@@ -712,6 +731,8 @@ module Path = struct
       | `Canonical (_, `Resolved p) -> parent_module_identifier p
       | `Canonical (p, _) -> parent_module_identifier p
       | `Apply (m, _) -> parent_module_identifier m
+      | `ApplyParam (m, _, _) ->
+          parent_module_identifier (m :> Paths_types.Resolved_path.module_)
       | `Alias (dest, `Resolved src) ->
           if is_resolved_hidden ~weak_canonical_test:false (dest :> t) then
             parent_module_identifier src
@@ -719,6 +740,10 @@ module Path = struct
       | `Alias (dest, _src) -> parent_module_identifier dest
       | `Substituted m -> parent_module_identifier m
       | `OpaqueModule m -> parent_module_identifier m
+
+    module Instance = struct
+      type t = Paths_types.Resolved_path.instance
+    end
 
     module Module = struct
       type t = Paths_types.Resolved_path.module_
@@ -773,6 +798,7 @@ module Path = struct
       | `Canonical (_, `Resolved p) -> identifier (p :> t)
       | `Canonical (p, _) -> identifier (p :> t)
       | `Apply (m, _) -> identifier (m :> t)
+      | `ApplyParam (m, _, _) -> identifier (m :> t)
       | `Type (m, n) -> parent m (fun p -> Identifier.Mk.type_ (p, n))
       | `Value (m, n) -> parent m (fun p -> Identifier.Mk.value (p, n))
       | `ModuleType (m, n) ->
@@ -802,6 +828,10 @@ module Path = struct
       | `Unbox m -> identifier (m :> t)
 
     let is_hidden r = is_resolved_hidden ~weak_canonical_test:false r
+  end
+
+  module Instance = struct
+    type t = Paths_types.Path.instance
   end
 
   module Module = struct

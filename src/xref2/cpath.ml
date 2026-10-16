@@ -59,7 +59,8 @@ and Cpath : sig
     | `Root of ModuleName.t
     | `Dot of module_ * ModuleName.t
     | `Module of Resolved.parent * ModuleName.t (* Like dot, but typed *)
-    | `Apply of module_ * module_ ]
+    | `Apply of module_ * module_
+    | `ApplyParam of Path.Instance.t * ModuleName.t * Path.Instance.t ]
 
   and module_type =
     [ `Resolved of Resolved.module_type
@@ -147,7 +148,7 @@ let rec is_module_substituted : module_ -> bool = function
   | `Local _ -> false
   | `Substituted _ -> true
   | `Dot (a, _) | `Apply (a, _) -> is_module_substituted a
-  | `Root _ -> false
+  | `Root _ | `ApplyParam _ -> false
   | `Module (a, _) -> is_resolved_parent_substituted a
 
 let is_module_type_substituted : module_type -> bool = function
@@ -181,7 +182,7 @@ let rec is_module_hidden : module_ -> bool = function
   | `Substituted p | `Dot (p, _) | `Apply (p, _) -> is_module_hidden p
   | `Identifier (_, b) -> b
   | `Local (_, b) -> b
-  | `Root _ -> false
+  | `Root _ | `ApplyParam _ -> false
   | `Module (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
 
 and is_resolved_module_hidden :
@@ -344,6 +345,7 @@ and unresolve_module_path : module_ -> module_ = function
   | `Dot (p, x) -> `Dot (unresolve_module_path p, x)
   | `Module (p, x) -> `Dot (unresolve_resolved_parent_path p, x)
   | `Apply (x, y) -> `Apply (unresolve_module_path x, unresolve_module_path y)
+  | `ApplyParam _ as x -> x
 
 and unresolve_resolved_module_type_path : Resolved.module_type -> module_type =
   function
@@ -407,6 +409,7 @@ let rec original_path_cpath : module_ -> module_ option = function
       match (original_path_cpath p1, original_path_cpath p2) with
       | Some p1', Some p2' -> Some (`Apply (p1', p2'))
       | _ -> None)
+  | `ApplyParam _ as p -> Some p
   | `Identifier (i, _) -> (
       match original_path_module_identifier i with
       | Some i -> Some (`Resolved i)
@@ -426,7 +429,7 @@ and original_path_module_identifier :
       match original_path_parent_identifier sg with
       | Some sg' -> Some (`Module (sg', name))
       | None -> None)
-  | `Root _ -> Some (`Gpath (`Identifier id))
+  | `Root _ | `LibraryParameter _ -> Some (`Gpath (`Identifier id))
   | _ ->
       None
 
