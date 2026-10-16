@@ -84,3 +84,9 @@
 (cram
  (applies_to big_search_path)
  (enabled_if false))
+
+; OxCaml only
+
+(cram
+ (applies_to oxcaml_kind_value)
+ (enabled_if %{ocaml-config:ox}))

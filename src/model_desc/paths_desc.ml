@@ -121,6 +121,11 @@ module General_paths = struct
               ( "`Type",
                 ((parent :> id_t), name),
                 Pair (identifier, Names.typename) )
+        | `KindAbbreviation (parent, name) ->
+            C
+              ( "`KindAbbreviation",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.typename) )
         | `Constructor (parent, name) ->
             C
               ( "`Constructor",
@@ -208,6 +213,7 @@ module General_paths = struct
       | `TPage -> C0 "`TPage"
       | `TAsset -> C0 "`TAsset"
       | `TType -> C0 "`TType"
+      | `TKindAbbreviation -> C0 "`TKindAbbreviation"
       | `TUnknown -> C0 "`TUnknown"
       | `TValue -> C0 "`TValue"
       | `TChildPage -> C0 "`TChildPage"
@@ -331,6 +337,11 @@ module General_paths = struct
               Pair (reference, Names.moduletypename) )
       | `Type (x1, x2) ->
           C ("`Type", ((x1 :> r), x2), Pair (reference, Names.typename))
+      | `KindAbbreviation (x1, x2) ->
+          C
+            ( "`KindAbbreviation",
+              ((x1 :> r), x2),
+              Pair (reference, Names.typename) )
       | `Constructor (x1, x2) ->
           C
             ( "`Constructor",
@@ -473,7 +484,12 @@ module General_paths = struct
           C
             ( "`Value",
               ((x1 :> rr), x2),
-              Pair (resolved_reference, Names.valuename) ))
+              Pair (resolved_reference, Names.valuename) )
+      | `KindAbbreviation (x1, x2) ->
+          C
+            ( "`KindAbbreviation",
+              ((x1 :> rr), x2),
+              Pair (resolved_reference, Names.typename) ))
 
   let resolved_fragment_root : Paths.Fragment.Resolved.root t =
     Variant

@@ -165,11 +165,136 @@ type t_inner_mod : float64 & (immediate mod portable)
 
 (** {1 Kind abbreviations} *)
 
+module M_shadow_value : sig
+  kind_ value = value mod portable
+
+  type t_unannotated
+
+  val poly_unannotated : 'a. 'a -> 'a
+  (** The compiler implicitly adds the default kind [value], but it should not
+      be confused with the kind abbreviation above. *)
+
+  type t : value
+  (** [value] here is the abbreviation above, not the built-in default, so it
+      is rendered and linked. *)
+end
+
+kind_ plain_value = value
+(** An abbreviation for the [value] kind. *)
+
+type t_plain_value : plain_value
+(** A use of the [plain_value] abbreviation, which should render and link. *)
+
 kind_ my_abbrev = value_or_null mod non_null global
 (** Declares a kind abbreviation named [my_abbrev]. *)
 
 type t_abbrev : my_abbrev mod immutable
-(** A type with an abbreviated kind. *)
+(** A type with an abbreviated kind. The use of [my_abbrev] should link to its
+    definition. References to the kind abbreviation resolve too, both
+    unqualified {!my_abbrev} and qualified {!kind:my_abbrev}. *)
+
+kind_ my_derived = my_abbrev mod portable
+(** A kind abbreviation defined in terms of another one; the use of [my_abbrev]
+    in this definition should also link to its definition. *)
+
+type t_derived : my_derived
+(** A type whose kind is the derived abbreviation. *)
+
+kind_ my_abstract
+(** An abstract kind abbreviation (no manifest). *)
+
+type t_abstract : my_abstract
+(** A type with an abstract abbreviated kind. *)
+
+type ('a : my_abbrev) abbrev_param
+(** A type parameter constrained by an abbreviated kind. *)
+
+val poly_abbrev : ('a : my_abbrev). 'a -> 'a
+(** A polymorphic value with an abbreviated kind constraint. *)
+
+type 'a t_with_abbrev : my_abbrev with 'a
+(** An abbreviated kind in a [with] constraint. *)
+
+module M_kinds : sig
+  kind_ mod_kind = value mod portable
+end
+
+type t_qualified : M_kinds.mod_kind
+(** A qualified use of a kind abbreviation from another module; the use should
+    link to [M_kinds.mod_kind]'s definition. *)
+
+type ('a : M_kinds.mod_kind) qualified_param
+(** A qualified kind abbreviation on a type parameter; the use should link to
+    the definition (resolved during linking, like [t_qualified]). *)
+
+module type S_kind = sig
+  kind_ functor_kind = value mod portable
+  (** A kind declared in a module type. *)
+end
+
+module F_kind (X : S_kind) : S_kind
+
+module Arg_kind : S_kind
+
+type t_functor_app : F_kind(Arg_kind).functor_kind
+(** A use behind a functor application. odoc references can't express functor
+    application, so this is rendered as plain text (not a link) rather than
+    crashing. *)
+
+module F_nested (X : S_kind) : sig
+  kind_ abstract_kind
+  (** An abstract kind. *)
+
+  module Nested : sig
+    kind_ custom_kind_abbrev = X.functor_kind mod contended
+    (** A nested kind extending the functor argument's kind. *)
+  end
+end
+
+kind_ functor_abbrev = F_nested(Arg_kind).abstract_kind
+(** A kind abbreviation defined through a functor-application path. The manifest
+    is rendered but the functor-application path isn't a link. *)
+
+kind_ nested_functor_abbrev = F_nested(Arg_kind).Nested.custom_kind_abbrev
+(** A kind abbreviation defined through a functor-application-then-nested-module
+    path. The manifest is rendered but the functor-application path isn't a
+    link. *)
+
+kind_ to_be_shadowed = value mod portable
+(** Shadowed below by a kind abbreviation of the same name. *)
+
+module X_shadowing : sig
+  type t : to_be_shadowed
+  (** Uses the outer [to_be_shadowed], declared before the one below, so the
+      link should point outside this module. *)
+
+  kind_ to_be_shadowed = value_or_null mod non_null global
+  (** Shadows the outer [to_be_shadowed]. *)
+end
+
+module M_inc : sig
+  kind_ inc_kind = value mod portable
+end
+
+include module type of M_inc
+
+type t_inc : inc_kind
+
+module type S_param = sig
+  kind_ param_kind = value mod portable
+
+  type ('a : param_kind) t
+  (** A kind-constrained type parameter inside a signature expansion. *)
+
+  type t_direct : param_kind
+  (** A kind annotation inside a signature expansion. *)
+end
+
+module M_param : S_param
+
+module M_param2 : S_param
+(** Each instantiation renders its own copy of [param_kind], so both uses
+    should link to the copy on their own page rather than to [S_param]'s. *)
 
 (** {1 Zero alloc} *)
 

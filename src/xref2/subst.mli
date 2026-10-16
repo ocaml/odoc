@@ -51,6 +51,9 @@ val module_type_expr :
 
 val exception_ : t -> Component.Exception.t -> Component.Exception.t
 
+val kind_abbreviation :
+  t -> Component.KindAbbreviation.t -> Component.KindAbbreviation.t
+
 val extension : t -> Component.Extension.t -> Component.Extension.t
 
 val include_ : t -> Component.Include.t -> Component.Include.t

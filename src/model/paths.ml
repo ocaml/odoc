@@ -35,6 +35,7 @@ module Identifier = struct
     | `Result x -> name_aux (x :> t)
     | `ModuleType (_, name) -> ModuleTypeName.to_string name
     | `Type (_, name) -> TypeName.to_string name
+    | `KindAbbreviation (_, name) -> TypeName.to_string name
     | `Constructor (_, name) -> ConstructorName.to_string name
     | `Field (_, name) -> FieldName.to_string name
     | `UnboxedField (_, name) -> UnboxedFieldName.to_string name
@@ -66,6 +67,7 @@ module Identifier = struct
     | `Result x -> is_hidden (x :> t)
     | `ModuleType (_, name) -> ModuleTypeName.is_hidden name
     | `Type (_, name) -> TypeName.is_hidden name
+    | `KindAbbreviation (_, name) -> TypeName.is_hidden name
     | `Constructor (parent, _) -> is_hidden (parent :> t)
     | `Field (parent, _) -> is_hidden (parent :> t)
     | `UnboxedField (parent, _) -> is_hidden (parent :> t)
@@ -102,6 +104,8 @@ module Identifier = struct
     | `ModuleType (parent, name) ->
         ModuleTypeName.to_string name :: full_name_aux (parent :> t)
     | `Type (parent, name) ->
+        TypeName.to_string name :: full_name_aux (parent :> t)
+    | `KindAbbreviation (parent, name) ->
         TypeName.to_string name :: full_name_aux (parent :> t)
     | `Constructor (parent, name) ->
         ConstructorName.to_string name :: full_name_aux (parent :> t)
@@ -155,6 +159,7 @@ module Identifier = struct
       | `Class (p, _)
       | `ClassType (p, _)
       | `Type (p, _)
+      | `KindAbbreviation (p, _)
       | `Extension (p, _)
       | `ExtensionDecl (p, _, _)
       | `Exception (p, _)
@@ -278,6 +283,13 @@ module Identifier = struct
 
   module Type = struct
     type t = Id.type_
+    let equal = equal
+    let hash = hash
+    let compare = compare
+  end
+
+  module KindAbbreviation = struct
+    type t = Id.kind_abbreviation
     let equal = equal
     let hash = hash
     let compare = compare
@@ -433,6 +445,7 @@ module Identifier = struct
     module Module = Map.Make (Module)
     module ModuleType = Map.Make (ModuleType)
     module Type = Map.Make (Type)
+    module KindAbbreviation = Map.Make (KindAbbreviation)
     module Class = Map.Make (Class)
     module ClassType = Map.Make (ClassType)
     module Label = Map.Make (Label)
@@ -501,6 +514,11 @@ module Identifier = struct
     let type_ :
         Signature.t * TypeName.t -> [> `Type of Signature.t * TypeName.t ] =
       mk (fun (p, n) -> `Type (p, n))
+
+    let kind_abbreviation :
+        Signature.t * TypeName.t ->
+        [> `KindAbbreviation of Signature.t * TypeName.t ] =
+      mk (fun (p, n) -> `KindAbbreviation (p, n))
 
     let core_type = mk (fun s -> `CoreType (TypeName.make_std s))
 
@@ -1046,6 +1064,10 @@ module Reference = struct
           match parent_signature_identifier p with
           | None -> None
           | Some p -> Some (Identifier.Mk.value (p, q)))
+      | `KindAbbreviation (p, q) -> (
+          match parent_signature_identifier p with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.kind_abbreviation (p, q)))
       | `Method (p, q) -> (
           match parent_class_signature_identifier p with
           | None -> None
@@ -1093,6 +1115,10 @@ module Reference = struct
 
     module Type = struct
       type t = Paths_types.Resolved_reference.type_
+    end
+
+    module KindAbbreviation = struct
+      type t = Paths_types.Resolved_reference.kind_abbreviation
     end
 
     module Constructor = struct
