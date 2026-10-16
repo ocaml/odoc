@@ -222,7 +222,7 @@ let add_fragment_root sg env =
   { env with fragmentroot = Some (id, sg); id }
 
 (** Implements most [add_*] functions. *)
-let add_to_elts kind identifier component env =
+let add_to_elts ?(by_name = true) kind identifier component env =
   if not env.linking then
     assert (
       List.mem kind
@@ -239,7 +239,9 @@ let add_to_elts kind identifier component env =
   {
     env with
     id = unique_id ();
-    elts = ElementsByName.add kind name component env.elts;
+    elts =
+      (if by_name then ElementsByName.add kind name component env.elts
+       else env.elts);
     ids = ElementsById.add identifier component env.ids;
   }
 
@@ -304,11 +306,13 @@ let add_cdocs p (docs : Component.CComment.docs) env =
       | _ -> env)
     env docs.elements
 
-let add_module identifier m docs env =
-  let env' = add_to_elts Kind_Module identifier (`Module (identifier, m)) env in
+let add_module ?by_name identifier m docs env =
+  let env' =
+    add_to_elts ?by_name Kind_Module identifier (`Module (identifier, m)) env
+  in
   if env.linking then add_cdocs identifier docs env' else env'
 
-let add_type (identifier : Identifier.Type.t) t env =
+let add_type ?by_name (identifier : Identifier.Type.t) t env =
   let open Component in
   let open_typedecl cs =
     let add_cons env (cons : TypeDecl.Constructor.t) =
@@ -347,15 +351,19 @@ let add_type (identifier : Identifier.Type.t) t env =
     | Some Extensible | None -> (cs, [])
   in
   let env, docs = if env.linking then open_typedecl env else (env, []) in
-  let env = add_to_elts Kind_Type identifier (`Type (identifier, t)) env in
+  let env =
+    add_to_elts ?by_name Kind_Type identifier (`Type (identifier, t)) env
+  in
   if env.linking then
     add_cdocs identifier t.doc env
     |> List.fold_right (add_cdocs identifier) docs
   else env
 
-let add_module_type identifier (t : Component.ModuleType.t) env =
+let add_module_type ?by_name identifier (t : Component.ModuleType.t) env =
   let env' =
-    add_to_elts Kind_ModuleType identifier (`ModuleType (identifier, t)) env
+    add_to_elts ?by_name Kind_ModuleType identifier
+      (`ModuleType (identifier, t))
+      env
   in
   if env'.linking then add_cdocs identifier t.doc env' else env'
 
@@ -769,15 +777,111 @@ let open_class_signature : Lang.ClassSignature.t -> t -> t =
         | _ -> env)
       env s.items
 
+let add_type_substitution ~by_name (t : Odoc_model.Lang.TypeDecl.t) env =
+  let open Component in
+  let open Of_Lang in
+  let ty = type_decl (empty ()) t in
+  add_type ~by_name t.Lang.TypeDecl.id ty env
+
+let add_module_substitution ~by_name (m : Odoc_model.Lang.ModuleSubstitution.t)
+    env =
+  let open Component in
+  let open Of_Lang in
+  let doc = docs (empty ()) m.doc in
+  let ty =
+    Component.Delayed.put (fun () ->
+        Of_Lang.(module_of_module_substitution (empty ()) m))
+  in
+  add_module ~by_name (m.id :> Identifier.Path.Module.t) ty doc env
+
+let add_module_type_substitution ~by_name (t : Lang.ModuleTypeSubstitution.t)
+    env =
+  let open Component in
+  let open Of_Lang in
+  let ty =
+    module_type (empty ())
+      {
+        id = t.id;
+        source_loc = None;
+        doc = t.doc;
+        expr = Some t.manifest;
+        canonical = None;
+      }
+  in
+  add_module_type ~by_name t.Lang.ModuleTypeSubstitution.id ty env
+
+module DeclaredNames = Set.Make (struct
+  type t = kind * string
+
+  let compare = compare
+end)
+
+(** The names of the types, modules and module types declared in a signature,
+    including those from its includes. A class or class type also declares a
+    type of the same name. *)
+let rec declared_names (s : Lang.Signature.t) acc =
+  let add kind id acc = DeclaredNames.add (kind, Identifier.name id) acc in
+  List.fold_left
+    (fun acc (item : Lang.Signature.item) ->
+      match item with
+      | Type (_, t) -> add Kind_Type t.id acc
+      | Class (_, c) -> add Kind_Type c.id acc
+      | ClassType (_, c) -> add Kind_Type c.id acc
+      | Module (_, m) -> add Kind_Module m.id acc
+      | ModuleType mt -> add Kind_ModuleType mt.id acc
+      | Include i -> declared_names i.expansion.content acc
+      | _ -> acc)
+    acc s.items
+
+let open_type_substitution = add_type_substitution ~by_name:true
+
+let open_module_substitution = add_module_substitution ~by_name:true
+
+let open_module_type_substitution = add_module_type_substitution ~by_name:true
+
+(** Adds the items of a signature to the environment, all at once. As for any
+    item, a reference anywhere in the signature can then refer to them, even
+    before their declaration, and they take precedence over items of the same
+    name from outside the signature.
+
+    When linking, this includes the signature's local substitutions
+    ([type t := ...], [module M := ...], [module type S := ...]). Paths to them
+    are looked up by identifier, so they are always added by identifier. They
+    are added by name, so that a reference such as [{!t}] can resolve to one,
+    only if the signature has no actual type, module or module type of the same
+    name: a reference then always goes to the actual item. If a name is
+    substituted several times, a reference goes to the last substitution.
+
+    Substitutions aren't part of a signature's interface, so they're not added
+    for a signature that is opened, either with [open] or as an [--open] unit.
+*)
 let rec open_signature : Lang.Signature.t -> t -> t =
+ fun s env ->
+  open_signature_items ~substitutions:true
+    (declared_names s DeclaredNames.empty)
+    s env
+
+and open_opened_signature : Lang.Signature.t -> t -> t =
+ fun s env ->
+  open_signature_items ~substitutions:false DeclaredNames.empty s env
+
+and open_signature_items ~substitutions declared : Lang.Signature.t -> t -> t =
   let open Component in
   let open Of_Lang in
   let module L = Lang in
+  let by_name kind id =
+    not (DeclaredNames.mem (kind, Identifier.name id) declared)
+  in
   fun s e ->
     let ident_map = empty () in
     List.fold_left
       (fun env orig ->
         match ((orig : L.Signature.item), env.linking) with
+        | ( ( L.Signature.TypeSubstitution _ | L.Signature.ModuleSubstitution _
+            | ModuleTypeSubstitution _ ),
+            _ )
+          when not (env.linking && substitutions) ->
+            env
         | Type (_, t), _ ->
             let ty = type_decl ident_map t in
             add_type t.L.TypeDecl.id ty env
@@ -791,21 +895,26 @@ let rec open_signature : Lang.Signature.t -> t -> t =
         | ModuleType t, _ ->
             let ty = module_type ident_map t in
             add_module_type t.L.ModuleType.id ty env
-        | ModuleTypeSubstitution _, _
-        | L.Signature.TypeSubstitution _, _
-        | L.Signature.ModuleSubstitution _, _ ->
-            env
+        | L.Signature.TypeSubstitution t, _ ->
+            add_type_substitution ~by_name:(by_name Kind_Type t.id) t env
+        | L.Signature.ModuleSubstitution m, _ ->
+            add_module_substitution ~by_name:(by_name Kind_Module m.id) m env
+        | ModuleTypeSubstitution mt, _ ->
+            add_module_type_substitution
+              ~by_name:(by_name Kind_ModuleType mt.id)
+              mt env
         | L.Signature.Class (_, c), _ ->
             let ty = class_ ident_map c in
             add_class c.id ty env
         | L.Signature.ClassType (_, c), _ ->
             let ty = class_type ident_map c in
             add_class_type c.id ty env
-        | L.Signature.Include i, _ -> open_signature i.expansion.content env
-        | L.Signature.Open o, false -> open_signature o.expansion env
+        | L.Signature.Include i, _ ->
+            open_signature_items ~substitutions declared i.expansion.content env
+        | L.Signature.Open o, false -> open_opened_signature o.expansion env
         (* The following are only added when linking *)
         | L.Signature.Open o, true ->
-            add_comment (`Docs o.doc) (open_signature o.expansion env)
+            add_comment (`Docs o.doc) (open_opened_signature o.expansion env)
         | Comment c, true -> add_comment c env
         | TypExt te, true ->
             let doc = docs ident_map te.doc in
@@ -830,52 +939,13 @@ let rec open_signature : Lang.Signature.t -> t -> t =
         | L.Signature.Value _, false -> env)
       e s.items
 
-let open_type_substitution : Odoc_model.Lang.TypeDecl.t -> t -> t =
- fun t env ->
-  let open Component in
-  let open Of_Lang in
-  let ty = type_decl (empty ()) t in
-  add_type t.Lang.TypeDecl.id ty env
-
-let open_module_substitution : Odoc_model.Lang.ModuleSubstitution.t -> t -> t =
- fun m env ->
-  let open Component in
-  let open Of_Lang in
-  let _id = Ident.Of_Identifier.module_ m.id in
-  let doc = docs (empty ()) m.doc in
-  let ty =
-    Component.Delayed.put (fun () ->
-        Of_Lang.(
-          module_of_module_substitution
-            (*                  { empty with modules = [ (m.id, id) ] } *)
-            (empty ())
-            m))
-  in
-  add_module (m.id :> Identifier.Path.Module.t) ty doc env
-
-let open_module_type_substitution : Lang.ModuleTypeSubstitution.t -> t -> t =
- fun t env ->
-  let open Component in
-  let open Of_Lang in
-  let ty =
-    module_type (empty ())
-      {
-        id = t.id;
-        source_loc = None;
-        doc = t.doc;
-        expr = Some t.manifest;
-        canonical = None;
-      }
-  in
-  add_module_type t.Lang.ModuleTypeSubstitution.id ty env
-
 let open_units resolver env =
   List.fold_left
     (fun env m ->
       match resolver.lookup_unit (`Name m) with
       | Ok (Found unit) -> (
           match unit.content with
-          | Module sg -> open_signature sg env
+          | Module sg -> open_opened_signature sg env
           | _ -> env)
       | _ -> env)
     env resolver.open_units

@@ -78,17 +78,30 @@ module Path = struct
     | `Page
     | `LeafPage
     | `ModuleType
+    | `ModuleSubst of int
+    | `ModuleTypeSubst of int
     | `Parameter of int
     | `Class
     | `ClassType
     | `File
     | `SourcePage ]
 
+  (* Local substitutions ([module M := ...], [module type S := ...],
+     [type t := ...]) are a kind of their own, numbered from 1 among the
+     substitutions of a name in a signature, so their pages and anchors can't
+     collide with a real item's, or with each other, while their names stay
+     as written. *)
+  let subst_kind prefix = function
+    | 1 -> prefix ^ "-subst"
+    | n -> Printf.sprintf "%s-subst-%d" prefix n
+
   let string_of_kind : kind -> string = function
     | `Page -> "page"
     | `Module -> "module"
     | `LeafPage -> "leaf-page"
     | `ModuleType -> "module-type"
+    | `ModuleSubst n -> subst_kind "module" n
+    | `ModuleTypeSubst n -> subst_kind "module-type" n
     | `Parameter arg_num -> Printf.sprintf "argument-%d" arg_num
     | `Class -> "class"
     | `ClassType -> "class-type"
@@ -137,7 +150,11 @@ module Path = struct
         mk ?parent kind name
     | `Module (parent, mod_name) ->
         let parent = from_identifier (parent :> any) in
-        let kind = `Module in
+        let kind =
+          match ModuleName.substituted_index mod_name with
+          | Some n -> `ModuleSubst n
+          | None -> `Module
+        in
         let name = ModuleName.to_string mod_name in
         mk ~parent kind name
     | `Parameter (functor_id, arg_name) as p ->
@@ -148,7 +165,11 @@ module Path = struct
         mk ~parent kind name
     | `ModuleType (parent, modt_name) ->
         let parent = from_identifier (parent :> any) in
-        let kind = `ModuleType in
+        let kind =
+          match ModuleTypeName.substituted_index modt_name with
+          | Some n -> `ModuleTypeSubst n
+          | None -> `ModuleType
+        in
         let name = ModuleTypeName.to_string modt_name in
         mk ~parent kind name
     | `Class (parent, name) ->
@@ -220,6 +241,7 @@ module Anchor = struct
     [ Path.kind
     | `Section
     | `Type
+    | `TypeSubst of int
     | `Extension
     | `ExtensionDecl
     | `Exception
@@ -234,6 +256,7 @@ module Anchor = struct
     | #Path.kind as k -> Path.string_of_kind k
     | `Section -> "section"
     | `Type -> "type"
+    | `TypeSubst n -> Path.subst_kind "type" n
     | `Extension -> "extension"
     | `ExtensionDecl -> "extension-decl"
     | `Exception -> "exception"
@@ -270,7 +293,11 @@ module Anchor = struct
   let rec from_identifier : Identifier.t -> t = function
     | `Module (parent, mod_name) ->
         let parent = Path.from_identifier (parent :> Path.any) in
-        let kind = `Module in
+        let kind =
+          match ModuleName.substituted_index mod_name with
+          | Some n -> `ModuleSubst n
+          | None -> `Module
+        in
         let anchor =
           Printf.sprintf "%s-%s" (Path.string_of_kind kind)
             (ModuleName.to_string mod_name)
@@ -291,7 +318,11 @@ module Anchor = struct
         anchorify_path @@ Path.from_identifier p
     | `Type (parent, type_name) ->
         let page = Path.from_identifier (parent :> Path.any) in
-        let kind = `Type in
+        let kind =
+          match TypeName.substituted_index type_name with
+          | Some n -> `TypeSubst n
+          | None -> `Type
+        in
         let name = TypeName.to_string type_name in
         { page; anchor = Format.asprintf "%a-%s" pp_kind kind name; kind }
     | `Extension (parent, name) ->

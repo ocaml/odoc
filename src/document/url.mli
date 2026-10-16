@@ -6,6 +6,8 @@ module Path : sig
     | `Page
     | `LeafPage
     | `ModuleType
+    | `ModuleSubst of int
+    | `ModuleTypeSubst of int
     | `Parameter of int
     | `Class
     | `ClassType
@@ -59,6 +61,7 @@ module Anchor : sig
     [ Path.kind
     | `Section
     | `Type
+    | `TypeSubst of int
     | `Extension
     | `ExtensionDecl
     | `Exception

@@ -118,19 +118,38 @@ module Of_Identifier = struct
 end
 
 module Name = struct
+  (* The strings below are what xref2 matches items by, e.g. a fragment
+     against a signature's items. A local substitution displays like the
+     item it may sit beside, so its string here also includes the ident's
+     stamp. Otherwise inlining [type t := ...] (see
+     [Tools.apply_inner_substs]) would also rewrite a real [type t]. *)
+  let subst_key name stamp = function
+    | None -> name
+    | Some _ -> Printf.sprintf "{%s}subst/%d" name stamp
+
   let typed_module : module_ -> ModuleName.t = function `LModule (n, _) -> n
-  let module_ m = ModuleName.to_string (typed_module m)
+
+  let module_ : module_ -> string = function
+    | `LModule (n, i) ->
+        subst_key (ModuleName.to_string n) i (ModuleName.substituted_index n)
 
   let unsafe_module m = ModuleName.to_string_unsafe (typed_module m)
 
   let typed_type : type_ -> TypeName.t = function `LType (n, _) -> n
-  let type_ t = TypeName.to_string (typed_type t)
+
+  let type_ : type_ -> string = function
+    | `LType (n, i) ->
+        subst_key (TypeName.to_string n) i (TypeName.substituted_index n)
 
   let unsafe_type : type_ -> string = function
     | `LType (n, _) -> TypeName.to_string_unsafe n
 
   let module_type : module_type -> string = function
-    | `LModuleType (n, _) -> ModuleTypeName.to_string n
+    | `LModuleType (n, i) ->
+        subst_key
+          (ModuleTypeName.to_string n)
+          i
+          (ModuleTypeName.substituted_index n)
 
   let unsafe_module_type : module_type -> string = function
     | `LModuleType (n, _) -> ModuleTypeName.to_string_unsafe n

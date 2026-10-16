@@ -6954,7 +6954,7 @@
   (targets
    Module_type_subst.html.gen
    Module_type_subst-Local.html.gen
-   Module_type_subst-Local-module-type-local.html.gen
+   Module_type_subst-Local-module-type-subst-local.html.gen
    Module_type_subst-Local-module-type-s.html.gen
    Module_type_subst-module-type-s.html.gen
    Module_type_subst-Basic.html.gen
@@ -7021,8 +7021,8 @@
   (package odoc)
   (action
    (diff
-    Module_type_subst-Local-module-type-local.html
-    Module_type_subst-Local-module-type-local.html.gen))
+    Module_type_subst-Local-module-type-subst-local.html
+    Module_type_subst-Local-module-type-subst-local.html.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13)))
  (rule
@@ -7463,7 +7463,7 @@
   (targets
    Module_type_subst.md.gen
    Module_type_subst-Local.md.gen
-   Module_type_subst-Local-module-type-local.md.gen
+   Module_type_subst-Local-module-type-subst-local.md.gen
    Module_type_subst-Local-module-type-s.md.gen
    Module_type_subst-module-type-s.md.gen
    Module_type_subst-Basic.md.gen
@@ -7528,8 +7528,8 @@
   (package odoc)
   (action
    (diff
-    Module_type_subst-Local-module-type-local.md
-    Module_type_subst-Local-module-type-local.md.gen))
+    Module_type_subst-Local-module-type-subst-local.md
+    Module_type_subst-Local-module-type-subst-local.md.gen))
   (enabled_if
    (>= %{ocaml_version} 4.13)))
  (rule
