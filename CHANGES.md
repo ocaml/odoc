@@ -41,6 +41,9 @@
 - Fix bug in hidden name check that sometimes exposed hidden items (@jonludlam, #1484)
 - Fix includes being re-expanded in dependent modules, which could lose type
   equations; also makes `.odoc` files smaller, particularly on OxCaml (@jonludlam, #1481)
+- Make the model and component path hidden checks agree, so that a functor
+  application is hidden when its functor or its argument is hidden
+  (@jonludlam, #1506)
 
 ### Performance
 - Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #1487)
