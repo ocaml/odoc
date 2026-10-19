@@ -46,6 +46,10 @@ module type Name = sig
 
   val shadowed_of_ident : Ident.t -> t
 
+  val substituted_of_string : string -> int -> t
+
+  val substituted_index : t -> int option
+
   val equal_modulo_shadowing : t -> t -> bool
 
   val equal : t -> t -> bool
@@ -71,16 +75,19 @@ module Name : Name = struct
     | Hidden of string
     | Shadowed of string * int * string
     | Std of string
+    | Substituted of string * int
 
   let to_string = function
     | Std s -> parenthesise s
     | Hidden s -> Printf.sprintf "%s" s
     | Shadowed (s, i, s2) -> Printf.sprintf "{%s}%d/shadowed/(%s)" s i s2
+    | Substituted (s, _) -> parenthesise s
 
   let to_string_unsafe = function
     | Std s -> s
     | Hidden s -> s
     | Shadowed (s, _i, _s2) -> s
+    | Substituted (s, _) -> s
 
   let make_std s = Std s
 
@@ -98,6 +105,10 @@ module Name : Name = struct
 
   let shadowed_of_ident id = shadowed_of_string (Ident.name id)
 
+  let substituted_of_string s n = Substituted (s, n)
+
+  let substituted_index = function Substituted (_, n) -> Some n | _ -> None
+
   let equal_modulo_shadowing (x : t) (y : t) =
     match (x, y) with
     | Std x, Std y -> x = y
@@ -105,6 +116,7 @@ module Name : Name = struct
     | Std x, Hidden y -> x = y
     | Hidden x, Hidden y -> x = y
     | Shadowed (x, i, s), Shadowed (y, j, t) -> x = y && i = j && s = t
+    | Substituted (x, i), Substituted (y, j) -> x = y && i = j
     | _, _ -> false
 
   let equal (x : t) (y : t) = x = y
@@ -117,6 +129,7 @@ module Name : Name = struct
     | Std _ -> false
     | Hidden _ -> true
     | Shadowed _ -> true
+    | Substituted _ -> false
 end
 
 module type SimpleName = sig

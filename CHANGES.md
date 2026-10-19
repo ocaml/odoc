@@ -35,6 +35,9 @@
   This removes repeated "Ambiguous lookup" warnings (@jonludlam, #1511)
 - `odoc compile` resolves an import only to a unit with the digest the import
   records (@jonludlam, #1502)
+- Fix local substitutions (`type t := ...`) shadowing earlier items. Their
+  anchors, pages and latex labels change to `type-subst-t`, `module-subst-M`,
+  `module-type-subst-S` (`-subst-2-` etc. for repeats) (@jonludlam, #1504)
 - Fix optional arguments rendering as `?arg:???` in modules without an mli on
   OCaml 5.5 (@jonludlam, #1489)
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)

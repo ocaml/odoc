@@ -8,10 +8,10 @@ source pages collide: each substitution has an anchor of its own.
   $ odoc html-generate-source --impl impl-source.odocl -o html source.ml
   $ grep -o 'id="module-type-S[^"]*"' html/src/source.ml.html
   id="module-type-S"
-  id="module-type-S.type-{t}1/shadowed/(src-source.ml)"
   id="module-type-S.type-t"
-  id="module-type-S.module-type-{T}2/shadowed/(src-source.ml)"
+  id="module-type-S.type-subst-t"
   id="module-type-S.module-type-T"
-  id="module-type-S.module-type-T.type-q"
-  id="module-type-S.module-{M}3/shadowed/(src-source.ml)"
+  id="module-type-S.module-type-subst-T"
+  id="module-type-S.module-type-subst-T.type-q"
   id="module-type-S.module-M"
+  id="module-type-S.module-subst-M"

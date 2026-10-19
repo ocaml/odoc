@@ -64,6 +64,12 @@ type item = [
     `Module of Ident.t * bool * Location.t option
   | `ModuleType of Ident.t * bool * Location.t option
   | `Type of Ident.t * bool * Location.t option
+  | `TypeSubst of Ident.t * bool * Location.t option
+  | `ModuleSubst of Ident.t * bool * Location.t option
+  | `ModuleTypeSubst of Ident.t * bool * Location.t option
+  (* Local substitutions ([type t := ...], [module M := ...],
+     [module type S := ...]). They aren't part of the resulting signature,
+     so they never shadow a real item; see [add_items]. *)
   | `Constructor of Ident.t * Ident.t * Location.t option
   (* Second ident.t is for the type parent *)
   | `Value of Ident.t * bool * Location.t option
@@ -295,13 +301,13 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
             `ClassType (clty.ci_id_class_type, clty.ci_id_object, typehash, hide_item, Some clty.ci_id_name.loc))
               cltyps @ extract_signature_tree_items hide_item rest
     | { sig_desc = Tsig_modsubst ms; sig_loc; _ } :: rest ->
-      [`Module (ms.ms_id, hide_item, Some sig_loc )] @ extract_signature_tree_items hide_item rest
+      [`ModuleSubst (ms.ms_id, hide_item, Some sig_loc )] @ extract_signature_tree_items hide_item rest
     | { sig_desc = Tsig_typesubst ts; sig_loc; _} :: rest ->
-      List.map (fun decl -> `Type (decl.typ_id, hide_item, Some sig_loc)) 
+      List.map (fun decl -> `TypeSubst (decl.typ_id, hide_item, Some sig_loc)) 
         ts @ extract_signature_tree_items hide_item rest
 #if OCAML_VERSION >= (4,13,0)
     | { sig_desc = Tsig_modtypesubst mtd; sig_loc; _ } :: rest ->
-      [`ModuleType (mtd.mtd_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
+      [`ModuleTypeSubst (mtd.mtd_id, hide_item, Some sig_loc)] @ extract_signature_tree_items hide_item rest
 #endif
     | { sig_desc = Tsig_open _;_} :: rest -> extract_signature_tree_items hide_item rest
 #if defined OXCAML
@@ -472,6 +478,9 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
 let flatten_includes : items list -> item list = fun items ->
   List.map (function
     | `Type _
+    | `TypeSubst _
+    | `ModuleSubst _
+    | `ModuleTypeSubst _
     | `Constructor _
     | `Module _
     | `ModuleType _
@@ -502,8 +511,55 @@ let class_type_name_exists name items =
 
 let add_items : Id.Signature.t -> item list -> t -> t = fun parent items env ->
   let open Odoc_model.Paths.Identifier in
+  (* Substitutions get [substituted_of_string name n], [n] counting the
+     substitutions of that name so far in this signature (per namespace),
+     so they never collide with a real item or with each other. Ones
+     hidden by stop comments get a fresh shadowed name instead: still
+     unique, and hidden. *)
+  let next_index =
+    let counts = Stdlib.Hashtbl.create 16 in
+    fun ns name ->
+      let n = 1 + Option.value ~default:0 (Stdlib.Hashtbl.find_opt counts (ns, name)) in
+      Stdlib.Hashtbl.replace counts (ns, name) n;
+      n
+  in
   let rec inner items env =
     match items with
+    | `TypeSubst (t, is_hidden_item, loc) :: rest ->
+      let name = Ident.name t in
+      let identifier =
+        Mk.type_(parent,
+          if is_hidden_item then TypeName.shadowed_of_string name
+          else TypeName.substituted_of_string name (next_index `Type name))
+      in
+      let types = Ident.add t identifier env.types in
+      (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
+      inner rest { env with types }
+
+    | `ModuleTypeSubst (t, is_hidden_item, loc) :: rest ->
+      let name = Ident.name t in
+      let identifier =
+        Mk.module_type(parent,
+          if is_hidden_item then ModuleTypeName.shadowed_of_string name
+          else ModuleTypeName.substituted_of_string name (next_index `ModuleType name))
+      in
+      let module_types = Ident.add t identifier env.module_types in
+      (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
+      inner rest { env with module_types }
+
+    | `ModuleSubst (t, is_hidden_item, loc) :: rest ->
+      let name = Ident.name t in
+      let identifier =
+        Mk.module_(parent,
+          if is_hidden_item then ModuleName.shadowed_of_string name
+          else ModuleName.substituted_of_string name (next_index `Module name))
+      in
+      let path = `Identifier(identifier, is_hidden_item) in
+      let modules = Ident.add t identifier env.modules in
+      let module_paths = Ident.add t path env.module_paths in
+      (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
+      inner rest { env with modules; module_paths }
+
     | `Type (t, is_hidden_item, loc) :: rest ->
       let name = Ident.name t in
       let is_shadowed = type_name_exists name rest in

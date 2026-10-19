@@ -197,6 +197,8 @@ let populate_local_defs source_id poses loc_to_id local_ident_to_loc =
    a unique anchor for any identifier. *)
 let anchor_of_identifier id =
   let open Odoc_document.Url in
+  let module_kind = Path.module_kind
+  and module_type_kind = Path.module_type_kind in
   let open Odoc_model.Paths in
   let open Odoc_model.Names in
   let rec anchor_of_identifier acc (id : Identifier.t) =
@@ -218,10 +220,12 @@ let anchor_of_identifier id =
         let anchor = anchor kind (ModuleName.to_string name) in
         continue anchor parent
     | `Module (parent, name) ->
-        let anchor = anchor `Module (ModuleName.to_string name) in
+        let kind = (module_kind name :> Anchor.kind) in
+        let anchor = anchor kind (ModuleName.to_string name) in
         continue anchor parent
     | `ModuleType (parent, name) ->
-        let anchor = anchor `ModuleType (ModuleTypeName.to_string name) in
+        let kind = (module_type_kind name :> Anchor.kind) in
+        let anchor = anchor kind (ModuleTypeName.to_string name) in
         continue anchor parent
     | `Method (parent, name) ->
         let anchor = anchor `Method (MethodName.to_string name) in
@@ -237,7 +241,8 @@ let anchor_of_identifier id =
     | `Result parent -> anchor_of_identifier acc (parent :> Identifier.t)
     | `SourceLocationInternal _ -> assert false
     | `Type (parent, name) ->
-        let anchor = anchor `Type (TypeName.to_string name) in
+        let kind = (Anchor.type_kind name :> Anchor.kind) in
+        let anchor = anchor kind (TypeName.to_string name) in
         continue anchor parent
     | `Label _ -> assert false
     | `Exception (parent, name) ->

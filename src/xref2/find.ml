@@ -20,11 +20,6 @@ type exception_ = [ `FExn of ExceptionName.t * Exception.t ]
 
 type extension = [ `FExt of Extension.t * Extension.Constructor.t ]
 
-type substitution =
-  [ `FModule_subst of ModuleSubstitution.t
-  | `FType_subst of TypeDecl.t
-  | `FModuleType_subst of ModuleTypeSubstitution.t ]
-
 type signature = [ module_ | module_type ]
 
 type type_ = [ datatype | class_ ]
@@ -47,13 +42,7 @@ type any_in_type_in_sig =
   [ `In_type of Odoc_model.Names.TypeName.t * TypeDecl.t * any_in_type ]
 
 type any_in_sig =
-  [ label_parent
-  | value
-  | label
-  | exception_
-  | extension
-  | substitution
-  | any_in_type_in_sig ]
+  [ label_parent | value | label | exception_ | extension | any_in_type_in_sig ]
 
 type instance_variable =
   [ `FInstance_variable of InstanceVariableName.t * InstanceVariable.t ]
@@ -266,13 +255,14 @@ let any_in_sig sg name =
   filter_in_sig sg (function
     | Signature.Module (id, _, m) when N.module_ id = name ->
         Some (`FModule (N.typed_module id, Delayed.get m))
-    | ModuleSubstitution (id, ms) when N.module_ id = name ->
-        Some (`FModule_subst ms)
+    (* Substitutions aren't part of the signature's interface, so qualified
+       references (e.g. [{!M.t}]) don't find them. *)
+    | ModuleSubstitution _ -> None
     | ModuleType (id, mt) when N.module_type id = name ->
         Some (`FModuleType (N.typed_module_type id, Delayed.get mt))
     | Type (id, _, t) when N.type_ id = name ->
         Some (`FType (N.typed_type id, Delayed.get t))
-    | TypeSubstitution (id, ts) when N.type_ id = name -> Some (`FType_subst ts)
+    | TypeSubstitution _ -> None
     | Exception (id, exc) when N.exception_ id = name ->
         Some (`FExn (N.typed_exception id, exc))
     | Value (id, v) when N.value id = name ->

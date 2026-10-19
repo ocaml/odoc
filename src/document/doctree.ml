@@ -331,10 +331,10 @@ end = struct
       mk (Types.inline (Text (s ^ " ")) :: Codefmt.code (Codefmt.txt name))
     in
     match kind with
-    | `Module -> (prefix "Module", preamble)
+    | `Module | `ModuleSubst _ -> (prefix "Module", preamble)
     | `LibraryParameter -> (prefix "Library parameter", preamble)
     | `Parameter _ -> (prefix "Parameter", preamble)
-    | `ModuleType -> (prefix "Module type", preamble)
+    | `ModuleType | `ModuleTypeSubst _ -> (prefix "Module type", preamble)
     | `ClassType -> (prefix "Class type", preamble)
     | `Class -> (prefix "Class", preamble)
     | `SourcePage -> (prefix "Source file", preamble)

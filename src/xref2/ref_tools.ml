@@ -82,9 +82,9 @@ let ref_kind_of_element = function
   | `Page _ -> "page"
 
 let ref_kind_of_find = function
-  | `FModule _ | `FModule_subst _ -> "module"
-  | `FModuleType _ | `FModuleType_subst _ -> "module-type"
-  | `FType _ | `FType_subst _ -> "type"
+  | `FModule _ -> "module"
+  | `FModuleType _ -> "module-type"
+  | `FType _ -> "type"
   | `FValue _ -> "val"
   | `FLabel _ -> "section"
   | `FClass _ -> "class"
@@ -920,8 +920,6 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
       | `FPoly p -> CS.poly_of_component env parent p.name >>= resolved1
       | `FField _ -> F.of_component env parent name >>= resolved1
       | `FUnboxedField _ -> UF.of_component env parent name >>= resolved1)
-  | `FModule_subst _ | `FType_subst _ | `FModuleType_subst _ ->
-      Error (`Find_by_name (`Any, name))
 
 let resolve_reference_dot_page env page name =
   L.in_page env page name >>= resolved_with_text
