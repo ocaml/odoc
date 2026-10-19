@@ -78,17 +78,40 @@ module Path = struct
     | `Page
     | `LeafPage
     | `ModuleType
+    | `ModuleSubst of int
+    | `ModuleTypeSubst of int
     | `Parameter of int
     | `Class
     | `ClassType
     | `File
     | `SourcePage ]
 
+  (* Local substitutions ([module M := ...], [module type S := ...],
+     [type t := ...]) are a kind of their own, numbered from 1 among the
+     substitutions of a name in a signature, so their pages and anchors can't
+     collide with a real item's, or with each other, while their names stay
+     as written. *)
+  let subst_prefix prefix = function
+    | 1 -> prefix ^ "-subst"
+    | n -> Printf.sprintf "%s-subst-%d" prefix n
+
+  let module_kind name =
+    match ModuleName.substituted_index name with
+    | Some n -> `ModuleSubst n
+    | None -> `Module
+
+  let module_type_kind name =
+    match ModuleTypeName.substituted_index name with
+    | Some n -> `ModuleTypeSubst n
+    | None -> `ModuleType
+
   let string_of_kind : kind -> string = function
     | `Page -> "page"
     | `Module -> "module"
     | `LeafPage -> "leaf-page"
     | `ModuleType -> "module-type"
+    | `ModuleSubst n -> subst_prefix "module" n
+    | `ModuleTypeSubst n -> subst_prefix "module-type" n
     | `Parameter arg_num -> Printf.sprintf "argument-%d" arg_num
     | `Class -> "class"
     | `ClassType -> "class-type"
@@ -137,7 +160,7 @@ module Path = struct
         mk ?parent kind name
     | `Module (parent, mod_name) ->
         let parent = from_identifier (parent :> any) in
-        let kind = `Module in
+        let kind = (module_kind mod_name :> kind) in
         let name = ModuleName.to_string mod_name in
         mk ~parent kind name
     | `Parameter (functor_id, arg_name) as p ->
@@ -148,7 +171,7 @@ module Path = struct
         mk ~parent kind name
     | `ModuleType (parent, modt_name) ->
         let parent = from_identifier (parent :> any) in
-        let kind = `ModuleType in
+        let kind = (module_type_kind modt_name :> kind) in
         let name = ModuleTypeName.to_string modt_name in
         mk ~parent kind name
     | `Class (parent, name) ->
@@ -220,6 +243,7 @@ module Anchor = struct
     [ Path.kind
     | `Section
     | `Type
+    | `TypeSubst of int
     | `Extension
     | `ExtensionDecl
     | `Exception
@@ -234,6 +258,7 @@ module Anchor = struct
     | #Path.kind as k -> Path.string_of_kind k
     | `Section -> "section"
     | `Type -> "type"
+    | `TypeSubst n -> Path.subst_prefix "type" n
     | `Extension -> "extension"
     | `ExtensionDecl -> "extension-decl"
     | `Exception -> "exception"
@@ -245,6 +270,11 @@ module Anchor = struct
     | `SourceAnchor -> "source-anchor"
 
   let pp_kind fmt kind = Format.fprintf fmt "%s" (string_of_kind kind)
+
+  let type_kind name =
+    match TypeName.substituted_index name with
+    | Some n -> `TypeSubst n
+    | None -> `Type
 
   type t = { page : Path.t; anchor : string; kind : kind }
 
@@ -270,12 +300,13 @@ module Anchor = struct
   let rec from_identifier : Identifier.t -> t = function
     | `Module (parent, mod_name) ->
         let parent = Path.from_identifier (parent :> Path.any) in
-        let kind = `Module in
+        let kind = Path.module_kind mod_name in
         let anchor =
-          Printf.sprintf "%s-%s" (Path.string_of_kind kind)
+          Printf.sprintf "%s-%s"
+            (Path.string_of_kind (kind :> Path.kind))
             (ModuleName.to_string mod_name)
         in
-        { page = parent; anchor; kind }
+        { page = parent; anchor; kind = (kind :> kind) }
     | `Root _ as p ->
         let page = Path.from_identifier (p :> Path.any) in
         { page; kind = `Module; anchor = "" }
@@ -291,7 +322,7 @@ module Anchor = struct
         anchorify_path @@ Path.from_identifier p
     | `Type (parent, type_name) ->
         let page = Path.from_identifier (parent :> Path.any) in
-        let kind = `Type in
+        let kind = (type_kind type_name :> kind) in
         let name = TypeName.to_string type_name in
         { page; anchor = Format.asprintf "%a-%s" pp_kind kind name; kind }
     | `Extension (parent, name) ->

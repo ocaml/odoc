@@ -44,6 +44,7 @@
   expansion
   github_issue_1066
   github_issue_1431
+  shadowed_substitution
   include_module_type_of_preamble
   open_struct_items
   open_struct_find)
@@ -60,14 +61,17 @@
 ; 4.13.0 and above
 
 (cram
- (applies_to github_issue_793 apply_inner_substs_module_type)
+ (applies_to
+  github_issue_793
+  apply_inner_substs_module_type
+  shadowed_module_type_substitution)
  (enabled_if
   (>= %{ocaml_version} 4.13.0)))
 
 ; 4.14.0 and above
 
 (cram
- (applies_to lookup_def shadow3 to_remove_test)
+ (applies_to lookup_def shadow3 to_remove_test shadowed_substitution_source)
  (enabled_if
   (>= %{ocaml_version} 4.14.0)))
 

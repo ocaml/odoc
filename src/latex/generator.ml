@@ -53,7 +53,7 @@ end
 module Expansion = struct
   let is_class_or_module (url : Odoc_document.Url.Path.t) =
     match url.kind with
-    | `Module | `LeafPage | `Class | `Page -> true
+    | `Module | `ModuleSubst _ | `LeafPage | `Class | `Page -> true
     | _ -> false
 
   let shortened config status url =

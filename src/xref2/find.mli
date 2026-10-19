@@ -19,11 +19,6 @@ type exception_ = [ `FExn of ExceptionName.t * Exception.t ]
 
 type extension = [ `FExt of Extension.t * Extension.Constructor.t ]
 
-type substitution =
-  [ `FModule_subst of ModuleSubstitution.t
-  | `FType_subst of TypeDecl.t
-  | `FModuleType_subst of ModuleTypeSubstitution.t ]
-
 type signature = [ module_ | module_type ]
 
 type type_ = [ datatype | class_ ]
@@ -45,13 +40,7 @@ type any_in_type =
 type any_in_type_in_sig = [ `In_type of TypeName.t * TypeDecl.t * any_in_type ]
 
 type any_in_sig =
-  [ label_parent
-  | value
-  | label
-  | exception_
-  | extension
-  | substitution
-  | any_in_type_in_sig ]
+  [ label_parent | value | label | exception_ | extension | any_in_type_in_sig ]
 
 type instance_variable =
   [ `FInstance_variable of InstanceVariableName.t * InstanceVariable.t ]

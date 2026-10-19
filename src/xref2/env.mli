@@ -54,16 +54,26 @@ val empty : t
 val add_fragment_root : Component.Signature.t -> t -> t
 
 val add_module :
+  ?by_name:bool ->
   Identifier.Path.Module.t ->
   Component.Module.t Component.Delayed.t ->
   Component.CComment.docs ->
   t ->
   t
+(** [by_name] (default [true]): also add the module by name, so that references
+    can find it. Otherwise it can only be looked up by identifier. *)
 
-val add_type : Identifier.Type.t -> Component.TypeDecl.t -> t -> t
+val add_type :
+  ?by_name:bool -> Identifier.Type.t -> Component.TypeDecl.t -> t -> t
+(** [by_name]: as for {!add_module}. *)
 
 val add_module_type :
-  Identifier.Path.ModuleType.t -> Component.ModuleType.t -> t -> t
+  ?by_name:bool ->
+  Identifier.Path.ModuleType.t ->
+  Component.ModuleType.t ->
+  t ->
+  t
+(** [by_name]: as for {!add_module}. *)
 
 val add_value : Identifier.Value.t -> Component.Value.t -> t -> t
 
@@ -173,12 +183,19 @@ val add_module_arg : Lang.TypeExpr.Module.t -> t -> t
 val open_class_signature : Lang.ClassSignature.t -> t -> t
 
 val open_signature : Lang.Signature.t -> t -> t
+(** Add the items of a signature to the env, all at once. When linking, this
+    includes its local substitutions, which are added by name only if the
+    signature has no actual item of the same name. *)
 
 val open_type_substitution : Lang.TypeDecl.t -> t -> t
+(** Add a local substitution, by identifier and by name. Used when compiling,
+    which adds a signature's items in order. *)
 
 val open_module_substitution : Lang.ModuleSubstitution.t -> t -> t
+(** As for {!open_type_substitution}. *)
 
 val open_module_type_substitution : Lang.ModuleTypeSubstitution.t -> t -> t
+(** As for {!open_type_substitution}. *)
 
 val open_page : Lang.Page.t -> t -> t
 (** Add a page content to the env. *)
