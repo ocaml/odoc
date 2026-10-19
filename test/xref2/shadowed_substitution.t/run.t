@@ -43,25 +43,32 @@ it too:
   # Module `Test`
   
   ```ocaml
+  type 'a t = 
+    | Empty
+    | Leaf of 'a
+  ```
+  ```ocaml
   type 'a t_float = 
     | Empty_f
     | Leaf_f of 'a
   ```
   ```ocaml
-  type 'a {t}4/shadowed/(3a1cabc1458465344e4a131fdb0463a2)
+  type 'a u
   ```
   ```ocaml
-  type 'a {u}5/shadowed/(3a1cabc1458465344e4a131fdb0463a2)
+  type 'a v = 'a list
   ```
   ```ocaml
-  type 'a {v}6/shadowed/(3a1cabc1458465344e4a131fdb0463a2) := 'a list
+  type 'a t := 'a t
   ```
   ```ocaml
-  val first : 
-    'a {t}1/shadowed/(3a1cabc1458465344e4a131fdb0463a2) ->
-    'a {u}2/shadowed/(3a1cabc1458465344e4a131fdb0463a2) ->
-    'a list ->
-    unit
+  type 'a u := 'a u
+  ```
+  ```ocaml
+  type 'a v := 'a v
+  ```
+  ```ocaml
+  val first : 'a t -> 'a u -> 'a v -> unit
   ```
   ```ocaml
   type 'a t := 'a t_float
@@ -84,26 +91,33 @@ value's declaration, from its [<div>] to the closing [</div>].)
 
   $ odoc html-generate --indent -o html test.odocl
   $ grep -o 'id="type-[^"]*"' html/Test/index.html
+  id="type-t"
+  id="type-t.Empty"
+  id="type-t.Leaf"
   id="type-t_float"
   id="type-t_float.Empty_f"
   id="type-t_float.Leaf_f"
-  id="type-{t}4/shadowed/(3a1cabc1458465344e4a131fdb0463a2)"
-  id="type-{u}5/shadowed/(3a1cabc1458465344e4a131fdb0463a2)"
-  id="type-{v}6/shadowed/(3a1cabc1458465344e4a131fdb0463a2)"
-  id="type-t"
   id="type-u"
   id="type-v"
+  id="type-subst-t"
+  id="type-subst-u"
+  id="type-subst-v"
+  id="type-subst-2-t"
+  id="type-subst-2-u"
+  id="type-subst-2-v"
   $ sed -n '/id="val-first"/,/<\/div>/p' html/Test/index.html | grep -o 'href="#type-[^"]*"'
-  [1]
+  href="#type-subst-t"
+  href="#type-subst-u"
+  href="#type-subst-v"
   $ sed -n '/id="val-first_float"/,/<\/div>/p' html/Test/index.html | grep -o 'href="#type-[^"]*"'
-  href="#type-t"
-  href="#type-u"
-  href="#type-v"
+  href="#type-subst-2-t"
+  href="#type-subst-2-u"
+  href="#type-subst-2-v"
 
 Nothing in the output, anchors included, uses the internal form:
 
   $ grep -c 'shadowed/(' html/Test/index.html || true
-  11
+  0
 
 When a signature is included, its substitutions are applied, and only to
 the items they were written for, not to a real item of the same name
@@ -217,8 +231,6 @@ name, whichever comes first, including a real item from an [include]:
   $ ocamlc -c -bin-annot refs.mli
   $ odoc compile refs.cmti
   $ odoc link refs.odoc
-  File "refs.mli", line 13, characters 17-23:
-  Warning: Failed to resolve reference unresolvedroot(M).a Couldn't find "a"
   $ odoc markdown-generate -o md refs.odocl
   $ cat md/Refs.md
   
@@ -228,7 +240,7 @@ name, whichever comes first, including a real item from an [include]:
   module Other : sig ... end
   ```
   ```ocaml
-  type {t}1/shadowed/(b3424fd09c6d2e1b45ffc04b5cf25e82) := int
+  type t := int
   ```
   ```ocaml
   type t = string
@@ -239,13 +251,19 @@ name, whichever comes first, including a real item from an [include]:
   See [`t`](./#type-t).
   
   ```ocaml
+  module M : sig ... end
+  ```
+  ```ocaml
   module M := Other
   ```
   ```ocaml
   val m : unit
   ```
-  See [`M`](./Refs-Other.md) and `M.a`.
+  See [`M`](./Refs-M.md) and [`M.a`](./Refs-M.md#type-a).
   
+  ```ocaml
+  type i = string
+  ```
   ```ocaml
   type i := int
   ```
@@ -278,8 +296,6 @@ substitutions of a name leave the name to the last one:
   $ ocamlc -c -bin-annot refs_order.mli
   $ odoc compile refs_order.cmti
   $ odoc link refs_order.odoc
-  File "refs_order.mli", line 2, characters 8-17:
-  Warning: Failed to resolve reference unresolvedroot(offset) Couldn't find "offset"
   $ odoc markdown-generate -o md refs_order.odocl
   $ cat md/Refs_order.md
   
@@ -288,10 +304,13 @@ substitutions of a name leave the name to the last one:
   ```ocaml
   val fwd : unit
   ```
-  See `offset`.
+  See [`offset`](./#type-subst-offset).
   
   ```ocaml
   type offset := int
+  ```
+  ```ocaml
+  type t = string
   ```
   ```ocaml
   type t := int
@@ -302,7 +321,7 @@ substitutions of a name leave the name to the last one:
   See [`t`](./#type-t).
   
   ```ocaml
-  type {u}2/shadowed/(4fdc400e1deb2abbb146ddb3061adb59) := int
+  type u := int
   ```
   ```ocaml
   type u := bool
@@ -310,7 +329,7 @@ substitutions of a name leave the name to the last one:
   ```ocaml
   val repeated : unit
   ```
-  See [`u`](./#type-u).
+  See [`u`](./#type-subst-2-u).
 
 References to substitutions in a signature that is included are resolved
 where it is included, after its substitutions have been applied. So in [I],
@@ -357,7 +376,7 @@ expected: the warnings below are part of the expected output.
   ```ocaml
   val x : t
   ```
-  See [`t`](./#type-t).
+  See [`t`](./#type-subst-t).
   
   ```ocaml
   module M := Base
@@ -395,8 +414,6 @@ rather than to a type substitution:
   $ ocamlc -c -bin-annot refs_class.mli
   $ odoc compile refs_class.cmti
   $ odoc link refs_class.odoc
-  File "refs_class.mli", line 6, characters 8-12:
-  Warning: Reference to 'k' is ambiguous. Please specify its kind: class-k, type-k.
   $ odoc markdown-generate -o md refs_class.odocl
   $ cat md/Refs_class.md
   
@@ -411,7 +428,7 @@ rather than to a type substitution:
   ```ocaml
   val after : unit
   ```
-  See [`k`](./#type-k).
+  See [`k`](./Refs_class-class-k.md).
 
 A hidden item isn't rendered, so it doesn't take the name over a
 substitution: the reference goes to the substitution, which is.
@@ -439,7 +456,7 @@ substitution: the reference goes to the substitution, which is.
   ```ocaml
   val x : t
   ```
-  See [`t`](./#type-t).
+  See [`t`](./#type-subst-t).
 
 Substitutions aren't part of a unit's interface, so an [--open]ed unit's
 substitutions are not in scope, and the references don't resolve:

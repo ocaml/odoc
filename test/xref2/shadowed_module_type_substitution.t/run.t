@@ -41,17 +41,18 @@ of the same name:
   $ ocamlc -c -bin-annot refs.mli
   $ odoc compile refs.cmti
   $ odoc link refs.odoc
-  File "refs.mli", line 5, characters 17-23:
-  Warning: Failed to resolve reference unresolvedroot(S).b Couldn't find "b"
   $ odoc markdown-generate -o md refs.odocl
   $ cat md/Refs.md
   
   # Module `Refs`
   
   ```ocaml
+  module type S = sig ... end
+  ```
+  ```ocaml
   module type S := sig ... end
   ```
   ```ocaml
   val s : unit
   ```
-  See [`S`](./Refs-module-type-S.md) and `S.b`.
+  See [`S`](./Refs-module-type-S.md) and [`S.b`](./Refs-module-type-S.md#type-b).

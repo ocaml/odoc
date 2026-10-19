@@ -6,6 +6,8 @@ module Path : sig
     | `Page
     | `LeafPage
     | `ModuleType
+    | `ModuleSubst of int
+    | `ModuleTypeSubst of int
     | `Parameter of int
     | `Class
     | `ClassType
@@ -15,6 +17,16 @@ module Path : sig
   val pp_kind : Format.formatter -> kind -> unit
 
   val string_of_kind : kind -> string
+
+  val module_kind :
+    Odoc_model.Names.ModuleName.t -> [ `Module | `ModuleSubst of int ]
+  (** The kind of a module's page: a local substitution ([module M := ...]) has
+      a kind of its own. *)
+
+  val module_type_kind :
+    Odoc_model.Names.ModuleTypeName.t ->
+    [ `ModuleType | `ModuleTypeSubst of int ]
+  (** As {!module_kind}, for module types. *)
 
   val pp_disambiguating_prefix : Format.formatter -> kind -> unit
   (** Print the ["kind-"] prefix used to disambiguate urls in "flat modes": e.g.
@@ -59,6 +71,7 @@ module Anchor : sig
     [ Path.kind
     | `Section
     | `Type
+    | `TypeSubst of int
     | `Extension
     | `ExtensionDecl
     | `Exception
@@ -72,6 +85,9 @@ module Anchor : sig
   val pp_kind : Format.formatter -> kind -> unit
 
   val string_of_kind : kind -> string
+
+  val type_kind : Odoc_model.Names.TypeName.t -> [ `Type | `TypeSubst of int ]
+  (** As {!Path.module_kind}, for types. *)
 
   type t = {
     page : Path.t;

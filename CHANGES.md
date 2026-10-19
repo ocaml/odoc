@@ -27,6 +27,9 @@
   which makes `.odoc` and `.odocl` files substantially smaller (@jonludlam, #1487)
 
 ### Fixed
+- Fix local substitutions (`type t := ...`) shadowing earlier items. Their
+  anchors, pages and latex labels change to `type-subst-t`, `module-subst-M`,
+  `module-type-subst-S` (`-subst-2-` etc. for repeats) (@jonludlam, #1504)
 - Fix optional arguments rendering as `?arg:???` in modules without an mli on
   OCaml 5.5 (@jonludlam, #1489)
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)
