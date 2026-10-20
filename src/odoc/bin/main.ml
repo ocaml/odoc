@@ -47,7 +47,7 @@ let convert_named_root =
   let parse inp =
     match String.cuts inp ~sep:":" with
     | [ s1; s2 ] -> Ok (s1, Fs.Directory.of_string s2)
-    | _ -> Error (`Msg "")
+    | _ -> Error (`Msg "expected NAME:DIR")
   in
   let print ppf (s, t) =
     Format.fprintf ppf "%s:%s" s (Fs.Directory.to_string t)
@@ -97,14 +97,34 @@ end
 
 let docs = "ARGUMENTS"
 
-let odoc_file_directories =
-  let doc =
-    "Where to look for required $(i,.odoc) files. Can be present several times."
-  in
+(* [-I], given its doc. *)
+let odoc_file_directories_with doc =
   Arg.(
     value
     & opt_all (convert_directory ()) []
     & info ~docs ~docv:"DIR" ~doc [ "I" ])
+
+let odoc_file_directories =
+  odoc_file_directories_with
+    "Where to look for required $(i,.odoc) files. Can be present several times."
+
+(* The same, for the commands that also take -L, which does everything -I
+   does and names the library besides. Marked deprecated in the help text
+   rather than with cmdliner's [~deprecated], which warns on every use: that
+   would have to land together with a conversion of the test suite, which
+   passes -I throughout. *)
+let deprecated_odoc_file_directories =
+  odoc_file_directories_with
+    "Where to look for required $(i,.odoc) files. Can be present several \
+     times. Deprecated: use $(b,-L) instead, which searches the directory in \
+     the same way and also names the library."
+
+(* [-L], given its doc. *)
+let lib_roots_with doc =
+  Arg.(
+    value
+    & opt_all convert_named_root []
+    & info ~docs ~docv:"libname:DIR" ~doc [ "L" ])
 
 let hidden =
   let doc =
@@ -223,14 +243,18 @@ end = struct
         in
         Fs.File.(set_ext ".odoc" output)
 
-  let compile hidden directories resolve_fwd_refs dst output_dir package_opt
-      parent_name_opt parent_id_opt open_modules children input warnings_options
-      unique_id short_title =
+  let compile hidden directories lib_roots resolve_fwd_refs dst output_dir
+      package_opt parent_name_opt parent_id_opt open_modules children input
+      warnings_options unique_id short_title =
     let _ =
       match unique_id with
       | Some id -> Odoc_model.Names.set_unique_ident id
       | None -> ()
     in
+    (* A library named with -L is searched like a directory given with -I, and
+       its name is written into the unit. *)
+    let directories = directories @ List.map ~f:snd lib_roots in
+    let libraries = List.map ~f:fst lib_roots in
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
         ~open_modules ~roots:None
@@ -269,7 +293,7 @@ end = struct
     cli_spec >>= fun cli_spec ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     Compile.compile ~resolver ~cli_spec ~hidden ~warnings_options ~short_title
-      input
+      ~libraries input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
@@ -291,6 +315,14 @@ end = struct
       value
       & opt (some string) None
       & info ~docs ~docv:"PATH" ~doc [ "output-dir" ])
+
+  let compile_lib_roots =
+    lib_roots_with
+      "Specifies a library called libname whose $(i,.odoc) files are in \
+       directory DIR. The directory is searched like one given with -I, and \
+       the library's name is written into the unit, so that a later $(b,odoc \
+       link) resolving a path or a reference into this unit knows which \
+       libraries it was compiled against. Prefer this to -I."
 
   let children =
     let doc =
@@ -338,9 +370,10 @@ end = struct
     in
     Term.(
       const handle_error
-      $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
-       $ output_dir $ package_opt $ parent_opt $ parent_id_opt $ open_modules
-       $ children $ input $ warnings_options $ unique_id $ short_title))
+      $ (const compile $ hidden $ deprecated_odoc_file_directories
+       $ compile_lib_roots $ resolve_fwd_refs $ dst $ output_dir $ package_opt
+       $ parent_opt $ parent_id_opt $ open_modules $ children $ input
+       $ warnings_options $ unique_id $ short_title))
 
   let info ~docs =
     let man =
@@ -424,9 +457,13 @@ module Compile_impl = struct
       ~directory:(Fpath.to_string dir |> Fs.Directory.of_string)
       ~name
 
-  let compile_impl directories output_dir parent_id source_id input
+  let compile_impl directories lib_roots output_dir parent_id source_id input
       warnings_options =
     let input = Fs.File.of_string input in
+    (* As for [odoc compile]: a library named with -L is searched like a
+       directory given with -I, and its name is written into the unit. *)
+    let directories = directories @ List.map ~f:snd lib_roots in
+    let libraries = List.map ~f:fst lib_roots in
     let output_dir =
       match output_dir with Some x -> Fpath.v x | None -> Fpath.v "."
     in
@@ -439,7 +476,8 @@ module Compile_impl = struct
       Resolver.create ~important_digests:true ~directories ~open_modules:[]
         ~roots:None
     in
-    Source.compile ~resolver ~source_id ~output ~warnings_options input
+    Source.compile ~resolver ~source_id ~output ~warnings_options ~libraries
+      input
 
   let cmd =
     let input =
@@ -460,11 +498,18 @@ module Compile_impl = struct
         & opt (some string) None
         & info [ "parent-id" ] ~doc ~docv:"/path/to/library")
     in
+    let lib_roots =
+      lib_roots_with
+        "Specifies a library called libname whose $(i,.odoc) files are in \
+         directory DIR. As for $(b,odoc compile), the directory is searched \
+         like one given with -I and the library's name is written into the \
+         unit. Prefer this to -I."
+    in
 
     Term.(
       const handle_error
-      $ (const compile_impl $ odoc_file_directories $ output_dir $ parent_id
-       $ source_id $ input $ warnings_options))
+      $ (const compile_impl $ deprecated_odoc_file_directories $ lib_roots
+       $ output_dir $ parent_id $ source_id $ input $ warnings_options))
 
   let info ~docs =
     let doc =
@@ -777,16 +822,11 @@ end = struct
       & info ~docs ~docv:"pkgname:DIR" ~doc [ "P" ])
 
   let lib_roots =
-    let doc =
+    lib_roots_with
       "Specifies a library called libname containing the modules in directory \
        DIR. Modules can be referenced both using the flat module namespace \
        {!Module} and the absolute reference {!/libname/Module}. All the trees \
        specified by this option and -P must be disjoint."
-    in
-    Arg.(
-      value
-      & opt_all convert_named_root []
-      & info ~docs ~docv:"libname:DIR" ~doc [ "L" ])
 
   let current_package =
     let doc =
