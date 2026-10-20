@@ -13,5 +13,4 @@ The warning for the ambiguous lookup:
 
   $ odoc link -I odoc/a -I odoc/b main.odoc
   File "Foo":
-  Ambiguous lookup. Possible files: Foo
-  Foo
+  Ambiguous lookup. Possible units: b/Foo, a/Foo

@@ -298,15 +298,28 @@ let lookup_unit_by_name ap target_name =
       | [] -> ()
       | ambiguous ->
           let ambiguous = m :: ambiguous in
-          let ambiguous =
-            List.map
-              (fun m -> root_name m.Odoc_model.Lang.Compilation_unit.root)
-              ambiguous
+          (* Name each unit with the pages it is in, which tell the units
+             apart, as they have the same module name. *)
+          let unit_path m =
+            let (`Root (parent, name)) =
+              m.Odoc_model.Lang.Compilation_unit.id
+            in
+            let rec pages = function
+              | None -> []
+              | Some (`Page (p, n)) ->
+                  pages p @ [ Odoc_model.Names.PageName.to_string n ]
+            in
+            String.concat ~sep:"/"
+              (pages parent @ [ Odoc_model.Names.ModuleName.to_string name ])
           in
+          let ambiguous = List.map unit_path ambiguous in
           let warning =
             Odoc_model.Error.filename_only
-              "Ambiguous lookup. Possible files: %a"
-              Format.(pp_print_list pp_print_string)
+              "Ambiguous lookup. Possible units: %a"
+              Format.(
+                pp_print_list
+                  ~pp_sep:(fun ppf () -> pp_print_string ppf ", ")
+                  pp_print_string)
               ambiguous target_name
           in
           prerr_endline (Odoc_model.Error.to_string warning));
