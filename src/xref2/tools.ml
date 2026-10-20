@@ -814,8 +814,8 @@ and resolve_module : Env.t -> Cpath.module_ -> resolve_module_result =
     | `Substituted s ->
         resolve_module env s |> map_error (fun e -> `Parent (`Parent_module e))
         >>= fun (p, m) -> Ok (`Substituted p, m)
-    | `Root r -> (
-        match Env.lookup_root_module r env with
+    | `Root (r, origin) -> (
+        match Env.lookup_root_module_in origin r env with
         | Some (Env.Resolved (_, p, m)) ->
             let p =
               `Identifier (p :> Odoc_model.Paths.Identifier.Path.Module.t)
@@ -835,21 +835,27 @@ and resolve_module : Env.t -> Cpath.module_ -> resolve_module_result =
 and resolve_instance env :
     Odoc_model.Paths.Path.Instance.t ->
     (Odoc_model.Paths.Path.Resolved.Instance.t, _) result = function
-  | `Root name -> resolve_root_unit env name >>= fun id -> Ok (`Identifier id)
+  | `Root (name, scope) ->
+      resolve_root_unit env scope name >>= fun id -> Ok (`Identifier id)
   | `ApplyParam (inst, param, arg) ->
-      resolve_instance env inst >>= fun inst ->
-      resolve_library_parameter env param >>= fun param ->
+      resolve_instance env inst >>= fun inst' ->
+      resolve_library_parameter env (instance_scope inst) param >>= fun param ->
       resolve_instance env arg >>= fun arg ->
-      Ok (`ApplyParam (inst, param, arg))
+      Ok (`ApplyParam (inst', param, arg))
 
-and resolve_root_unit env name =
-  match Env.lookup_root_module name env with
+and resolve_root_unit env scope name =
+  match Env.lookup_root_module_in scope name env with
   | Some (Env.Resolved (_, id, _)) -> Ok id
   | Some Env.Forward -> Error (`Parent (`Parent_sig `UnresolvedForwardPath))
   | None -> Error (`Lookup_failure_root name)
 
-and resolve_library_parameter env name =
-  resolve_root_unit env name >>= function
+(* A parameter is resolved where the library it parameterises is. *)
+and instance_scope : Odoc_model.Paths.Path.Instance.t -> _ = function
+  | `Root (_, scope) -> scope
+  | `ApplyParam (inst, _, _) -> instance_scope inst
+
+and resolve_library_parameter env scope name =
+  resolve_root_unit env scope name >>= function
   | `LibraryParameter _ as id -> Ok id
   | `Root _ -> Error (`NotALibraryParameter name)
 

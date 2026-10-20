@@ -387,7 +387,10 @@ let extract_top_comment_class items =
 
 let rec conv_canonical_module : Odoc_model.Reference.path -> Paths.Path.Module.t = function
   | `Dot (parent, name) -> `Dot (conv_canonical_module parent, Names.ModuleName.make_std name)
-  | `Root name -> `Root (Names.ModuleName.make_std name)
+  | `Root name ->
+      (* The root of a canonical tag is looked up anywhere, as the root of a
+         reference is. *)
+      `Root (Names.ModuleName.make_std name, Odoc_model.Library_scope.any)
 
 let conv_canonical_type : Odoc_model.Reference.path -> Paths.Path.Type.t option = function
   | `Dot (parent, name) -> Some (`DotT (conv_canonical_module parent, Names.TypeName.make_std name))

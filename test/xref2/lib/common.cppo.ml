@@ -82,7 +82,7 @@ let root_pp fmt (_ : Odoc_model.Root.t) = Format.fprintf fmt "Common.root"
 
 let model_of_string str = 
     let cmti = cmti_of_string str in
-    Odoc_loader__Cmti.read_interface id ~warnings_tag:None cmti
+    Odoc_loader__Cmti.read_interface id ~scope:Odoc_model.Library_scope.any ~warnings_tag:None cmti
 
 let model_of_string_impl str =
 #if OCAML_VERSION < (4,13,0)
@@ -90,7 +90,7 @@ let model_of_string_impl str =
 #else
     let cmt = (cmt_of_string str).structure in
 #endif
-    Odoc_loader__Cmt.read_implementation id ~warnings_tag:None cmt
+    Odoc_loader__Cmt.read_implementation id ~scope:Odoc_model.Library_scope.any ~warnings_tag:None cmt
 
 let signature_of_mli_string str =
     Odoc_xref2.Ident.reset ();
@@ -576,7 +576,7 @@ module LangUtils = struct
             match p with
             | `Resolved rp -> Format.fprintf ppf "resolved[%a]" resolved_path (rp :> Odoc_model.Paths.Path.Resolved.t)
             | `Identifier (i,b) -> Format.fprintf ppf "identifier(%a,%b)" identifier i b
-            | `Root s -> Format.fprintf ppf "%a" ModuleName.fmt s
+            | `Root (s, _) -> Format.fprintf ppf "%a" ModuleName.fmt s
             | `Dot (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ModuleName.fmt s
             | `DotMT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ModuleTypeName.fmt s
             | `DotT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) TypeName.fmt s

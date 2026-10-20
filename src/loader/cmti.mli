@@ -27,6 +27,7 @@ val read_module_expr :
 
 val read_interface :
   Odoc_model.Paths.Identifier.RootModule.t ->
+  scope:Odoc_model.Library_scope.t ->
   warnings_tag:string option ->
   Typedtree.signature ->
   Paths.Identifier.RootModule.t
