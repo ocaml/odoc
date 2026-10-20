@@ -388,7 +388,8 @@ let resolve_spec ~input resolver cli_spec =
   | CliNoParent output ->
       Ok { output; parent_id = None; parents_children = None; children = [] }
 
-let compile ~resolver ~hidden ~cli_spec ~warnings_options ~short_title input =
+let compile ~resolver ~hidden ~cli_spec ~warnings_options ~short_title
+    ~libraries input =
   resolve_spec ~input resolver cli_spec
   >>= fun { parent_id; output; parents_children; children } ->
   let ext = Fs.File.get_ext input in
@@ -412,5 +413,9 @@ let compile ~resolver ~hidden ~cli_spec ~warnings_options ~short_title input =
     (* Extract warnings to write them into the output file *)
     let _, warnings = Error.unpack_warnings result in
     Error.handle_errors_and_warnings ~warnings_options result >>= fun unit ->
+    (* Remember the libraries the unit was compiled against, so that a later
+       run resolving a path or a reference into this unit can look the names it
+       mentions up among them. *)
+    let unit = { unit with Lang.Compilation_unit.libraries } in
     Odoc_file.save_unit output ~warnings unit;
     Ok ()

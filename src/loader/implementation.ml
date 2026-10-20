@@ -414,6 +414,7 @@ let read_cmt_infos source_id shape_info impl digest root imports =
         linked = false;
         shape_info;
         imports;
+        libraries = [];
       }
   | None as shape_info ->
       {
@@ -424,6 +425,7 @@ let read_cmt_infos source_id shape_info impl digest root imports =
         linked = false;
         shape_info;
         imports;
+        libraries = [];
       }
 
 
@@ -438,6 +440,7 @@ let read_cmt_infos source_id shape_info _impl digest root imports =
     linked = false;
     shape_info;
     imports;
+    libraries = [];
   }
 
 #endif

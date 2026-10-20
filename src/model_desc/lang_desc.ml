@@ -793,6 +793,7 @@ and compilation_unit_t =
       F ("source", (fun t -> t.source), Option compilation_unit_source);
       F ("interface", (fun t -> t.interface), bool);
       F ("hidden", (fun t -> t.hidden), bool);
+      F ("libraries", (fun t -> t.libraries), List string);
       F ("content", (fun t -> t.content), compilation_unit_content);
       F ("expansion", (fun t -> t.expansion), Option signature_t);
       F
@@ -913,6 +914,7 @@ and implementation_t =
       F ("id", (fun t -> t.id), Option identifier);
       F ("digest", (fun t -> t.digest), Digest.t);
       F ("root", (fun t -> t.root), root);
+      F ("libraries", (fun t -> t.libraries), List string);
       F ("source_info", (fun t -> t.source_info), source_info_t);
     ]
 
