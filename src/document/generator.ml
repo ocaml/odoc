@@ -140,6 +140,9 @@ module Make (Syntax : SYNTAX) = struct
       | `Unbox t -> from_path (t :> Path.t)
       | `Root (root, _) ->
           unresolved [ inline @@ Text (ModuleName.to_string root) ]
+      | `LibraryRoot (`Only, lib, root) ->
+          unresolved
+            [ inline @@ Text ("/" ^ lib ^ "/" ^ ModuleName.to_string root) ]
       | `Dot (prefix, suffix) ->
           let link = from_path (prefix :> Path.t) in
           link ++ O.txt ("." ^ ModuleName.to_string suffix)

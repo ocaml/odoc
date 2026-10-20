@@ -684,7 +684,7 @@ module Path = struct
     | `SubstitutedT r -> is_path_hidden (r :> any)
     | `SubstitutedCT r -> is_path_hidden (r :> any)
     | `Unbox r -> is_path_hidden (r :> any)
-    | `Root (s, _) -> ModuleName.is_hidden s
+    | `Root (s, _) | `LibraryRoot (_, _, s) -> ModuleName.is_hidden s
     | `Dot (p, n) ->
         ModuleName.is_hidden n || is_path_hidden (p : module_ :> any)
     | `DotMT (p, n) ->

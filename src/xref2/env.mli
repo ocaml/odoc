@@ -18,8 +18,8 @@ type resolver = {
       (** Finds the unit a name refers to. A path wants [Scoped] with the
           libraries the unit the name is in recorded: a path can only mean a
           module the compiler gave the unit. A reference or a canonical path
-          wants [Any], the whole search path. Where several units match, the
-          lookup warns. *)
+          wants [Any], the whole search path, unless it names its library. Where
+          several units match, the lookup warns. *)
   lookup_unit_by_path :
     Reference.Hierarchy.t -> (Lang.Compilation_unit.t, lookup_error) result;
       (** Finds the unit a path reference names, such as [{!/libname/Module}].
@@ -150,8 +150,8 @@ val lookup_root_module : Odoc_model.Names.ModuleName.t -> t -> root option
     The compiler wrote the path, so it can only mean a module that unit could
     see. The scope does not limit the root of a reference, which an author may
     write for anything on the search path, nor the root of a canonical path,
-    which is looked up as a reference's is, nor a lookup by identifier
-    ({!lookup_by_id}), which names its unit. *)
+    which is looked up as a reference's is (in its library, if it names one),
+    nor a lookup by identifier ({!lookup_by_id}), which names its unit. *)
 
 type 'a scope constraint 'a = [< Component.Element.any ]
 (** Target of a lookup *)
