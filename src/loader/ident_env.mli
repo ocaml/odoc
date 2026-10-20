@@ -18,7 +18,9 @@ open Odoc_model
 
 type t
 
-val empty : unit -> t
+val empty : scope:Library_scope.t -> unit -> t
+(** [scope] is the libraries of the unit being read, given to each root path the
+    unit holds. *)
 
 val add_parameter :
   Paths.Identifier.Signature.t -> Ident.t -> Names.ModuleName.t -> t -> t

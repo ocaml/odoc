@@ -147,9 +147,9 @@ module Env = struct
         unwrap_module_expr_desc mexpr.mod_desc
     | desc -> desc
 
-  let of_structure (id : Odoc_model.Paths.Identifier.RootModule.t)
+  let of_structure ~scope (id : Odoc_model.Paths.Identifier.RootModule.t)
       (s : Typedtree.structure) =
-    let env = Ident_env.empty () in
+    let env = Ident_env.empty ~scope () in
     let () = structure env (id :> Odoc_model.Paths.Identifier.Signature.t) s in
     env
 end
@@ -362,14 +362,14 @@ let add_definitions loc_to_id occurrences =
       (Odoc_model.Lang.Source_info.Definition id, pos_of_loc loc) :: acc)
     loc_to_id occurrences
 
-let read_cmt_infos source_id shape_info impl digest root imports =
+let read_cmt_infos ~scope source_id shape_info impl digest root imports =
   match shape_info with
   | Some (shape, uid_to_loc) ->
       let fake_root_id =
         Odoc_model.Paths.Identifier.Mk.root
           (None, Odoc_model.Names.ModuleName.make_std "fake_root")
       in
-      let env = Env.of_structure fake_root_id impl in
+      let env = Env.of_structure ~scope fake_root_id impl in
       let traverse_infos =
         Typedtree_traverse.of_cmt env impl |> List.rev
         (* Information are accumulated in a list. We need to have the
@@ -418,7 +418,7 @@ let read_cmt_infos source_id shape_info impl digest root imports =
 
 #else
 
-let read_cmt_infos source_id shape_info _impl digest root imports =
+let read_cmt_infos ~scope:_ source_id shape_info _impl digest root imports =
   {
     Odoc_model.Lang.Implementation.id = source_id;
     source_info = [];

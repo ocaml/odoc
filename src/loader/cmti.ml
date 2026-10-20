@@ -1149,10 +1149,10 @@ and read_signature :
   | _ ->
     ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; removed = []; doc }, tags)
 
-let read_interface (id : Identifier.RootModule.t) ~warnings_tag intf =
+let read_interface (id : Identifier.RootModule.t) ~scope ~warnings_tag intf =
   let sg, canonical =
     read_signature Odoc_model.Semantics.Expect_canonical
-      { ident_env = Env.empty (); warnings_tag }
+      { ident_env = Env.empty ~scope (); warnings_tag }
       (id :> Identifier.Signature.t) intf
   in
   let canonical =
