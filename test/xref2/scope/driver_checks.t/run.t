@@ -55,10 +55,16 @@ whose origin [l] was compiled with [ext]. Without [ext] at link, odoc should
 warn once that [ext] is missing.
 
   $ odoc link -L n:h/pkg/n -L l:h/pkg/l h/pkg/n/n.odoc
+  File "N":
+  Warning: Library ext was used to compile this unit but is not given with -L. Paths that need it may be left unresolved.
 
 Without [l] and [ext], it should warn once about each of them.
 
   $ odoc link -L n:h/pkg/n h/pkg/n/n.odoc
+  File "N":
+  Warning: Library ext was used to compile this unit but is not given with -L. Paths that need it may be left unresolved.
+  File "N":
+  Warning: Library l was used to compile this unit but is not given with -L. Paths that need it may be left unresolved.
 
 The D6 message is a warning (section 2). So it should follow the options for
 warnings, as other warnings do. With [--warn-error], it should be an error,
@@ -66,6 +72,10 @@ and odoc should fail. With [--print-warnings false], it should not be
 printed.
 
   $ odoc link --warn-error -L n:h/pkg/n -L l:h/pkg/l h/pkg/n/n.odoc
+  File "N":
+  Error: Library ext was used to compile this unit but is not given with -L. Paths that need it may be left unresolved.
+  ERROR: Warnings have been generated.
+  [1]
   $ odoc link --print-warnings false -L n:h/pkg/n -L l:h/pkg/l h/pkg/n/n.odoc
 
 The same check applies when [L]'s implementation is linked: it records the
@@ -74,6 +84,8 @@ same libraries (D8). Without [ext], odoc should warn that it is missing.
 A link of [impl-l] with no warning would be wrong.
 
   $ odoc link -L l:h/pkg/l h/pkg/l/impl-l.odoc
+  File "L":
+  Warning: Library ext was used to compile this unit but is not given with -L. Paths that need it may be left unresolved.
 
 Case 2. D6 for a unit reached by a reference (section 2). [p]'s reference
 [{!R.Y.t}] is projected through [r], whose paths are resolved at the link of
