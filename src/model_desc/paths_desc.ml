@@ -234,6 +234,14 @@ module General_paths = struct
           C ("`Identifier", ((x1 :> id_t), x2), Pair (identifier, bool))
       | `Root (x1, x2) ->
           C ("`Root", (x1, x2), Pair (Names.modulename, Library_scope.t))
+      | `LibraryRoot (x0, x1, x2) ->
+          C
+            ( "`LibraryRoot",
+              (x0, x1, x2),
+              Triple
+                ( Variant (function `Only -> C0 "`Only"),
+                  string,
+                  Names.modulename ) )
       | `Dot (x1, x2) ->
           C ("`Dot", ((x1 :> p), x2), Pair (path, Names.modulename))
       | `DotT (x1, x2) ->

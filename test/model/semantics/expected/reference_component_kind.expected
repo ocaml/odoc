@@ -1121,19 +1121,19 @@
 --- input ---
 @canonical val-foo
 --- output ---
-{"value":[],"warnings":["File \"f.ml\", line 1, characters 0-18:\nUnexpected tag '@canonical' at this location."]}
+{"value":[],"warnings":["File \"f.ml\", line 1, characters 11-18:\nExpected a valid path."]}
 --- input ---
 @canonical bar.page-foo
 --- output ---
-{"value":[],"warnings":["File \"f.ml\", line 1, characters 0-23:\nUnexpected tag '@canonical' at this location."]}
+{"value":[],"warnings":["File \"f.ml\", line 1, characters 15-23:\nPage label is not allowed in on the right side of a dot.\nSuggestion: Reference pages as '<parent_path>/foo'."]}
 --- input ---
 @canonical .Foo
 --- output ---
-{"value":[],"warnings":["File \"f.ml\", line 1, characters 11-15:\nExpected a valid path."]}
+{"value":[],"warnings":["File \"f.ml\", line 1, characters 11-11:\nIdentifier in reference should not be empty."]}
 --- input ---
 @canonical Foo.
 --- output ---
-{"value":[],"warnings":["File \"f.ml\", line 1, characters 11-15:\nExpected a valid path."]}
+{"value":[],"warnings":["File \"f.ml\", line 1, characters 15-15:\nIdentifier in reference should not be empty."]}
 --- input ---
 {!foo. bar .baz}
 --- output ---

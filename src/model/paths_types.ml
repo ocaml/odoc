@@ -231,6 +231,9 @@ module rec Path : sig
     | `Root of ModuleName.t * Library_scope.t
       (** An unresolved root, with the libraries it is resolved among: those of
           the unit it was read from (its origin), wherever the path goes. *)
+    | `LibraryRoot of [ `Only ] * string * ModuleName.t
+      (** [`LibraryRoot (`Only, lib, name)]: the root module [name] of library
+          [lib] alone, as a canonical path written [/lib/Name] names it. *)
     | `Dot of module_ * ModuleName.t
     | `Apply of module_ * module_
     | `ApplyParam of instance * ModuleName.t * instance
@@ -275,6 +278,9 @@ module rec Path : sig
     | `Root of ModuleName.t * Library_scope.t
       (** An unresolved root, with the libraries it is resolved among: those of
           the unit it was read from (its origin), wherever the path goes. *)
+    | `LibraryRoot of [ `Only ] * string * ModuleName.t
+      (** [`LibraryRoot (`Only, lib, name)]: the root module [name] of library
+          [lib] alone, as a canonical path written [/lib/Name] names it. *)
     | `Dot of module_ * ModuleName.t
     | `DotT of module_ * TypeName.t
     | `DotMT of module_ * ModuleTypeName.t

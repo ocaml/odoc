@@ -1,4 +1,9 @@
-type path = [ `Root of string | `Dot of path * string ]
+type path =
+  [ `Root of string
+  | `LibraryRoot of [ `Only ] * string * string
+    (** [`LibraryRoot (`Only, lib, name)]: the root [name] in library [lib]
+        alone, written [/lib/name]. *)
+  | `Dot of path * string ]
 
 val parse :
   Location_.span -> string -> Paths.Reference.t Error.with_errors_and_warnings
