@@ -611,8 +611,13 @@ let build_compile_env_for_unit
      different results depending on the compilation order.
      On the other hand, [lookup_unit_by_name] is needed at compile time and the
      compilation order is known by the driver. *)
-  let lookup_unit_by_name ~scope name =
-    lookup_unit_by_name ~important_digests ~imports_map ~scope ap name
+  (* The resolver of [odoc compile] is not given the library names, so it
+     cannot keep a lookup to a root's libraries. A root with no digest is left for
+     link, unless [--resolve-fwd-refs] asks for it to be looked up now, and
+     then it is looked up everywhere, as for a legacy unit. *)
+  let lookup_unit_by_name ~scope:_ name =
+    lookup_unit_by_name ~important_digests ~imports_map
+      ~scope:Env.Library_scope.any ap name
   and lookup_unit_by_path = lookup_unit_by_path ~libs:None ~hierarchy:None
   and lookup_page _ = Error `Not_found
   and lookup_asset _ = Error `Not_found
@@ -649,8 +654,15 @@ let build ?(imports_map = StringMap.empty) ?hierarchy_roots
     hierarchy_roots >>= Named_roots.current_root >>= fun hierarchy_root ->
     Some (Hierarchy.make ~hierarchy_root ~current_dir)
   in
+  (* A command that takes no [-L], such as [odoc html-url], knows no library
+     names, so it cannot keep to a unit's libraries. It looks names up
+     everywhere, as for a legacy unit. *)
+  let scoped scope =
+    match libs with None -> Env.Library_scope.any | Some _ -> scope
+  in
   let lookup_unit_by_name ~scope name =
-    lookup_unit_by_name ~important_digests ~imports_map ~scope extended_ap name
+    lookup_unit_by_name ~important_digests ~imports_map ~scope:(scoped scope)
+      extended_ap name
   and lookup_unit_by_path = lookup_unit_by_path ~libs ~hierarchy
   and lookup_page = lookup_page ap ~pages ~hierarchy
   and lookup_asset = lookup_asset ~pages ~hierarchy

@@ -71,10 +71,6 @@ Linking with no warning would be wrong.
 
   $ ALL="-L client:h/pkg/client -L server:h/pkg/server -L app_client:h/pkg/app_client -L app_server:h/pkg/app_server"
   $ for u in client/eliom__ client/eliom__Content client/eliom server/eliom__ server/eliom__Content server/eliom app_client/app app_server/app; do odoc link $ALL h/pkg/$u.odoc; done
-  File "Eliom__Content":
-  Ambiguous lookup. Possible units: pkg/client/Eliom__Content, pkg/server/Eliom__Content
-  File "Eliom__Content":
-  Ambiguous lookup. Possible units: pkg/client/Eliom__Content, pkg/server/Eliom__Content
 
 How to read [odoc_print --short --long-paths --show-root-parents]. Each line
 is one item of the signature. [v/0] is the item [v], with a number odoc adds
