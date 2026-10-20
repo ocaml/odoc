@@ -110,5 +110,7 @@ When [ext1] is not given at link, odoc should warn once that the library is
 missing (D6). [x] was resolved at compile, so it should stay resolved.
 
   $ odoc link -L ext2:h/pkg/ext2 -L l:h/pkg/l h/pkg/l/l.odoc
+  File "L":
+  Warning: Library ext1 was used to compile this unit but is not given with -L. Paths that need it may be left unresolved.
   $ odoc_print --short --long-paths --show-root-parents h/pkg/l/l.odocl
   val x/0 : resolved(root(pkg/ext1/Ext).t)

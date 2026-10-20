@@ -46,6 +46,9 @@ module Named_roots : sig
 
   val current_root : t -> Fs.Directory.t option
 
+  val mem : t -> string -> bool
+  (** Whether a root of that name was given. *)
+
   val find_by_path :
     ?root:string -> t -> path:Fs.File.t -> (Fs.File.t option, error) result
 
@@ -82,6 +85,8 @@ end = struct
     { current_root; table = cache }
 
   let current_root t = Option.map snd t.current_root
+
+  let mem t name = Hashtbl.mem t.table name
 
   let find_by_path ?root { table = cache; current_root; _ } ~path =
     let path = Fpath.normalize path in
@@ -694,8 +699,28 @@ let build_compile_env_for_impl t i =
   let resolver = build ~imports_map ~scope:Env.Library_scope.any t in
   Env.env_of_impl i resolver
 
+(* A path with no digest is looked up among the libraries its unit recorded, so
+   a library link was not given leaves the paths that can only mean its modules
+   unresolved. Say so once for each such library. *)
+let warn_missing_libraries t ~file libraries =
+  match t.libs with
+  | None -> ()
+  | Some libs ->
+      List.iter
+        (fun lib ->
+          if not (Named_roots.mem libs lib) then
+            Odoc_model.Error.raise_warning
+              (Odoc_model.Error.filename_only
+                 "Library %s was used to compile this unit but is not given \
+                  with -L. Paths that need it may be left unresolved."
+                 lib file))
+        (List.sort_uniq String.compare libraries)
+
 let build_link_env_for_unit t m =
   add_unit_to_cache (Odoc_file.Unit_content m);
+  warn_missing_libraries t
+    ~file:(root_name m.Odoc_model.Lang.Compilation_unit.root)
+    m.Odoc_model.Lang.Compilation_unit.libraries;
   let imports_map = build_imports_map m.imports in
   let scope =
     Env.Library_scope.of_libraries m.Odoc_model.Lang.Compilation_unit.libraries
@@ -704,6 +729,9 @@ let build_link_env_for_unit t m =
   Env.env_of_unit m ~linking:true resolver
 
 let build_link_env_for_impl t i =
+  warn_missing_libraries t
+    ~file:(root_name i.Odoc_model.Lang.Implementation.root)
+    i.Odoc_model.Lang.Implementation.libraries;
   let imports_map =
     build_imports_map i.Odoc_model.Lang.Implementation.imports
   in
