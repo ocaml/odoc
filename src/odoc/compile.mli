@@ -59,6 +59,8 @@ val compile :
   cli_spec:cli_spec ->
   warnings_options:Odoc_model.Error.warnings_options ->
   short_title:string option ->
+  libraries:string list ->
   Fpath.t ->
   (unit, [> msg ]) result
-(** Produces .odoc files out of [.cm{i,t,ti}] or .mld files. *)
+(** Produces .odoc files out of [.cm{i,t,ti}] or .mld files. [libraries] names
+    the libraries that were in scope, and is written into the unit. *)

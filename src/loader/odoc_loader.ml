@@ -152,6 +152,7 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     canonical;
     source_loc = None;
     parameterisation;
+    libraries = [];
   }
 
 let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id

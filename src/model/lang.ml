@@ -577,6 +577,10 @@ module rec Compilation_unit : sig
     source_loc : Identifier.SourceLocation.t option;
     canonical : Path.Module.t option;
     parameterisation : Parameterisation.t;
+    libraries : string list;
+        (** The libraries that were in scope when this unit was compiled, by the
+            names [odoc compile] was given with [-L]. The empty list means the
+            driver named none. *)
   }
 end =
   Compilation_unit
@@ -611,6 +615,9 @@ module rec Implementation : sig
     root : Root.t;
     linked : bool;  (** Whether this unit has been linked. *)
     imports : Compilation_unit.Import.t list;
+    libraries : string list;
+        (** The libraries in scope when this implementation was compiled, as
+            {!Compilation_unit.t.libraries} records them for an interface. *)
     source_info : Source_info.t;
     shape_info :
       (Compat.shape * Paths.Identifier.SourceLocation.t Compat.shape_uid_map)

@@ -22,7 +22,7 @@ let root_of_implementation ~module_name ~digest =
   in
   Ok { id; file; digest }
 
-let compile ~resolver ~output ~warnings_options ~source_id input =
+let compile ~resolver ~output ~warnings_options ~source_id ~libraries input =
   let source_id =
     match source_id with
     | None -> Ok None
@@ -54,5 +54,8 @@ let compile ~resolver ~output ~warnings_options ~source_id input =
   (* Extract warnings to write them into the output file *)
   let _, warnings = Error.unpack_warnings result in
   Error.handle_errors_and_warnings ~warnings_options result >>= fun impl ->
+  (* Remember the libraries this implementation was compiled against, as
+     [odoc compile] does for an interface. *)
+  let impl = { impl with Lang.Implementation.libraries } in
   Odoc_file.save_impl output ~warnings impl;
   Ok ()
