@@ -1,0 +1,1 @@
+include Odoc_model.Library_scope
