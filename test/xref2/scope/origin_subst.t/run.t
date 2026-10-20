@@ -120,14 +120,12 @@ be [Apply]'s [P.t]. There should be no warning.
     end
   end
   $ link h/pkg/z/apply.odoc
-  File "Ext":
-  Ambiguous lookup. Possible units: pkg/ext1/Ext, pkg/ext2/Ext
   $ show h/pkg/z/apply.odocl
   module P/1 : r(canonical(root(pkg/x/X).Fn,resolved(root(pkg/x/X).Fn)).S)
     => sig type t/2 end
   module M/0 : r(canonical(root(pkg/x/X).Fn,resolved(root(pkg/x/X).Fn)).F(P/1).R)
     => sig
-      module E/4 = resolved(root(pkg/ext2/Ext))
+      module E/4 = resolved(root(pkg/ext1/Ext))
       type u/3 = resolved(substituted(P/1).t)
      end
 
@@ -142,8 +140,6 @@ should still be [ext1]'s [Ext], with no warning:
   
   module M : X.Fn.G(Q).R
   $ link h/pkg/z/opaque.odoc
-  File "Ext":
-  Ambiguous lookup. Possible units: pkg/ext1/Ext, pkg/ext2/Ext
   $ show h/pkg/z/opaque.odocl
   module Q/1 : r(canonical(root(pkg/x/X).Fn,resolved(root(pkg/x/X).Fn)).U)
     => sig
@@ -151,7 +147,7 @@ should still be [ext1]'s [Ext], with no warning:
      end
   module M/0 : r(canonical(root(pkg/x/X).Fn,resolved(root(pkg/x/X).Fn)).G(Q/1).R)
     => sig
-      module E/4 = resolved(root(pkg/ext2/Ext))
+      module E/4 = resolved(root(pkg/ext1/Ext))
       module O/3 : module type of resolved(opaquemodule(substituted(Q/1).O))
      end
 

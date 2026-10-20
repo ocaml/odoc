@@ -579,8 +579,11 @@ module rec Compilation_unit : sig
     parameterisation : Parameterisation.t;
     libraries : string list;
         (** The libraries that were in scope when this unit was compiled, by the
-            names [odoc compile] was given with [-L]. The empty list means the
-            driver named none. *)
+            names [odoc compile] was given with [-L]. Once resolution has
+            reached this unit, by following a path or a reference into it, a
+            path this unit mentions is looked up among these libraries alone,
+            since they are what the compiler could see. The empty list means the
+            driver named none, and resolution is not limited. *)
   }
 end =
   Compilation_unit

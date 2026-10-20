@@ -62,8 +62,6 @@ ambiguous.
 Linking with no warning would be wrong.
 
   $ odoc link -L client:h/pkg/client -L server:h/pkg/server h/pkg/client/content.odoc
-  File "Content__Html":
-  Ambiguous lookup. Possible units: pkg/client/Content__Html, pkg/server/Content__Html
 
 How to read [odoc_print --refs --long-paths --show-root-parents]. Each line
 is one reference. [r(...)] is a resolved reference, and [unresolvedroot(...)]
@@ -84,7 +82,7 @@ wrong.
 
   $ odoc_print --refs --long-paths --show-root-parents h/pkg/client/content.odocl
   r(alias(canonical(hidden(root(pkg/server/Content__Html)),resolved(root(pkg/client/Content).Html)),root(pkg/server/Content).Html))
-  r(alias(root(pkg/client/Content),root(pkg/server/Wrap).C))
+  r(alias(root(pkg/server/Content),root(pkg/server/Wrap).C))
 
 A library's own canonical tag, as dune writes it. Unlike dune, the units
 here are compiled without [-no-alias-deps], so [Content] records a digest for

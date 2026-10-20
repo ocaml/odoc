@@ -47,10 +47,6 @@ Every library is given at link. [$ALL] holds the [-L] options for that.
 
   $ ALL="-L a1:h/pkg/a1 -L a2:h/pkg/a2 -L cc:h/pkg/cc"
   $ for u in a1/lib a1/lib__Foo a2/lib a2/lib__Foo cc/cc__User; do odoc link $ALL h/pkg/$u.odoc; done
-  File "Lib__Foo":
-  Ambiguous lookup. Possible units: pkg/a1/Lib__Foo, pkg/a2/Lib__Foo
-  File "Lib__Foo":
-  Ambiguous lookup. Possible units: pkg/a1/Lib__Foo, pkg/a2/Lib__Foo
 
 How to read [odoc_print --short --long-paths --show-root-parents
 --show-expansions]. Each line is one item of the signature. [t/1] is the
@@ -71,8 +67,6 @@ shown as it is, and should never be shown as, or link to, [a2]'s [Lib.Foo].
   $ odoc link $ALL h/pkg/cc/cc.odoc
   File "Lib":
   Ambiguous lookup. Possible units: pkg/a1/Lib, pkg/a2/Lib
-  File "Lib__Foo":
-  Ambiguous lookup. Possible units: pkg/a1/Lib__Foo, pkg/a2/Lib__Foo
   $ odoc_print --short --long-paths --show-root-parents --show-expansions h/pkg/cc/cc.odocl
   module User/0 = resolved(hidden(root(pkg/cc/Cc__User)))
     => sig

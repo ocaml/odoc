@@ -56,7 +56,8 @@ val build_compile_env_for_unit :
 (** Initialize the environment for compiling the given module. *)
 
 val build_link_env_for_unit : t -> Lang.Compilation_unit.t -> Odoc_xref2.Env.t
-(** Initialize the environment for linking the given module. *)
+(** Initialize the environment for linking the given module. A root name is
+    looked up among the libraries of the unit it was read from. *)
 
 val build_env_for_page : t -> Lang.Page.t -> Odoc_xref2.Env.t
 (** Initialize the environment for the given page. *)
@@ -65,7 +66,8 @@ val build_compile_env_for_impl : t -> Lang.Implementation.t -> Odoc_xref2.Env.t
 (** Initialize the environment for the given implementation. *)
 
 val build_link_env_for_impl : t -> Lang.Implementation.t -> Odoc_xref2.Env.t
-(** Initialize the environment for the given implementation. *)
+(** Initialize the environment for linking the given implementation, as
+    {!build_link_env_for_unit} does for a module. *)
 
 val build_env_for_reference : t -> Odoc_xref2.Env.t
 (** Initialize the environment for a reference. *)

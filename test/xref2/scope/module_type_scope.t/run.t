@@ -44,8 +44,6 @@ Both libraries are given at link. Both references should reach
   Through the module type: {!/x/X.S.H}. Through the module: {!/x/X.H}.
   $ odoc compile --output-dir h --parent-id pkg p.mld
   $ odoc link -P pkg:h/pkg -L x:h/pkg/x -L y:h/pkg/y h/pkg/page-p.odoc
-  File "Inner":
-  Ambiguous lookup. Possible units: pkg/x/Inner, pkg/y/Inner
   $ odoc_print --refs --long-paths --show-root-parents h/pkg/page-p.odocl
-  r(alias(root(pkg/y/Inner),root(pkg/x/X).S.H))
-  r(alias(root(pkg/y/Inner),root(pkg/x/X).H))
+  r(alias(root(pkg/x/Inner),root(pkg/x/X).S.H))
+  r(alias(root(pkg/x/Inner),root(pkg/x/X).H))

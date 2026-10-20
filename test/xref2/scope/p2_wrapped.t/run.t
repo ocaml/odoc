@@ -84,11 +84,9 @@ among all the libraries given at link, and would find two [Lib__Bar]s. So
 odoc should show its expansion inside the [include].
 
   $ odoc link -L lib:h/pkg/lib -L libv:h/pkg/libv -L c:h/pkg/c h/pkg/c/c.odoc
-  File "Lib__Bar":
-  Ambiguous lookup. Possible units: pkg/lib/Lib__Bar, pkg/libv/Lib__Bar
   $ show h/pkg/c/c.odocl
   include module type of resolved(root(pkg/lib/Lib))
     => sig
-      module Bar/0 = resolved(hidden(root(pkg/libv/Lib__Bar)))
+      module Bar/0 = resolved(hidden(root(pkg/lib/Lib__Bar)))
         => sig type t/1 end
      end
