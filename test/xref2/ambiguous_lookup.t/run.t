@@ -13,12 +13,10 @@ The warning for the ambiguous lookup:
 
   $ odoc link -I odoc/a -I odoc/b main.odoc
   File "Foo":
-  Ambiguous lookup. Possible files: Foo
-  Foo
+  Ambiguous lookup. Possible units: a/Foo, b/Foo
 
 The warning should be the same whatever the order of the directories:
 
   $ odoc link -I odoc/b -I odoc/a main.odoc
   File "Foo":
-  Ambiguous lookup. Possible files: Foo
-  Foo
+  Ambiguous lookup. Possible units: a/Foo, b/Foo
