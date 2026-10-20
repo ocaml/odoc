@@ -31,6 +31,8 @@ type resolver = {
   lookup_page : path_query -> (Lang.Page.t, lookup_error) result;
   lookup_asset : path_query -> (Lang.Asset.t, lookup_error) result;
   lookup_impl : string -> Lang.Implementation.t option;
+      (** Finds an implementation by its unit name. See
+          {!Odoc_odoc.Resolver.build_link_env_for_unit}. *)
   shape_reducer : Shape_reducer.t;
 }
 
