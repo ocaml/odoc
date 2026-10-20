@@ -161,7 +161,7 @@ tag as a reference, and R3 restricts [{!/library/N}] to that library. So the
 tag should resolve to [z]'s [Z.L], and [l]'s path should be shown as [Z.L].
 
   $ show l
-  val l/7 : resolved(canonical(root(pkg/x/X).L,root((/z/Z)).L).t)
+  val l/7 : resolved(canonical(root(pkg/x/X).L,resolved(root(pkg/z/Z).L)).t)
 
 Case 6 (S3). Hidden units are not linked to. [h]'s path [X.H] is an alias of the
 hidden unit [X__H] with no tag, and [h2]'s path names [X__H] itself. Neither
@@ -209,6 +209,8 @@ A missing warning would be wrong (section 11, "Canonical tags that fail").
   $ for m in A B; do ocamlc -bin-annot -no-alias-deps -I q -c q/q__$m.mli; done
   $ for m in A B; do odoc compile --output-dir h --parent-id pkg/q -L q:h/pkg/q q/q__$m.cmti; done
   $ odoc compile --output-dir h --parent-id pkg/q -L q:h/pkg/q q/q.cmt
+  File "q/q.ml", line 1, characters 15-24:
+  Warning: Expected a valid path.
   $ odoc link -L q:h/pkg/q h/pkg/q/q.odoc
   $ odoc_print --short --long-paths --show-root-parents h/pkg/q/q.odocl
   module A/1 = resolved(hidden(root(pkg/q/Q__A))) 
@@ -225,4 +227,4 @@ A root of [Z.F] read as naming the library [x] first would be wrong.
 
   $ odoc compile --output-dir h2 --parent-id pkg/x -I h/pkg/x x/x.cmt
   $ odoc_print h2/pkg/x/x.odoc | jq -c '[.. | objects | select(has("`Root") or has("`LibraryRoot")) | select(tostring | test("\"Z\""))] | unique'
-  [{"`Root":["Z","Any"]}]
+  [{"`LibraryRoot":["`Only","z","Z"]},{"`Root":["Z","Any"]}]

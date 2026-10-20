@@ -391,6 +391,7 @@ let rec conv_canonical_module : Odoc_model.Reference.path -> Paths.Path.Module.t
       (* The root of a canonical tag is looked up anywhere, as the root of a
          reference is. *)
       `Root (Names.ModuleName.make_std name, Odoc_model.Library_scope.any)
+  | `LibraryRoot (k, lib, name) -> `LibraryRoot (k, lib, Names.ModuleName.make_std name)
 
 let conv_canonical_type : Odoc_model.Reference.path -> Paths.Path.Type.t option = function
   | `Dot (parent, name) -> Some (`DotT (conv_canonical_module parent, Names.TypeName.make_std name))
