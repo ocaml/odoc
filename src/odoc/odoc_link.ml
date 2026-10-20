@@ -5,9 +5,12 @@ let link_page ~resolver ~filename page =
   let env = Resolver.build_env_for_page resolver page in
   Odoc_xref2.Link.resolve_page ~filename env page
 
+(* Building the env can warn, so it is done where warnings are caught. *)
 let link_impl ~resolver ~filename impl =
-  let env = Resolver.build_link_env_for_impl resolver impl in
-  Odoc_xref2.Link.resolve_impl ~filename env impl
+  Odoc_model.Error.catch_warnings (fun () ->
+      let env = Resolver.build_link_env_for_impl resolver impl in
+      Odoc_model.Error.raise_warnings
+        (Odoc_xref2.Link.resolve_impl ~filename env impl))
 
 let content_for_hidden_modules =
   let open Odoc_model in
@@ -63,9 +66,10 @@ let link_unit ~resolver ~filename ~warnings_tags m =
       }
     else m
   in
-  let env = Resolver.build_link_env_for_unit resolver m in
-  let env = Odoc_xref2.Env.set_warnings_tags env warnings_tags in
-  Odoc_xref2.Link.link ~filename env m
+  Odoc_model.Error.catch_warnings (fun () ->
+      let env = Resolver.build_link_env_for_unit resolver m in
+      let env = Odoc_xref2.Env.set_warnings_tags env warnings_tags in
+      Odoc_model.Error.raise_warnings (Odoc_xref2.Link.link ~filename env m))
 
 (** [~input_warnings] are the warnings stored in the input file *)
 let handle_warnings ~input_warnings ~warnings_options ww =
