@@ -137,7 +137,7 @@ be wrong, and so would no link.
   [1]
   $ odoc html-generate-source --impl h/pkg/tool/impl-tool.odocl -o html tool/tool.ml
   $ grep -o 'href="[^"]*"' html/pkg/src/tool/tool.ml.html | grep 'clock.ml'
-  [1]
+  href="../impl_a/clock.ml.html#val-now"
   $ odoc html-generate-source --impl h/pkg/impl_a/impl-vlib__impl_a__Extra.odocl -o html impl_a/extra.ml
   $ grep -o 'href="[^"]*"' html/pkg/src/impl_a/extra.ml.html | grep 'clock.ml'
   href="clock.ml.html#val-now"
@@ -148,4 +148,4 @@ The answer should not depend on the order of the [-L] flags at link:
   $ odoc link $L2 h/pkg/tool/impl-tool.odoc
   $ odoc html-generate-source --impl h/pkg/tool/impl-tool.odocl -o html tool/tool.ml
   $ grep -o 'href="[^"]*"' html/pkg/src/tool/tool.ml.html | grep 'clock.ml'
-  [1]
+  href="../impl_a/clock.ml.html#val-now"
