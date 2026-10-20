@@ -1362,7 +1362,7 @@ module Fmt = struct
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
     | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
     | `Substituted p -> wrap c "substituted" module_path ppf p
-    | `Root r -> wrap c "unresolvedroot" str ppf (ModuleName.to_string r)
+    | `Root (r, _) -> wrap c "unresolvedroot" str ppf (ModuleName.to_string r)
 
   and resolved_module_type_path :
       config -> Format.formatter -> Cpath.Resolved.module_type -> unit =
@@ -1523,7 +1523,7 @@ module Fmt = struct
         Format.fprintf ppf "%s" (Odoc_model.Paths.Identifier.name (id :> id))
     | `Identifier (id, b) ->
         wrap2 c "identifier" model_identifier bool ppf (id :> id) b
-    | `Root s -> wrap c "root" str ppf (ModuleName.to_string s)
+    | `Root (s, _) -> wrap c "root" str ppf (ModuleName.to_string s)
     | `Dot (p, s) -> dot p (ModuleName.to_string s)
     | `DotMT (p, s) -> dot p (ModuleTypeName.to_string s)
     | `DotT (p, s) -> dot p (TypeName.to_string s)
@@ -2225,7 +2225,7 @@ module Of_Lang = struct
     | `Apply (p1, p2) ->
         `Apply (module_path ident_map p1, module_path ident_map p2)
     | `ApplyParam (p1, p2, p3) -> `ApplyParam (p1, p2, p3)
-    | `Root str -> `Root str
+    | `Root (str, scope) -> `Root (str, scope)
 
   and module_type_path :
       _ -> Odoc_model.Paths.Path.ModuleType.t -> Cpath.module_type =

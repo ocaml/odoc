@@ -69,7 +69,7 @@ let rec shape_of_module_path env : _ -> Shape.t option =
   fun (path : Odoc_model.Paths.Path.Module.t) ->
     match path with
     | `Resolved _ -> None
-    | `Root name -> (
+    | `Root (name, _) -> (
         match Env.lookup_impl (ModuleName.to_string name) env with
         | Some impl -> (
             match impl.shape_info with

@@ -225,4 +225,4 @@ A root of [Z.F] read as naming the library [x] first would be wrong.
 
   $ odoc compile --output-dir h2 --parent-id pkg/x -I h/pkg/x x/x.cmt
   $ odoc_print h2/pkg/x/x.odoc | jq -c '[.. | objects | select(has("`Root") or has("`LibraryRoot")) | select(tostring | test("\"Z\""))] | unique'
-  [{"`Root":"Z"}]
+  [{"`Root":["Z","Any"]}]

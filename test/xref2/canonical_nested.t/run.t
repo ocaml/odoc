@@ -89,7 +89,10 @@ unresolved in the paths though:
                       {
                         "`Dot": [
                           {
-                            "`Root": "Main"
+                            "`Root": [
+                              "Main",
+                              "Any"
+                            ]
                           },
                           "Container"
                         ]
@@ -151,7 +154,10 @@ unresolved in the paths though:
               {
                 "`Dot": [
                   {
-                    "`Root": "Main"
+                    "`Root": [
+                      "Main",
+                      "Any"
+                    ]
                   },
                   "Container"
                 ]

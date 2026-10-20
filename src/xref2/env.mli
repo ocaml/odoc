@@ -138,8 +138,17 @@ val lookup_root_module_in :
     module by name in that unit's libraries. *)
 
 val lookup_root_module : Odoc_model.Names.ModuleName.t -> t -> root option
-(** Looks up a root module by name anywhere on the search path. A reference's
-    root is looked up by {!lookup_by_name} instead. *)
+(** Looks up a root module by name anywhere on the search path, for a name that
+    no unit's typed tree holds, such as a page's child module. A path uses
+    {!lookup_root_module_in} with the scope its root name carries, and a
+    reference's root is looked up by {!lookup_by_name}.
+
+    The root name of a path carries the scope it is resolved in
+    ({!Odoc_model.Paths.Path.Module.t}). The compiler wrote the path, so it can
+    only mean a module that unit could see. The scope does not limit the root of
+    a reference, which an author may write for anything on the search path, nor
+    the root of a canonical path, which is looked up as a reference's is, nor a
+    lookup by identifier ({!lookup_by_id}), which names its unit. *)
 
 type 'a scope constraint 'a = [< Component.Element.any ]
 (** Target of a lookup *)

@@ -47,6 +47,14 @@ module Names = struct
   let localname = To_string LocalName.to_string
 end
 
+module Library_scope = struct
+  let t : Library_scope.t t =
+    Variant
+      (function
+      | Scoped libs -> C ("Scoped", libs, List string)
+      | Any -> C0 "Any")
+end
+
 module General_paths = struct
   (** Simplified paths types that can be coerced to. *)
 
@@ -224,7 +232,8 @@ module General_paths = struct
       | `Resolved x -> C ("`Resolved", x, resolved_path)
       | `Identifier (x1, x2) ->
           C ("`Identifier", ((x1 :> id_t), x2), Pair (identifier, bool))
-      | `Root x -> C ("`Root", x, Names.modulename)
+      | `Root (x1, x2) ->
+          C ("`Root", (x1, x2), Pair (Names.modulename, Library_scope.t))
       | `Dot (x1, x2) ->
           C ("`Dot", ((x1 :> p), x2), Pair (path, Names.modulename))
       | `DotT (x1, x2) ->
