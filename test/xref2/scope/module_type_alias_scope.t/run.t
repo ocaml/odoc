@@ -55,7 +55,5 @@ would be looked up among all the libraries given at link, and would find two
   {!/y/Y.S.H}
   $ odoc compile --output-dir h --parent-id pkg p.mld
   $ odoc link -P pkg:h/pkg -L ix:h/pkg/ix -L iy:h/pkg/iy -L x:h/pkg/x -L y:h/pkg/y h/pkg/page-p.odoc
-  File "Inner":
-  Ambiguous lookup. Possible units: pkg/ix/Inner, pkg/iy/Inner
   $ odoc_print --refs --long-paths --show-root-parents h/pkg/page-p.odocl
-  r(alias(root(pkg/iy/Inner),aliasmoduletype(root(pkg/x/X).S,root(pkg/y/Y).S).H))
+  r(alias(root(pkg/ix/Inner),aliasmoduletype(root(pkg/x/X).S,root(pkg/y/Y).S).H))

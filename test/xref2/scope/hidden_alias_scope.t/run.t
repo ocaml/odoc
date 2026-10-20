@@ -57,7 +57,5 @@ find two [A]s. So [N] should reach [a2]'s [A], with no warning.
   {!/l1/Outer.M.N}
   $ odoc compile --output-dir h --parent-id pkg p.mld
   $ odoc link -P pkg:h/pkg -L a2:h/pkg/a2 -L o:h/pkg/o -L l2:h/pkg/l2 -L l1:h/pkg/l1 h/pkg/page-p.odoc
-  File "A":
-  Ambiguous lookup. Possible units: pkg/a2/A, pkg/o/A
   $ odoc_print --refs --long-paths --show-root-parents h/pkg/page-p.odocl
-  r(alias(root(pkg/o/A),alias(hidden(root(pkg/l2/Inner__Hidden)),root(pkg/l1/Outer).M).N))
+  r(alias(root(pkg/a2/A),alias(hidden(root(pkg/l2/Inner__Hidden)),root(pkg/l1/Outer).M).N))

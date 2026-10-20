@@ -2,10 +2,11 @@ open Odoc_utils
 open ResultMonad
 open Odoc_model
 
-let resolve_and_substitute ~resolver ~make_root ~source_id input_file =
+let resolve_and_substitute ~resolver ~make_root ~source_id ~libraries input_file
+    =
   let filename = Fs.File.to_string input_file in
   let impl =
-    Odoc_loader.read_impl ~make_root ~filename ~source_id
+    Odoc_loader.read_impl ~make_root ~filename ~libraries ~source_id
     |> Error.raise_errors_and_warnings
   in
   let impl =
@@ -49,7 +50,7 @@ let compile ~resolver ~output ~warnings_options ~source_id ~libraries input =
   let result =
     Error.catch_errors_and_warnings (fun () ->
         resolve_and_substitute ~resolver ~make_root:root_of_implementation
-          ~source_id input)
+          ~source_id ~libraries input)
   in
   (* Extract warnings to write them into the output file *)
   let _, warnings = Error.unpack_warnings result in

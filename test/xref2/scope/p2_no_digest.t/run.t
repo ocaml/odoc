@@ -139,15 +139,13 @@ compiler loads the first [Ext] in [-I], so [c] should record [ext2]'s
   $ odoc compile --output-dir h --parent-id pkg/l -L l:h/pkg/l -L ext1:h/pkg/ext1 l/l.cmti
   $ odoc compile --output-dir h --parent-id pkg/c -L c:h/pkg/c -L l:h/pkg/l -L ext1:h/pkg/ext1 -L ext2:h/pkg/ext2 c/c.cmti
   $ odoc link -L ext1:h/pkg/ext1 -L ext2:h/pkg/ext2 -L l:h/pkg/l -L c:h/pkg/c h/pkg/l/l.odoc
-  File "Ext":
-  Ambiguous lookup. Possible units: pkg/ext1/Ext, pkg/ext2/Ext
   $ odoc link -L ext1:h/pkg/ext1 -L ext2:h/pkg/ext2 -L l:h/pkg/l -L c:h/pkg/c h/pkg/c/c.odoc
 
 On [l]'s page, [M] should mean [ext1]'s [Ext], the author's target: Λc(L)
 holds only that [Ext].
 
   $ odoc_print --short --long-paths --show-root-parents h/pkg/l/l.odocl
-  module M/0 = resolved(root(pkg/ext2/Ext))
+  module M/0 = resolved(root(pkg/ext1/Ext))
 
 This is a known limit (section 3.3): Λc(C) holds two units named [Ext],
 which D3 rules out, so the claims of section 3.7 do not hold for [c]. The

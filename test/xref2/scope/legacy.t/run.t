@@ -66,7 +66,10 @@ Case 2. A recorded unit shows a legacy unit's expansion. [n] is compiled with
 [-L] for [n], [a] and [ext1], so it is not a legacy unit. Its [X] has the
 signature of [A], so the [Ext] in it has [a] as its origin, and [a] is a
 legacy unit. The spec makes no claim about such a root (section 6). This
-records what odoc does, at compile and at link with every library.
+records what odoc does, at compile and at link with every library. The root
+keeps its origin in [n]'s [.odoc] file, and [a] recorded no libraries, so at
+link it is looked up anywhere, as in case 1: odoc warns that both [Ext]s
+match, and picks one.
 
   $ odoc compile --output-dir h --parent-id pkg/n -L n:h/pkg/n -L a:h/pkg/a -L ext1:h/pkg/ext1 n/n.cmti
   $ odoc_print --short --long-paths --show-root-parents --show-expansions h/pkg/n/n.odoc

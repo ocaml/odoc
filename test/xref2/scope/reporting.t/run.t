@@ -100,7 +100,7 @@ unresolved.
 
   $ odoc link -L l:h/pkg/l -I h/pkg/ext h/pkg/l/l.odoc
   $ odoc_print --short --long-paths --show-root-parents h/pkg/l/l.odocl
-  module M/0 = resolved(root(pkg/ext/Ext))
+  module M/0 = unresolvedroot(Ext)
 
 It should also hold when another library with a unit [Ext] is given at
 link. [old_ext] has one, but it is not in Λc(L), so its [Ext] is never a
@@ -108,7 +108,7 @@ candidate (P2, section 8).
 
   $ odoc link -L l:h/pkg/l -L old_ext:h/pkg/old_ext h/pkg/l/l.odoc
   $ odoc_print --short --long-paths --show-root-parents h/pkg/l/l.odocl
-  module M/0 = resolved(root(pkg/old_ext/Ext))
+  module M/0 = unresolvedroot(Ext)
 
 Case 2: a failure is classified by the innermost root that fails (section 3.6).
 In [e2]'s [F.Make(Ext).t], the outer root [F] has a digest that matches

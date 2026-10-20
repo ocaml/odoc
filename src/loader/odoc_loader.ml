@@ -174,6 +174,8 @@ let unit_name_as_string x = x
 let name_to_string x = x
 #endif
 
+(* Every root path a unit holds is resolved among the libraries the unit was
+   compiled against: [scope] is made from them. *)
 let read_cmti ~make_root ~parent ~filename ~scope ~warnings_tag () =
   let cmt_info, unit_kind = read_cmt_and_unit_kind filename in
   match cmt_info.cmt_annots with
@@ -411,24 +413,25 @@ let wrap_errors ~filename f =
       | Not_an_interface -> not_an_interface filename
       | Make_root_error m -> error_msg filename m)
 
-let read_cmti ~make_root ~parent ~filename ~warnings_tag =
+let scope_of = Odoc_model.Library_scope.of_libraries
+
+let read_cmti ~make_root ~parent ~filename ~libraries ~warnings_tag =
   wrap_errors ~filename
-    (read_cmti ~make_root ~parent ~filename ~scope:Odoc_model.Library_scope.any
+    (read_cmti ~make_root ~parent ~filename ~scope:(scope_of libraries)
        ~warnings_tag)
 
-let read_cmt ~make_root ~parent ~filename ~warnings_tag =
+let read_cmt ~make_root ~parent ~filename ~libraries ~warnings_tag =
   wrap_errors ~filename
-    (read_cmt ~make_root ~parent ~filename ~scope:Odoc_model.Library_scope.any
+    (read_cmt ~make_root ~parent ~filename ~scope:(scope_of libraries)
        ~warnings_tag)
 
-let read_impl ~make_root ~filename ~source_id =
+let read_impl ~make_root ~filename ~libraries ~source_id =
   wrap_errors ~filename
-    (read_impl ~make_root ~source_id ~scope:Odoc_model.Library_scope.any
-       ~filename)
+    (read_impl ~make_root ~source_id ~scope:(scope_of libraries) ~filename)
 
-let read_cmi ~make_root ~parent ~filename ~warnings_tag =
+let read_cmi ~make_root ~parent ~filename ~libraries ~warnings_tag =
   wrap_errors ~filename
-    (read_cmi ~make_root ~parent ~filename ~scope:Odoc_model.Library_scope.any
+    (read_cmi ~make_root ~parent ~filename ~scope:(scope_of libraries)
        ~warnings_tag)
 
 let read_location = Doc_attr.read_location

@@ -177,8 +177,6 @@ should not mean [p1]'s [P], even though [p1] is in the Λc of [Project].
   $ cat c/c.mli
   module N = P
   $ odoc link $ALL h/pkg/l/project.odoc
-  File "P":
-  Ambiguous lookup. Possible units: pkg/p1/P, pkg/p2/P
   $ odoc_print --refs --long-paths --show-root-parents h/pkg/l/project.odocl
   r(alias(root(pkg/p2/P),root(pkg/c/C).N).t)
 
