@@ -38,7 +38,7 @@ Parts of a longer paragraph that can be considered alone can also have headings.
 
 ## Styling
 
-This paragraph has some styled elements: **bold** and *italic*, ***bold italic***, *emphasis*, **emphasis* within emphasis*, ***bold italic***, superscript, subscript. The line spacing should be enough for superscripts and subscripts not to look odd.
+This paragraph has some styled elements: **bold** and *italic*, ***bold italic***, *emphasis*, **emphasis* within emphasis*, ***bold italic***, superscript, subscript, strikethrough. The line spacing should be enough for superscripts and subscripts not to look odd.
 
 Note: *In italics *emphasis* is rendered as normal text while *emphasis *in* emphasis* is rendered in italics.* *It also work the same in [links in italics with *emphasis *in* emphasis*.](#)*
 

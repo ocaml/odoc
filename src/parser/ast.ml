@@ -8,7 +8,8 @@
     references or headings that are out of range. *)
 
 type 'a with_location = 'a Loc.with_location
-type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
+type style =
+  [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript | `Strikethrough ]
 type alignment = [ `Left | `Center | `Right ]
 
 type reference_kind = [ `Simple | `With_text ]

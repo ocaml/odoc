@@ -19,7 +19,7 @@ and styled style content =
       (* We treat emphasis as italic, since there's no difference in Markdown *)
       let inlines_as_one_inline = Renderer.Inline.Inlines content in
       [ Renderer.Inline.Emphasis inlines_as_one_inline ]
-  | `Superscript | `Subscript ->
+  | `Superscript | `Subscript | `Strikethrough ->
       (* CommonMark doesn't have support for superscript/subscript, we fallback to inline *)
       content
 

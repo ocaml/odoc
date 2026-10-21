@@ -6,7 +6,8 @@ module Identifier = Paths.Identifier
 
 type 'a with_location = 'a Location_.with_location
 
-type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
+type style =
+  [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript | `Strikethrough ]
 
 type alignment = [ `Left | `Center | `Right ]
 

@@ -118,6 +118,9 @@ let subscript pp = create "textsubscript" pp
 
 let superscript pp = create "textsuperscript" pp
 
+(* requires [ulem] package *)
+let strikethrough pp = create "sout" pp
+
 let code_block pp ppf x =
   let name = "ocamlcodeblock" in
   mbegin ppf name;
