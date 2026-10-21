@@ -70,7 +70,7 @@ Parts of a longer paragraph that can be considered alone can also have headings\
 .in 
 .sp 
 .fi 
-This paragraph has some styled elements: \fBbold\fR and \fIitalic\fR, \fB\fIbold italic\fB\fR, emphasis, emphasis within emphasis, \fB\fIbold italic\fB\fR, superscript, subscript\. The line spacing should be enough for superscripts and subscripts not to look odd\.
+This paragraph has some styled elements: \fBbold\fR and \fIitalic\fR, \fB\fIbold italic\fB\fR, emphasis, emphasis within emphasis, \fB\fIbold italic\fB\fR, superscript, subscript, strikethrough\. The line spacing should be enough for superscripts and subscripts not to look odd\.
 .sp 
 Note: \fIIn italics emphasis is rendered as normal text while emphasis in emphasis is rendered in italics\.\fR \fIIt also work the same in 
 .UR #

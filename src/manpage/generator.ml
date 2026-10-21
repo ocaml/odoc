@@ -234,8 +234,8 @@ let style (style : style) content =
   match style with
   | `Bold -> font "B" content
   | `Italic -> font "I" content
-  (* We ignore those *)
-  | `Emphasis | `Superscript | `Subscript -> content
+  (* We ignore those, there are no groff macros for this *)
+  | `Emphasis | `Superscript | `Subscript | `Strikethrough -> content
 
 (* Striped content should be rendered in one line, without styling *)
 let strip l =

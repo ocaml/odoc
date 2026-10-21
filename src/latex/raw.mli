@@ -46,6 +46,8 @@ val subscript : 'a t
 
 val superscript : 'a t
 
+val strikethrough : 'a t
+
 val section : 'a t
 
 val subsection : 'a t
