@@ -64,31 +64,42 @@ and compute_length_inline (t : Types.Inline.t) : int =
   List.fold_left f 0 t
 
 module Tag = struct
-
-  type Format.stag +=
-    | Elt of Inline.t
-    | Tag of Source.tag
-    | Ignore
+  type Format.stag += Elt of Inline.t | Tag of Source.tag | Ignore
 
   let setup_tags formatter state0 =
     let stag_functions =
       let mark_open_stag = function
-        | Elt elt -> State.push state0 (Elt elt); ""
-        | Tag tag -> State.enter state0 tag; ""
-        | Format.String_tag "" -> State.enter state0 None; ""
-        | Format.String_tag tag -> State.enter state0 (Some tag); ""
-        | Ignore -> State.push_ignore state0; ""
+        | Elt elt ->
+            State.push state0 (Elt elt);
+            ""
+        | Tag tag ->
+            State.enter state0 tag;
+            ""
+        | Format.String_tag "" ->
+            State.enter state0 None;
+            ""
+        | Format.String_tag tag ->
+            State.enter state0 (Some tag);
+            ""
+        | Ignore ->
+            State.push_ignore state0;
+            ""
         | _ -> ""
       and mark_close_stag = function
         | Elt _ -> ""
-        | Tag _
-        | Format.String_tag _ -> State.leave state0; ""
-        | Ignore -> State.pop_ignore state0; ""
+        | Tag _ | Format.String_tag _ ->
+            State.leave state0;
+            ""
+        | Ignore ->
+            State.pop_ignore state0;
+            ""
         | _ -> ""
-      in {Format.
-        print_open_stag = (fun _ -> ());
+      in
+      {
+        Format.print_open_stag = (fun _ -> ());
         print_close_stag = (fun _ -> ());
-        mark_open_stag; mark_close_stag;
+        mark_open_stag;
+        mark_close_stag;
       }
     in
     Format.pp_set_tags formatter true;
