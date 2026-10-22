@@ -719,9 +719,10 @@ and bad_markup_recovery start_offset input = parse
     {
       warning
         input
+        ~start_offset
         (Parse_error.bad_markup
           "{" ~suggestion:"escape the brace with '\\{'.");
-      emit input (`Word "{")
+      emit input (`Word "{") ~start_offset
     }
 
 (* Based on OCaml's parsing/lexer.mll
