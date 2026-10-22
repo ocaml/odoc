@@ -642,12 +642,13 @@ module Fmt : sig
         - : unit = ()
       ]}
 
-      The remaining two fields need inputs this self-contained example does not
-      produce: [show_canonical] toggles the [(canonical=...)] note printed for a
-      module carrying a [@canonical] tag, and [identifier_name_only] shortens
+      The remaining three fields need inputs this self-contained example does
+      not produce: [show_canonical] toggles the [(canonical=...)] note printed
+      for a module carrying a [@canonical] tag, [identifier_name_only] shortens
       paths that resolution has lifted to a single cross-unit
-      {!Odoc_model.Paths.Identifier.t} — which only arises across compilation
-      units, not the in-unit signatures [sig_of] builds. *)
+      {!Odoc_model.Paths.Identifier.t}, and [show_root_parents] prints the
+      parent pages of root modules. These only arise across compilation units,
+      not the in-unit signatures [sig_of] builds. *)
 
   type config = {
     short_paths : bool;
@@ -667,6 +668,12 @@ module Fmt : sig
     identifier_name_only : bool;
         (** Print Identifiers using only the leaf name (as the HTML renderer
             does). *)
+    show_root_parents : bool;
+        (** Print the parent pages of a root module, as in [pkg/client/Content].
+            Units of different libraries can share a name, and the parent pages
+            tell them apart. With [short_paths], a path can print as its
+            canonical path, and then the parent pages are those of the canonical
+            path. Turn [short_paths] off to see every root. *)
   }
 
   val default : config
