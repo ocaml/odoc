@@ -212,8 +212,194 @@ let print_short c elt =
         (cls.id :> Odoc_model.Paths.Identifier.t)
         (class_ c) cls'
 
+(* [--refs]: print the references in the doc comments of a unit or a page,
+   one per line. A [{!modules:}] entry is printed as [modules:], followed by
+   the references in its synopsis, indented. *)
+module Refs = struct
+  open Odoc_model
+  open Odoc_model.Lang
+
+  let print_ref c indent (r : Paths.Reference.t) =
+    Format.printf "%s%a@." indent Odoc_xref2.Component.Fmt.(model_reference c) r
+
+  let rec inline c indent (x : Comment.inline_element Location_.with_location) =
+    match x.value with
+    | `Reference (r, _) -> print_ref c indent r
+    | `Styled (_, xs) -> List.iter (inline c indent) xs
+    | `Space _ | `Word _ | `Code_span _ | `Math_span _ | `Raw_markup _ | `Link _
+      ->
+        ()
+
+  and nestable c indent
+      (x : Comment.nestable_block_element Location_.with_location) =
+    match x.value with
+    | `Paragraph p -> List.iter (inline c indent) p
+    | `Code_block (_, _, Some output) -> List.iter (nestable c indent) output
+    | `Code_block (_, _, None) | `Math_block _ | `Verbatim _ -> ()
+    | `Modules ms -> List.iter (module_entry c indent) ms
+    | `Table { data; _ } ->
+        List.iter
+          (List.iter (fun (cell, _) -> List.iter (nestable c indent) cell))
+          data
+    | `List (_, items) -> List.iter (List.iter (nestable c indent)) items
+    | `Media (`Reference r, _, _) -> print_ref c indent (r :> Paths.Reference.t)
+    | `Media (`Link _, _, _) -> ()
+
+  and module_entry c indent { Comment.module_reference; module_synopsis } =
+    Format.printf "%smodules: %a@." indent
+      Odoc_xref2.Component.Fmt.(model_reference c)
+      (module_reference :> Paths.Reference.t);
+    match module_synopsis with
+    | Some p -> List.iter (inline c (indent ^ "  ")) p
+    | None -> ()
+
+  let tag c indent (t : Comment.tag) =
+    match t with
+    | `Deprecated bs
+    | `Param (_, bs)
+    | `Return bs
+    | `See (_, _, bs)
+    | `Before (_, bs) ->
+        List.iter (nestable c indent) bs
+    | `Raise (`Reference (r, _), bs) ->
+        print_ref c indent r;
+        List.iter (nestable c indent) bs
+    | `Raise (`Code_span _, bs) -> List.iter (nestable c indent) bs
+    | `Author _ | `Since _ | `Version _ | `Alert _ -> ()
+
+  let docs c (d : Comment.docs) =
+    List.iter
+      (fun (x : Comment.block_element Location_.with_location) ->
+        match x.value with
+        | #Comment.nestable_block_element as b ->
+            nestable c "" { x with value = b }
+        | `Heading (_, _, inls) -> List.iter (inline c "") inls
+        | `Tag t -> tag c "" t)
+      d.elements
+
+  (* Only signatures written out in this unit are followed. A module type
+     given by a path, [with] or [module type of], and the expansion of an
+     include of a path, take their items from another signature, whose own
+     references are printed when that signature is. *)
+  let rec written_signature : ModuleType.U.expr -> bool = function
+    | Signature _ -> true
+    | With (_, e) | Strengthen (e, _, _) -> written_signature e
+    | Path _ | TypeOf _ -> false
+
+  let rec signature c (sg : Signature.t) =
+    docs c sg.doc;
+    List.iter (item c) sg.items
+
+  and module_type_expr c (e : ModuleType.expr) =
+    match e with
+    | Signature sg -> signature c sg
+    | Functor (p, body) ->
+        functor_parameter c p;
+        module_type_expr c body
+    | Path _ | With _ | TypeOf _ | Strengthen _ -> ()
+
+  and functor_parameter c (p : FunctorParameter.t) =
+    match p with Named { expr; _ } -> module_type_expr c expr | Unit -> ()
+
+  and constructor_argument c (a : TypeDecl.Constructor.argument) =
+    match a with
+    | Record fields ->
+        List.iter (fun (f : TypeDecl.Field.t) -> docs c f.doc) fields
+    | Tuple _ -> ()
+
+  and type_decl c (t : TypeDecl.t) =
+    docs c t.doc;
+    (match t.representation with
+    | Some (Variant cs) ->
+        List.iter
+          (fun (k : TypeDecl.Constructor.t) ->
+            docs c k.doc;
+            constructor_argument c k.args)
+          cs
+    | Some (Record fields) ->
+        List.iter (fun (f : TypeDecl.Field.t) -> docs c f.doc) fields
+    | Some (Record_unboxed_product fields) ->
+        List.iter (fun (f : TypeDecl.UnboxedField.t) -> docs c f.doc) fields
+    | Some Extensible | None -> ());
+    (* Only a polymorphic variant at the top of a manifest has documented
+       constructors. *)
+    match t.equation.manifest with
+    | Some (Polymorphic_variant { elements; _ }) ->
+        List.iter
+          (function
+            | TypeExpr.Polymorphic_variant.Constructor k -> docs c k.doc
+            | Type _ -> ())
+          elements
+    | Some _ | None -> ()
+
+  and class_type_expr c (e : ClassType.expr) =
+    match e with Signature cs -> class_signature c cs | Constr _ -> ()
+
+  and class_decl c (d : Class.decl) =
+    match d with
+    | ClassType e -> class_type_expr c e
+    | Arrow (_, _, d) -> class_decl c d
+
+  and class_signature c (cs : ClassSignature.t) =
+    docs c cs.doc;
+    List.iter
+      (fun (i : ClassSignature.item) ->
+        match i with
+        | Method m -> docs c m.doc
+        | InstanceVariable v -> docs c v.doc
+        | Constraint x -> docs c x.doc
+        | Inherit x -> docs c x.doc
+        | Comment (`Docs d) -> docs c d
+        | Comment `Stop -> ())
+      cs.items
+
+  and item c (i : Signature.item) =
+    match i with
+    | Module (_, m) -> (
+        docs c m.doc;
+        match m.type_ with
+        | ModuleType e -> module_type_expr c e
+        | Alias _ -> ())
+    | ModuleType mt -> (
+        docs c mt.doc;
+        match mt.expr with Some e -> module_type_expr c e | None -> ())
+    | ModuleSubstitution x -> docs c x.doc
+    | ModuleTypeSubstitution x ->
+        docs c x.doc;
+        module_type_expr c x.manifest
+    | Open x -> docs c x.doc
+    | Type (_, x) | TypeSubstitution x -> type_decl c x
+    | TypExt x ->
+        docs c x.doc;
+        List.iter
+          (fun (k : Extension.Constructor.t) ->
+            docs c k.doc;
+            constructor_argument c k.args)
+          x.constructors
+    | Exception x ->
+        docs c x.doc;
+        constructor_argument c x.args
+    | Value x -> docs c x.doc
+    | Class (_, x) ->
+        docs c x.doc;
+        class_decl c x.type_
+    | ClassType (_, x) ->
+        docs c x.doc;
+        class_type_expr c x.expr
+    | Include x -> (
+        docs c x.doc;
+        match x.decl with
+        | ModuleType e when written_signature e ->
+            (* Compiling empties a signature written here, so its items are
+               read from the expansion. *)
+            signature c x.expansion.content
+        | ModuleType _ | Alias _ | Functor _ -> ())
+    | Comment (`Docs d) -> docs c d
+    | Comment `Stop -> ()
+end
+
 let run inp short long_paths show_canonical show_expansions
-    show_include_expansions show_removed show_root_parents ref =
+    show_include_expansions show_removed show_root_parents refs ref =
   let inp = Fpath.v inp in
   let c =
     {
@@ -227,37 +413,59 @@ let run inp short long_paths show_canonical show_expansions
     }
   in
   Odoc_file.load inp >>= fun unit ->
-  match unit.content with
-  | Odoc_file.Page_content page ->
-      print_json_desc Lang_desc.page_t page;
-      Ok ()
-  | Odoc_file.Impl_content impl ->
-      print_json_desc Lang_desc.implementation_t impl;
-      Ok ()
-  | Unit_content u -> (
-      match (short, ref, u.content) with
-      | true, None, Module sg ->
-          let sg' = Odoc_xref2.Component.Of_Lang.(signature (empty ()) sg) in
-          Format.printf "%a\n%!" Odoc_xref2.Component.Fmt.(signature c) sg';
+  if refs then
+    if
+      Option.is_some ref || short || show_canonical || show_expansions
+      || show_include_expansions || show_removed
+    then
+      Error
+        (`Msg
+           "--refs can only be used with --long-paths and --show-root-parents")
+    else
+      match unit.content with
+      | Page_content page ->
+          Refs.docs c page.content;
           Ok ()
-      | _, Some r, Module sg -> (
-          let r = Odoc_model.Semantics.parse_reference r in
-          match Odoc_model.Error.raise_warnings r with
-          | Ok r -> (
-              match handle_ref sg r with
-              | Some elt ->
-                  if short then print_short c elt else print_element elt;
-                  Ok ()
-              | None -> Ok ())
-          | _ -> Ok ())
-      | true, None, _ -> Error (`Msg "Can't short-print packed modules")
-      | _, Some _, _ -> Error (`Msg "Can't look up in packed modules")
-      | false, None, _ ->
-          print_json_desc Lang_desc.compilation_unit_t u;
-          Ok ())
-  | Asset_content a ->
-      print_json_desc Lang_desc.asset_t a;
-      Ok ()
+      | Unit_content { content = Module sg; _ } ->
+          Refs.signature c sg;
+          Ok ()
+      | Unit_content { content = Pack _; _ } ->
+          Error (`Msg "--refs can't print the references of a packed unit")
+      | Impl_content _ | Asset_content _ ->
+          Error
+            (`Msg "--refs can only print the references of a unit or a page")
+  else
+    match unit.content with
+    | Odoc_file.Page_content page ->
+        print_json_desc Lang_desc.page_t page;
+        Ok ()
+    | Odoc_file.Impl_content impl ->
+        print_json_desc Lang_desc.implementation_t impl;
+        Ok ()
+    | Unit_content u -> (
+        match (short, ref, u.content) with
+        | true, None, Module sg ->
+            let sg' = Odoc_xref2.Component.Of_Lang.(signature (empty ()) sg) in
+            Format.printf "%a\n%!" Odoc_xref2.Component.Fmt.(signature c) sg';
+            Ok ()
+        | _, Some r, Module sg -> (
+            let r = Odoc_model.Semantics.parse_reference r in
+            match Odoc_model.Error.raise_warnings r with
+            | Ok r -> (
+                match handle_ref sg r with
+                | Some elt ->
+                    if short then print_short c elt else print_element elt;
+                    Ok ()
+                | None -> Ok ())
+            | _ -> Ok ())
+        | true, None, _ -> Error (`Msg "Can't short-print packed modules")
+        | _, Some _, _ -> Error (`Msg "Can't look up in packed modules")
+        | false, None, _ ->
+            print_json_desc Lang_desc.compilation_unit_t u;
+            Ok ())
+    | Asset_content a ->
+        print_json_desc Lang_desc.asset_t a;
+        Ok ()
 
 open Cmdliner
 
@@ -278,7 +486,7 @@ let a_show_expansions =
   Arg.(value & flag & info ~doc [ "show-expansions" ])
 
 let a_long_paths =
-  let doc = "Show long paths in short output" in
+  let doc = "Show long paths in short output and with $(b,--refs)." in
   Arg.(value & flag & info ~doc [ "long-paths" ])
 
 let a_show_canonical =
@@ -295,10 +503,25 @@ let a_show_removed =
 
 let a_show_root_parents =
   let doc =
-    "Show the parent pages of root modules in short output. Use with \
-     $(b,--long-paths) to see every root, not only canonical paths."
+    "Show the parent pages of root modules, in short output and with \
+     $(b,--refs). In short output, use $(b,--long-paths) to see every root, \
+     not only canonical paths."
   in
   Arg.(value & flag & info ~doc [ "show-root-parents" ])
+
+let a_refs =
+  let doc =
+    "Print the references in the doc comments of a unit or a page, one per \
+     line, instead of the content. Signatures written in the unit are \
+     followed. A module type given by a path or by $(b,module type of) is not \
+     followed. An include of such a module type is not followed either. Their \
+     items come from another signature. References after a $(b,(**/**)) stop \
+     comment are printed, although odoc does not render them. A resolved \
+     reference can have hidden and canonical parts, and only $(b,--long-paths) \
+     shows them. $(b,--show-root-parents) applies too. No other option can be \
+     used with $(b,--refs)."
+  in
+  Arg.(value & flag & info ~doc [ "refs" ])
 
 let cmd =
   let doc = "Print the content of .odoc files into a text format. For tests" in
@@ -306,7 +529,7 @@ let cmd =
   @@ Term.(
        const run $ a_inp $ a_short $ a_long_paths $ a_show_canonical
        $ a_show_expansions $ a_show_include_expansions $ a_show_removed
-       $ a_show_root_parents $ reference)
+       $ a_show_root_parents $ a_refs $ reference)
 
 let () =
   match Cmd.eval_value' cmd with
