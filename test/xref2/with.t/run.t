@@ -9,18 +9,16 @@ be able to link anywhere because we don't render the inner signature anywhere.
   end with type t = int with type u = int
   
 
-  $ cat compile.sh
-  #!/bin/sh
-  
-  ocamlc -c -bin-annot test.ml
-  odoc compile page.mld --child module-test
-  odoc compile -I . --parent page test.cmt
-  odoc link -I . test.odoc
-  odoc html-generate --indent -o html test.odocl
-  odoc support-files -o html
-  
+  $ compile() {
+  >   ocamlc -c -bin-annot test.ml
+  >   odoc compile page.mld --child module-test
+  >   odoc compile -I . --parent page test.cmt
+  >   odoc link -I . test.odoc
+  >   odoc html-generate --indent -o html test.odocl
+  >   odoc support-files -o html
+  > }
 
-  $ ./compile.sh
+  $ compile
 
 Let's check which module type `.content.Module.items[0].ModuleType` refers to:
 
