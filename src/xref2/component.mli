@@ -669,11 +669,12 @@ module Fmt : sig
         (** Print Identifiers using only the leaf name (as the HTML renderer
             does). *)
     show_root_parents : bool;
-        (** Print the parent pages of a root module, as in [pkg/client/Content].
-            Units of different libraries can share a name, and the parent pages
-            tell them apart. With [short_paths], a path can print as its
-            canonical path, and then the parent pages are those of the canonical
-            path. Turn [short_paths] off to see every root. *)
+        (** Print the parent pages of a root module or a page, as in
+            [pkg/client/Content] or [pkg/index]. Units and pages of different
+            libraries or packages can share a name, and the parent pages tell
+            them apart. With [short_paths], a path can print as its canonical
+            path, and then the parent pages are those of the canonical path.
+            Turn [short_paths] off to see every root. *)
   }
 
   val default : config

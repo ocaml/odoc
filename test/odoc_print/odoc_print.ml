@@ -503,7 +503,7 @@ let a_show_removed =
 
 let a_show_root_parents =
   let doc =
-    "Show the parent pages of root modules, in short output and with \
+    "Show the parent pages of root modules and pages, in short output and with \
      $(b,--refs). In short output, use $(b,--long-paths) to see every root, \
      not only canonical paths."
   in

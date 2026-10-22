@@ -197,3 +197,40 @@ With [--show-root-parents], roots are printed with their parent pages.
   unresolvedroot(Not_found)
   r(pkg/B.t)
 
+Pages are printed with their parent pages too.
+
+  $ odoc_print --refs --show-root-parents h/pkg/page-index.odocl
+  r(pkg/other)
+  r(pkg/A.M)
+  /pkg/nope
+
+Pages of different packages can share a name. [refs.mld] of [pkg] refers to
+its own index, to the index of a second package [other], and to a page two
+levels down.
+
+  $ cat refs.mld
+  {0 Refs}
+  
+  {!page-index}, {!/other/index} and {!./sub/deep}.
+  $ odoc compile --output-dir h --parent-id other other/index.mld
+  $ odoc compile --output-dir h --parent-id pkg/sub sub/deep.mld
+  $ odoc compile --output-dir h --parent-id pkg refs.mld
+  $ odoc link -P pkg:h/pkg -P other:h/other --current-package pkg -I h/pkg h/pkg/page-refs.odoc
+
+Without [--show-root-parents], the two indexes look the same.
+
+  $ odoc_print --refs h/pkg/page-refs.odocl
+  r(index)
+  r(index)
+  r(deep)
+  $ odoc_print --refs --show-root-parents h/pkg/page-refs.odocl
+  r(pkg/index)
+  r(other/index)
+  r(pkg/sub/deep)
+
+A page compiled without [--parent-id] has no parent pages.
+
+  $ odoc compile -o lone/page-lone.odoc lone/lone.mld
+  $ odoc link -I lone lone/page-lone.odoc
+  $ odoc_print --refs --show-root-parents lone/page-lone.odocl
+  r(lone)
