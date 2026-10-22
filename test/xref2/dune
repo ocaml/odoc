@@ -67,7 +67,14 @@
 ; 4.14.0 and above
 
 (cram
- (applies_to lookup_def shadow3 to_remove_test odoc_print_refs)
+ (applies_to
+  lookup_def
+  shadow3
+  to_remove_test
+  odoc_print_refs
+  sibling_libraries
+  self_name
+  shared_identifier)
  (enabled_if
   (>= %{ocaml_version} 4.14.0)))
 
