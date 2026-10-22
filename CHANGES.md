@@ -1,3 +1,13 @@
+# 3.2.2 (unreleased)
+
+### Added
+- Support for OCaml 5.6 (@jonludlam, #1472)
+
+### Fixed
+- Avoid relying on `ocamllex` raising `Failure` for an unescaped '{', which
+  OCaml 5.6's `ocamllex` warns about (@Leonidas-from-XIV, #1494)
+- Remove requirement for ppx_expect in tests (@jonludlam, #1445)
+
 # 3.2.1
 
 ### Fixed
