@@ -213,7 +213,7 @@ let print_short c elt =
         (class_ c) cls'
 
 let run inp short long_paths show_canonical show_expansions
-    show_include_expansions show_removed ref =
+    show_include_expansions show_removed show_root_parents ref =
   let inp = Fpath.v inp in
   let c =
     {
@@ -223,6 +223,7 @@ let run inp short long_paths show_canonical show_expansions
       show_include_expansions;
       show_removed;
       identifier_name_only = false;
+      show_root_parents;
     }
   in
   Odoc_file.load inp >>= fun unit ->
@@ -292,13 +293,20 @@ let a_show_removed =
   let doc = "Show removed items in signature expansions in short output." in
   Arg.(value & flag & info ~doc [ "show-removed" ])
 
+let a_show_root_parents =
+  let doc =
+    "Show the parent pages of root modules in short output. Use with \
+     $(b,--long-paths) to see every root, not only canonical paths."
+  in
+  Arg.(value & flag & info ~doc [ "show-root-parents" ])
+
 let cmd =
   let doc = "Print the content of .odoc files into a text format. For tests" in
   Cmd.v (Cmd.info "odoc_print" ~doc)
   @@ Term.(
        const run $ a_inp $ a_short $ a_long_paths $ a_show_canonical
        $ a_show_expansions $ a_show_include_expansions $ a_show_removed
-       $ reference)
+       $ a_show_root_parents $ reference)
 
 let () =
   match Cmd.eval_value' cmd with

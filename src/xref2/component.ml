@@ -613,6 +613,7 @@ module Fmt = struct
             [Mylib.A] into a single Identifier, this prints just [A]. Has no
             effect on Module-step paths where the structure inherently requires
             walking the chain. *)
+    show_root_parents : bool;
   }
 
   let default =
@@ -623,6 +624,7 @@ module Fmt = struct
       show_expansions = true;
       show_include_expansions = true;
       identifier_name_only = false;
+      show_root_parents = false;
     }
 
   type id = Odoc_model.Paths.Identifier.t
@@ -717,12 +719,20 @@ module Fmt = struct
    fun c ppf i ->
     if c.short_paths then Ident.short_fmt ppf i else Ident.fmt ppf i
 
+  let root_name parent c ppf unit_name =
+    (match parent with
+    | Some p when c.show_root_parents ->
+        Format.fprintf ppf "%s/"
+          (String.concat "/" (Odoc_model.Paths.Identifier.fullname p))
+    | Some _ | None -> ());
+    ModuleName.fmt ppf unit_name
+
   let rec model_identifier c ppf (p : id) =
     match p with
-    | `Root (_, unit_name) ->
-        wrap c "root" (fun _ -> ModuleName.fmt) ppf unit_name
-    | `LibraryParameter (_, unit_name) ->
-        wrap c "libparam" (fun _ -> ModuleName.fmt) ppf unit_name
+    | `Root (parent, unit_name) ->
+        wrap c "root" (root_name parent) ppf unit_name
+    | `LibraryParameter (parent, unit_name) ->
+        wrap c "libparam" (root_name parent) ppf unit_name
     | `Module (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (parent :> id)
