@@ -719,12 +719,15 @@ module Fmt = struct
    fun c ppf i ->
     if c.short_paths then Ident.short_fmt ppf i else Ident.fmt ppf i
 
-  let root_name parent c ppf unit_name =
-    (match parent with
+  let parent_prefix c ppf parent =
+    match parent with
     | Some p when c.show_root_parents ->
         Format.fprintf ppf "%s/"
           (String.concat "/" (Odoc_model.Paths.Identifier.fullname p))
-    | Some _ | None -> ());
+    | Some _ | None -> ()
+
+  let root_name parent c ppf unit_name =
+    parent_prefix c ppf parent;
     ModuleName.fmt ppf unit_name
 
   let rec model_identifier c ppf (p : id) =
@@ -800,8 +803,9 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (p :> id)
           (ExtensionName.to_string name)
-    | `Page (_, name) | `LeafPage (_, name) ->
-        Format.fprintf ppf "%s" (PageName.to_string name)
+    | `Page (parent, name) | `LeafPage (parent, name) ->
+        Format.fprintf ppf "%a%s" (parent_prefix c) parent
+          (PageName.to_string name)
     | `SourcePage (p, name) ->
         Format.fprintf ppf "%a/%s" (model_identifier c) (p :> id) name
     | `SourceLocation (p, def) ->
