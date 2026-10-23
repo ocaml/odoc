@@ -6,11 +6,11 @@ Test the JSON output in the presence of expanded modules.
   $ odoc compile -I . main.cmt
   $ odoc link -I . main.odoc
 
-  $ odoc html-targets -o html main.odocl | cram_test_helper
+  $ odoc html-targets -o html main.odocl 2>&1 | cram_test_helper
   html/Main/index.html
   html/Main/A/index.html
   html/Main/A/B/index.html
-  $ odoc html-targets --as-json -o html main.odocl | cram_test_helper
+  $ odoc html-targets --as-json -o html main.odocl 2>&1 | cram_test_helper
   html/Main/index.html.json
   html/Main/A/index.html.json
   html/Main/A/B/index.html.json

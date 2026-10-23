@@ -92,7 +92,7 @@ Some more parsing test:
   > @children_order [Some wrong content]
   > {0 Test1}
   > EOF
-  $ odoc compile --parent-id pkg/doc --output-dir _odoc errors/index.mld | cram_test_helper
+  $ odoc compile --parent-id pkg/doc --output-dir _odoc errors/index.mld 2>&1 | cram_test_helper
   File "errors/index.mld", line 1, characters 16-36:
   Warning: Only words are accepted when specifying children order
 
@@ -108,7 +108,7 @@ Some more parsing test:
   > {0 Test1}
   > @children_order a
   > EOF
-  $ odoc compile --parent-id pkg/doc --output-dir _odoc errors/index.mld | cram_test_helper
+  $ odoc compile --parent-id pkg/doc --output-dir _odoc errors/index.mld 2>&1 | cram_test_helper
   File "errors/index.mld", line 2, characters 0-17:
   Warning: @children_order tag has to be before any content
 
@@ -116,6 +116,6 @@ Some more parsing test:
   > @children_order a
   > {0 Test1}
   > EOF
-  $ odoc compile --parent-id pkg/doc --output-dir _odoc errors/not_index.mld | cram_test_helper
+  $ odoc compile --parent-id pkg/doc --output-dir _odoc errors/not_index.mld 2>&1 | cram_test_helper
   File "errors/not_index.mld":
   Warning: Non-index page cannot specify @children_order.
