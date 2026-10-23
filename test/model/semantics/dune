@@ -3,8 +3,6 @@
 
 (executable
  (name odoc_semantic_test)
- (enabled_if
-  (>= %{ocaml_version} 4.04.1))
  (libraries sexplib0 odoc_model odoc_model_desc yojson expect_test_helper))
 
 (rule

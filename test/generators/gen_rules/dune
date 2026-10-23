@@ -1,5 +1,3 @@
 (executable
  (name gen_rules)
- (libraries gen_rules_lib)
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+ (libraries gen_rules_lib))
