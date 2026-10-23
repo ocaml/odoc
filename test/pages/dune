@@ -1,13 +1,14 @@
 (env
  (_
   (binaries
+   (../cram_test_helper/cram_test_helper.exe as cram_test_helper)
    (../odoc_print/odoc_print.exe as odoc_print))))
 
 (cram
  (package odoc)
  (enabled_if
   (>= %{ocaml_version} 4.04.1))
- (deps %{bin:odoc} %{bin:odoc_print}))
+ (deps %{bin:odoc} %{bin:cram_test_helper} %{bin:odoc_print}))
 
 (cram
  (applies_to medias)
