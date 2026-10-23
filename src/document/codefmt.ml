@@ -63,35 +63,43 @@ and compute_length_inline (t : Types.Inline.t) : int =
   in
   List.fold_left f 0 t
 
-(** Modern implementation using semantic tags, Only for 4.08+ *)
-
-(*
 module Tag = struct
-
-  type Format.stag +=
-    | Elt of Inline.t
-    | Tag of Source.tag
-    | Ignore
+  type Format.stag += Elt of Inline.t | Tag of Source.tag | Ignore
 
   let setup_tags formatter state0 =
     let stag_functions =
       let mark_open_stag = function
-        | Elt elt -> State.push state0 (Elt elt); ""
-        | Tag tag -> State.enter state0 tag; ""
-        | Format.String_tag "" -> State.enter state0 None; ""
-        | Format.String_tag tag -> State.enter state0 (Some tag); ""
-        | Ignore -> State.push_ignore state0; ""
+        | Elt elt ->
+            State.push state0 (Elt elt);
+            ""
+        | Tag tag ->
+            State.enter state0 tag;
+            ""
+        | Format.String_tag "" ->
+            State.enter state0 None;
+            ""
+        | Format.String_tag tag ->
+            State.enter state0 (Some tag);
+            ""
+        | Ignore ->
+            State.push_ignore state0;
+            ""
         | _ -> ""
       and mark_close_stag = function
         | Elt _ -> ""
-        | Tag _
-        | Format.String_tag _ -> State.leave state0; ""
-        | Ignore -> State.pop_ignore state0; ""
+        | Tag _ | Format.String_tag _ ->
+            State.leave state0;
+            ""
+        | Ignore ->
+            State.pop_ignore state0;
+            ""
         | _ -> ""
-      in {Format.
-        print_open_stag = (fun _ -> ());
+      in
+      {
+        Format.print_open_stag = (fun _ -> ());
         print_close_stag = (fun _ -> ());
-        mark_open_stag; mark_close_stag;
+        mark_open_stag;
+        mark_close_stag;
       }
     in
     Format.pp_set_tags formatter true;
@@ -108,64 +116,6 @@ module Tag = struct
     Format.fprintf ppf "%t" txt;
     Format.pp_close_stag ppf ()
 end
-*)
-
-(** Ugly terrible implementation of Format Semantic tags for OCaml < 4.08.
-    Please get rid of it as soon as possible. *)
-module Tag = struct
-  let setup_tags formatter state0 =
-    let tag_functions =
-      let get_tag s =
-        let prefix_tag = "tag:" and prefix_ignore = "ignore-tag" in
-        let l = String.length prefix_tag in
-        if String.length s > l && String.sub s 0 l = prefix_tag then
-          let elt : Inline.t = Marshal.from_string s l in
-          `Elt elt
-        else if s = prefix_ignore then `Ignore
-        else `String s
-      in
-      let mark_open_tag s =
-        match get_tag s with
-        | `Ignore ->
-            State.push_ignore state0;
-            ""
-        | `Elt elt ->
-            State.push state0 (Elt elt);
-            ""
-        | `String "" ->
-            State.enter state0 None;
-            ""
-        | `String tag ->
-            State.enter state0 (Some tag);
-            ""
-      and mark_close_tag s =
-        match get_tag s with
-        | `Ignore ->
-            State.pop_ignore state0;
-            ""
-        | `Elt _ -> ""
-        | `String _ ->
-            State.leave state0;
-            ""
-      in
-      {
-        Format.print_open_tag = (fun _ -> ());
-        print_close_tag = (fun _ -> ());
-        mark_open_tag;
-        mark_close_tag;
-      }
-    in
-    Format.pp_set_tags formatter true;
-    Format.pp_set_formatter_tag_functions formatter tag_functions;
-    ()
-
-  let elt ppf (elt : Inline.t) =
-    Format.fprintf ppf "@{<tag:%s>%t@}" (Marshal.to_string elt []) (fun fmt ->
-        Format.pp_print_as fmt (compute_length_inline elt) "")
-
-  let ignore ppf txt = Format.fprintf ppf "@{<ignore-tag>%t@}" txt
-end
-[@@alert "-deprecated--deprecated"]
 
 type t = Format.formatter -> unit
 
