@@ -88,10 +88,7 @@ let make_test_case case_name =
     in
     let odoc = Fpath.set_ext ".odoc" base_out_path in
     let odocl = Fpath.set_ext ".odocl" base_out_path in
-    let enabledif =
-      try Some (List.assoc case_name constraints)
-      with Not_found -> Some (Min "4.04")
-    in
+    let enabledif = List.assoc_opt case_name constraints in
     { Gen_rules_lib.input; cmt; odoc; odocl; enabledif }
   in
   match Fpath.get_ext input with

@@ -2,49 +2,37 @@
  (target alerts.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/alerts.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/alerts.mli})))
 
 (rule
  (target alerts.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:alerts.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:alerts.cmti})))
 
 (rule
  (target alerts.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:alerts.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:alerts.odoc})))
 
 (rule
  (target alias.cmt)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/alias.ml}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/alias.ml})))
 
 (rule
  (target alias.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:alias.cmt}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:alias.cmt})))
 
 (rule
  (target alias.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:alias.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:alias.odoc})))
 
 (rule
  (target annotations.cmti)
@@ -146,49 +134,37 @@
  (target bugs.cmt)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/bugs.ml}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/bugs.ml})))
 
 (rule
  (target bugs.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:bugs.cmt}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:bugs.cmt})))
 
 (rule
  (target bugs.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:bugs.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:bugs.odoc})))
 
 (rule
  (target bugs_post_406.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/bugs_post_406.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/bugs_post_406.mli})))
 
 (rule
  (target bugs_post_406.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:bugs_post_406.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:bugs_post_406.cmti})))
 
 (rule
  (target bugs_post_406.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:bugs_post_406.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:bugs_post_406.odoc})))
 
 (rule
  (target bugs_pre_410.cmt)
@@ -218,121 +194,91 @@
  (target class.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/class.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/class.mli})))
 
 (rule
  (target class.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:class.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:class.cmti})))
 
 (rule
  (target class.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:class.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:class.odoc})))
 
 (rule
  (target class_comments.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/class_comments.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/class_comments.mli})))
 
 (rule
  (target class_comments.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:class_comments.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:class_comments.cmti})))
 
 (rule
  (target class_comments.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:class_comments.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:class_comments.odoc})))
 
 (rule
  (target external.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/external.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/external.mli})))
 
 (rule
  (target external.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:external.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:external.cmti})))
 
 (rule
  (target external.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:external.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:external.odoc})))
 
 (rule
  (target functor.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/functor.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/functor.mli})))
 
 (rule
  (target functor.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:functor.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:functor.cmti})))
 
 (rule
  (target functor.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:functor.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:functor.odoc})))
 
 (rule
  (target functor2.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/functor2.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/functor2.mli})))
 
 (rule
  (target functor2.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:functor2.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:functor2.cmti})))
 
 (rule
  (target functor2.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:functor2.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:functor2.odoc})))
 
 (rule
  (target functor_ml.cmt)
@@ -362,97 +308,73 @@
  (target include.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/include.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/include.mli})))
 
 (rule
  (target include.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:include.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:include.cmti})))
 
 (rule
  (target include.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:include.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:include.odoc})))
 
 (rule
  (target include2.cmt)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/include2.ml}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/include2.ml})))
 
 (rule
  (target include2.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:include2.cmt}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:include2.cmt})))
 
 (rule
  (target include2.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:include2.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:include2.odoc})))
 
 (rule
  (target include_sections.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/include_sections.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/include_sections.mli})))
 
 (rule
  (target include_sections.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:include_sections.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:include_sections.cmti})))
 
 (rule
  (target include_sections.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:include_sections.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:include_sections.odoc})))
 
 (rule
  (target interlude.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/interlude.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/interlude.mli})))
 
 (rule
  (target interlude.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:interlude.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:interlude.cmti})))
 
 (rule
  (target interlude.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:interlude.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:interlude.odoc})))
 
 (rule
  (target labels.cmti)
@@ -482,113 +404,85 @@
  (target markup.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/markup.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/markup.mli})))
 
 (rule
  (target markup.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:markup.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:markup.cmti})))
 
 (rule
  (target markup.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:markup.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:markup.odoc})))
 
 (rule
  (target page-mld.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:cases/mld.mld}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:cases/mld.mld})))
 
 (rule
  (target page-mld.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:page-mld.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:page-mld.odoc})))
 
 (rule
  (target module.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/module.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/module.mli})))
 
 (rule
  (target module.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:module.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:module.cmti})))
 
 (rule
  (target module.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:module.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:module.odoc})))
 
 (rule
  (target module_type_alias.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/module_type_alias.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/module_type_alias.mli})))
 
 (rule
  (target module_type_alias.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:module_type_alias.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:module_type_alias.cmti})))
 
 (rule
  (target module_type_alias.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:module_type_alias.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:module_type_alias.odoc})))
 
 (rule
  (target module_type_of.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/module_type_of.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/module_type_of.mli})))
 
 (rule
  (target module_type_of.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:module_type_of.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:module_type_of.cmti})))
 
 (rule
  (target module_type_of.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:module_type_of.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:module_type_of.odoc})))
 
 (rule
  (target module_type_subst.cmti)
@@ -618,25 +512,19 @@
  (target nested.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/nested.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/nested.mli})))
 
 (rule
  (target nested.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:nested.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:nested.cmti})))
 
 (rule
  (target nested.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:nested.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:nested.odoc})))
 
 (rule
  (target ocaml_55.cmti)
@@ -810,193 +698,145 @@
  (target section.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/section.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/section.mli})))
 
 (rule
  (target section.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:section.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:section.cmti})))
 
 (rule
  (target section.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:section.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:section.odoc})))
 
 (rule
  (target stop.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/stop.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/stop.mli})))
 
 (rule
  (target stop.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:stop.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:stop.cmti})))
 
 (rule
  (target stop.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:stop.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:stop.odoc})))
 
 (rule
  (target stop_dead_link_doc.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/stop_dead_link_doc.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/stop_dead_link_doc.mli})))
 
 (rule
  (target stop_dead_link_doc.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:stop_dead_link_doc.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:stop_dead_link_doc.cmti})))
 
 (rule
  (target stop_dead_link_doc.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:stop_dead_link_doc.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:stop_dead_link_doc.odoc})))
 
 (rule
  (target stop_first_comment.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/stop_first_comment.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/stop_first_comment.mli})))
 
 (rule
  (target stop_first_comment.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:stop_first_comment.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:stop_first_comment.cmti})))
 
 (rule
  (target stop_first_comment.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:stop_first_comment.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:stop_first_comment.odoc})))
 
 (rule
  (target tag_link.cmt)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/tag_link.ml}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/tag_link.ml})))
 
 (rule
  (target tag_link.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:tag_link.cmt}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:tag_link.cmt})))
 
 (rule
  (target tag_link.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:tag_link.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:tag_link.odoc})))
 
 (rule
  (target toplevel_comments.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/toplevel_comments.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/toplevel_comments.mli})))
 
 (rule
  (target toplevel_comments.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:toplevel_comments.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:toplevel_comments.cmti})))
 
 (rule
  (target toplevel_comments.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:toplevel_comments.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:toplevel_comments.odoc})))
 
 (rule
  (target type.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/type.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/type.mli})))
 
 (rule
  (target type.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:type.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:type.cmti})))
 
 (rule
  (target type.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:type.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:type.odoc})))
 
 (rule
  (target val.cmti)
  (package odoc)
  (action
-  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/val.mli}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run ocamlc -c -bin-annot -o %{target} %{dep:cases/val.mli})))
 
 (rule
  (target val.odoc)
  (package odoc)
  (action
-  (run odoc compile -o %{target} %{dep:val.cmti}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc compile -o %{target} %{dep:val.cmti})))
 
 (rule
  (target val.odocl)
  (package odoc)
  (action
-  (run odoc link -o %{target} %{dep:val.odoc}))
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+  (run odoc link -o %{target} %{dep:val.odoc})))
 
 (subdir
  html
@@ -1013,23 +853,17 @@
     gen
     -o
     .
-    %{dep:../alerts.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../alerts.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alerts.html Alerts.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Alerts.html Alerts.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alerts-Top1.html Alerts-Top1.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Alerts-Top1.html Alerts-Top1.html.gen))))
 
 (subdir
  html
@@ -1039,16 +873,12 @@
   (action
    (with-outputs-to
     alerts.targets.gen
-    (run odoc html-targets -o . %{dep:../alerts.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../alerts.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff alerts.targets alerts.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff alerts.targets alerts.targets.gen))))
 
 (subdir
  latex
@@ -1056,16 +886,12 @@
   (targets Alerts.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../alerts.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../alerts.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alerts.tex Alerts.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Alerts.tex Alerts.tex.gen))))
 
 (subdir
  latex
@@ -1075,16 +901,12 @@
   (action
    (with-outputs-to
     alerts.targets.gen
-    (run odoc latex-targets -o . %{dep:../alerts.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../alerts.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff alerts.targets alerts.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff alerts.targets alerts.targets.gen))))
 
 (subdir
  man
@@ -1092,23 +914,17 @@
   (targets Alerts.3o.gen Alerts.Top1.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../alerts.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../alerts.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alerts.3o Alerts.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Alerts.3o Alerts.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alerts.Top1.3o Alerts.Top1.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Alerts.Top1.3o Alerts.Top1.3o.gen))))
 
 (subdir
  man
@@ -1118,16 +934,12 @@
   (action
    (with-outputs-to
     alerts.targets.gen
-    (run odoc man-targets -o . %{dep:../alerts.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../alerts.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff alerts.targets alerts.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff alerts.targets alerts.targets.gen))))
 
 (subdir
  markdown
@@ -1142,23 +954,17 @@
     .
     --extra-suffix
     gen
-    %{dep:../alerts.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../alerts.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alerts.md Alerts.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Alerts.md Alerts.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alerts-Top1.md Alerts-Top1.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Alerts-Top1.md Alerts-Top1.md.gen))))
 
 (subdir
  markdown
@@ -1168,16 +974,12 @@
   (action
    (with-outputs-to
     alerts.targets.gen
-    (run odoc markdown-targets -o . %{dep:../alerts.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../alerts.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff alerts.targets alerts.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff alerts.targets alerts.targets.gen))))
 
 (subdir
  html
@@ -1194,23 +996,17 @@
     gen
     -o
     .
-    %{dep:../alias.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../alias.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alias.html Alias.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Alias.html Alias.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alias-X.html Alias-X.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Alias-X.html Alias-X.html.gen))))
 
 (subdir
  html
@@ -1220,16 +1016,12 @@
   (action
    (with-outputs-to
     alias.targets.gen
-    (run odoc html-targets -o . %{dep:../alias.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../alias.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff alias.targets alias.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff alias.targets alias.targets.gen))))
 
 (subdir
  latex
@@ -1237,23 +1029,17 @@
   (targets Alias.tex.gen Alias.X.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../alias.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../alias.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alias.tex Alias.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Alias.tex Alias.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alias.X.tex Alias.X.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Alias.X.tex Alias.X.tex.gen))))
 
 (subdir
  latex
@@ -1263,16 +1049,12 @@
   (action
    (with-outputs-to
     alias.targets.gen
-    (run odoc latex-targets -o . %{dep:../alias.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../alias.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff alias.targets alias.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff alias.targets alias.targets.gen))))
 
 (subdir
  man
@@ -1280,23 +1062,17 @@
   (targets Alias.3o.gen Alias.X.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../alias.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../alias.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alias.3o Alias.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Alias.3o Alias.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alias.X.3o Alias.X.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Alias.X.3o Alias.X.3o.gen))))
 
 (subdir
  man
@@ -1306,16 +1082,12 @@
   (action
    (with-outputs-to
     alias.targets.gen
-    (run odoc man-targets -o . %{dep:../alias.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../alias.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff alias.targets alias.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff alias.targets alias.targets.gen))))
 
 (subdir
  markdown
@@ -1323,23 +1095,17 @@
   (targets Alias.md.gen Alias-X.md.gen)
   (package odoc)
   (action
-   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../alias.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../alias.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alias.md Alias.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Alias.md Alias.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Alias-X.md Alias-X.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Alias-X.md Alias-X.md.gen))))
 
 (subdir
  markdown
@@ -1349,16 +1115,12 @@
   (action
    (with-outputs-to
     alias.targets.gen
-    (run odoc markdown-targets -o . %{dep:../alias.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../alias.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff alias.targets alias.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff alias.targets alias.targets.gen))))
 
 (subdir
  html
@@ -1999,16 +1761,12 @@
     gen
     -o
     .
-    %{dep:../bugs.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../bugs.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Bugs.html Bugs.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Bugs.html Bugs.html.gen))))
 
 (subdir
  html
@@ -2018,16 +1776,12 @@
   (action
    (with-outputs-to
     bugs.targets.gen
-    (run odoc html-targets -o . %{dep:../bugs.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../bugs.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff bugs.targets bugs.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff bugs.targets bugs.targets.gen))))
 
 (subdir
  latex
@@ -2035,16 +1789,12 @@
   (targets Bugs.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../bugs.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../bugs.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Bugs.tex Bugs.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Bugs.tex Bugs.tex.gen))))
 
 (subdir
  latex
@@ -2054,16 +1804,12 @@
   (action
    (with-outputs-to
     bugs.targets.gen
-    (run odoc latex-targets -o . %{dep:../bugs.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../bugs.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff bugs.targets bugs.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff bugs.targets bugs.targets.gen))))
 
 (subdir
  man
@@ -2071,16 +1817,12 @@
   (targets Bugs.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../bugs.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../bugs.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Bugs.3o Bugs.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Bugs.3o Bugs.3o.gen))))
 
 (subdir
  man
@@ -2090,16 +1832,12 @@
   (action
    (with-outputs-to
     bugs.targets.gen
-    (run odoc man-targets -o . %{dep:../bugs.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../bugs.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff bugs.targets bugs.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff bugs.targets bugs.targets.gen))))
 
 (subdir
  markdown
@@ -2107,16 +1845,12 @@
   (targets Bugs.md.gen)
   (package odoc)
   (action
-   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../bugs.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../bugs.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Bugs.md Bugs.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Bugs.md Bugs.md.gen))))
 
 (subdir
  markdown
@@ -2126,16 +1860,12 @@
   (action
    (with-outputs-to
     bugs.targets.gen
-    (run odoc markdown-targets -o . %{dep:../bugs.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../bugs.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff bugs.targets bugs.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff bugs.targets bugs.targets.gen))))
 
 (subdir
  html
@@ -2155,34 +1885,26 @@
     gen
     -o
     .
-    %{dep:../bugs_post_406.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../bugs_post_406.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Bugs_post_406.html Bugs_post_406.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Bugs_post_406.html Bugs_post_406.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Bugs_post_406-class-type-let_open.html
-    Bugs_post_406-class-type-let_open.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Bugs_post_406-class-type-let_open.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Bugs_post_406-class-let_open'.html
-    Bugs_post_406-class-let_open'.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Bugs_post_406-class-let_open'.html.gen))))
 
 (subdir
  html
@@ -2192,16 +1914,12 @@
   (action
    (with-outputs-to
     bugs_post_406.targets.gen
-    (run odoc html-targets -o . %{dep:../bugs_post_406.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../bugs_post_406.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff bugs_post_406.targets bugs_post_406.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff bugs_post_406.targets bugs_post_406.targets.gen))))
 
 (subdir
  latex
@@ -2216,23 +1934,17 @@
     .
     --extra-suffix
     gen
-    %{dep:../bugs_post_406.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../bugs_post_406.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Bugs_post_406.tex Bugs_post_406.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Bugs_post_406.tex Bugs_post_406.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Bugs_post_406.let_open'.tex Bugs_post_406.let_open'.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Bugs_post_406.let_open'.tex Bugs_post_406.let_open'.tex.gen))))
 
 (subdir
  latex
@@ -2242,16 +1954,12 @@
   (action
    (with-outputs-to
     bugs_post_406.targets.gen
-    (run odoc latex-targets -o . %{dep:../bugs_post_406.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../bugs_post_406.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff bugs_post_406.targets bugs_post_406.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff bugs_post_406.targets bugs_post_406.targets.gen))))
 
 (subdir
  man
@@ -2266,25 +1974,19 @@
     .
     --extra-suffix
     gen
-    %{dep:../bugs_post_406.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../bugs_post_406.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Bugs_post_406.3o Bugs_post_406.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Bugs_post_406.3o Bugs_post_406.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Bugs_post_406.class-let_open'.3o
-    Bugs_post_406.class-let_open'.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Bugs_post_406.class-let_open'.3o.gen))))
 
 (subdir
  man
@@ -2294,16 +1996,12 @@
   (action
    (with-outputs-to
     bugs_post_406.targets.gen
-    (run odoc man-targets -o . %{dep:../bugs_post_406.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../bugs_post_406.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff bugs_post_406.targets bugs_post_406.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff bugs_post_406.targets bugs_post_406.targets.gen))))
 
 (subdir
  markdown
@@ -2321,34 +2019,26 @@
     .
     --extra-suffix
     gen
-    %{dep:../bugs_post_406.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../bugs_post_406.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Bugs_post_406.md Bugs_post_406.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Bugs_post_406.md Bugs_post_406.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Bugs_post_406-class-type-let_open.md
-    Bugs_post_406-class-type-let_open.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Bugs_post_406-class-type-let_open.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Bugs_post_406-class-let_open'.md
-    Bugs_post_406-class-let_open'.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Bugs_post_406-class-let_open'.md.gen))))
 
 (subdir
  markdown
@@ -2358,16 +2048,12 @@
   (action
    (with-outputs-to
     bugs_post_406.targets.gen
-    (run odoc markdown-targets -o . %{dep:../bugs_post_406.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../bugs_post_406.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff bugs_post_406.targets bugs_post_406.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff bugs_post_406.targets bugs_post_406.targets.gen))))
 
 (subdir
  html
@@ -2568,83 +2254,61 @@
     gen
     -o
     .
-    %{dep:../class.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../class.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class.html Class.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class.html Class.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-type-empty.html Class-class-type-empty.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class-class-type-empty.html Class-class-type-empty.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-type-mutually.html Class-class-type-mutually.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class-class-type-mutually.html Class-class-type-mutually.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-type-recursive.html Class-class-type-recursive.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class-class-type-recursive.html Class-class-type-recursive.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-mutually'.html Class-class-mutually'.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class-class-mutually'.html Class-class-mutually'.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-recursive'.html Class-class-recursive'.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class-class-recursive'.html Class-class-recursive'.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Class-class-type-empty_virtual.html
-    Class-class-type-empty_virtual.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Class-class-type-empty_virtual.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-empty_virtual'.html Class-class-empty_virtual'.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class-class-empty_virtual'.html Class-class-empty_virtual'.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Class-class-type-polymorphic.html
-    Class-class-type-polymorphic.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Class-class-type-polymorphic.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-polymorphic'.html Class-class-polymorphic'.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Class-class-polymorphic'.html Class-class-polymorphic'.html.gen))))
 
 (subdir
  html
@@ -2654,16 +2318,12 @@
   (action
    (with-outputs-to
     class.targets.gen
-    (run odoc html-targets -o . %{dep:../class.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../class.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff class.targets class.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff class.targets class.targets.gen))))
 
 (subdir
  latex
@@ -2676,44 +2336,32 @@
    Class.polymorphic'.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../class.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../class.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class.tex Class.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class.tex Class.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class.mutually'.tex Class.mutually'.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class.mutually'.tex Class.mutually'.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class.recursive'.tex Class.recursive'.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class.recursive'.tex Class.recursive'.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class.empty_virtual'.tex Class.empty_virtual'.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class.empty_virtual'.tex Class.empty_virtual'.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class.polymorphic'.tex Class.polymorphic'.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Class.polymorphic'.tex Class.polymorphic'.tex.gen))))
 
 (subdir
  latex
@@ -2723,16 +2371,12 @@
   (action
    (with-outputs-to
     class.targets.gen
-    (run odoc latex-targets -o . %{dep:../class.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../class.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff class.targets class.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff class.targets class.targets.gen))))
 
 (subdir
  man
@@ -2745,44 +2389,32 @@
    Class.class-polymorphic'.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../class.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../class.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class.3o Class.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class.3o Class.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class.class-mutually'.3o Class.class-mutually'.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class.class-mutually'.3o Class.class-mutually'.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class.class-recursive'.3o Class.class-recursive'.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class.class-recursive'.3o Class.class-recursive'.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class.class-empty_virtual'.3o Class.class-empty_virtual'.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class.class-empty_virtual'.3o Class.class-empty_virtual'.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class.class-polymorphic'.3o Class.class-polymorphic'.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Class.class-polymorphic'.3o Class.class-polymorphic'.3o.gen))))
 
 (subdir
  man
@@ -2792,16 +2424,12 @@
   (action
    (with-outputs-to
     class.targets.gen
-    (run odoc man-targets -o . %{dep:../class.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../class.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff class.targets class.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff class.targets class.targets.gen))))
 
 (subdir
  markdown
@@ -2819,81 +2447,59 @@
    Class-class-polymorphic'.md.gen)
   (package odoc)
   (action
-   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../class.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../class.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class.md Class.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class.md Class.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-type-empty.md Class-class-type-empty.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class-class-type-empty.md Class-class-type-empty.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-type-mutually.md Class-class-type-mutually.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class-class-type-mutually.md Class-class-type-mutually.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-type-recursive.md Class-class-type-recursive.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class-class-type-recursive.md Class-class-type-recursive.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-mutually'.md Class-class-mutually'.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class-class-mutually'.md Class-class-mutually'.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-recursive'.md Class-class-recursive'.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class-class-recursive'.md Class-class-recursive'.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Class-class-type-empty_virtual.md
-    Class-class-type-empty_virtual.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Class-class-type-empty_virtual.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-empty_virtual'.md Class-class-empty_virtual'.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class-class-empty_virtual'.md Class-class-empty_virtual'.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-type-polymorphic.md Class-class-type-polymorphic.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class-class-type-polymorphic.md Class-class-type-polymorphic.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class-class-polymorphic'.md Class-class-polymorphic'.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Class-class-polymorphic'.md Class-class-polymorphic'.md.gen))))
 
 (subdir
  markdown
@@ -2903,16 +2509,12 @@
   (action
    (with-outputs-to
     class.targets.gen
-    (run odoc markdown-targets -o . %{dep:../class.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../class.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff class.targets class.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff class.targets class.targets.gen))))
 
 (subdir
  html
@@ -2932,30 +2534,22 @@
     gen
     -o
     .
-    %{dep:../class_comments.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../class_comments.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class_comments.html Class_comments.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class_comments.html Class_comments.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class_comments-class-x.html Class_comments-class-x.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class_comments-class-x.html Class_comments-class-x.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class_comments-class-c.html Class_comments-class-c.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Class_comments-class-c.html Class_comments-class-c.html.gen))))
 
 (subdir
  html
@@ -2965,16 +2559,12 @@
   (action
    (with-outputs-to
     class_comments.targets.gen
-    (run odoc html-targets -o . %{dep:../class_comments.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../class_comments.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff class_comments.targets class_comments.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff class_comments.targets class_comments.targets.gen))))
 
 (subdir
  latex
@@ -2992,30 +2582,22 @@
     .
     --extra-suffix
     gen
-    %{dep:../class_comments.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../class_comments.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class_comments.tex Class_comments.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class_comments.tex Class_comments.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class_comments.x.tex Class_comments.x.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class_comments.x.tex Class_comments.x.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class_comments.c.tex Class_comments.c.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Class_comments.c.tex Class_comments.c.tex.gen))))
 
 (subdir
  latex
@@ -3025,16 +2607,12 @@
   (action
    (with-outputs-to
     class_comments.targets.gen
-    (run odoc latex-targets -o . %{dep:../class_comments.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../class_comments.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff class_comments.targets class_comments.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff class_comments.targets class_comments.targets.gen))))
 
 (subdir
  man
@@ -3052,30 +2630,22 @@
     .
     --extra-suffix
     gen
-    %{dep:../class_comments.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../class_comments.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class_comments.3o Class_comments.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class_comments.3o Class_comments.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class_comments.class-x.3o Class_comments.class-x.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class_comments.class-x.3o Class_comments.class-x.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class_comments.class-c.3o Class_comments.class-c.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Class_comments.class-c.3o Class_comments.class-c.3o.gen))))
 
 (subdir
  man
@@ -3085,16 +2655,12 @@
   (action
    (with-outputs-to
     class_comments.targets.gen
-    (run odoc man-targets -o . %{dep:../class_comments.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../class_comments.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff class_comments.targets class_comments.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff class_comments.targets class_comments.targets.gen))))
 
 (subdir
  markdown
@@ -3112,30 +2678,22 @@
     .
     --extra-suffix
     gen
-    %{dep:../class_comments.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../class_comments.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class_comments.md Class_comments.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class_comments.md Class_comments.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class_comments-class-x.md Class_comments-class-x.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Class_comments-class-x.md Class_comments-class-x.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Class_comments-class-c.md Class_comments-class-c.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Class_comments-class-c.md Class_comments-class-c.md.gen))))
 
 (subdir
  markdown
@@ -3145,16 +2703,12 @@
   (action
    (with-outputs-to
     class_comments.targets.gen
-    (run odoc markdown-targets -o . %{dep:../class_comments.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../class_comments.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff class_comments.targets class_comments.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff class_comments.targets class_comments.targets.gen))))
 
 (subdir
  html
@@ -3171,16 +2725,12 @@
     gen
     -o
     .
-    %{dep:../external.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../external.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff External.html External.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff External.html External.html.gen))))
 
 (subdir
  html
@@ -3190,16 +2740,12 @@
   (action
    (with-outputs-to
     external.targets.gen
-    (run odoc html-targets -o . %{dep:../external.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../external.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff external.targets external.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff external.targets external.targets.gen))))
 
 (subdir
  latex
@@ -3207,16 +2753,12 @@
   (targets External.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../external.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../external.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff External.tex External.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff External.tex External.tex.gen))))
 
 (subdir
  latex
@@ -3226,16 +2768,12 @@
   (action
    (with-outputs-to
     external.targets.gen
-    (run odoc latex-targets -o . %{dep:../external.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../external.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff external.targets external.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff external.targets external.targets.gen))))
 
 (subdir
  man
@@ -3243,16 +2781,12 @@
   (targets External.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../external.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../external.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff External.3o External.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff External.3o External.3o.gen))))
 
 (subdir
  man
@@ -3262,16 +2796,12 @@
   (action
    (with-outputs-to
     external.targets.gen
-    (run odoc man-targets -o . %{dep:../external.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../external.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff external.targets external.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff external.targets external.targets.gen))))
 
 (subdir
  markdown
@@ -3286,16 +2816,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../external.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../external.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff External.md External.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff External.md External.md.gen))))
 
 (subdir
  markdown
@@ -3305,16 +2831,12 @@
   (action
    (with-outputs-to
     external.targets.gen
-    (run odoc markdown-targets -o . %{dep:../external.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../external.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff external.targets external.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff external.targets external.targets.gen))))
 
 (subdir
  html
@@ -3344,102 +2866,74 @@
     gen
     -o
     .
-    %{dep:../functor.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../functor.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.html Functor.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor.html Functor.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-module-type-S.html Functor-module-type-S.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-module-type-S.html Functor-module-type-S.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-module-type-S1.html Functor-module-type-S1.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-module-type-S1.html Functor-module-type-S1.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Functor-module-type-S1-argument-1-_.html
-    Functor-module-type-S1-argument-1-_.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Functor-module-type-S1-argument-1-_.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F1.html Functor-F1.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F1.html Functor-F1.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F1-argument-1-Arg.html Functor-F1-argument-1-Arg.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F1-argument-1-Arg.html Functor-F1-argument-1-Arg.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F2.html Functor-F2.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F2.html Functor-F2.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F2-argument-1-Arg.html Functor-F2-argument-1-Arg.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F2-argument-1-Arg.html Functor-F2-argument-1-Arg.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F3.html Functor-F3.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F3.html Functor-F3.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F3-argument-1-Arg.html Functor-F3-argument-1-Arg.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F3-argument-1-Arg.html Functor-F3-argument-1-Arg.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F4.html Functor-F4.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F4.html Functor-F4.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F4-argument-1-Arg.html Functor-F4-argument-1-Arg.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F4-argument-1-Arg.html Functor-F4-argument-1-Arg.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F5.html Functor-F5.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Functor-F5.html Functor-F5.html.gen))))
 
 (subdir
  html
@@ -3449,16 +2943,12 @@
   (action
    (with-outputs-to
     functor.targets.gen
-    (run odoc html-targets -o . %{dep:../functor.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../functor.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff functor.targets functor.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff functor.targets functor.targets.gen))))
 
 (subdir
  latex
@@ -3472,51 +2962,37 @@
    Functor.F5.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../functor.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../functor.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.tex Functor.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor.tex Functor.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.F1.tex Functor.F1.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor.F1.tex Functor.F1.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.F2.tex Functor.F2.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor.F2.tex Functor.F2.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.F3.tex Functor.F3.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor.F3.tex Functor.F3.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.F4.tex Functor.F4.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor.F4.tex Functor.F4.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.F5.tex Functor.F5.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Functor.F5.tex Functor.F5.tex.gen))))
 
 (subdir
  latex
@@ -3526,16 +3002,12 @@
   (action
    (with-outputs-to
     functor.targets.gen
-    (run odoc latex-targets -o . %{dep:../functor.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../functor.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff functor.targets functor.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff functor.targets functor.targets.gen))))
 
 (subdir
  man
@@ -3549,51 +3021,37 @@
    Functor.F5.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../functor.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../functor.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.3o Functor.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor.3o Functor.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.F1.3o Functor.F1.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor.F1.3o Functor.F1.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.F2.3o Functor.F2.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor.F2.3o Functor.F2.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.F3.3o Functor.F3.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor.F3.3o Functor.F3.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.F4.3o Functor.F4.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor.F4.3o Functor.F4.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.F5.3o Functor.F5.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Functor.F5.3o Functor.F5.3o.gen))))
 
 (subdir
  man
@@ -3603,16 +3061,12 @@
   (action
    (with-outputs-to
     functor.targets.gen
-    (run odoc man-targets -o . %{dep:../functor.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../functor.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff functor.targets functor.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff functor.targets functor.targets.gen))))
 
 (subdir
  markdown
@@ -3640,102 +3094,74 @@
     .
     --extra-suffix
     gen
-    %{dep:../functor.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../functor.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor.md Functor.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor.md Functor.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-module-type-S.md Functor-module-type-S.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-module-type-S.md Functor-module-type-S.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-module-type-S1.md Functor-module-type-S1.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-module-type-S1.md Functor-module-type-S1.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Functor-module-type-S1-argument-1-_.md
-    Functor-module-type-S1-argument-1-_.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Functor-module-type-S1-argument-1-_.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F1.md Functor-F1.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F1.md Functor-F1.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F1-argument-1-Arg.md Functor-F1-argument-1-Arg.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F1-argument-1-Arg.md Functor-F1-argument-1-Arg.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F2.md Functor-F2.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F2.md Functor-F2.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F2-argument-1-Arg.md Functor-F2-argument-1-Arg.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F2-argument-1-Arg.md Functor-F2-argument-1-Arg.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F3.md Functor-F3.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F3.md Functor-F3.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F3-argument-1-Arg.md Functor-F3-argument-1-Arg.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F3-argument-1-Arg.md Functor-F3-argument-1-Arg.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F4.md Functor-F4.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F4.md Functor-F4.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F4-argument-1-Arg.md Functor-F4-argument-1-Arg.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor-F4-argument-1-Arg.md Functor-F4-argument-1-Arg.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor-F5.md Functor-F5.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Functor-F5.md Functor-F5.md.gen))))
 
 (subdir
  markdown
@@ -3745,16 +3171,12 @@
   (action
    (with-outputs-to
     functor.targets.gen
-    (run odoc markdown-targets -o . %{dep:../functor.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../functor.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff functor.targets functor.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff functor.targets functor.targets.gen))))
 
 (subdir
  html
@@ -3779,69 +3201,51 @@
     gen
     -o
     .
-    %{dep:../functor2.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../functor2.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2.html Functor2.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2.html Functor2.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2-module-type-S.html Functor2-module-type-S.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2-module-type-S.html Functor2-module-type-S.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2-X.html Functor2-X.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2-X.html Functor2-X.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2-X-argument-1-Y.html Functor2-X-argument-1-Y.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2-X-argument-1-Y.html Functor2-X-argument-1-Y.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2-X-argument-2-Z.html Functor2-X-argument-2-Z.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2-X-argument-2-Z.html Functor2-X-argument-2-Z.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2-module-type-XF.html Functor2-module-type-XF.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2-module-type-XF.html Functor2-module-type-XF.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Functor2-module-type-XF-argument-1-Y.html
-    Functor2-module-type-XF-argument-1-Y.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Functor2-module-type-XF-argument-1-Y.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Functor2-module-type-XF-argument-2-Z.html
-    Functor2-module-type-XF-argument-2-Z.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Functor2-module-type-XF-argument-2-Z.html.gen))))
 
 (subdir
  html
@@ -3851,16 +3255,12 @@
   (action
    (with-outputs-to
     functor2.targets.gen
-    (run odoc html-targets -o . %{dep:../functor2.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../functor2.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff functor2.targets functor2.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff functor2.targets functor2.targets.gen))))
 
 (subdir
  latex
@@ -3868,23 +3268,17 @@
   (targets Functor2.tex.gen Functor2.X.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../functor2.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../functor2.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2.tex Functor2.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2.tex Functor2.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2.X.tex Functor2.X.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Functor2.X.tex Functor2.X.tex.gen))))
 
 (subdir
  latex
@@ -3894,16 +3288,12 @@
   (action
    (with-outputs-to
     functor2.targets.gen
-    (run odoc latex-targets -o . %{dep:../functor2.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../functor2.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff functor2.targets functor2.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff functor2.targets functor2.targets.gen))))
 
 (subdir
  man
@@ -3911,23 +3301,17 @@
   (targets Functor2.3o.gen Functor2.X.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../functor2.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../functor2.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2.3o Functor2.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2.3o Functor2.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2.X.3o Functor2.X.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Functor2.X.3o Functor2.X.3o.gen))))
 
 (subdir
  man
@@ -3937,16 +3321,12 @@
   (action
    (with-outputs-to
     functor2.targets.gen
-    (run odoc man-targets -o . %{dep:../functor2.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../functor2.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff functor2.targets functor2.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff functor2.targets functor2.targets.gen))))
 
 (subdir
  markdown
@@ -3969,69 +3349,51 @@
     .
     --extra-suffix
     gen
-    %{dep:../functor2.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../functor2.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2.md Functor2.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2.md Functor2.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2-module-type-S.md Functor2-module-type-S.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2-module-type-S.md Functor2-module-type-S.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2-X.md Functor2-X.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2-X.md Functor2-X.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2-X-argument-1-Y.md Functor2-X-argument-1-Y.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2-X-argument-1-Y.md Functor2-X-argument-1-Y.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2-X-argument-2-Z.md Functor2-X-argument-2-Z.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2-X-argument-2-Z.md Functor2-X-argument-2-Z.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Functor2-module-type-XF.md Functor2-module-type-XF.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Functor2-module-type-XF.md Functor2-module-type-XF.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Functor2-module-type-XF-argument-1-Y.md
-    Functor2-module-type-XF-argument-1-Y.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Functor2-module-type-XF-argument-1-Y.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Functor2-module-type-XF-argument-2-Z.md
-    Functor2-module-type-XF-argument-2-Z.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Functor2-module-type-XF-argument-2-Z.md.gen))))
 
 (subdir
  markdown
@@ -4041,16 +3403,12 @@
   (action
    (with-outputs-to
     functor2.targets.gen
-    (run odoc markdown-targets -o . %{dep:../functor2.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../functor2.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff functor2.targets functor2.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff functor2.targets functor2.targets.gen))))
 
 (subdir
  html
@@ -4314,70 +3672,54 @@
     gen
     -o
     .
-    %{dep:../include.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../include.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include.html Include.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include.html Include.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include-module-type-Not_inlined.html
-    Include-module-type-Not_inlined.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Include-module-type-Not_inlined.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include-module-type-Inlined.html
-    Include-module-type-Inlined.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Include-module-type-Inlined.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include-module-type-Not_inlined_and_closed.html
-    Include-module-type-Not_inlined_and_closed.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Include-module-type-Not_inlined_and_closed.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include-module-type-Not_inlined_and_opened.html
-    Include-module-type-Not_inlined_and_opened.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Include-module-type-Not_inlined_and_opened.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include-module-type-Inherent_Module.html
-    Include-module-type-Inherent_Module.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Include-module-type-Inherent_Module.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include-module-type-Dorminant_Module.html
-    Include-module-type-Dorminant_Module.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Include-module-type-Dorminant_Module.html.gen))))
 
 (subdir
  html
@@ -4387,16 +3729,12 @@
   (action
    (with-outputs-to
     include.targets.gen
-    (run odoc html-targets -o . %{dep:../include.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../include.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff include.targets include.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff include.targets include.targets.gen))))
 
 (subdir
  latex
@@ -4404,16 +3742,12 @@
   (targets Include.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../include.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../include.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include.tex Include.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Include.tex Include.tex.gen))))
 
 (subdir
  latex
@@ -4423,16 +3757,12 @@
   (action
    (with-outputs-to
     include.targets.gen
-    (run odoc latex-targets -o . %{dep:../include.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../include.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff include.targets include.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff include.targets include.targets.gen))))
 
 (subdir
  man
@@ -4440,16 +3770,12 @@
   (targets Include.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../include.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../include.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include.3o Include.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Include.3o Include.3o.gen))))
 
 (subdir
  man
@@ -4459,16 +3785,12 @@
   (action
    (with-outputs-to
     include.targets.gen
-    (run odoc man-targets -o . %{dep:../include.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../include.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff include.targets include.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff include.targets include.targets.gen))))
 
 (subdir
  markdown
@@ -4490,68 +3812,52 @@
     .
     --extra-suffix
     gen
-    %{dep:../include.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../include.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include.md Include.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include.md Include.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include-module-type-Not_inlined.md
-    Include-module-type-Not_inlined.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Include-module-type-Not_inlined.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include-module-type-Inlined.md Include-module-type-Inlined.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include-module-type-Inlined.md Include-module-type-Inlined.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include-module-type-Not_inlined_and_closed.md
-    Include-module-type-Not_inlined_and_closed.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Include-module-type-Not_inlined_and_closed.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include-module-type-Not_inlined_and_opened.md
-    Include-module-type-Not_inlined_and_opened.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Include-module-type-Not_inlined_and_opened.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include-module-type-Inherent_Module.md
-    Include-module-type-Inherent_Module.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Include-module-type-Inherent_Module.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include-module-type-Dorminant_Module.md
-    Include-module-type-Dorminant_Module.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Include-module-type-Dorminant_Module.md.gen))))
 
 (subdir
  markdown
@@ -4561,16 +3867,12 @@
   (action
    (with-outputs-to
     include.targets.gen
-    (run odoc markdown-targets -o . %{dep:../include.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../include.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff include.targets include.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff include.targets include.targets.gen))))
 
 (subdir
  html
@@ -4592,46 +3894,34 @@
     gen
     -o
     .
-    %{dep:../include2.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../include2.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2.html Include2.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include2.html Include2.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2-X.html Include2-X.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include2-X.html Include2-X.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2-Y.html Include2-Y.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include2-Y.html Include2-Y.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include2-Y_include_synopsis.html
-    Include2-Y_include_synopsis.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Include2-Y_include_synopsis.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2-Y_include_doc.html Include2-Y_include_doc.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Include2-Y_include_doc.html Include2-Y_include_doc.html.gen))))
 
 (subdir
  html
@@ -4641,16 +3931,12 @@
   (action
    (with-outputs-to
     include2.targets.gen
-    (run odoc html-targets -o . %{dep:../include2.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../include2.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff include2.targets include2.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff include2.targets include2.targets.gen))))
 
 (subdir
  latex
@@ -4658,16 +3944,12 @@
   (targets Include2.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../include2.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../include2.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2.tex Include2.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Include2.tex Include2.tex.gen))))
 
 (subdir
  latex
@@ -4677,16 +3959,12 @@
   (action
    (with-outputs-to
     include2.targets.gen
-    (run odoc latex-targets -o . %{dep:../include2.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../include2.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff include2.targets include2.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff include2.targets include2.targets.gen))))
 
 (subdir
  man
@@ -4699,44 +3977,32 @@
    Include2.Y_include_doc.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../include2.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../include2.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2.3o Include2.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include2.3o Include2.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2.X.3o Include2.X.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include2.X.3o Include2.X.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2.Y.3o Include2.Y.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include2.Y.3o Include2.Y.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2.Y_include_synopsis.3o Include2.Y_include_synopsis.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include2.Y_include_synopsis.3o Include2.Y_include_synopsis.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2.Y_include_doc.3o Include2.Y_include_doc.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Include2.Y_include_doc.3o Include2.Y_include_doc.3o.gen))))
 
 (subdir
  man
@@ -4746,16 +4012,12 @@
   (action
    (with-outputs-to
     include2.targets.gen
-    (run odoc man-targets -o . %{dep:../include2.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../include2.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff include2.targets include2.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff include2.targets include2.targets.gen))))
 
 (subdir
  markdown
@@ -4775,44 +4037,32 @@
     .
     --extra-suffix
     gen
-    %{dep:../include2.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../include2.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2.md Include2.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include2.md Include2.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2-X.md Include2-X.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include2-X.md Include2-X.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2-Y.md Include2-Y.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include2-Y.md Include2-Y.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2-Y_include_synopsis.md Include2-Y_include_synopsis.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include2-Y_include_synopsis.md Include2-Y_include_synopsis.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include2-Y_include_doc.md Include2-Y_include_doc.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Include2-Y_include_doc.md Include2-Y_include_doc.md.gen))))
 
 (subdir
  markdown
@@ -4822,16 +4072,12 @@
   (action
    (with-outputs-to
     include2.targets.gen
-    (run odoc markdown-targets -o . %{dep:../include2.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../include2.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff include2.targets include2.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff include2.targets include2.targets.gen))))
 
 (subdir
  html
@@ -4850,25 +4096,19 @@
     gen
     -o
     .
-    %{dep:../include_sections.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../include_sections.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include_sections.html Include_sections.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include_sections.html Include_sections.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include_sections-module-type-Something.html
-    Include_sections-module-type-Something.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Include_sections-module-type-Something.html.gen))))
 
 (subdir
  html
@@ -4878,16 +4118,12 @@
   (action
    (with-outputs-to
     include_sections.targets.gen
-    (run odoc html-targets -o . %{dep:../include_sections.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../include_sections.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff include_sections.targets include_sections.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff include_sections.targets include_sections.targets.gen))))
 
 (subdir
  latex
@@ -4902,16 +4138,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../include_sections.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../include_sections.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include_sections.tex Include_sections.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Include_sections.tex Include_sections.tex.gen))))
 
 (subdir
  latex
@@ -4921,16 +4153,12 @@
   (action
    (with-outputs-to
     include_sections.targets.gen
-    (run odoc latex-targets -o . %{dep:../include_sections.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../include_sections.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff include_sections.targets include_sections.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff include_sections.targets include_sections.targets.gen))))
 
 (subdir
  man
@@ -4945,16 +4173,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../include_sections.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../include_sections.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include_sections.3o Include_sections.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Include_sections.3o Include_sections.3o.gen))))
 
 (subdir
  man
@@ -4964,16 +4188,12 @@
   (action
    (with-outputs-to
     include_sections.targets.gen
-    (run odoc man-targets -o . %{dep:../include_sections.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../include_sections.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff include_sections.targets include_sections.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff include_sections.targets include_sections.targets.gen))))
 
 (subdir
  markdown
@@ -4990,25 +4210,19 @@
     .
     --extra-suffix
     gen
-    %{dep:../include_sections.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../include_sections.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Include_sections.md Include_sections.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Include_sections.md Include_sections.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Include_sections-module-type-Something.md
-    Include_sections-module-type-Something.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Include_sections-module-type-Something.md.gen))))
 
 (subdir
  markdown
@@ -5018,16 +4232,12 @@
   (action
    (with-outputs-to
     include_sections.targets.gen
-    (run odoc markdown-targets -o . %{dep:../include_sections.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../include_sections.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff include_sections.targets include_sections.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff include_sections.targets include_sections.targets.gen))))
 
 (subdir
  html
@@ -5044,16 +4254,12 @@
     gen
     -o
     .
-    %{dep:../interlude.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../interlude.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Interlude.html Interlude.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Interlude.html Interlude.html.gen))))
 
 (subdir
  html
@@ -5063,16 +4269,12 @@
   (action
    (with-outputs-to
     interlude.targets.gen
-    (run odoc html-targets -o . %{dep:../interlude.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../interlude.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff interlude.targets interlude.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff interlude.targets interlude.targets.gen))))
 
 (subdir
  latex
@@ -5087,16 +4289,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../interlude.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../interlude.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Interlude.tex Interlude.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Interlude.tex Interlude.tex.gen))))
 
 (subdir
  latex
@@ -5106,16 +4304,12 @@
   (action
    (with-outputs-to
     interlude.targets.gen
-    (run odoc latex-targets -o . %{dep:../interlude.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../interlude.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff interlude.targets interlude.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff interlude.targets interlude.targets.gen))))
 
 (subdir
  man
@@ -5123,16 +4317,12 @@
   (targets Interlude.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../interlude.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../interlude.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Interlude.3o Interlude.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Interlude.3o Interlude.3o.gen))))
 
 (subdir
  man
@@ -5142,16 +4332,12 @@
   (action
    (with-outputs-to
     interlude.targets.gen
-    (run odoc man-targets -o . %{dep:../interlude.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../interlude.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff interlude.targets interlude.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff interlude.targets interlude.targets.gen))))
 
 (subdir
  markdown
@@ -5166,16 +4352,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../interlude.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../interlude.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Interlude.md Interlude.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Interlude.md Interlude.md.gen))))
 
 (subdir
  markdown
@@ -5185,16 +4367,12 @@
   (action
    (with-outputs-to
     interlude.targets.gen
-    (run odoc markdown-targets -o . %{dep:../interlude.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../interlude.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff interlude.targets interlude.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff interlude.targets interlude.targets.gen))))
 
 (subdir
  html
@@ -5458,30 +4636,22 @@
     gen
     -o
     .
-    %{dep:../markup.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../markup.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Markup.html Markup.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Markup.html Markup.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Markup-X.html Markup-X.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Markup-X.html Markup-X.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Markup-Y.html Markup-Y.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Markup-Y.html Markup-Y.html.gen))))
 
 (subdir
  html
@@ -5491,16 +4661,12 @@
   (action
    (with-outputs-to
     markup.targets.gen
-    (run odoc html-targets -o . %{dep:../markup.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../markup.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff markup.targets markup.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff markup.targets markup.targets.gen))))
 
 (subdir
  latex
@@ -5508,16 +4674,12 @@
   (targets Markup.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../markup.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../markup.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Markup.tex Markup.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Markup.tex Markup.tex.gen))))
 
 (subdir
  latex
@@ -5527,16 +4689,12 @@
   (action
    (with-outputs-to
     markup.targets.gen
-    (run odoc latex-targets -o . %{dep:../markup.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../markup.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff markup.targets markup.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff markup.targets markup.targets.gen))))
 
 (subdir
  man
@@ -5544,30 +4702,22 @@
   (targets Markup.3o.gen Markup.X.3o.gen Markup.Y.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../markup.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../markup.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Markup.3o Markup.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Markup.3o Markup.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Markup.X.3o Markup.X.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Markup.X.3o Markup.X.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Markup.Y.3o Markup.Y.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Markup.Y.3o Markup.Y.3o.gen))))
 
 (subdir
  man
@@ -5577,16 +4727,12 @@
   (action
    (with-outputs-to
     markup.targets.gen
-    (run odoc man-targets -o . %{dep:../markup.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../markup.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff markup.targets markup.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff markup.targets markup.targets.gen))))
 
 (subdir
  markdown
@@ -5601,30 +4747,22 @@
     .
     --extra-suffix
     gen
-    %{dep:../markup.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../markup.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Markup.md Markup.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Markup.md Markup.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Markup-X.md Markup-X.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Markup-X.md Markup-X.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Markup-Y.md Markup-Y.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Markup-Y.md Markup-Y.md.gen))))
 
 (subdir
  markdown
@@ -5634,16 +4772,12 @@
   (action
    (with-outputs-to
     markup.targets.gen
-    (run odoc markdown-targets -o . %{dep:../markup.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../markup.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff markup.targets markup.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff markup.targets markup.targets.gen))))
 
 (subdir
  html
@@ -5660,16 +4794,12 @@
     gen
     -o
     .
-    %{dep:../page-mld.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../page-mld.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff mld.html mld.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff mld.html mld.html.gen))))
 
 (subdir
  html
@@ -5679,16 +4809,12 @@
   (action
    (with-outputs-to
     page-mld.targets.gen
-    (run odoc html-targets -o . %{dep:../page-mld.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../page-mld.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff page-mld.targets page-mld.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff page-mld.targets page-mld.targets.gen))))
 
 (subdir
  latex
@@ -5696,16 +4822,12 @@
   (targets mld.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../page-mld.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../page-mld.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff mld.tex mld.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff mld.tex mld.tex.gen))))
 
 (subdir
  latex
@@ -5715,16 +4837,12 @@
   (action
    (with-outputs-to
     page-mld.targets.gen
-    (run odoc latex-targets -o . %{dep:../page-mld.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../page-mld.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff page-mld.targets page-mld.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff page-mld.targets page-mld.targets.gen))))
 
 (subdir
  man
@@ -5732,16 +4850,12 @@
   (targets mld.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../page-mld.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../page-mld.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff mld.3o mld.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff mld.3o mld.3o.gen))))
 
 (subdir
  man
@@ -5751,16 +4865,12 @@
   (action
    (with-outputs-to
     page-mld.targets.gen
-    (run odoc man-targets -o . %{dep:../page-mld.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../page-mld.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff page-mld.targets page-mld.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff page-mld.targets page-mld.targets.gen))))
 
 (subdir
  markdown
@@ -5775,16 +4885,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../page-mld.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../page-mld.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff mld.md mld.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff mld.md mld.md.gen))))
 
 (subdir
  markdown
@@ -5794,16 +4900,12 @@
   (action
    (with-outputs-to
     page-mld.targets.gen
-    (run odoc markdown-targets -o . %{dep:../page-mld.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../page-mld.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff page-mld.targets page-mld.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff page-mld.targets page-mld.targets.gen))))
 
 (subdir
  html
@@ -5837,128 +4939,92 @@
     gen
     -o
     .
-    %{dep:../module.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../module.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module.html Module.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module.html Module.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S.html Module-module-type-S.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S.html Module-module-type-S.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S-M.html Module-module-type-S-M.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S-M.html Module-module-type-S-M.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S3.html Module-module-type-S3.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S3.html Module-module-type-S3.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S3-M.html Module-module-type-S3-M.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S3-M.html Module-module-type-S3-M.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S4.html Module-module-type-S4.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S4.html Module-module-type-S4.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S4-M.html Module-module-type-S4-M.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S4-M.html Module-module-type-S4-M.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S5.html Module-module-type-S5.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S5.html Module-module-type-S5.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S5-M.html Module-module-type-S5-M.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S5-M.html Module-module-type-S5-M.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S6.html Module-module-type-S6.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S6.html Module-module-type-S6.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S6-M.html Module-module-type-S6-M.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S6-M.html Module-module-type-S6-M.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-M'.html Module-M'.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-M'.html Module-M'.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S7.html Module-module-type-S7.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S7.html Module-module-type-S7.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S8.html Module-module-type-S8.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S8.html Module-module-type-S8.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S9.html Module-module-type-S9.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S9.html Module-module-type-S9.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-Mutually.html Module-Mutually.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-Mutually.html Module-Mutually.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-Recursive.html Module-Recursive.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Module-Recursive.html Module-Recursive.html.gen))))
 
 (subdir
  html
@@ -5968,16 +5034,12 @@
   (action
    (with-outputs-to
     module.targets.gen
-    (run odoc html-targets -o . %{dep:../module.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../module.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff module.targets module.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff module.targets module.targets.gen))))
 
 (subdir
  latex
@@ -5985,16 +5047,12 @@
   (targets Module.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../module.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../module.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module.tex Module.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Module.tex Module.tex.gen))))
 
 (subdir
  latex
@@ -6004,16 +5062,12 @@
   (action
    (with-outputs-to
     module.targets.gen
-    (run odoc latex-targets -o . %{dep:../module.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../module.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff module.targets module.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff module.targets module.targets.gen))))
 
 (subdir
  man
@@ -6025,37 +5079,27 @@
    Module.Recursive.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../module.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../module.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module.3o Module.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module.3o Module.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module.M'.3o Module.M'.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module.M'.3o Module.M'.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module.Mutually.3o Module.Mutually.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module.Mutually.3o Module.Mutually.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module.Recursive.3o Module.Recursive.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Module.Recursive.3o Module.Recursive.3o.gen))))
 
 (subdir
  man
@@ -6065,16 +5109,12 @@
   (action
    (with-outputs-to
     module.targets.gen
-    (run odoc man-targets -o . %{dep:../module.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../module.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff module.targets module.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff module.targets module.targets.gen))))
 
 (subdir
  markdown
@@ -6106,128 +5146,92 @@
     .
     --extra-suffix
     gen
-    %{dep:../module.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../module.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module.md Module.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module.md Module.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S.md Module-module-type-S.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S.md Module-module-type-S.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S-M.md Module-module-type-S-M.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S-M.md Module-module-type-S-M.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S3.md Module-module-type-S3.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S3.md Module-module-type-S3.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S3-M.md Module-module-type-S3-M.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S3-M.md Module-module-type-S3-M.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S4.md Module-module-type-S4.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S4.md Module-module-type-S4.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S4-M.md Module-module-type-S4-M.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S4-M.md Module-module-type-S4-M.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S5.md Module-module-type-S5.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S5.md Module-module-type-S5.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S5-M.md Module-module-type-S5-M.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S5-M.md Module-module-type-S5-M.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S6.md Module-module-type-S6.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S6.md Module-module-type-S6.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S6-M.md Module-module-type-S6-M.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S6-M.md Module-module-type-S6-M.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-M'.md Module-M'.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-M'.md Module-M'.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S7.md Module-module-type-S7.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S7.md Module-module-type-S7.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S8.md Module-module-type-S8.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S8.md Module-module-type-S8.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-module-type-S9.md Module-module-type-S9.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-module-type-S9.md Module-module-type-S9.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-Mutually.md Module-Mutually.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module-Mutually.md Module-Mutually.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module-Recursive.md Module-Recursive.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Module-Recursive.md Module-Recursive.md.gen))))
 
 (subdir
  markdown
@@ -6237,16 +5241,12 @@
   (action
    (with-outputs-to
     module.targets.gen
-    (run odoc markdown-targets -o . %{dep:../module.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../module.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff module.targets module.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff module.targets module.targets.gen))))
 
 (subdir
  html
@@ -6272,88 +5272,68 @@
     gen
     -o
     .
-    %{dep:../module_type_alias.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../module_type_alias.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_alias.html Module_type_alias.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_alias.html Module_type_alias.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-A.html
-    Module_type_alias-module-type-A.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-A.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-B.html
-    Module_type_alias-module-type-B.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-B.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-B-argument-1-C.html
-    Module_type_alias-module-type-B-argument-1-C.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-B-argument-1-C.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-E.html
-    Module_type_alias-module-type-E.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-E.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-E-argument-1-F.html
-    Module_type_alias-module-type-E-argument-1-F.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-E-argument-1-F.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-E-argument-2-C.html
-    Module_type_alias-module-type-E-argument-2-C.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-E-argument-2-C.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-G.html
-    Module_type_alias-module-type-G.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-G.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-G-argument-1-H.html
-    Module_type_alias-module-type-G-argument-1-H.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Module_type_alias-module-type-G-argument-1-H.html.gen))))
 
 (subdir
  html
@@ -6363,16 +5343,12 @@
   (action
    (with-outputs-to
     module_type_alias.targets.gen
-    (run odoc html-targets -o . %{dep:../module_type_alias.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../module_type_alias.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff module_type_alias.targets module_type_alias.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff module_type_alias.targets module_type_alias.targets.gen))))
 
 (subdir
  latex
@@ -6387,16 +5363,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../module_type_alias.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../module_type_alias.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_alias.tex Module_type_alias.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Module_type_alias.tex Module_type_alias.tex.gen))))
 
 (subdir
  latex
@@ -6406,16 +5378,12 @@
   (action
    (with-outputs-to
     module_type_alias.targets.gen
-    (run odoc latex-targets -o . %{dep:../module_type_alias.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../module_type_alias.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff module_type_alias.targets module_type_alias.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff module_type_alias.targets module_type_alias.targets.gen))))
 
 (subdir
  man
@@ -6430,16 +5398,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../module_type_alias.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../module_type_alias.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_alias.3o Module_type_alias.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Module_type_alias.3o Module_type_alias.3o.gen))))
 
 (subdir
  man
@@ -6449,16 +5413,12 @@
   (action
    (with-outputs-to
     module_type_alias.targets.gen
-    (run odoc man-targets -o . %{dep:../module_type_alias.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../module_type_alias.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff module_type_alias.targets module_type_alias.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff module_type_alias.targets module_type_alias.targets.gen))))
 
 (subdir
  markdown
@@ -6482,88 +5442,68 @@
     .
     --extra-suffix
     gen
-    %{dep:../module_type_alias.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../module_type_alias.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_alias.md Module_type_alias.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_alias.md Module_type_alias.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-A.md
-    Module_type_alias-module-type-A.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-A.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-B.md
-    Module_type_alias-module-type-B.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-B.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-B-argument-1-C.md
-    Module_type_alias-module-type-B-argument-1-C.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-B-argument-1-C.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-E.md
-    Module_type_alias-module-type-E.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-E.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-E-argument-1-F.md
-    Module_type_alias-module-type-E-argument-1-F.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-E-argument-1-F.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-E-argument-2-C.md
-    Module_type_alias-module-type-E-argument-2-C.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-E-argument-2-C.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-G.md
-    Module_type_alias-module-type-G.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_alias-module-type-G.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_alias-module-type-G-argument-1-H.md
-    Module_type_alias-module-type-G-argument-1-H.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Module_type_alias-module-type-G-argument-1-H.md.gen))))
 
 (subdir
  markdown
@@ -6573,16 +5513,12 @@
   (action
    (with-outputs-to
     module_type_alias.targets.gen
-    (run odoc markdown-targets -o . %{dep:../module_type_alias.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../module_type_alias.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff module_type_alias.targets module_type_alias.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff module_type_alias.targets module_type_alias.targets.gen))))
 
 (subdir
  html
@@ -6608,82 +5544,62 @@
     gen
     -o
     .
-    %{dep:../module_type_of.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../module_type_of.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of.html Module_type_of.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_of.html Module_type_of.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_of-module-type-S.html
-    Module_type_of-module-type-S.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_of-module-type-S.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_of-module-type-S-module-type-T.html
-    Module_type_of-module-type-S-module-type-T.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_of-module-type-S-module-type-T.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_of-module-type-S-M.html
-    Module_type_of-module-type-S-M.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_of-module-type-S-M.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_of-module-type-S-N.html
-    Module_type_of-module-type-S-N.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_of-module-type-S-N.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of-X.html Module_type_of-X.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_of-X.html Module_type_of-X.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of-T.html Module_type_of-T.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_of-T.html Module_type_of-T.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_of-T-module-type-T.html
-    Module_type_of-T-module-type-T.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_of-T-module-type-T.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of-T-N.html Module_type_of-T-N.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Module_type_of-T-N.html Module_type_of-T-N.html.gen))))
 
 (subdir
  html
@@ -6693,16 +5609,12 @@
   (action
    (with-outputs-to
     module_type_of.targets.gen
-    (run odoc html-targets -o . %{dep:../module_type_of.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../module_type_of.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff module_type_of.targets module_type_of.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff module_type_of.targets module_type_of.targets.gen))))
 
 (subdir
  latex
@@ -6720,30 +5632,22 @@
     .
     --extra-suffix
     gen
-    %{dep:../module_type_of.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../module_type_of.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of.tex Module_type_of.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_of.tex Module_type_of.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of.T.tex Module_type_of.T.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_of.T.tex Module_type_of.T.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of.T.N.tex Module_type_of.T.N.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Module_type_of.T.N.tex Module_type_of.T.N.tex.gen))))
 
 (subdir
  latex
@@ -6753,16 +5657,12 @@
   (action
    (with-outputs-to
     module_type_of.targets.gen
-    (run odoc latex-targets -o . %{dep:../module_type_of.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../module_type_of.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff module_type_of.targets module_type_of.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff module_type_of.targets module_type_of.targets.gen))))
 
 (subdir
  man
@@ -6781,37 +5681,27 @@
     .
     --extra-suffix
     gen
-    %{dep:../module_type_of.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../module_type_of.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of.3o Module_type_of.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_of.3o Module_type_of.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of.X.3o Module_type_of.X.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_of.X.3o Module_type_of.X.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of.T.3o Module_type_of.T.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_of.T.3o Module_type_of.T.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of.T.N.3o Module_type_of.T.N.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Module_type_of.T.N.3o Module_type_of.T.N.3o.gen))))
 
 (subdir
  man
@@ -6821,16 +5711,12 @@
   (action
    (with-outputs-to
     module_type_of.targets.gen
-    (run odoc man-targets -o . %{dep:../module_type_of.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../module_type_of.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff module_type_of.targets module_type_of.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff module_type_of.targets module_type_of.targets.gen))))
 
 (subdir
  markdown
@@ -6854,80 +5740,60 @@
     .
     --extra-suffix
     gen
-    %{dep:../module_type_of.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../module_type_of.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of.md Module_type_of.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_of.md Module_type_of.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of-module-type-S.md Module_type_of-module-type-S.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_of-module-type-S.md Module_type_of-module-type-S.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_of-module-type-S-module-type-T.md
-    Module_type_of-module-type-S-module-type-T.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_of-module-type-S-module-type-T.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_of-module-type-S-M.md
-    Module_type_of-module-type-S-M.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_of-module-type-S-M.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_of-module-type-S-N.md
-    Module_type_of-module-type-S-N.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_of-module-type-S-N.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of-X.md Module_type_of-X.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_of-X.md Module_type_of-X.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of-T.md Module_type_of-T.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Module_type_of-T.md Module_type_of-T.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Module_type_of-T-module-type-T.md
-    Module_type_of-T-module-type-T.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Module_type_of-T-module-type-T.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Module_type_of-T-N.md Module_type_of-T-N.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Module_type_of-T-N.md Module_type_of-T-N.md.gen))))
 
 (subdir
  markdown
@@ -6937,16 +5803,12 @@
   (action
    (with-outputs-to
     module_type_of.targets.gen
-    (run odoc markdown-targets -o . %{dep:../module_type_of.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../module_type_of.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff module_type_of.targets module_type_of.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff module_type_of.targets module_type_of.targets.gen))))
 
 (subdir
  html
@@ -7866,65 +6728,47 @@
     gen
     -o
     .
-    %{dep:../nested.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../nested.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested.html Nested.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested.html Nested.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-X.html Nested-X.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested-X.html Nested-X.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-module-type-Y.html Nested-module-type-Y.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested-module-type-Y.html Nested-module-type-Y.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-F.html Nested-F.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested-F.html Nested-F.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-F-argument-1-Arg1.html Nested-F-argument-1-Arg1.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested-F-argument-1-Arg1.html Nested-F-argument-1-Arg1.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-F-argument-2-Arg2.html Nested-F-argument-2-Arg2.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested-F-argument-2-Arg2.html Nested-F-argument-2-Arg2.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-class-z.html Nested-class-z.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested-class-z.html Nested-class-z.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-class-inherits.html Nested-class-inherits.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Nested-class-inherits.html Nested-class-inherits.html.gen))))
 
 (subdir
  html
@@ -7934,16 +6778,12 @@
   (action
    (with-outputs-to
     nested.targets.gen
-    (run odoc html-targets -o . %{dep:../nested.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../nested.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff nested.targets nested.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff nested.targets nested.targets.gen))))
 
 (subdir
  latex
@@ -7955,37 +6795,27 @@
    Nested.inherits.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../nested.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../nested.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested.tex Nested.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested.tex Nested.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested.F.tex Nested.F.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested.F.tex Nested.F.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested.z.tex Nested.z.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested.z.tex Nested.z.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested.inherits.tex Nested.inherits.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Nested.inherits.tex Nested.inherits.tex.gen))))
 
 (subdir
  latex
@@ -7995,16 +6825,12 @@
   (action
    (with-outputs-to
     nested.targets.gen
-    (run odoc latex-targets -o . %{dep:../nested.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../nested.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff nested.targets nested.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff nested.targets nested.targets.gen))))
 
 (subdir
  man
@@ -8017,44 +6843,32 @@
    Nested.class-inherits.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../nested.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../nested.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested.3o Nested.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested.3o Nested.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested.X.3o Nested.X.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested.X.3o Nested.X.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested.F.3o Nested.F.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested.F.3o Nested.F.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested.class-z.3o Nested.class-z.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested.class-z.3o Nested.class-z.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested.class-inherits.3o Nested.class-inherits.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Nested.class-inherits.3o Nested.class-inherits.3o.gen))))
 
 (subdir
  man
@@ -8064,16 +6878,12 @@
   (action
    (with-outputs-to
     nested.targets.gen
-    (run odoc man-targets -o . %{dep:../nested.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../nested.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff nested.targets nested.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff nested.targets nested.targets.gen))))
 
 (subdir
  markdown
@@ -8096,65 +6906,47 @@
     .
     --extra-suffix
     gen
-    %{dep:../nested.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../nested.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested.md Nested.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested.md Nested.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-X.md Nested-X.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested-X.md Nested-X.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-module-type-Y.md Nested-module-type-Y.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested-module-type-Y.md Nested-module-type-Y.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-F.md Nested-F.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested-F.md Nested-F.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-F-argument-1-Arg1.md Nested-F-argument-1-Arg1.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested-F-argument-1-Arg1.md Nested-F-argument-1-Arg1.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-F-argument-2-Arg2.md Nested-F-argument-2-Arg2.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested-F-argument-2-Arg2.md Nested-F-argument-2-Arg2.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-class-z.md Nested-class-z.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Nested-class-z.md Nested-class-z.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Nested-class-inherits.md Nested-class-inherits.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Nested-class-inherits.md Nested-class-inherits.md.gen))))
 
 (subdir
  markdown
@@ -8164,16 +6956,12 @@
   (action
    (with-outputs-to
     nested.targets.gen
-    (run odoc markdown-targets -o . %{dep:../nested.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../nested.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff nested.targets nested.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff nested.targets nested.targets.gen))))
 
 (subdir
  html
@@ -15734,16 +14522,12 @@
     gen
     -o
     .
-    %{dep:../section.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../section.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Section.html Section.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Section.html Section.html.gen))))
 
 (subdir
  html
@@ -15753,16 +14537,12 @@
   (action
    (with-outputs-to
     section.targets.gen
-    (run odoc html-targets -o . %{dep:../section.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../section.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff section.targets section.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff section.targets section.targets.gen))))
 
 (subdir
  latex
@@ -15770,16 +14550,12 @@
   (targets Section.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../section.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../section.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Section.tex Section.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Section.tex Section.tex.gen))))
 
 (subdir
  latex
@@ -15789,16 +14565,12 @@
   (action
    (with-outputs-to
     section.targets.gen
-    (run odoc latex-targets -o . %{dep:../section.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../section.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff section.targets section.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff section.targets section.targets.gen))))
 
 (subdir
  man
@@ -15806,16 +14578,12 @@
   (targets Section.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../section.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../section.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Section.3o Section.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Section.3o Section.3o.gen))))
 
 (subdir
  man
@@ -15825,16 +14593,12 @@
   (action
    (with-outputs-to
     section.targets.gen
-    (run odoc man-targets -o . %{dep:../section.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../section.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff section.targets section.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff section.targets section.targets.gen))))
 
 (subdir
  markdown
@@ -15849,16 +14613,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../section.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../section.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Section.md Section.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Section.md Section.md.gen))))
 
 (subdir
  markdown
@@ -15868,16 +14628,12 @@
   (action
    (with-outputs-to
     section.targets.gen
-    (run odoc markdown-targets -o . %{dep:../section.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../section.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff section.targets section.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff section.targets section.targets.gen))))
 
 (subdir
  html
@@ -15894,37 +14650,27 @@
     gen
     -o
     .
-    %{dep:../stop.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../stop.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop.html Stop.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Stop.html Stop.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop-N.html Stop-N.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Stop-N.html Stop-N.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop-O.html Stop-O.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Stop-O.html Stop-O.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop-P.html Stop-P.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Stop-P.html Stop-P.html.gen))))
 
 (subdir
  html
@@ -15934,16 +14680,12 @@
   (action
    (with-outputs-to
     stop.targets.gen
-    (run odoc html-targets -o . %{dep:../stop.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../stop.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff stop.targets stop.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff stop.targets stop.targets.gen))))
 
 (subdir
  latex
@@ -15951,16 +14693,12 @@
   (targets Stop.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../stop.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../stop.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop.tex Stop.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Stop.tex Stop.tex.gen))))
 
 (subdir
  latex
@@ -15970,16 +14708,12 @@
   (action
    (with-outputs-to
     stop.targets.gen
-    (run odoc latex-targets -o . %{dep:../stop.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../stop.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff stop.targets stop.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff stop.targets stop.targets.gen))))
 
 (subdir
  man
@@ -15987,37 +14721,27 @@
   (targets Stop.3o.gen Stop.N.3o.gen Stop.O.3o.gen Stop.P.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../stop.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../stop.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop.3o Stop.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Stop.3o Stop.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop.N.3o Stop.N.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Stop.N.3o Stop.N.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop.O.3o Stop.O.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Stop.O.3o Stop.O.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop.P.3o Stop.P.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Stop.P.3o Stop.P.3o.gen))))
 
 (subdir
  man
@@ -16027,16 +14751,12 @@
   (action
    (with-outputs-to
     stop.targets.gen
-    (run odoc man-targets -o . %{dep:../stop.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../stop.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff stop.targets stop.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff stop.targets stop.targets.gen))))
 
 (subdir
  markdown
@@ -16044,37 +14764,27 @@
   (targets Stop.md.gen Stop-N.md.gen Stop-O.md.gen Stop-P.md.gen)
   (package odoc)
   (action
-   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../stop.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../stop.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop.md Stop.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Stop.md Stop.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop-N.md Stop-N.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Stop-N.md Stop-N.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop-O.md Stop-O.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Stop-O.md Stop-O.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop-P.md Stop-P.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Stop-P.md Stop-P.md.gen))))
 
 (subdir
  markdown
@@ -16084,16 +14794,12 @@
   (action
    (with-outputs-to
     stop.targets.gen
-    (run odoc markdown-targets -o . %{dep:../stop.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../stop.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff stop.targets stop.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff stop.targets stop.targets.gen))))
 
 (subdir
  html
@@ -16110,23 +14816,17 @@
     gen
     -o
     .
-    %{dep:../stop_dead_link_doc.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../stop_dead_link_doc.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop_dead_link_doc.html Stop_dead_link_doc.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Stop_dead_link_doc.html Stop_dead_link_doc.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop_dead_link_doc-Foo.html Stop_dead_link_doc-Foo.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Stop_dead_link_doc-Foo.html Stop_dead_link_doc-Foo.html.gen))))
 
 (subdir
  html
@@ -16136,16 +14836,12 @@
   (action
    (with-outputs-to
     stop_dead_link_doc.targets.gen
-    (run odoc html-targets -o . %{dep:../stop_dead_link_doc.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../stop_dead_link_doc.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff stop_dead_link_doc.targets stop_dead_link_doc.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff stop_dead_link_doc.targets stop_dead_link_doc.targets.gen))))
 
 (subdir
  latex
@@ -16160,16 +14856,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../stop_dead_link_doc.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../stop_dead_link_doc.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop_dead_link_doc.tex Stop_dead_link_doc.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Stop_dead_link_doc.tex Stop_dead_link_doc.tex.gen))))
 
 (subdir
  latex
@@ -16179,16 +14871,12 @@
   (action
    (with-outputs-to
     stop_dead_link_doc.targets.gen
-    (run odoc latex-targets -o . %{dep:../stop_dead_link_doc.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../stop_dead_link_doc.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff stop_dead_link_doc.targets stop_dead_link_doc.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff stop_dead_link_doc.targets stop_dead_link_doc.targets.gen))))
 
 (subdir
  man
@@ -16203,23 +14891,17 @@
     .
     --extra-suffix
     gen
-    %{dep:../stop_dead_link_doc.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../stop_dead_link_doc.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop_dead_link_doc.3o Stop_dead_link_doc.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Stop_dead_link_doc.3o Stop_dead_link_doc.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop_dead_link_doc.Foo.3o Stop_dead_link_doc.Foo.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Stop_dead_link_doc.Foo.3o Stop_dead_link_doc.Foo.3o.gen))))
 
 (subdir
  man
@@ -16229,16 +14911,12 @@
   (action
    (with-outputs-to
     stop_dead_link_doc.targets.gen
-    (run odoc man-targets -o . %{dep:../stop_dead_link_doc.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../stop_dead_link_doc.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff stop_dead_link_doc.targets stop_dead_link_doc.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff stop_dead_link_doc.targets stop_dead_link_doc.targets.gen))))
 
 (subdir
  markdown
@@ -16253,23 +14931,17 @@
     .
     --extra-suffix
     gen
-    %{dep:../stop_dead_link_doc.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../stop_dead_link_doc.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop_dead_link_doc.md Stop_dead_link_doc.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Stop_dead_link_doc.md Stop_dead_link_doc.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop_dead_link_doc-Foo.md Stop_dead_link_doc-Foo.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Stop_dead_link_doc-Foo.md Stop_dead_link_doc-Foo.md.gen))))
 
 (subdir
  markdown
@@ -16279,16 +14951,12 @@
   (action
    (with-outputs-to
     stop_dead_link_doc.targets.gen
-    (run odoc markdown-targets -o . %{dep:../stop_dead_link_doc.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../stop_dead_link_doc.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff stop_dead_link_doc.targets stop_dead_link_doc.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff stop_dead_link_doc.targets stop_dead_link_doc.targets.gen))))
 
 (subdir
  html
@@ -16305,16 +14973,12 @@
     gen
     -o
     .
-    %{dep:../stop_first_comment.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../stop_first_comment.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop_first_comment.html Stop_first_comment.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Stop_first_comment.html Stop_first_comment.html.gen))))
 
 (subdir
  html
@@ -16324,16 +14988,12 @@
   (action
    (with-outputs-to
     stop_first_comment.targets.gen
-    (run odoc html-targets -o . %{dep:../stop_first_comment.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../stop_first_comment.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff stop_first_comment.targets stop_first_comment.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff stop_first_comment.targets stop_first_comment.targets.gen))))
 
 (subdir
  latex
@@ -16348,16 +15008,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../stop_first_comment.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../stop_first_comment.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop_first_comment.tex Stop_first_comment.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Stop_first_comment.tex Stop_first_comment.tex.gen))))
 
 (subdir
  latex
@@ -16367,16 +15023,12 @@
   (action
    (with-outputs-to
     stop_first_comment.targets.gen
-    (run odoc latex-targets -o . %{dep:../stop_first_comment.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../stop_first_comment.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff stop_first_comment.targets stop_first_comment.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff stop_first_comment.targets stop_first_comment.targets.gen))))
 
 (subdir
  man
@@ -16391,16 +15043,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../stop_first_comment.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../stop_first_comment.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop_first_comment.3o Stop_first_comment.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Stop_first_comment.3o Stop_first_comment.3o.gen))))
 
 (subdir
  man
@@ -16410,16 +15058,12 @@
   (action
    (with-outputs-to
     stop_first_comment.targets.gen
-    (run odoc man-targets -o . %{dep:../stop_first_comment.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../stop_first_comment.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff stop_first_comment.targets stop_first_comment.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff stop_first_comment.targets stop_first_comment.targets.gen))))
 
 (subdir
  markdown
@@ -16434,16 +15078,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../stop_first_comment.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../stop_first_comment.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Stop_first_comment.md Stop_first_comment.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Stop_first_comment.md Stop_first_comment.md.gen))))
 
 (subdir
  markdown
@@ -16453,16 +15093,12 @@
   (action
    (with-outputs-to
     stop_first_comment.targets.gen
-    (run odoc markdown-targets -o . %{dep:../stop_first_comment.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../stop_first_comment.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff stop_first_comment.targets stop_first_comment.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff stop_first_comment.targets stop_first_comment.targets.gen))))
 
 (subdir
  html
@@ -16479,16 +15115,12 @@
     gen
     -o
     .
-    %{dep:../tag_link.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../tag_link.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Tag_link.html Tag_link.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Tag_link.html Tag_link.html.gen))))
 
 (subdir
  html
@@ -16498,16 +15130,12 @@
   (action
    (with-outputs-to
     tag_link.targets.gen
-    (run odoc html-targets -o . %{dep:../tag_link.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../tag_link.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff tag_link.targets tag_link.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff tag_link.targets tag_link.targets.gen))))
 
 (subdir
  latex
@@ -16515,16 +15143,12 @@
   (targets Tag_link.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../tag_link.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../tag_link.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Tag_link.tex Tag_link.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Tag_link.tex Tag_link.tex.gen))))
 
 (subdir
  latex
@@ -16534,16 +15158,12 @@
   (action
    (with-outputs-to
     tag_link.targets.gen
-    (run odoc latex-targets -o . %{dep:../tag_link.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../tag_link.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff tag_link.targets tag_link.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff tag_link.targets tag_link.targets.gen))))
 
 (subdir
  man
@@ -16551,16 +15171,12 @@
   (targets Tag_link.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../tag_link.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../tag_link.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Tag_link.3o Tag_link.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Tag_link.3o Tag_link.3o.gen))))
 
 (subdir
  man
@@ -16570,16 +15186,12 @@
   (action
    (with-outputs-to
     tag_link.targets.gen
-    (run odoc man-targets -o . %{dep:../tag_link.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../tag_link.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff tag_link.targets tag_link.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff tag_link.targets tag_link.targets.gen))))
 
 (subdir
  markdown
@@ -16594,16 +15206,12 @@
     .
     --extra-suffix
     gen
-    %{dep:../tag_link.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../tag_link.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Tag_link.md Tag_link.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Tag_link.md Tag_link.md.gen))))
 
 (subdir
  markdown
@@ -16613,16 +15221,12 @@
   (action
    (with-outputs-to
     tag_link.targets.gen
-    (run odoc markdown-targets -o . %{dep:../tag_link.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../tag_link.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff tag_link.targets tag_link.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff tag_link.targets tag_link.targets.gen))))
 
 (subdir
  html
@@ -16655,139 +15259,105 @@
     gen
     -o
     .
-    %{dep:../toplevel_comments.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../toplevel_comments.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments.html Toplevel_comments.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments.html Toplevel_comments.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-module-type-T.html
-    Toplevel_comments-module-type-T.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-module-type-T.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-Include_inline.html
-    Toplevel_comments-Include_inline.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-Include_inline.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-Include_inline'.html
-    Toplevel_comments-Include_inline'.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-Include_inline'.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-module-type-Include_inline_T.html
-    Toplevel_comments-module-type-Include_inline_T.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-module-type-Include_inline_T.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-module-type-Include_inline_T'.html
-    Toplevel_comments-module-type-Include_inline_T'.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-module-type-Include_inline_T'.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments-M.html Toplevel_comments-M.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments-M.html Toplevel_comments-M.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments-M'.html Toplevel_comments-M'.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments-M'.html Toplevel_comments-M'.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments-M''.html Toplevel_comments-M''.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments-M''.html Toplevel_comments-M''.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments-Alias.html Toplevel_comments-Alias.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments-Alias.html Toplevel_comments-Alias.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments-class-c1.html Toplevel_comments-class-c1.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments-class-c1.html Toplevel_comments-class-c1.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-class-type-ct.html
-    Toplevel_comments-class-type-ct.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-class-type-ct.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments-class-c2.html Toplevel_comments-class-c2.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments-class-c2.html Toplevel_comments-class-c2.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-Ref_in_synopsis.html
-    Toplevel_comments-Ref_in_synopsis.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-Ref_in_synopsis.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-Comments_on_open.html
-    Toplevel_comments-Comments_on_open.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-Comments_on_open.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-Comments_on_open-M.html
-    Toplevel_comments-Comments_on_open-M.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Toplevel_comments-Comments_on_open-M.html.gen))))
 
 (subdir
  html
@@ -16797,16 +15367,12 @@
   (action
    (with-outputs-to
     toplevel_comments.targets.gen
-    (run odoc html-targets -o . %{dep:../toplevel_comments.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../toplevel_comments.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff toplevel_comments.targets toplevel_comments.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff toplevel_comments.targets toplevel_comments.targets.gen))))
 
 (subdir
  latex
@@ -16825,37 +15391,27 @@
     .
     --extra-suffix
     gen
-    %{dep:../toplevel_comments.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../toplevel_comments.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments.tex Toplevel_comments.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments.tex Toplevel_comments.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments.Alias.tex Toplevel_comments.Alias.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments.Alias.tex Toplevel_comments.Alias.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments.c1.tex Toplevel_comments.c1.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments.c1.tex Toplevel_comments.c1.tex.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments.c2.tex Toplevel_comments.c2.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Toplevel_comments.c2.tex Toplevel_comments.c2.tex.gen))))
 
 (subdir
  latex
@@ -16865,16 +15421,12 @@
   (action
    (with-outputs-to
     toplevel_comments.targets.gen
-    (run odoc latex-targets -o . %{dep:../toplevel_comments.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../toplevel_comments.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff toplevel_comments.targets toplevel_comments.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff toplevel_comments.targets toplevel_comments.targets.gen))))
 
 (subdir
  man
@@ -16901,103 +15453,77 @@
     .
     --extra-suffix
     gen
-    %{dep:../toplevel_comments.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../toplevel_comments.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments.3o Toplevel_comments.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments.3o Toplevel_comments.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments.Include_inline.3o
-    Toplevel_comments.Include_inline.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments.Include_inline.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments.Include_inline'.3o
-    Toplevel_comments.Include_inline'.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments.Include_inline'.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments.M.3o Toplevel_comments.M.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments.M.3o Toplevel_comments.M.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments.M'.3o Toplevel_comments.M'.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments.M'.3o Toplevel_comments.M'.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments.M''.3o Toplevel_comments.M''.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments.M''.3o Toplevel_comments.M''.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments.Alias.3o Toplevel_comments.Alias.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments.Alias.3o Toplevel_comments.Alias.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments.class-c1.3o Toplevel_comments.class-c1.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments.class-c1.3o Toplevel_comments.class-c1.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments.class-c2.3o Toplevel_comments.class-c2.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments.class-c2.3o Toplevel_comments.class-c2.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments.Ref_in_synopsis.3o
-    Toplevel_comments.Ref_in_synopsis.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments.Ref_in_synopsis.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments.Comments_on_open.3o
-    Toplevel_comments.Comments_on_open.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments.Comments_on_open.3o.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments.Comments_on_open.M.3o
-    Toplevel_comments.Comments_on_open.M.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Toplevel_comments.Comments_on_open.M.3o.gen))))
 
 (subdir
  man
@@ -17007,16 +15533,12 @@
   (action
    (with-outputs-to
     toplevel_comments.targets.gen
-    (run odoc man-targets -o . %{dep:../toplevel_comments.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../toplevel_comments.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff toplevel_comments.targets toplevel_comments.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff toplevel_comments.targets toplevel_comments.targets.gen))))
 
 (subdir
  markdown
@@ -17047,139 +15569,105 @@
     .
     --extra-suffix
     gen
-    %{dep:../toplevel_comments.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../toplevel_comments.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments.md Toplevel_comments.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments.md Toplevel_comments.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-module-type-T.md
-    Toplevel_comments-module-type-T.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-module-type-T.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-Include_inline.md
-    Toplevel_comments-Include_inline.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-Include_inline.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-Include_inline'.md
-    Toplevel_comments-Include_inline'.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-Include_inline'.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-module-type-Include_inline_T.md
-    Toplevel_comments-module-type-Include_inline_T.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-module-type-Include_inline_T.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-module-type-Include_inline_T'.md
-    Toplevel_comments-module-type-Include_inline_T'.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-module-type-Include_inline_T'.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments-M.md Toplevel_comments-M.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments-M.md Toplevel_comments-M.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments-M'.md Toplevel_comments-M'.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments-M'.md Toplevel_comments-M'.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments-M''.md Toplevel_comments-M''.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments-M''.md Toplevel_comments-M''.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments-Alias.md Toplevel_comments-Alias.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments-Alias.md Toplevel_comments-Alias.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments-class-c1.md Toplevel_comments-class-c1.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments-class-c1.md Toplevel_comments-class-c1.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-class-type-ct.md
-    Toplevel_comments-class-type-ct.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-class-type-ct.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Toplevel_comments-class-c2.md Toplevel_comments-class-c2.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Toplevel_comments-class-c2.md Toplevel_comments-class-c2.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-Ref_in_synopsis.md
-    Toplevel_comments-Ref_in_synopsis.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-Ref_in_synopsis.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-Comments_on_open.md
-    Toplevel_comments-Comments_on_open.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    Toplevel_comments-Comments_on_open.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff
     Toplevel_comments-Comments_on_open-M.md
-    Toplevel_comments-Comments_on_open-M.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+    Toplevel_comments-Comments_on_open-M.md.gen))))
 
 (subdir
  markdown
@@ -17189,16 +15677,12 @@
   (action
    (with-outputs-to
     toplevel_comments.targets.gen
-    (run odoc markdown-targets -o . %{dep:../toplevel_comments.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../toplevel_comments.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff toplevel_comments.targets toplevel_comments.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff toplevel_comments.targets toplevel_comments.targets.gen))))
 
 (subdir
  html
@@ -17215,23 +15699,17 @@
     gen
     -o
     .
-    %{dep:../type.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../type.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Type.html Type.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Type.html Type.html.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Type-module-type-X.html Type-module-type-X.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Type-module-type-X.html Type-module-type-X.html.gen))))
 
 (subdir
  html
@@ -17241,16 +15719,12 @@
   (action
    (with-outputs-to
     type.targets.gen
-    (run odoc html-targets -o . %{dep:../type.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../type.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff type.targets type.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff type.targets type.targets.gen))))
 
 (subdir
  latex
@@ -17258,16 +15732,12 @@
   (targets Type.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../type.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../type.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Type.tex Type.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Type.tex Type.tex.gen))))
 
 (subdir
  latex
@@ -17277,16 +15747,12 @@
   (action
    (with-outputs-to
     type.targets.gen
-    (run odoc latex-targets -o . %{dep:../type.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../type.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff type.targets type.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff type.targets type.targets.gen))))
 
 (subdir
  man
@@ -17294,16 +15760,12 @@
   (targets Type.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../type.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../type.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Type.3o Type.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Type.3o Type.3o.gen))))
 
 (subdir
  man
@@ -17313,16 +15775,12 @@
   (action
    (with-outputs-to
     type.targets.gen
-    (run odoc man-targets -o . %{dep:../type.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../type.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff type.targets type.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff type.targets type.targets.gen))))
 
 (subdir
  markdown
@@ -17330,23 +15788,17 @@
   (targets Type.md.gen Type-module-type-X.md.gen)
   (package odoc)
   (action
-   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../type.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../type.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Type.md Type.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (diff Type.md Type.md.gen)))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Type-module-type-X.md Type-module-type-X.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Type-module-type-X.md Type-module-type-X.md.gen))))
 
 (subdir
  markdown
@@ -17356,16 +15808,12 @@
   (action
    (with-outputs-to
     type.targets.gen
-    (run odoc markdown-targets -o . %{dep:../type.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../type.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff type.targets type.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff type.targets type.targets.gen))))
 
 (subdir
  html
@@ -17382,16 +15830,12 @@
     gen
     -o
     .
-    %{dep:../val.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    %{dep:../val.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Val.html Val.html.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Val.html Val.html.gen))))
 
 (subdir
  html
@@ -17401,16 +15845,12 @@
   (action
    (with-outputs-to
     val.targets.gen
-    (run odoc html-targets -o . %{dep:../val.odocl} --flat)))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc html-targets -o . %{dep:../val.odocl} --flat))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff val.targets val.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff val.targets val.targets.gen))))
 
 (subdir
  latex
@@ -17418,16 +15858,12 @@
   (targets Val.tex.gen)
   (package odoc)
   (action
-   (run odoc latex-generate -o . --extra-suffix gen %{dep:../val.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc latex-generate -o . --extra-suffix gen %{dep:../val.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Val.tex Val.tex.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Val.tex Val.tex.gen))))
 
 (subdir
  latex
@@ -17437,16 +15873,12 @@
   (action
    (with-outputs-to
     val.targets.gen
-    (run odoc latex-targets -o . %{dep:../val.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc latex-targets -o . %{dep:../val.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff val.targets val.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff val.targets val.targets.gen))))
 
 (subdir
  man
@@ -17454,16 +15886,12 @@
   (targets Val.3o.gen)
   (package odoc)
   (action
-   (run odoc man-generate -o . --extra-suffix gen %{dep:../val.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc man-generate -o . --extra-suffix gen %{dep:../val.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Val.3o Val.3o.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Val.3o Val.3o.gen))))
 
 (subdir
  man
@@ -17473,16 +15901,12 @@
   (action
    (with-outputs-to
     val.targets.gen
-    (run odoc man-targets -o . %{dep:../val.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc man-targets -o . %{dep:../val.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff val.targets val.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff val.targets val.targets.gen))))
 
 (subdir
  markdown
@@ -17490,16 +15914,12 @@
   (targets Val.md.gen)
   (package odoc)
   (action
-   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../val.odocl}))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+   (run odoc markdown-generate -o . --extra-suffix gen %{dep:../val.odocl})))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff Val.md Val.md.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff Val.md Val.md.gen))))
 
 (subdir
  markdown
@@ -17509,13 +15929,9 @@
   (action
    (with-outputs-to
     val.targets.gen
-    (run odoc markdown-targets -o . %{dep:../val.odocl})))
-  (enabled_if
-   (>= %{ocaml_version} 4.04)))
+    (run odoc markdown-targets -o . %{dep:../val.odocl}))))
  (rule
   (alias runtest)
   (package odoc)
   (action
-   (diff val.targets val.targets.gen))
-  (enabled_if
-   (>= %{ocaml_version} 4.04))))
+   (diff val.targets val.targets.gen))))
