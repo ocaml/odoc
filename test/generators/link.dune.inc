@@ -172,7 +172,7 @@
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/bugs_post_406.mli}))
  (enabled_if
-  (>= %{ocaml_version} 4.06)))
+  (>= %{ocaml_version} 4.04)))
 
 (rule
  (target bugs_post_406.odoc)
@@ -180,7 +180,7 @@
  (action
   (run odoc compile -o %{target} %{dep:bugs_post_406.cmti}))
  (enabled_if
-  (>= %{ocaml_version} 4.06)))
+  (>= %{ocaml_version} 4.04)))
 
 (rule
  (target bugs_post_406.odocl)
@@ -188,7 +188,7 @@
  (action
   (run odoc link -o %{target} %{dep:bugs_post_406.odoc}))
  (enabled_if
-  (>= %{ocaml_version} 4.06)))
+  (>= %{ocaml_version} 4.04)))
 
 (rule
  (target bugs_pre_410.cmt)
@@ -244,7 +244,7 @@
  (action
   (run ocamlc -c -bin-annot -o %{target} %{dep:cases/class_comments.mli}))
  (enabled_if
-  (>= %{ocaml_version} 4.08)))
+  (>= %{ocaml_version} 4.04)))
 
 (rule
  (target class_comments.odoc)
@@ -252,7 +252,7 @@
  (action
   (run odoc compile -o %{target} %{dep:class_comments.cmti}))
  (enabled_if
-  (>= %{ocaml_version} 4.08)))
+  (>= %{ocaml_version} 4.04)))
 
 (rule
  (target class_comments.odocl)
@@ -260,7 +260,7 @@
  (action
   (run odoc link -o %{target} %{dep:class_comments.odoc}))
  (enabled_if
-  (>= %{ocaml_version} 4.08)))
+  (>= %{ocaml_version} 4.04)))
 
 (rule
  (target external.cmti)
@@ -2157,14 +2157,14 @@
     .
     %{dep:../bugs_post_406.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Bugs_post_406.html Bugs_post_406.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
@@ -2173,7 +2173,7 @@
     Bugs_post_406-class-type-let_open.html
     Bugs_post_406-class-type-let_open.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
@@ -2182,7 +2182,7 @@
     Bugs_post_406-class-let_open'.html
     Bugs_post_406-class-let_open'.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  html
@@ -2194,14 +2194,14 @@
     bugs_post_406.targets.gen
     (run odoc html-targets -o . %{dep:../bugs_post_406.odocl} --flat)))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff bugs_post_406.targets bugs_post_406.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  latex
@@ -2218,21 +2218,21 @@
     gen
     %{dep:../bugs_post_406.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Bugs_post_406.tex Bugs_post_406.tex.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Bugs_post_406.let_open'.tex Bugs_post_406.let_open'.tex.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  latex
@@ -2244,14 +2244,14 @@
     bugs_post_406.targets.gen
     (run odoc latex-targets -o . %{dep:../bugs_post_406.odocl})))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff bugs_post_406.targets bugs_post_406.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  man
@@ -2268,14 +2268,14 @@
     gen
     %{dep:../bugs_post_406.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Bugs_post_406.3o Bugs_post_406.3o.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
@@ -2284,7 +2284,7 @@
     Bugs_post_406.class-let_open'.3o
     Bugs_post_406.class-let_open'.3o.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  man
@@ -2296,14 +2296,14 @@
     bugs_post_406.targets.gen
     (run odoc man-targets -o . %{dep:../bugs_post_406.odocl})))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff bugs_post_406.targets bugs_post_406.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  markdown
@@ -2323,14 +2323,14 @@
     gen
     %{dep:../bugs_post_406.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Bugs_post_406.md Bugs_post_406.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
@@ -2339,7 +2339,7 @@
     Bugs_post_406-class-type-let_open.md
     Bugs_post_406-class-type-let_open.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
@@ -2348,7 +2348,7 @@
     Bugs_post_406-class-let_open'.md
     Bugs_post_406-class-let_open'.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  markdown
@@ -2360,14 +2360,14 @@
     bugs_post_406.targets.gen
     (run odoc markdown-targets -o . %{dep:../bugs_post_406.odocl})))
   (enabled_if
-   (>= %{ocaml_version} 4.06)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff bugs_post_406.targets bugs_post_406.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.06))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  html
@@ -2934,28 +2934,28 @@
     .
     %{dep:../class_comments.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Class_comments.html Class_comments.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Class_comments-class-x.html Class_comments-class-x.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Class_comments-class-c.html Class_comments-class-c.html.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  html
@@ -2967,14 +2967,14 @@
     class_comments.targets.gen
     (run odoc html-targets -o . %{dep:../class_comments.odocl} --flat)))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff class_comments.targets class_comments.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  latex
@@ -2994,28 +2994,28 @@
     gen
     %{dep:../class_comments.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Class_comments.tex Class_comments.tex.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Class_comments.x.tex Class_comments.x.tex.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Class_comments.c.tex Class_comments.c.tex.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  latex
@@ -3027,14 +3027,14 @@
     class_comments.targets.gen
     (run odoc latex-targets -o . %{dep:../class_comments.odocl})))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff class_comments.targets class_comments.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  man
@@ -3054,28 +3054,28 @@
     gen
     %{dep:../class_comments.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Class_comments.3o Class_comments.3o.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Class_comments.class-x.3o Class_comments.class-x.3o.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Class_comments.class-c.3o Class_comments.class-c.3o.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  man
@@ -3087,14 +3087,14 @@
     class_comments.targets.gen
     (run odoc man-targets -o . %{dep:../class_comments.odocl})))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff class_comments.targets class_comments.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  markdown
@@ -3114,28 +3114,28 @@
     gen
     %{dep:../class_comments.odocl}))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Class_comments.md Class_comments.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Class_comments-class-x.md Class_comments-class-x.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff Class_comments-class-c.md Class_comments-class-c.md.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  markdown
@@ -3147,14 +3147,14 @@
     class_comments.targets.gen
     (run odoc markdown-targets -o . %{dep:../class_comments.odocl})))
   (enabled_if
-   (>= %{ocaml_version} 4.08)))
+   (>= %{ocaml_version} 4.04)))
  (rule
   (alias runtest)
   (package odoc)
   (action
    (diff class_comments.targets class_comments.targets.gen))
   (enabled_if
-   (>= %{ocaml_version} 4.08))))
+   (>= %{ocaml_version} 4.04))))
 
 (subdir
  html
