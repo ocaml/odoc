@@ -11,25 +11,25 @@ Test the JSON output in the presence of expanded modules.
   $ odoc link -I . main__A.odoc
   $ odoc link -I . main.odoc
 
-  $ odoc html-targets -o html main__A.odocl
+  $ odoc html-targets -o html main__A.odocl 2>&1 | cram_test_helper
   html/Main__A/index.html
-  $ odoc html-targets -o html main.odocl
+  $ odoc html-targets -o html main.odocl 2>&1 | cram_test_helper
   html/Main/index.html
   html/Main/A/index.html
   html/Main/A/B/index.html
-  $ odoc html-targets --as-json -o html main__A.odocl
+  $ odoc html-targets --as-json -o html main__A.odocl 2>&1 | cram_test_helper
   html/Main__A/index.html.json
-  $ odoc html-targets --as-json -o html main.odocl
+  $ odoc html-targets --as-json -o html main.odocl 2>&1 | cram_test_helper
   html/Main/index.html.json
   html/Main/A/index.html.json
   html/Main/A/B/index.html.json
-  $ odoc html-targets-source --impl impl-main__A.odocl -o html a.ml
+  $ odoc html-targets-source --impl impl-main__A.odocl -o html a.ml 2>&1 | cram_test_helper
   html/src/a.ml.html
-  $ odoc html-targets-source --impl impl-main.odocl -o html main.ml
+  $ odoc html-targets-source --impl impl-main.odocl -o html main.ml 2>&1 | cram_test_helper
   html/src/main.ml.html
-  $ odoc html-targets-source --impl impl-main__A.odocl --as-json -o html a.ml
+  $ odoc html-targets-source --impl impl-main__A.odocl --as-json -o html a.ml 2>&1 | cram_test_helper
   html/src/a.ml.html.json
-  $ odoc html-targets-source --impl impl-main.odocl --as-json -o html main.ml
+  $ odoc html-targets-source --impl impl-main.odocl --as-json -o html main.ml 2>&1 | cram_test_helper
   html/src/main.ml.html.json
 
   $ odoc html-generate-source --impl impl-main__A.odocl --as-json -o html a.ml
