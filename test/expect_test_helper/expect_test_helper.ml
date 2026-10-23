@@ -49,7 +49,9 @@ let run ?package groups =
   | [| _; "--gen-rules" |] -> emit_rules ?package exe groups
   | [| _; name |] -> (
       match List.assoc_opt name groups with
-      | Some f -> f ()
+      | Some f ->
+          Stdlib.set_binary_mode_out Stdlib.stdout true;
+          f ()
       | None ->
           prerr_endline ("Unknown group: " ^ name);
           exit 2)
