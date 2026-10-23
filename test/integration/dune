@@ -1,12 +1,14 @@
 (env
  (_
   (binaries
+   (../cram_test_helper/cram_test_helper.exe as cram_test_helper)
    (../odoc_print/odoc_print.exe as odoc_print))))
 
 (cram
  (package odoc)
  (deps
   (package odoc)
+  %{bin:cram_test_helper}
   %{bin:odoc_print}))
 
 (cram
