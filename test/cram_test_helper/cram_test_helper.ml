@@ -1,6 +1,6 @@
 let translate_paths =
-  let double_backslash = Str.regexp "\\(.+\\)\\\\" in
-  let single_backslash = Str.regexp "\\(.+\\)\\" in
+  let double_backslash = Str.regexp "\\([^\\]+\\)\\\\" in
+  let single_backslash = Str.regexp "\\([^\\]+\\)\\" in
   fun line ->
     line
     |> Str.global_replace double_backslash "\\1/"
