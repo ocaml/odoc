@@ -57,15 +57,12 @@ let read_files_from_dir dir =
 let constraints =
   let open Gen_rules_lib in
   [
-    ("stop_dead_link_doc.mli", Min "4.04");
-    ("bugs_post_406.mli", Min "4.06");
     ("ocamlary.mli", Min "4.14");
     ("recent.mli", Min "5.4");
     ("labels.mli", Min "4.09");
     ("recent_impl.ml", MinExcludingOxCaml "4.09");
     ("bugs_pre_410.ml", Before "4.10");
     ("module_type_subst.mli", Min "4.13");
-    ("class_comments.mli", Min "4.08");
     ("functor_ml.ml", Min "4.14");
     ("ocaml_55.mli", Min "5.5");
     ("ocaml_56.mli", Min "5.6");
@@ -91,10 +88,7 @@ let make_test_case case_name =
     in
     let odoc = Fpath.set_ext ".odoc" base_out_path in
     let odocl = Fpath.set_ext ".odocl" base_out_path in
-    let enabledif =
-      try Some (List.assoc case_name constraints)
-      with Not_found -> Some (Min "4.04")
-    in
+    let enabledif = List.assoc_opt case_name constraints in
     { Gen_rules_lib.input; cmt; odoc; odocl; enabledif }
   in
   match Fpath.get_ext input with

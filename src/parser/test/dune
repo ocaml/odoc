@@ -1,8 +1,6 @@
 (library
  (name odoc_parser_test)
  (modules test test_tables)
- (enabled_if
-  (>= %{ocaml_version} 4.04.1))
  (instrumentation
   (backend landmarks --auto))
  (libraries sexplib0 odoc-parser expect_test_helper))

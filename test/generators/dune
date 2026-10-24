@@ -8,8 +8,6 @@
   (glob_files man/*.targets)
   (glob_files markdown/*.targets))
  (package odoc)
- (enabled_if
-  (>= %{ocaml_version} 4.04))
  (action
   (with-stdout-to
    link.dune.inc.gen.raw
@@ -21,16 +19,12 @@
 (rule
  (alias runtest)
  (package odoc)
- (enabled_if
-  (>= %{ocaml_version} 4.04))
  (action
   (diff link.dune.inc link.dune.inc.gen)))
 
 (library
  (name gen_rules_lib)
- (libraries sexplib0 unix fpath odoc_utils)
- (enabled_if
-  (>= %{ocaml_version} 4.04)))
+ (libraries sexplib0 unix fpath odoc_utils))
 
 (cram
  (package odoc)
