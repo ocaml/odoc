@@ -1,4 +1,4 @@
-# 3.2.2 (unreleased)
+# 3.2.2
 
 ### Added
 - Support for OCaml 5.6 (@jonludlam, #1472)
