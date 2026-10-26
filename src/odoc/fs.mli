@@ -82,7 +82,7 @@ module File : sig
 
   val to_string : t -> string
 
-  val read : t -> (string, [> msg ]) result
+  val read : ?binary:bool -> t -> (string, [> msg ]) result
 
   val copy : src:t -> dst:t -> (unit, [> msg ]) result
 
