@@ -1,9 +1,13 @@
 open Odoc_utils
 open ResultMonad
 
+(* Building the env can warn, and so can the lookups the link makes, so both
+   are done where warnings are caught. *)
 let link_page ~resolver ~filename page =
-  let env = Resolver.build_env_for_page resolver page in
-  Odoc_xref2.Link.resolve_page ~filename env page
+  Odoc_model.Error.catch_warnings (fun () ->
+      let env = Resolver.build_env_for_page resolver page in
+      Odoc_model.Error.raise_warnings
+        (Odoc_xref2.Link.resolve_page ~filename env page))
 
 (* Building the env can warn, so it is done where warnings are caught. *)
 let link_impl ~resolver ~filename impl =
