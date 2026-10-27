@@ -71,6 +71,10 @@ Linking with no warning would be wrong.
 
   $ ALL="-L client:h/pkg/client -L server:h/pkg/server -L app_client:h/pkg/app_client -L app_server:h/pkg/app_server"
   $ for u in client/eliom__ client/eliom__Content client/eliom server/eliom__ server/eliom__Content server/eliom app_client/app app_server/app; do odoc link $ALL h/pkg/$u.odoc; done
+  File "Eliom":
+  Ambiguous lookup. Possible units: pkg/client/Eliom, pkg/server/Eliom
+  File "Eliom":
+  Ambiguous lookup. Possible units: pkg/client/Eliom, pkg/server/Eliom
 
 How to read [odoc_print --short --long-paths --show-root-parents]. Each line
 is one item of the signature. [v/0] is the item [v], with a number odoc adds
@@ -91,7 +95,7 @@ Showing either [v] as, or linking it to, the other library's
 [Eliom.Content.t] would be wrong.
 
   $ odoc_print --short --long-paths --show-root-parents h/pkg/app_client/app.odocl
-  type v/0 = resolved(alias(canonical(hidden(root(pkg/client/Eliom__)).Content,resolved(root(pkg/client/Eliom).Content)),identifier(root(pkg/client/Eliom),false).Content).t)
+  type v/0 = resolved(alias(canonical(hidden(root(pkg/client/Eliom__)).Content,resolved(root(pkg/server/Eliom).Content)),identifier(root(pkg/client/Eliom),false).Content).t)
   $ odoc_print --short --long-paths --show-root-parents h/pkg/app_server/app.odocl
   type v/0 = resolved(alias(canonical(hidden(root(pkg/server/Eliom__)).Content,resolved(root(pkg/server/Eliom).Content)),identifier(root(pkg/server/Eliom),false).Content).t)
 
@@ -99,7 +103,7 @@ The links, in the HTML of each [App]:
 
   $ for l in client server; do odoc html-generate -o html h/pkg/app_$l/app.odocl; done
   $ grep -o 'href="[^"]*Content[^"]*"' html/pkg/app_client/App/index.html
-  href="../../client/Eliom/Content/index.html#type-t"
+  href="../../server/Eliom/Content/index.html#type-t"
   $ grep -o 'href="[^"]*Content[^"]*"' html/pkg/app_server/App/index.html
   href="../../server/Eliom/Content/index.html#type-t"
 
