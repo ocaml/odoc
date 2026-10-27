@@ -347,7 +347,7 @@ module Arg_kind : S_kind
 ```ocaml
 type t_functor_app : F_kind(Arg_kind).functor_kind
 ```
-A use behind a functor application. odoc references can't express functor application, so this is rendered as plain text (not a link) rather than crashing.
+A use behind a functor application. It links into the result signature of the functor.
 
 ```ocaml
 module F_nested (X : S_kind) : sig ... end
@@ -355,12 +355,12 @@ module F_nested (X : S_kind) : sig ... end
 ```ocaml
 kind_ functor_abbrev = F_nested(Arg_kind).abstract_kind
 ```
-A kind abbreviation defined through a functor-application path. The manifest is rendered but the functor-application path isn't a link.
+A kind abbreviation defined through a functor-application path. The manifest links into the result signature of the functor.
 
 ```ocaml
 kind_ nested_functor_abbrev = F_nested(Arg_kind).Nested.custom_kind_abbrev
 ```
-A kind abbreviation defined through a functor-application-then-nested-module path. The manifest is rendered but the functor-application path isn't a link.
+A kind abbreviation defined through a functor-application-then-nested-module path. The manifest links into the result signature of the functor.
 
 ```ocaml
 kind_ to_be_shadowed = value mod portable

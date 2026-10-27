@@ -1146,11 +1146,11 @@ and read_items env parent items =
         let wrapper_module = wrapper_module wrapper ~hidden (List.rev acc) in
         let items = read_include_functor env parent (snd wrapper) incl in
         ( List.rev_append items (wrapper_module :: acc),
-          Cmi.scope_kind_abbreviations env items )
+          Cmi.scope_kind_abbreviations_from_sig_items env items )
 #endif
       | _ ->
         let items = read_signature_item env parent item in
-        (List.rev_append items acc, Cmi.scope_kind_abbreviations env items))
+        (List.rev_append items acc, Cmi.scope_kind_abbreviations_from_sig_items env items))
     ([], env) items
   |> fst |> List.rev
 

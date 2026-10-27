@@ -237,9 +237,8 @@ module F_kind (X : S_kind) : S_kind
 module Arg_kind : S_kind
 
 type t_functor_app : F_kind(Arg_kind).functor_kind
-(** A use behind a functor application. odoc references can't express functor
-    application, so this is rendered as plain text (not a link) rather than
-    crashing. *)
+(** A use behind a functor application. It links into the result signature of
+    the functor. *)
 
 module F_nested (X : S_kind) : sig
   kind_ abstract_kind
@@ -253,12 +252,11 @@ end
 
 kind_ functor_abbrev = F_nested(Arg_kind).abstract_kind
 (** A kind abbreviation defined through a functor-application path. The manifest
-    is rendered but the functor-application path isn't a link. *)
+    links into the result signature of the functor. *)
 
 kind_ nested_functor_abbrev = F_nested(Arg_kind).Nested.custom_kind_abbrev
 (** A kind abbreviation defined through a functor-application-then-nested-module
-    path. The manifest is rendered but the functor-application path isn't a
-    link. *)
+    path. The manifest links into the result signature of the functor. *)
 
 kind_ to_be_shadowed = value mod portable
 (** Shadowed below by a kind abbreviation of the same name. *)

@@ -1945,11 +1945,7 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (ModuleTypeName.to_string name)
-    | `Type (parent, name) ->
-        Format.fprintf ppf "%a.%s" (model_reference c)
-          (parent :> t)
-          (TypeName.to_string name)
-    | `KindAbbreviation (parent, name) ->
+    | `Type (parent, name) | `KindAbbreviation (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (TypeName.to_string name)
