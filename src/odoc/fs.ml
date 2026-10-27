@@ -63,7 +63,12 @@ module File = struct
   let read ?(binary = true) file =
     let input_one_shot len ic =
       let buf = Bytes.create len in
-      really_input ic buf 0 len;
+      (match really_input ic buf 0 len with
+      | () -> ()
+      | exception End_of_file ->
+          (* when opening files in text mode the length might be shorter
+           than what [input_channel_length ic] reported; this is harmless *)
+          ());
       close_in ic;
       Ok (Bytes.unsafe_to_string buf)
     in
