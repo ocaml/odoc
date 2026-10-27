@@ -95,6 +95,8 @@ should warn that [ext2] is missing. The reference fails, so it should also
 get an ordinary warning (section 4.5).
 
   $ odoc link -L p:h/pkg/p -L r:h/pkg/r h/pkg/p/p.odoc
+  File "R":
+  Warning: Library ext2 was used to compile this unit but is not given with -L. Paths that need it may be left unresolved.
   File "p/p.mli", line 1, characters 8-16:
   Warning: Failed to resolve reference unresolvedroot(R).Y.t Parent_sig: Unresolved module path unresolvedroot(Ext2) (Lookup failure (root module): Ext2)
 
@@ -116,6 +118,8 @@ A link of [q] with no warning about [ext2] would be wrong.
   $ ocamlc -bin-annot -no-alias-deps -c q/q.mli
   $ odoc compile --output-dir h --parent-id pkg/q -L q:h/pkg/q q/q.cmti
   $ odoc link -L q:h/pkg/q -L r:h/pkg/r h/pkg/q/q.odoc
+  File "R":
+  Warning: Library ext2 was used to compile this unit but is not given with -L. Paths that need it may be left unresolved.
   File "q/q.mli", line 1, characters 8-19:
   Warning: Failed to resolve reference /r/R.Y.t Parent_sig: Unresolved module path unresolvedroot(Ext2) (Lookup failure (root module): Ext2)
 
@@ -131,6 +135,8 @@ A link of [pg] with no warning about [ext2] would be wrong.
   See {!R.Y.t}.
   $ odoc compile --output-dir h --parent-id pkg pg.mld
   $ odoc link -L r:h/pkg/r h/pkg/page-pg.odoc
+  File "R":
+  Warning: Library ext2 was used to compile this unit but is not given with -L. Paths that need it may be left unresolved.
   File "pg.mld", line 3, characters 4-12:
   Warning: Failed to resolve reference unresolvedroot(R).Y.t Parent_sig: Unresolved module path unresolvedroot(Ext2) (Lookup failure (root module): Ext2)
 

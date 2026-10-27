@@ -650,17 +650,45 @@ let build_compile_env_for_unit
   in
   Env.env_of_unit m ~linking:false resolver
 
+(* At link, the libraries a unit recorded must all be given with -L (D6): a path
+   with no digest is looked up among them, so without one of them the paths that
+   need it stay unresolved. Warn once for each unit and missing library. Only
+   odoc link knows the library names; elsewhere [t.libs] is [None]. *)
+let warned_libraries = Hashtbl.create 7
+
+let warn_missing_libraries t ~file libraries =
+  Option.iter
+    (fun libs ->
+      List.sort_uniq String.compare libraries
+      |> List.iter (fun lib ->
+             if
+               not
+                 (Named_roots.mem libs lib
+                 || Hashtbl.mem warned_libraries (file, lib))
+             then (
+               Hashtbl.add warned_libraries (file, lib) ();
+               Odoc_model.Error.raise_warning
+                 (Odoc_model.Error.filename_only
+                    "Library %s was used to compile this unit but is not given \
+                     with -L. Paths that need it may be left unresolved."
+                    lib file))))
+    t.libs
+
 (** [important_digests] and [imports_map] only apply to modules. *)
 let build ?(imports_map = StringMap.empty) ?hierarchy_roots ~scope
-    {
-      important_digests;
-      ap;
-      page_ap;
-      open_modules = open_units;
-      pages;
-      libs;
-      current_dir;
-    } =
+    ({
+       important_digests;
+       ap;
+       page_ap;
+       open_modules = open_units;
+       pages;
+       libs;
+       current_dir;
+     } as t) =
+  (* A unit read to resolve another must have its libraries given too. *)
+  let check (m : Odoc_model.Lang.Compilation_unit.t) =
+    warn_missing_libraries t ~file:(root_name m.root) m.libraries
+  in
   let hierarchy =
     let open OptionMonad in
     current_dir >>= fun current_dir ->
@@ -691,9 +719,20 @@ let build ?(imports_map = StringMap.empty) ?hierarchy_roots ~scope
     let imports_map =
       if own_scope scope then imports_map else StringMap.empty
     in
-    lookup_unit_by_name ~important_digests ~imports_map ~scope:(scoped scope) ap
-      name
-  and lookup_unit_by_path = lookup_unit_by_path ~libs ~hierarchy
+    let r =
+      lookup_unit_by_name ~important_digests ~imports_map ~scope:(scoped scope)
+        ap name
+    in
+    (match r with Ok (Env.Found m) -> check m | _ -> ());
+    r
+  and lookup_unit_by_path p =
+    let r = lookup_unit_by_path ~libs ~hierarchy p in
+    Result.iter check r;
+    r
+  and lookup_unit_by_id id =
+    let r = lookup_unit_by_id ap id in
+    Option.iter check r;
+    r
   and lookup_page = lookup_page page_ap ~pages ~hierarchy
   and lookup_asset = lookup_asset ~pages ~hierarchy
   and lookup_impl = lookup_impl ~scope:(scoped scope) ap in
@@ -702,7 +741,7 @@ let build ?(imports_map = StringMap.empty) ?hierarchy_roots ~scope
     Env.open_units;
     lookup_unit_by_name;
     lookup_unit_by_path;
-    lookup_unit_by_id = lookup_unit_by_id ap;
+    lookup_unit_by_id;
     lookup_page;
     lookup_impl;
     lookup_asset;
@@ -715,23 +754,6 @@ let build_compile_env_for_impl t i =
   in
   let resolver = build ~imports_map ~scope:Env.Library_scope.any t in
   Env.env_of_impl i resolver
-
-(* A path with no digest is looked up among the libraries its unit recorded, so
-   a library link was not given leaves the paths that can only mean its modules
-   unresolved. Say so once for each such library. *)
-let warn_missing_libraries t ~file libraries =
-  match t.libs with
-  | None -> ()
-  | Some libs ->
-      List.iter
-        (fun lib ->
-          if not (Named_roots.mem libs lib) then
-            Odoc_model.Error.raise_warning
-              (Odoc_model.Error.filename_only
-                 "Library %s was used to compile this unit but is not given \
-                  with -L. Paths that need it may be left unresolved."
-                 lib file))
-        (List.sort_uniq String.compare libraries)
 
 let build_link_env_for_unit t m =
   add_unit_to_cache (Odoc_file.Unit_content m);
