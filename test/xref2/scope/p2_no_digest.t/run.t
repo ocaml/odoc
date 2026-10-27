@@ -196,6 +196,8 @@ before [c].
   $ odoc compile --output-dir h --parent-id pkg/x -L x:h/pkg/x x/x.cmti
   $ odoc compile --output-dir h --parent-id pkg/x -L x:h/pkg/x x/inner.cmti
   $ odoc link -L x:h/pkg/x -L y:h/pkg/y -L z:h/pkg/z h/pkg/z/z.odoc
+  File "h/pkg/z/z.odoc":
+  Warning: Failed to lookup type identifier(root(Z).M,false).u Find failure
 
 Λc(z) holds two units named [Inner], which D3 rules out, so section 3.7
 makes no promise for [z]. Link follows [M] into [X] and meets the root
@@ -206,5 +208,5 @@ only in the order of compiling, so odoc may link different units in them.
 
   $ odoc_print --short --long-paths --show-root-parents h/pkg/z/z.odocl
   module M/0 =
-    resolved(alias(root(pkg/y/Inner),identifier(root(pkg/x/X),false).H))
-  val v/1 : resolved(alias(alias(root(pkg/y/Inner),identifier(root(pkg/x/X),false).H),local(M/0,false)).u)
+    resolved(alias(root(pkg/x/Inner),identifier(root(pkg/x/X),false).H))
+  val v/1 : local(M/0,false).u
