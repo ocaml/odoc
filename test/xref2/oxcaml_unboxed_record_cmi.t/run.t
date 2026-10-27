@@ -13,7 +13,7 @@ fields.
   # Module `M`
   
   ```ocaml
-  type t = {
+  type t = #{
     x : int;
     y : float#;
   }

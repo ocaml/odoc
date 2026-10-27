@@ -45,6 +45,7 @@
 - Fix bug in hidden name check that sometimes exposed hidden items (@jonludlam, #1484)
 - Fix includes being re-expanded in dependent modules, which could lose type
   equations; also makes `.odoc` files smaller, particularly on OxCaml (@jonludlam, #1481)
+- Fix OxCaml unboxed records in cmi (@art-w, #1523)
 
 # 3.2.1
 

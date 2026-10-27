@@ -1110,6 +1110,16 @@ let read_label_declaration env parent ld =
   let modalities = read_label_modalities ld in
   { id; doc; mutability; type_; modalities; }
 
+let read_unboxed_label_declaration env parent ld =
+  let { TypeDecl.Field.doc; type_; _ } =
+    read_label_declaration env (parent :> Identifier.FieldParent.t) ld
+  in
+  let id =
+    Identifier.Mk.unboxed_field
+      (parent, Odoc_model.Names.UnboxedFieldName.make_std (Ident.name ld.ld_id))
+  in
+  { TypeDecl.UnboxedField.id; doc; type_ }
+
 let read_constructor_declaration_arguments env parent arg =
   let open TypeDecl.Constructor in
     match arg with
@@ -1160,10 +1170,11 @@ let read_type_kind env parent =
     | Type_record_unboxed_product(lbls, _, _) ->
         let lbls =
           List.map
-            (read_label_declaration env (parent :> Identifier.FieldParent.t))
+            (read_unboxed_label_declaration env
+               (parent :> Identifier.UnboxedFieldParent.t))
             lbls
         in
-          Some (Record lbls)
+          Some (Record_unboxed_product lbls)
     | Type_record(lbls, _, _) ->
 #else
     | Type_record(lbls, _) ->
