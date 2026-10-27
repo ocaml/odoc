@@ -61,16 +61,16 @@ module File = struct
     | Ok p -> p
 
   let read ?(binary = true) file =
-    let input_one_shot len ic =
-      let buf = Bytes.create len in
-      (match really_input ic buf 0 len with
+    let input_one_shot max_len ic =
+      let buf = Buffer.create max_len in
+      (match Buffer.add_channel buf ic max_len with
       | () -> ()
       | exception End_of_file ->
           (* when opening files in text mode the length might be shorter
            than what [input_channel_length ic] reported; this is harmless *)
           ());
       close_in ic;
-      Ok (Bytes.unsafe_to_string buf)
+      Ok (Buffer.contents buf)
     in
     let input_stream file ic =
       let bsize =
