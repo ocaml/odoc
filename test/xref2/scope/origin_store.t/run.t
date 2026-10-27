@@ -88,9 +88,11 @@ write tags with a library yet.
 A resolved tag, to either library's [X.Hid], would be wrong.
 
   $ link h/pkg/z/z.odoc
+  File "X":
+  Ambiguous lookup. Possible units: pkg/x/X, pkg/xv/X
   $ odoc_print --short --long-paths --show-root-parents h/pkg/z/z.odocl
   module M/0 =
-    resolved(canonical(root(pkg/x/X).Hid,resolved(root(pkg/x/X).Hid)))
+    resolved(canonical(root(pkg/x/X).Hid,resolved(root(pkg/xv/X).Hid)))
 
 Case 2. A cache keyed by origin. [a] is built against [ext1] and [b] against
 [ext2]. Each has the pure alias [E = Ext], so the root text [Ext] is the same

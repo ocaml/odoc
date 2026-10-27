@@ -120,6 +120,8 @@ The link also resolves [user]'s comment, whose references are the subject of
 case 5; any warning it prints comes from them.
 
   $ odoc link -L vlib:h/pkg/vlib -L impl_a:h/pkg/impl_a -L impl_b:h/pkg/impl_b -L user:h/pkg/user -L tool:h/pkg/tool h/pkg/user/user.odoc
+  File "Vlib__Clock":
+  Ambiguous lookup. Possible units: pkg/impl_a/Vlib__Clock, pkg/impl_b/Vlib__Clock, pkg/vlib/Vlib__Clock
   $ odoc_print --short --long-paths --show-root-parents h/pkg/user/user.odocl
   val stamp/0 : resolved(unit) -> resolved(canonical(root(pkg/vlib/Vlib).Clock,resolved(root(pkg/vlib/Vlib).Clock)).t)
   val direct/1 : resolved(hidden(root(pkg/vlib/Vlib__Clock)).t)
@@ -201,6 +203,8 @@ case 1.
   r(alias(hidden(root(pkg/vlib/Vlib__Clock)),root(pkg/vlib/Vlib).Clock))
   r(hidden(root(pkg/vlib/Vlib__Clock)))
   $ odoc link -L impl_b:h/pkg/impl_b -L impl_a:h/pkg/impl_a -L vlib:h/pkg/vlib -L user:h/pkg/user h/pkg/user/user.odoc
+  File "Vlib__Clock":
+  Ambiguous lookup. Possible units: pkg/impl_a/Vlib__Clock, pkg/impl_b/Vlib__Clock, pkg/vlib/Vlib__Clock
   $ odoc_print --refs --long-paths --show-root-parents h/pkg/user/user.odocl
   r(alias(hidden(root(pkg/vlib/Vlib__Clock)),root(pkg/vlib/Vlib).Clock))
   r(hidden(root(pkg/vlib/Vlib__Clock)))
@@ -214,6 +218,8 @@ should mean [impl_a]'s copy: the implementation has been chosen (R3).
 "Ambiguous lookup" warning.
 
   $ odoc link -L vlib:h/pkg/vlib -L impl_a:h/pkg/impl_a -L user:h/pkg/user h/pkg/user/user.odoc
+  File "Vlib__Clock":
+  Ambiguous lookup. Possible units: pkg/impl_a/Vlib__Clock, pkg/vlib/Vlib__Clock
   $ odoc_print --refs --long-paths --show-root-parents h/pkg/user/user.odocl
   r(alias(hidden(root(pkg/vlib/Vlib__Clock)),root(pkg/vlib/Vlib).Clock))
   r(hidden(root(pkg/vlib/Vlib__Clock)))
@@ -262,11 +268,15 @@ go to different pages (the known limit in section 4.2). [{!Timer}] meaning
 [uvlib]'s unit would be wrong, and so would an "Ambiguous lookup" warning.
 
   $ odoc link -L uvlib:h/pkg/uvlib -L uimpl:h/pkg/uimpl -L uuser:h/pkg/uuser h/pkg/uuser/uuser.odoc
+  File "Timer":
+  Ambiguous lookup. Possible units: pkg/uimpl/Timer, pkg/uvlib/Timer
   $ odoc_print --short --long-paths --show-root-parents h/pkg/uuser/uuser.odocl
   val now/0 : resolved(unit) -> resolved(root(pkg/uvlib/Timer).t)
   $ odoc_print --refs --long-paths --show-root-parents h/pkg/uuser/uuser.odocl
   r(root(pkg/uvlib/Timer))
   $ odoc link -L uvlib:h/pkg/uvlib -L uimpl:h/pkg/uimpl -L utool:h/pkg/utool h/pkg/utool/utool.odoc
+  File "Timer":
+  Ambiguous lookup. Possible units: pkg/uimpl/Timer, pkg/uvlib/Timer
   $ odoc_print --short --long-paths --show-root-parents h/pkg/utool/utool.odocl
   val now/0 : resolved(unit) -> resolved(root(pkg/uvlib/Timer).t)
   $ odoc_print --refs --long-paths --show-root-parents h/pkg/utool/utool.odocl

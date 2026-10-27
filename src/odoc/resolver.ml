@@ -673,7 +673,24 @@ let build ?(imports_map = StringMap.empty) ?hierarchy_roots ~scope
   let scoped scope =
     match libs with None -> Env.Library_scope.any | Some _ -> scope
   in
+  (* The digests the linked unit recorded say which unit the compiler used for
+     each name it saw, so they are right only for roots written in the linked
+     unit, that is, roots in its scope. A root from another library is looked
+     up by name in that library's scope, which holds one unit of that name
+     (D3). The root of a reference or a canonical tag is looked up in every
+     library; it is written by hand, so the digests do not apply to it either.
+     A legacy unit has no scope, and its digests are used for every root. *)
+  let own_scope root_scope =
+    match (scope, root_scope) with
+    | Env.Library_scope.Any, _ -> true
+    | Env.Library_scope.Scoped libs, Env.Library_scope.Scoped root_libs ->
+        libs = root_libs
+    | Env.Library_scope.Scoped _, Env.Library_scope.Any -> false
+  in
   let lookup_unit_by_name ~scope name =
+    let imports_map =
+      if own_scope scope then imports_map else StringMap.empty
+    in
     lookup_unit_by_name ~important_digests ~imports_map ~scope:(scoped scope) ap
       name
   and lookup_unit_by_path = lookup_unit_by_path ~libs ~hierarchy
