@@ -492,8 +492,6 @@ module rec Reference : sig
     | `TCurrentPackage  (** [{!//identifier}] *) ]
   (** @canonical Odoc_model.Paths.Reference.tag_hierarchy *)
 
-  type tag_only_kind_abbreviation = [ `TKindAbbreviation ]
-
   type tag_any =
     [ `TModule
     | `TModuleType

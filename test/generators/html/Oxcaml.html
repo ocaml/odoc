@@ -1008,15 +1008,16 @@
      <a href="#type-t_functor_app" class="anchor"></a>
      <code>
       <span><span class="keyword">type</span> t_functor_app : 
-       F_kind(Arg_kind).functor_kind
+       <a href="Oxcaml-F_kind.html#kind-functor_kind">
+        F_kind(Arg_kind).functor_kind
+       </a>
       </span>
      </code>
     </div>
     <div class="spec-doc">
      <p>
-      A use behind a functor application. odoc references can't express
-      functor application, so this is rendered as plain text (not a link)
-      rather than crashing.
+      A use behind a functor application. It links into the result signature
+      of the functor.
      </p>
     </div>
    </div>
@@ -1040,14 +1041,16 @@
      <a href="#kind-functor_abbrev" class="anchor"></a>
      <code>
       <span><span class="keyword">kind_</span> functor_abbrev = 
-       F_nested(Arg_kind).abstract_kind
+       <a href="Oxcaml-F_nested.html#kind-abstract_kind">
+        F_nested(Arg_kind).abstract_kind
+       </a>
       </span>
      </code>
     </div>
     <div class="spec-doc">
      <p>
       A kind abbreviation defined through a functor-application path. The
-      manifest is rendered but the functor-application path isn't a link.
+      manifest links into the result signature of the functor.
      </p>
     </div>
    </div>
@@ -1057,15 +1060,18 @@
      <a href="#kind-nested_functor_abbrev" class="anchor"></a>
      <code>
       <span><span class="keyword">kind_</span> nested_functor_abbrev =
+        
+       <a href="Oxcaml-F_nested-Nested.html#kind-custom_kind_abbrev">
         F_nested(Arg_kind).Nested.custom_kind_abbrev
+       </a>
       </span>
      </code>
     </div>
     <div class="spec-doc">
      <p>
       A kind abbreviation defined through a
-      functor-application-then-nested-module path. The manifest is rendered
-      but the functor-application path isn't a link.
+      functor-application-then-nested-module path. The manifest links into
+      the result signature of the functor.
      </p>
     </div>
    </div>

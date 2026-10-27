@@ -380,6 +380,7 @@ module Refs = struct
         docs c x.doc;
         constructor_argument c x.args
     | Value x -> docs c x.doc
+    | KindAbbreviation x -> docs c x.doc
     | Class (_, x) ->
         docs c x.doc;
         class_decl c x.type_

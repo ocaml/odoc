@@ -17,12 +17,12 @@
 open Asttypes
 open Types
 module OCamlPath = Path
+let ocaml_empty_env = Env.empty
 
 open Odoc_model.Paths
 open Odoc_model.Lang
 open Odoc_model.Names
 
-module OCamlEnv = Env
 module Env = Ident_env
 module Paths = Odoc_model.Paths
 
@@ -546,31 +546,28 @@ let read_parsetree_modes (modes : Parsetree.modes) =
     let (Parsetree.Mode s) = m.txt in s)
     modes
 
-let rec kind_signature_reference :
-    Longident.t -> Paths.Reference.Signature.t option = function
-  | Longident.Lident m -> Some (`Root (m, `TUnknown))
+let rec kind_signature_reference : Longident.t -> Paths.Reference.Signature.t =
+  function
+  | Longident.Lident m -> `Root (m, `TUnknown)
   | Longident.Ldot (p, m) ->
-      Option.map (fun p -> `Dot (p, m)) (kind_label_parent_reference p)
-  | Longident.Lapply _ -> None
+      let p = (kind_signature_reference p :> Paths.Reference.LabelParent.t) in
+      `Dot (p, m)
+  | Longident.Lapply (f, _) -> kind_signature_reference f
 
-and kind_label_parent_reference x =
-  Option.map
-    (fun r -> (r : Paths.Reference.Signature.t :> Paths.Reference.LabelParent.t))
-    (kind_signature_reference x)
-
-let read_kind_abbreviation env (lid : Longident.t) =
+let read_kind_abbreviation env lid =
   let name = Format.asprintf "%a" Pprintast.longident lid in
-  let reference : Paths.Reference.t option =
+  let reference =
     match lid with
     | Longident.Lident n ->
         Option.map
           (fun id -> `Resolved (`Identifier (id :> Identifier.t)))
           (Env.find_kind_abbreviation env n)
     | Longident.Ldot (prefix, n) ->
-        Option.map
-          (fun prefix -> `KindAbbreviation (prefix, TypeName.make_std n))
-          (kind_signature_reference prefix)
-    | Longident.Lapply _ -> None
+        Some
+          (`KindAbbreviation
+             (kind_signature_reference prefix, TypeName.make_std n))
+    | Longident.Lapply _ ->
+        invalid_arg "kind: unexpected functor application"
   in
   Kind.Abbreviation (name, reference)
 
@@ -1301,27 +1298,35 @@ let read_jkind_of_types env (jkind : _ Types.jkind) =
             | Abbreviation (_, r) -> r
             | _ -> None)
       in
-      let with_bounds =
-        match desc.with_bounds with
-        | No_with_bounds -> []
-        | With_bounds tys -> List.of_seq (With_bounds_types.to_seq tys)
-      in
-      let rec conv : Outcometree.out_jkind_const -> Kind.t = function
-        | Ojkind_const_default -> Default
+      let rec conv = function
+        | Outcometree.Ojkind_const_default -> Default
         | Ojkind_const_abbreviation (name, []) -> Abbreviation (name, reference)
         | Ojkind_const_abbreviation (name, axes) ->
             Abbreviation (String.concat " " (name :: axes), reference)
         | Ojkind_const_mod (Some k, modes) -> Mod (conv k, modes)
         | Ojkind_const_mod (None, modes) -> Mod (Default, modes)
-        | Ojkind_const_with (k, _, modalities) ->
-            let k = conv k in
-            let depth = with_depth k in
-            let ty, _ = List.nth with_bounds depth in
-            With (k, read_type_expr env ty, modalities)
-        | Ojkind_const_kind_of _ -> Default
         | Ojkind_const_product ks -> Product (List.map conv ks)
-      and with_depth = function With (k, _, _) -> 1 + with_depth k | _ -> 0 in
-      conv (Jkind.Const.to_out_jkind_const OCamlEnv.empty const)
+        | Ojkind_const_kind_of _ -> invalid_arg "unexpected kind of"
+        | Ojkind_const_with _ -> invalid_arg "kind with nested bound"
+      in
+      let rec conv_with = function
+        | Outcometree.Ojkind_const_with (k, _, modalities) -> (
+            let with_bounds, k = conv_with k in
+            match Seq.uncons with_bounds with
+            | None -> invalid_arg "kind expected with bound"
+            | Some ((ty, _), with_bounds) ->
+                with_bounds, With (k, read_type_expr env ty, modalities))
+        | out_jkind_const ->
+            let with_bounds =
+              match desc.with_bounds with
+              | No_with_bounds -> Seq.empty
+              | With_bounds tys -> With_bounds_types.to_seq tys
+            in
+            with_bounds, conv out_jkind_const
+      in
+      let with_bounds, kind = conv_with (Jkind.Const.to_out_jkind_const ocaml_empty_env const) in
+      assert (Seq.is_empty with_bounds);
+      kind
 #endif
 
 let read_type_declaration env parent id decl =
@@ -1373,9 +1378,19 @@ let read_type_declaration env parent id decl =
   let private_ = (decl.type_private = Private) in
   let kind =
 #if defined OXCAML
-    match decl.type_jkind.annotation, decl.type_manifest, decl.type_kind with
-    | None, None, Type_abstract _ -> read_jkind_of_types env decl.type_jkind
-    | annot, _, _ -> read_jkind_annotation env.ident_env annot
+    match decl.type_jkind.annotation with
+    | None ->
+        (* no user-written kind annotation is available *)
+        (match decl.type_manifest, decl.type_kind with
+        | None, Type_abstract _ ->
+            (* and the kind is not obvious from the type definition,
+               so we have to use the verbose typechecker representation. *)
+            read_jkind_of_types env decl.type_jkind
+        | _ ->
+            (* otherwise the kind implicitly defaults to the kind
+               of the type definition. *)
+            Kind.Default)
+    | annot -> read_jkind_annotation env.ident_env annot
 #else
     Kind.Default
 #endif

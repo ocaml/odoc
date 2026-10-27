@@ -498,7 +498,7 @@ A kind declared in a module type\.
 .fi 
 .br 
 .ti +2
-A use behind a functor application\. odoc references can't express functor application, so this is rendered as plain text (not a link) rather than crashing\.
+A use behind a functor application\. It links into the result signature of the functor\.
 .nf 
 .sp 
 \f[CB]module\fR F_nested (X : S_kind) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
@@ -507,14 +507,14 @@ A use behind a functor application\. odoc references can't express functor appli
 .fi 
 .br 
 .ti +2
-A kind abbreviation defined through a functor-application path\. The manifest is rendered but the functor-application path isn't a link\.
+A kind abbreviation defined through a functor-application path\. The manifest links into the result signature of the functor\.
 .nf 
 .sp 
 \f[CB]kind_\fR nested_functor_abbrev = F_nested(Arg_kind)\.Nested\.custom_kind_abbrev
 .fi 
 .br 
 .ti +2
-A kind abbreviation defined through a functor-application-then-nested-module path\. The manifest is rendered but the functor-application path isn't a link\.
+A kind abbreviation defined through a functor-application-then-nested-module path\. The manifest links into the result signature of the functor\.
 .nf 
 .sp 
 \f[CB]kind_\fR to_be_shadowed = value \f[CB]mod\fR portable

@@ -26,6 +26,16 @@ A kind abbreviation can be named [value], shadowing the built-in kind.
   > type m : immediate = int
   > 
   > type n : value mod portable = int
+  > 
+  > type unboxed_record = #{ p : float#; q : int }
+  > 
+  > module F (X : sig end) : sig
+  >   kind_ k
+  > end
+  > 
+  > type applied : F(K).k
+  > 
+  > type ('a, 'b) two_with : immutable_data with 'a @@ many with 'b @@ contended
   > EOF
 
   $ ocamlc -c -bin-annot m.mli
@@ -77,8 +87,24 @@ built-in default, so it is hidden:
   ```ocaml
   type n : value mod portable = int
   ```
+  ```ocaml
+  type unboxed_record = #{
+    p : float#;
+    q : int;
+  }
+  ```
+  ```ocaml
+  module F (X : sig ... end) : sig ... end
+  ```
+  ```ocaml
+  type applied : F(K).k
+  ```
+  ```ocaml
+  type ('a, 'b) two_with : (immutable_data with 'a @@ many) with 'b @@ contended
+  ```
 
-Kind names link to their abbreviations:
+Kind names link to their abbreviations, and [F(K).k] links into the result
+signature of [F]:
 
   $ odoc html-generate -o html m.odocl
   $ grep -o '<a href="[^"]*">[^<]*</a>' html/M/index.html | grep -v 'class="anchor"'
@@ -89,10 +115,15 @@ Kind names link to their abbreviations:
   <a href="K/index.html">K</a>
   <a href="K/index.html#kind-k">K.k</a>
   <a href="#kind-value">value</a>
+  <a href="F/index.html">F</a>
+  <a href="F/argument-1-X/index.html">X</a>
+  <a href="F/index.html#kind-k">F(K).k</a>
 
 From a [.cmi] alone, the compiler drops the kind annotation on [t] and stores only
 its expansion, so [t] is rendered as [value mod portable], where [value] is the
-built-in kind.
+built-in kind. [unboxed_record] has no annotation either, but its inferred kind
+is not rendered as it was not written by the user. The with-bounds of
+[two_with] are reordered by the compiler, but each type keeps its modality.
 
   $ mkdir cmi && cp m.mli cmi/ && cd cmi
   $ ocamlc -c m.mli
@@ -139,6 +170,21 @@ built-in kind.
   ```ocaml
   type n : immediate = int
   ```
+  ```ocaml
+  type unboxed_record = #{
+    p : float#;
+    q : int;
+  }
+  ```
+  ```ocaml
+  module F (X : sig ... end) : sig ... end
+  ```
+  ```ocaml
+  type applied : F(K).k
+  ```
+  ```ocaml
+  type ('a, 'b) two_with : (immutable_data with 'b @@ contended) with 'a @@ many
+  ```
 
 Kind names still link to their abbreviations (but [t : value mod portable] is
 now the default `value`, so it does not):
@@ -150,3 +196,6 @@ now the default `value`, so it does not):
   <a href="#kind-k">k</a>
   <a href="K/index.html">K</a>
   <a href="K/index.html#kind-k">K.k</a>
+  <a href="F/index.html">F</a>
+  <a href="F/argument-1-X/index.html">X</a>
+  <a href="F/index.html#kind-k">F(K).k</a>
