@@ -1147,6 +1147,27 @@ let read_label_declaration env parent ld =
   let modalities = read_label_modalities ld in
   { id; doc; mutability; type_; modalities; }
 
+#if defined OXCAML
+let read_unboxed_label_declaration env parent ld =
+  let open TypeDecl.UnboxedField in
+  let name = Ident.name ld.ld_id in
+  let id =
+    Identifier.Mk.unboxed_field
+      (parent, Odoc_model.Names.UnboxedFieldName.make_std name)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag
+      (parent :> Identifier.LabelParent.t) ld.ld_attributes
+  in
+  let atomic = is_atomic ld in
+  let mutable_ = match mutability ld.ld_mutable ~atomic with
+    | Immutable -> false
+    | Atomically_mutable | Mutable -> true
+  in
+  let type_ = read_type_expr env ld.ld_type in
+  {id; doc; mutable_; type_}
+#endif
+
 let read_constructor_declaration_arguments env parent arg =
   let open TypeDecl.Constructor in
     match arg with
@@ -1197,10 +1218,11 @@ let read_type_kind env parent =
     | Type_record_unboxed_product(lbls, _, _) ->
         let lbls =
           List.map
-            (read_label_declaration env (parent :> Identifier.FieldParent.t))
+            (read_unboxed_label_declaration env
+               (parent :> Identifier.UnboxedFieldParent.t))
             lbls
         in
-          Some (Record lbls)
+          Some (Record_unboxed_product lbls)
     | Type_record(lbls, _, _) ->
 #else
     | Type_record(lbls, _) ->
