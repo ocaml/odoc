@@ -95,6 +95,33 @@ module Antichain = struct
       Error (`Msg msg)
 end
 
+(** The libraries named by the [-L] options given to [odoc compile], each once.
+    A name given with two directories would mean two libraries, so it is an
+    error. *)
+let libraries_of_lib_roots lib_roots =
+  let dir d = Antichain.absolute_normalization (Fs.Directory.to_fpath d) in
+  let clash (name, d) =
+    List.find_opt
+      ~f:(fun (name', d') ->
+        String.equal name name' && not (Fpath.equal (dir d) (dir d')))
+      lib_roots
+    |> Option.map (fun (_, d') -> (name, d, d'))
+  in
+  match List.find_map ~f:clash lib_roots with
+  | Some (name, d, d') ->
+      Error
+        (`Msg
+           (Format.sprintf
+              "Library %s is given with -L for different directories: %s and %s"
+              name (Fs.Directory.to_string d)
+              (Fs.Directory.to_string d')))
+  | None ->
+      Ok
+        (List.fold_left
+           ~f:(fun acc (name, _) ->
+             if List.mem name ~set:acc then acc else acc @ [ name ])
+           ~init:[] lib_roots)
+
 let docs = "ARGUMENTS"
 
 (* [-I], given its doc. *)
@@ -254,7 +281,7 @@ end = struct
     (* A library named with -L is searched like a directory given with -I, and
        its name is written into the unit. *)
     let directories = directories @ List.map ~f:snd lib_roots in
-    let libraries = List.map ~f:fst lib_roots in
+    libraries_of_lib_roots lib_roots >>= fun libraries ->
     let resolver =
       Resolver.create ~important_digests:(not resolve_fwd_refs) ~directories
         ~open_modules ~roots:None
@@ -463,7 +490,7 @@ module Compile_impl = struct
     (* As for [odoc compile]: a library named with -L is searched like a
        directory given with -I, and its name is written into the unit. *)
     let directories = directories @ List.map ~f:snd lib_roots in
-    let libraries = List.map ~f:fst lib_roots in
+    libraries_of_lib_roots lib_roots >>= fun libraries ->
     let output_dir =
       match output_dir with Some x -> Fpath.v x | None -> Fpath.v "."
     in

@@ -158,6 +158,8 @@ an earlier compile, and the link below reads that file.
 A link that accepts it would be wrong.
 
   $ odoc compile --output-dir h --parent-id pkg/l -L l:h/pkg/l -L ext:h/pkg/ext -L ext:h/pkg/ext2 l/l.cmti
+  ERROR: Library ext is given with -L for different directories: h/pkg/ext/ and h/pkg/ext2/
+  [1]
   $ odoc link -L l:h/pkg/l -L ext:h/pkg/ext -L ext:h/pkg/ext2 h/pkg/l/l.odoc
 
 Section 1 lets a driver bind one directory to several names. [odoc link]
@@ -177,7 +179,7 @@ this records what odoc does. The unit should record the name once.
 
   $ odoc compile --output-dir h --parent-id pkg/l -L l:h/pkg/l -L ext:h/pkg/ext -L ext:h/pkg/ext l/l.cmti
   $ odoc_print h/pkg/l/l.odoc | jq -c .libraries
-  ["l","ext","ext"]
+  ["l","ext"]
   $ odoc link -L l:h/pkg/l -L ext:h/pkg/ext -L ext:h/pkg/ext h/pkg/l/l.odoc
   ERROR: Paths given to all -L options must be disjoint
   [1]
