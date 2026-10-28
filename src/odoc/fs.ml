@@ -60,12 +60,17 @@ module File = struct
     | Error (`Msg e) -> invalid_arg ("Odoc.Fs.File.of_string: " ^ e)
     | Ok p -> p
 
-  let read file =
-    let input_one_shot len ic =
-      let buf = Bytes.create len in
-      really_input ic buf 0 len;
+  let read ?(binary = true) file =
+    let input_one_shot max_len ic =
+      let buf = Buffer.create max_len in
+      (match Buffer.add_channel buf ic max_len with
+      | () -> ()
+      | exception End_of_file ->
+          (* when opening files in text mode the length might be shorter
+           than what [input_channel_length ic] reported; this is harmless *)
+          ());
       close_in ic;
-      Ok (Bytes.unsafe_to_string buf)
+      Ok (Buffer.contents buf)
     in
     let input_stream file ic =
       let bsize =
@@ -85,7 +90,10 @@ module File = struct
     try
       let file = Fpath.to_string file in
       let with_ic k =
-        if file = "-" then k stdin else Io_utils.with_open_in_bin file k
+        match (file, binary) with
+        | "-", _ -> k stdin
+        | _, true -> Io_utils.with_open_in_bin file k
+        | _, false -> Io_utils.with_open_in file k
       in
       with_ic @@ fun ic ->
       match in_channel_length ic with

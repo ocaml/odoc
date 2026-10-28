@@ -77,7 +77,7 @@ let generate_odoc ~syntax ~warnings_options:_ ~renderer ~output ~extra_suffix
 let documents_of_implementation ~warnings_options:_ ~syntax impl source_file =
   match impl.Lang.Implementation.id with
   | Some _ -> (
-      match Fs.File.read source_file with
+      match Fs.File.read ~binary:false source_file with
       | Error (`Msg msg) ->
           Error (`Msg (Format.sprintf "Couldn't load source file: %s" msg))
       | Ok source_code ->
