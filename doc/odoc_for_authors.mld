@@ -621,7 +621,7 @@ v}
 This will generate a list of links to these modules. If the module has a synopsis
 (see {{!synopsis}later}), this will be inserted into the list.
 
-{3 Reference Scope}
+{3:reference_scope Reference Scope}
 
 [odoc] uses the same scoping as OCaml when resolving references,
 but with one major difference. In a particular

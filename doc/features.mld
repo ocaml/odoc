@@ -507,7 +507,7 @@ type t = B.t
 Here we've hidden [A] via the {{:https://ocaml.org/manual/ocamldoc.html#ss:ocamldoc-stop}documentation stop comment}
 mechanism. This example is demonstrated {{!Odoc_examples.Resolution.HiddenAlias}here}.
 
-{2 Canonical Paths}
+{2:canonical_paths Canonical Paths}
 
 When encountering a module, module type, or a type that has been marked with a
 [@canonical] tag, [odoc] first has to check that the specified canonical path
