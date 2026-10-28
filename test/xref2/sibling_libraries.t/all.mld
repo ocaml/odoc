@@ -6,4 +6,4 @@ By plain name: {!Content}.
 
 A submodule of each: {!/client/Content.Html} and {!/server/Content.Html}.
 
-{!modules: Content}
+{!modules: /client/Content /server/Content}
