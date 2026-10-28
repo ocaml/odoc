@@ -1,0 +1,716 @@
+{0 The Library Scope Model}
+
+Two libraries can define modules with the same name. For example, [eliom.client] and
+[eliom.server] both have an [Eliom__Content]. While it's never intended that a program
+links with both of these libraries at the same time, it may be convenient for
+{e documentation} to do this, and hence we end up in a situation where odoc needs
+to distinguish between the two modules. In references, we have syntax to disambiguate
+by specifying the library explicitly, but we may also end up traversing syntactic
+elements in modules, and in that case we need to be very careful to ensure signature
+items are treated as they are in OCaml.
+
+An example might make this clearer. In both [eliom.client] and [eliom.server], there
+is a module, [Eliom.Content] that is an alias of [Eliom__Content]. A reference
+like [{!/eliom.client/Eliom.Content}] picks the correct module [Eliom] by using
+the explicit library syntax. However, picking the correct [Eliom__Content] module
+requires knowing which modules are in scope {e for the chosen Eliom module}, as
+compiling with [-no-alias-deps] (as dune does) means that we cannot rely on digests
+to uniquely identify the correct target of the aliases.
+
+The scope is decided at compile time - each unit records the libraries it was built against, which the
+driver passes with [-L] to [odoc compile] (see {{!page-driver}the driver
+documentation}). This page gives the rules [odoc] follows to resolve a module
+name with that information, and the assumptions those rules make about the
+libraries and the driver. It is written for driver authors and for [odoc]
+developers, and there are a number of scope tests that refer to its rules by name. It is a
+work in progress -
+{{!gaps}section 11} lists where [odoc] does not yet follow it.
+
+The rules cover the names of modules, in interfaces and implementations. R1
+({{!refs}section 4}) finds local items, so it applies to names of every kind.
+Pages are not covered yet, nor are packs ([-pack]) and OxCaml parameterised
+libraries ([-parameter], [-instantiate]), whose names are bound in ways these
+rules do not describe.
+
+The rules apply to [.cmt] units too, though [odoc] handles a few
+constructs that can appear in an implementation less well (see
+{{!page-driver}the driver documentation}).
+
+The rules are for "sane" libraries (D3 and D4 in {{!assumptions}section 2}).
+[odoc] need not give the right answer for all possible combinations of
+modules.
+
+The rules are not proved formally: there is no formal framework for the module
+system to prove them in. Instead, {{!operations}section 7} lists every
+operation [odoc] performs on names, with what each must keep, so that each can
+be checked with a short argument.
+
+{1:definitions 1. Definitions}
+
+While we're not being rigorous, it's still helpful to have some definitions
+to help describe the operations.
+
+- A {e unit} [u] is one [.odoc] file made by [odoc compile] from a [.cmti],
+  [.cmt] or [.cmi]. It has a name [name(u)] (a capitalised module name) and a
+  digest [dg(u)]: the digest that other units record when they import
+  [name(u)], which is the digest of its [.cmi]. Not every unit is part of a
+  library, but the units this model is about are, and [lib(u)] is the library
+  of [u]. A unit made
+  by [odoc compile-impl] follows the same rules, but it is never a candidate
+  for a name: names mean interfaces.
+- A {e library} is a name, bound to one directory of units (we will ignore
+  archives for the purposes of this discussion). Within one
+  library, no two units have the same name. Drivers can bind several names to
+  one directory, and the units of that directory then belong to each of them,
+  which is harmless under D3. This lets the [.odoc] directories mirror the
+  compiler's. The [compiler-libs.*] libraries share one directory of [.cmi]
+  files, so a unit built against [compiler-libs.common] can use a module of
+  [compiler-libs.bytecomp], as the compiler allows. With one [.odoc]
+  directory bound to all those names, [odoc] finds that module too.
+  [odoc link] checks by default that no two [-L] directories overlap, so a
+  driver that shares a directory passes [--custom-layout], which turns the
+  check off.
+- [Λc(u)] is the set of library names passed with [-L] when [u] was
+  compiled. [odoc] records it in the unit. A unit compiled with no [-L] is a
+  {e legacy unit}, and has no [Λc].
+- [Λl] is the set of library names passed with [-L] to [odoc link]. At link,
+  [Λl] also gives the directory of each library named in any [Λc]. Where
+  this page says a name is looked up in [Λl], [odoc] looks along its whole
+  search path, which also has the [-I] directories.
+- [units(L, N)] is the set of units named [N] in the libraries [L], not
+  counting units made by [odoc compile-impl].
+- [u] {e records digest [d] for [N]} if the import table of [u]'s compiled
+  file has the entry [(N, d)]. It {e records no digest for [N]} if the table
+  has an entry for [N] with no digest, as a pure alias compiled with
+  [-no-alias-deps] gives. The table belongs to the unit, not to each
+  individual occurrence of [N]. The compiler adds an entry for every name that a [.cmi]
+  it loads records with a digest, so a unit can record a digest for a name
+  it never used itself. A name recorded with no digest is not copied: a unit
+  that includes a pure alias has no entry for the alias's target.
+- An {e implementation copy} is the interface of a virtual module of a
+  virtual library, documented again in the library of one implementation
+  of it ({{!virtual_libraries}section 3.5}).
+- A unit is {e hidden} if its name contains [__], as dune's [X__M] does.
+  Hidden units are not linked to (S3).
+- An alias [module M = X__M] is to a {e self-canonical} module when the
+  canonical path of [X__M], from its [@canonical] tag, is the alias itself,
+  as for dune's alias in [X] with [@canonical X.M]. [odoc] then shows the
+  signature of [X__M] at [M].
+
+Two kinds of name appear in a unit:
+
+- A {e path} is a name in the typed tree, such as the [A] in [module X = A]
+  or in [A.t]. The compiler bound its root to a unit, except for a pure alias
+  compiled with [-no-alias-deps], whose root the compiler did not look up.
+- A {e reference} is a name written in a doc comment, such as [{!A}], or the
+  target of a [@canonical] tag. The compiler never sees it. It is written by
+  hand, and it may name things the compiler could not see when the unit was
+  compiled.
+
+The two kinds follow different rules: {{!paths}section 3} for paths,
+{{!refs}section 4} for references. {{!display}Section 5} says how names are
+shown, which is separate from what they mean.
+
+{1:assumptions 2. Assumptions}
+
+The rules are only correct if these conditions hold. D3 and D4 are about the
+libraries being documented. The others are about the driver. A driver that
+passes no [-L] at compile produces legacy units ({{!legacy}section 6}).
+
+- {b D1 (complete scope).} [Λc(u)] includes [lib(u)]. If [u] records a
+  digest [d] for [N], the unit with name [N] and digest [d] is in a library
+  in [Λc(u)].
+  Directories given to the compiler with [-H] count. A library in [Λc(u)]
+  holds a unit for each of its interfaces, or the driver leaves the library
+  out of [Λc(u)].
+- {b D2 (closure).} If [Λc(u)] includes [lib(v)], it includes all of [Λc(v)].
+  So all units of one library have the same [Λc]. This must hold across
+  separate runs of the driver. It assumes transitive dependencies are visible,
+  as dune does by default. [(implicit_transitive_deps false)] is not covered
+  for now.
+- {b D3 (sane libraries).} No [Λc(u)] holds two units of the same name,
+  except a virtual library's unit and its implementation copies. A [Λc] that
+  is larger than what the compiler could see is fine, as long as it meets
+  D3.
+- {b D4 (aliases look back).} The target of a pure alias in a unit of
+  library [l] is a unit of [l], or of a library [l] depends on. It is never a
+  unit of a library compiled later.
+- {b D5 (order).} If [u] records a digest for [N], the unit it imported was
+  compiled with [odoc compile] before [u] was, and its [.odoc] file is
+  complete when [u] reads it. This holds for [odoc compile-impl] too. It
+  matters only for resolution at compile ({{!operations}section 7}).
+- {b D6 (link scope).} At the link of [u], for every unit [o] whose paths are
+  resolved, [Λl] includes all of [Λc(o)]. That covers [u], the units whose
+  terms appear in [u]'s output, and the units reached by projecting a
+  reference. An implementation read only to find a source link has no paths
+  resolved, so it is not covered. Each library in [Λl] holds the [.odoc] file
+  of each of its units.
+  [odoc] checks the first part and warns about each library that is missing.
+  It cannot check the second part.
+- {b D7 (one directory).} A library name means the same directory in every
+  run of [odoc] that reads a unit recording that name.
+- {b D8 (implementations).} A unit made by [odoc compile-impl] has the same
+  [Λc] as the interface of the same module.
+- {b D9 (copies).} The driver documents an implementation copy in the
+  implementation's library, with the implementation of that module, made by
+  [odoc compile-impl], next to it. The copy's [Λc] is the implementation's.
+  The other units that an implementation's directory holds copies of (the
+  virtual library's alias module, and its modules that are not virtual) are
+  not documented again. The driver knows which interfaces it copies, so a
+  later version may let it mark a copy instead. (See {{!gaps}section 11}.)
+
+{1:paths 3. Paths}
+
+{2:roots 3.1 Roots and Origins}
+
+The head of a path is either a {e root} (a unit name) or a {e local}
+identifier (bound by an enclosing signature, a functor parameter, and so
+on). A local is looked up in the enclosing signatures and parameters that
+bind it; no library is searched. Its definition can still contain roots, as
+in [module N = Other], and those follow the rules below. Once a root is
+resolved to an identifier, no library needs to be searched for it again. The
+rules below are for unresolved roots.
+
+Every occurrence of a root has an {e origin}: the unit whose source it came
+from.
+
+- A root in a unit's typed tree has that unit as its origin.
+- When [odoc] copies a term from one unit into another (by expanding it,
+  including it, substituting it, or following an alias to it), every root in
+  it keeps its origin. [odoc] recomputes the signatures of [include] and
+  [module type of] from the unit they name, and drops the compiler's copy,
+  so the roots in them have the origin of that unit.
+- A root that [odoc] makes from another occurrence, for example when it
+  strengthens a path, takes that occurrence's origin.
+- A root the compiler made and [odoc] does not recompute, such as one in the
+  inferred type of a value in a [.cmt] with no [.mli], has as its origin the
+  unit whose compiled file holds it. That unit's import table has the entry,
+  because the compiler loaded the [.cmi] the type came from.
+
+If [odoc] cannot recompute a signature, it warns and keeps the compiler's.
+This is sometimes unavoidable: dune compiles [.odoc] files only for the
+libraries in its workspace, never for installed ones such as [Stdlib]. So
+[odoc] cannot find the unit a signature names when that unit is installed,
+as in [module type of Stdlib.List], and keeping the compiler's signature is
+better than leaving items out. [odoc] also need not recompute [module type of
+F(M)], or other signatures of a functor application. It may keep the
+compiler's, with the warning.
+The roots and comments in that signature are outside the claims of
+{{!claims}section 3.7}. The warning is an ordinary one, unless the failure is
+a missing root, which {{!path_failures}section 3.6} reports. (See
+{{!gaps}section 11} for [module type of] a functor application.)
+
+One term can hold roots of several origins. For example, after [F(B)] is
+applied in [u], the roots from the body of [F] have the origin of the unit
+that defines [F], and [B] has the origin [u].
+
+{2:meaning 3.2 Meaning}
+
+The meaning [⟦N⟧] of a root occurrence [N] with origin [o] is:
+
+{ul
+{li {b P1 (digest).} If [o] records a digest [d] for [N], the candidates
+    [C] are the units in [units(Λc(o), N)] whose digest is [d].}
+{li {b P2 (no digest).} If [o] records no digest for [N], the candidates
+    [C] are all the units in [units(Λc(o), N)].}
+{li {b P3 (choice).} If P1 or P2 gives candidates [C] and [C] holds
+    exactly one unit, [⟦N⟧] is that unit. If V1 applies
+    ({{!virtual_libraries}section 3.5}), [⟦N⟧] is the unit it picks.
+    Otherwise the root is unresolved. This covers:
+    {ul
+    {li a digest that no unit matches, for example because a library is
+        missing at link;}
+    {li no unit named [N];}
+    {li several candidates, which D3 rules out except for virtual
+        libraries;}
+    {li a root that is not in [o]'s import table at all. The compiler
+        records every unit it looks up, so this does not happen for a root
+        of [o]'s typed tree. No rule can give such a root a meaning.}}}}
+
+P2 applies only when no digest is recorded. A digest that fails to match
+never falls back to a lookup by name: that could pick a unit with the right
+name and the wrong contents.
+
+[⟦N⟧] depends only on [N] and [o]. It does not depend on the unit being
+linked, on where the term is shown, or on [Λl], except that [Λl] gives the
+directories.
+
+The meaning of a whole path is the meaning of its root, followed by
+{e projection}: looking up each next component in the signature of the
+module meant so far, expanding it where needed. When projection meets a
+path, for example the target of an alias or a module type path, the roots
+in that path are resolved by these same rules, with their own origins.
+
+{2:late_aliases 3.3 Aliases Bound Late}
+
+A pure alias compiled with [-no-alias-deps] is not bound by the unit that
+writes it. Each unit that uses it binds it again, through its own [-I]. For
+example:
+
+{t
+  | File         | Contents             | Built against                        |
+  |--------------|----------------------|--------------------------------------|
+  | [ext1/ext.mli] | [type t = A]       | nothing                              |
+  | [ext2/ext.mli] | [type t = B]       | nothing                              |
+  | [l/l.mli]      | [module M = Ext]   | [ext1], with [-no-alias-deps]        |
+  | [c/c.mli]      | [val x : L.M.t]    | [l], [ext1] and [ext2]               |
+}
+
+[l] records no digest for [Ext]. To check [L.M.t], the compiler loads an
+[Ext] for [c]: the first one in [-I] order. If that is [ext2]'s, [c] binds
+the alias to a unit its author never saw, and P2 gives the wrong unit on
+[c]'s page.
+
+This needs two libraries that define the same top-level module in one
+unit's scope, which D3 rules out. dune compiles such a setup, for example
+with two [(wrapped false)] libraries, but a program links only while [l]'s
+dependency on [ext1] is dead. If [l] itself uses its [Ext], linking a
+program that uses both fails with "Duplicated implementations". Under D3 and
+D4, every unit that uses the alias has only one unit of that name in its
+scope, the author's target, and so binds the alias as its author did. If D3
+is broken, [odoc] may link the author's choice where a later unit took
+another one. [odoc] does not try to detect this.
+
+{2:candidates 3.4 Several Candidates}
+
+The compiler does not reject two units of one name in its [-I] path. At
+[-c], for interfaces and implementations, it binds the name to the first
+match in [-I] order. [odoc] does not record that order. Under D3 this does
+not happen, except for virtual libraries. If it does, P3 leaves the root
+unresolved when the candidates cannot be told apart by digest.
+
+{2:virtual_libraries 3.5 Virtual Libraries}
+
+dune compiles every implementation of a virtual library [vl] against the one
+[.cmi] of each virtual module. A driver documents that interface several
+times: once in [vl], with no source links, and once more in each
+implementation, as an implementation copy with source links to that
+implementation. The copies have the same name and digest.
+
+- {b V1.} Suppose the candidates [C] of P1 or P2
+  ({{!meaning}section 3.2}) have one name and one digest, so they are one
+  interface documented more than once. A candidate is a copy if its library
+  holds an implementation of that module (D9). If exactly one candidate is a
+  copy, it is the meaning. Otherwise, if exactly one candidate is not a
+  copy, it is [vl]'s unit, and it is the meaning. Otherwise the root is
+  unresolved.
+
+So a root whose origin depends on [vl] alone has only [vl]'s unit in [C],
+and links to [vl]'s page. A root whose origin depends on one implementation
+has that implementation's copy in [C] too, and links to the copy, whose
+source links are right for it. dune forbids two implementations of one
+library in one closure. If a driver lets that happen, [vl]'s page is still
+correct.
+
+At compile, the implementation next to a copy may not be compiled yet. V1
+then finds no copy and two other candidates, so the root is left for link,
+when every implementation has been compiled.
+
+The choice shows only where a root names the virtual module's unit itself.
+For a wrapped [vl], that unit is hidden, and the usual forms, such as
+[Vl.M.t], go through [vl]'s alias module, whose origin is in [vl]. They
+reach [vl]'s unit whatever the implementation. The choice shows for a [vl]
+with [(wrapped false)], and in roots the compiler made
+({{!roots}section 3.1}), such as those that source links follow.
+
+References choose between the copies by the libraries given at link
+instead ({{!lookup}section 4.2}, R3).
+
+A source link does not need the interface to be resolved. It follows
+shapes, which name units, from the unit being linked, and takes the
+implementation of each name among that unit's libraries
+({{!operations}section 7}). An implementation is chosen by the closure that
+uses it, not where the virtual library's alias is written. dune forbids two
+implementations of one virtual library in a closure, even a library's, so
+those libraries hold at most one. So the link is right even when V1 cannot
+choose.
+
+{2:path_failures 3.6 Reporting Failures}
+
+A failure is classified by the innermost root that fails.
+
+- A {e missing root} is one where no unit of the searched libraries has the
+  name [N]. On a path, the compiler checked the name, so this means a
+  library was not given. That is already reported by the D6 check, so a
+  missing root is reported again only with [--enable-missing-root-warning].
+  A missing root takes precedence over a digest that no unit matches.
+- {e Any other failure} gets an ordinary warning: several candidates, a
+  digest no unit matches, or a root that resolves while the rest of the path
+  does not.
+
+This is for paths only. {{!ref_failures}Section 4.5} says what happens for
+references.
+
+{2:claims 3.7 Guarantees}
+
+These claims are about roots whose origin is not a legacy unit, and that are
+not in a signature [odoc] kept from the compiler ({{!roots}section 3.1}).
+
+- {b Soundness.} Under D1 to D9, if P1 applies, [⟦N⟧] is the interface the
+  compiler checked [o] against, or an implementation copy of it (V1). If P2
+  applies, [⟦N⟧] is the target the author of the alias meant, and every unit
+  that uses the alias binds it the same way. Otherwise the root is
+  unresolved, and is reported as {{!path_failures}section 3.6} says.
+- {b Completeness.} Under D1 to D9, every root resolves. A root fails only
+  when an assumption is broken: a library it needs is missing at link (D6),
+  or two units have its name and digest without being copies of one
+  interface (D3).
+
+The argument for soundness is in two parts:
+
+{ol
+{li Given its origin, a root gets the right unit.
+    {ul
+    {li Under P1, by D1 the unit [o] imported is in a library in [Λc(o)],
+        and the digest picks it out. By D3, no other unit of that name is
+        there, except implementation copies, which V1 handles. A unit that
+        shows the term later cannot change this: the term was checked when
+        [o] was compiled.}
+    {li Under P2, by D4 the target is in [Λc(o)], and by D3 it is the only
+        unit of that name there, except implementation copies, which V1
+        handles. By D2 and D3, the same holds in the scope of
+        each unit that uses the alias, so they all bind it the same way.}
+    {li By D6 and D7, [Λc(o)] can be read at link, from the directories the
+        compiler used.}}}
+{li Every operation in {{!operations}section 7} keeps the origin of every
+    root.}}
+
+So at link, a root is looked up by name in its origin's [Λc]. A root with a
+digest was resolved when its origin was compiled (D5), unless V1 left it for
+link. If one is left, by D3 the lookup by name finds the unit its digest
+names, or a virtual library's unit and its copies, between which V1
+chooses. The digests of the unit
+being linked are only about its own library's roots, and they are used only
+there, so that a digest that matches no unit is not looked up by name.
+
+Paths are never ambiguous: by D3, [Λc(o)] holds one unit of each name,
+except the copies V1 chooses between. Only references and canonical tags
+({{!refs}section 4}) can be ambiguous. There is no order of lookup that
+settles an ambiguity; the author writes [{!/library/N}].
+
+{1:refs 4. References}
+
+{2:ref_origin 4.1 Origin}
+
+Every doc comment has an origin: the unit whose source it came from, by the
+same rules as for roots ({{!roots}section 3.1}). In particular, the comments
+in a recomputed [include] are those of the unit it names, with their
+bindings from R0.
+
+{2:lookup 4.2 Lookup}
+
+A reference [{!N}], or the first part of a dotted reference [{!N.x}], is
+looked up in this order:
+
+{ul
+{li {b R1 (local).} In the signature that encloses the comment, and the
+    functor parameters in scope there, then outwards, in the unit where the
+    comment was written. In this signature, [{!M}] means its own [M], even if
+    several units are called [M]:
+
+    {[
+    module M : sig end
+    type t = int (** {!M} *)
+    ]}
+
+    R1 looks only for the kinds the reference allows: all kinds for
+    [{!M}], one kind for a typed reference such as [{!module-M}], and
+    modules and module types before a dot, as in [{!M.x}]. A local of an
+    allowed kind stops the lookup, so R3 is not tried. If locals of two
+    allowed kinds match, the reference is ambiguous, and the author picks
+    one by giving its kind. A typed reference is also how the author reaches
+    a root that a local of another kind hides: if [M] is a local module
+    type, [{!M}] means it, and [{!module-M}] means the root module.
+
+    Known limit: in OCaml only a module can come before a dot, so a module
+    type never hides a module there. [odoc] also lets a reference look
+    inside a module type, as in [{!S.x}], so before a dot a local module
+    type [M] hides a root module [M], and [{!M.x}] does not reach the root.
+
+    R1 sees the whole of each enclosing signature, including items declared
+    after the comment. If a signature binds one name twice in one kind, as
+    two values may be, or as an [include] and a later item may, R1 picks
+    the last binding, which is the one the signature exports. The compiler
+    rejects two modules, or two module types, of one name in a
+    signature. A functor parameter is not in scope in its own
+    signature, as in OCaml.
+
+    R1 does not see names brought in by an [open] in a signature. After
+    [open Foo], the author writes [{!Foo.t}], not [{!t}]. This may change
+    later. If it does, some references that now resolve as roots will
+    resolve locally.}
+{li {b R2 (initial open).} In the modules given to [odoc] with [--open], the
+    later ones first. The default is [Stdlib], so [{!List}] means
+    [Stdlib.List]. These modules are found as roots by R3. This is how
+    [--open] already works.
+
+    Known limit: [odoc] does not see the compiler's own [-open] flags, such
+    as the [-open Lib__] of a dune wrapped library
+    ({{!page-odoc_for_authors.reference_scope}Reference Scope} says what
+    this means for authors). [--open] is also given per run,
+    not recorded in the unit, so a comment shown on another page uses that
+    page's opens. (See {{!gaps}section 11} for the wrapper's page.)}
+{li {b R3 (root).} Otherwise [N] is a root. If the origin of the
+    reference is a unit named [N], [N] means that unit: the compiler never
+    binds a unit's own name inside it, so no other unit of that name can be
+    meant there. Otherwise its candidates are [units(Λl, N)]. If there is
+    exactly one, that is its meaning. If they are a virtual library [vl]'s
+    unit and implementation copies of it, told apart as in V1
+    ({{!virtual_libraries}section 3.5}), and exactly one candidate is a
+    copy, that copy is the meaning: a virtual library stands for an
+    implementation not yet chosen, and once one is chosen, a reference
+    links to it, with its source links. If several candidates are copies,
+    [vl]'s unit is the meaning. Otherwise it is unresolved.
+    [{!/library/N}] restricts the candidates to [units({library}, N)]. If
+    [library] is not in [Λl], it is unresolved. (See {{!gaps}section 11} for
+    a root with the name of the unit being linked.)}}
+
+R3 looks in [Λl], not in [Λc(o)]. This allows forward references: a comment
+can name a unit of a library compiled later, if it is given at link. If a
+unit of [Λc(o)] and a unit of a library added at link have the same name,
+the reference is ambiguous, and the author picks one with [{!/library/N}].
+A virtual library's unit and its copies are the exception: R3 chooses
+between them.
+
+Known limit: a comment shown on several pages is resolved with the [Λl] of
+each page. If those differ, a root reference can mean different units on
+different pages.
+
+Known limit: paths choose between the copies of a virtual library by
+[Λc(o)] (V1), and references by [Λl] (R3). So in a unit built against [vl]
+alone, a path to the virtual module's unit goes to [vl]'s page, while a
+reference to it goes to the copy when [Λl] holds one implementation. The
+two pages differ only in their source links.
+
+The rest of a dotted reference is resolved by projection, as for a path
+({{!meaning}section 3.2}). Paths met on the way follow {{!paths}section 3},
+with their own origins.
+
+{2:when 4.3 When}
+
+- {b R0.} When a unit is compiled, R1 binds the first part of each reference
+  in that unit's own comments, before any expansion can move the comment.
+  The result is stored as an identifier. The rest of a dotted reference is
+  resolved by projection at link. So at link, no reference needs the
+  context it was written in. (See {{!gaps}section 11}.)
+
+{2:copies 4.4 Copies}
+
+{ul
+{li {b R4 (copies).} From then on, a reference that R1 bound to a local item
+    is treated as a local path to that item:
+    {ul
+    {li if an operation copies the item (by [include], by expansion, by
+        [with type t = …] or by [with module M = A]), the reference names the
+        copy;}
+    {li if an operation replaces the item by a path (a functor argument, or
+        [with module M := A]), the reference becomes that path, and
+        {{!paths}section 3} gives it meaning. Its origin is the unit where
+        the application or the [with] was written;}
+    {li if an operation removes the item without putting a path in its place
+        ([with type t := …], [with module type S := …]), the reference keeps
+        naming the original;}
+    {li if the item is not copied, the reference keeps naming the
+        original.}}
+
+    A copy that is an alias, as [with module M = A] gives, has no page of its
+    own; a reference to it is shown like any path to that alias.
+    [module type of M] copies [M]'s own doc comment too, so that comment is
+    shown, and its references resolved, in a second place.}}
+
+(See {{!gaps}section 11}.)
+
+{2:ref_failures 4.5 Reporting Failures}
+
+A reference that does not resolve always gets an ordinary warning. It is
+hand-written, so a missing root is as likely to be a typo as a missing
+library.
+
+A reference to a hidden unit, such as [{!Foo__Bar}], or to an item hidden
+with [(**/**)], also gets a warning, and is not linked: its target has no
+page or anchor to link to.
+
+{1:display 5. Display}
+
+What a name means and how it is shown are separate. [show(p)] picks how the
+path [p] is printed and where its link goes. It never changes what [p]
+refers to.
+
+{ul
+{li {b S1 (canonical).} A [@canonical] tag is a reference, resolved as in
+    {{!refs}section 4}. A tag may name the library of its root, as in
+    [@canonical /lib/Name.X]. If it resolves, paths to the module are shown
+    as its target. [odoc] trusts the tag, and does not check that the target
+    is the same module. A wrong tag can give links to anchors that do not
+    exist. Canonical targets are often forward references: a library names
+    as canonical a module of a library that depends on it, as eio does.
+
+    A tag applies to paths through the module it is written on. A path that
+    names the module directly, such as [X__M.t] where dune's tag is on the
+    alias [X.M], is shown as it is (see
+    {{!page-dune.library_wrapping}dune's library wrapping}).}
+{li {b S2 (fallback).} If a canonical tag does not resolve, the path is
+    shown as it is. A canonical that does not resolve is reported as in
+    {{!ref_failures}section 4.5}. This includes a tag whose root is
+    ambiguous.
+
+    Known limit: dune's tags name no library, so if two libraries in [Λl]
+    have the same main module, the tags are ambiguous (see
+    {{!page-features.canonical_paths}Canonical Paths}).}
+{li {b S3 (hidden).} Hidden units, such as [Foo__Bar], are not linked to,
+    and do not appear in the search index or the sidebar.}}
+
+{1:legacy 6. Legacy Units}
+
+A legacy unit has no [Λc]. For it, [odoc] does what it did before units
+recorded their libraries, and this page makes no promise about it beyond that.
+A command that takes no [-L], such as [odoc html-url], knows no library
+names, so it treats every unit as a legacy unit.
+{{!claims}Section 3.7} does not cover roots whose origin is a legacy unit. How
+legacy and recorded units mix is left to the implementation, which should do
+whatever keeps the code simplest.
+
+{1:operations 7. Operations}
+
+Every operation [odoc] performs on names is listed here. Each must keep the
+origin of every root occurrence in the terms it handles ({b O1}), and must
+treat a reference bound by R1 as a local path (R4).
+
+{t
+  | Operation | When | Obligation |
+  |-----------|------|------------|
+  | Load: read the typed tree | compile | give each root its origin; record [Λc(u)] in the unit; R0 |
+  | Resolve a root with a digest | compile or link | P1, P3 over [Λc(o)]; at compile, by D5; V1 may leave it for link |
+  | Resolve a root with no digest | compile or link | P2, P3 over [Λc(o)]; at compile, it may be left for link, and must be if the target is not yet compiled |
+  | Expand an alias to a hidden module | compile or link | O1, R4 |
+  | Expand an alias to a self-canonical module | link | O1, R4 |
+  | Recompute [include], [module type of], a module type path | compile or link | O1, R4; if it fails, warn ({{!roots}section 3.1}) |
+  | Substitute: functor application, [with], [:=] | compile or link | O1, R4 |
+  | Strengthen | compile or link | new roots take the origin of the path they come from |
+  | Unresolve and resolve again ([Invalidated], opaque paths) | compile and link | keep the origin |
+  | Cache a lookup or an expansion | compile and link | the key includes the origin of each unresolved root in it |
+  | Convert between component and model forms | compile and link | keep the origin, and the R1 bindings |
+  | Write and read a unit | compile and link | keep the origin, so that [Λc(o)] and [o]'s import table can be found at link ([odoc] keeps only [Λc(o)], {{!gaps}section 11}); keep the R1 bindings |
+  | Resolve a reference | link | R2, R3, then projection, which follows {{!paths}section 3}; R4 |
+  | Resolve a canonical tag | link | S1, S2 |
+  | Find the implementation of a unit (source links, shapes) | link | the implementation of that name among the libraries of the unit being linked, where the shape is reduced from; there is at most one, as dune forbids two implementations of one virtual library in a closure; if there is none, no source link |
+  | Check D6 | link | warn per missing library, for every unit whose paths are resolved |
+}
+
+A root that is unresolved after a write must not lose its origin. [odoc]
+writes [Λc(o)] with each unresolved root.
+
+{1:order 8. Order of the Rules}
+
++ A path: P1, or P2 if no digest; then P3, with V1.
++ A reference: R1 at compile (R0); then R2; then R3; then
+  projection, where paths follow item 1; references that R4 turned into
+  paths follow item 1 too.
++ Display: S1, S2 and S3, after meaning is fixed.
+
+P-rules use [Λl] only to find the directory of each library in [Λc]. They
+never take candidates from it. R2 and R3 never look at [Λc], except through
+a path met during projection, or a reference that R4 turned into a path.
+
+{1:evidence 9. Evidence}
+
+The rules rely on facts about the OCaml compiler: how it binds a name with
+two candidates, what a pure alias records, which names a unit's import table
+holds, and what [include], [module type of] and an implementation compiled
+against another library's [.cmi] record. The tests
+in [test/xref2/scope] depend on these facts, so a compiler that behaves
+otherwise makes them fail.
+
+
+{1:questions 10. Open Questions}
+
+- R2: should [odoc] take the compiler's [-open] flags into account? It could
+  read them from the compiler's command line, which [.cmt] and [.cmti] files
+  record ([cmt_args]), or the driver could pass them. Not for now.
+- R4 and shadowed copies. If [S] declares [type t] and documents a value
+  with [{!t}], then in [sig include S type t = int end] the reference names
+  the included copy of [t], which is shadowed and not shown. The compiler
+  allows this, because no type uses the shadowed [t]. Should the reference
+  link to the new [t], to [S.t], or not at all?
+- R4 and anonymous arguments. If a comment in the result of
+  [F (X : sig type t end)] says [{!X.t}], then in
+  [module R = F (struct type t = int end)] the application replaces [X] by
+  an argument that has no path. Should the reference name [F]'s parameter,
+  show [int], or not link? A module type applies functors only to paths,
+  so in an [.mli] file this happens only inside [module type of], as in
+  [module type of struct include F (struct type t = int end) end]. Today
+  the question does not arise: [odoc] keeps the compiler's signature for
+  [R], which has no comments at all
+  ({{:https://github.com/ocaml/odoc/issues/1394}issue 1394}).
+
+{1:gaps 11. Known Gaps}
+
+These are the places where [odoc] does not yet do what the rules above
+require. Each says what the rule requires, and what [odoc] does instead.
+
+- {b V1 and R3 (copies).} A copy must be told apart from the virtual
+  library's unit by the implementation next to it. [odoc] does not do this.
+  At compile, a root that records the digest of a virtual module takes the
+  unit with that digest from the last [-L] that holds one, with no warning,
+  so the result depends on the order of the [-L] options. A root left for
+  link takes [vl]'s unit. A reference whose candidates are [vl]'s unit and
+  copies of it is ambiguous: [odoc] warns and takes [vl]'s unit.
+  odoc_driver meets D9 only when it finds the implementation's source,
+  because it runs [odoc compile-impl] only then. [odoc compile-impl] itself
+  does not need the source.
+- {b Recomputing signatures} ({{!roots}section 3.1}). When [odoc] keeps the
+  compiler's signature, it must warn. [odoc] does not try to recompute
+  [module type of] a functor application, and keeps the compiler's signature
+  with no warning.
+- {b R0 (binding at compile).} R1 must bind the first part of each reference
+  when its unit is compiled. [odoc] does not: it resolves each reference at
+  link, in the context of the page where the comment is shown.
+- {b R2 on the wrapper's page.} A sibling reference [{!Bar}] in a dune
+  wrapped library must not resolve (R2's known limit). [odoc] does resolve
+  it on the wrapper's page, because the comment is looked up again there.
+  This stops when R0 is implemented.
+- {b R3 and the unit being linked.} The root of a reference or a canonical
+  tag must be looked up among [units(Λl, N)], and is ambiguous if there are
+  several. When [N] is the name of the unit being linked, [odoc] finds that
+  unit alone, whatever else [Λl] holds. So a reference or a canonical tag
+  written in another unit, even in another library, whose root has the
+  linked unit's name resolves to the linked unit with no warning, where R3
+  and S2 say it is ambiguous.
+- {b Ambiguous names} (R1, R3, S2). A reference or a canonical tag whose
+  first part has several candidates must stay unresolved, with a warning, except where R3 chooses
+  between a virtual library's unit and its copies. [odoc] warns,
+  and then takes one of the candidates.
+- {b Digests no unit matches} ({{!path_failures}section 3.6}). Such a root
+  must get an ordinary warning. [odoc] gives no warning, or, with
+  [--enable-missing-root-warning], reports it as a missing root.
+- {b References to hidden targets} ({{!ref_failures}section 4.5}). A
+  reference to a hidden unit or a hidden item must get a warning. [odoc]
+  gives none. It shows a reference to a hidden unit as unresolved, and links
+  a reference to a hidden item to an anchor that is not on the page.
+- {b Hidden units in the index} (S3). Hidden units must not appear in the
+  search index or the sidebar. [odoc compile-index] and
+  [odoc sidebar-generate] include each hidden unit they are given.
+- {b Canonical tags that fail} ({{!ref_failures}section 4.5}). A misspelt
+  tag, or one whose library is not given at link, must get a warning. [odoc]
+  gives none.
+- {b D7 at link.} A [-L] set that binds one library name to two directories
+  breaks D7, and must be rejected. [odoc compile] rejects it; [odoc link]
+  accepts it.
+- {b R4 (copies).} Each operation must rebind the references that R1 bound,
+  as R4 says. None does: references pass through the conversions between
+  the internal forms unchanged, as model values, and only heading labels are
+  rebound. Resolved references need a component form for this.
+- {b S1 (canonical).} A [@canonical] tag must be resolved as a reference.
+  [odoc] resolves it as a module path, whose root may name its library.
+- {b Origins at link} ({{!roots}section 3.1}). A root with a digest that
+  is left for link must still be looked up with [o]'s import table. [odoc]
+  keeps only [Λc(o)] with each root, not [o]. At compile it uses the
+  digests of the unit being compiled for every root, whatever its origin.
+  At link it uses the digests of
+  the unit being linked for a root whose scope is that unit's own, and looks
+  up any other root by name in [Λc(o)], as if it were not in an import
+  table at all. By D3 the lookup by name finds the
+  unit the digest names ({{!claims}section 3.7}), so the meaning is the
+  same. What is lost is the check: a root whose digest matches no unit in
+  [Λc(o)], for example because a library was rebuilt after [o] was
+  compiled, is not reported ({{!path_failures}section 3.6}).
