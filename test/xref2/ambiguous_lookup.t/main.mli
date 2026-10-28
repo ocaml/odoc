@@ -1,0 +1,3 @@
+(** See {!Foo}. *)
+
+type x
