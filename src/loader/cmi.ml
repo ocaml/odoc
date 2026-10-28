@@ -17,6 +17,7 @@
 open Asttypes
 open Types
 module OCamlPath = Path
+let ocaml_empty_env = Env.empty
 
 open Odoc_model.Paths
 open Odoc_model.Lang
@@ -545,20 +546,45 @@ let read_parsetree_modes (modes : Parsetree.modes) =
     let (Parsetree.Mode s) = m.txt in s)
     modes
 
-let rec read_parsetree_core_type (ct : Parsetree.core_type) =
+let rec kind_signature_reference : Longident.t -> Paths.Reference.Signature.t =
+  function
+  | Longident.Lident m -> `Root (m, `TUnknown)
+  | Longident.Ldot (p, m) ->
+      let p = (kind_signature_reference p :> Paths.Reference.LabelParent.t) in
+      `Dot (p, m)
+  | Longident.Lapply (f, _) -> kind_signature_reference f
+
+let read_kind_abbreviation env lid =
+  let name = Format.asprintf "%a" Pprintast.longident lid in
+  let reference =
+    match lid with
+    | Longident.Lident n ->
+        Option.map
+          (fun id -> `Resolved (`Identifier (id :> Identifier.t)))
+          (Env.find_kind_abbreviation env n)
+    | Longident.Ldot (prefix, n) ->
+        Some
+          (`KindAbbreviation
+             (kind_signature_reference prefix, TypeName.make_std n))
+    | Longident.Lapply _ ->
+        invalid_arg "kind: unexpected functor application"
+  in
+  Kind.Abbreviation (name, reference)
+
+let rec read_parsetree_core_type env (ct : Parsetree.core_type) =
   let open TypeExpr in
   match ct.ptyp_desc with
   | Ptyp_var (s, _) -> Var s
   | Ptyp_any _ -> Any
   | Ptyp_constr (lid, args) ->
-      Constr (read_longident_type lid.txt, List.map read_parsetree_core_type args)
+      Constr (read_longident_type lid.txt, List.map (read_parsetree_core_type env) args)
   | Ptyp_class (lid, args) ->
       Class
-        (read_longident_class_type lid.txt, List.map read_parsetree_core_type args)
+        (read_longident_class_type lid.txt, List.map (read_parsetree_core_type env) args)
   | Ptyp_tuple ts ->
-      Tuple (List.map (fun (lbl, t) -> (lbl, read_parsetree_core_type t)) ts)
+      Tuple (List.map (fun (lbl, t) -> (lbl, read_parsetree_core_type env t)) ts)
   | Ptyp_unboxed_tuple ts ->
-      Unboxed_tuple (List.map (fun (lbl, t) -> (lbl, read_parsetree_core_type t)) ts)
+      Unboxed_tuple (List.map (fun (lbl, t) -> (lbl, read_parsetree_core_type env t)) ts)
   | Ptyp_arrow (lbl, arg, res, arg_modes, res_modes) ->
       let lbl =
         match lbl with
@@ -568,8 +594,8 @@ let rec read_parsetree_core_type (ct : Parsetree.core_type) =
       in
       Arrow
         ( lbl,
-          (read_parsetree_core_type arg, read_parsetree_modes arg_modes),
-          (read_parsetree_core_type res, read_parsetree_modes res_modes) )
+          (read_parsetree_core_type env arg, read_parsetree_modes arg_modes),
+          (read_parsetree_core_type env res, read_parsetree_modes res_modes) )
   | Ptyp_variant (fields, closed, labels) ->
       let open TypeExpr.Polymorphic_variant in
       let elements =
@@ -581,11 +607,11 @@ let rec read_parsetree_core_type (ct : Parsetree.core_type) =
                   {
                     name = name.txt;
                     constant;
-                    arguments = List.map read_parsetree_core_type args;
+                    arguments = List.map (read_parsetree_core_type env) args;
                     doc =
                       { Odoc_model.Comment.elements = []; warnings_tag = None };
                   }
-            | Rinherit ct -> Type (read_parsetree_core_type ct))
+            | Rinherit ct -> Type (read_parsetree_core_type env ct))
           fields
       in
       let kind =
@@ -602,70 +628,78 @@ let rec read_parsetree_core_type (ct : Parsetree.core_type) =
           (fun (field : Parsetree.object_field) ->
             match field.pof_desc with
             | Otag (name, ct) ->
-                Method { name = name.txt; type_ = read_parsetree_core_type ct }
-            | Oinherit ct -> Inherit (read_parsetree_core_type ct))
+                Method { name = name.txt; type_ = read_parsetree_core_type env ct }
+            | Oinherit ct -> Inherit (read_parsetree_core_type env ct))
           fields
       in
       Object { fields; open_ = (closed = Asttypes.Open) }
-  | Ptyp_alias (ct, None, _) -> read_parsetree_core_type ct
-  | Ptyp_alias (ct, Some name, _) -> Alias (read_parsetree_core_type ct, name.txt)
+  | Ptyp_alias (ct, None, _) -> read_parsetree_core_type env ct
+  | Ptyp_alias (ct, Some name, _) -> Alias (read_parsetree_core_type env ct, name.txt)
   | Ptyp_poly (vars, ct) ->
       let vars =
         List.map
           (fun (name, jk) ->
             let kind =
-              match jk with None -> Kind.Default | Some jk -> read_jkind_annotation jk
+              match jk with
+              | None -> Kind.Default
+              | Some jk -> read_jkind env jk
             in
             (name.txt, kind))
           vars
       in
-      Poly (vars, read_parsetree_core_type ct)
+      Poly (vars, read_parsetree_core_type env ct)
   | Ptyp_package (lid, substs) ->
       let path = read_longident_module_type lid.txt in
       let substitutions =
         List.map
           (fun (frag, ct) ->
-            (Env.Fragment.read_type frag.txt, read_parsetree_core_type ct))
+            (Env.Fragment.read_type frag.txt, read_parsetree_core_type env ct))
           substs
       in
       Package { path; substitutions }
-  | Ptyp_quote ct -> Quote (read_parsetree_core_type ct)
-  | Ptyp_splice ct -> Splice (read_parsetree_core_type ct)
+  | Ptyp_quote ct -> Quote (read_parsetree_core_type env ct)
+  | Ptyp_splice ct -> Splice (read_parsetree_core_type env ct)
   (* TODO: no good representation available atm *)
   | Ptyp_of_kind _ | Ptyp_repr _ | Ptyp_extension _ -> Any
-  | Ptyp_open (_, ct) -> read_parsetree_core_type ct
+  | Ptyp_open (_, ct) -> read_parsetree_core_type env ct
   | Ptyp_newlayout (_, ct) ->
       (* layout-variable binder; odoc currently ignores the layout vars *)
-      read_parsetree_core_type ct
+      read_parsetree_core_type env ct
 
-and read_jkind_annotation (jk : Parsetree.jkind_annotation) =
+and read_jkind env (jk : Parsetree.jkind_annotation) =
   let open Kind in
   match jk.pjka_desc with
   | Pjk_default -> Default
-  | Pjk_abbreviation (s, _) -> Abbreviation (Env.Fragment.read_type s.txt)
+  | Pjk_abbreviation (s, _) -> read_kind_abbreviation env s.txt
   | Pjk_mod (jk', modes) ->
-    Mod (read_jkind_annotation jk', read_parsetree_modes modes)
+    Mod (read_jkind env jk', read_parsetree_modes modes)
   | Pjk_with (jk', cty, modalities) ->
-    let ty = read_parsetree_core_type cty in
+    let ty = read_parsetree_core_type env cty in
     let modalities = List.map (fun (m : Parsetree.modality Location.loc) ->
       let (Parsetree.Modality s) = m.txt in s) modalities in
-    With (read_jkind_annotation jk', ty, modalities)
+    With (read_jkind env jk', ty, modalities)
   | Pjk_kind_of cty ->
-    Kind_of (read_parsetree_core_type cty)
+    Kind_of (read_parsetree_core_type env cty)
   | Pjk_product jks ->
-    Product (List.map read_jkind_annotation jks)
+    Product (List.map (read_jkind env) jks)
 
-let read_jkind_annotation = function
+let read_jkind_annotation env = function
   | None -> Kind.Default
-  | Some jk ->
-    match read_jkind_annotation jk with
-    | Abbreviation (`Dot (`Root, "value")) -> Default
-    | k -> k
+  | Some
+      {
+        Parsetree.pjka_desc =
+          Pjk_abbreviation ({ txt = Longident.Lident "value"; _ }, _);
+        pjka_loc = { loc_ghost = true; _ };
+      } ->
+      (* Inserted by the compiler on unannotated declarations, unlike a
+         [value] written by the user. *)
+      Kind.Default
+  | Some jk -> read_jkind env jk
 
-let jkind_of_type_desc te =
+let jkind_of_type_desc env te =
   match  te with
   | Tvar { jkind; _ } | Tunivar { jkind; _ } ->
-      read_jkind_annotation jkind.annotation
+      read_jkind_annotation env jkind.annotation
   | _ -> Kind.Default
 
 let read_modalities mut modalities =
@@ -778,7 +812,7 @@ let read_arrow_modes implied_modes typ =
 
 #else
 
-let jkind_of_type_desc _te = Kind.Default
+let jkind_of_type_desc _env _te = Kind.Default
 let read_value_descr_modalities _vd = []
 let read_label_modalities _ld = []
 let read_constructor_argument arg = arg, []
@@ -855,7 +889,7 @@ and read_type_expr_modal env implied_modes typ =
           let tyl = List.map Compat.repr tyl in
           let vars_with_kinds = List.map (fun ty ->
             let name = name_of_type_repr ty in
-            let kind = jkind_of_type_desc ty.desc in
+            let kind = jkind_of_type_desc env.ident_env ty.desc in
             (name, kind)
           ) tyl in
           let typ = read_type_expr env typ in
@@ -1110,6 +1144,27 @@ let read_label_declaration env parent ld =
   let modalities = read_label_modalities ld in
   { id; doc; mutability; type_; modalities; }
 
+#if defined OXCAML
+let read_unboxed_label_declaration env parent ld =
+  let open TypeDecl.UnboxedField in
+  let name = Ident.name ld.ld_id in
+  let id =
+    Identifier.Mk.unboxed_field
+      (parent, Odoc_model.Names.UnboxedFieldName.make_std name)
+  in
+  let doc =
+    Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag
+      (parent :> Identifier.LabelParent.t) ld.ld_attributes
+  in
+  let atomic = is_atomic ld in
+  let mutable_ = match mutability ld.ld_mutable ~atomic with
+    | Immutable -> false
+    | Atomically_mutable | Mutable -> true
+  in
+  let type_ = read_type_expr env ld.ld_type in
+  {id; doc; mutable_; type_}
+#endif
+
 let read_constructor_declaration_arguments env parent arg =
   let open TypeDecl.Constructor in
     match arg with
@@ -1160,10 +1215,11 @@ let read_type_kind env parent =
     | Type_record_unboxed_product(lbls, _, _) ->
         let lbls =
           List.map
-            (read_label_declaration env (parent :> Identifier.FieldParent.t))
+            (read_unboxed_label_declaration env
+               (parent :> Identifier.UnboxedFieldParent.t))
             lbls
         in
-          Some (Record lbls)
+          Some (Record_unboxed_product lbls)
     | Type_record(lbls, _, _) ->
 #else
     | Type_record(lbls, _) ->
@@ -1187,14 +1243,14 @@ let read_injectivity var =
 #endif
   inj
 
-let read_type_parameter abstr var param =
+let read_type_parameter env abstr var param =
   let open TypeDecl in
   let name = name_of_type param in
   let desc =
     if name = "_" then Any
     else Var name
   in
-  let kind = jkind_of_type_desc (Compat.get_desc param) in
+  let kind = jkind_of_type_desc env (Compat.get_desc param) in
   let variance =
     if not (abstr || aliasable param) then None
     else begin
@@ -1222,6 +1278,56 @@ let read_class_constraints env params =
   read_type_constraints env params
   |> List.map (fun (left, right) ->
          Constraint { Constraint.left; right; doc = empty_doc env })
+
+#if defined OXCAML
+let read_jkind_of_types env (jkind : _ Types.jkind) =
+  let open Kind in
+  let desc = Jkind.get jkind in
+  match Jkind.Desc.get_const desc with
+  | None -> Default
+  | Some const ->
+      let reference : Paths.Reference.t option =
+        match desc.base with
+        | Layout _ -> None
+        | Kconstr (OCamlPath.Pident id) -> (
+            match Env.find_kind_abbreviation_identifier env.ident_env id with
+            | id -> Some (`Resolved (`Identifier (id :> Identifier.t)))
+            | exception Not_found -> None)
+        | Kconstr p -> (
+            match read_kind_abbreviation env.ident_env (Untypeast.lident_of_path p) with
+            | Abbreviation (_, r) -> r
+            | _ -> None)
+      in
+      let rec conv = function
+        | Outcometree.Ojkind_const_default -> Default
+        | Ojkind_const_abbreviation (name, []) -> Abbreviation (name, reference)
+        | Ojkind_const_abbreviation (name, axes) ->
+            Abbreviation (String.concat " " (name :: axes), reference)
+        | Ojkind_const_mod (Some k, modes) -> Mod (conv k, modes)
+        | Ojkind_const_mod (None, modes) -> Mod (Default, modes)
+        | Ojkind_const_product ks -> Product (List.map conv ks)
+        | Ojkind_const_kind_of _ -> invalid_arg "unexpected kind of"
+        | Ojkind_const_with _ -> invalid_arg "kind with nested bound"
+      in
+      let rec conv_with = function
+        | Outcometree.Ojkind_const_with (k, _, modalities) -> (
+            let with_bounds, k = conv_with k in
+            match Seq.uncons with_bounds with
+            | None -> invalid_arg "kind expected with bound"
+            | Some ((ty, _), with_bounds) ->
+                with_bounds, With (k, read_type_expr env ty, modalities))
+        | out_jkind_const ->
+            let with_bounds =
+              match desc.with_bounds with
+              | No_with_bounds -> Seq.empty
+              | With_bounds tys -> With_bounds_types.to_seq tys
+            in
+            with_bounds, conv out_jkind_const
+      in
+      let with_bounds, kind = conv_with (Jkind.Const.to_out_jkind_const ocaml_empty_env const) in
+      assert (Seq.is_empty with_bounds);
+      kind
+#endif
 
 let read_type_declaration env parent id decl =
   let open TypeDecl in
@@ -1267,12 +1373,24 @@ let read_type_declaration env parent id decl =
 #endif
   in
   let params =
-    List.map2 (read_type_parameter abstr) decl.type_variance params
+    List.map2 (read_type_parameter env.ident_env abstr) decl.type_variance params
   in
   let private_ = (decl.type_private = Private) in
   let kind =
 #if defined OXCAML
-    read_jkind_annotation decl.type_jkind.annotation
+    match decl.type_jkind.annotation with
+    | None ->
+        (* no user-written kind annotation is available *)
+        (match decl.type_manifest, decl.type_kind with
+        | None, Type_abstract _ ->
+            (* and the kind is not obvious from the type definition,
+               so we have to use the verbose typechecker representation. *)
+            read_jkind_of_types env decl.type_jkind
+        | _ ->
+            (* otherwise the kind implicitly defaults to the kind
+               of the type definition. *)
+            Kind.Default)
+    | annot -> read_jkind_annotation env.ident_env annot
 #else
     Kind.Default
 #endif
@@ -1306,7 +1424,7 @@ let read_type_extension env parent id ext rest =
   in
   let constructors = first :: rest in
   let type_params =
-    List.map (read_type_parameter false Variance.null) type_params
+    List.map (read_type_parameter env.ident_env false Variance.null) type_params
   in
   let private_ = (ext.ext_private = Private) in
     { parent; type_path; type_params;
@@ -1416,7 +1534,7 @@ let read_class_type_declaration env parent id cltd =
     mark_class_type_declaration cltd;
     let params =
       List.map2
-        (read_type_parameter false)
+        (read_type_parameter env.ident_env false)
         cltd.clty_variance cltd.clty_params
     in
     let expr =
@@ -1454,7 +1572,7 @@ let read_class_declaration env parent id cld =
     mark_class_declaration cld;
     let params =
       List.map2
-        (read_type_parameter false)
+        (read_type_parameter env.ident_env false)
         cld.cty_variance cld.cty_params
     in
     let type_ =
@@ -1542,8 +1660,39 @@ and read_module_rec_status rec_status =
   | Trec_first -> Rec
   | Trec_next -> And
 
+#if defined OXCAML
+and read_kind_abbreviation_from_types env parent id (jkd : Types.jkind_declaration) =
+  let open KindAbbreviation in
+  let identifier = Env.find_kind_abbreviation_identifier env.ident_env id in
+  let source_loc = None in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
+  let doc =
+    Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container
+      jkd.jkind_attributes
+  in
+  (* TODO: [jkd.jkind_manifest] holds the manifest in normalised typed form,
+     so rendering it would print the expansion rather than the source. Until
+     that is converted, a concrete abbreviation read from a [.cmi] is
+     indistinguishable from an abstract one. *)
+  { id = identifier; source_loc; doc; manifest = None }
+#endif
+
+and scope_kind_abbreviation env (ka : Odoc_model.Lang.KindAbbreviation.t) =
+  { env with
+    ident_env = Env.add_kind_abbreviation_to_scope env.ident_env ka.id }
+
+and scope_kind_abbreviations env items =
+  List.fold_left
+    (fun env item ->
+      match item with
+      | Signature.KindAbbreviation ka -> scope_kind_abbreviation env ka
+      | Signature.Include incl ->
+          scope_kind_abbreviations env incl.expansion.content.items
+      | _ -> env)
+    env items
+
 and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
-  let rec loop (acc,shadowed) items =
+  let rec loop env (acc,shadowed) items =
     let open Signature in
     let open Odoc_model.Compat in
     let open Include in
@@ -1558,10 +1707,10 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
           | `Value (_, n) -> { shadowed with s_values = (Odoc_model.Names.parenthesise (Ident.name id), n) :: shadowed.s_values }
           else shadowed
         in
-          loop (vd :: acc, shadowed) rest
+          loop env (vd :: acc, shadowed) rest
     | Sig_type(id, _, _, _) :: rest
         when Btype.is_row_name (Ident.name id) ->
-        loop (acc, shadowed) rest
+        loop env (acc, shadowed) rest
     | Sig_type(id, decl, rec_status, _)::rest ->
         let decl = read_type_declaration env parent id decl in
         let shadowed =
@@ -1572,7 +1721,21 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
             { shadowed with s_types = (Ident.name id, name) :: shadowed.s_types }
           else shadowed
         in
-        loop (Type (read_type_rec_status rec_status, decl)::acc, shadowed) rest
+        loop env (Type (read_type_rec_status rec_status, decl)::acc, shadowed) rest
+#if defined OXCAML
+    | Sig_jkind(id, jkd, _)::rest ->
+        let ka = read_kind_abbreviation_from_types env parent id jkd in
+        let shadowed =
+          if Env.is_shadowed env.ident_env id
+          then
+            let identifier = Env.find_kind_abbreviation_identifier env.ident_env id in
+            let `KindAbbreviation (_, name) = identifier in
+            { shadowed with s_kind_abbreviations = (Ident.name id, name) :: shadowed.s_kind_abbreviations }
+          else shadowed
+        in
+        let env = scope_kind_abbreviation env ka in
+        loop env (KindAbbreviation ka :: acc, shadowed) rest
+#endif
     | Sig_typext (id, ext, Text_first, _) :: rest ->
         let rec inner_loop inner_acc = function
           | Sig_typext(id, ext, Text_next, _) :: rest ->
@@ -1581,15 +1744,15 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
               let ext =
                 read_type_extension env parent id ext (List.rev inner_acc)
               in
-                loop (TypExt ext :: acc, shadowed) rest
+                loop env (TypExt ext :: acc, shadowed) rest
         in
           inner_loop [] rest
     | Sig_typext (id, ext, Text_next, _) :: rest ->
         let ext = read_type_extension env parent id ext [] in
-          loop (TypExt ext :: acc, shadowed) rest
+          loop env (TypExt ext :: acc, shadowed) rest
     | Sig_typext (id, ext, Text_exception, _) :: rest ->
         let exn = read_exception env parent id ext in
-          loop (Exception exn :: acc, shadowed) rest
+          loop env (Exception exn :: acc, shadowed) rest
     | Sig_module (id, _, md, rec_status, _)::rest ->
           let md = read_module_declaration env parent id md in
           let shadowed =
@@ -1605,7 +1768,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
 { shadowed with s_modules = (Ident.name id, name) :: shadowed.s_modules }
             else shadowed
           in
-            loop (Module (read_module_rec_status rec_status, md)::acc, shadowed) rest
+            loop env (Module (read_module_rec_status rec_status, md)::acc, shadowed) rest
     | Sig_modtype(id, mtd, _) :: rest ->
           let mtd = read_module_type_declaration env parent id mtd in
           let shadowed =
@@ -1620,7 +1783,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
               { shadowed with s_module_types = (Ident.name id, name) :: shadowed.s_module_types }
             else shadowed
           in
-            loop (ModuleType mtd :: acc, shadowed) rest
+            loop env (ModuleType mtd :: acc, shadowed) rest
 #if OCAML_VERSION < (5,1,0)
     | Sig_class(id, cl, rec_status, _) :: Sig_class_type _
       :: Sig_type _ :: Sig_type _ :: rest ->
@@ -1641,7 +1804,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
             { shadowed with s_classes = (Ident.name id, name) :: shadowed.s_classes }
             else shadowed
           in
-            loop (Class (read_type_rec_status rec_status, cl)::acc, shadowed) rest
+            loop env (Class (read_type_rec_status rec_status, cl)::acc, shadowed) rest
 #if OCAML_VERSION < (5,1,0)
     | Sig_class_type(id, cltyp, rec_status, _)::Sig_type _::Sig_type _::rest ->
 #else
@@ -1659,7 +1822,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
 { shadowed with s_class_types = (Ident.name id, name) :: shadowed.s_class_types }
           else shadowed
         in
-        loop (ClassType (read_type_rec_status rec_status, cltyp)::acc, shadowed) rest
+        loop env (ClassType (read_type_rec_status rec_status, cltyp)::acc, shadowed) rest
     (* Skip all of the hidden sig items *)
 
 
@@ -1670,7 +1833,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
 
     | [] -> ({items = List.rev acc; compiled=false; removed = []; doc = empty_doc env }, shadowed)
   in
-    loop ([],{s_modules=[]; s_module_types=[]; s_values=[];s_types=[]; s_classes=[]; s_class_types=[]}) items
+    loop env ([],{s_modules=[]; s_module_types=[]; s_values=[];s_types=[]; s_kind_abbreviations=[]; s_classes=[]; s_class_types=[]}) items
 
 and read_signature env parent (items : Odoc_model.Compat.signature) =
   let e' = Env.handle_signature_type_items parent items env.ident_env in

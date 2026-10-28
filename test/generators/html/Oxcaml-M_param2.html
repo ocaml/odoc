@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head><title>M_param2 (Oxcaml.M_param2)</title><meta charset="utf-8"/>
+  <link rel="stylesheet" href="odoc.css"/>
+  <meta name="generator" content="odoc %%VERSION%%"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <script src="highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+ </head>
+ <body class="odoc">
+  <nav class="odoc-nav"><a href="Oxcaml.html">Up</a> – 
+   <a href="index.html">Index</a> &#x00BB; <a href="Oxcaml.html">Oxcaml</a>
+    &#x00BB; M_param2
+  </nav>
+  <header class="odoc-preamble">
+   <h1>Module <code><span>Oxcaml.M_param2</span></code></h1>
+   <p>Each instantiation renders its own copy of <code>param_kind</code>
+    , so both uses should link to the copy on their own page rather than to 
+    <code>S_param</code>'s.
+   </p>
+  </header>
+  <div class="odoc-content">
+   <div class="odoc-spec">
+    <div class="spec type kind-abbreviation anchored" id="kind-param_kind">
+     <a href="#kind-param_kind" class="anchor"></a>
+     <code>
+      <span><span class="keyword">kind_</span> param_kind = value 
+       <span class="keyword">mod</span> portable
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t">
+     <a href="#type-t" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> 
+       <span>('a : <a href="#kind-param_kind">param_kind</a>) t</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A kind-constrained type parameter inside a signature expansion.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_direct">
+     <a href="#type-t_direct" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_direct : 
+       <a href="#kind-param_kind">param_kind</a>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A kind annotation inside a signature expansion.</p>
+    </div>
+   </div>
+  </div>
+ </body>
+</html>
