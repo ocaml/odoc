@@ -658,17 +658,56 @@ type u
 
 The above example can be seen rendered in the module {!Odoc_examples.Markup.Scope}.
 
+An element in scope hides a compilation unit of the same name, even an
+element of another kind. In a signature that declares [module type M],
+[{!M}] refers to the module type, even if a compilation unit is called [M].
+Give the kind to refer to the unit: [{!module-M}]. The same holds before a
+dot: unlike OCaml, [odoc] can look inside a module type, as in [{!S.x}], so
+there [{!M.x}] looks in the module type [M], and [{!module-M.x}] looks in the
+unit. If two elements in scope have the same name and different kinds, such
+as an exception [E] and a module [E], [{!E}] is ambiguous, and [odoc] warns;
+write [{!exception-E}] or [{!module-E}].
+
+If a signature declares a name twice, as it may for two values, a reference
+refers to the last one, which is the one the signature exports.
+
+A compilation unit can refer to itself by name: in [foo.mli], [{!Foo.x}]
+refers to [x] in [Foo], even if another library also has a module [Foo].
+
 [odoc] allows modules to be 'opened' for the purposes of resolving references.
 By default, the module [Stdlib] is 'opened', allowing references like [{!List.t}]
 to work. This feature is enabled via the command-line flag [--open]. Currently
 inline [open] statements do {e not} bring other elements into scope.
 
+[odoc] does not see the compiler's own [-open] flags either. dune compiles each
+module of a wrapped library [lib] with [-open Lib__], so that [b.ml] can refer
+to its sibling [Lib.A] as [A]. A reference [{!A}] in [b.mli] is not resolved
+this way: write [{!Lib.A}]. Likewise, [{!List}] means [Stdlib.List] even if
+the library has its own [List] module.
+
 In order for [odoc] to resolve links to other compilation units or [.mld] pages,
 the referenced
 unit or page must be {e compiled} and available to [odoc]. That is, when performing the
-[odoc link] command, one of the include paths passed via the command-line argument
-[-I] must contain the relevant [.odoc] file. This is normally the responsibility of
-the {{!page-driver}driver}.
+[odoc link] command, the relevant [.odoc] file must be in a directory passed
+via [-I], in a library passed via [-L] or, for a page, in a package passed via
+[-P]. This is normally the responsibility of the {{!page-driver}driver}.
+
+Two libraries may have modules of the same name, as [eliom.client] and
+[eliom.server] both have [Eliom_content]. A bare reference such as
+[{!Eliom_content}] is then ambiguous, as [odoc] does not prefer the library the
+comment is written in, and [odoc] warns. Use a path reference to say which one
+you mean:
+
+{[
+(** {!/eliom.client/Eliom_content} and {!/eliom.server/Eliom_content} *)
+]}
+
+A page reference by name, such as [{!page-guide}], refers to a page named
+[guide] in the same directory as the page or module the reference is in, or
+at the top of the current package. If both have one, either may be taken. A
+page in another directory needs a path reference, such as [{!//manual/guide}]
+for the page [manual/guide] of the current package. A page of another
+package always needs a path reference, such as [{!/otherpkg/index}].
 
 {2:tags Tags}
 
@@ -703,8 +742,9 @@ examples below. They are:
 - [@since string] - declares from which version the element has been available
 - [@version string] - declares the version of the element itself
 - [@canonical string] - declares the path to this element's canonical instance.
-It can be applied to modules, module types, and types. See the {{!page-features.canonical}
-Language Features} page for more details
+It can be applied to modules, module types, and types. As in a path reference,
+the path can start with [/library_name/] to give the library of its root module.
+See the {{!page-features.canonical_paths} Language Features} page for more details
 
 The tag's content is read from the rest of the line. It is also uninterpreted,
 i.e., there shouldn't be any [odoc] markup.
