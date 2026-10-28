@@ -93,9 +93,14 @@ compiled, but only one module is considered to be visible: [Lib]. All others
 have double underscores meaning they are hidden. Only the non-hidden module
 [Lib] is linked, and during this process, the
 the modules [A] and [B] are expanded because they are aliases of hidden
-modules. All references to [Lib__A] and [Lib__B] are replaced with the canonical
-paths [Lib.A] and [Lib.B], so in this way, [odoc] presents the library as entirely
+modules. Paths that go through the aliases are shown with the canonical paths
+[Lib.A] and [Lib.B], so in this way, [odoc] presents the library as entirely
 contained within the module [Lib].
+
+The canonical tags are on the aliases, not on [Lib__A] and [Lib__B]
+themselves. So a path that names [Lib__A] directly, such as [Lib__A.t], does
+not go through an alias. It is shown as it is, and as [Lib__A] is hidden, it
+is not linked.
 
 {2 Hand-Written Top-Level Module}
 
