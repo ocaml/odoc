@@ -511,8 +511,11 @@ mechanism. This example is demonstrated {{!Odoc_examples.Resolution.HiddenAlias}
 
 When encountering a module, module type, or a type that has been marked with a
 [@canonical] tag, [odoc] first has to check that the specified canonical path
-actually resolves. If this is the case, in a similar way to the alias above, the
-path's target will be rewritten to point to the canonical path.
+actually resolves. Like the root of a reference, its root module is looked up
+along the whole search path, in every library given to [odoc link], as the
+canonical item is often in a
+library that depends on this one. If it resolves, in a similar way to the alias
+above, the path's target will be rewritten to point to the canonical path.
 However, in contrast to the alias behaviour, the path's {e text} will
 also be rewritten, so it will be as if the canonical path had been written instead
 of whatever path was actually there.
@@ -537,6 +540,18 @@ path to the canonical item.
 
 The right-hand side of [type t] will be rewritten such
 that it will be as if [B.t] had been written instead.
+
+If two libraries have a root module of the same name, the root of the
+canonical path is ambiguous, and [odoc] warns. As in a path reference, the
+library can be given explicitly:
+
+{[
+(** @canonical /eliom.client/Eliom_content.Html *)
+]}
+
+This happens most often with wrapped [dune] libraries: [dune] adds a canonical
+tag to each module of a wrapped library, naming the library's main module, and
+two libraries may have main modules of the same name.
 
 Note that canonical tags are only used when resolving {e paths}, not 
 fragments (which are relative anyway) nor references. Since they are
