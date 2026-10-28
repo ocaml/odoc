@@ -1,0 +1,2 @@
+(** @canonical X.Hid *)
+module Hid = X__Hid

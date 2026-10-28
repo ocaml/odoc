@@ -1,0 +1,8 @@
+(** @canonical X.Hid *)
+module Hid = X__Hid
+
+(** @canonical X.Inc *)
+module Inc = X__Inc
+
+(** @canonical X.Mt *)
+module Mt = X__Mt

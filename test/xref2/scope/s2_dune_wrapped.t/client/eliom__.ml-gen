@@ -1,0 +1,2 @@
+(** @canonical Eliom.Content *)
+module Content = Eliom__Content
