@@ -636,7 +636,8 @@ module Path = struct
       | `Subst (p1, p2) ->
           inner (p1 : module_type :> any) || inner (p2 : module_ :> any)
       | `Module (p, _) -> inner (p : module_ :> any)
-      | `Apply (p, _) -> inner (p : module_ :> any)
+      | `Apply (p1, p2) ->
+          inner (p1 : module_ :> any) || inner (p2 : module_ :> any)
       | `ApplyParam _ ->
           (* Instances are of whole libraries, which are never hidden. *)
           false
@@ -647,6 +648,8 @@ module Path = struct
       | `Type (p, _) -> inner (p : module_ :> any)
       | `Value (_, t) when Names.ValueName.is_hidden t -> true
       | `Value (p, _) -> inner (p : module_ :> any)
+      | (`Class (_, t) | `ClassType (_, t)) when Names.TypeName.is_hidden t ->
+          true
       | `Class (p, _) -> inner (p : module_ :> any)
       | `ClassType (p, _) -> inner (p : module_ :> any)
       | `Alias (dest, `Resolved src) ->

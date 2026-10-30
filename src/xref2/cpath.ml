@@ -179,10 +179,13 @@ let is_class_type_substituted : class_type -> bool = function
 
 let rec is_module_hidden : module_ -> bool = function
   | `Resolved r -> is_resolved_module_hidden ~weak_canonical_test:false r
-  | `Substituted p | `Dot (p, _) | `Apply (p, _) -> is_module_hidden p
-  | `Identifier (_, b) -> b
+  | `Dot (p, n) -> ModuleName.is_hidden n || is_module_hidden p
+  | `Apply (p1, p2) -> is_module_hidden p1 || is_module_hidden p2
+  | `Substituted p -> is_module_hidden p
+  | `Identifier (id, b) -> b || Identifier.is_hidden id
   | `Local (_, b) -> b
-  | `Root _ | `ApplyParam _ -> false
+  | `Root n -> ModuleName.is_hidden n
+  | `ApplyParam _ -> false
   | `Module (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
 
 and is_resolved_module_hidden :
@@ -197,9 +200,10 @@ and is_resolved_module_hidden :
     | `Canonical (p, _) -> (not weak_canonical_test) && inner p
     | `Substituted p -> inner p
     | `Module (p, _) -> is_resolved_parent_hidden ~weak_canonical_test p
-    | `Subst (p1, p2) -> is_resolved_module_type_hidden p1 || inner p2
+    | `Subst (p1, p2) ->
+        is_resolved_module_type_hidden ~weak_canonical_test p1 || inner p2
     | `Alias (p1, `Resolved p2, _) -> inner p1 && inner p2
-    | `Alias (p1, _p2, _) -> inner p1
+    | `Alias (p1, p2, _) -> inner p1 && is_module_hidden p2
     | `Apply (p1, p2) -> inner p1 || inner p2
     | `OpaqueModule m -> inner m
   in
@@ -209,7 +213,7 @@ and is_resolved_parent_hidden :
     weak_canonical_test:bool -> Resolved.parent -> bool =
  fun ~weak_canonical_test -> function
   | `Module m -> is_resolved_module_hidden ~weak_canonical_test m
-  | `ModuleType m -> is_resolved_module_type_hidden m
+  | `ModuleType m -> is_resolved_module_type_hidden ~weak_canonical_test m
   | `FragmentRoot -> false
 
 and is_module_type_hidden : module_type -> bool = function
@@ -217,21 +221,24 @@ and is_module_type_hidden : module_type -> bool = function
   | `Identifier (`ModuleType (_, t), b) -> b || ModuleTypeName.is_hidden t
   | `Local (_, b) -> b
   | `Substituted p -> is_module_type_hidden p
-  | `DotMT (p, _) -> is_module_hidden p
+  | `DotMT (p, n) -> ModuleTypeName.is_hidden n || is_module_hidden p
   | `ModuleType (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
 
-and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
+and is_resolved_module_type_hidden :
+    ?weak_canonical_test:bool -> Resolved.module_type -> bool =
+ fun ?(weak_canonical_test = false) p ->
+  let inner = is_resolved_module_type_hidden ~weak_canonical_test in
+  match p with
   | `Local _ -> false
   | `Gpath p -> Odoc_model.Paths.Path.Resolved.(is_hidden (p :> t))
-  | `Substituted p -> is_resolved_module_type_hidden p
-  | `ModuleType (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
-  | `SubstT (p1, p2) ->
-      is_resolved_module_type_hidden p1 || is_resolved_module_type_hidden p2
-  | `AliasModuleType (p1, p2) ->
-      is_resolved_module_type_hidden p1 || is_resolved_module_type_hidden p2
+  | `Substituted p -> inner p
+  | `ModuleType (_, n) when ModuleTypeName.is_hidden n -> true
+  | `ModuleType (p, _) -> is_resolved_parent_hidden ~weak_canonical_test p
+  | `SubstT (p1, p2) -> inner p1 || inner p2
+  | `AliasModuleType (p1, p2) -> inner p1 && inner p2
   | `CanonicalModuleType (_, `Resolved _) -> false
-  | `CanonicalModuleType (p, _) -> is_resolved_module_type_hidden p
-  | `OpaqueModuleType m -> is_resolved_module_type_substituted m
+  | `CanonicalModuleType (p, _) -> inner p
+  | `OpaqueModuleType m -> inner m
 
 and is_type_hidden : type_ -> bool = function
   | `Resolved r -> is_resolved_type_hidden r
@@ -240,40 +247,46 @@ and is_type_hidden : type_ -> bool = function
   | `Identifier (`Class (_, t), b) -> b || TypeName.is_hidden t
   | `Local (_, b) -> b
   | `Substituted p -> is_type_hidden (p :> type_)
-  | `DotT (p, _) -> is_module_hidden p
+  | `DotT (p, n) -> TypeName.is_hidden n || is_module_hidden p
   | `Unbox p -> is_type_hidden p
   | `Type (p, _) | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
 
-and is_resolved_type_hidden : Resolved.type_ -> bool = function
+and is_resolved_type_hidden :
+    ?weak_canonical_test:bool -> Resolved.type_ -> bool =
+ fun ?(weak_canonical_test = false) p ->
+  match p with
   | `CoreType n -> TypeName.is_hidden n
   | `Local _ -> false
   | `Gpath p -> Odoc_model.Paths.Path.Resolved.(is_hidden (p :> t))
-  | `Substituted p -> is_resolved_type_hidden p
+  | `Substituted p -> is_resolved_type_hidden ~weak_canonical_test p
   | `CanonicalType (_, `Resolved _) -> false
-  | `CanonicalType (p, _) -> is_resolved_type_hidden p
-  | `Unbox p -> is_resolved_type_hidden p
+  | `CanonicalType (p, _) -> is_resolved_type_hidden ~weak_canonical_test p
+  | `Unbox p -> is_resolved_type_hidden ~weak_canonical_test p
   (* A shadowed or otherwise hidden name makes the path hidden even when its
      parent is visible - as in [Odoc_model.Paths.Path.Resolved.is_hidden]. *)
   | (`Type (_, n) | `Class (_, n) | `ClassType (_, n)) when TypeName.is_hidden n
     ->
       true
   | `Type (p, _) | `Class (p, _) | `ClassType (p, _) ->
-      is_resolved_parent_hidden ~weak_canonical_test:false p
+      is_resolved_parent_hidden ~weak_canonical_test p
 
-and is_resolved_class_type_hidden : Resolved.class_type -> bool = function
+and is_resolved_class_type_hidden :
+    ?weak_canonical_test:bool -> Resolved.class_type -> bool =
+ fun ?(weak_canonical_test = false) p ->
+  match p with
   | `Local _ -> false
   | `Gpath p -> Odoc_model.Paths.Path.Resolved.(is_hidden (p :> t))
-  | `Substituted p -> is_resolved_class_type_hidden p
+  | `Substituted p -> is_resolved_class_type_hidden ~weak_canonical_test p
   | `Class (p, _) | `ClassType (p, _) ->
-      is_resolved_parent_hidden ~weak_canonical_test:false p
+      is_resolved_parent_hidden ~weak_canonical_test p
 
 and is_class_type_hidden : class_type -> bool = function
   | `Resolved r -> is_resolved_class_type_hidden r
-  | `Identifier (_, b) -> b
+  | `Identifier (id, b) -> b || Identifier.is_hidden id
   | `Local (_, b) -> b
   | `Substituted p -> is_class_type_hidden p
-  | `DotT (p, _) -> is_module_hidden p
+  | `DotT (p, n) -> TypeName.is_hidden n || is_module_hidden p
   | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
 
