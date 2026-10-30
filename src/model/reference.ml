@@ -602,7 +602,13 @@ let read_mod_longident location lid =
       | Error _ as e -> e
       | Ok p -> (
           match p with
-          | (`Root (_, (`TUnknown | `TModule)) | `Dot (_, _) | `Module (_, _))
-            as r ->
+          | ( `Root (_, (`TUnknown | `TModule))
+            | `Dot (_, _)
+            | `Module (_, _)
+            | `Module_path _ ) as r ->
               Ok r
+          | `Any_path p ->
+              (* An unqualified path reference: in a module list it must be a
+                 module. *)
+              Ok (`Module_path p)
           | _ -> Error (expected_err_str "a reference to a module" location)))
