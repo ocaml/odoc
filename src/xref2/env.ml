@@ -13,6 +13,7 @@ type lookup_error = [ `Not_found ]
 type resolver = {
   open_units : string list;
   lookup_unit : path_query -> (lookup_unit_result, lookup_error) result;
+  lookup_unit_by_id : Identifier.RootModule.t -> Lang.Compilation_unit.t option;
   lookup_page : path_query -> (Lang.Page.t, lookup_error) result;
   lookup_asset : path_query -> (Lang.Asset.t, lookup_error) result;
   lookup_impl : string -> Lang.Implementation.t option;
@@ -544,8 +545,23 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
   | None -> (
       (* Format.eprintf "Can't find %a\n%!" Component.Fmt.model_identifier (id :> Identifier.t); *)
       match (id :> Identifier.t) with
-      | `Root (_, name) | `LibraryParameter (_, name) ->
-          scope.root (ModuleName.to_string name) env
+      | (`Root (_, name) | `LibraryParameter (_, name)) as root -> (
+          (* The identifier names the unit, so it is looked up as itself, not
+             by its name. If no single file holds a unit with that identifier,
+             the name is looked up as before. *)
+          match env.resolver with
+          | None -> None
+          | Some r -> (
+              match r.lookup_unit_by_id root with
+              | None -> scope.root (ModuleName.to_string name) env
+              | Some u ->
+                  let x =
+                    `Module
+                      ( (u.id :> Identifier.Path.Module.t),
+                        Component.Delayed.put_val (module_of_unit u) )
+                  in
+                  record_lookup_result x;
+                  scope.filter x))
       | _ -> None)
 
 let lookup_root_module_fallback name t =
