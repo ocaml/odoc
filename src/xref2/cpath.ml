@@ -7,20 +7,24 @@ module rec Resolved : sig
 
   and module_ =
     [ `Local of Ident.module_
-    | `Gpath of Path.Resolved.Module.t
+    | `Identifier of Identifier.Path.Module.t
     | `Substituted of module_
     | `Subst of module_type * module_
     | `Hidden of module_
     | `Module of parent * ModuleName.t
     | `Canonical of module_ * Path.Module.t
     | `Apply of module_ * module_
+    | `ApplyParam of
+      Path.Resolved.Instance.t
+      * Identifier.LibraryParameter.t
+      * Path.Resolved.Instance.t
     | `Alias of module_ * Cpath.module_ * module_ option
     | `OpaqueModule of module_ ]
 
   and module_type =
     [ `Local of Ident.module_type
     | `Substituted of module_type
-    | `Gpath of Path.Resolved.ModuleType.t
+    | `Identifier of Identifier.Path.ModuleType.t
     | `ModuleType of parent * ModuleTypeName.t
     | `SubstT of module_type * module_type
     | `AliasModuleType of module_type * module_type
@@ -29,7 +33,7 @@ module rec Resolved : sig
 
   and type_ =
     [ `Local of Ident.type_
-    | `Gpath of Path.Resolved.Type.t
+    | `Identifier of Identifier.Path.Type.t
     | `Substituted of type_
     | `CanonicalType of type_ * Path.Type.t
     | `CoreType of TypeName.t
@@ -39,12 +43,12 @@ module rec Resolved : sig
     | `Unbox of type_ ]
 
   and value =
-    [ `Value of parent * ValueName.t | `Gpath of Path.Resolved.Value.t ]
+    [ `Value of parent * ValueName.t | `Identifier of Identifier.Path.Value.t ]
 
   and class_type =
     [ `Local of Ident.type_
     | `Substituted of class_type
-    | `Gpath of Path.Resolved.ClassType.t
+    | `Identifier of Identifier.Path.ClassType.t
     | `Class of parent * TypeName.t
     | `ClassType of parent * TypeName.t ]
 end =
@@ -103,7 +107,7 @@ include Cpath
 let rec is_resolved_module_substituted : Resolved.module_ -> bool = function
   | `Local _ -> false
   | `Substituted _ -> true
-  | `Gpath _ -> false
+  | `Identifier _ | `ApplyParam _ -> false
   | `Subst (_a, _) -> false (* is_resolved_module_type_substituted a*)
   | `Hidden a | `Apply (a, _) | `Alias (a, _, _) | `Canonical (a, _) ->
       is_resolved_module_substituted a
@@ -119,7 +123,7 @@ and is_resolved_module_type_substituted : Resolved.module_type -> bool =
   function
   | `Local _ -> false
   | `Substituted _ -> true
-  | `Gpath _ -> false
+  | `Identifier _ -> false
   | `ModuleType (a, _) -> is_resolved_parent_substituted a
   | `SubstT _ -> false
   | `AliasModuleType (m1, _) -> is_resolved_module_type_substituted m1
@@ -131,7 +135,7 @@ and is_resolved_type_substituted : Resolved.type_ -> bool = function
   | `CoreType _ -> false
   | `Unbox _ -> false
   | `Substituted _ -> true
-  | `Gpath _ -> false
+  | `Identifier _ -> false
   | `CanonicalType (t, _) -> is_resolved_type_substituted t
   | `Type (a, _) | `Class (a, _) | `ClassType (a, _) ->
       is_resolved_parent_substituted a
@@ -139,7 +143,7 @@ and is_resolved_type_substituted : Resolved.type_ -> bool = function
 and is_resolved_class_type_substituted : Resolved.class_type -> bool = function
   | `Local _ -> false
   | `Substituted _ -> true
-  | `Gpath _ -> false
+  | `Identifier _ -> false
   | `Class (a, _) | `ClassType (a, _) -> is_resolved_parent_substituted a
 
 let rec is_module_substituted : module_ -> bool = function
@@ -190,7 +194,7 @@ and is_resolved_module_hidden :
  fun ~weak_canonical_test ->
   let rec inner = function
     | `Local _ -> false
-    | `Gpath p ->
+    | (`Identifier _ | `ApplyParam _) as p ->
         Odoc_model.Paths.Path.Resolved.Module.is_hidden ~weak_canonical_test p
     | `Hidden _ -> true
     | `Canonical (_, `Resolved _) -> false
@@ -222,7 +226,7 @@ and is_module_type_hidden : module_type -> bool = function
 
 and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
   | `Local _ -> false
-  | `Gpath p -> Odoc_model.Paths.Path.Resolved.(is_hidden (p :> t))
+  | `Identifier _ as p -> Odoc_model.Paths.Path.Resolved.(is_hidden (p :> t))
   | `Substituted p -> is_resolved_module_type_hidden p
   | `ModuleType (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
   | `SubstT (p1, p2) ->
@@ -248,7 +252,7 @@ and is_type_hidden : type_ -> bool = function
 and is_resolved_type_hidden : Resolved.type_ -> bool = function
   | `CoreType n -> TypeName.is_hidden n
   | `Local _ -> false
-  | `Gpath p -> Odoc_model.Paths.Path.Resolved.(is_hidden (p :> t))
+  | `Identifier _ as p -> Odoc_model.Paths.Path.Resolved.(is_hidden (p :> t))
   | `Substituted p -> is_resolved_type_hidden p
   | `CanonicalType (_, `Resolved _) -> false
   | `CanonicalType (p, _) -> is_resolved_type_hidden p
@@ -263,7 +267,7 @@ and is_resolved_type_hidden : Resolved.type_ -> bool = function
 
 and is_resolved_class_type_hidden : Resolved.class_type -> bool = function
   | `Local _ -> false
-  | `Gpath p -> Odoc_model.Paths.Path.Resolved.(is_hidden (p :> t))
+  | `Identifier _ as p -> Odoc_model.Paths.Path.Resolved.(is_hidden (p :> t))
   | `Substituted p -> is_resolved_class_type_hidden p
   | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
@@ -282,13 +286,13 @@ let rec resolved_module_of_resolved_module_reference :
   | `Module (parent, name) ->
       `Module
         (`Module (resolved_module_of_resolved_signature_reference parent), name)
-  | `Identifier x -> `Gpath (`Identifier x)
+  | `Identifier x -> `Identifier x
   | `Alias (_m1, _m2) -> failwith "gah"
   | `Hidden s -> `Hidden (resolved_module_of_resolved_module_reference s)
 
 and resolved_module_of_resolved_signature_reference :
     Reference.Resolved.Signature.t -> Resolved.module_ = function
-  | `Identifier (#Identifier.Module.t as i) -> `Gpath (`Identifier i)
+  | `Identifier (#Identifier.Module.t as i) -> `Identifier i
   | (`Alias _ | `Module _ | `Hidden _) as r' ->
       resolved_module_of_resolved_module_reference r'
   | `ModuleType (_, n) ->
@@ -314,15 +318,15 @@ and module_of_module_reference : Reference.Module.t -> module_ = function
   | _ -> failwith "Not a module reference"
 
 let rec unresolve_resolved_module_path : Resolved.module_ -> module_ = function
-  | `Hidden (`Gpath (`Identifier x)) -> `Identifier (x, true)
-  | `Gpath (`Identifier x) ->
+  | `Hidden (`Identifier x) -> `Identifier (x, true)
+  | `Identifier x ->
       let hidden =
         match x with
         | `Module (_, n) -> Odoc_model.Names.ModuleName.is_hidden n
         | _ -> false
       in
       `Identifier (x, hidden)
-  | `Gpath _ as x -> `Resolved x
+  | `ApplyParam _ as x -> `Resolved x
   | `Hidden (`Local x) -> `Local (x, true)
   | `Local x -> `Local (x, false)
   | `Substituted x -> unresolve_resolved_module_path x
@@ -349,7 +353,7 @@ and unresolve_module_path : module_ -> module_ = function
 
 and unresolve_resolved_module_type_path : Resolved.module_type -> module_type =
   function
-  | (`Local _ | `Gpath _) as p -> `Resolved p
+  | (`Local _ | `Identifier _) as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_module_type_path x
   | `ModuleType (p, n) -> `DotMT (unresolve_resolved_parent_path p, n)
   | `SubstT (_, m) -> unresolve_resolved_module_type_path m
@@ -362,7 +366,7 @@ and unresolve_resolved_parent_path : Resolved.parent -> module_ = function
   | `FragmentRoot | `ModuleType _ -> assert false
 
 and unresolve_resolved_type_path : Resolved.type_ -> type_ = function
-  | (`Gpath _ | `Local _ | `CoreType _) as p -> `Resolved p
+  | (`Identifier _ | `Local _ | `CoreType _) as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_type_path x
   | `CanonicalType (t1, _) -> unresolve_resolved_type_path t1
   | `Type (p, n) -> `DotT (unresolve_resolved_parent_path p, n)
@@ -372,7 +376,7 @@ and unresolve_resolved_type_path : Resolved.type_ -> type_ = function
 
 and unresolve_resolved_class_type_path : Resolved.class_type -> class_type =
   function
-  | (`Local _ | `Gpath _) as p -> `Resolved p
+  | (`Local _ | `Identifier _) as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_class_type_path x
   | `Class (p, n) -> `DotT (unresolve_resolved_parent_path p, n)
   | `ClassType (p, n) -> `DotT (unresolve_resolved_parent_path p, n)
@@ -429,7 +433,7 @@ and original_path_module_identifier :
       match original_path_parent_identifier sg with
       | Some sg' -> Some (`Module (sg', name))
       | None -> None)
-  | `Root _ | `LibraryParameter _ -> Some (`Gpath (`Identifier id))
+  | `Root _ | `LibraryParameter _ -> Some (`Identifier id)
   | _ ->
       None
 

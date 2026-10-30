@@ -216,7 +216,7 @@ module M = struct
   let of_element env (`Module (id, m)) : t =
     let m = Component.Delayed.get m in
     let id = (id :> Identifier.Path.Module.t) in
-    of_component env m (`Gpath (`Identifier id)) (`Identifier id)
+    of_component env m (`Identifier id) (`Identifier id)
 
   let in_env env name =
     match env_lookup_by_name Env.s_module name env with
@@ -287,7 +287,7 @@ module MT = struct
          (`ModuleType (parent', name)))
 
   let of_element env (`ModuleType (id, mt)) : t =
-    of_component env mt (`Gpath (`Identifier id)) (`Identifier id)
+    of_component env mt (`Identifier id) (`Identifier id)
 
   let in_env env name =
     env_lookup_by_name Env.s_module_type name env >>= fun e ->

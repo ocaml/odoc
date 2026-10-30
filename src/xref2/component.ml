@@ -1330,7 +1330,8 @@ module Fmt = struct
     | `Apply (p1, p2) ->
         Format.fprintf ppf "%a(%a)" (resolved_module_path c) p1
           (resolved_module_path c) p2
-    | `Gpath p -> Format.fprintf ppf "%a" (model_resolved_path c) (p :> rpath)
+    | (`Identifier _ | `ApplyParam _) as p ->
+        Format.fprintf ppf "%a" (model_resolved_path c) (p :> rpath)
     | `Substituted p -> wrap c "substituted" resolved_module_path ppf p
     | `Module (p, m) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
@@ -1368,7 +1369,7 @@ module Fmt = struct
    fun c ppf p ->
     match p with
     | `Local id -> ident_fmt c ppf id
-    | `Gpath p -> model_resolved_path c ppf (p :> rpath)
+    | `Identifier _ as p -> model_resolved_path c ppf (p :> rpath)
     | `Substituted x -> wrap c "substituted" resolved_module_type_path ppf x
     | `ModuleType (p, m) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
@@ -1407,7 +1408,7 @@ module Fmt = struct
     match p with
     | `CoreType n -> Format.fprintf ppf "%s" (TypeName.to_string n)
     | `Local id -> ident_fmt c ppf id
-    | `Gpath p -> model_resolved_path c ppf (p :> rpath)
+    | `Identifier _ as p -> model_resolved_path c ppf (p :> rpath)
     | `Substituted x -> wrap c "substituted" resolved_type_path ppf x
     | `Unbox x -> wrap c "unbox" resolved_type_path ppf x
     | `CanonicalType (t1, t2) ->
@@ -1430,7 +1431,8 @@ module Fmt = struct
     | `Value (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
           (ValueName.to_string t)
-    | `Gpath p -> Format.fprintf ppf "%a" (model_resolved_path c) (p :> rpath)
+    | `Identifier _ as p ->
+        Format.fprintf ppf "%a" (model_resolved_path c) (p :> rpath)
 
   and resolved_parent_path :
       config -> Format.formatter -> Cpath.Resolved.parent -> unit =
@@ -1480,7 +1482,8 @@ module Fmt = struct
    fun c ppf p ->
     match p with
     | `Local id -> Format.fprintf ppf "%a" Ident.fmt id
-    | `Gpath p -> Format.fprintf ppf "%a" (model_resolved_path c) (p :> rpath)
+    | `Identifier _ as p ->
+        Format.fprintf ppf "%a" (model_resolved_path c) (p :> rpath)
     | `Substituted s -> wrap c "substituted" resolved_class_type_path ppf s
     | `Class (p, t) ->
         Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
@@ -2123,10 +2126,10 @@ module Of_Lang = struct
     | `Identifier i -> (
         match identifier find_any_module ident_map i with
         | `Local l -> `Local l
-        | `Identifier _ -> `Gpath p)
+        | `Identifier _ -> `Identifier i)
     | `Module (p, name) -> `Module (`Module (recurse p), name)
     | `Apply (p1, p2) -> `Apply (recurse p1, recurse p2)
-    | `ApplyParam _ -> (* Instances are of units, never local. *) `Gpath p
+    | `ApplyParam _ as p -> (* Instances are of units, never local. *) p
     | `Alias (p1, p2) -> `Alias (recurse p1, module_path ident_map p2, None)
     | `Subst (p1, p2) ->
         `Subst (resolved_module_type_path ident_map p1, recurse p2)
@@ -2144,7 +2147,7 @@ module Of_Lang = struct
     | `Identifier i -> (
         match identifier Maps.ModuleType.find ident_map.module_types i with
         | `Local l -> `Local l
-        | `Identifier _ -> `Gpath p)
+        | `Identifier _ -> `Identifier i)
     | `ModuleType (p, name) ->
         `ModuleType (`Module (resolved_module_path ident_map p), name)
     | `CanonicalModuleType (p1, p2) ->
@@ -2169,7 +2172,7 @@ module Of_Lang = struct
     | `Identifier i -> (
         match identifier Maps.Path.Type.find ident_map.path_types i with
         | `Local l -> `Local l
-        | `Identifier _ -> `Gpath p)
+        | `Identifier _ -> `Identifier i)
     | `CanonicalType (p1, p2) ->
         `CanonicalType (resolved_type_path ident_map p1, p2)
     | `Type (p, name) -> `Type (`Module (resolved_module_path ident_map p), name)
@@ -2189,7 +2192,7 @@ module Of_Lang = struct
     match p with
     | `Value (p, name) ->
         `Value (`Module (resolved_module_path ident_map p), name)
-    | `Identifier _ -> `Gpath p
+    | `Identifier _ as i -> i
 
   and resolved_class_type_path :
       _ ->
@@ -2202,7 +2205,7 @@ module Of_Lang = struct
           identifier Maps.Path.ClassType.find ident_map.path_class_types i
         with
         | `Local l -> `Local l
-        | `Identifier _ -> `Gpath p)
+        | `Identifier _ -> `Identifier i)
     | `Class (p, name) ->
         `Class (`Module (resolved_module_path ident_map p), name)
     | `ClassType (p, name) ->
