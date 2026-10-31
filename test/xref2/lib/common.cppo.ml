@@ -578,6 +578,7 @@ module LangUtils = struct
             | `Identifier (i,b) -> Format.fprintf ppf "identifier(%a,%b)" identifier i b
             | `Root (s, _) -> Format.fprintf ppf "%a" ModuleName.fmt s
             | `LibraryRoot (`Only, l, s) -> Format.fprintf ppf "/%s/%a" l ModuleName.fmt s
+            | `LibraryRoot (`First, l, s) -> Format.fprintf ppf "/%s?/%a" l ModuleName.fmt s
             | `Dot (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ModuleName.fmt s
             | `DotMT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ModuleTypeName.fmt s
             | `DotT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) TypeName.fmt s

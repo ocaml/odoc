@@ -1,8 +1,9 @@
 type path =
   [ `Root of string
-  | `LibraryRoot of [ `Only ] * string * string
+  | `LibraryRoot of [ `Only | `First ] * string * string
     (** [`LibraryRoot (`Only, lib, name)]: the root [name] in library [lib]
-        alone, written [/lib/name]. *)
+        alone, written [/lib/name]. TEMPORARY: [`First] looks in [lib] first,
+        then anywhere. *)
   | `Dot of path * string ]
 
 let expected_err :
@@ -581,13 +582,23 @@ let parse_asset whole_reference_location s :
   let path = parse_path whole_reference_location s in
   Error.catch_errors_and_warnings (fun () -> `Asset_path path)
 
+(* TEMPORARY: remove when dune writes the library in its canonical tags, as
+   [@canonical /lib/Name.X]. dune's tags name no library, so they are
+   ambiguous when two libraries have the same main module. While [odoc compile]
+   reads a unit of library [lib], this is [Some lib], and a tag that names no
+   library looks in [lib] first. *)
+let own_library = ref None
+
 let read_path_longident location s =
   (* A canonical tag uses the reference syntax, so that [/lib/Name.X] names the
      library of its root as in [{!/lib/Name.X}]. Only a module path, with an
      optional library, is a valid tag; of the kind qualifiers, only [module-]
      on its first name is accepted. *)
   let rec to_path : Paths.Reference.t -> path option = function
-    | `Root (name, (`TUnknown | `TModule)) -> Some (`Root name)
+    | `Root (name, (`TUnknown | `TModule)) -> (
+        match !own_library with
+        | Some lib -> Some (`LibraryRoot (`First, lib, name))
+        | None -> Some (`Root name))
     | `Module_path (`TAbsolutePath, [ lib; name ])
     | `Any_path (`TAbsolutePath, [ lib; name ]) ->
         Some (`LibraryRoot (`Only, lib, name))
