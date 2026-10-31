@@ -107,7 +107,8 @@ to tell apart items of the same name. [resolved(...)] is a resolved path, and
 package [pkg]. [hidden(...)] marks a hidden unit, such as [Vlib__Clock],
 which is never linked to (S3). [canonical(p,c)] is the path [p], shown as
 its canonical target [c] (S1); [c] comes from a [@canonical] tag, and is
-resolved at link. [root(Vlib)] is the root [Vlib] of such a tag before link.
+resolved at link. [root(/vlib?/Vlib)] is the root [Vlib] of such a tag
+before link, looked up in [vlib] first (S2's known limit).
 
 Case 1 (V1). A unit built against the virtual library only.
 
@@ -140,7 +141,7 @@ at compile it takes the unit of the last [-L] that holds one. [direct]
 meaning [vlib]'s unit would be wrong.
 
   $ odoc_print --short --long-paths --show-root-parents h/pkg/tool/tool.odoc
-  val stamp/0 : resolved(unit) -> resolved(canonical(root(pkg/vlib/Vlib).Clock,root(Vlib).Clock).t)
+  val stamp/0 : resolved(unit) -> resolved(canonical(root(pkg/vlib/Vlib).Clock,root(/vlib?/Vlib).Clock).t)
   val direct/1 : resolved(hidden(root(pkg/vlib/Vlib__Clock)).t)
   $ odoc link -L vlib:h/pkg/vlib -L impl_a:h/pkg/impl_a -L impl_b:h/pkg/impl_b -L user:h/pkg/user -L tool:h/pkg/tool h/pkg/tool/tool.odoc
   $ odoc_print --short --long-paths --show-root-parents h/pkg/tool/tool.odocl
@@ -171,7 +172,7 @@ candidate it picks.
 
   $ odoc compile --output-dir h --parent-id pkg/tool -L tool:h/pkg/tool -L vlib:h/pkg/vlib -L impl_a:h/pkg/impl_a tool/tool.cmti
   $ odoc_print --short --long-paths --show-root-parents h/pkg/tool/tool.odoc
-  val stamp/0 : resolved(unit) -> resolved(canonical(root(pkg/vlib/Vlib).Clock,root(Vlib).Clock).t)
+  val stamp/0 : resolved(unit) -> resolved(canonical(root(pkg/vlib/Vlib).Clock,root(/vlib?/Vlib).Clock).t)
   val direct/1 : resolved(hidden(root(pkg/impl_a/Vlib__Clock)).t)
   $ odoc compile --output-dir h --parent-id pkg/impl_a -L vlib:h/pkg/vlib -L impl_a:h/pkg/impl_a impl_a/vlib__impl_a__Extra.cmti
   $ odoc_print --short --long-paths --show-root-parents h/pkg/impl_a/vlib__impl_a__Extra.odoc

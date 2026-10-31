@@ -60,6 +60,7 @@ val compile :
   warnings_options:Odoc_model.Error.warnings_options ->
   short_title:string option ->
   libraries:string list ->
+  own_library:(Fs.File.t -> string option) ->
   Fpath.t ->
   (unit, [> msg ]) result
 (** Produces .odoc files out of [.cm{i,t,ti}] or .mld files. [libraries] names

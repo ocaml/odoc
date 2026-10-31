@@ -1526,6 +1526,8 @@ module Fmt = struct
     | `Root (s, _) -> wrap c "root" str ppf (ModuleName.to_string s)
     | `LibraryRoot (`Only, lib, s) ->
         wrap c "root" str ppf ("/" ^ lib ^ "/" ^ ModuleName.to_string s)
+    | `LibraryRoot (`First, lib, s) ->
+        wrap c "root" str ppf ("/" ^ lib ^ "?/" ^ ModuleName.to_string s)
     | `Dot (p, s) -> dot p (ModuleName.to_string s)
     | `DotMT (p, s) -> dot p (ModuleTypeName.to_string s)
     | `DotT (p, s) -> dot p (TypeName.to_string s)
@@ -2230,6 +2232,7 @@ module Of_Lang = struct
     | `Root (str, scope) -> `Root (str, scope)
     | `LibraryRoot (`Only, lib, str) ->
         `Root (str, Library_scope.of_libraries [ lib ])
+    | `LibraryRoot (`First, lib, str) -> `Root (str, Library_scope.first [ lib ])
 
   and module_type_path :
       _ -> Odoc_model.Paths.Path.ModuleType.t -> Cpath.module_type =

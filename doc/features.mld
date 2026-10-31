@@ -551,7 +551,12 @@ library can be given explicitly:
 
 This happens most often with wrapped [dune] libraries: [dune] adds a canonical
 tag to each module of a wrapped library, naming the library's main module, and
-two libraries may have main modules of the same name.
+two libraries may have main modules of the same name. Until [dune] names the
+library in its tags, [odoc compile] reads a tag that names no library as
+naming first the library of the module it is written in, given by the [-L]
+whose directory holds the output. The tag's root is looked up in that library,
+and only if it has no module of that name, in every library. So [dune]'s tags
+are not ambiguous, when the driver passes [-L] to [odoc compile].
 
 Note that canonical tags are only used when resolving {e paths}, not 
 fragments (which are relative anyway) nor references. Since they are

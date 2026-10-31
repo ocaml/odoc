@@ -231,9 +231,11 @@ module rec Path : sig
     | `Root of ModuleName.t * Library_scope.t
       (** An unresolved root, with the libraries it is resolved among: those of
           the unit it was read from (its origin), wherever the path goes. *)
-    | `LibraryRoot of [ `Only ] * string * ModuleName.t
+    | `LibraryRoot of [ `Only | `First ] * string * ModuleName.t
       (** [`LibraryRoot (`Only, lib, name)]: the root module [name] of library
-          [lib] alone, as a canonical path written [/lib/Name] names it. *)
+          [lib] alone, as a canonical path written [/lib/Name] names it.
+          TEMPORARY: [`First] looks in [lib] first, then anywhere; it is what a
+          canonical tag that names no library is read as. *)
     | `Dot of module_ * ModuleName.t
     | `Apply of module_ * module_
     | `ApplyParam of instance * ModuleName.t * instance
@@ -278,9 +280,11 @@ module rec Path : sig
     | `Root of ModuleName.t * Library_scope.t
       (** An unresolved root, with the libraries it is resolved among: those of
           the unit it was read from (its origin), wherever the path goes. *)
-    | `LibraryRoot of [ `Only ] * string * ModuleName.t
+    | `LibraryRoot of [ `Only | `First ] * string * ModuleName.t
       (** [`LibraryRoot (`Only, lib, name)]: the root module [name] of library
-          [lib] alone, as a canonical path written [/lib/Name] names it. *)
+          [lib] alone, as a canonical path written [/lib/Name] names it.
+          TEMPORARY: [`First] looks in [lib] first, then anywhere; it is what a
+          canonical tag that names no library is read as. *)
     | `Dot of module_ * ModuleName.t
     | `DotT of module_ * TypeName.t
     | `DotMT of module_ * ModuleTypeName.t

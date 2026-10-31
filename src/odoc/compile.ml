@@ -392,7 +392,7 @@ let resolve_spec ~input resolver cli_spec =
       Ok { output; parent_id = None; parents_children = None; children = [] }
 
 let compile ~resolver ~hidden ~cli_spec ~warnings_options ~short_title
-    ~libraries input =
+    ~libraries ~own_library input =
   resolve_spec ~input resolver cli_spec
   >>= fun { parent_id; output; parents_children; children } ->
   let ext = Fs.File.get_ext input in
@@ -407,6 +407,8 @@ let compile ~resolver ~hidden ~cli_spec ~warnings_options ~short_title
     let make_root =
       root_of_compilation_unit ~parent_id ~parents_children ~hidden ~output
     in
+    (* TEMPORARY: see [Odoc_model.Reference.own_library]. *)
+    Odoc_model.Reference.own_library := own_library output;
     let result =
       Error.catch_errors_and_warnings (fun () ->
           resolve_and_substitute ~resolver ~make_root ~hidden

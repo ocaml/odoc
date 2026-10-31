@@ -556,7 +556,16 @@ refers to.
 
     Known limit: dune's tags name no library, so if two libraries in [Λl]
     have the same main module, the tags are ambiguous (see
-    {{!page-features.canonical_paths}Canonical Paths}).}
+    {{!page-features.canonical_paths}Canonical Paths}). Until dune names
+    the library, [odoc compile] reads a tag that names no library, written
+    in a unit [u], as naming [lib(u)] first: at link its root [N] is looked
+    up in [lib(u)], and only if [lib(u)] has no unit [N], in [Λl] as S1
+    says. dune writes the tags that name its main module in the units of
+    that library, so they resolve there. A tag that names a module of
+    another library, such as one that depends on [lib(u)], finds no unit in
+    [lib(u)] and follows S1. [odoc compile] knows [lib(u)] from the [-L]
+    whose directory holds its output. This exception will be removed when
+    dune writes the library.}
 {li {b S3 (hidden).} Hidden units, such as [Foo__Bar], are not linked to,
     and do not appear in the search index or the sidebar.}}
 

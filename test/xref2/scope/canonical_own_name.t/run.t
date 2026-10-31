@@ -1,8 +1,9 @@
-Rule S1 (doc/scope_model.mld, section 5): a [@canonical] tag is a
-reference, resolved as in section 4. So its root is looked up in the
-libraries given at link, Λl (R3). If the tag does not resolve, the path is
-shown as it is, and odoc warns (S2, and section 4.5). How a path is shown
-never changes what it means.
+Rule R3 (doc/scope_model.mld, section 4.2) for a [@canonical] tag, which is
+a reference (S1, section 5): if the origin of a reference is a unit named
+[N], its root [N] means that unit. dune writes the tags of a wrapped library
+that has no hand-written main module into the alias module [N] itself, so
+their origin is [N]. A tag written in [N__] is not covered by this rule;
+that is the case of s2_dune_wrapped.t.
 
 Libraries [a1] and [a2] are two dune wrapped libraries with the same name,
 [lib], for example from two projects. Each has the alias module [Lib], with
@@ -60,21 +61,23 @@ module. [canonical(A,resolved(B))] is the path [A] shown as its
 [Cc]'s page shows the expansion of the hidden [Cc__User]. Its [Lib.Foo.t]
 means [a1]'s [Lib__Foo]'s [t], by its digest (P1). [Cc] records nothing for
 [Lib], and the tag [Lib.Foo] is a reference, so it does not depend on what
-[Cc] records. Its root [Lib] has two candidates in Λl, [a1]'s and [a2]'s. So
-the tag should not resolve, and odoc should warn (S2). The path should be
-shown as it is, and should never be shown as, or link to, [a2]'s [Lib.Foo].
+[Cc] records. Its root [Lib] has two candidates in Λl, [a1]'s and [a2]'s. The
+tag is written in [a1]'s [Lib], so by R3 it should resolve to [a1]'s
+[Lib.Foo], with no warning. odoc resolves references at link, not where
+they are written (section 11, "R0"), so it does not apply this rule itself.
+S2's temporary rule, where odoc has it, gives the same answer.
+
+Showing the path as, or linking it to, [a2]'s [Lib.Foo] would be wrong.
 
   $ odoc link $ALL h/pkg/cc/cc.odoc
-  File "Lib":
-  Ambiguous lookup. Possible units: pkg/a1/Lib, pkg/a2/Lib
   $ odoc_print --short --long-paths --show-root-parents --show-expansions h/pkg/cc/cc.odocl
   module User/0 = resolved(hidden(root(pkg/cc/Cc__User)))
     => sig
-      type t/1 = resolved(canonical(root(pkg/a1/Lib).Foo,resolved(root(pkg/a2/Lib).Foo)).t)
+      type t/1 = resolved(canonical(root(pkg/a1/Lib).Foo,resolved(root(pkg/a1/Lib).Foo)).t)
      end
 
 The link, in the HTML of [Cc.User]:
 
   $ odoc html-generate -o html h/pkg/cc/cc.odocl
   $ grep -o 'href="[^"]*Foo[^"]*"' html/pkg/cc/Cc/User/index.html
-  href="../../../a2/Lib/Foo/index.html#type-t"
+  href="../../../a1/Lib/Foo/index.html#type-t"

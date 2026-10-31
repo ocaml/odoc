@@ -52,6 +52,7 @@ module Library_scope = struct
     Variant
       (function
       | Scoped libs -> C ("Scoped", libs, List string)
+      | First libs -> C ("First", libs, List string)
       | Any -> C0 "Any")
 end
 
@@ -239,7 +240,8 @@ module General_paths = struct
             ( "`LibraryRoot",
               (x0, x1, x2),
               Triple
-                ( Variant (function `Only -> C0 "`Only"),
+                ( Variant
+                    (function `Only -> C0 "`Only" | `First -> C0 "`First"),
                   string,
                   Names.modulename ) )
       | `Dot (x1, x2) ->

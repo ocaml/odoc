@@ -252,11 +252,18 @@ let self = ref None
    [scope], each in the directory its [-L] names, or all of them. Neither
    prefers one file to another: the lookup warns when several remain. *)
 let within (scope : Odoc_xref2.Env.Library_scope.t) found =
+  let in_libraries libraries =
+    List.filter
+      (fun (libs, _) -> List.exists (fun lib -> List.mem lib libraries) libs)
+      found
+  in
   match scope with
-  | Scoped libraries ->
-      List.filter
-        (fun (libs, _) -> List.exists (fun lib -> List.mem lib libraries) libs)
-        found
+  | Scoped libraries -> in_libraries libraries
+  | First libraries -> (
+      (* TEMPORARY: see [Library_scope.First]. *)
+      match in_libraries libraries with
+      | [] -> found
+      | files -> files)
   | Any -> found
 
 (** The units in the files [found], within [scope]. The unit being compiled or
@@ -297,7 +304,7 @@ let load_units =
     match (check_self target_name, scope) with
     | None, _ -> units
     | Some self, Any -> [ self ]
-    | Some self, Scoped _ ->
+    | Some self, (Scoped _ | First _) ->
         (* The unit being compiled or linked stands for its own file, which may
            be stale or not written yet. A scoped lookup that did not find the
            file is not looking where the unit is. *)
@@ -713,7 +720,7 @@ let build ?(imports_map = StringMap.empty) ?hierarchy_roots ~scope
     | Env.Library_scope.Any, _ -> true
     | Env.Library_scope.Scoped libs, Env.Library_scope.Scoped root_libs ->
         libs = root_libs
-    | Env.Library_scope.Scoped _, Env.Library_scope.Any -> false
+    | Env.Library_scope.(Scoped _ | First _), _ -> false
   in
   let lookup_unit_by_name ~scope name =
     let imports_map =
