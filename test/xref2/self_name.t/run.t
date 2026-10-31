@@ -12,9 +12,11 @@ holds both modules [Content], and D3 (section 2) holds.
 
 A path is looked up in Λc(o), where [o] is the unit it was written in. For
 paths, the unit being linked is not special. A reference is looked up in Λl
-(R3). A canonical tag is a reference too (S1), so where its root is
-ambiguous in Λl, it should not resolve, and odoc should warn (section 4.5).
-The path is then shown as it is (S2).
+(R3). A canonical tag is a reference too (S1). Until dune names the library
+in its tags, a tag that names no library is looked up first in the library
+of the unit it is written in, and in every library only if that library has
+no unit of that name (S2). Each tag here names its own library's [Content],
+so it should resolve there, with no warning.
 
 The source files:
 
@@ -55,11 +57,8 @@ The source files:
   >   done
   > done
 
-Linking should warn about each lookup of the root [Content] of a canonical
-tag, which is ambiguous. The client's own alias [Html] should not be
-ambiguous.
-
-Linking with no warning would be wrong.
+Linking should give no warning. The client's own alias [Html] is not
+ambiguous, and each canonical tag names its own library's [Content].
 
   $ odoc link -L client:h/pkg/client -L server:h/pkg/server h/pkg/client/content.odoc
 
@@ -73,15 +72,14 @@ canonical name [Y].
 
 The first reference should resolve to [pkg/server/Content__Html]: R3 finds
 the server's [Content], and its alias [Html] follows P2 over the server's
-Λc. Its canonical tag should not resolve, so it should be shown as it is.
-The second should resolve to [pkg/server/Content], the module that the
-server's alias [C] names.
+Λc. Its canonical tag, written in the server's [Content__Html], should
+resolve to the server's [Content.Html]. The second should resolve to
+[pkg/server/Content], the module that the server's alias [C] names.
 
-A resolved canonical tag, to either library's [Content.Html], would be
-wrong.
+A canonical tag resolved to the client's [Content.Html] would be wrong.
 
   $ odoc_print --refs --long-paths --show-root-parents h/pkg/client/content.odocl
-  r(alias(canonical(hidden(root(pkg/server/Content__Html)),resolved(root(pkg/client/Content).Html)),root(pkg/server/Content).Html))
+  r(alias(canonical(hidden(root(pkg/server/Content__Html)),resolved(root(pkg/server/Content).Html)),root(pkg/server/Content).Html))
   r(alias(root(pkg/server/Content),root(pkg/server/Wrap).C))
 
 A library's own canonical tag, as dune writes it. Unlike dune, the units
@@ -90,10 +88,8 @@ here are compiled without [-no-alias-deps], so [Content] records a digest for
 client's own [Content__Html], whose canonical tag is [Content.Html]. The
 server's [Content] is also in Λl.
 
-Linking should warn that the root [Content] of the canonical tag is
-ambiguous.
-
-Linking with no warning would be wrong.
+Linking should give no warning, as the tag names the client's own
+[Content].
 
   $ mkdir own && cp -RL client server own && cd own
   $ for lib in client server; do
@@ -110,12 +106,10 @@ Linking with no warning would be wrong.
 
 The first line of the output below is the module, and the second line is the
 alias it is defined as, in the notation above. The alias should resolve to
-[pkg/client/Content__Html]. Its canonical tag should not resolve, so it
-should be shown as it is. A canonical tag that names its library (S1), which
-would let dune pick [pkg/client/Content], is not written by dune yet.
+[pkg/client/Content__Html]. Its canonical tag should resolve to the
+client's own [Content.Html].
 
-A resolved canonical tag would be wrong, even to the client's own
-[Content.Html].
+A canonical tag resolved to the server's [Content.Html] would be wrong.
 
   $ odoc_print --short --long-paths --show-root-parents -r Html h/pkg/client/content.odocl
   module root(pkg/client/Content).Html =

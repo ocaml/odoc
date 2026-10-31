@@ -143,6 +143,8 @@ module Make (Syntax : SYNTAX) = struct
       | `LibraryRoot (`Only, lib, root) ->
           unresolved
             [ inline @@ Text ("/" ^ lib ^ "/" ^ ModuleName.to_string root) ]
+      | `LibraryRoot (`First, _, root) ->
+          unresolved [ inline @@ Text (ModuleName.to_string root) ]
       | `Dot (prefix, suffix) ->
           let link = from_path (prefix :> Path.t) in
           link ++ O.txt ("." ^ ModuleName.to_string suffix)

@@ -122,6 +122,23 @@ let libraries_of_lib_roots lib_roots =
              if List.mem name ~set:acc then acc else acc @ [ name ])
            ~init:[] lib_roots)
 
+(** The root of [l] whose directory holds [o], with its directory. *)
+let find_root_of_input l o =
+  let l =
+    List.map
+      ~f:(fun (x, p) ->
+        (x, p, p |> Fs.Directory.to_fpath |> Antichain.absolute_normalization))
+      l
+  in
+  let o = Antichain.absolute_normalization o in
+  match l with
+  | [] -> None
+  | _ ->
+      Odoc_utils.List.find_map
+        (fun (root, orig_path, norm_path) ->
+          if Fpath.is_prefix norm_path o then Some (root, orig_path) else None)
+        l
+
 let docs = "ARGUMENTS"
 
 (* [-I], given its doc. *)
@@ -319,8 +336,13 @@ end = struct
     in
     cli_spec >>= fun cli_spec ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
+    (* TEMPORARY: see [Odoc_model.Reference.own_library]. The library whose
+       directory holds the output. *)
+    let own_library output =
+      Option.map fst (find_root_of_input lib_roots output)
+    in
     Compile.compile ~resolver ~cli_spec ~hidden ~warnings_options ~short_title
-      ~libraries input
+      ~libraries ~own_library input
 
   let input =
     let doc = "Input $(i,.cmti), $(i,.cmt), $(i,.cmi) or $(i,.mld) file." in
@@ -738,22 +760,6 @@ end = struct
     | None -> Fs.File.(set_ext ".odocl" input)
 
   (** Find the package/library name the output is part of *)
-  let find_root_of_input l o =
-    let l =
-      List.map
-        ~f:(fun (x, p) ->
-          (x, p, p |> Fs.Directory.to_fpath |> Antichain.absolute_normalization))
-        l
-    in
-    let o = Antichain.absolute_normalization o in
-    match l with
-    | [] -> None
-    | _ ->
-        Odoc_utils.List.find_map
-          (fun (root, orig_path, norm_path) ->
-            if Fpath.is_prefix norm_path o then Some (root, orig_path) else None)
-          l
-
   let current_library_of_input lib_roots input =
     find_root_of_input lib_roots input
 

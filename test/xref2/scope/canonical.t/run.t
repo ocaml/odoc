@@ -53,12 +53,13 @@ A link of [Use] with no warning for [Z.Mispelt] would be wrong (section
 
 How to read [odoc_print --short --long-paths --show-root-parents]. Each line
 is one item of the signature. [x/0] is the item [x], with a number odoc adds
-to tell apart items of the same name. [resolved(...)] is a resolved path, and
-[root(pkg/x/X)] is the unit [X] of the library [x] in the package [pkg].
+to tell apart items of the same name. [resolved(...)] is a resolved path,
+and [root(pkg/x/X)] is the unit [X] of the library [x] in the package [pkg].
 [canonical(P,resolved(Q))] is the path [P], whose canonical tag resolved to
-[Q]: [P] is shown as [Q]. [canonical(P,Q)], where [Q] is not [resolved(...)],
-is the path [P], whose canonical tag did not resolve. [root(Z)] is a root
-[Z] that is not resolved. [hidden(P)] is a path [P] to a hidden module.
+[Q]: [P] is shown as [Q]. [canonical(P,Q)], where [Q] is not
+[resolved(...)], is the path [P], whose canonical tag did not resolve.
+[root(/x?/Z)] is a root [Z] that is not resolved, which is looked up in [x]
+first (S2's known limit). [hidden(P)] is a path [P] to a hidden module.
 
 [show NAME] prints the line of the value [NAME] of [Use].
 
@@ -154,7 +155,7 @@ exist. [t]'s path should be shown as [X.T], as it is. The link of [Use] above
 should warn about the tag.
 
   $ show t
-  val t/4 : resolved(canonical(root(pkg/x/X).T,root(Z).Mispelt).t)
+  val t/4 : resolved(canonical(root(pkg/x/X).T,root(/x?/Z).Mispelt).t)
 
 Case 5 (S1). A canonical tag with the [/library/] syntax, [/z/Z.L]. S1 resolves a
 tag as a reference, and R3 restricts [{!/library/N}] to that library. So the
@@ -188,7 +189,7 @@ tags that fail").
 
   $ odoc link -L x:h/pkg/x h/pkg/x/use.odoc
   $ show f
-  val f/2 : resolved(canonical(root(pkg/x/X).F,root(Z).F).t)
+  val f/2 : resolved(canonical(root(pkg/x/X).F,root(/x?/Z).F).t)
 
 Case 8 (S1). Tags that cannot resolve. In library [q], [Q]'s alias [A] has
 the tag [@canonical /a/b/C.D], which is not a module path, and [B] has

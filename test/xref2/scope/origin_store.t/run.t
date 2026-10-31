@@ -78,21 +78,21 @@ should mean [x]'s [X__Hid], with no warning:
   $ odoc_print --short --long-paths --show-root-parents h/pkg/x/x.odocl
   module Hid/0 = resolved(hidden(root(pkg/x/X__Hid))) 
 
-[z]'s link reads [X]'s [.odoc] file, not the linked one, to resolve
-[X.Hid]. The root [X__Hid] in it still has the origin [X], so [M] should be
-[x]'s [X__Hid]. Its canonical tag [X.Hid] is a reference (S1), and both [x]
-and [xv] have an [X] in Λl, so the tag is ambiguous: odoc should warn, and
-leave it unresolved (S2). An author would write [/x/X.Hid]; dune does not
-write tags with a library yet.
+[z]'s link reads [X]'s [.odoc] file, not the linked one, to resolve [X.Hid].
+The root [X__Hid] in it still has the origin [X], so [M] should be [x]'s
+[X__Hid]. Its canonical tag [X.Hid] is a reference (S1), and both [x] and
+[xv] have an [X] in Λl. Until dune writes tags with a library, a tag that
+names no library is looked up first in the library of the unit it is written
+in, and in every library only if that library has no unit of that name (S2).
+The tag is written in [x]'s [X], so it should resolve to [x]'s [X.Hid], with
+no warning.
 
-A resolved tag, to either library's [X.Hid], would be wrong.
+A tag resolved to [xv]'s [X.Hid] would be wrong.
 
   $ link h/pkg/z/z.odoc
-  File "X":
-  Ambiguous lookup. Possible units: pkg/x/X, pkg/xv/X
   $ odoc_print --short --long-paths --show-root-parents h/pkg/z/z.odocl
   module M/0 =
-    resolved(canonical(root(pkg/x/X).Hid,resolved(root(pkg/xv/X).Hid)))
+    resolved(canonical(root(pkg/x/X).Hid,resolved(root(pkg/x/X).Hid)))
 
 Case 2. A cache keyed by origin. [a] is built against [ext1] and [b] against
 [ext2]. Each has the pure alias [E = Ext], so the root text [Ext] is the same
