@@ -24,6 +24,10 @@
 - Support for strikethrough text (@Leonidas-from-XIV, #1515)
 - Improve source locations (@lukemaurer, @avsm, #1527)
 - Support for OxCaml 5.4.0-ox9 (@avsm, #1526)
+- `odoc compile` and `odoc compile-impl` take `-L lib:dir` to record the
+  libraries a unit was built against (@jonludlam, #1516)
+- A `@canonical` tag can name the library of its root, as in
+  `@canonical /lib/Name.X` (@jonludlam, #1516)
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
@@ -37,6 +41,9 @@
   This removes repeated "Ambiguous lookup" warnings (@jonludlam, #1511)
 - `odoc compile` resolves an import only to a unit with the digest the import
   records (@jonludlam, #1502)
+- `odoc link` resolves a module name among the libraries of the unit it was
+  written in, so it no longer picks a same-named module of another library
+  (@jonludlam, #1450, #XXXX)
 - Fix optional arguments rendering as `?arg:???` in modules without an mli on
   OCaml 5.5 (@jonludlam, #1489)
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)
