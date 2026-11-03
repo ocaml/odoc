@@ -21,6 +21,10 @@
 - Support for OxCaml parameterized libraries (@art-w, #1464)
 - `{!modules: ...}` lists accept path references such as
   `{!modules: /lib/Module}` (@jonludlam, #1503)
+- `odoc compile` and `odoc compile-impl` take `-L lib:dir` to record the
+  libraries a unit was built against (@jonludlam, #XXXX)
+- A `@canonical` tag can name the library of its root, as in
+  `@canonical /lib/Name.X` (@jonludlam, #XXXX)
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
@@ -36,6 +40,9 @@
 - `odoc compile` and `odoc link` look up a unit that an identifier names by
   that identifier. They look it up by name only if no single file holds it.
   This removes repeated "Ambiguous lookup" warnings (@jonludlam, #1511)
+- `odoc link` resolves a module name among the libraries of the unit it was
+  written in, so it no longer picks a same-named module of another library
+  (@jonludlam, #1450, #XXXX)
 - Fix optional arguments rendering as `?arg:???` in modules without an mli on
   OCaml 5.5 (@jonludlam, #1489)
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)
