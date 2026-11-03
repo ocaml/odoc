@@ -124,3 +124,36 @@ module Anonymous_functor = struct
   type t
   include functor (functor (T : sig type t end) -> struct type included = T.t end)
 end
+
+module Include_functor_kind = struct
+(** A kind abbreviation reaching the functor through its argument. [T.k] is
+    rendered as plain text: it is a reference through the parameter, which the
+    wrapper the functor is applied to does not bind. *)
+  module Make (T : sig kind_ k end) = struct
+    type inherited : T.k
+  end
+
+  kind_ k = value mod portable
+
+  include functor Make
+end
+
+(* A kind abbreviation defined in an implementation. *)
+kind_ my_abbrev = value_or_null mod non_null global
+
+(* A type that uses the abbreviation; the use should link to the definition. *)
+type t_abbrev : my_abbrev mod immutable
+
+(* Shadowing: [dup] brought in by the include is shadowed by the local [dup].
+   Only the local definition should be rendered (no duplicate anchor). *)
+module Shadowing_source = struct
+  kind_ dup = value mod portable
+end
+
+include Shadowing_source
+
+(* Uses the included [dup], which the local [dup] below shadows. The shadowed
+   declaration is not rendered, so this must not link to it. *)
+type t_dup : dup
+
+kind_ dup = value_or_null mod non_null

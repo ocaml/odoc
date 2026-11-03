@@ -1,0 +1,14 @@
+
+.TH Shadowing_source 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_impl\.Shadowing_source
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml_impl\.Shadowing_source\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]kind_\fR dup = value \f[CB]mod\fR portable

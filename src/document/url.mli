@@ -60,6 +60,7 @@ module Anchor : sig
     [ Path.kind
     | `Section
     | `Type
+    | `KindAbbreviation
     | `Extension
     | `ExtensionDecl
     | `Exception
