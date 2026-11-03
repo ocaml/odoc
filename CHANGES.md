@@ -21,6 +21,7 @@
 - Support for OxCaml parameterized libraries (@art-w, #1464)
 - `{!modules: ...}` lists accept path references such as
   `{!modules: /lib/Module}` (@jonludlam, #1503)
+- Support for strikethrough text (@Leonidas-from-XIV, #1515)
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
