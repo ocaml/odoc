@@ -120,7 +120,7 @@ let elt_size (x : elt) =
   | Code_fragment _ | Tag _ | Break _ | Ligaturable _ ->
       Small
   | List _ | Section _ | Verbatim _ | Raw _ | Code_block _ | Indented _
-  | Description _ | Image _ ->
+  | Description _ | Image _ | Block_quote _ ->
       Large
   | Table _ | Layout_table _ -> Huge
 
@@ -191,6 +191,7 @@ let rec pp_elt ppf = function
   | Ligaturable s -> Fmt.string ppf s
   | Tag (s, t) -> tag s ppf t
   | Image target -> Raw.includegraphics Fpath.pp ppf target
+  | Block_quote s -> Raw.block_quote Fmt.string ppf s
 
 and pp ppf = function
   | [] -> ()
@@ -340,6 +341,7 @@ let rec block ~config ~in_source (l : Block.t) =
     | List (typ, l) ->
         [ List { typ; items = List.map (block ~config ~in_source:false) l } ]
     | Table t -> table_block ~config t
+    | Block_quote s -> block_quote ~config s
     | Description l ->
         [
           (let item i =
@@ -371,6 +373,8 @@ and table_block ~config { Table.data; align } =
       data
   in
   [ Table { align; data } ]
+
+and block_quote ~config s = [ Block_quote s ]
 
 let rec is_only_text l =
   let is_text : Item.t -> _ = function

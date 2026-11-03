@@ -40,6 +40,7 @@ let rec nestable_block_element line_directives oc names v =
     when needs_extraction names meta ->
       print line_directives oc location value
   | `Code_block _ -> ()
+  | `Block_quote _ -> ()
   | `List (_, _, l) ->
       List.iter (List.iter (nestable_block_element line_directives oc names)) l
   | `Table ((table, _), _) ->

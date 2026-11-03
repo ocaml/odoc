@@ -402,6 +402,7 @@ end = struct
           List.exists (List.exists (fun (cell, _) -> block cell)) data
       | Description x -> description x
       | Math _ -> true
+      | Block_quote _ -> true
       | Audio (_, _)
       | Video (_, _)
       | Image (_, _)

@@ -66,6 +66,7 @@ type nestable_block_element =
     string option
     * string with_location
     * nestable_block_element with_location list option
+  | `Block_quote of string
   | `Math_block of string
   | `Verbatim of string
   | `Modules of module_reference list

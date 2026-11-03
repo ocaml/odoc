@@ -119,6 +119,7 @@ module Block = struct
     | Ordered_list of t list (* 1. item *)
     | Paragraph of Inline.t (* paragraph *)
     | Table of Table.t
+    | Block_quote of string (* > quote *)
   let empty = Blocks []
 end
 
@@ -593,6 +594,12 @@ let table c t =
   in
   List.iter (row c) (Block.Table.rows t)
 
+let block_quote c q =
+  newline c;
+  Context.byte c '>';
+  Context.string c q;
+  newline c
+
 let block c = function
   | Block.Blank_line -> blank_line c ""
   | Block.Blocks bs -> List.iter (Context.block c) bs
@@ -603,6 +610,7 @@ let block c = function
   | Block.Ordered_list l -> ordered_list c l
   | Block.Paragraph p -> paragraph c p
   | Block.Table t -> table c t
+  | Block.Block_quote q -> block_quote c q
 
 let to_string d =
   let t = { init_context; inline; block } in

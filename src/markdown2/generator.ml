@@ -155,6 +155,7 @@ let rec block ~config ~resolve l =
           Renderer.Block.Code_block { info_string = None; code = [ s ] }
         in
         [ block ]
+    | Block_quote s -> [ Renderer.Block.Block_quote s ]
     | Raw_markup (target, content) -> (
         match Astring.String.Ascii.lowercase target with
         | "html" ->

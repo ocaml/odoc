@@ -263,7 +263,7 @@ let rec comment_nestable_block_element_needs_resolving
   | `Modules _ -> true
   | `Media (`Reference _, _, _) -> true
   | `Media (`Link _, _, _) -> false
-  | `Code_block _ | `Verbatim _ | `Math_block _ -> false
+  | `Code_block _ | `Verbatim _ | `Math_block _ | `Block_quote _ -> false
 
 let comment_tag_needs_resolving (x : Comment.tag) =
   match x with
@@ -338,7 +338,7 @@ and comment_nestable_block_element env warnings_tag parent ~loc:_
     (x : Comment.nestable_block_element) =
   match x with
   | `Paragraph elts -> `Paragraph (paragraph env warnings_tag elts)
-  | (`Code_block _ | `Math_block _ | `Verbatim _) as x -> x
+  | (`Code_block _ | `Math_block _ | `Verbatim _ | `Block_quote _) as x -> x
   | `List (x, ys) ->
       `List
         ( x,
