@@ -42,6 +42,7 @@ module Inline = struct
     | Code_span of string list (* `code` *)
     | Emphasis of t (* *emphasis* *)
     | Strong_emphasis of t (* **strong emphasis** *)
+    | Strikethrough of t (* ~~strikethroug; not in CommonMark but in GFM~~ *)
     | Image of link (* ![alt text](url) *)
     | Link of link (* [link text](url) *)
     | Raw_html of string list (* <div></div> *)
@@ -440,6 +441,14 @@ let strong_emphasis c i =
   Context.byte c delim;
   Context.byte c delim
 
+let strikethrough c i =
+  let delim = '~' in
+  Context.byte c delim;
+  Context.byte c delim;
+  Context.inline c i;
+  Context.byte c delim;
+  Context.byte c delim
+
 let link_title c open_delim title =
   match title with
   | None -> ()
@@ -475,6 +484,7 @@ let inline c = function
   | Inline.Link l -> link c l
   | Inline.Break -> break c
   | Inline.Emphasis e -> emphasis c e
+  | Inline.Strikethrough n -> strikethrough c n
   | Inline.Code_span cs -> code_span c cs
   | Inline.Image i -> image c i
   | Inline.Inlines is -> List.iter (Context.inline c) is
