@@ -65,11 +65,22 @@ let save_ file f =
          magic_version);
 
   Fs.Directory.mkdir_p (Fs.File.dirname file);
-  Io_utils.with_open_out_bin (Fs.File.to_string file) (fun oc ->
-      output_string oc magic;
-      output_binary_int oc len;
-      output_string oc magic_version;
-      f oc)
+  (* Written beside the file and renamed over it, so that a reader, such as
+     another odoc run at the same time, sees the old file or the whole new
+     one, never a part of it. *)
+  let file = Fs.File.to_string file in
+  let tmp = Printf.sprintf "%s.%d.tmp" file (Unix.getpid ()) in
+  match
+    Io_utils.with_open_out_bin tmp (fun oc ->
+        output_string oc magic;
+        output_binary_int oc len;
+        output_string oc magic_version;
+        f oc)
+  with
+  | () -> Sys.rename tmp file
+  | exception e ->
+      (try Sys.remove tmp with Sys_error _ -> ());
+      raise e
 
 let save_unit file (root : Root.t) (t : t) =
   save_ file (fun oc ->
