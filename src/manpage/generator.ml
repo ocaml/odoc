@@ -234,8 +234,12 @@ let style (style : style) content =
   match style with
   | `Bold -> font "B" content
   | `Italic -> font "I" content
-  (* We ignore those, there are no groff macros for this *)
-  | `Emphasis | `Superscript | `Subscript | `Strikethrough -> content
+  | `Strikethrough ->
+      (* there is no way to represent this so we just encode it as text *)
+      concat [ String "--"; content; String "--" ]
+  | `Emphasis | `Superscript | `Subscript ->
+      (* We ignore those, there are no groff macros for them *)
+      content
 
 (* Striped content should be rendered in one line, without styling *)
 let strip l =
