@@ -44,8 +44,3 @@ A class whose type comes from an explicitely named class type
 class output_class_via_name : T.class_
 ```
 A class whose type comes from the name of a class
-
-```ocaml
-module Aliased = T
-```
-The input module itself. It should contain everything from the top level module
