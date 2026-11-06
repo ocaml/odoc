@@ -41,79 +41,63 @@ let generate_status ~html_dir pkg =
   Status.file ~html_dir ~pkg ~redirections ()
 
 let run package_name blessed actions odoc_dir odocl_dir
-    { Common_args.verbose; html_dir; nb_workers; odoc_bin; odoc_md_bin; _ } =
-  Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
-  Option.iter
-    (fun odoc_md_bin -> Odoc.odoc_md := Bos.Cmd.v odoc_md_bin)
-    odoc_md_bin;
+    ({ Common_args.html_dir; nb_workers; _ } as common) =
+  Common_args.setup common;
   let index_dir = Fpath.v "_index" in
   let mld_dir = Fpath.v "_mld" in
   Eio_main.run @@ fun env ->
   Eio.Switch.run @@ fun sw ->
-  if verbose then Logs.set_level (Some Logs.Debug);
-  Logs.set_reporter (Logs_fmt.reporter ());
-  Stats.init_nprocs nb_workers;
   let () = Worker_pool.start_workers env sw nb_workers in
   let odocl_dir = Option.value odocl_dir ~default:odoc_dir in
 
-  let all, extra_paths, actions, generate_json, occurrence_file, odocl_dirs =
-    let pkg =
-      let pkg_opt = Voodoo.find_pkg package_name ~blessed in
-      match pkg_opt with Some pkg -> pkg | None -> exit 1
-    in
-    let all = Voodoo.of_voodoo pkg in
-    let odocl_dirs =
-      List.map
-        (fun l -> Fpath.(odocl_dir // Odoc_unit.lib_dir all l))
-        all.libraries
-    in
-    let occurrence_file =
-      Fpath.(odocl_dir // Voodoo.occurrence_file_of_pkg pkg)
-    in
-    let extra_paths = Voodoo.extra_paths odoc_dir in
-    (all, extra_paths, actions, true, occurrence_file, odocl_dirs)
+  let pkg =
+    match Voodoo.find_pkg package_name ~blessed with
+    | Some pkg -> pkg
+    | None -> exit 1
   in
-
-  let all = Packages.remap_virtual [ all ] in
-
-  let partial =
-    match all with
-    | [ p ] ->
-        let output_path = Fpath.(odoc_dir // p.pkg_dir) in
-        Some output_path
-    | _ -> failwith "Error, expecting singleton library in voodoo mode"
-  in
+  let voodoo_pkg, installed = Voodoo.of_voodoo pkg in
+  let all = Packages.remap_virtual [ voodoo_pkg ] in
   let units =
     let dirs = { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir } in
-    Odoc_units_of.packages ~dirs ~indices_style:Voodoo ~extra_paths ~remap:false
-      all
+    match
+      Odoc_units_of.packages ~installed ~dirs ~indices_style:Voodoo ~remap:false
+        ~selected:(Util.StringSet.singleton package_name)
+        all
+    with
+    | [ units ] -> units
+    | _ -> failwith "Error, expecting a single package in voodoo mode"
   in
-  Compile.init_stats units;
-  let compiled =
-    match actions with
-    | LinkAndGen -> units
-    | CompileOnly | All -> Compile.compile ?partial ~partial_dir:odoc_dir units
-  in
-  let () = Voodoo.write_lib_markers odoc_dir all in
-  let () =
-    match actions with
-    | CompileOnly -> ()
-    | LinkAndGen | All ->
-        let linked =
-          Compile.link ~warnings_tags:[ package_name ] ~custom_layout:false
-            compiled
-        in
-        let () =
-          Odoc.count_occurrences ~input:odocl_dirs ~output:occurrence_file
-        in
-        let () =
-          Compile.html_generate ~occurrence_file ~remaps:[] ~generate_json
-            ~simplified_search_output:true html_dir linked
-        in
-        List.iter (generate_status ~html_dir) all;
-        let _ = Odoc.support_files html_dir in
-        ()
-  in
+  Compile.init_stats [ units ];
+  (* The dependencies were compiled by earlier runs (ocaml-docs-ci builds one
+     package per job) and are found through the search path, so only this
+     package's own libraries are compiled, in their own dependency order. *)
+  (match actions with
+  | LinkAndGen -> ()
+  | CompileOnly | All -> Build.compile_package units);
+  (match actions with
+  | CompileOnly -> ()
+  | LinkAndGen | All ->
+      Compile.link ~warnings_tags:[ package_name ] units;
+      Compile.html_support html_dir;
+      Compile.generate ~generate_json:true html_dir units;
+      List.iter (generate_status ~html_dir) all;
+      (* Occurrence counts feed only the JSON search index, so they are a
+         final step over the linked output. *)
+      let occurrence_file =
+        Fpath.(odocl_dir // Voodoo.occurrence_file_of_pkg pkg)
+      in
+      let odocl_dirs =
+        List.concat_map
+          (fun (p : Packages.t) ->
+            Fpath.(odocl_dir // Odoc_unit.pages_dir p)
+            :: List.map
+                 (fun l -> Fpath.(odocl_dir // Odoc_unit.lib_obj_dir l))
+                 p.libraries)
+          all
+      in
+      Cmd_outputs.run
+      @@ Odoc.count_occurrences ~input:odocl_dirs ~output:occurrence_file;
+      Compile.json_index ~occurrence_file html_dir units);
 
   List.iter
     (fun { Cmd_outputs.log_dest; prefix; run } ->

@@ -7,14 +7,8 @@ type package = { name : string; version : string }
 let pp fmt p = Format.fprintf fmt "%s.%s" p.name p.version
 
 let memoize f =
-  let r = ref None in
-  fun () ->
-    match !r with
-    | Some x -> x
-    | None ->
-        let x = f () in
-        r := Some x;
-        x
+  let x = lazy (f ()) in
+  fun () -> Lazy.force x
 
 let get_switch =
   memoize @@ fun () ->
@@ -97,6 +91,61 @@ let pkg_contents { name; _ } =
   in
   List.map Fpath.v added
 
+(* The names a field such as [x-extra-doc-deps] lists, [["eio_main" {= version}
+   "bigstring"]] say, without their constraints. *)
+let rec names_of_value (v : OpamParserTypes.FullPos.value) =
+  match v.pelem with
+  | String s -> [ s ]
+  | List l | Group l -> List.concat_map names_of_value l.pelem
+  | Option (v, _) -> names_of_value v
+  | _ -> []
+
+(* The packages a package's documentation needs beyond its dependencies: the
+   dependencies its opam file marks [{with-doc & post}], and the packages its
+   [x-extra-doc-deps] field lists. ocaml-docs-ci installs them after the
+   package is compiled and before it is linked. A package naming itself, as
+   eio_main does, is left out. *)
+let doc_deps { name; version } =
+  let file =
+    Fpath.(
+      v (prefix ())
+      / ".opam-switch" / "packages"
+      / (name ^ "." ^ version)
+      / "opam")
+  in
+  match
+    OpamFile.OPAM.read_opt
+      (OpamFile.make (OpamFilename.of_string (Fpath.to_string file)))
+  with
+  | None -> []
+  | Some opam ->
+      let depends = OpamFile.OPAM.depends opam in
+      let names ~doc ~post =
+        (* A filter on anything else, [with-test] or [os] say, is false. *)
+        let env var =
+          match OpamVariable.Full.to_string var with
+          | "build" -> Some (OpamVariable.B true)
+          | "post" -> Some (OpamVariable.B post)
+          | "with-doc" -> Some (OpamVariable.B doc)
+          | _ -> None
+        in
+        OpamFilter.filter_formula ~default:false env depends
+        |> OpamFormula.atoms
+        |> List.map (fun (n, _) -> OpamPackage.Name.to_string n)
+        |> Util.StringSet.of_list
+      in
+      let doc_post =
+        Util.StringSet.(
+          diff
+            (names ~doc:true ~post:true)
+            (union (names ~doc:false ~post:true) (names ~doc:true ~post:false)))
+      in
+      let extra =
+        Option.value ~default:[]
+          (OpamFile.OPAM.extended opam "x-extra-doc-deps" names_of_value)
+      in
+      Util.StringSet.(elements (remove name (union doc_post (of_list extra))))
+
 let deps pkgs =
   let cmd =
     Cmd.(
@@ -151,11 +200,13 @@ let pp_fpaths_of_package fmt l =
         docs (Fmt.option Fpath.pp) odoc_config)
     l
 
-let classify_docs prefix only_package contents =
-  let pkg_match pkg =
-    match only_package with None -> true | Some p -> p = pkg
-  in
+(* Whether files below [doc/<pkg>] or [lib/<pkg>] are wanted: those of every
+   package, or of [only_package]. *)
+let pkg_match only_package pkg =
+  match only_package with None -> true | Some p -> p = pkg
 
+let classify_docs prefix only_package contents =
+  let pkg_match = pkg_match only_package in
   let is_dir f =
     try Sys.is_directory (Fpath.to_string f) with Sys_error _ -> false
   in
@@ -192,12 +243,11 @@ let classify_docs prefix only_package contents =
     [] contents
 
 let classify_libs prefix only_package contents =
-  let pkg_match pkg =
-    match only_package with None -> true | Some p -> p = pkg
-  in
-
+  let pkg_match = pkg_match only_package in
+  (* A directory holding a [.cmi], or a [META]: a library with no modules,
+     such as [seq], installs nothing else, and voodoo mode documents it. *)
   contents
-  |> List.filter (Fpath.has_ext ".cmi")
+  |> List.filter (fun f -> Fpath.has_ext ".cmi" f || Fpath.filename f = "META")
   |> List.filter_map (fun fpath ->
          match Fpath.segs fpath with
          | ("lib" | "lib64") :: "stublibs" :: _ -> None
@@ -211,10 +261,7 @@ let classify_libs prefix only_package contents =
   |> Fpath.Set.of_list
 
 let find_odoc_config prefix only_package contents =
-  let pkg_match pkg =
-    match only_package with None -> true | Some p -> p = pkg
-  in
-
+  let pkg_match = pkg_match only_package in
   let opt =
     List.find_opt
       (fun fpath ->
@@ -226,61 +273,71 @@ let find_odoc_config prefix only_package contents =
 
   Option.map (fun p -> Fpath.(prefix // p)) opt
 
-let dune_overrides () =
-  let ocamlpath = Sys.getenv_opt "OCAMLPATH" in
-  match ocamlpath with
-  | None -> []
+(* When run under [dune exec], OCAMLPATH points at the dune install directory,
+   e.g. [/Users/jon/odoc/_build/install/default/lib]. Strip the [lib] off to
+   find the root of the installed files. *)
+let dune_install_base () =
+  match Sys.getenv_opt "OCAMLPATH" with
+  | None -> None
   | Some path -> (
-      (* OCAMLPATH is set in dune to be e.g. /Users/jon/odoc/_build/install/default/lib *)
-      (* Let's strip the 'lib' off and we can find the installed files *)
       let path = Fpath.v path in
       match Fpath.segs path |> List.rev with
-      | "lib" :: _ :: "install" :: "_build" :: _ -> (
-          (* Check it's of the right form *)
-          let base = Fpath.split_base path |> fst in
-          let contents =
-            Bos.OS.Dir.fold_contents
-              (fun x acc ->
-                match Fpath.relativize ~root:base x with
-                | None -> acc
-                | Some r -> r :: acc)
-              [] base
-          in
-          match contents with
-          | Ok contents ->
-              Logs.debug (fun m ->
-                  m "dune install contents: %a"
-                    Fmt.(Dump.list Fpath.pp)
-                    contents);
-              let packages =
-                List.fold_left
-                  (fun acc fpath ->
-                    match Fpath.segs fpath with
-                    | "lib" :: pkg :: _ :: _ -> Util.StringSet.add pkg acc
-                    | "doc" :: pkg :: _ :: _ -> Util.StringSet.add pkg acc
-                    | _ -> acc)
-                  Util.StringSet.empty contents
-              in
+      | "lib" :: _ :: "install" :: "_build" :: _ ->
+          Some (Fpath.split_base path |> fst)
+      | _ -> None)
 
+(* The roots below which installed files live: the opam switch prefix and, when
+   running under dune, the dune install directory. A library's object directory
+   is recorded relative to one of these (see [Packages.libty.rel_dir]). *)
+let install_roots () =
+  let prefix = Fpath.v (prefix ()) in
+  match dune_install_base () with
+  | None -> [ prefix ]
+  | Some base -> [ prefix; base ]
+
+let dune_overrides () =
+  match dune_install_base () with
+  | None -> []
+  | Some base -> (
+      let contents =
+        Bos.OS.Dir.fold_contents
+          (fun x acc ->
+            match Fpath.relativize ~root:base x with
+            | None -> acc
+            | Some r -> r :: acc)
+          [] base
+      in
+      match contents with
+      | Ok contents ->
+          Logs.debug (fun m ->
+              m "dune install contents: %a" Fmt.(Dump.list Fpath.pp) contents);
+          let packages =
+            List.fold_left
+              (fun acc fpath ->
+                match Fpath.segs fpath with
+                | "lib" :: pkg :: _ :: _ -> Util.StringSet.add pkg acc
+                | "doc" :: pkg :: _ :: _ -> Util.StringSet.add pkg acc
+                | _ -> acc)
+              Util.StringSet.empty contents
+          in
+
+          Logs.debug (fun m ->
+              m "Found packages: %a"
+                Fmt.(Dump.list string)
+                (Util.StringSet.elements packages));
+          Util.StringSet.fold
+            (fun pkg acc ->
+              let libs = classify_libs base (Some pkg) contents in
+              let docs = classify_docs base (Some pkg) contents in
+              let odoc_config = find_odoc_config base (Some pkg) contents in
               Logs.debug (fun m ->
-                  m "Found packages: %a"
-                    Fmt.(Dump.list string)
-                    (Util.StringSet.elements packages));
-              Util.StringSet.fold
-                (fun pkg acc ->
-                  let libs = classify_libs base (Some pkg) contents in
-                  let docs = classify_docs base (Some pkg) contents in
-                  let odoc_config = find_odoc_config base (Some pkg) contents in
-                  Logs.debug (fun m ->
-                      m "pkg %s Found %d docs" pkg (List.length docs));
-                  ({ name = pkg; version = "dev" }, { libs; docs; odoc_config })
-                  :: acc)
-                packages []
-          | Error (`Msg msg) ->
-              Logs.err (fun m ->
-                  m "Error listing dune install directory: %s" msg);
-              [])
-      | _ -> [])
+                  m "pkg %s Found %d docs" pkg (List.length docs));
+              ({ name = pkg; version = "dev" }, { libs; docs; odoc_config })
+              :: acc)
+            packages []
+      | Error (`Msg msg) ->
+          Logs.err (fun m -> m "Error listing dune install directory: %s" msg);
+          [])
 
 let check pkgs =
   let cmd =

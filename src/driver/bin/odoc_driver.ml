@@ -16,25 +16,10 @@ let check_packages packages =
 
 let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
     ~generate_grep ~index_grep ~remap ~index_mld packages
-    {
-      Common_args.verbose;
-      html_dir;
-      stats;
-      nb_workers;
-      odoc_bin;
-      odoc_md_bin;
-      generate_json;
-      _;
-    } () =
-  Option.iter (fun odoc_bin -> Odoc.odoc := Bos.Cmd.v odoc_bin) odoc_bin;
-  Option.iter
-    (fun odoc_md_bin -> Odoc.odoc_md := Bos.Cmd.v odoc_md_bin)
-    odoc_md_bin;
-
-  if verbose then Logs.set_level (Some Logs.Debug);
-  Logs.set_reporter (Logs_fmt.reporter ());
+    ({ Common_args.html_dir; stats; nb_workers; generate_json; _ } as common) ()
+    =
+  Common_args.setup common;
   check_packages packages;
-  Stats.init_nprocs nb_workers;
 
   let index_mld_content =
     Option.bind index_mld (fun fpath ->
@@ -49,12 +34,29 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
   Eio_main.run @@ fun env ->
   Eio.Switch.run @@ fun sw ->
   let () = Worker_pool.start_workers env sw nb_workers in
-  let all = Packages.of_packages ~packages_dir:None packages in
+  let installed = Installed.of_switch () in
+  let all = Packages.of_packages ~installed ~packages_dir:None packages in
   let all = Packages.remap_virtual all in
-  let extra_paths = Voodoo.empty_extra_paths in
 
+  let selected = Util.StringSet.of_list packages in
+  (* The packages this run does not render keep their links working by
+     pointing at ocaml.org. *)
   let remaps =
-    if remap then List.concat_map (fun pkg -> pkg.Packages.remaps) all else []
+    if not remap then []
+    else
+      List.concat_map
+        (fun (pkg : Packages.t) ->
+          if Util.StringSet.mem pkg.name selected then []
+          else Packages.remaps pkg)
+        all
+  in
+
+  let units () =
+    let dirs = { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir } in
+    Odoc_units_of.packages ~installed ~dirs
+      ~indices_style:
+        (Odoc_units_of.Normal { toplevel_content = index_mld_content })
+      ~remap ~selected all
   in
 
   Logs.app (fun m -> m "Starting the compilation process...");
@@ -62,51 +64,13 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
   let () =
     Eio.Fiber.both
       (fun () ->
-        let units =
-          let dirs = { Odoc_unit.odoc_dir; odocl_dir; index_dir; mld_dir } in
-          Odoc_units_of.packages ~dirs
-            ~indices_style:
-              (Odoc_units_of.Normal { toplevel_content = index_mld_content })
-            ~extra_paths ~remap all
-        in
-        Compile.init_stats units;
-        let compiled = Compile.compile ~partial_dir:odoc_dir units in
-        let linked =
-          Compile.link ~warnings_tags:packages ~custom_layout:false compiled
-        in
-        let odoc_dirs =
-          List.fold_left
-            (fun acc pkg ->
-              let lib_dirs =
-                List.map
-                  (fun l -> Fpath.(odocl_dir // Odoc_unit.lib_dir pkg l))
-                  pkg.libraries
-              in
-              Fpath.Set.union acc (Fpath.Set.of_list lib_dirs))
-            Fpath.Set.empty all
-        in
-
-        Logs.debug (fun m ->
-            m "odoc_dirs: %a" (Fmt.Dump.list Fpath.pp)
-              (Fpath.Set.to_list odoc_dirs));
-        let occurrence_file =
-          let output =
-            Fpath.( / ) odocl_dir "occurrences-all.odoc-occurrences"
-          in
-          let () =
-            Odoc.count_occurrences ~input:(Fpath.Set.to_list odoc_dirs) ~output
-          in
-          output
-        in
-        let () =
-          Compile.html_generate ~occurrence_file ~remaps ~generate_json
-            ~simplified_search_output:false html_dir linked
-        in
+        let pkgs = units () in
+        Compile.init_stats pkgs;
+        Build.all ~html_dir ~remaps ~generate_json ~warnings_tags:packages pkgs;
         List.iter (fun pkg -> Status.file ~html_dir ~pkg ()) all;
-        let _ = Odoc.support_files html_dir in
-        Stats.stats.finished <- true;
+        Stats.finish ();
         ())
-      (fun () -> Stats.render_stats env ~generate_json nb_workers)
+      (fun () -> Stats.render_stats env nb_workers)
   in
 
   Logs.app (fun m ->
@@ -124,15 +88,13 @@ let run_inner ~odoc_dir ~odocl_dir ~index_dir ~mld_dir ~compile_grep ~link_grep
     in
     Option.iter do_ s
   in
-  (* Grep log compile and compile_src commands *)
+  (* Grep log compile commands *)
   grep_log `Compile compile_grep;
-  grep_log `Compile_src compile_grep;
   (* Grep log link commands *)
   grep_log `Link link_grep;
   (* Grep log generate commands *)
   grep_log `Generate generate_grep;
   (* Grep log index and co commands *)
-  grep_log `Count_occurrences index_grep;
   grep_log `Count_occurrences index_grep;
   grep_log `Index index_grep;
 

@@ -20,17 +20,12 @@ exception Worker_failure of Run.t
 
 let rec run_worker env id : unit =
   let { request; output_file; description }, reply = Eio.Stream.take stream in
-  Atomic.incr Stats.stats.processes;
-  Atomic.set Stats.stats.process_activity.(id) description;
-  (try
-     let result = handle_job env request output_file in
-     match result.status with
-     | `Exited 0 ->
-         Atomic.decr Stats.stats.processes;
-         Atomic.set Stats.stats.process_activity.(id) "idle";
-         Promise.resolve reply (Ok result)
-     | _ -> Promise.resolve_error reply (Worker_failure result)
-   with e -> Promise.resolve_error reply e);
+  Stats.worker_busy id description;
+  (match handle_job env request output_file with
+  | { status = `Exited 0; _ } as result -> Promise.resolve reply (Ok result)
+  | result -> Promise.resolve_error reply (Worker_failure result)
+  | exception e -> Promise.resolve_error reply e);
+  Stats.worker_idle id;
   run_worker env id
 
 let submit description request output_file =

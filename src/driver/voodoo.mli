@@ -1,35 +1,23 @@
-val find_universe_and_version :
-  string -> (string * string, [> `Msg of string ]) result
+(** Input for ocaml.org, which builds documentation one package per job.
+
+    Each job runs the voodoo driver on a package prepared by [voodoo-prep]: a
+    directory [prep/universes/<universe>/<pkg>/<version>] holding the files the
+    package installed. Dependencies are not in [prep]; they are installed in the
+    job's switch, and their [.odoc] files are those earlier jobs wrote into the
+    odoc directory. *)
 
 type pkg
+(** A prepared package. *)
 
 val find_pkg : string -> blessed:bool -> pkg option
-(** [get_pkg name ~blessed] looks for a package named [name] in the prep
-    directory *)
+(** Find the prepared package of the given name. [blessed] marks the version
+    ocaml.org shows by default; it decides the identifiers, see {!of_voodoo}. *)
 
-val of_voodoo : pkg -> Packages.t
+val of_voodoo : pkg -> Packages.t * Installed.t
+(** Read the package's [META] files, objects and documentation from the prep
+    directory. Identifiers start with [p/<pkg>/<version>] for a blessed package
+    and [u/<universe>/<pkg>/<version>] otherwise. *)
 
 val occurrence_file_of_pkg : pkg -> Fpath.t
-(** [occurrences_file_of_pkg pkg odoc_dir] returns an appropriate filename for
-    the occurrences file for [pkg]. *)
-
-type extra_paths = {
-  pkgs : Fpath.t Util.StringMap.t;
-  libs : Fpath.t Util.StringMap.t;
-  libs_of_pkg : string list Util.StringMap.t;
-}
-
-val empty_extra_paths : extra_paths
-(** When [odoc_driver] is not running in voodoo mode, this value can be passed
-    to {!Odoc_units_of.packages} *)
-
-val extra_paths : Fpath.t -> extra_paths
-(** [extra_paths odoc_dir] returns the paths to packages and libraries that have
-    previously been compiled by odoc_driver running in voodoo mode. In order to
-    find these, the previous invocation of odoc_driver will need to have written
-    marker files by calling {!write_lib_markers} *)
-
-val write_lib_markers : Fpath.t -> Packages.t list -> unit
-(** [write_lib_markers odoc_dir pkgs] writes marker files to show the locations
-    of the compilation units associated with packages and libraries in [pkgs].
+(** Where the package's occurrence counts go, relative to the odocl directory.
 *)

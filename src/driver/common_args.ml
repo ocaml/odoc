@@ -72,6 +72,13 @@ type t = {
   generate_json : bool;
 }
 
+let setup { verbose; nb_workers; odoc_bin; odoc_md_bin; _ } =
+  Option.iter (fun bin -> Odoc.odoc := Bos.Cmd.v bin) odoc_bin;
+  Option.iter (fun bin -> Odoc.odoc_md := Bos.Cmd.v bin) odoc_md_bin;
+  if verbose then Logs.set_level (Some Logs.Debug);
+  Logs.set_reporter (Logs_fmt.reporter ());
+  Stats.init_nprocs nb_workers
+
 type dirs = {
   odoc_dir : Fpath.t option;
   odocl_dir : Fpath.t option;

@@ -1,6 +1,7 @@
 (* ocamlobjinfo *)
 
 open Bos
+
 let ocamlobjinfo = Cmd.v "ocamlobjinfo"
 
 let source_possibilities file =
@@ -36,28 +37,23 @@ let get_source file srcdirs =
   let f =
     List.filter_map
       (fun line ->
-        let affix = "Source file: " in
-        if Astring.String.is_prefix ~affix line then
-          let name =
-            String.sub line (String.length affix)
-              (String.length line - String.length affix)
-          in
-          let name = Fpath.(filename (v name)) in
-          let possibilities =
-            List.map
-              (fun dir ->
-                List.map
-                  (fun poss -> Fpath.(dir / poss))
-                  (source_possibilities name))
-              srcdirs
-            |> List.flatten
-          in
-          List.find_opt
-            (fun f ->
-              Logs.debug (fun m -> m "src: checking %a" Fpath.pp f);
-              Sys.file_exists (Fpath.to_string f))
-            possibilities
-        else None)
+        match Astring.String.cut ~sep:"Source file: " line with
+        | Some ("", name) ->
+            let name = Fpath.(filename (v name)) in
+            let possibilities =
+              List.concat_map
+                (fun dir ->
+                  List.map
+                    (fun poss -> Fpath.(dir / poss))
+                    (source_possibilities name))
+                srcdirs
+            in
+            List.find_opt
+              (fun f ->
+                Logs.debug (fun m -> m "src: checking %a" Fpath.pp f);
+                Sys.file_exists (Fpath.to_string f))
+              possibilities
+        | _ -> None)
       lines
   in
   match f with

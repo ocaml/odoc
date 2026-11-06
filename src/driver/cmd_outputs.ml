@@ -1,6 +1,5 @@
 type log_dest =
   [ `Compile
-  | `Compile_src
   | `Link
   | `Count_occurrences
   | `Generate
@@ -33,3 +32,18 @@ let submit_ignore_failures log_dest desc cmd output_file =
   | Error exn ->
       Logs.err (fun m -> m "Error: %s" (Printexc.to_string exn));
       ()
+
+type action = {
+  log : (log_dest * string) option;
+  desc : string;
+  cmd : Bos.Cmd.t;
+  output : Fpath.t option;
+  ignore_failures : bool;
+}
+
+let v ?log ?output ?(ignore_failures = false) ~desc cmd =
+  { log; desc; cmd; output; ignore_failures }
+
+let run { log; desc; cmd; output; ignore_failures } =
+  if ignore_failures then submit_ignore_failures log desc cmd output
+  else ignore (submit log desc cmd output)

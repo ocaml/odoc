@@ -1,350 +1,184 @@
-(* compile *)
+(* Compile, link and render the units of one package. *)
 
 open Bos
-
-type compiled = Odoc_unit.any
-
-let odoc_partial_filename = "__odoc_partial.m"
-
-let mk_byhash (pkgs : Odoc_unit.any list) =
-  List.fold_left
-    (fun acc (u : Odoc_unit.any) ->
-      match u.Odoc_unit.kind with
-      | `Intf { hash; _ } as kind ->
-          let elt = { u with kind } in
-          Util.StringMap.update hash
-            (function None -> Some [ elt ] | Some x -> Some (elt :: x))
-            acc
-      | _ -> acc)
-    Util.StringMap.empty pkgs
-
-let init_stats (units : Odoc_unit.any list) =
-  let total, total_impl, non_hidden, mlds, assets, indexes =
-    List.fold_left
-      (fun (total, total_impl, non_hidden, mlds, assets, indexes)
-           (unit : Odoc_unit.any) ->
-        let total = match unit.kind with `Intf _ -> total + 1 | _ -> total in
-        let total_impl =
-          match unit.kind with `Impl _ -> total_impl + 1 | _ -> total_impl
-        in
-        let assets =
-          match unit.kind with `Asset -> assets + 1 | _ -> assets
-        in
-        let indexes =
-          match unit.index with
-          | None -> indexes
-          | Some index -> Fpath.Set.add index.output_file indexes
-        in
-        let non_hidden =
-          match unit.kind with
-          | `Intf { hidden = false; _ } -> non_hidden + 1
-          | _ -> non_hidden
-        in
-        let mlds = match unit.kind with `Mld | `Md -> mlds + 1 | _ -> mlds in
-        (total, total_impl, non_hidden, mlds, assets, indexes))
-      (0, 0, 0, 0, 0, Fpath.Set.empty)
-      units
-  in
-
-  Atomic.set Stats.stats.total_units total;
-  Atomic.set Stats.stats.total_impls total_impl;
-  Atomic.set Stats.stats.non_hidden_units non_hidden;
-  Atomic.set Stats.stats.total_mlds mlds;
-  Atomic.set Stats.stats.total_assets assets;
-  Atomic.set Stats.stats.total_indexes (Fpath.Set.cardinal indexes)
-
 open Eio.Std
 
-type partial = Odoc_unit.intf Odoc_unit.t list Util.StringMap.t
+let init_stats (pkgs : Odoc_unit.pkg list) =
+  let units = List.concat_map Odoc_unit.all_units pkgs in
+  let output = List.length (List.filter Odoc_unit.is_output units) in
+  Stats.expect Compile (List.length units);
+  Stats.expect Link output;
+  Stats.expect Generate output;
+  Stats.expect Index
+    (List.length
+       (List.filter (fun (p : Odoc_unit.pkg) -> p.index <> None) pkgs))
 
-let unmarshal filename : partial =
-  let ic = open_in_bin (Fpath.to_string filename) in
-  Fun.protect
-    ~finally:(fun () -> close_in ic)
-    (fun () -> Marshal.from_channel ic)
-
-let marshal (v : partial) filename =
-  let _ = OS.Dir.create (Fpath.parent filename) |> Result.get_ok in
-  let oc = open_out_bin (Fpath.to_string filename) in
-  Fun.protect
-    ~finally:(fun () -> close_out oc)
-    (fun () -> Marshal.to_channel oc v [])
-
-let find_partials odoc_dir :
-    Odoc_unit.intf Odoc_unit.t list Util.StringMap.t * _ =
-  let tbl = Hashtbl.create 1000 in
-  let hashes_result =
-    OS.Dir.fold_contents ~dotfiles:false ~elements:`Dirs
-      (fun p hashes ->
-        let index_m = Fpath.( / ) p odoc_partial_filename in
-        match OS.File.exists index_m with
-        | Ok true ->
-            let hashes' = unmarshal index_m in
-            Util.StringMap.iter
-              (fun h units ->
-                List.iter
-                  (fun u ->
-                    Hashtbl.replace tbl
-                      (h, Odoc.Id.to_string u.Odoc_unit.parent_id)
-                      (Promise.create_resolved ()))
-                  units)
-              hashes';
-            Util.StringMap.union (fun _x o1 _o2 -> Some o1) hashes hashes'
-        | _ -> hashes)
-      Util.StringMap.empty odoc_dir
-  in
-  match hashes_result with
-  | Ok h -> (h, tbl)
-  | Error _ -> (* odoc_dir doesn't exist...? *) (Util.StringMap.empty, tbl)
-
-let compile ?partial ~partial_dir (all : Odoc_unit.any list) =
-  let hashes = mk_byhash all in
-  let compile_mod =
-    (* Modules have a more complicated compilation because:
-       - They have dependencies and must be compiled in the right order
-       - In Voodoo mode, there might exists already compiled parts *)
-    let other_hashes, tbl =
-      match partial with
-      | Some _ -> find_partials partial_dir
-      | None -> (Util.StringMap.empty, Hashtbl.create 10)
-    in
-    let hashes =
-      Odoc_unit.fix_virtual ~precompiled_units:other_hashes ~units:hashes
-    in
-    let all_hashes =
-      Util.StringMap.union (fun _x o1 o2 -> Some (o1 @ o2)) hashes other_hashes
-    in
-    let compile_one compile_other (unit : Odoc_unit.intf Odoc_unit.t) =
-      let (`Intf { Odoc_unit.deps; _ }) = unit.kind in
-      let _fibers =
-        Fiber.List.map
-          (fun (other_unit_name, other_unit_hash) ->
-            match compile_other other_unit_hash with
-            | Ok r -> Some r
-            | Error _exn ->
-                Logs.debug (fun m ->
-                    m
-                      "Error during compilation of module %s (hash %s, \
-                       required by %s)"
-                      other_unit_name other_unit_hash
-                      (Fpath.filename unit.input_file));
-                None)
-          deps
-      in
-      let includes =
-        List.fold_left
-          (fun acc (_lib, path) -> Fpath.Set.add path acc)
-          Fpath.Set.empty
-          (Odoc_unit.Pkg_args.compiled_libs unit.pkg_args)
-      in
-      Odoc.compile ~output_dir:unit.output_dir ~input_file:unit.input_file
-        ~includes ~warnings_tag:unit.pkgname ~parent_id:unit.parent_id
-        ~ignore_output:(not unit.enable_warnings);
-      (match unit.input_copy with
-      | None -> ()
-      | Some p -> Util.cp (Fpath.to_string unit.input_file) (Fpath.to_string p));
-      Atomic.incr Stats.stats.compiled_units
-    in
-    let rec compile_mod : string -> ('a list, [> `Msg of string ]) Result.t =
-     fun hash ->
-      let map_units =
-        Fiber.List.map (fun unit ->
-            match
-              Hashtbl.find_opt tbl
-                (hash, Odoc.Id.to_string unit.Odoc_unit.parent_id)
-            with
-            | Some p ->
-                Promise.await p;
-                None
-            | None ->
-                let p, r = Promise.create () in
-                Hashtbl.add tbl (hash, Odoc.Id.to_string unit.parent_id) p;
-                let _result = compile_one compile_mod unit in
-                Promise.resolve r ();
-                Some unit)
-      in
-      try
-        let units = Util.StringMap.find hash all_hashes in
-        let r = map_units units in
-        Ok (List.filter_map Fun.id r)
-      with Not_found ->
-        Error (`Msg ("Module with hash " ^ hash ^ " not found"))
-    in
-    compile_mod
-  in
-
-  let compile (unit : Odoc_unit.any) =
-    match unit.kind with
-    | `Intf intf -> (compile_mod intf.hash :> (Odoc_unit.any list, _) Result.t)
-    | `Impl src ->
-        let includes =
-          List.fold_left
-            (fun acc (_lib, path) -> Fpath.Set.add path acc)
-            Fpath.Set.empty
-            (Odoc_unit.Pkg_args.compiled_libs unit.pkg_args)
-        in
-        let source_id = src.src_id in
-        Odoc.compile_impl ~output_dir:unit.output_dir
-          ~input_file:unit.input_file ~includes ~parent_id:unit.parent_id
-          ~source_id;
-        Atomic.incr Stats.stats.compiled_impls;
-        Ok [ unit ]
-    | `Asset ->
-        Odoc.compile_asset ~output_dir:unit.output_dir ~parent_id:unit.parent_id
-          ~name:(Fpath.filename unit.input_file);
-        Atomic.incr Stats.stats.compiled_assets;
-        Ok [ unit ]
-    | `Mld ->
-        let includes = Fpath.Set.empty in
-        Odoc.compile ~output_dir:unit.output_dir ~input_file:unit.input_file
-          ~includes ~warnings_tag:None ~parent_id:unit.parent_id
-          ~ignore_output:(not unit.enable_warnings);
-        Atomic.incr Stats.stats.compiled_mlds;
-        Ok [ unit ]
-    | `Md ->
-        Odoc.compile_md ~output_dir:unit.output_dir ~input_file:unit.input_file
-          ~parent_id:unit.parent_id;
-        Atomic.incr Stats.stats.compiled_mlds;
-        Ok [ unit ]
-  in
-  let _ = Fiber.List.map compile all in
-  (match partial with
-  | Some l -> marshal hashes Fpath.(l / odoc_partial_filename)
-  | None -> ());
-
-  all
-
-type linked = Odoc_unit.any
-
-let link : warnings_tags:string list -> custom_layout:bool -> compiled list -> _
-    =
- fun ~warnings_tags ~custom_layout compiled ->
-  let link : compiled -> linked =
-   fun c ->
-    let link input_file output_file enable_warnings =
-      let libs = Odoc_unit.Pkg_args.compiled_libs c.pkg_args in
-      let pages = Odoc_unit.Pkg_args.compiled_pages c.pkg_args in
-      let includes = Odoc_unit.Pkg_args.includes c.pkg_args in
-      Odoc.link ~custom_layout ~input_file ~output_file ~libs ~docs:pages
-        ~includes ~ignore_output:(not enable_warnings) ~warnings_tags
-        ?current_package:c.pkgname ()
-    in
-    match c.kind with
-    | `Intf { hidden = true; _ } ->
-        Logs.debug (fun m -> m "not linking %a" Fpath.pp c.odoc_file);
-        c
-    | _ ->
-        Logs.debug (fun m -> m "linking %a" Fpath.pp c.odoc_file);
-        if c.to_output then link c.odoc_file c.odocl_file c.enable_warnings;
-        (match c.kind with
-        | `Intf _ -> Atomic.incr Stats.stats.linked_units
-        | `Mld -> Atomic.incr Stats.stats.linked_mlds
-        | `Asset -> ()
-        | `Impl _ -> Atomic.incr Stats.stats.linked_impls
-        | `Md -> Atomic.incr Stats.stats.linked_mlds);
-        c
-  in
-  Fiber.List.map link compiled
-
-let sherlodoc_index_one ~output_dir (index : Odoc_unit.index) =
-  let inputs = [ index.output_file ] in
-  let rel_path = Fpath.(index.search_dir / "sherlodoc_db.js") in
-  let dst = Fpath.(output_dir // rel_path) in
-  let dst_dir, _ = Fpath.split_base dst in
-  let _ = OS.Dir.create dst_dir |> Result.get_ok in
-  Sherlodoc.index ~format:`js ~inputs ~dst ();
-  rel_path
-
-let html_generate ~occurrence_file ~remaps ~generate_json
-    ~simplified_search_output output_dir linked =
-  let tbl = Hashtbl.create 10 in
-  let _ = OS.Dir.create output_dir |> Result.get_ok in
-  Sherlodoc.js Fpath.(output_dir // Sherlodoc.js_file);
-  let compile_index : Odoc_unit.index -> _ =
-   fun index ->
-    let compile_index_one
-        ({ roots; output_file; json; search_dir = _; sidebar } as index :
-          Odoc_unit.index) =
-      let () =
-        Odoc.compile_index ~json ~occurrence_file ~output_file ~roots
-          ~simplified:false ~wrap:false ()
-      in
-      let sidebar =
-        match sidebar with
-        | None -> None
-        | Some { output_file; json; pkg_dir } ->
-            Odoc.sidebar_generate ~output_file ~json index.output_file ();
-            Odoc.sidebar_generate
-              ~output_file:Fpath.(output_dir // pkg_dir / "sidebar.json")
-              ~json:true index.output_file ();
-            if simplified_search_output then
-              Odoc.compile_index ~json:true ~occurrence_file
-                ~output_file:Fpath.(output_dir // pkg_dir / "index.js")
-                ~simplified:true ~wrap:true ~roots ();
-
-            Some output_file
-      in
-      (sherlodoc_index_one ~output_dir index, sidebar)
-    in
-    match Hashtbl.find_opt tbl index.output_file with
-    | None ->
-        let p, r = Promise.create () in
-        Hashtbl.add tbl index.output_file p;
-        let rel_path = compile_index_one index in
-        Atomic.incr Stats.stats.generated_indexes;
-        Promise.resolve r rel_path;
-        rel_path
-    | Some p -> Promise.await p
-  in
-  let html_generate : Fpath.t option -> linked -> unit =
-   fun remap_file l ->
-    if l.to_output then
-      let output_dir = Fpath.to_string output_dir in
-      let home_breadcrumb = "Package index" in
-      let input_file = l.odocl_file in
-      match l.kind with
-      | `Intf { hidden = true; _ } -> ()
-      | `Impl { src_path; _ } ->
-          let search_uris, sidebar =
-            match l.index with
-            | None -> (None, None)
-            | Some index ->
-                let db_path, sidebar = compile_index index in
-                let search_uris = [ db_path; Sherlodoc.js_file ] in
-                (Some search_uris, sidebar)
-          in
-          Odoc.html_generate_source ?search_uris ?sidebar ~output_dir
-            ~input_file ~home_breadcrumb ~source:src_path ();
-          Atomic.incr Stats.stats.generated_units;
-          if generate_json then (
-            Odoc.html_generate_source ?search_uris ?sidebar ~output_dir
-              ~input_file ~source:src_path ~as_json:true ~home_breadcrumb ();
-            Atomic.incr Stats.stats.generated_units)
-      | `Asset ->
-          Odoc.html_generate_asset ~output_dir ~input_file:l.odoc_file
-            ~asset_path:l.input_file ~home_breadcrumb ()
-      | _ ->
-          let search_uris, sidebar =
-            match l.index with
-            | None -> (None, None)
-            | Some index ->
-                let db_path, sidebar = compile_index index in
-                let search_uris = [ db_path; Sherlodoc.js_file ] in
-                (Some search_uris, sidebar)
-          in
-          Odoc.html_generate ?search_uris ?sidebar ?remap:remap_file ~output_dir
-            ~input_file ~home_breadcrumb ();
-          Atomic.incr Stats.stats.generated_units;
-          if generate_json then (
-            Odoc.html_generate ?search_uris ?sidebar ~output_dir ~input_file
-              ~as_json:true ~home_breadcrumb ();
-            Atomic.incr Stats.stats.generated_units)
-  in
-  if List.length remaps = 0 then Fiber.List.iter (html_generate None) linked
+(* An implementation of a virtual library ships its modules as [.cmt] files
+   only: the interface, and the documentation written in it, belong to the
+   virtual library's [.cmti], which shares the module's digest. When the
+   virtual library is built in the same run, [Packages.remap_virtual] has
+   already substituted the [.cmti]; when it was built earlier (voodoo mode),
+   the copy stashed next to its [.odoc] file ([input_copy]) is among the
+   implementation's transitive dependencies, so look for a same-named [.cmti]
+   with the right digest in their directories. *)
+let find_virtual_interface (lib : Odoc_unit.lib)
+    (unit : Odoc_unit.intf Odoc_unit.t) =
+  if not (Fpath.has_ext "cmt" unit.input_file) then unit
   else
-    Bos.OS.File.with_tmp_oc "remap.%s.txt"
-      (fun fpath oc () ->
-        List.iter (fun (a, b) -> Printf.fprintf oc "%s:%s\n%!" a b) remaps;
-        Fiber.List.iter (html_generate (Some fpath)) linked)
-      ()
-    |> ignore
+    let hash = Odoc_unit.hash unit in
+    let name = Fpath.(unit.input_file |> rem_ext |> basename) in
+    let candidate dir =
+      let cmti = Fpath.(dir / (name ^ ".cmti")) in
+      match OS.File.exists cmti with
+      | Ok true -> (
+          match Odoc.compile_deps cmti with
+          | Ok { digest; _ } when digest = hash -> Some cmti
+          | _ -> None)
+      | _ -> None
+    in
+    match List.find_map (fun (_, dir) -> candidate dir) lib.lib_includes with
+    | None -> unit
+    | Some cmti ->
+        Logs.debug (fun m ->
+            m "Using %a as the interface of %a" Fpath.pp cmti Fpath.pp
+              unit.input_file);
+        { unit with input_file = cmti }
+
+(* The interfaces of a library, keyed by digest: a virtual library's interface
+   and those of its implementations share one. *)
+let by_hash (units : [ Odoc_unit.intf | Odoc_unit.impl ] Odoc_unit.t list) =
+  List.fold_left
+    (fun acc (u : _ Odoc_unit.t) ->
+      match u.kind with
+      | `Intf _ as kind ->
+          let u = { u with kind } in
+          Util.StringMap.update (Odoc_unit.hash u)
+            (function None -> Some [ u ] | Some x -> Some (u :: x))
+            acc
+      | `Impl _ -> acc)
+    Util.StringMap.empty units
+
+let compile_lib (lib : Odoc_unit.lib) =
+  let hashes = by_hash lib.units in
+  let compile_intf (unit : Odoc_unit.intf Odoc_unit.t) =
+    let unit = find_virtual_interface lib unit in
+    List.iter Cmd_outputs.run
+      (Commands.compile_module lib (unit :> Odoc_unit.module_unit));
+    Stats.did Compile
+  in
+  (* A module is compiled after the modules it imports. [compile_mod] on a
+     digest compiles the interfaces with that digest, once. An import whose
+     digest is not among this library's modules belongs to a library compiled
+     earlier, and is found among the [-L] directories. *)
+  let compile_mod =
+    Util.memo ~key:Fun.id @@ fun compile_mod hash ->
+    match Util.StringMap.find_opt hash hashes with
+    | None -> ()
+    | Some units ->
+        Fiber.List.iter
+          (fun (unit : Odoc_unit.intf Odoc_unit.t) ->
+            Fiber.List.iter compile_mod (Odoc_unit.deps unit);
+            compile_intf unit)
+          units
+  in
+  (* An implementation imports interfaces it records no digest for here, so
+     it waits for all of the library's (D5). *)
+  let intfs, impls =
+    List.partition
+      (fun (u : Odoc_unit.module_unit) ->
+        match u.kind with `Intf _ -> true | `Impl _ -> false)
+      lib.units
+  in
+  Fiber.List.iter
+    (fun (u : Odoc_unit.module_unit) ->
+      match u.kind with `Intf { hash; _ } -> compile_mod hash | `Impl _ -> ())
+    intfs;
+  Fiber.List.iter
+    (fun unit ->
+      List.iter Cmd_outputs.run (Commands.compile_module lib unit);
+      Stats.did Compile)
+    impls
+
+let compile_pages (pkg : Odoc_unit.pkg) =
+  let compile (unit : Odoc_unit.page) =
+    Cmd_outputs.run (Commands.compile_page unit);
+    Stats.did Compile
+  in
+  let lib_pages =
+    List.filter_map (fun (l : Odoc_unit.lib) -> l.page) pkg.libs
+  in
+  Fiber.List.iter compile (pkg.pages @ (lib_pages :> Odoc_unit.page list))
+
+let link ~warnings_tags (pkg : Odoc_unit.pkg) =
+  let link (u : Odoc_unit.any) =
+    if Odoc_unit.is_output u then (
+      Cmd_outputs.run (Commands.link ~warnings_tags pkg u);
+      Stats.did Link)
+  in
+  Fiber.List.iter link (Odoc_unit.all_units pkg)
+
+(* The index of a package is built from the [.odocl] files of its linked units.
+   Listing them explicitly puts the package's pages and modules in one hierarchy
+   even though they live in different directories. *)
+let index_file_list (pkg : Odoc_unit.pkg) (index : Odoc_unit.index) =
+  let inputs = Odoc_unit.index_inputs pkg in
+  let file_list = Fpath.(parent index.index_file / "index-inputs.txt") in
+  Util.with_out_to file_list (fun oc ->
+      List.iter (fun f -> Printf.fprintf oc "%s\n" (Fpath.to_string f)) inputs)
+  |> Result.get_ok;
+  file_list
+
+(* The files every page relies on: odoc's support files and sherlodoc's
+   runtime. *)
+let html_support html_dir =
+  let _ = OS.Dir.create html_dir |> Result.get_ok in
+  Cmd_outputs.run @@ Sherlodoc.js Fpath.(html_dir // Sherlodoc.js_file);
+  ignore (Cmd_outputs.run @@ Odoc.support_files html_dir)
+
+let with_remaps remaps f =
+  match remaps with
+  | [] -> f None
+  | remaps ->
+      OS.File.with_tmp_oc "remap.%s.txt"
+        (fun fpath oc () ->
+          List.iter (fun (a, b) -> Printf.fprintf oc "%s:%s\n%!" a b) remaps;
+          f (Some fpath))
+        ()
+      |> Result.get_ok
+
+let generate ?remap_file ~generate_json html_dir (pkg : Odoc_unit.pkg) =
+  (* The package's index, sidebar and search database, which its pages then
+     point at. *)
+  (match pkg.index with
+  | None -> ()
+  | Some index ->
+      let file_list = index_file_list pkg index in
+      let _ =
+        OS.Dir.create Fpath.(html_dir // index.html_dir) |> Result.get_ok
+      in
+      let compile_index, from_index =
+        Commands.index ~html_dir ~file_list index
+      in
+      Cmd_outputs.run compile_index;
+      List.iter Cmd_outputs.run from_index;
+      Stats.did Index);
+  let generate (u : Odoc_unit.any) =
+    match Commands.generate ~html_dir ?remap_file ~generate_json pkg u with
+    | [] -> ()
+    | actions ->
+        List.iter Cmd_outputs.run actions;
+        Stats.did Generate
+  in
+  Fiber.List.iter generate (Odoc_unit.all_units pkg)
+
+(* The JSON search index of a package, for ocaml.org. It is the only consumer
+   of the occurrence counts, which is why it is a separate, final step. *)
+let json_index ~occurrence_file html_dir (pkg : Odoc_unit.pkg) =
+  match pkg.index with
+  | None -> ()
+  | Some ({ html_dir = pkg_html; _ } as index) ->
+      let file_list = index_file_list pkg index in
+      Cmd_outputs.run
+      @@ Odoc.compile_index ~json:true ~occurrence_file
+           ~output_file:Fpath.(html_dir // pkg_html / "index.js")
+           ~simplified:true ~wrap:true ~file_list ()

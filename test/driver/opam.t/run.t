@@ -60,23 +60,18 @@ be given the libraries its units recorded (D6).
 A warning, or a package missing from the list, would be wrong.
 
   $ odoc_driver --odoc-dir _odoc --html-dir _html pb 2>&1 | grep -v '^\(Deciding\|Performing\|Starting\|Documentation\)' || true
-  odoc_driver: internal error, uncaught exception:
-               Failure("Config file not found - neither $TESTCASE_ROOT/no-findlib.conf nor the directory $TESTCASE_ROOT/no-findlib.conf.d")
-               
   $ ls -d _html/p*
-  ls: _html/p*: No such file or directory
-  [1]
+  _html/pa
+  _html/pb
+  _html/pc
   $ grep -o 'href="[^"]*A[^"]*"' _html/pc/index.html
-  grep: _html/pc/index.html: No such file or directory
-  [2]
+  href="../pa/pa/A/index.html#type-t"
 
 Case 2 (D1, D2). [B] should record its own library and the closure of what
 it requires: [pa], [pb], [pc] and [stdlib].
 
   $ odoc_print _odoc/lib/pb/b.odoc | jq -c .libraries
-  odoc_print: PATH argument: no '_odoc/lib/pb/b.odoc' file or directory
-  Usage: odoc_print [OPTION]… PATH
-  Try 'odoc_print --help' for more information.
+  ["pa","pb","pc","stdlib"]
 
 Case 3. Documenting [pc] alone should document [pa] too: [pc]'s opam file
 names it in [x-extra-doc-deps], so ocaml-docs-ci installs it for [pc]'s
@@ -86,14 +81,11 @@ documentation, after [pc] is compiled and before [pc] is linked. So
 A warning that [A] is not found, or no [pa] in the list, would be wrong.
 
   $ odoc_driver --odoc-dir _odoc3 --html-dir _html3 pc 2>&1 | grep -v '^\(Deciding\|Performing\|Starting\|Documentation\)' || true
-  odoc_driver: internal error, uncaught exception:
-               Failure("Config file not found - neither $TESTCASE_ROOT/no-findlib.conf nor the directory $TESTCASE_ROOT/no-findlib.conf.d")
-               
   $ ls -d _html3/p*
-  ls: _html3/p*: No such file or directory
-  [1]
+  _html3/pa
+  _html3/pc
   $ grep -o 'href="[^"]*A[^"]*"' _html3/pc/index.html || true
-  grep: _html3/pc/index.html: No such file or directory
+  href="../pa/pa/A/index.html#type-t"
 
 Case 4. A package's [odoc-config.sexp] may name a package that its opam
 file lists neither as a dependency nor as a doc dep. ocaml-docs-ci does not
@@ -117,12 +109,12 @@ No [pm] directory below the package's would be wrong.
 
   $ mkdir -p _odoc6$(ocamlc -where)
   $ odoc_driver --odoc-dir _odoc6 --html-dir _html6 pm 2>&1 | grep -v '^\(Deciding\|Performing\|Starting\|Documentation\)' || true
-  odoc_driver: internal error, uncaught exception:
-               Failure("Config file not found - neither $TESTCASE_ROOT/no-findlib.conf nor the directory $TESTCASE_ROOT/no-findlib.conf.d")
-               
   $ ls _html6/pm
-  ls: _html6/pm: No such file or directory
-  [1]
+  index.html
+  pm
+  sherlodoc_db.js
+  sidebar.json
+  status.json
 
 Case 6. A directory may hold an archive that no library of its META
 declares, as the compiler's [ocamldoc] directory holds [odoc_info.cma].
@@ -134,12 +126,9 @@ No [u] directory, or [U] missing from it, would be wrong.
 
   $ mkdir -p _odoc7$(ocamlc -where)
   $ odoc_driver --odoc-dir _odoc7 --html-dir _html7 pu 2>&1 | grep -v '^\(Deciding\|Performing\|Starting\|Documentation\)' || true
-  odoc_driver: internal error, uncaught exception:
-               Failure("Config file not found - neither $TESTCASE_ROOT/no-findlib.conf nor the directory $TESTCASE_ROOT/no-findlib.conf.d")
-               
   $ ls _html7/pu/u 2>&1
-  ls: _html7/pu/u: No such file or directory
-  [1]
+  U
+  index.html
 
 Case 7. The switch documented should be the one the environment selects,
 as under [opam exec --switch], even when opam's default switch is another
@@ -173,6 +162,7 @@ package's, would be wrong.
   $ printf 'path="%s:%s"\ndestdir="%s"\n' $PWD/sw/lib $(ocamlc -where) $PWD/sw/lib > sw/etc/findlib.conf
   $ (unset OCAMLFIND_CONF; odoc_driver -v --odoc-dir _odoc9 --html-dir _html9 pc 2>&1) | grep 'by hand' || true
   $ ls -d _html9/p*
+  _html9/pa
   _html9/pc
   $ ls _html9/pc/pc
   ls: _html9/pc/pc: No such file or directory

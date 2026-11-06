@@ -54,8 +54,6 @@ so its directory is made empty instead.
 
   $ mkdir -p _odoc/lib/ocaml
   $ odoc_driver_voodoo --odoc-dir _odoc pd
-  process_meta_file: prep/universes/u/pd/1.0/lib/pd/META
-  process_meta_file: prep/universes/u/pd/1.0/lib/pd/META
 
 Case 1 (D6). At the link of a unit, every library the unit recorded should
 be given with [-L]. [U] recorded [pc.alias]: it was compiled against it.
@@ -66,11 +64,7 @@ should give no warning that a library is missing.
 A "Library pc.alias ... is not given with -L" warning would be wrong.
 
   $ odoc_driver_voodoo --odoc-dir _odoc pc
-  process_meta_file: prep/universes/u/pc/1.0/lib/pc/META
-  process_meta_file: prep/universes/u/pc/1.0/lib/pc/META
   $ odoc_driver_voodoo --odoc-dir _odoc pa
-  process_meta_file: prep/universes/u/pa/1.0/lib/pa/META
-  process_meta_file: prep/universes/u/pa/1.0/lib/pa/META
 
 Case 2 (D6). At the link of a unit or a page, every library of each unit
 whose paths are resolved should be given with [-L]. [pb]'s page has
@@ -82,11 +76,6 @@ should give no warning that a library is missing. [pd] has no modules, but
 A "Library ... is not given with -L" warning would be wrong.
 
   $ odoc_driver_voodoo --odoc-dir _odoc pb
-  process_meta_file: prep/universes/u/pb/1.0/lib/pb/META
-  process_meta_file: prep/universes/u/pb/1.0/lib/pb/META
-  _odoc/u/u/pb/1.0/doc/page-index.odoc: File "prep/universes/u/pb/1.0/doc/pb/odoc-pages/index.mld", line 3, characters 15-21:
-  _odoc/u/u/pb/1.0/doc/page-index.odoc: Warning: Failed to resolve reference unresolvedroot(A).t Couldn't find "A"
-  _odoc/u/u/pb/1.0/doc/page-index.odoc: 
 
 Case 3 (D1, D2). A unit records the libraries it was compiled with: its own,
 and the closure of what that library requires. So [B] should record [pa], [pb],
@@ -95,9 +84,7 @@ and the closure of what that library requires. So [B] should record [pa], [pb],
 A list without [pa], [pc] or [pd] would be wrong.
 
   $ odoc_print _odoc/lib/pb/b.odoc | jq -c .libraries
-  odoc_print: PATH argument: no '_odoc/lib/pb/b.odoc' file or directory
-  Usage: odoc_print [OPTION]… PATH
-  Try 'odoc_print --help' for more information.
+  ["pa","pb","pc","pd","stdlib"]
 
 Case 4 (D1). [pe]'s META has two [requires]: [pc], and, under the predicate
 [-ppx_driver], [pd]. The second is the form a ppx rewriter uses for what a
@@ -114,16 +101,8 @@ A list with [pd] and not [pc] would be wrong, and so would a warning that
   requires(-ppx_driver) = "pd"
   archive(byte) = "e.cma"
   $ odoc_driver_voodoo --odoc-dir _odoc pe
-  process_meta_file: prep/universes/u/pe/1.0/lib/pe/META
-  process_meta_file: prep/universes/u/pe/1.0/lib/pe/META
-  _odoc/u/u/pe/1.0/doc/pe/e.odoc: File "_odoc/u/u/pe/1.0/doc/pe/e.odoc":
-  _odoc/u/u/pe/1.0/doc/pe/e.odoc: Warning: Couldn't find the following modules:
-  _odoc/u/u/pe/1.0/doc/pe/e.odoc:   C
-  _odoc/u/u/pe/1.0/doc/pe/e.odoc: 
   $ odoc_print _odoc/lib/pe/e.odoc | jq -c .libraries
-  odoc_print: PATH argument: no '_odoc/lib/pe/e.odoc' file or directory
-  Usage: odoc_print [OPTION]… PATH
-  Try 'odoc_print --help' for more information.
+  ["pc","pe","stdlib"]
 
 Case 5. ocaml-docs-ci documents a package in a switch holding only its
 dependencies, and a switch of dune-only packages has no ocamlfind, so no
@@ -137,21 +116,8 @@ A warning, or a list that differs from case 3's, would be wrong.
   $ export OCAMLFIND_CONF=$PWD/no-findlib.conf
   $ mkdir -p _odoc2/lib/ocaml
   $ for p in pd pc pa pb; do odoc_driver_voodoo --odoc-dir _odoc2 $p; done
-  process_meta_file: prep/universes/u/pd/1.0/lib/pd/META
-  process_meta_file: prep/universes/u/pd/1.0/lib/pd/META
-  process_meta_file: prep/universes/u/pc/1.0/lib/pc/META
-  process_meta_file: prep/universes/u/pc/1.0/lib/pc/META
-  process_meta_file: prep/universes/u/pa/1.0/lib/pa/META
-  process_meta_file: prep/universes/u/pa/1.0/lib/pa/META
-  process_meta_file: prep/universes/u/pb/1.0/lib/pb/META
-  process_meta_file: prep/universes/u/pb/1.0/lib/pb/META
-  _odoc2/u/u/pb/1.0/doc/page-index.odoc: File "prep/universes/u/pb/1.0/doc/pb/odoc-pages/index.mld", line 3, characters 15-21:
-  _odoc2/u/u/pb/1.0/doc/page-index.odoc: Warning: Failed to resolve reference unresolvedroot(A).t Couldn't find "A"
-  _odoc2/u/u/pb/1.0/doc/page-index.odoc: 
   $ odoc_print _odoc2/lib/pb/b.odoc | jq -c .libraries
-  odoc_print: PATH argument: no '_odoc2/lib/pb/b.odoc' file or directory
-  Usage: odoc_print [OPTION]… PATH
-  Try 'odoc_print --help' for more information.
+  ["pa","pb","pc","pd","stdlib"]
 
 Case 6. A library may be installed in the compiler's library directory, as
 the standard library, [unix] and [threads] are: its META says [directory =
@@ -169,10 +135,8 @@ An [.odoc] file anywhere else, or none, would be wrong.
   >   mkdir -p $root/lib/ocaml/ps && cp src/ps/s.cm* src/ps/s.mli $root/lib/ocaml/ && cp src/ps/META $root/lib/ocaml/ps/
   > done
   $ CAMLLIB=$PWD/inst/_build/install/default/lib/ocaml odoc_driver_voodoo --odoc-dir _odoc6 ps
-  process_meta_file: prep/universes/u/ps/1.0/lib/ocaml/ps/META
-  process_meta_file: prep/universes/u/ps/1.0/lib/ocaml/ps/META
   $ find _odoc6 -name 's.odoc'
-  _odoc6/u/u/ps/1.0/doc/s/s.odoc
+  _odoc6/lib/ocaml/s.odoc
 
 Case 7. A package's [odoc-config.sexp] may name a package it does not
 depend on, as eio's names eio_main, so that its pages can refer to it.
@@ -207,9 +171,6 @@ library with the bytecode archive.
   $ (cd src/pi && ocamlc -bin-annot -c i.mli i.ml && ocamlc -a -o i.cma i.cmo)
   $ mkdir -p prep/universes/u/pi/1.0/lib/pi && cp src/pi/META src/pi/i.cm* src/pi/i.mli prep/universes/u/pi/1.0/lib/pi/
   $ odoc_driver_voodoo --odoc-dir _odoc --html-dir _html pi
-  process_meta_file: prep/universes/u/pi/1.0/lib/pi/META
-  process_meta_file: prep/universes/u/pi/1.0/lib/pi/META
-  odoc_driver_voodoo: [ERROR] Multiple libraries for archive i: pi.native and pi.
   $ ls _html/u/u/pi/1.0/doc | grep '^pi'
   pi
 
@@ -226,7 +187,5 @@ A library called [t_top] would be wrong.
   $ (cd src/pt && ocamlc -bin-annot -c t.mli t.ml && ocamlc -a -o t_top.cma t.cmo)
   $ mkdir -p prep/universes/u/pt/1.0/lib/pt && cp src/pt/META src/pt/t.cm* src/pt/t_top.cma src/pt/t.mli prep/universes/u/pt/1.0/lib/pt/
   $ odoc_driver_voodoo --odoc-dir _odoc --html-dir _html pt
-  process_meta_file: prep/universes/u/pt/1.0/lib/pt/META
-  process_meta_file: prep/universes/u/pt/1.0/lib/pt/META
   $ ls _html/u/u/pt/1.0/doc | grep '^\(pt\|t_top\)$'
-  t_top
+  pt

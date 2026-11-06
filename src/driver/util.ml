@@ -10,15 +10,6 @@ let with_dir dir pat f =
   | None -> OS.Dir.with_tmp pat f () |> Result.get_ok
   | Some dir -> f dir ()
 
-let lines_of_channel ic =
-  let rec inner acc =
-    try
-      let l = input_line ic in
-      inner (l :: acc)
-    with End_of_file -> List.rev acc
-  in
-  inner []
-
 let lines_of_process cmd =
   match OS.Cmd.(run_out ~err:err_null cmd |> to_lines) with
   | Ok x -> x
@@ -36,4 +27,18 @@ let with_out_to filename f =
     ()
   |> Result.join
 
-let cp src dst = assert (lines_of_process Cmd.(v "cp" % src % dst) = [])
+let memo ~key f =
+  let started = Hashtbl.create 100 in
+  let rec g x =
+    let k = key x in
+    match Hashtbl.find_opt started k with
+    | Some p -> Eio.Promise.await_exn p
+    | None ->
+        let p, r = Eio.Promise.create () in
+        Hashtbl.add started k p;
+        (match f g x with
+        | y -> Eio.Promise.resolve_ok r y
+        | exception e -> Eio.Promise.resolve_error r e);
+        Eio.Promise.await_exn p
+  in
+  g

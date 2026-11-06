@@ -2,8 +2,6 @@
 
 type dep = string * Digest.t
 
-(* type id = Odoc.id *)
-
 type intf = { mif_hash : string; mif_path : Fpath.t; mif_deps : dep list }
 
 let pp_intf fmt (i : intf) =
@@ -17,20 +15,13 @@ type src_info = { src_path : Fpath.t }
 let pp_src_info fmt i =
   Format.fprintf fmt "@[<hov>{@,src_path: %a@,}@]" Fpath.pp i.src_path
 
-type impl = {
-  mip_path : Fpath.t;
-  mip_src_info : src_info option;
-  mip_deps : dep list;
-}
+type impl = { mip_path : Fpath.t; mip_src_info : src_info option }
 
 let pp_impl fmt i =
-  Format.fprintf fmt
-    "@[<hov>{@,mip_path: %a;@,mip_src_info: %a;@,mip_deps: %a@,}@]" Fpath.pp
+  Format.fprintf fmt "@[<hov>{@,mip_path: %a;@,mip_src_info: %a@,}@]" Fpath.pp
     i.mip_path
     (Fmt.Dump.option pp_src_info)
     i.mip_src_info
-    (Fmt.Dump.list (Fmt.Dump.pair Fmt.string Fmt.string))
-    i.mip_deps
 
 type modulety = {
   m_name : string;
@@ -65,10 +56,10 @@ let pp_asset fmt m =
 type libty = {
   lib_name : string;
   dir : Fpath.t;
+  rel_dir : Fpath.t;
   archive_name : string option;
   lib_deps : Util.StringSet.t;
   modules : modulety list;
-  id_override : string option;
 }
 
 let pp_libty fmt l =
@@ -76,20 +67,18 @@ let pp_libty fmt l =
     "@[<hov>{@,\
      lib_name: %s;@,\
      dir: %a;@,\
+     rel_dir: %a;@,\
      archive_name: %a;@,\
      lib_deps: %a;@,\
      modules: %a@,\
-     id_override: %a@,\n\
-    \     }@]"
-    l.lib_name Fpath.pp l.dir
+     }@]"
+    l.lib_name Fpath.pp l.dir Fpath.pp l.rel_dir
     (Fmt.Dump.option Fmt.string)
     l.archive_name
     (Fmt.list ~sep:Fmt.comma Fmt.string)
     (Util.StringSet.elements l.lib_deps)
     (Fmt.Dump.list pp_modulety)
     l.modules
-    Fmt.Dump.(option string)
-    l.id_override
 
 type t = {
   name : string;
@@ -97,13 +86,28 @@ type t = {
   libraries : libty list;
   mlds : mld list;
   assets : asset list;
-  selected : bool;
-  remaps : (string * string) list;
   other_docs : md list;
   pkg_dir : Fpath.t;
   doc_dir : Fpath.t;
   config : Global_config.t;
+  doc_deps : string list;
 }
+
+(* The documentation of a package this run does not render is on ocaml.org,
+   so a link into it is rewritten to point there. Every library of the
+   package goes to the same page as the package itself. *)
+let remaps t =
+  let local_pkg_path = Fpath.to_string (Fpath.to_dir_path t.pkg_dir) in
+  let pkg_path =
+    Printf.sprintf "https://ocaml.org/p/%s/%s/doc/" t.name t.version
+  in
+  let lib_paths =
+    List.map
+      (fun (lib : libty) ->
+        (Printf.sprintf "%s%s/" local_pkg_path lib.lib_name, pkg_path))
+      t.libraries
+  in
+  (local_pkg_path, pkg_path) :: lib_paths
 
 let pp fmt t =
   Format.fprintf fmt
@@ -113,13 +117,12 @@ let pp fmt t =
      libraries: %a;@,\
      mlds: %a;@,\
      assets: %a;@,\
-     selected: %b;@,\
      other_docs: %a;@,\
      pkg_dir: %a@,\
      }@]"
     t.name t.version (Fmt.Dump.list pp_libty) t.libraries (Fmt.Dump.list pp_mld)
-    t.mlds (Fmt.Dump.list pp_asset) t.assets t.selected (Fmt.Dump.list pp_md)
-    t.other_docs Fpath.pp t.pkg_dir
+    t.mlds (Fmt.Dump.list pp_asset) t.assets (Fmt.Dump.list pp_md) t.other_docs
+    Fpath.pp t.pkg_dir
 
 let maybe_prepend_top top_dir dir =
   match top_dir with None -> dir | Some d -> Fpath.(d // dir)
@@ -135,8 +138,7 @@ module Module = struct
 
   let is_hidden name = Astring.String.is_infix ~affix:"__" name
 
-  let vs libsdir cmtidir modules =
-    let dir = match cmtidir with None -> libsdir | Some dir -> dir in
+  let vs dir modules =
     let mk m_name =
       let exists ext =
         let p =
@@ -161,13 +163,8 @@ module Module = struct
         | Error _ -> failwith "bad deps"
       in
       let mk_impl mip_path =
-        (* Directories in which we should look for source files *)
-        let src_dirs =
-          match cmtidir with None -> [ libsdir ] | Some d2 -> [ libsdir; d2 ]
-        in
-
         let mip_src_info =
-          match Ocamlobjinfo.get_source mip_path src_dirs with
+          match Ocamlobjinfo.get_source mip_path [ dir ] with
           | None ->
               Logs.debug (fun m -> m "No source found for module %s" m_name);
               None
@@ -176,12 +173,7 @@ module Module = struct
                   m "Found source file %a for %s" Fpath.pp src_path m_name);
               Some { src_path }
         in
-        let mip_deps =
-          match Odoc.compile_deps mip_path with
-          | Ok { digest = _; deps } -> deps
-          | Error _ -> failwith "bad deps"
-        in
-        { mip_src_info; mip_path; mip_deps }
+        { mip_src_info; mip_path }
       in
       let state = (exists "cmt", exists "cmti") in
 
@@ -204,7 +196,35 @@ module Module = struct
 end
 
 module Lib = struct
-  let handle_virtual_lib ~dir ~id_override ~lib_name ~all_lib_deps =
+  (* The object directory of a library -- where its [cmi]/[cmt] files live --
+     relative to the first of [roots] that contains it. The [.odoc] files of
+     the library are written to the same relative path below the odoc
+     directory, so that the directory structure of compiled documentation
+     mirrors that of the compiled objects. Libraries installed in a single
+     directory (e.g. the [compiler-libs.*] family) therefore share an odoc
+     directory too, and the [-L] of any one of them finds every one of them,
+     just as the compiler's [-I] does. *)
+  let rel_dir ~roots dir =
+    let dir = Fpath.normalize dir in
+    match List.find_map (fun root -> Fpath.rem_prefix root dir) roots with
+    | Some rel -> rel
+    | None -> (
+        if Fpath.is_rel dir then dir
+        else
+          (* Not below any root: drop the leading '/' and use the path as is. *)
+          match Fpath.segs dir with
+          | "" :: segs -> Fpath.v (String.concat "/" segs)
+          | _ -> dir)
+
+  (* What a library requires, as its META declared it. A library found
+     without one, which is how the compiler's own libraries are found in a
+     switch with no ocamlfind, declares nothing; it is still compiled against
+     the standard library, and saying so is what lets its modules resolve the
+     signatures they are constrained by. *)
+  let lib_deps_of installed lib_name =
+    Util.StringSet.add "stdlib" (Installed.requires installed lib_name)
+
+  let handle_virtual_lib ~roots ~installed ~dir ~lib_name =
     let modules =
       match
         Bos.OS.Dir.fold_contents
@@ -220,43 +240,88 @@ module Lib = struct
           Logs.err (fun m -> m "Error reading dir %a: %s" Fpath.pp dir e);
           []
     in
-    let modules = Module.vs dir None modules in
-    let lib_deps =
-      try Util.StringMap.find lib_name all_lib_deps
-      with _ -> Util.StringSet.empty
-    in
-    [ { lib_name; archive_name = None; modules; lib_deps; dir; id_override } ]
+    let modules = Module.vs dir modules in
+    let lib_deps = lib_deps_of installed lib_name in
+    let rel_dir = rel_dir ~roots dir in
+    [ { lib_name; archive_name = None; modules; lib_deps; dir; rel_dir } ]
 
-  let v ~libname_of_archive ~pkg_name ~dir ~cmtidir ~all_lib_deps ~cmi_only_libs
-      ~id_override =
+  let v ~roots ~installed ~pkg_name ~dir =
     Logs.debug (fun m ->
         m "Classifying dir %a for package %s" Fpath.pp dir pkg_name);
-    let dirs =
-      match cmtidir with None -> [ dir ] | Some dir2 -> [ dir; dir2 ]
-    in
-    let results = Odoc.classify dirs in
+    let results = Odoc.classify [ dir ] in
+    let rel_dir = rel_dir ~roots dir in
     match List.length results with
     | 0 -> (
-        match
-          List.find_opt (fun dir -> List.mem_assoc dir cmi_only_libs) dirs
-        with
+        match Installed.no_archive_lib installed dir with
         | None -> []
-        | Some dir ->
-            let lib_name = List.assoc dir cmi_only_libs in
-            handle_virtual_lib ~dir ~lib_name ~all_lib_deps ~id_override)
+        | Some lib_name -> handle_virtual_lib ~roots ~installed ~dir ~lib_name)
     | _ ->
         Logs.debug (fun m -> m "Got %d lines" (List.length results));
+        let of_libraries =
+          List.filter_map
+            (fun (archive_name, modules) ->
+              match
+                Installed.lib_of_archive installed Fpath.(dir / archive_name)
+              with
+              | Some lib_name -> Some (lib_name, archive_name, modules)
+              | None ->
+                  (* An archive no META declares, as the compiler's ocamldoc
+                     directory holds odoc_info.cma. Its modules are still
+                     installed for use, so it is documented, as a library
+                     named after it. *)
+                  Logs.info (fun m ->
+                      m
+                        "No library declares archive %a: documenting it as \
+                         library %s"
+                        Fpath.pp
+                        Fpath.(dir / archive_name)
+                        archive_name);
+                  Some (archive_name, archive_name, modules))
+            results
+        in
+        (* An archive may bundle another's modules: ocamloptcomp holds all of
+           ocamlmiddleend's. [odoc classify] says so, reporting the module
+           under both, but a module is documented once, so each is given to
+           the largest library that holds it. The bundling archive is the one
+           that ships as a library people can depend on -- findlib declares
+           compiler-libs.optcomp and has no name at all for the middle end --
+           and the smaller archive is a component of it. Without a rule the
+           two libraries write the same file and whichever ran last decides,
+           which lost every page of the loser. *)
+        let owner =
+          List.fold_left
+            (fun acc (lib_name, _, modules) ->
+              let size = List.length modules in
+              List.fold_left
+                (fun acc m ->
+                  match Util.StringMap.find_opt m acc with
+                  | Some (_, best) when best >= size -> acc
+                  | _ -> Util.StringMap.add m (lib_name, size) acc)
+                acc modules)
+            Util.StringMap.empty of_libraries
+        in
         List.filter_map
-          (fun (archive_name, modules) ->
-            match
-              Fpath.Map.find Fpath.(dir / archive_name) libname_of_archive
-            with
-            | Some lib_name ->
-                let modules = Module.vs dir cmtidir modules in
-                let lib_deps =
-                  try Util.StringMap.find lib_name all_lib_deps
-                  with _ -> Util.StringSet.empty
-                in
+          (fun (lib_name, archive_name, modules) ->
+            let modules =
+              List.filter
+                (fun m ->
+                  match Util.StringMap.find_opt m owner with
+                  | Some (owner, _) -> owner = lib_name
+                  | None -> true)
+                modules
+            in
+            match modules with
+            | [] ->
+                Logs.info (fun m ->
+                    m
+                      "Every module of library %s is also in a larger library \
+                       in the same directory, which is the one that ships; it \
+                       has nothing of its own to document"
+                      lib_name);
+                None
+            | _ ->
+                let modules = Module.vs dir modules in
+                let lib_deps = lib_deps_of installed lib_name in
                 Some
                   {
                     lib_name;
@@ -264,17 +329,9 @@ module Lib = struct
                     modules;
                     lib_deps;
                     dir;
-                    id_override;
-                  }
-            | None ->
-                Logs.info (fun m ->
-                    m "No entry for '%a' in libname_of_archive" Fpath.pp
-                      Fpath.(dir / archive_name));
-                Logs.info (fun m ->
-                    m "Unable to determine library of archive %s: Ignoring."
-                      archive_name);
-                None)
-          results
+                    rel_dir;
+                  })
+          of_libraries
 
   let pp ppf t =
     Fmt.pf ppf "archive: %a modules: [@[<hov 2>@,%a@]@,]"
@@ -303,153 +360,14 @@ let mk_mlds docs =
             { md_path = doc.file; md_rel_path = doc.rel_path } :: others ))
     ([], [], []) docs
 
-let fix_missing_deps pkgs =
-  let lib_name_by_hash =
-    List.fold_right
-      (fun pkg acc ->
-        List.fold_left
-          (fun acc lib ->
-            List.fold_left
-              (fun acc m ->
-                Util.StringMap.update m.m_intf.mif_hash
-                  (function
-                    | None -> Some [ lib.lib_name ]
-                    | Some l -> Some (lib.lib_name :: l))
-                  acc)
-              acc lib.modules)
-          acc pkg.libraries)
-      pkgs Util.StringMap.empty
-  in
-  List.map
-    (fun pkg ->
-      let libraries =
-        List.map
-          (fun lib ->
-            let lib_deps = lib.lib_deps in
-            let new_lib_deps =
-              List.fold_left
-                (fun acc m ->
-                  let if_deps =
-                    Util.StringSet.of_list (List.map snd m.m_intf.mif_deps)
-                  in
-                  let impl_deps =
-                    match m.m_impl with
-                    | Some i -> Util.StringSet.of_list (List.map snd i.mip_deps)
-                    | None -> Util.StringSet.empty
-                  in
-                  let deps = Util.StringSet.union if_deps impl_deps in
-                  Util.StringSet.fold
-                    (fun hash acc ->
-                      match Util.StringMap.find hash lib_name_by_hash with
-                      | exception Not_found -> acc
-                      | deps ->
-                          if
-                            List.mem lib.lib_name deps
-                            || List.exists
-                                 (fun d -> Util.StringSet.mem d lib_deps)
-                                 deps
-                          then acc
-                          else Util.StringSet.add (List.hd deps) acc)
-                    deps acc)
-                Util.StringSet.empty lib.modules
-            in
-            if Util.StringSet.cardinal new_lib_deps > 0 then
-              Logs.debug (fun m ->
-                  m "Adding missing deps to %s: %a" lib.lib_name
-                    Fmt.(list string)
-                    (Util.StringSet.elements new_lib_deps));
-            { lib with lib_deps = Util.StringSet.union new_lib_deps lib_deps })
-          pkg.libraries
-      in
-      { pkg with libraries })
-    pkgs
-
-let of_libs ~packages_dir libs =
-  let Ocamlfind.Db.
-        { archives_by_dir; libname_of_archive; cmi_only_libs; all_lib_deps; _ }
-      =
-    Ocamlfind.Db.create libs
-  in
-
-  (* Opam gives us a map of packages to directories, and vice-versa *)
-  let opam_map, opam_rmap = Opam.pkg_to_dir_map () in
-
-  (* Now we can construct the packages *)
-  let packages =
-    Fpath.Map.fold
-      (fun dir archives acc ->
-        match Fpath.Map.find dir opam_rmap with
-        | None ->
-            Logs.debug (fun m -> m "No package for dir %a\n%!" Fpath.pp dir);
-            acc
-        | Some pkg ->
-            let libraries =
-              Lib.v ~libname_of_archive ~pkg_name:pkg.name ~dir ~cmtidir:None
-                ~all_lib_deps ~cmi_only_libs ~id_override:None
-            in
-            let libraries =
-              List.filter
-                (fun l ->
-                  match l.archive_name with
-                  | None -> true
-                  | Some a -> Util.StringSet.mem a archives)
-                libraries
-            in
-            Util.StringMap.update pkg.name
-              (function
-                | Some pkg ->
-                    let libraries = libraries @ pkg.libraries in
-                    Some { pkg with libraries }
-                | None ->
-                    let pkg_dir = pkg_dir packages_dir pkg.name in
-
-                    let _, { Opam.docs; odoc_config; _ } =
-                      List.find
-                        (fun (pkg', _) ->
-                          (* Logs.debug (fun m ->
-                              m "Checking %s against %s" pkg.Opam.name pkg'.Opam.name); *)
-                          pkg = pkg')
-                        opam_map
-                    in
-
-                    let config =
-                      match odoc_config with
-                      | None -> Global_config.empty
-                      | Some f -> Global_config.load f
-                    in
-
-                    let mlds, assets, _ = mk_mlds docs in
-                    Some
-                      {
-                        name = pkg.name;
-                        version = pkg.version;
-                        libraries;
-                        mlds;
-                        assets;
-                        selected = false;
-                        remaps = [];
-                        other_docs = [];
-                        pkg_dir;
-                        doc_dir = pkg_dir;
-                        config;
-                      })
-              acc)
-      archives_by_dir Util.StringMap.empty
-  in
-  let packages = Util.StringMap.bindings packages |> List.map snd in
-  fix_missing_deps packages
-
-let of_packages ~packages_dir packages =
+let of_packages ~installed ~packages_dir packages =
   Logs.app (fun m -> m "Deciding which packages to build...");
   let deps =
     if packages = [] then Opam.all_opam_packages () else Opam.deps packages
   in
 
-  let Ocamlfind.Db.{ libname_of_archive; cmi_only_libs; all_lib_deps; _ } =
-    Ocamlfind.Db.create (Ocamlfind.all () |> Util.StringSet.of_list)
-  in
-
-  let opam_map, _opam_rmap = Opam.pkg_to_dir_map () in
+  let opam_map = Installed.package_files installed in
+  let roots = Opam.install_roots () in
 
   let ps =
     List.filter_map
@@ -480,6 +398,43 @@ let of_packages ~packages_dir packages =
       (fun (a, _) (b, _) -> String.compare a.Opam.name b.Opam.name)
       all
   in
+  (* ocaml-docs-ci installs a package's doc deps for its documentation, and
+     what they depend on, so the run documents them too. *)
+  let all =
+    let rec close all =
+      let in_all name = List.exists (fun (p, _) -> p.Opam.name = name) all in
+      let wanted =
+        List.concat_map (fun (p, _) -> Opam.doc_deps p) all
+        |> List.filter (fun n -> not (in_all n))
+        |> List.sort_uniq String.compare
+      in
+      let available =
+        List.filter
+          (fun n -> List.exists (fun (p, _) -> p.Opam.name = n) opam_map)
+          wanted
+      in
+      match available with
+      | [] -> all
+      | names ->
+          let more =
+            List.filter_map
+              (fun (p : Opam.package) ->
+                if in_all p.name then None
+                else
+                  List.find_opt (fun (p', _) -> p'.Opam.name = p.name) opam_map)
+              (List.map (fun name -> { Opam.name; version = "" }) names
+              @ Opam.deps names)
+            |> List.sort_uniq (fun (a, _) (b, _) ->
+                   String.compare a.Opam.name b.Opam.name)
+          in
+          Logs.debug (fun m ->
+              m "Adding the doc deps of the run's packages: %a"
+                Fmt.(list ~sep:comma Opam.pp)
+                (List.map fst more));
+          close (all @ more)
+    in
+    close all
+  in
 
   Logs.app (fun m -> m "Performing module-level dependency analysis...");
 
@@ -489,9 +444,7 @@ let of_packages ~packages_dir packages =
         let libraries =
           List.fold_left
             (fun acc dir ->
-              Lib.v ~libname_of_archive ~pkg_name:pkg.Opam.name ~dir
-                ~cmtidir:None ~all_lib_deps ~cmi_only_libs ~id_override:None
-              @ acc)
+              Lib.v ~roots ~installed ~pkg_name:pkg.Opam.name ~dir @ acc)
             []
             (files.Opam.libs |> Fpath.Set.to_list)
         in
@@ -502,103 +455,61 @@ let of_packages ~packages_dir packages =
           | Some f -> Global_config.load f
         in
         let mlds, assets, _ = mk_mlds files.docs in
-        let selected = List.mem pkg.name packages in
-        let remaps =
-          if selected then []
-          else
-            let local_pkg_path = Fpath.to_string (Fpath.to_dir_path pkg_dir) in
-            let pkg_path =
-              Printf.sprintf "https://ocaml.org/p/%s/%s/doc/" pkg.name
-                pkg.version
-            in
-            let lib_paths =
-              List.map
-                (fun libty ->
-                  let lib_name = libty.lib_name in
-                  let local_lib_path =
-                    Printf.sprintf "%s%s/" local_pkg_path lib_name
-                  in
-                  let lib_path = pkg_path in
-                  (local_lib_path, lib_path))
-                libraries
-            in
-            (local_pkg_path, pkg_path) :: lib_paths
-        in
-
+        let doc_deps = Opam.doc_deps pkg in
         {
           name = pkg.name;
           version = pkg.version;
           libraries;
           mlds;
           assets;
-          selected;
-          remaps;
           other_docs = [];
           pkg_dir;
           doc_dir = pkg_dir;
           config;
+          doc_deps;
         })
       all
   in
-  let res = fix_missing_deps packages in
-  Logs.debug (fun m -> m "Packages: %a" Fmt.Dump.(list pp) res);
-  res
+  Logs.debug (fun m -> m "Packages: %a" Fmt.Dump.(list pp) packages);
+  packages
 
-let remap_virtual_interfaces duplicate_hashes pkgs =
+(* A virtual library's implementations ship [.cmt] files only. Their
+   interface is the virtual library's [.cmti], which has the same digest, so
+   that is the interface they are given. *)
+let remap_virtual all =
+  let cmtis =
+    List.fold_left
+      (fun acc pkg ->
+        List.fold_left
+          (fun acc lib ->
+            List.fold_left
+              (fun acc m ->
+                if Fpath.has_ext "cmti" m.m_intf.mif_path then
+                  Util.StringMap.add_to_list m.m_intf.mif_hash m.m_intf acc
+                else acc)
+              acc lib.modules)
+          acc pkg.libraries)
+      Util.StringMap.empty all
+  in
+  let cmti_of hash =
+    match Util.StringMap.find_opt hash cmtis with
+    | Some [ x ] -> Some x
+    | _ -> None
+  in
+  let remap m =
+    if Fpath.has_ext "cmt" m.m_intf.mif_path then
+      match cmti_of m.m_intf.mif_hash with
+      | Some m_intf -> { m with m_intf }
+      | None -> m
+    else m
+  in
   List.map
     (fun pkg ->
       {
         pkg with
         libraries =
-          pkg.libraries
-          |> List.map (fun lib ->
-                 {
-                   lib with
-                   modules =
-                     lib.modules
-                     |> List.map (fun m ->
-                            let m_intf =
-                              if
-                                Util.StringMap.mem m.m_intf.mif_hash
-                                  duplicate_hashes
-                                && Fpath.has_ext "cmt" m.m_intf.mif_path
-                              then
-                                match
-                                  List.filter
-                                    (fun intf ->
-                                      Fpath.has_ext "cmti" intf.mif_path)
-                                    (Util.StringMap.find m.m_intf.mif_hash
-                                       duplicate_hashes)
-                                with
-                                | [ x ] -> x
-                                | _ -> m.m_intf
-                              else m.m_intf
-                            in
-                            { m with m_intf });
-                 });
+          List.map
+            (fun lib -> { lib with modules = List.map remap lib.modules })
+            pkg.libraries;
       })
-    pkgs
-
-let remap_virtual all =
-  let virtual_check =
-    let hashes =
-      List.fold_left
-        (fun acc pkg ->
-          List.fold_left
-            (fun acc lib ->
-              List.fold_left
-                (fun acc m ->
-                  let hash = m.m_intf.mif_hash in
-                  Util.StringMap.update hash
-                    (function
-                      | None -> Some [ m.m_intf ]
-                      | Some l -> Some (m.m_intf :: l))
-                    acc)
-                acc lib.modules)
-            acc pkg.libraries)
-        Util.StringMap.empty all
-    in
-    Util.StringMap.filter (fun _hash intfs -> List.length intfs > 1) hashes
-  in
-
-  remap_virtual_interfaces virtual_check all
+    all
