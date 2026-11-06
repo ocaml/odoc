@@ -153,7 +153,8 @@ open Reader.Infix
 let npeek n input = Stream.npeek n input.tokens
 
 (* {2 Non-link inline elements} *)
-type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
+type style =
+  [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript | `Strikethrough ]
 
 (* Convenient abbreviation for use in patterns. *)
 type token_that_always_begins_an_inline_element =
@@ -248,7 +249,7 @@ let rec inline_element :
 
       let requires_leading_whitespace =
         match s with
-        | `Bold | `Italic | `Emphasis -> true
+        | `Bold | `Italic | `Emphasis | `Strikethrough -> true
         | `Superscript | `Subscript -> false
       in
       let content, brace_location =

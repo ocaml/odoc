@@ -1,4 +1,5 @@
-type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
+type style =
+  [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript | `Strikethrough ]
 
 module rec Class : sig
   type t = string list

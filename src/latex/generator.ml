@@ -79,6 +79,7 @@ let style = function
   | `Bold -> Raw.bold
   | `Subscript -> Raw.subscript
   | `Superscript -> Raw.superscript
+  | `Strikethrough -> Raw.strikethrough
 
 let gen_hyperref pp r ppf =
   match (r.target, r.text) with
