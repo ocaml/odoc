@@ -24,7 +24,7 @@ weaknesses:
 $ opam install odoc-driver <pkg>
 $ odoc_driver <pkg>
 v}
-  to build the docs. The output will appear in the directory `_html` by default.
+  to build the docs. The output will appear in the directory [_html] by default.
   Full documentation is available in the {{!/odoc-driver/page-index}reference driver package}.
 - {{:https://dune.build/}Dune} is the best way to view docs while
   developing your project. We have a {{!page-dune}page} describing
@@ -574,7 +574,7 @@ This is useful if there are several identifiers [bar] in module [Foo], e.g., a t
 - [odoc]: [ {!module-Foo.type-bar} ] - each element in the path may be prefixed by its type. This is
 useful if there are ambiguous elements in any part of the path, e.g., in this case perhaps there is a
 module type [Foo].
-- [odoc3]: [ {!/library_name/Module} ] - this is a path to them module [M] in library [library_name].
+- [odoc3]: [ {!/library_name/Module} ] - this is a path to the module [Module] in library [library_name].
 This is useful if the module name is ambiguous, e.g., if there are two modules [M] in different libraries.
 You may need to add the library to the per-package config file.
 - [odoc3]: [ {!/package/path/to/page-foo} ] - this is a path to a page [foo] in the package [package].
@@ -592,7 +592,7 @@ The prefixes supported are:
 - [method]
 - [constructor] (and the equivalent deprecated prefix [const]) both for normal
   constructors and polymorphic constructors defined in a type alias. The
-  backtick [`] in polumorphic constructor is optional.
+  backtick [`] in a polymorphic constructor is optional.
 - [extension]
 - [extension-decl] for refering to the declaration point of an extension constructor
 - [field] (and the equivalent deprecated prefix [recfield])
@@ -620,6 +620,11 @@ v}
 
 This will generate a list of links to these modules. If the module has a synopsis
 (see {{!synopsis}later}), this will be inserted into the list.
+
+The entries may be path references naming the library the module belongs to,
+as in [{!modules: /mylib/A}]. This is useful when several libraries in scope
+provide a module of the same name — a virtual library and its implementations,
+for instance — and a plain [{!modules: A}] would be ambiguous.
 
 {3:reference_scope Reference Scope}
 
@@ -675,9 +680,11 @@ A compilation unit can refer to itself by name: in [foo.mli], [{!Foo.x}]
 refers to [x] in [Foo], even if another library also has a module [Foo].
 
 [odoc] allows modules to be 'opened' for the purposes of resolving references.
-By default, the module [Stdlib] is 'opened', allowing references like [{!List.t}]
-to work. This feature is enabled via the command-line flag [--open]. Currently
-inline [open] statements do {e not} bring other elements into scope.
+By default, the module [Stdlib] is 'opened', allowing references like
+[{!List.t}] to work. The list of opened modules is set by the repeatable
+[--open] flag, whose default is [Stdlib]; passing it replaces that default
+rather than adding to it. Currently inline [open] statements do {e not} bring
+other elements into scope.
 
 [odoc] does not see the compiler's own [-open] flags either. dune compiles each
 module of a wrapped library [lib] with [-open Lib__], so that [b.ml] can refer
@@ -688,9 +695,45 @@ the library has its own [List] module.
 In order for [odoc] to resolve links to other compilation units or [.mld] pages,
 the referenced
 unit or page must be {e compiled} and available to [odoc]. That is, when performing the
-[odoc link] command, the relevant [.odoc] file must be in a directory passed
-via [-I], in a library passed via [-L] or, for a page, in a package passed via
-[-P]. This is normally the responsibility of the {{!page-driver}driver}.
+[odoc link] command, the referenced [.odoc] file must be reachable through one of
+the library ([-L]), package ([-P]) or include ([-I]) arguments. The
+{{!page-driver}driver} decides which units to make available, and so what you
+can reference.
+
+{4:in_scope What is in scope}
+
+The reference driver computes this scope {e per package}: every library and
+every page in a package shares the same set of visible units. Other drivers
+should aim for equivalent behaviour. For a package [P], the following are in scope.
+
+You may reference the modules of (and the types, values, etc. within):
+
+{ul
+{- every library in [P] itself;}
+{- the dependencies of those libraries, direct and transitive: the libraries
+   listed in each library's [META] [requires] field, what those require, and so
+   on. A dependency that provides no modules of its own, such as [num] (which
+   only requires [num.core]) or [threads.posix] (which only requires
+   [threads]), stands for its own [requires];}
+{- the OCaml standard library;}
+{- any library named in the package's {{!section-"config-file"}[odoc-config.sexp]},
+   whether listed there directly or belonging to a package listed there, and
+   its dependencies likewise.}}
+
+You may reference the {e pages} of:
+
+{ul
+{- [P] itself;}
+{- every package that provides one of the in-scope libraries above;}
+{- any package named in [odoc-config.sexp].}}
+
+The transitive dependencies are in scope because [odoc] needs them to link
+the package: each of its modules records the libraries it was compiled
+against, and so does each module it refers to. A dependency is only
+there if its documentation was built: a library of a package that is not
+documented, such as an optional dependency that is not installed, contributes
+nothing. To refer to a package that none of your libraries depends on, name it
+in {{!section-"config-file"}[odoc-config.sexp]}.
 
 Two libraries may have modules of the same name, as [eliom.client] and
 [eliom.server] both have [Eliom_content]. A bare reference such as

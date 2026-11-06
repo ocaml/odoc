@@ -1,0 +1,97 @@
+{0 Internals}
+
+How the reference driver does what {{!/odoc/page-driver}How to drive odoc}
+describes. The two executables, [odoc_driver] and [odoc_driver_voodoo], are
+thin layers over {!Odoc_driver_lib}.
+
+{1 What is installed}
+
+{!Odoc_driver_lib.Installed} is built once per run. From findlib it has every
+library's directory, archives and [META] [requires]. From opam's record of the
+files each package installed, it has which package installed each library.
+Every other module asks it rather than findlib or opam.
+
+{!Odoc_driver_lib.Packages} asks opam which packages the run needs: the ones
+asked for, their dependencies, their doc deps, and the packages of the
+optional dependencies their libraries were built with. It makes one
+{!Odoc_driver_lib.Packages.t} for each, holding its libraries, pages, assets
+and [odoc-config.sexp]. The modules of a library come from [odoc classify] on
+its directory, and their imports from [odoc compile-deps].
+
+A switch need not have findlib configured: ocaml.org documents each package in
+a switch holding only its dependencies, which may not include [ocamlfind].
+{!Odoc_driver_lib.Ocamlfind} then sets findlib up by hand, with the search path
+the configuration would have given: [OCAMLPATH], the standard library's
+directory, and the switch's [lib]. The standard library is the one
+[ocamlc -where] prints, or [CAMLLIB], since the driver may have been built in
+another switch. For the same reason the switch is the one [OPAM_SWITCH_PREFIX]
+names, and findlib reads that switch's configuration.
+
+{1 Units}
+
+{!Odoc_driver_lib.Odoc_units_of} turns each [Packages.t] into an
+{!Odoc_driver_lib.Odoc_unit.pkg}: its units, grouped by library, each with its
+identifier, its [.odoc] location and its [-L], and the package's reference
+scope. For a library outside the run, it asks [Installed] for the directory of
+its [.odoc] files, the package that provides it, and what it requires.
+
+Locations mirror the switch. A library's [.odoc] files go at the path of its
+object directory, [_odoc/lib/fmt/cli] for [fmt.cli], and a package's pages
+below [_odoc/doc/<pkg>]. Two things follow. Libraries installed in one
+directory share one [.odoc] directory, as the [compiler-libs.*] libraries do,
+which is why the driver passes [--custom-layout]. And every location can be
+computed from a name, so a run finds what earlier runs built without any
+record of them.
+
+A library that provides no modules, such as [num] (which requires [num.core])
+or [threads.posix], stands for what it requires, in the scope and in the
+compile order. A library that is not built, or not documented, contributes
+nothing: a [META] names the libraries a package can install, and [fmt.cli] is
+declared even when [cmdliner] was absent.
+
+{1 Building}
+
+{!Odoc_driver_lib.Build} builds each package as a whole. A package is
+compiled once the packages it depends on are ready, and packages that do not
+depend on one another are built at the same time. A package with doc deps is
+compiled, then its doc deps are compiled, and then it is linked; it is ready
+for the packages that depend on it once it is compiled. Any other package is
+ready once it is linked and rendered, which is stricter than [odoc] needs.
+Before it starts, [Build] checks that no packages wait for one another in a
+cycle.
+
+Within a package, the order follows from the calls. Each library is compiled
+after the package's libraries among its transitive dependencies, and each
+module after the modules it imports, through {!Odoc_driver_lib.Util.memo}, so
+that a module already under way is awaited rather than compiled twice.
+{!Odoc_driver_lib.Compile} runs each step, and every command goes through a
+pool of workers that bounds how many run at once.
+
+A module can be in more than one archive: [ocamloptcomp.cma] holds all of
+[ocamlmiddleend.cma]. The driver gives each module to the largest library
+that holds it, as that is the one findlib declares. This only happens where
+there is no [META] and libraries are named after their archives.
+
+{1 Virtual libraries}
+
+When the virtual library is built in the same run,
+{!Odoc_driver_lib.Packages.remap_virtual} gives each implementation its
+[.cmti]. When an earlier run built it, as on ocaml.org,
+{!Odoc_driver_lib.Compile.compile_lib} looks for a [.cmti] of the same name
+and digest among the implementation's transitive dependencies. The driver
+copies the [.cmti] of every library that ships no archive next to its [.odoc]
+files so that it can be found.
+
+{1 Voodoo mode}
+
+{!Odoc_driver_lib.Voodoo} reads the package that voodoo-prep laid out in
+[prep/universes/<u>/<pkg>/<version>] into a [Packages.t], with the package's
+[lib] first on findlib's path. Everything after that is the same code as for a
+switch, applied to one package. [--blessed] gives identifiers starting
+[p/<pkg>/<version>], and [u/<u>/<pkg>/<version>] otherwise.
+
+{1 Reporting}
+
+Warnings are shown at the end of a run, for the packages asked for and not
+their dependencies, using [--warnings-tag]. With [--remap], dependencies are
+compiled but not linked or rendered, and links into them point at ocaml.org.

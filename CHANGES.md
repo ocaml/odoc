@@ -37,6 +37,31 @@
   libraries a unit was built against (@jonludlam, #1516)
 - A `@canonical` tag can name the library of its root, as in
   `@canonical /lib/Name.X` (@jonludlam, #1516)
+- odoc-driver: build each package as a whole, after the packages it depends
+  on, and build packages that do not depend on one another at the same time.
+  A package whose opam file names doc deps, with `{with-doc & post}`
+  dependencies or `x-extra-doc-deps`, is compiled, then its doc deps are, and
+  then it is linked, as ocaml.org builds it. The standard build now gives the
+  same documentation as ocaml.org's (@jonludlam, #1461)
+- odoc-driver: lay `.odoc` files out like the compiled objects, so that
+  co-located libraries share a directory; this replaces the digest-based
+  recovery of undeclared dependencies (@jonludlam, #1461)
+- odoc-driver: give odoc the library scope: compile and link with `-L` alone,
+  a unit's libraries being its library and that library's transitive
+  dependencies, and a package's pages those of each library it names
+  (@jonludlam, #1461)
+- odoc-driver: document the doc deps of a run's packages, and the packages of
+  the optional dependencies its libraries were built with (@jonludlam, #1461)
+- odoc-driver: read every META through findlib, and set findlib up by hand in
+  a switch with no findlib configuration, as ocaml-docs-ci gives a package
+  whose dependencies have no ocamlfind (@jonludlam, #1461)
+- odoc-driver: warn when `odoc-config.sexp` names a package that the opam file
+  lists neither as a dependency nor as a doc dep (@jonludlam, #1461)
+- odoc-driver: where two libraries ship the same module, document it under the
+  larger one, which is the one a reader can depend on (@jonludlam, #1461)
+- odoc-driver: remove `odoc_driver_monorepo` (@jonludlam, #1461)
+- Document the odoc 3 reference scope and driving model in `driver.mld` and
+  `odoc_for_authors.mld` (@jonludlam, #1461)
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
@@ -47,6 +72,10 @@
 ### Fixed
 - `.odoc` and `.odocl` files are written to a temporary file and renamed, so
   a parallel build never reads one that is partly written (@jonludlam)
+- odoc-driver: document the switch that opam's environment selects, as
+  `opam exec --switch` sets it, rather than opam's default switch, and read
+  that switch's findlib configuration rather than the one of the switch the
+  driver was built in (@jonludlam, #1461)
 - `odoc compile` and `odoc link` look up a unit that an identifier names by
   that identifier. They look it up by name only if no single file holds it.
   This removes repeated "Ambiguous lookup" warnings (@jonludlam, #1511)
