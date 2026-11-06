@@ -546,9 +546,7 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
       (* Format.eprintf "Can't find %a\n%!" Component.Fmt.model_identifier (id :> Identifier.t); *)
       match (id :> Identifier.t) with
       | (`Root (_, name) | `LibraryParameter (_, name)) as root -> (
-          (* The identifier names the unit, so it is looked up as itself, not
-             by its name. If no single file holds a unit with that identifier,
-             the name is looked up as before. *)
+          (* Look up by id first, and if that fails fall back to looking up by name *)
           match env.resolver with
           | None -> None
           | Some r -> (

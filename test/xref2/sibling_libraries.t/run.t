@@ -19,7 +19,7 @@ each result should be. A FIXME says where odoc gets it wrong today.
   > done
 
 Both libraries are in the reference scope of every unit, with [-L]. The
-[-I] path of a unit holds only its own library, as the compiler's did.
+[-I] path of a unit holds only its own library, as the compilation step did.
 
   $ L="-L client:h/pkg/client -L server:h/pkg/server"
   $ for lib in client server; do
@@ -100,7 +100,7 @@ reference. They should resolve to [pkg/client/Content] and
 [pkg/server/Content].
 
 The third is the plain [{!Content}], which is ambiguous. odoc should warn, and
-take one of the two.
+take an arbitrary one of the two.
 
 The fourth is [{!/client/Content.Html}]. It should resolve to
 [pkg/client/Content__Html], with the canonical name [pkg/client/Content.Html].
