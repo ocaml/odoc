@@ -330,13 +330,24 @@ let rec read_pattern hide_item pat =
   | Tpat_alias(pat, id, loc, _, _) ->
 #endif
     `Value(id, hide_item, Some loc.loc) :: read_pattern hide_item pat
-  | Tpat_record(pats, _) -> 
+#if defined OXCAML && OCAML_VERSION >= (5,4,0)
+  | Tpat_record(pats, _, _) ->
+#else
+  | Tpat_record(pats, _) ->
+#endif
       List.concat (List.map (fun (_, _, pat) -> read_pattern hide_item pat) pats)
 #if defined OXCAML
+#if OCAML_VERSION >= (5,4,0)
+  | Tpat_record_unboxed_product(pats, _, _) ->
+#else
   | Tpat_record_unboxed_product(pats, _) ->
+#endif
       List.concat (List.map (fun (_, _, pat) -> read_pattern hide_item pat) pats)
 #endif
-#if OCAML_VERSION < (4,13,0)
+#if defined OXCAML && OCAML_VERSION >= (5,4,0)
+  | Tpat_construct(_, _, _, pats, _) ->
+      List.concat (List.map (fun (_, pat) -> read_pattern hide_item pat) pats)
+#elif OCAML_VERSION < (4,13,0)
   | Tpat_construct(_, _, pats)
 #else
   | Tpat_construct(_, _, pats, _)
