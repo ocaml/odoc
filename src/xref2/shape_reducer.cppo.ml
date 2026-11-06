@@ -10,6 +10,16 @@ let rec traverse_aliases = function
   | _ -> None
 #endif
 
+#if defined OXCAML && OCAML_VERSION >= (5, 4, 0)
+let mutrec_uid (shape : Shape.t) =
+  match shape.desc with
+  | Proj_decl ({ desc = Mutrec decls; _ }, id) -> (
+      match Odoc_model.Paths.Ocaml_ident.Map.find_opt id decls with
+      | Some decl -> decl.uid
+      | None -> None)
+  | _ -> None
+#endif
+
 let make ~lookup_impl =
   let read_unit_shape ~unit_name =
     match lookup_impl unit_name with
@@ -48,6 +58,12 @@ let make ~lookup_impl =
       (try Some (Reduce.reduce_for_uid Odoc_model.Paths.Ocaml_env.empty query)
        with Not_found -> None)
     with
+#if defined OXCAML && OCAML_VERSION >= (5, 4, 0)
+    | Some Internal_error_missing_uid -> (
+        match Reduce.reduce Odoc_model.Paths.Ocaml_env.empty query with
+        | shape -> mutrec_uid shape
+        | exception Not_found -> None)
+#endif
     | Some r -> traverse_aliases r
     | None -> None
 #endif

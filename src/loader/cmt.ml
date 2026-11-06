@@ -45,7 +45,7 @@ let rec read_pattern env parent doc id_attrs pat =
 #if OCAML_VERSION < (5,2,0)
     | Tpat_var(id, _) ->
 #elif defined OXCAML
-    | Tpat_var { id; _ } ->
+    | Tpat_var { id; _ } | Tpat_fun_layout { id; _ } ->
 #else
     | Tpat_var(id, _, _uid) ->
 #endif
@@ -55,7 +55,8 @@ let rec read_pattern env parent doc id_attrs pat =
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          [Value {id; source_loc; doc; type_; value; ext_attrs; modalities = []}]
+          let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmt_builddir pat.pat_loc) in
+          [Value {id; source_loc; doc; type_; value; ext_attrs; modalities = []; source_loc_jane}]
 #if OCAML_VERSION < (5,2, 0)
     | Tpat_alias(pat, id, _) ->
 #elif defined OXCAML
@@ -71,7 +72,8 @@ let rec read_pattern env parent doc id_attrs pat =
           Cmi.mark_type_expr pat.pat_type;
           let type_ = Cmi.read_type_expr env pat.pat_type in
           let value = Abstract in
-          let item = Value {id; source_loc; doc; type_; value; ext_attrs; modalities = []} in
+          let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmt_builddir pat.pat_loc) in
+          let item = Value {id; source_loc; doc; type_; value; ext_attrs; modalities = []; source_loc_jane} in
           item :: read_pattern env parent doc id_attrs pat
     | Tpat_constant _ -> []
     | Tpat_tuple pats ->
@@ -83,22 +85,35 @@ let rec read_pattern env parent doc id_attrs pat =
     | Tpat_unboxed_tuple pats ->
         List.concat (List.map (fun (_, p, _) -> read_pattern env parent doc id_attrs p) pats)
 #endif
+#if defined OXCAML && OCAML_VERSION >= (5, 4, 0)
+    | Tpat_construct(_,_,_,pats,_) ->
+        List.concat (List.map (fun (_, p) -> read_pattern env parent doc id_attrs p) pats)
+#else
 #if OCAML_VERSION < (4, 13, 0)
     | Tpat_construct(_, _, pats) ->
 #else
     | Tpat_construct(_,_,pats,_) ->
 #endif
         List.concat (List.map (read_pattern env parent doc id_attrs) pats)
+#endif
     | Tpat_variant(_, None, _) -> []
     | Tpat_variant(_, Some pat, _) ->
         read_pattern env parent doc id_attrs pat
+#if defined OXCAML && OCAML_VERSION >= (5, 4, 0)
+    | Tpat_record(pats, _, _) ->
+#else
     | Tpat_record(pats, _) ->
+#endif
         List.concat
           (List.map
              (fun (_, _, pat) -> read_pattern env parent doc id_attrs pat)
           pats)
 #if defined OXCAML
+#if OCAML_VERSION >= (5, 4, 0)
+    | Tpat_record_unboxed_product(pats, _, _) ->
+#else
     | Tpat_record_unboxed_product(pats, _) ->
+#endif
         List.concat
           (List.map
              (fun (_, _, pat) -> read_pattern env parent doc id_attrs pat)
@@ -121,7 +136,6 @@ let rec read_pattern env parent doc id_attrs pat =
 #if defined OXCAML
     | Tpat_unboxed_unit -> []
     | Tpat_unboxed_bool _ -> []
-    | Tpat_fun_layout _ -> []
 #endif
 
 let read_value_binding env parent id_attrs vb =
@@ -382,7 +396,8 @@ let read_class_declaration env parent cld =
         clparams
     in
     let type_ = read_class_expr env (id :> Identifier.ClassSignature.t) clparams cld.ci_expr in
-    { id; source_loc; doc; virtual_; params; type_; expansion = None }
+    let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmt_builddir cld.ci_loc) in
+    { id; source_loc; doc; virtual_; params; type_; expansion = None ; source_loc_jane}
 
 let read_class_declarations env parent clds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -406,7 +421,11 @@ let rec read_module_expr env parent label_parent mexpr =
         let sg, () = read_structure Odoc_model.Semantics.Expect_none env parent str in
         Signature sg
 #if OCAML_VERSION >= (4,10,0)
+#if defined OXCAML && OCAML_VERSION >= (5,4,0)
+    | Tmod_functor(parameter, res, _) ->
+#else
     | Tmod_functor(parameter, res) ->
+#endif
         let f_parameter, env =
           match parameter with
           | Unit -> FunctorParameter.Unit, env
@@ -505,7 +524,8 @@ and read_module_binding env parent mb =
     | None, (`Module (_, n) | `Parameter (_, n) | `Root (_, n) | `LibraryParameter (_, n)) -> Odoc_model.Names.ModuleName.is_hidden n
     | Some _, _ -> false
   in
-  Some {id; source_loc; doc; type_; canonical; hidden; }
+  let source_loc_jane = Some (Odoc_model.Lang.Source_loc_jane.of_location !cmt_builddir mb.mb_loc) in
+  Some {id; source_loc; doc; type_; canonical; hidden; source_loc_jane}
 
 and read_module_bindings env parent mbs =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
@@ -623,7 +643,7 @@ and read_include_functor env parent wrapper incl =
       let mty = read_module_expr env parent container incl.incl_mod in
       let hidden = true in
       let id, path = Cmti.generate_wrapper_module parent ~prefix:"INCLUDE" ~hidden in
-      let m : Module.t = {id; source_loc=None; doc; type_=ModuleType mty; canonical=None; hidden} in
+      let m : Module.t = {id; source_loc=None; source_loc_jane=None; doc; type_=ModuleType mty; canonical=None; hidden} in
       ([Signature.Module (Ordinary, m)], path, ModuleType mty)
   in
   let decl = Functor {target = Path (`Apply (functor_path, wrapper)); original_ref} in

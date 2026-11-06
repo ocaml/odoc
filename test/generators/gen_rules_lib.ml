@@ -9,6 +9,8 @@ type enabledif =
   | Before of string
   (* Any version of OxCaml *)
   | OxCaml
+  (* OxCaml, maximum version, bound excluded *)
+  | OxCamlBefore of string
   (* Minimum version, but not OxCaml *)
   | MinExcludingOxCaml of string
   (* Maximum version, but not OxCaml *)
@@ -35,6 +37,13 @@ module Dune = struct
     | Min v -> List [ Atom ">="; Atom "%{ocaml_version}"; Atom v ]
     | Before v -> List [ Atom "<"; Atom "%{ocaml_version}"; Atom v ]
     | OxCaml -> Atom "%{ocaml-config:ox}"
+    | OxCamlBefore v ->
+        List
+          [
+            Atom "and";
+            render_enabledif' OxCaml;
+            render_enabledif' (Before v);
+          ]
     | MinExcludingOxCaml v ->
         List
           [

@@ -339,7 +339,10 @@ let mark_type ty =
       | Tquote_eval typ -> loop visited typ
       | Tsplice typ -> loop visited typ
       | Tof_kind _ -> ()
-      | Trepr _ -> ()
+      | Trepr (typ, _) -> loop visited typ
+#if OCAML_VERSION >= (5,4,0)
+      | Tmod (typ, _) | Tbox typ -> loop visited typ
+#endif
 #endif
   in
   loop [] ty
@@ -510,22 +513,34 @@ let mark_class_declaration cld =
   mark_class_type cld.cty_params cld.cty_type
 
 #if defined OXCAML
+(* From OxCaml 5.4 the components of a [Longident.t] carry their location. *)
+#if OCAML_VERSION >= (5,4,0)
+let lid_txt (l : Longident.t Location.loc) = l.txt
+let lid_name (s : string Location.loc) = s.txt
+#else
+let lid_txt (l : Longident.t) = l
+let lid_name (s : string) = s
+#endif
+
 let rec read_longident_module (l : Longident.t) : Paths.Path.Module.t =
   match l with
   | Longident.Lident s -> `Root (ModuleName.make_std s)
-  | Longident.Ldot (p, s) -> `Dot (read_longident_module p, ModuleName.make_std s)
+  | Longident.Ldot (p, s) ->
+      `Dot (read_longident_module (lid_txt p), ModuleName.make_std (lid_name s))
   | Longident.Lapply (p, arg) ->
-      `Apply (read_longident_module p, read_longident_module arg)
+      `Apply (read_longident_module (lid_txt p), read_longident_module (lid_txt arg))
 
 let read_longident_type (l : Longident.t) : Paths.Path.Type.t =
   match l with
   | Longident.Lident s -> `Resolved (`CoreType (TypeName.make_std s))
-  | Longident.Ldot (p, s) -> `DotT (read_longident_module p, TypeName.make_std s)
+  | Longident.Ldot (p, s) ->
+      `DotT (read_longident_module (lid_txt p), TypeName.make_std (lid_name s))
   | Longident.Lapply _ -> `Resolved (`CoreType (TypeName.make_std "_"))
 
 let read_longident_class_type (l : Longident.t) : Paths.Path.ClassType.t =
   match l with
-  | Longident.Ldot (p, s) -> `DotT (read_longident_module p, TypeName.make_std s)
+  | Longident.Ldot (p, s) ->
+      `DotT (read_longident_module (lid_txt p), TypeName.make_std (lid_name s))
   | Longident.Lident s ->
       `DotT (`Root (ModuleName.make_std "*"), TypeName.make_std s)
   | Longident.Lapply _ ->
@@ -534,7 +549,7 @@ let read_longident_class_type (l : Longident.t) : Paths.Path.ClassType.t =
 let read_longident_module_type (l : Longident.t) : Paths.Path.ModuleType.t =
   match l with
   | Longident.Ldot (p, s) ->
-      `DotMT (read_longident_module p, ModuleTypeName.make_std s)
+      `DotMT (read_longident_module (lid_txt p), ModuleTypeName.make_std (lid_name s))
   | Longident.Lident s ->
       `DotMT (`Root (ModuleName.make_std "_"), ModuleTypeName.make_std s)
   | Longident.Lapply _ ->
@@ -620,7 +635,11 @@ let rec read_parsetree_core_type (ct : Parsetree.core_type) =
           vars
       in
       Poly (vars, read_parsetree_core_type ct)
+#if OCAML_VERSION >= (5,4,0)
+  | Ptyp_package { ppt_path = lid; ppt_cstrs = substs; _ } ->
+#else
   | Ptyp_package (lid, substs) ->
+#endif
       let path = read_longident_module_type lid.txt in
       let substitutions =
         List.map
@@ -642,7 +661,13 @@ and read_jkind_annotation (jk : Parsetree.jkind_annotation) =
   let open Kind in
   match jk.pjka_desc with
   | Pjk_default -> Default
+#if OCAML_VERSION >= (5,4,0)
+  | Pjk_abbreviation s -> Abbreviation (Env.Fragment.read_type s.txt)
+  (* The model has no scannable axis annotations. *)
+  | Pjk_operator (jk', _) -> read_jkind_annotation jk'
+#else
   | Pjk_abbreviation (s, _) -> Abbreviation (Env.Fragment.read_type s.txt)
+#endif
   | Pjk_mod (jk', modes) ->
     Mod (read_jkind_annotation jk', read_parsetree_modes modes)
   | Pjk_with (jk', cty, modalities) ->
@@ -706,12 +731,19 @@ let tree_of_modes (modes : Mode.Alloc.Const.t) : string list =
     match modes.visibility, modes.contention with
     | Immutable, Contended
     | Read, Shared
+#if OCAML_VERSION >= (5,4,0)
+    | Write, Corrupted
+#endif
     | Read_write, Uncontended -> None
     | _, _ -> Some modes.contention
   in
   let portability =
     match modes.statefulness, modes.portability with
     | Stateless, Portable
+#if OCAML_VERSION >= (5,4,0)
+    | Reading, Shareable
+    | Writing, Corruptible
+#endif
     | Stateful, Nonportable -> None
     | _, _ -> Some modes.portability
   in
@@ -740,14 +772,26 @@ let tree_of_modes (modes : Mode.Alloc.Const.t) : string list =
     ; print_opt Mode.Visibility.Const.print visibility
     ; print_opt Mode.Staticity.Const.print staticity ]
 
-let read_alloc_modes m = tree_of_modes (Mode.Alloc.zap_to_legacy m)
+(* From OxCaml 5.4 a mode can be generic, and zapping one needs to know
+   whether it sits in argument position.  The model has no mode variables, so
+   a generic mode is read as the legacy mode, as the compiler prints it when
+   mode polymorphism is off. *)
+#if OCAML_VERSION >= (5,4,0)
+let zap_to_legacy ~arg m = Mode.Alloc.zap_to_legacy_force ~arg m
+let curry_mode = Ctype.curry_mode_const
+#else
+let zap_to_legacy ~arg:_ m = Mode.Alloc.zap_to_legacy m
+let curry_mode = Ctype.curry_mode
+#endif
+
+let read_alloc_modes ~arg m = tree_of_modes (zap_to_legacy ~arg m)
 
 type modes = Mode.Alloc.Const.t
 
 let legacy_modes = Mode.Alloc.Const.legacy
 
 let curried_acc modes arg_mode =
-  Ctype.curry_mode modes (Mode.Alloc.zap_to_legacy arg_mode)
+  curry_mode modes (zap_to_legacy ~arg:true arg_mode)
 
 let mode_is_implied implied_modes res_mode =
   let snap = Btype.snapshot () in
@@ -762,7 +806,7 @@ let mode_is_implied implied_modes res_mode =
 let read_arrow_modes implied_modes typ =
   match Compat.get_desc typ with
   | Tarrow ((_, arg_mode, res_mode), _, res, _) ->
-      let arg_modes = read_alloc_modes arg_mode in
+      let arg_modes = read_alloc_modes ~arg:true arg_mode in
       let implied_modes = curried_acc implied_modes arg_mode in
       let res_is_arrow =
         match Compat.get_desc res with
@@ -771,7 +815,7 @@ let read_arrow_modes implied_modes typ =
       in
       let res_modes =
         if res_is_arrow && mode_is_implied implied_modes res_mode then []
-        else read_alloc_modes res_mode
+        else read_alloc_modes ~arg:false res_mode
       in
       (arg_modes, res_modes, implied_modes)
   | _ -> ([], [], implied_modes)
@@ -909,7 +953,18 @@ and read_type_expr_modal env implied_modes typ =
       | Tquote_eval typ -> Quote (read_type_expr env typ)
       | Tsplice typ -> Splice (read_type_expr env typ)
       | Tof_kind _ -> assert false
-      | Trepr _ -> Any  (* oxcaml: representation annotations are ignored *)
+      (* oxcaml: only the sort variables of a representation annotation are
+         dropped *)
+      | Trepr (typ, _) -> read_type_expr env typ
+#if OCAML_VERSION >= (5,4,0)
+      (* The model has no mode-crossing bounds. The type is read without
+         them. *)
+      | Tmod (typ, _) -> read_type_expr env typ
+      (* [ty box] is an application of the predefined [box] constructor. *)
+      | Tbox typ ->
+          let p = Env.Path.read_type env.ident_env Predef.path_box in
+          Constr (p, [read_type_expr env typ])
+#endif
 #endif
     in
       match alias with
@@ -1064,7 +1119,9 @@ let read_value_description ({ident_env ; warnings_tag} as env) parent id vd =
   in
   let ext_attrs = Doc_attr.attrs_of_value_description vd in
   let modalities = read_value_descr_modalities vd in
-  Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities }
+  (* Source location is not trustworthy since it's a cmi so left as None *)
+  let source_loc_jane = None in
+  Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities; source_loc_jane }
 
 #if defined OXCAML
 let is_atomic ld =
@@ -1278,7 +1335,9 @@ let read_type_declaration env parent id decl =
 #endif
   in
   let equation = Equation.{params; manifest; constraints; private_; kind} in
-  {id; source_loc; doc; canonical; equation; representation}
+  (* Source location is not trustworthy since it's a cmi so left as None *)
+  let source_loc_jane = None in
+  {id; source_loc; doc; canonical; equation; representation; source_loc_jane }
 
 let read_extension_constructor env parent id ext =
   let open Extension.Constructor in
@@ -1325,7 +1384,9 @@ let read_exception env parent id ext =
         (parent : Identifier.Signature.t :> Identifier.FieldParent.t) ext.ext_args
     in
     let res = opt_map (read_type_expr env) ext.ext_ret_type in
-    {id; source_loc; doc; args; res}
+    (* Source location is not trustworthy since it's a cmi so left as None *)
+    let source_loc_jane = None in
+    {id; source_loc; doc; args; res; source_loc_jane}
 
 let read_method env parent concrete (name, kind, typ) =
   let open Method in
@@ -1423,7 +1484,9 @@ let read_class_type_declaration env parent id cltd =
       read_class_signature env (id :> Identifier.ClassSignature.t) cltd.clty_params cltd.clty_type
     in
     let virtual_ = read_virtual cltd.clty_type in
-    { id; source_loc; doc; virtual_; params; expr; expansion = None }
+    (* Source location is not trustworthy since it's a cmi so left as None *)
+    let source_loc_jane = None in
+    { id; source_loc; doc; virtual_; params; expr; expansion = None ; source_loc_jane}
 
 let rec read_class_type env parent params =
   let open Class in function
@@ -1461,7 +1524,9 @@ let read_class_declaration env parent id cld =
       read_class_type env (id :> Identifier.ClassSignature.t) cld.cty_params cld.cty_type
     in
     let virtual_ = cld.cty_new = None in
-    { id; source_loc; doc; virtual_; params; type_; expansion = None }
+    (* Source location is not trustworthy since it's a cmi so left as None *)
+    let source_loc_jane = None in
+    { id; source_loc; doc; virtual_; params; type_; expansion = None ; source_loc_jane}
 
 let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
   let open ModuleType in
@@ -1507,7 +1572,9 @@ and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_
   let doc, canonical = Doc_attr.attached ~warnings_tag:env.warnings_tag Odoc_model.Semantics.Expect_canonical container mtd.mtd_attributes in
   let canonical = match canonical with | None -> None | Some s -> Doc_attr.conv_canonical_module_type s in
   let expr = opt_map (read_module_type env (id :> Identifier.Signature.t)) mtd.mtd_type in
-  {id; source_loc; doc; canonical; expr }
+  (* Source location is not trustworthy since it's a cmi so left as None *)
+  let source_loc_jane = None in
+  {id; source_loc; doc; canonical; expr ; source_loc_jane}
 
 and read_module_declaration env parent ident (md : Odoc_model.Compat.module_declaration) =
   let open Module in
@@ -1526,7 +1593,9 @@ and read_module_declaration env parent ident (md : Odoc_model.Compat.module_decl
     | Some _ -> false
     | None -> Odoc_model.Names.contains_double_underscore (Ident.name ident)
   in
-  {id; source_loc; doc; type_; canonical; hidden }
+  (* Source location is not trustworthy since it's a cmi so left as None *)
+  let source_loc_jane = None in
+  {id; source_loc; doc; type_; canonical; hidden ; source_loc_jane}
 
 and read_type_rec_status rec_status =
   let open Signature in

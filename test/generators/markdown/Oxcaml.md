@@ -11,7 +11,7 @@ Unboxed types have a trailing hash '\#'
 ```ocaml
 type pt = {
   x : int;
-  y : float32#;
+  y : float#;
 }
 ```
 ```ocaml

@@ -68,6 +68,7 @@ let constraints =
     ("ocaml_56.mli", Min "5.6");
     ("oxcaml.mli", OxCaml);
     ("oxcaml_impl.ml", OxCaml);
+    ("oxcaml_functor_alias.mli", OxCamlBefore "5.4");
     ("annotations.mli", Or (Min "5.4", OxCaml));
     ("annotations_impl.ml", Or (Min "5.4", OxCaml));
     ("annotations_unsupported.mli", BeforeExcludingOxCaml "5.4");

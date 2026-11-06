@@ -8,7 +8,16 @@ let rec is_persistent : Path.t -> bool = function
   | Path.Pextra_ty (p, _) -> is_persistent p
 #endif
 
-let pos_of_loc loc = (loc.Location.loc_start.pos_cnum, loc.loc_end.pos_cnum)
+let pos_of_loc (loc : Warnings.loc) = {
+  Odoc_model.Lang.Source_info.loc_start = {
+    pos_cnum = loc.loc_start.pos_cnum ;
+    pos_lnum = loc.loc_start.pos_lnum
+  } ;
+  loc_end = {
+    pos_cnum = loc.loc_start.pos_cnum ;
+    pos_lnum = loc.loc_start.pos_lnum
+  }
+}
 
 let counter =
   let c = ref 0 in
@@ -107,7 +116,11 @@ module Env = struct
     match mexpr.mod_desc with
     | Tmod_ident _ -> ()
     | Tmod_structure str -> structure env parent str
+#if defined OXCAML && OCAML_VERSION >= (5, 4, 0)
+    | Tmod_functor (parameter, res, _) ->
+#else
     | Tmod_functor (parameter, res) ->
+#endif
         let open Odoc_model.Names in
         let env =
           match parameter with
