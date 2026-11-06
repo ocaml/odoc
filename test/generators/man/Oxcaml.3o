@@ -28,7 +28,7 @@ Unboxed types have a trailing hash '#'
 x : int;
 .br 
 .ti +2
-y : float32#;
+y : float#;
 .br 
 }
 .sp 

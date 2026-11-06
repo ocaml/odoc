@@ -3,7 +3,7 @@ val f : int -> ('a . 'a -> 'a) -> unit
 
 (** Unboxed types have a trailing hash '#' *)
 
-type pt = { x : int ; y : float32# }
+type pt = { x : int ; y : float# }
 type segment = { start : pt# ; stop : pt# }
 
 (** {1 Layouts} *)
@@ -584,10 +584,6 @@ module Include_functor_argument_shapes : sig
 
     class output_class_via_name : T.class_
     (** A class whose type comes from the name of a class *)
-
-    module Aliased = T
-    (** The input module itself. It should contain everything from the top
-        level module *)
   end
 
   (**/**)

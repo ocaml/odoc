@@ -138,11 +138,4 @@ A class whose type comes from an explicitely named class type
 .ti +2
 A class whose type comes from the name of a class
 .nf 
-.sp 
-\f[CB]module\fR Aliased : \f[CB]sig\fR \.\.\. \f[CB]end\fR
-.fi 
-.br 
-.ti +2
-The input module itself\. It should contain everything from the top level module
-.nf 
 
