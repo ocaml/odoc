@@ -309,12 +309,17 @@ let rec nestable_block_element :
       Location.at location (`Paragraph (inline_elements content))
   | { value = `Code_block { meta; delimiter = _; content; output }; location }
     ->
-      let lang_tag =
+      let meta =
         match meta with
-        | Some { language = { Location.value; _ }; _ } -> Some value
+        | Some { language; tags } ->
+            let tag : Ast.code_block_tag -> Comment.code_block_tag = function
+              | `Tag t -> `Tag t.value
+              | `Binding (k, v) -> `Binding (k.value, v.value)
+            in
+            Some { Comment.language = language.value; tags = List.map tag tags }
         | None -> None
       in
-      let outputs =
+      let output =
         match output with
         | None -> None
         | Some l -> Some (List.map nestable_block_element l)
@@ -325,7 +330,7 @@ let rec nestable_block_element :
       let warnings = List.map Error.t_of_parser_t warnings in
       List.iter (Error.raise_warning ~non_fatal:true) warnings;
       let content = Location.at content.location trimmed_content in
-      Location.at location (`Code_block (lang_tag, content, outputs))
+      Location.at location (`Code_block { Comment.meta; content; output })
   | { value = `Math_block s; location } -> Location.at location (`Math_block s)
   | { value = `Verbatim v; location } ->
       let v, warnings = Odoc_parser.codeblock_content location v in

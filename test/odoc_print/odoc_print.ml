@@ -234,8 +234,9 @@ module Refs = struct
       (x : Comment.nestable_block_element Location_.with_location) =
     match x.value with
     | `Paragraph p -> List.iter (inline c indent) p
-    | `Code_block (_, _, Some output) -> List.iter (nestable c indent) output
-    | `Code_block (_, _, None) | `Math_block _ | `Verbatim _ -> ()
+    | `Code_block { output = Some output; _ } ->
+        List.iter (nestable c indent) output
+    | `Code_block { output = None; _ } | `Math_block _ | `Verbatim _ -> ()
     | `Modules ms -> List.iter (module_entry c indent) ms
     | `Table { data; _ } ->
         List.iter
