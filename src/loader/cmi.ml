@@ -339,7 +339,7 @@ let mark_type ty =
       | Tquote_eval typ -> loop visited typ
       | Tsplice typ -> loop visited typ
       | Tof_kind _ -> ()
-      | Trepr _ -> ()
+      | Trepr (typ, _) -> loop visited typ
 #endif
   in
   loop [] ty
@@ -909,7 +909,9 @@ and read_type_expr_modal env implied_modes typ =
       | Tquote_eval typ -> Quote (read_type_expr env typ)
       | Tsplice typ -> Splice (read_type_expr env typ)
       | Tof_kind _ -> assert false
-      | Trepr _ -> Any  (* oxcaml: representation annotations are ignored *)
+      (* oxcaml: only the sort variables of a representation annotation are
+         dropped *)
+      | Trepr (typ, _) -> read_type_expr env typ
 #endif
     in
       match alias with
