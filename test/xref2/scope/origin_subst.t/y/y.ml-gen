@@ -1,0 +1,2 @@
+(** @canonical Y.W *)
+module W = Y__W

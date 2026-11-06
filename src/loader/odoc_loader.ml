@@ -60,7 +60,11 @@ let normal_unit =
 
 #if defined OXCAML
 let unit_kind_of_cmi ~cmi_kind ~cmi_params =
-  let root name = `Root (Odoc_model.Names.ModuleName.make_std name) in
+  (* Parameterised libraries are outside the library scope model, so their
+     parameters are looked up anywhere. *)
+  let root name =
+    `Root (Odoc_model.Names.ModuleName.make_std name, Odoc_model.Library_scope.any)
+  in
   let param p = root (Global_module.Parameter_name.to_string p) in
   let is_parameter, argument_for =
     match (cmi_kind : Cmi_format.kind) with
@@ -96,7 +100,7 @@ let root_id ~parent ~name { is_parameter; _ } =
     Odoc_model.Paths.Identifier.Mk.library_parameter (parent, name)
   else Odoc_model.Paths.Identifier.Mk.root (parent, name)
 
-let read_cmt_infos source_id ~filename root digest imports () =
+let read_cmt_infos ~scope source_id ~filename root digest imports () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error _ -> raise Corrupted
   | cmt_info -> (
@@ -105,7 +109,8 @@ let read_cmt_infos source_id ~filename root digest imports () =
           let shape_infos =
             Odoc_model.Compat.shape_info_of_cmt_infos cmt_info
           in
-          Implementation.read_cmt_infos source_id shape_infos impl digest root
+          Implementation.read_cmt_infos ~scope source_id shape_infos impl digest
+            root
             imports
       | _ -> raise Not_an_implementation)
 
@@ -152,6 +157,7 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     canonical;
     source_loc = None;
     parameterisation;
+    libraries = [];
   }
 
 let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
@@ -168,7 +174,9 @@ let unit_name_as_string x = x
 let name_to_string x = x
 #endif
 
-let read_cmti ~make_root ~parent ~filename ~warnings_tag () =
+(* Every root path a unit holds is resolved among the libraries the unit was
+   compiled against: [scope] is made from them. *)
+let read_cmti ~make_root ~parent ~filename ~scope ~warnings_tag () =
   let cmt_info, unit_kind = read_cmt_and_unit_kind filename in
   match cmt_info.cmt_annots with
   | Interface intf -> (
@@ -189,7 +197,7 @@ let read_cmti ~make_root ~parent ~filename ~warnings_tag () =
           let id, sg, canonical =
             Cmti.read_interface
               (root_id ~parent ~name unit_kind)
-              ~warnings_tag intf
+              ~scope ~warnings_tag intf
           in
 #if defined OXCAML
           let imports =
@@ -207,7 +215,7 @@ let read_cmti ~make_root ~parent ~filename ~warnings_tag () =
             sg)
   | _ -> raise Not_an_interface
 
-let read_cmt ~make_root ~parent ~filename ~warnings_tag () =
+let read_cmt ~make_root ~parent ~filename ~scope ~warnings_tag () =
   match read_cmt_and_unit_kind filename with
   | exception Cmi_format.Error (Not_an_interface _) ->
       raise Not_an_implementation
@@ -258,7 +266,9 @@ let read_cmt ~make_root ~parent ~filename ~warnings_tag () =
                   Odoc_model.Paths.Identifier.Mk.module_
                     (id, Odoc_model.Names.ModuleName.make_std name)
                 in
-                let path = `Root (Odoc_model.Names.ModuleName.make_std name) in
+                let path =
+                  `Root (Odoc_model.Names.ModuleName.make_std name, scope)
+                in
                 { Odoc_model.Lang.Compilation_unit.Packed.id; path })
               items
           in
@@ -271,7 +281,7 @@ let read_cmt ~make_root ~parent ~filename ~warnings_tag () =
           let id, sg, canonical =
             Cmt.read_implementation
               (root_id ~parent ~name unit_kind)
-              ~warnings_tag impl
+              ~scope ~warnings_tag impl
           in
           compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
             ~name ~id ?canonical ~parameterisation:unit_kind.parameterisation
@@ -297,7 +307,7 @@ let cmi_crcs cmi_info =
 let cmi_crcs cmi_info = cmi_info.Cmi_format.cmi_crcs
 #endif
 
-let read_cmi ~make_root ~parent ~filename ~warnings_tag () =
+let read_cmi ~make_root ~parent ~filename ~scope ~warnings_tag () =
   let cmi_info = Cmi_format.read_cmi filename in
   let cmi_crcs = cmi_crcs cmi_info in
   match cmi_crcs with
@@ -314,7 +324,7 @@ let read_cmi ~make_root ~parent ~filename ~warnings_tag () =
       let id, sg =
         Cmi.read_interface
           (root_id ~parent ~name unit_kind)
-          ~warnings_tag
+          ~scope ~warnings_tag
 #if defined OXCAML
           (Odoc_model.Compat.signature (fst cmi_info.cmi_sign))
 #else
@@ -334,7 +344,7 @@ let read_cmi ~make_root ~parent ~filename ~warnings_tag () =
         ~parameterisation:unit_kind.parameterisation sg
   | _ -> raise Corrupted
 
-let read_impl ~make_root ~filename ~source_id () =
+let read_impl ~make_root ~filename ~scope ~source_id () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error (Not_an_interface _) ->
       raise Not_an_implementation
@@ -387,7 +397,7 @@ let read_impl ~make_root ~filename ~source_id () =
                 Odoc_model.Lang.Compilation_unit.Import.Unresolved (s, d))
               imports
           in
-          read_cmt_infos source_id ~filename root digest imports ()
+          read_cmt_infos ~scope source_id ~filename root digest imports ()
       | _ -> raise Not_an_implementation)
 
 (** Catch errors from reading the object files and some internal errors *)
@@ -403,17 +413,26 @@ let wrap_errors ~filename f =
       | Not_an_interface -> not_an_interface filename
       | Make_root_error m -> error_msg filename m)
 
-let read_cmti ~make_root ~parent ~filename ~warnings_tag =
-  wrap_errors ~filename (read_cmti ~make_root ~parent ~filename ~warnings_tag)
+let scope_of = Odoc_model.Library_scope.of_libraries
 
-let read_cmt ~make_root ~parent ~filename ~warnings_tag =
-  wrap_errors ~filename (read_cmt ~make_root ~parent ~filename ~warnings_tag)
+let read_cmti ~make_root ~parent ~filename ~libraries ~warnings_tag =
+  wrap_errors ~filename
+    (read_cmti ~make_root ~parent ~filename ~scope:(scope_of libraries)
+       ~warnings_tag)
 
-let read_impl ~make_root ~filename ~source_id =
-  wrap_errors ~filename (read_impl ~make_root ~source_id ~filename)
+let read_cmt ~make_root ~parent ~filename ~libraries ~warnings_tag =
+  wrap_errors ~filename
+    (read_cmt ~make_root ~parent ~filename ~scope:(scope_of libraries)
+       ~warnings_tag)
 
-let read_cmi ~make_root ~parent ~filename ~warnings_tag =
-  wrap_errors ~filename (read_cmi ~make_root ~parent ~filename ~warnings_tag)
+let read_impl ~make_root ~filename ~libraries ~source_id =
+  wrap_errors ~filename
+    (read_impl ~make_root ~source_id ~scope:(scope_of libraries) ~filename)
+
+let read_cmi ~make_root ~parent ~filename ~libraries ~warnings_tag =
+  wrap_errors ~filename
+    (read_cmi ~make_root ~parent ~filename ~scope:(scope_of libraries)
+       ~warnings_tag)
 
 let read_location = Doc_attr.read_location
 

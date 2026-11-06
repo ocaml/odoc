@@ -32,6 +32,7 @@ val mutability : Asttypes.mutable_flag -> atomic:bool -> Odoc_model.Lang.TypeDec
 
 val read_interface :
   Odoc_model.Paths.Identifier.RootModule.t ->
+  scope:Odoc_model.Library_scope.t ->
   warnings_tag:string option ->
   Odoc_model.Compat.signature ->
   Paths.Identifier.RootModule.t * Odoc_model.Lang.Signature.t

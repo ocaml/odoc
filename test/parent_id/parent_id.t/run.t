@@ -66,3 +66,16 @@ Testing missing file:
   $ odoc link -P pkg:_odoc/pkg/ _odoc/pkg/page-file.odoc
   File "file.mld", line 3, characters 0-20:
   Warning: Failed to resolve reference /pkg/dir1/my_page Path '/pkg/dir1/my_page' not found
+
+Module lists accept path references naming the library root, which lets a
+generated page pick a module unambiguously when several libraries in scope
+provide a module of the same name:
+
+  $ cat > modules.mld << EOF2
+  > {0 Modules}
+  > {!modules: /libname/Unit}
+  > EOF2
+  $ odoc compile --output-dir _odoc/ --parent-id pkg modules.mld
+  $ odoc link -P pkg:_odoc/pkg/ -L libname:_odoc/pkg/libname/ _odoc/pkg/page-modules.odoc
+  $ odoc_print _odoc/pkg/page-modules.odocl | jq -c '.. | .["`Modules"]? | select(.) | .[] | .[0]'
+  {"`Resolved":{"`Identifier":{"`Root":[{"Some":{"`Page":[{"Some":{"`Page":["None","pkg"]}},"libname"]}},"Unit"]}}}

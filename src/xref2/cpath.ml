@@ -56,7 +56,9 @@ and Cpath : sig
     | `Substituted of module_
     | `Local of Ident.module_ * bool
     | `Identifier of Identifier.Path.Module.t * bool
-    | `Root of ModuleName.t
+    | `Root of ModuleName.t * Library_scope.t
+      (** Where the name is resolved, wherever the path has travelled: among the
+          libraries of the unit it was read from. *)
     | `Dot of module_ * ModuleName.t
     | `Module of Resolved.parent * ModuleName.t (* Like dot, but typed *)
     | `Apply of module_ * module_
@@ -412,7 +414,7 @@ original context into a path that is valid in _all_ contexts.
 let rec original_path_cpath : module_ -> module_ option = function
   | `Resolved p ->
       original_path_cpath (unresolve_resolved_module_path p)
-  | `Root name -> Some (`Root name)
+  | `Root _ as r -> Some r
   | `Forward _ -> None
   | `Dot (p, s) -> (
       match original_path_cpath p with

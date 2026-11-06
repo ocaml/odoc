@@ -40,9 +40,12 @@ type t =
     class_types : Id.ClassType.t Ident.tbl;
     loc_to_ident : Id.t LocHashtbl.t;
     shadowed : Ident.t list;
+    scope : Library_scope.t;
+      (* The libraries of the unit being read: every root it holds is resolved
+         among them. *)
   }
 
-let empty () =
+let empty ~scope () =
   { modules = Ident.empty;
     parameters = Ident.empty;
     module_paths = Ident.empty;
@@ -56,6 +59,7 @@ let empty () =
     class_types = Ident.empty;
     loc_to_ident = LocHashtbl.create 100;
     shadowed = [];
+    scope;
   }
 
 (* The boolean is an override for whether it should be hidden - true only for
@@ -719,30 +723,31 @@ let is_shadowed
 module Path = struct
 
 #if defined OXCAML
-  let rec read_global_name (n : Global_module.Name.t) : Paths.Path.Instance.t =
+  let rec read_global_name env (n : Global_module.Name.t) :
+      Paths.Path.Instance.t =
     (* OxCaml parameterized library application "Lib[Param:Impl][P2:I2]" *)
-    let base = `Root (ModuleName.make_std n.head) in
+    let base = `Root (ModuleName.make_std n.head, env.scope) in
     List.fold_left
       (fun acc (arg : Global_module.Name.argument) ->
         let param =
           ModuleName.make_std
             (Global_module.Parameter_name.to_string arg.param)
         in
-        `ApplyParam (acc, param, read_global_name arg.value))
+        `ApplyParam (acc, param, read_global_name env arg.value))
       base n.args
 
-  let module_of_id id =
+  let module_of_id env id =
     match Ident.to_global id with
     | Some ({ Global_module.Name.args = _ :: _; _ } as n) ->
-        (read_global_name n :> Paths.Path.Module.t)
-    | _ -> `Root (ModuleName.of_ident id)
+        (read_global_name env n :> Paths.Path.Module.t)
+    | _ -> `Root (ModuleName.of_ident id, env.scope)
 #else
-  let module_of_id id = `Root (ModuleName.of_ident id)
+  let module_of_id env id = `Root (ModuleName.of_ident id, env.scope)
 #endif
 
   let read_module_ident env id =
     if ident_is_global_or_predef id then
-      module_of_id id
+      module_of_id env id
     else
       try find_module env id
       with Not_found -> assert false
@@ -764,7 +769,7 @@ module Path = struct
     try
       `Identifier (find_class_type env id, false)
     with Not_found ->
-      `DotT (`Root (ModuleName.make_std "*"), (TypeName.of_ident id))
+      `DotT (`Root (ModuleName.make_std "*", env.scope), (TypeName.of_ident id))
       (* TODO remove this hack once the fix for PR#6650
          is in the OCaml release *)
 
