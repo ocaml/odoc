@@ -24,7 +24,22 @@ let extra_path = ref []
    contains no ocamlfind. Findlib is then set up by hand, with the search path
    the configuration would have given: [OCAMLPATH], the standard library's
    directory, which holds the METAs of the compiler's own libraries, and the
-   switch's [lib]. *)
+   switch's [lib].
+
+   The configuration file is the switch's, when opam's environment selects a
+   switch and [OCAMLFIND_CONF] does not name another: [etc/findlib.conf] if
+   there is one, else [lib/findlib.conf]. Findlib looks there itself only when
+   ocamlfind was configured with relative paths, which opam's is not. Its own
+   default is the one in the switch it was built in. *)
+let config =
+  match
+    (Sys.getenv_opt "OCAMLFIND_CONF", Sys.getenv_opt "OPAM_SWITCH_PREFIX")
+  with
+  | None, Some prefix ->
+      let conf dir = Filename.(concat (concat prefix dir) "findlib.conf") in
+      Some (if Sys.file_exists (conf "etc") then conf "etc" else conf "lib")
+  | _ -> None
+
 let setup =
   lazy
     (let stdlib = Lazy.force stdlib in
@@ -37,7 +52,7 @@ let setup =
      let env_ocamlpath =
        String.concat (if Sys.win32 then ";" else ":") ocamlpath
      in
-     try Findlib.init ~env_ocamlpath ?env_camllib:stdlib ()
+     try Findlib.init ?config ~env_ocamlpath ?env_camllib:stdlib ()
      with e ->
        Logs.debug (fun m ->
            m "No findlib configuration (%s), so findlib is set up by hand"

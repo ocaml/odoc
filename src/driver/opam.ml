@@ -10,15 +10,29 @@ let memoize f =
   let x = lazy (f ()) in
   fun () -> Lazy.force x
 
+(* The switch is the one opam's environment selects, as [opam env] and
+   [opam exec --switch] set it, since findlib follows that environment too.
+   [opam] itself would answer for its default switch. A local switch's prefix
+   is [<dir>/_opam], and opam names it by [<dir>]; a global one's is
+   [<root>/<name>]. *)
 let get_switch =
   memoize @@ fun () ->
-  Util.lines_of_process Cmd.(opam % "switch" % "show") |> List.hd
+  match Sys.getenv_opt "OPAM_SWITCH_PREFIX" with
+  | Some prefix ->
+      let prefix = Fpath.(rem_empty_seg (v prefix)) in
+      if Fpath.basename prefix = "_opam" then
+        Fpath.(to_string (rem_empty_seg (parent prefix)))
+      else Fpath.basename prefix
+  | None -> Util.lines_of_process Cmd.(opam % "switch" % "show") |> List.hd
 
 let prefix =
   memoize @@ fun () ->
-  Util.lines_of_process
-    Cmd.(opam % "var" % "--switch" % get_switch () % "prefix")
-  |> List.hd
+  match Sys.getenv_opt "OPAM_SWITCH_PREFIX" with
+  | Some prefix -> prefix
+  | None ->
+      Util.lines_of_process
+        Cmd.(opam % "var" % "--switch" % get_switch () % "prefix")
+      |> List.hd
 
 let all_opam_packages =
   memoize @@ fun () ->
@@ -149,8 +163,8 @@ let doc_deps { name; version } =
 let deps pkgs =
   let cmd =
     Cmd.(
-      opam % "list" % "--recursive" % "-i" % "--columns" % "package" % "--color"
-      % "never" % "-s" % "--or")
+      opam % "list" % "--switch" % get_switch () % "--recursive" % "-i"
+      % "--columns" % "package" % "--color" % "never" % "-s" % "--or")
   in
   let cmd =
     List.fold_left (fun cmd pkg -> Cmd.(cmd % "--required-by" % pkg)) cmd pkgs
@@ -342,8 +356,8 @@ let dune_overrides () =
 let check pkgs =
   let cmd =
     Cmd.(
-      opam % "list" % "-i" % "--columns" % "package" % "--color" % "never"
-      % "-s")
+      opam % "list" % "--switch" % get_switch () % "-i" % "--columns"
+      % "package" % "--color" % "never" % "-s")
   in
   let cmd = List.fold_left Cmd.( % ) cmd pkgs in
   let out = Util.lines_of_process cmd in

@@ -142,13 +142,12 @@ package's would be wrong.
 
   $ mkdir -p _odoc8$(ocamlc -where)
   $ (unset OCAMLFIND_CONF; FAKE_DEFAULT=other odoc_driver --odoc-dir _odoc8 --html-dir _html8 pc 2>&1) | grep -v '^\(Deciding\|Performing\|Starting\|Documentation\)' || true
-  odoc_driver: [ERROR] Error: Unknown/uninstalled packages: ["pc"]
   $ ls -d _html8/p*
-  ls: _html8/p*: No such file or directory
-  [1]
+  _html8/pa
+  _html8/pc
   $ ls _html8/pc/pc
-  ls: _html8/pc/pc: No such file or directory
-  [1]
+  C
+  index.html
 
 Case 8. A switch may keep findlib's configuration in [etc] rather than
 [lib], and findlib looks in [etc] first. The driver should read it, as in
@@ -165,5 +164,5 @@ package's, would be wrong.
   _html9/pa
   _html9/pc
   $ ls _html9/pc/pc
-  ls: _html9/pc/pc: No such file or directory
-  [1]
+  C
+  index.html
