@@ -789,11 +789,19 @@ let rec block_element_list : type block stops_at_which_tokens.
         junk input;
         consume_block_elements where_in_line acc
     (* Tags. These can appear at the top level only. *)
-    | { value = `Tag tag as token; location } as next_token -> (
+    | { value = (`Tag _ | `Begin_tag _) as token; location } as next_token -> (
+        let tag, delimited =
+          match token with
+          | `Tag tag -> (tag, false)
+          | `Begin_tag tag -> ((tag :> Token.tag_kind), true)
+        in
         let recover_when_not_at_top_level context =
           warn_because_not_at_top_level next_token;
           junk input;
-          let words = List.map (Loc.at location) (tag_to_words tag) in
+          let words =
+            tag_to_words tag @ if delimited then [ `Word "{" ] else []
+          in
+          let words = List.map (Loc.at location) words in
           let paragraph =
             `Paragraph words
             |> accepted_in_all_contexts context
@@ -824,6 +832,37 @@ let rec block_element_list : type block stops_at_which_tokens.
 
             junk input;
 
+            (* The content of an undelimited tag ends implicitly, for example at
+               a blank line. The content of a delimited tag ([@return{...}])
+               ends at the matching ['}'], so it can span several blocks. *)
+            let tag_content () =
+              if delimited then (
+                let content, brace, _where_in_line =
+                  block_element_list In_explicit_list ~parent_markup:token input
+                in
+                (match brace.value with
+                | `Right_brace -> junk input
+                | `End ->
+                    Parse_error.end_not_allowed brace.location
+                      ~in_what:(Token.describe token)
+                    |> add_warning input);
+                let location =
+                  (location :: List.map Loc.location content)
+                  @ [ brace.location ]
+                  |> Loc.span
+                in
+                (content, location, `After_text))
+              else
+                let content, _stream_head, where_in_line =
+                  block_element_list (In_implicitly_ended `Tag)
+                    ~parent_markup:token input
+                in
+                let location =
+                  location :: List.map Loc.location content |> Loc.span
+                in
+                (content, location, where_in_line)
+            in
+
             match tag with
             | (`Author s | `Since s | `Version s | `Canonical s) as tag ->
                 let s = String.trim s in
@@ -849,10 +888,7 @@ let rec block_element_list : type block stops_at_which_tokens.
                 consume_block_elements `After_text (tag :: acc)
             | ( `Deprecated | `Return | `Children_order | `Short_title
               | `Toc_status | `Order_category ) as tag ->
-                let content, _stream_head, where_in_line =
-                  block_element_list (In_implicitly_ended `Tag)
-                    ~parent_markup:token input
-                in
+                let content, location, where_in_line = tag_content () in
                 let tag =
                   match tag with
                   | `Deprecated -> `Deprecated content
@@ -862,35 +898,20 @@ let rec block_element_list : type block stops_at_which_tokens.
                   | `Short_title -> `Short_title content
                   | `Order_category -> `Order_category content
                 in
-                let location =
-                  location :: List.map Loc.location content |> Loc.span
-                in
                 let tag = Loc.at location (`Tag tag) in
                 consume_block_elements where_in_line (tag :: acc)
             | (`Param _ | `Raise _ | `Before _) as tag ->
-                let content, _stream_head, where_in_line =
-                  block_element_list (In_implicitly_ended `Tag)
-                    ~parent_markup:token input
-                in
+                let content, location, where_in_line = tag_content () in
                 let tag =
                   match tag with
                   | `Param s -> `Param (s, content)
                   | `Raise s -> `Raise (s, content)
                   | `Before s -> `Before (s, content)
                 in
-                let location =
-                  location :: List.map Loc.location content |> Loc.span
-                in
                 let tag = Loc.at location (`Tag tag) in
                 consume_block_elements where_in_line (tag :: acc)
             | `See (kind, target) ->
-                let content, _next_token, where_in_line =
-                  block_element_list (In_implicitly_ended `Tag)
-                    ~parent_markup:token input
-                in
-                let location =
-                  location :: List.map Loc.location content |> Loc.span
-                in
+                let content, location, where_in_line = tag_content () in
                 let tag = `Tag (`See (kind, target, content)) in
                 let tag = Loc.at location tag in
                 consume_block_elements where_in_line (tag :: acc)
@@ -1242,8 +1263,9 @@ and shorthand_list_items :
       Ast.nestable_block_element with_location list list * where_in_line =
    fun next_token where_in_line acc ->
     match next_token.value with
-    | `End | `Right_brace | `Blank_line _ | `Tag _ | `Begin_section_heading _
-    | `Simple_media _ | `Media_with_replacement_text _ ->
+    | `End | `Right_brace | `Blank_line _ | `Tag _ | `Begin_tag _
+    | `Begin_section_heading _ | `Simple_media _
+    | `Media_with_replacement_text _ ->
         (List.rev acc, where_in_line)
     | (`Minus | `Plus) as bullet ->
         if bullet = bullet_token then (
@@ -1346,7 +1368,7 @@ and explicit_list_items :
     | token ->
         let suggestion =
           match token with
-          | `Begin_section_heading _ | `Tag _ ->
+          | `Begin_section_heading _ | `Tag _ | `Begin_tag _ ->
               Printf.sprintf "move %s outside the list." (Token.describe token)
           | _ ->
               Printf.sprintf "move %s into a list item, %s or %s."
