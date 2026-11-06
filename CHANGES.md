@@ -29,6 +29,9 @@
   which makes `.odoc` and `.odocl` files substantially smaller (@jonludlam, #1487)
 
 ### Fixed
+- `odoc compile` and `odoc link` look up a unit that an identifier names by
+  that identifier. They look it up by name only if no single file holds it.
+  This removes repeated "Ambiguous lookup" warnings (@jonludlam, #1511)
 - Fix optional arguments rendering as `?arg:???` in modules without an mli on
   OCaml 5.5 (@jonludlam, #1489)
 - Remove requirement for ppx_expect in tests (@jonludlam, #1445)
