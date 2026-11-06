@@ -73,7 +73,7 @@ Testing latex and manpages
   caml.gif
   ./caqzdqzdml.gif
 
-  $ cat latex/pkg1/index.tex | grep png
+  $ grep png latex/pkg1/index.tex | cram_test_helper
   \includegraphics{pkg1/caml.png}}%
 
   $ odoc man-generate -o man _odoc/pkg1/page-index.odocl
