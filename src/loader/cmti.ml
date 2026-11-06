@@ -259,7 +259,10 @@ and read_core_type_modal env modes container ctyp =
     | Ttyp_splice typ -> Splice (read_core_type env container typ)
     | Ttyp_call_pos -> Constr(Env.Path.read_type env.ident_env Predef.path_lexing_position, [])
     | Ttyp_of_kind _ -> assert false
-    | Ttyp_repr _ -> Any  (* oxcaml: representation annotations are ignored *)
+    | Ttyp_repr (_, ct) ->
+        (* oxcaml: only the sort variables of a representation annotation are
+           dropped *)
+        read_core_type env container ct
     | Ttyp_newlayout (_, ct) ->
         (* oxcaml: layout-variable binder; odoc ignores the layout vars *)
         read_core_type env container ct

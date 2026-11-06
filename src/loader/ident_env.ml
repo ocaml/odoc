@@ -315,7 +315,7 @@ let rec read_pattern hide_item pat =
 #if OCAML_VERSION < (5,2,0)
   | Tpat_var(id, loc) ->
 #elif defined OXCAML
-  | Tpat_var { id; name = loc; _ } ->
+  | Tpat_var { id; name = loc; _ } | Tpat_fun_layout { id; name = loc; _ } ->
 #else
   | Tpat_var(id, loc, _) ->
 #endif
@@ -371,7 +371,6 @@ let rec read_pattern hide_item pat =
 #if defined OXCAML
   | Tpat_unboxed_unit -> []
   | Tpat_unboxed_bool _ -> []
-  | Tpat_fun_layout _ -> []
 #endif
 
 let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> items list = fun hide_item items ->
