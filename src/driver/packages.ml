@@ -398,10 +398,47 @@ let of_packages ~installed ~packages_dir packages =
       (fun (a, _) (b, _) -> String.compare a.Opam.name b.Opam.name)
       all
   in
-  (* ocaml-docs-ci installs a package's doc deps for its documentation, and
-     what they depend on, so the run documents them too. *)
+  (* opam does not count an optional dependency as required, but a library
+     compiled against one needs its docs as much as any other (D1 in
+     doc/scope_model.mld). So add, until nothing changes, the package that
+     installed each library the run's libraries require. *)
   let all =
+    let in_run all lib =
+      match Installed.package installed lib with
+      | Some p -> List.exists (fun (p', _) -> p'.Opam.name = p) all
+      | None -> false
+    in
     let rec close all =
+      let required =
+        List.fold_left
+          (fun acc (l : Installed.lib) ->
+            if in_run all l.name then Util.StringSet.union l.requires acc
+            else acc)
+          Util.StringSet.empty (Installed.libs installed)
+      in
+      let added =
+        Util.StringSet.fold
+          (fun lib acc ->
+            match Installed.package installed lib with
+            | Some p when not (in_run all lib || List.mem p acc) -> p :: acc
+            | _ -> acc)
+          required []
+      in
+      match
+        List.filter_map
+          (fun p -> List.find_opt (fun (p', _) -> p'.Opam.name = p) opam_map)
+          added
+      with
+      | [] -> close_doc_deps all
+      | more ->
+          Logs.debug (fun m ->
+              m "Adding the packages of required libraries: %a"
+                Fmt.(list ~sep:comma Opam.pp)
+                (List.map fst more));
+          close (all @ more)
+    (* ocaml-docs-ci installs a package's doc deps for its documentation, and
+       what they depend on, so the run documents them too. *)
+    and close_doc_deps all =
       let in_all name = List.exists (fun (p, _) -> p.Opam.name = name) all in
       let wanted =
         List.concat_map (fun (p, _) -> Opam.doc_deps p) all
