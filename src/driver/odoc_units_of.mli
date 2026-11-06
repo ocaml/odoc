@@ -1,9 +1,6 @@
 open Odoc_unit
 
-type indices_style =
-  | Voodoo
-  | Normal of { toplevel_content : string option }
-  | Automatic
+type indices_style = Voodoo | Normal of { toplevel_content : string option }
 
 val packages :
   dirs:dirs ->

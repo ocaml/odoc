@@ -17,13 +17,3 @@
   (package odoc-md)
   %{bin:sherlodoc})
  (libraries odoc_driver_lib))
-
-(executable
- (public_name odoc_driver_monorepo)
- (modules odoc_driver_monorepo)
- (package odoc-driver)
- (link_deps
-  (package odoc)
-  (package odoc-md)
-  %{bin:sherlodoc})
- (libraries odoc_driver_lib))

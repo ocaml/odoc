@@ -18,6 +18,3 @@ val package : dirs:dirs -> pkg:Packages.t -> index:index -> mld t
 val src : dirs:dirs -> pkg:Packages.t -> index:index -> mld t
 
 val package_list : dirs:dirs -> remap:bool -> Packages.t list -> mld t
-
-val make_custom :
-  dirs -> (Packages.t -> Odoc_unit.index) -> Packages.t -> mld t list
