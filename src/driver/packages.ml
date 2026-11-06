@@ -493,6 +493,30 @@ let of_packages ~installed ~packages_dir packages =
         in
         let mlds, assets, _ = mk_mlds files.docs in
         let doc_deps = Opam.doc_deps pkg in
+        (* The config says what the scope is, and the opam file what is
+           installed for the docs and built first. A package named only in the
+           config is not installed by ocaml-docs-ci, and not waited for here.
+           Said for the packages the run was asked for, as their warnings are. *)
+        (match config.deps.packages with
+        | _ when not (List.mem pkg.name packages) -> ()
+        | [] -> ()
+        | named ->
+            let deps =
+              List.map
+                (fun (p : Opam.package) -> p.name)
+                (Opam.deps [ pkg.name ])
+            in
+            List.iter
+              (fun p ->
+                if not (List.mem p doc_deps || List.mem p deps || p = pkg.name)
+                then
+                  Logs.warn (fun m ->
+                      m
+                        "Package %s's odoc-config.sexp names %s, which its \
+                         opam file lists neither as a dependency nor in \
+                         x-extra-doc-deps"
+                        pkg.name p))
+              named);
         {
           name = pkg.name;
           version = pkg.version;

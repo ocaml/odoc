@@ -98,7 +98,7 @@ No warning would be wrong.
   $ cat src/pa/odoc-config.sexp
   (packages pz)
   $ odoc_driver --odoc-dir _odoc5 --html-dir _html5 pa 2>&1 | grep -i 'pz'
-  [1]
+  odoc_driver: [WARNING] Package pa's odoc-config.sexp names pz, which its opam file lists neither as a dependency nor in x-extra-doc-deps
 
 Case 5. A library may have no modules, as the compatibility libraries
 [seq] and [bytes] have none. [pm] is such a package: it installs a META and
