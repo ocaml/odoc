@@ -45,7 +45,7 @@ let rec read_pattern env parent doc id_attrs pat =
 #if OCAML_VERSION < (5,2,0)
     | Tpat_var(id, _) ->
 #elif defined OXCAML
-    | Tpat_var { id; _ } ->
+    | Tpat_var { id; _ } | Tpat_fun_layout { id; _ } ->
 #else
     | Tpat_var(id, _, _uid) ->
 #endif
@@ -123,7 +123,6 @@ let rec read_pattern env parent doc id_attrs pat =
 #if defined OXCAML
     | Tpat_unboxed_unit -> []
     | Tpat_unboxed_bool _ -> []
-    | Tpat_fun_layout _ -> []
 #endif
 
 let read_value_binding env parent id_attrs vb =
