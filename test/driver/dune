@@ -1,0 +1,17 @@
+(env
+ (_
+  (binaries
+   (../odoc_print/odoc_print.exe as odoc_print))))
+
+; odoc_driver needs OCaml 5.1, and calls opam to find the switch's prefix.
+
+(cram
+ (package odoc-driver)
+ (deps
+  %{bin:odoc}
+  %{bin:odoc-md}
+  %{bin:odoc_driver_voodoo}
+  %{bin:odoc_driver}
+  %{bin:odoc_print})
+ (enabled_if
+  (>= %{ocaml_version} 5.1.0)))

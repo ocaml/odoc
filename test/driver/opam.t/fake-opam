@@ -1,0 +1,39 @@
+#!/bin/sh
+# Answers the opam commands odoc_driver runs, for the switch in $FAKE_PREFIX,
+# which is named after its directory. Its default switch is $FAKE_DEFAULT, or
+# that one; any other switch is empty.
+# A package's dependencies are the names its opam file's depends lists.
+own=$(basename "$FAKE_PREFIX")
+switch=${FAKE_DEFAULT:-$own}
+deps() { sed -n 's/^depends: \[\(.*\)\]/\1/p' "$FAKE_PREFIX/.opam-switch/packages/$1.1.0/opam" | tr -d '"' ; }
+installed() { [ -d "$FAKE_PREFIX/.opam-switch/packages/$1.1.0" ]; }
+case "$1" in
+  switch) echo "$switch" ;;
+  var)
+    [ "$2" = --switch ] && switch=$3
+    if [ "$switch" = "$own" ]; then echo "$FAKE_PREFIX"; else echo "$PWD/$switch"; fi ;;
+  list)
+    shift; recursive=; pkgs=
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --switch) shift; switch=$1 ;;
+        --recursive) recursive=1 ;;
+        --required-by) shift; pkgs="$pkgs $1" ;;
+        --columns|--color) shift ;;
+        -*) ;;
+        *) pkgs="$pkgs $1" ;;
+      esac; shift
+    done
+    if [ -n "$recursive" ]; then
+      todo=$pkgs; seen=
+      while [ -n "$todo" ]; do
+        set -- $todo; p=$1; shift; todo="$*"
+        for d in $(deps $p); do
+          case " $seen " in *" $d "*) ;; *) installed $d && { seen="$seen $d"; todo="$todo $d"; } ;; esac
+        done
+      done
+      pkgs=$seen
+    fi
+    [ "$switch" = "$own" ] || pkgs=
+    for p in $pkgs; do installed $p && echo "$p.1.0"; done ;;
+esac

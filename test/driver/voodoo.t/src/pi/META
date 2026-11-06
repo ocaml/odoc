@@ -1,0 +1,5 @@
+version = "1.0"
+archive(byte) = "i.cma"
+package "native" (
+  archive(native) = "i.cmxa"
+)

@@ -1,0 +1,2 @@
+version = "1.0"
+description = "A library with no modules, as seq and bytes are"

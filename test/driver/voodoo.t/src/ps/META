@@ -1,0 +1,3 @@
+version = "1.0"
+directory = "+"
+archive(byte) = "s.cma"

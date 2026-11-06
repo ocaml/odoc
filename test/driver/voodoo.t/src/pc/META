@@ -1,0 +1,11 @@
+version = "1.0"
+archive(byte) = "c.cma"
+package "alias" (
+  description = "Another name for pc, as threads.posix is for threads"
+  requires = "pc"
+)
+package "user" (
+  directory = "user"
+  requires = "pc.alias"
+  archive(byte) = "u.cma"
+)

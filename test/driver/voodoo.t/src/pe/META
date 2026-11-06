@@ -1,0 +1,4 @@
+version = "1.0"
+requires = "pc"
+requires(-ppx_driver) = "pd"
+archive(byte) = "e.cma"

@@ -1,0 +1,3 @@
+version = "1.0"
+requires = "pc pd"
+archive(byte) = "a.cma"

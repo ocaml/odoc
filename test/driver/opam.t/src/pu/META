@@ -1,0 +1,2 @@
+version = "1.0"
+description = "A plugin interface, as ocamldoc is"

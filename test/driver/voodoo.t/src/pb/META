@@ -1,0 +1,3 @@
+version = "1.0"
+requires = "pa"
+archive(byte) = "b.cma"

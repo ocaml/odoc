@@ -1,0 +1,3 @@
+opam-version: "2.0"
+depends: [ "ocaml" "conf-thing" {os = "linux" & with-dev-setup} ]
+x-extra-doc-deps: [ "pa" ]

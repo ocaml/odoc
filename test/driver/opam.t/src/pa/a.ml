@@ -1,0 +1,1 @@
+type t = C.t
