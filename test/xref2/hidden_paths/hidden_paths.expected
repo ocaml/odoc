@@ -1,0 +1,19 @@
+Resolved paths:
+Alias (hidden, visible unresolved) model=false cpath=false
+Apply (hidden, visible)            model=true  cpath=true 
+Apply (visible, hidden)            model=true  cpath=true 
+ModuleType (visible, hidden name)  model=true  cpath=true 
+AliasModuleType (hidden, visible)  model=false cpath=false
+OpaqueModuleType (hidden)          model=true  cpath=true 
+Class (visible, hidden name)       model=true  cpath=true 
+Identifier (hidden class)          model=true  cpath=true 
+Subst, weak canonical test         model=false cpath=false
+Unresolved paths:
+Identifier (hidden name)           model=true  cpath=true 
+Root (hidden name)                 model=true  cpath=true 
+Dot (visible, hidden name)         model=true  cpath=true 
+Apply (hidden, visible)            model=true  cpath=true 
+Apply (visible, hidden)            model=true  cpath=true 
+DotMT (visible, hidden name)       model=true  cpath=true 
+DotT (visible, hidden name)        model=true  cpath=true 
+Identifier (hidden class)          model=true  cpath=true 
