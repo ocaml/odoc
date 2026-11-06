@@ -957,9 +957,13 @@ and read_type_expr_modal env implied_modes typ =
          dropped *)
       | Trepr (typ, _) -> read_type_expr env typ
 #if OCAML_VERSION >= (5,4,0)
-      (* The model has no mode-crossing bounds or boxing operator. Both
-         wrappers are read as the type they wrap. *)
-      | Tmod (typ, _) | Tbox typ -> read_type_expr env typ
+      (* The model has no mode-crossing bounds. The type is read without
+         them. *)
+      | Tmod (typ, _) -> read_type_expr env typ
+      (* [ty box] is an application of the predefined [box] constructor. *)
+      | Tbox typ ->
+          let p = Env.Path.read_type env.ident_env Predef.path_box in
+          Constr (p, [read_type_expr env typ])
 #endif
 #endif
     in
