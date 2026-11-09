@@ -40,8 +40,8 @@ it is installed below that tree, as it would below an opam switch.
   $ (cd src/pb && ocamlc -bin-annot -I ../pa -I ../pc -c b.mli b.ml && ocamlc -a -o b.cma b.cmo)
   $ for p in pd pc pa pb pe; do
   >   l=prep/universes/u/$p/1.0/lib/$p
-  >   mkdir -p $l && cp -r src/$p/* $l/ && rm -f $l/*.cmo $l/*/*.cmo $l/*.mld
-  >   mkdir -p inst/_build/install/default/lib && cp -r $l inst/_build/install/default/lib/
+  >   mkdir -p $l && cp -RL src/$p/* $l/ && rm -f $l/*.cmo $l/*/*.cmo $l/*.mld
+  >   mkdir -p inst/_build/install/default/lib && cp -RL $l inst/_build/install/default/lib/
   > done
   $ mkdir -p prep/universes/u/pb/1.0/doc/pb/odoc-pages
   $ cp src/pb/index.mld prep/universes/u/pb/1.0/doc/pb/odoc-pages/
