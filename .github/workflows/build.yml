@@ -56,7 +56,7 @@ jobs:
       - name: Install dependencies
         run: |
           opam install --deps-only --with-test ./odoc.opam ./odoc-parser.opam \
-            ${{ matrix.test-sherlodoc && './sherlodoc.opam' }}
+            ${{ matrix.test-sherlodoc && './sherlodoc.opam ./odoc-md.opam ./odoc-driver.opam' }}
 
       # odoc-md needs cmarkit, which is not a dep of odoc.opam or
       # odoc-parser.opam, and which requires OCaml >= 4.14.
