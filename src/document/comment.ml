@@ -237,17 +237,28 @@ let rec nestable_block_element :
  fun content ->
   match content with
   | `Paragraph p -> [ paragraph p ]
-  | `Code_block (lang_tag, code, outputs) ->
+  | `Code_block { meta; content = code; output = outputs } ->
       let lang_tag =
-        match lang_tag with None -> default_lang_tag | Some t -> t
+        match meta with None -> default_lang_tag | Some m -> m.language
       in
       let rest =
         match outputs with
         | Some xs -> nestable_block_element_list xs
         | None -> []
       in
+      (* The bare tags of a code block, such as [server] in
+         [{@ocaml server[...]}], become its classes, prefixed so that they do
+         not clash with odoc's own. *)
+      let attr =
+        match meta with
+        | None -> []
+        | Some m ->
+            List.filter_map
+              (function `Tag t -> Some ("tag-" ^ t) | `Binding _ -> None)
+              m.tags
+      in
       [
-        block
+        block ~attr
         @@ Source (lang_tag, source_of_code (Odoc_model.Location_.value code));
       ]
       @ rest

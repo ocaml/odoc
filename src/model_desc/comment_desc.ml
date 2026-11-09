@@ -19,10 +19,7 @@ and general_link_content = general_inline_element with_location list
 
 type general_block_element =
   [ `Paragraph of general_link_content
-  | `Code_block of
-    string option
-    * string with_location
-    * general_block_element with_location list option
+  | `Code_block of Comment.code_block
   | `Math_block of string
   | `Verbatim of string
   | `Modules of Comment.module_reference list
@@ -118,6 +115,19 @@ let media_href =
     | `Reference r -> C ("`Reference", r, reference)
     | `Link l -> C ("`Link", l, string))
 
+let code_block_meta : Comment.code_block_meta t =
+  let tag =
+    Variant
+      (function
+      | `Tag t -> C ("`Tag", t, string)
+      | `Binding (k, v) -> C ("`Binding", (k, v), Pair (string, string)))
+  in
+  Record
+    [
+      F ("language", (fun m -> m.Comment.language), string);
+      F ("tags", (fun m -> m.Comment.tags), List tag);
+    ]
+
 let rec block_element : general_block_element t =
   let list_kind =
     Variant
@@ -126,8 +136,11 @@ let rec block_element : general_block_element t =
   Variant
     (function
     | `Paragraph x -> C ("`Paragraph", x, link_content)
-    | `Code_block (x1, x2, _) ->
-        C ("`Code_block", (x1, ignore_loc x2), Pair (Option string, string))
+    | `Code_block { Comment.meta; content; output = _ } ->
+        C
+          ( "`Code_block",
+            (meta, ignore_loc content),
+            Pair (Option code_block_meta, string) )
     | `Math_block x -> C ("`Math_block", x, string)
     | `Verbatim x -> C ("`Verbatim", x, string)
     | `Modules x -> C ("`Modules", x, List module_reference)
