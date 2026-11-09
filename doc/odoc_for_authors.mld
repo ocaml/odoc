@@ -719,6 +719,24 @@ and other tags. Note that compared to ocamldoc, block tags do not extend to the
 end of the docstring. Instead, they are ended by a blank line, or a block that
 cannot be included in (a heading or another tag).
 
+To include several blocks, for example more than one paragraph, put the
+content of the tag in braces immediately after the tag name. The tag then ends
+at the closing brace:
+
+{[
+@return{The first paragraph of the description.
+
+The second paragraph, still part of the description.}
+
+@param{x The description of [x].
+
+More about [x].}
+]}
+
+Any data the tag takes, such as the parameter name of [@param], goes inside
+the braces. There must be no space between the tag name and the brace:
+[@return {[...]}] is an ordinary tag whose content starts with a code block.
+
 {4 Signature tags}
 
 - [@deprecated <text>] - marks the element as deprecated. [text] should describe

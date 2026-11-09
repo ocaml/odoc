@@ -19,6 +19,10 @@
 - Allow to break link into multiple lines (@Tim-ats-d, #1439)
 - Support for atomic annotation (@ElectreAAS, #1496)
 - Support for OxCaml parameterized libraries (@art-w, #1464)
+- Block tags can span several blocks when their content is delimited with
+  braces, as in `@return{...}`. A brace straight after a tag name used to be
+  the start of the tag's content, so `@return{!foo} bar` now means something
+  else (@jonludlam, #1517)
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)

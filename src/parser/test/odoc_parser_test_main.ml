@@ -35,6 +35,7 @@ let groups =
     ("open", Test.open_);
     ("closed", Test.closed);
     ("hidden", Test.hidden);
+    ("delimited_tag", Test.delimited_tag);
     ("bad_markup", Test.bad_markup);
     ("utf_8", Test.utf_8);
     ("comment_location", Test.comment_location);

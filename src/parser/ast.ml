@@ -116,6 +116,10 @@ type ocamldoc_tag =
 *)
 
 type tag = [ ocamldoc_tag | internal_tag ]
+(** A tag whose content is delimited by braces, as in [@return{...}], has the
+    same representation as one whose content is not. Its location includes the
+    braces. *)
+
 type heading = int * string option * inline_element with_location list
 
 type block_element =
