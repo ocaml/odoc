@@ -1,0 +1,31 @@
+
+.TH M_shadow_value 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.M_shadow_value
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml\.M_shadow_value\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]kind_\fR value = value \f[CB]mod\fR portable
+.sp 
+\f[CB]type\fR t_unannotated
+.sp 
+\f[CB]val\fR poly_unannotated : 'a\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR
+.fi 
+.br 
+.ti +2
+The compiler implicitly adds the default kind value, but it should not be confused with the kind abbreviation above\.
+.nf 
+.sp 
+\f[CB]type\fR t : value
+.fi 
+.br 
+.ti +2
+value here is the abbreviation above, not the built-in default, so it is rendered and linked\.
+.nf 
+

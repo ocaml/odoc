@@ -58,6 +58,8 @@ module Identifier : sig
 
   module Type : IdSig with type t = Id.type_
 
+  module KindAbbreviation : IdSig with type t = Id.kind_abbreviation
+
   module Class : IdSig with type t = Id.class_
 
   module ClassType : IdSig with type t = Id.class_type
@@ -196,6 +198,8 @@ module Identifier : sig
 
     module Type : Map.S with type key = Type.t
 
+    module KindAbbreviation : Map.S with type key = KindAbbreviation.t
+
     module Class : Map.S with type key = Class.t
 
     module ClassType : Map.S with type key = ClassType.t
@@ -262,6 +266,10 @@ module Identifier : sig
 
     val type_ :
       Signature.t * TypeName.t -> [> `Type of Signature.t * TypeName.t ]
+
+    val kind_abbreviation :
+      Signature.t * TypeName.t ->
+      [> `KindAbbreviation of Signature.t * TypeName.t ]
 
     val core_type : string -> [> `CoreType of TypeName.t ]
 
@@ -511,6 +519,10 @@ module rec Reference : sig
 
     module Type : sig
       type t = Paths_types.Resolved_reference.type_
+    end
+
+    module KindAbbreviation : sig
+      type t = Paths_types.Resolved_reference.kind_abbreviation
     end
 
     module Constructor : sig

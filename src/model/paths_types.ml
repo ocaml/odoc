@@ -92,6 +92,9 @@ module Identifier = struct
   type type_ = [ `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Type.t *)
 
+  type kind_abbreviation = [ `KindAbbreviation of signature * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.KindAbbreviation.t *)
+
   type constructor = [ `Constructor of datatype * ConstructorName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Constructor.t *)
 
@@ -143,6 +146,7 @@ module Identifier = struct
     | functor_result
     | module_type
     | type_
+    | kind_abbreviation
     | constructor
     | field
     | unboxed_field
@@ -188,6 +192,8 @@ module Identifier = struct
   type reference_module_type = module_type
 
   type reference_type = path_type
+
+  type reference_kind_abbreviation = kind_abbreviation
 
   type reference_constructor = [ constructor | extension | exception_ ]
 
@@ -490,6 +496,7 @@ module rec Reference : sig
     [ `TModule
     | `TModuleType
     | `TType
+    | `TKindAbbreviation
     | `TConstructor
     | `TField
     | `TUnboxedField
@@ -712,6 +719,7 @@ module rec Reference : sig
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
+    | `KindAbbreviation of signature * TypeName.t
     | `Constructor of fragment_type_parent * ConstructorName.t
     | `Field of fragment_type_parent * FieldName.t
     | `UnboxedField of fragment_type_parent * UnboxedFieldName.t
@@ -882,6 +890,11 @@ and Resolved_reference : sig
   type asset = [ `Identifier of Identifier.asset_file ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Asset.t *)
 
+  type kind_abbreviation =
+    [ `Identifier of Identifier.reference_kind_abbreviation
+    | `KindAbbreviation of signature * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Reference.Resolved.KindAbbreviation.t *)
+
   type any =
     [ `Identifier of Identifier.any
     | `Alias of Resolved_path.module_ * module_
@@ -890,6 +903,7 @@ and Resolved_reference : sig
     | `Hidden of module_
     | `ModuleType of signature * ModuleTypeName.t
     | `Type of signature * TypeName.t
+    | `KindAbbreviation of signature * TypeName.t
     | `Constructor of datatype * ConstructorName.t
     | `PolyConstructor of datatype * ConstructorName.t
     | `Field of field_parent * FieldName.t

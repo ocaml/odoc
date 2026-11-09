@@ -1,0 +1,14 @@
+
+.TH M_kinds 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.M_kinds
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml\.M_kinds\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]kind_\fR mod_kind = value \f[CB]mod\fR portable

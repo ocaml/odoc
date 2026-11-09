@@ -7,6 +7,9 @@ type module_type = [ `FModuleType of ModuleTypeName.t * ModuleType.t ]
 
 type datatype = [ `FType of TypeName.t * TypeDecl.t ]
 
+type kind_abbreviation =
+  [ `FKindAbbreviation of TypeName.t * KindAbbreviation.t ]
+
 type core_type = [ `CoreType of TypeName.t ]
 
 type class_ =
@@ -127,6 +130,14 @@ let type_in_sig sg name =
     | ClassType (id, _, c)
       when TypeName.equal_modulo_shadowing (N.typed_type id) name ->
         Some (`FClassType (N.typed_type id, c))
+    | _ -> None)
+
+let kind_abbreviation_in_sig sg name =
+  find_in_sig sg (function
+    | Signature.KindAbbreviation (id, ka)
+      when TypeName.equal_modulo_shadowing (N.typed_kind_abbreviation id) name
+      ->
+        Some (`FKindAbbreviation (N.typed_kind_abbreviation id, ka))
     | _ -> None)
 
 type removed_type =

@@ -1,0 +1,20 @@
+
+.TH Nested 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.F_nested\.Nested
+.SH Synopsis
+.sp 
+.in 2
+\fBModule F_nested\.Nested\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]kind_\fR custom_kind_abbrev = X\.functor_kind \f[CB]mod\fR contended
+.fi 
+.br 
+.ti +2
+A nested kind extending the functor argument's kind\.
+.nf 
+
