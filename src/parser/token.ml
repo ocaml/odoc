@@ -3,7 +3,8 @@
    for error messages. *)
 
 type section_heading = [ `Begin_section_heading of int * string option ]
-type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
+type style =
+  [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript | `Strikethrough ]
 type paragraph_style = [ `Left | `Center | `Right ]
 
 type tag =
@@ -118,6 +119,7 @@ let print : [< t ] -> string = function
   | `Begin_style `Emphasis -> "'{e'"
   | `Begin_style `Superscript -> "'{^'"
   | `Begin_style `Subscript -> "'{_'"
+  | `Begin_style `Strikethrough -> "'{~'"
   | `Begin_reference_with_replacement_text _ -> "'{{!'"
   | `Begin_link_with_replacement_text _ -> "'{{:'"
   | `Begin_list_item `Li -> "'{li ...}'"
@@ -184,6 +186,7 @@ let describe : [< t | `Comment ] -> string = function
   | `Begin_style `Emphasis -> "'{e ...}' (emphasized text)"
   | `Begin_style `Superscript -> "'{^...}' (superscript)"
   | `Begin_style `Subscript -> "'{_...}' (subscript)"
+  | `Begin_style `Strikethrough -> "{~...} (strikethrough)"
   | `Math_span _ -> "'{m ...}' (math span)"
   | `Math_block _ -> "'{math ...}' (math block)"
   | `Simple_reference _ -> "'{!...}' (cross-reference)"

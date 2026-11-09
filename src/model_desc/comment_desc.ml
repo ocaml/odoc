@@ -68,7 +68,8 @@ let rec inline_element : general_inline_element t =
       | `Italic -> C0 "`Italic"
       | `Emphasis -> C0 "`Emphasis"
       | `Superscript -> C0 "`Superscript"
-      | `Subscript -> C0 "`Subscript")
+      | `Subscript -> C0 "`Subscript"
+      | `Strikethrough -> C0 "`Strikethrough")
   in
   Variant
     (function

@@ -15,7 +15,14 @@ type elt =
   | Label of string
   | Raw of string
   | Tag of string * t
-  | Style of [ `Emphasis | `Bold | `Superscript | `Subscript | `Italic ] * t
+  | Style of
+      [ `Emphasis
+      | `Bold
+      | `Superscript
+      | `Subscript
+      | `Italic
+      | `Strikethrough ]
+      * t
   | Code_block of t
   | Inlined_code of t
   | Code_fragment of t

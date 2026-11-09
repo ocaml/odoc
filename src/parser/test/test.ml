@@ -35,6 +35,7 @@ module Ast_to_sexp = struct
     | `Emphasis -> Atom "emphasis"
     | `Superscript -> Atom "superscript"
     | `Subscript -> Atom "subscript"
+    | `Strikethrough -> Atom "strikethrough"
 
   let alignment : Ast.alignment option -> sexp = function
     | Some `Left -> Atom "left"

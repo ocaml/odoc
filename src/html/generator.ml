@@ -98,6 +98,7 @@ and styled style ~emph_level =
   | `Italic -> (emph_level, Html.i ~a:[])
   | `Superscript -> (emph_level, Html.sup ~a:[])
   | `Subscript -> (emph_level, Html.sub ~a:[])
+  | `Strikethrough -> (emph_level, Html.s ~a:[])
 
 let rec internallink ~config ~emph_level ~resolve ?(a = []) target content
     tooltip =
