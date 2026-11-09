@@ -12,6 +12,7 @@
   %{bin:odoc-md}
   %{bin:odoc_driver_voodoo}
   %{bin:odoc_driver}
-  %{bin:odoc_print})
+  %{bin:odoc_print}
+  %{bin:sherlodoc})
  (enabled_if
   (>= %{ocaml_version} 5.1.0)))

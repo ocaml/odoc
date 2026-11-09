@@ -45,7 +45,7 @@ it is installed below that tree, as it would below an opam switch.
   > done
   $ mkdir -p prep/universes/u/pb/1.0/doc/pb/odoc-pages
   $ cp src/pb/index.mld prep/universes/u/pb/1.0/doc/pb/odoc-pages/
-  $ export OCAMLPATH=$PWD/inst/_build/install/default/lib
+  $ export OCAMLPATH=$(pwd)/inst/_build/install/default/lib
 
 The driver documents one package per run, dependencies first. The
 standard library, which every library is compiled against, would be
