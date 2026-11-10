@@ -22,11 +22,9 @@
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
-
-### Performance
-- Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
 - Store comment text as one node per run of words rather than one per word,
   which makes `.odoc` and `.odocl` files substantially smaller (@jonludlam, #1487)
+- Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #1487)
 
 ### Fixed
 - `odoc compile` and `odoc link` look up a unit that an identifier names by
@@ -45,9 +43,6 @@
 - Fix bug in hidden name check that sometimes exposed hidden items (@jonludlam, #1484)
 - Fix includes being re-expanded in dependent modules, which could lose type
   equations; also makes `.odoc` files smaller, particularly on OxCaml (@jonludlam, #1481)
-
-### Performance
-- Cache Shape_reduce functor instantiation per environment during source resolution (@jonludlam, #1487)
 
 # 3.2.1
 
