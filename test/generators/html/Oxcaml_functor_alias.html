@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head><title>Oxcaml_functor_alias (Oxcaml_functor_alias)</title>
+  <meta charset="utf-8"/><link rel="stylesheet" href="odoc.css"/>
+  <meta name="generator" content="odoc %%VERSION%%"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <script src="highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+ </head>
+ <body class="odoc">
+  <nav class="odoc-nav"><a href="index.html">Up</a> – 
+   <a href="index.html">Index</a> &#x00BB; Oxcaml_functor_alias
+  </nav>
+  <header class="odoc-preamble">
+   <h1>Module <code><span>Oxcaml_functor_alias</span></code></h1>
+   <p>A functor whose result aliases its argument, applied by 
+    <code>include functor</code>.
+   </p>
+   <p>
+    OxCaml 5.4 rejects such an alias, as OCaml does, so this is kept apart
+    from the <code>oxcaml.mli</code>
+     case and runs on earlier versions of OxCaml only.
+   </p>
+  </header>
+  <div class="odoc-content">
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-Make">
+     <a href="#module-Make" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml_functor_alias-Make.html">Make</a>
+      </span>
+      <span> (<a href="Oxcaml_functor_alias-Make-argument-1-T.html">T</a>
+        : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>) : <span class="keyword">sig</span>
+        ... <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t">
+     <a href="#type-t" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t</span></code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-p">
+     <a href="#type-p" class="anchor"></a>
+     <code><span><span class="keyword">type</span> <span>'a p</span></span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-X">
+     <a href="#module-X" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml_functor_alias-X.html">X</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module-type anchored" id="module-type-S">
+     <a href="#module-type-S" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <span class="keyword">type</span> 
+       <a href="Oxcaml_functor_alias-module-type-S.html">S</a>
+      </span>
+      <span> = <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-via_module_type_include">
+     <a href="#val-via_module_type_include" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> via_module_type_include : unit
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-include">
+    <details open="open">
+     <summary class="spec include">
+      <code>
+       <span><span class="keyword">include functor</span> 
+        <span class="keyword">module</span> <span class="keyword">type</span>
+         <span class="keyword">of</span> 
+        <a href="Oxcaml_functor_alias-Make.html">Make</a>
+       </span>
+      </code>
+     </summary>
+     <div class="odoc-spec">
+      <div class="spec module anchored" id="module-Aliased">
+       <a href="#module-Aliased" class="anchor"></a>
+       <code>
+        <span><span class="keyword">module</span> 
+         <a href="Oxcaml_functor_alias-Aliased.html">Aliased</a>
+        </span>
+        <span> : <span class="keyword">sig</span> ... 
+         <span class="keyword">end</span>
+        </span>
+       </code>
+      </div>
+      <div class="spec-doc">
+       <p>
+        The input module itself. It should contain everything from the top
+        level module
+       </p>
+      </div>
+     </div>
+    </details>
+   </div>
+  </div>
+ </body>
+</html>

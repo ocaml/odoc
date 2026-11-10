@@ -1,0 +1,20 @@
+\section{Module \ocamlinlinecode{Oxcaml\_\allowbreak{}functor\_\allowbreak{}alias}}\label{Oxcaml_functor_alias}%
+A functor whose result aliases its argument, applied by \ocamlinlinecode{include functor}.
+
+OxCaml 5.4 rejects such an alias, as OCaml does, so this is kept apart from the \ocamlinlinecode{oxcaml.\allowbreak{}mli} case and runs on earlier versions of OxCaml only.
+
+\label{Oxcaml_functor_alias--module-Make}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml_functor_alias-Make]{\ocamlinlinecode{Make}}}\ocamlcodefragment{ (\hyperref[Oxcaml_functor_alias-Make-argument-1-T]{\ocamlinlinecode{T}} : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{Oxcaml_functor_alias--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\label{Oxcaml_functor_alias--type-p}\ocamlcodefragment{\ocamltag{keyword}{type} 'a p}\\
+\label{Oxcaml_functor_alias--module-X}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml_functor_alias-X]{\ocamlinlinecode{X}}}\label{Oxcaml_functor_alias-X}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml_functor_alias-X--type-v}\ocamlcodefragment{\ocamltag{keyword}{type} v}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{Oxcaml_functor_alias--module-type-S}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[Oxcaml_functor_alias-module-type-S]{\ocamlinlinecode{S}}}\label{Oxcaml_functor_alias-module-type-S}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml_functor_alias-module-type-S--type-u}\ocamlcodefragment{\ocamltag{keyword}{type} u}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\ocamltag{keyword}{include} .\allowbreak{}.\allowbreak{}.\allowbreak{}\label{Oxcaml_functor_alias--val-via_module_type_include}\ocamlcodefragment{\ocamltag{keyword}{val} via\_\allowbreak{}module\_\allowbreak{}type\_\allowbreak{}include : unit}\\
+\ocamltag{keyword}{include functor} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[Oxcaml_functor_alias-Make]{\ocamlinlinecode{Make}}\label{Oxcaml_functor_alias--module-Aliased}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml_functor_alias-Aliased]{\ocamlinlinecode{Aliased}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\begin{ocamlindent}The input module itself. It should contain everything from the top level module\end{ocamlindent}%
+\medbreak
+
+\input{Oxcaml_functor_alias.Make.tex}
+\input{Oxcaml_functor_alias.Aliased.tex}

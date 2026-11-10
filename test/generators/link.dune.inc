@@ -620,6 +620,42 @@
  (enabled_if %{ocaml-config:ox}))
 
 (rule
+ (target oxcaml_functor_alias.cmti)
+ (package odoc)
+ (action
+  (run
+   ocamlc
+   -c
+   -bin-annot
+   -o
+   %{target}
+   %{dep:cases/oxcaml_functor_alias.mli}))
+ (enabled_if
+  (and
+   %{ocaml-config:ox}
+   (< %{ocaml_version} 5.4))))
+
+(rule
+ (target oxcaml_functor_alias.odoc)
+ (package odoc)
+ (action
+  (run odoc compile -o %{target} %{dep:oxcaml_functor_alias.cmti}))
+ (enabled_if
+  (and
+   %{ocaml-config:ox}
+   (< %{ocaml_version} 5.4))))
+
+(rule
+ (target oxcaml_functor_alias.odocl)
+ (package odoc)
+ (action
+  (run odoc link -o %{target} %{dep:oxcaml_functor_alias.odoc}))
+ (enabled_if
+  (and
+   %{ocaml-config:ox}
+   (< %{ocaml_version} 5.4))))
+
+(rule
  (target oxcaml_impl.cmt)
  (package odoc)
  (action
@@ -11674,9 +11710,6 @@
    Oxcaml-Include_functor_argument_shapes-module-type-S.html.gen
    Oxcaml-Include_functor_argument_shapes-class-output_class_via_type.html.gen
    Oxcaml-Include_functor_argument_shapes-class-output_class_via_name.html.gen
-   Oxcaml-Include_functor_argument_shapes-Aliased.html.gen
-   Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.html.gen
-   Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.html.gen
    Oxcaml-Include_functor_desugared.html.gen
    Oxcaml-Include_functor_desugared-Make.html.gen
    Oxcaml-Include_functor_desugared-Make-argument-1-T.html.gen
@@ -11975,30 +12008,6 @@
   (package odoc)
   (action
    (diff
-    Oxcaml-Include_functor_argument_shapes-Aliased.html
-    Oxcaml-Include_functor_argument_shapes-Aliased.html.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
-    Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.html
-    Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.html.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
-    Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.html
-    Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.html.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
     Oxcaml-Include_functor_desugared.html
     Oxcaml-Include_functor_desugared.html.gen))
   (enabled_if %{ocaml-config:ox}))
@@ -12265,8 +12274,6 @@
    Oxcaml.Include_functor_argument_shapes.X.3o.gen
    Oxcaml.Include_functor_argument_shapes.class-output_class_via_type.3o.gen
    Oxcaml.Include_functor_argument_shapes.class-output_class_via_name.3o.gen
-   Oxcaml.Include_functor_argument_shapes.Aliased.3o.gen
-   Oxcaml.Include_functor_argument_shapes.Aliased.To_include_module.3o.gen
    Oxcaml.Include_functor_desugared.3o.gen
    Oxcaml.Include_functor_desugared.Make.3o.gen
    Oxcaml.Include_functor_named_type_desugared.3o.gen
@@ -12434,22 +12441,6 @@
   (package odoc)
   (action
    (diff
-    Oxcaml.Include_functor_argument_shapes.Aliased.3o
-    Oxcaml.Include_functor_argument_shapes.Aliased.3o.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
-    Oxcaml.Include_functor_argument_shapes.Aliased.To_include_module.3o
-    Oxcaml.Include_functor_argument_shapes.Aliased.To_include_module.3o.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
     Oxcaml.Include_functor_desugared.3o
     Oxcaml.Include_functor_desugared.3o.gen))
   (enabled_if %{ocaml-config:ox}))
@@ -12596,9 +12587,6 @@
    Oxcaml-Include_functor_argument_shapes-module-type-S.md.gen
    Oxcaml-Include_functor_argument_shapes-class-output_class_via_type.md.gen
    Oxcaml-Include_functor_argument_shapes-class-output_class_via_name.md.gen
-   Oxcaml-Include_functor_argument_shapes-Aliased.md.gen
-   Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.md.gen
-   Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.md.gen
    Oxcaml-Include_functor_desugared.md.gen
    Oxcaml-Include_functor_desugared-Make.md.gen
    Oxcaml-Include_functor_desugared-Make-argument-1-T.md.gen
@@ -12889,30 +12877,6 @@
   (package odoc)
   (action
    (diff
-    Oxcaml-Include_functor_argument_shapes-Aliased.md
-    Oxcaml-Include_functor_argument_shapes-Aliased.md.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
-    Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.md
-    Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.md.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
-    Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.md
-    Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.md.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
     Oxcaml-Include_functor_desugared.md
     Oxcaml-Include_functor_desugared.md.gen))
   (enabled_if %{ocaml-config:ox}))
@@ -13099,6 +13063,426 @@
   (action
    (diff oxcaml.targets oxcaml.targets.gen))
   (enabled_if %{ocaml-config:ox})))
+
+(subdir
+ html
+ (rule
+  (targets
+   Oxcaml_functor_alias.html.gen
+   Oxcaml_functor_alias-Make.html.gen
+   Oxcaml_functor_alias-Make-argument-1-T.html.gen
+   Oxcaml_functor_alias-Make-argument-1-T-X.html.gen
+   Oxcaml_functor_alias-X.html.gen
+   Oxcaml_functor_alias-module-type-S.html.gen
+   Oxcaml_functor_alias-Aliased.html.gen
+   Oxcaml_functor_alias-Aliased-module-type-To_include_module_type.html.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    html-generate
+    --indent
+    --flat
+    --extra-suffix
+    gen
+    -o
+    .
+    %{dep:../oxcaml_functor_alias.odocl}))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_functor_alias.html Oxcaml_functor_alias.html.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_functor_alias-Make.html Oxcaml_functor_alias-Make.html.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_functor_alias-Make-argument-1-T.html
+    Oxcaml_functor_alias-Make-argument-1-T.html.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_functor_alias-Make-argument-1-T-X.html
+    Oxcaml_functor_alias-Make-argument-1-T-X.html.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_functor_alias-X.html Oxcaml_functor_alias-X.html.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_functor_alias-module-type-S.html
+    Oxcaml_functor_alias-module-type-S.html.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_functor_alias-Aliased.html
+    Oxcaml_functor_alias-Aliased.html.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_functor_alias-Aliased-module-type-To_include_module_type.html
+    Oxcaml_functor_alias-Aliased-module-type-To_include_module_type.html.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4)))))
+
+(subdir
+ html
+ (rule
+  (target oxcaml_functor_alias.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    oxcaml_functor_alias.targets.gen
+    (run odoc html-targets -o . %{dep:../oxcaml_functor_alias.odocl} --flat)))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff oxcaml_functor_alias.targets oxcaml_functor_alias.targets.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4)))))
+
+(subdir
+ latex
+ (rule
+  (targets
+   Oxcaml_functor_alias.tex.gen
+   Oxcaml_functor_alias.Make.tex.gen
+   Oxcaml_functor_alias.Aliased.tex.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    latex-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../oxcaml_functor_alias.odocl}))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_functor_alias.tex Oxcaml_functor_alias.tex.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_functor_alias.Make.tex Oxcaml_functor_alias.Make.tex.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_functor_alias.Aliased.tex
+    Oxcaml_functor_alias.Aliased.tex.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4)))))
+
+(subdir
+ latex
+ (rule
+  (target oxcaml_functor_alias.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    oxcaml_functor_alias.targets.gen
+    (run odoc latex-targets -o . %{dep:../oxcaml_functor_alias.odocl})))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff oxcaml_functor_alias.targets oxcaml_functor_alias.targets.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4)))))
+
+(subdir
+ man
+ (rule
+  (targets
+   Oxcaml_functor_alias.3o.gen
+   Oxcaml_functor_alias.Make.3o.gen
+   Oxcaml_functor_alias.X.3o.gen
+   Oxcaml_functor_alias.Aliased.3o.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    man-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../oxcaml_functor_alias.odocl}))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_functor_alias.3o Oxcaml_functor_alias.3o.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_functor_alias.Make.3o Oxcaml_functor_alias.Make.3o.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_functor_alias.X.3o Oxcaml_functor_alias.X.3o.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_functor_alias.Aliased.3o Oxcaml_functor_alias.Aliased.3o.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4)))))
+
+(subdir
+ man
+ (rule
+  (target oxcaml_functor_alias.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    oxcaml_functor_alias.targets.gen
+    (run odoc man-targets -o . %{dep:../oxcaml_functor_alias.odocl})))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff oxcaml_functor_alias.targets oxcaml_functor_alias.targets.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4)))))
+
+(subdir
+ markdown
+ (rule
+  (targets
+   Oxcaml_functor_alias.md.gen
+   Oxcaml_functor_alias-Make.md.gen
+   Oxcaml_functor_alias-Make-argument-1-T.md.gen
+   Oxcaml_functor_alias-Make-argument-1-T-X.md.gen
+   Oxcaml_functor_alias-X.md.gen
+   Oxcaml_functor_alias-module-type-S.md.gen
+   Oxcaml_functor_alias-Aliased.md.gen
+   Oxcaml_functor_alias-Aliased-module-type-To_include_module_type.md.gen)
+  (package odoc)
+  (action
+   (run
+    odoc
+    markdown-generate
+    -o
+    .
+    --extra-suffix
+    gen
+    %{dep:../oxcaml_functor_alias.odocl}))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_functor_alias.md Oxcaml_functor_alias.md.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_functor_alias-Make.md Oxcaml_functor_alias-Make.md.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_functor_alias-Make-argument-1-T.md
+    Oxcaml_functor_alias-Make-argument-1-T.md.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_functor_alias-Make-argument-1-T-X.md
+    Oxcaml_functor_alias-Make-argument-1-T-X.md.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_functor_alias-X.md Oxcaml_functor_alias-X.md.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_functor_alias-module-type-S.md
+    Oxcaml_functor_alias-module-type-S.md.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff Oxcaml_functor_alias-Aliased.md Oxcaml_functor_alias-Aliased.md.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff
+    Oxcaml_functor_alias-Aliased-module-type-To_include_module_type.md
+    Oxcaml_functor_alias-Aliased-module-type-To_include_module_type.md.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4)))))
+
+(subdir
+ markdown
+ (rule
+  (target oxcaml_functor_alias.targets.gen)
+  (package odoc)
+  (action
+   (with-outputs-to
+    oxcaml_functor_alias.targets.gen
+    (run odoc markdown-targets -o . %{dep:../oxcaml_functor_alias.odocl})))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4))))
+ (rule
+  (alias runtest)
+  (package odoc)
+  (action
+   (diff oxcaml_functor_alias.targets oxcaml_functor_alias.targets.gen))
+  (enabled_if
+   (and
+    %{ocaml-config:ox}
+    (< %{ocaml_version} 5.4)))))
 
 (subdir
  html

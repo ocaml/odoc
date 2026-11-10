@@ -2183,6 +2183,7 @@ let apply_inner_substs env (sg : Component.Signature.t) : Component.Signature.t
               Component.Delayed.put (fun () ->
                   {
                     Component.Module.source_loc = None;
+                    source_loc_jane = None;
                     doc = modsubst.doc;
                     type_ = Alias (modsubst.manifest, None);
                     canonical = None;
@@ -2210,6 +2211,7 @@ let apply_inner_substs env (sg : Component.Signature.t) : Component.Signature.t
               Component.Delayed.put (fun () ->
                   {
                     Component.ModuleType.source_loc = None;
+                    source_loc_jane = None;
                     doc = modtypesubst.doc;
                     expr = Some modtypesubst.manifest;
                     canonical = None;

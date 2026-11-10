@@ -63,6 +63,7 @@ module rec Module : sig
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     type_ : decl;
     canonical : Odoc_model.Paths.Path.Module.t option;
@@ -160,6 +161,7 @@ end
 and Exception : sig
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     args : TypeDecl.Constructor.argument;
     res : TypeExpr.t option;
@@ -232,6 +234,7 @@ and ModuleType : sig
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     canonical : Odoc_model.Paths.Path.ModuleType.t option;
     expr : expr option;
@@ -293,6 +296,7 @@ and TypeDecl : sig
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     canonical : Odoc_model.Paths.Path.Type.t option;
     equation : Equation.t;
@@ -362,6 +366,7 @@ and Value : sig
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     type_ : TypeExpr.t;
     value : value;
@@ -377,6 +382,7 @@ and Class : sig
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
@@ -392,6 +398,7 @@ and ClassType : sig
 
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    source_loc_jane : Odoc_model.Lang.Source_loc_jane.t option;
     doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
