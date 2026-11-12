@@ -22,10 +22,10 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
   $ odoc html-generate --indent -o html a.odocl
   $ odoc html-generate --indent -o html a__b.odocl
 
-  $ odoc html-targets -o html a.odocl
+  $ odoc html-targets -o html a.odocl 2>&1 | cram_test_helper
   html/test/A/index.html
   html/test/A/B/index.html
-  $ odoc html-targets -o html a__b.odocl
+  $ odoc html-targets -o html a__b.odocl 2>&1 | cram_test_helper
   html/test/A__b/index.html
 
   $ cat html/test/A/index.html

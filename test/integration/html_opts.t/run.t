@@ -9,7 +9,7 @@
   $ odoc link page-page.odoc
   $ odoc html-generate test.odocl -o html --indent
 
-  $ odoc html-targets test.odocl -o html --indent
+  $ odoc html-targets test.odocl -o html --indent 2>&1 | cram_test_helper
   html/test/Test/index.html
 
 This should have the breadcrumbs in it as a nav with id 'odoc-nav'. Let's also
@@ -27,7 +27,7 @@ Generate --as-json embeddable HTML fragment output:
   $ cat html/test/Test/index.html.json
   {"header":"<h1>Module <code><span>Test</span></code></h1>","type":"documentation","uses_katex":false,"breadcrumbs":[{"name":"Index","href":"../../index.html","kind":"leaf-page"},{"name":"test","href":"../index.html","kind":"page"},{"name":"Test","href":"#","kind":"module"}],"toc":[{"title":"Section 1","href":"#section-1","children":[]},{"title":"Section 2","href":"#section-2","children":[]}],"source_anchor":null,"preamble":"<p>Test</p>","content":"<h2 id=\"section-1\"><a href=\"#section-1\" class=\"anchor\"></a>Section 1</h2><div class=\"odoc-spec\">\u000A <div class=\"spec type anchored\" id=\"type-t\">\u000A  <a href=\"#type-t\" class=\"anchor\"></a>\u000A  <code><span><span class=\"keyword\">type</span> t</span></code>\u000A </div>\u000A</div><h2 id=\"section-2\"><a href=\"#section-2\" class=\"anchor\"></a>Section 2</h2><div class=\"odoc-spec\">\u000A <div class=\"spec type anchored\" id=\"type-u\">\u000A  <a href=\"#type-u\" class=\"anchor\"></a>\u000A  <code><span><span class=\"keyword\">type</span> u</span></code>\u000A </div>\u000A</div>"}
 
-  $ odoc html-targets test.odocl -o html --as-json --indent
+  $ odoc html-targets test.odocl -o html --as-json --indent 2>&1 | cram_test_helper
   html/test/Test/index.html.json
 
 Also for pages
