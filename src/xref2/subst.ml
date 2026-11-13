@@ -314,7 +314,7 @@ and module_path : t -> Cpath.module_ -> Cpath.module_ =
   | `Identifier (i, _) -> (
       match find_library_parameter s i with Some (p', _) -> p' | None -> p)
   | `Substituted p -> `Substituted (module_path s p)
-  | `Root name -> (
+  | `Root (name, _) -> (
       match find_library_parameter_by_name s name with
       | Some (p', _) -> p'
       | None -> p)

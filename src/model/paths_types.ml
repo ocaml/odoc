@@ -218,7 +218,8 @@ end
 
 module rec Path : sig
   type instance =
-    [ `Root of ModuleName.t | `ApplyParam of instance * ModuleName.t * instance ]
+    [ `Root of ModuleName.t * Library_scope.t
+    | `ApplyParam of instance * ModuleName.t * instance ]
   (** An instance of a parameterised library, [Lib[P:A]]: the library and the
       argument are compilation units or themselves instances.
       @canonical Odoc_model.Paths.Path.Instance.t *)
@@ -227,7 +228,14 @@ module rec Path : sig
     [ `Resolved of Resolved_path.module_
     | `Identifier of Identifier.path_module * bool
     | `Substituted of module_
-    | `Root of ModuleName.t
+    | `Root of ModuleName.t * Library_scope.t
+      (** An unresolved root, with the libraries it is resolved among: those of
+          the unit it was read from (its origin), wherever the path goes. *)
+    | `LibraryRoot of [ `Only | `First ] * string * ModuleName.t
+      (** [`LibraryRoot (`Only, lib, name)]: the root module [name] of library
+          [lib] alone, as a canonical path written [/lib/Name] names it.
+          TEMPORARY: [`First] looks in [lib] first, then anywhere; it is what a
+          canonical tag that names no library is read as. *)
     | `Dot of module_ * ModuleName.t
     | `Apply of module_ * module_
     | `ApplyParam of instance * ModuleName.t * instance
@@ -269,7 +277,14 @@ module rec Path : sig
     | `Substituted of module_
     | `SubstitutedCT of class_type
     | `Identifier of Identifier.path_any * bool
-    | `Root of ModuleName.t
+    | `Root of ModuleName.t * Library_scope.t
+      (** An unresolved root, with the libraries it is resolved among: those of
+          the unit it was read from (its origin), wherever the path goes. *)
+    | `LibraryRoot of [ `Only | `First ] * string * ModuleName.t
+      (** [`LibraryRoot (`Only, lib, name)]: the root module [name] of library
+          [lib] alone, as a canonical path written [/lib/Name] names it.
+          TEMPORARY: [`First] looks in [lib] first, then anywhere; it is what a
+          canonical tag that names no library is read as. *)
     | `Dot of module_ * ModuleName.t
     | `DotT of module_ * TypeName.t
     | `DotMT of module_ * ModuleTypeName.t
