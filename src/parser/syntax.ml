@@ -927,6 +927,13 @@ let rec block_element_list : type block stops_at_which_tokens.
         let block = Loc.at location block in
         let acc = block :: acc in
         consume_block_elements `After_text acc
+    | { value = `Block_quote q as token; location } as next_token ->
+        warn_if_after_text next_token;
+        junk input;
+        let block = accepted_in_all_contexts context token in
+        let block = Loc.at location block in
+        let acc = block :: acc in
+        consume_block_elements `After_text acc
     | {
         value =
           `Code_block (meta, delim, { value = s; location = v_loc }, has_outputs)

@@ -163,6 +163,10 @@ There are also verbatim blocks:
 .EX 
 The main difference is these don't get syntax highlighting\.
 .EE 
+.sp 
+here is a quote block
+.sp 
+ hello
 .nf 
 .sp 
 .in 3

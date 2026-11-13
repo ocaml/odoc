@@ -102,6 +102,9 @@
 The main difference is these don't get syntax highlighting.
 v}
 
+here is a quote block
+{quote hello}
+
 
     {1 Lists}
 
