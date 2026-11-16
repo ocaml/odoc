@@ -23,6 +23,7 @@ let empty_shadow =
     s_module_types = [];
     s_values = [];
     s_types = [];
+    s_kind_abbreviations = [];
     s_classes = [];
     s_class_types = [];
   }
@@ -398,6 +399,7 @@ module ExtractIDs = struct
       | Class (id, _, _) :: rest -> inner rest (class_ parent map id)
       | ClassType (id, _, _) :: rest -> inner rest (class_type parent map id)
       | Exception (_, _) :: rest
+      | KindAbbreviation (_, _) :: rest
       | Value (_, _) :: rest
       | TypExt _ :: rest
       | Comment _ :: rest ->
@@ -453,6 +455,19 @@ let rec signature_items id map items =
           (ModuleSubstitution (module_substitution map parent id m) :: acc)
     | TypeSubstitution (id, t) :: rest ->
         inner rest (TypeSubstitution (type_decl map parent id t) :: acc)
+    | KindAbbreviation (id, ka) :: rest ->
+        (* Like a shadowed type, a shadowed kind abbreviation is kept under its
+           hidden shadowed name. *)
+        let name = Ident.Name.typed_kind_abbreviation id in
+        let name =
+          match
+            List.assoc_opt (TypeName.to_string name)
+              map.shadowed.s_kind_abbreviations
+          with
+          | Some shadowed -> shadowed
+          | None -> name
+        in
+        inner rest (KindAbbreviation (kind_abbreviation parent name ka) :: acc)
     | Class (id, r, c) :: rest ->
         inner rest (Class (r, class_ map parent id c) :: acc)
     | ClassType (id, r, c) :: rest ->
@@ -651,6 +666,8 @@ and combine_shadowed s1 s2 =
     s_module_types = combine s1.s_module_types s2.s_module_types;
     s_values = combine s1.s_values s2.s_values;
     s_types = combine s1.s_types s2.s_types;
+    s_kind_abbreviations =
+      combine s1.s_kind_abbreviations s2.s_kind_abbreviations;
     s_classes = combine s1.s_classes s2.s_classes;
     s_class_types = combine s1.s_class_types s2.s_class_types;
   }
@@ -1138,6 +1155,15 @@ and functor_parameter map f : Odoc_model.Lang.FunctorParameter.parameter =
       module_type_expr map
         (identifier :> Odoc_model.Paths.Identifier.Signature.t)
         f.expr;
+  }
+
+and kind_abbreviation parent name (ka : Component.KindAbbreviation.t) :
+    Odoc_model.Lang.KindAbbreviation.t =
+  {
+    id = Identifier.Mk.kind_abbreviation (parent, name);
+    source_loc = ka.source_loc;
+    doc = docs (parent :> Identifier.LabelParent.t) ka.doc;
+    manifest = ka.manifest;
   }
 
 and exception_ map parent id (e : Component.Exception.t) :

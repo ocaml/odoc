@@ -92,6 +92,9 @@ module Identifier = struct
   type type_ = [ `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Type.t *)
 
+  type kind_abbreviation = [ `KindAbbreviation of signature * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.KindAbbreviation.t *)
+
   type constructor = [ `Constructor of datatype * ConstructorName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Constructor.t *)
 
@@ -143,6 +146,7 @@ module Identifier = struct
     | functor_result
     | module_type
     | type_
+    | kind_abbreviation
     | constructor
     | field
     | unboxed_field

@@ -39,19 +39,9 @@ A kind abbreviation can be named [value], shadowing the built-in kind.
   > EOF
 
   $ ocamlc -c -bin-annot m.mli
-  $ odoc compile m.cmti 2>&1 | head -1
-  odoc: internal error, uncaught exception:
+  $ odoc compile m.cmti
   $ odoc link m.odoc
-  Usage: odoc link [--help] [--custom-layout] [--open=MODULE] [OPTION]…
-         FILE.odoc
-  odoc: FILE.odoc argument: no m.odoc file or directory
-  [2]
   $ odoc markdown-generate -o md m.odocl
-  Usage: odoc markdown-generate [--help] [--extra-suffix=SUFFIX]
-         [--sidebar=FILE.odoc-sidebar] [--syntax=SYNTAX] [OPTION]…
-         FILE.odocl…
-  odoc: FILE.odocl… arguments: no m.odocl file or directory
-  [2]
 
 The [value] the compiler inserts on unannotated declarations is the built-in
 default, so it is hidden. Kind names are rendered as written, so the later
@@ -59,18 +49,70 @@ default, so it is hidden. Kind names are rendered as written, so the later
 default and is hidden too (BROKEN):
 
   $ cat md/M.md
-  cat: md/M.md: No such file or directory
-  [1]
+  
+  # Module `M`
+  
+  ```ocaml
+  kind_ value = value mod portable
+  ```
+  ```ocaml
+  type t_unannotated
+  ```
+  ```ocaml
+  val poly_unannotated : 'a. 'a -> 'a
+  ```
+  ```ocaml
+  type t
+  ```
+  ```ocaml
+  kind_ k
+  ```
+  ```ocaml
+  type u : k
+  ```
+  ```ocaml
+  module K : sig ... end
+  ```
+  ```ocaml
+  type v : K.k
+  ```
+  ```ocaml
+  type 'a w : immutable_data with 'a
+  ```
+  ```ocaml
+  type p : float64 & immediate
+  ```
+  ```ocaml
+  type m : immediate = int
+  ```
+  ```ocaml
+  type n : value mod portable = int
+  ```
+  ```ocaml
+  type unboxed_record = #{
+    p : float#;
+    q : int;
+  }
+  ```
+  ```ocaml
+  module F (X : sig ... end) : sig ... end
+  ```
+  ```ocaml
+  type applied : F(K).k
+  ```
+  ```ocaml
+  type ('a, 'b) two_with : (immutable_data with 'a @@ many) with 'b @@ contended
+  ```
 
 Kind names are rendered as plain text, without links:
 
   $ odoc html-generate -o html m.odocl
-  Usage: odoc html-generate [--help] [OPTION]… FILE.odocl…
-  odoc: FILE.odocl… arguments: no m.odocl file or directory
-  [2]
   $ grep -o '<a href="[^"]*">[^<]*</a>' html/M/index.html | grep -v 'class="anchor"'
-  grep: html/M/index.html: No such file or directory
-  [1]
+  <a href="../index.html">Up</a>
+  <a href="../index.html">Index</a>
+  <a href="K/index.html">K</a>
+  <a href="F/index.html">F</a>
+  <a href="F/argument-1-X/index.html">X</a>
 
 From a [.cmi] alone, the compiler drops the kind annotation on [t] and stores only
 its expansion, so [t] is rendered as [value mod portable], where [value] is the
@@ -88,28 +130,34 @@ is not rendered as it was not written by the user. The with-bounds of
   # Module `M`
   
   ```ocaml
+  kind_ value
+  ```
+  ```ocaml
   type t_unannotated
   ```
   ```ocaml
   val poly_unannotated : 'a -> 'a
   ```
   ```ocaml
-  type t
+  type t : value mod portable
   ```
   ```ocaml
-  type u
+  kind_ k
+  ```
+  ```ocaml
+  type u : k
   ```
   ```ocaml
   module K : sig ... end
   ```
   ```ocaml
-  type v
+  type v : K.k
   ```
   ```ocaml
-  type 'a w
+  type 'a w : immutable_data with 'a
   ```
   ```ocaml
-  type p
+  type p : float64 & value non_pointer mod external_
   ```
   ```ocaml
   type m : immediate = int
@@ -127,10 +175,10 @@ is not rendered as it was not written by the user. The with-bounds of
   module F (X : sig ... end) : sig ... end
   ```
   ```ocaml
-  type applied
+  type applied : F(K).k
   ```
   ```ocaml
-  type ('a, 'b) two_with
+  type ('a, 'b) two_with : (immutable_data with 'b @@ contended) with 'a @@ many
   ```
 
 Kind names are still rendered as plain text:

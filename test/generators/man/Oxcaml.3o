@@ -384,11 +384,25 @@ Should render as float64 & (immediate mod portable)\.
 .sp 
 \f[CB]module\fR M_shadow_value : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .sp 
+\f[CB]kind_\fR plain_value = value
+.fi 
+.br 
+.ti +2
+An abbreviation for the value kind\.
+.nf 
+.sp 
 \f[CB]type\fR t_plain_value : plain_value
 .fi 
 .br 
 .ti +2
 A use of the plain_value abbreviation\.
+.nf 
+.sp 
+\f[CB]kind_\fR my_abbrev = value_or_null \f[CB]mod\fR non_null global
+.fi 
+.br 
+.ti +2
+Declares a kind abbreviation named my_abbrev\.
 .nf 
 .sp 
 \f[CB]type\fR t_abbrev : my_abbrev \f[CB]mod\fR immutable
@@ -398,11 +412,25 @@ A use of the plain_value abbreviation\.
 A type with an abbreviated kind\.
 .nf 
 .sp 
+\f[CB]kind_\fR my_derived = my_abbrev \f[CB]mod\fR portable
+.fi 
+.br 
+.ti +2
+A kind abbreviation defined in terms of another one\.
+.nf 
+.sp 
 \f[CB]type\fR t_derived : my_derived
 .fi 
 .br 
 .ti +2
 A type whose kind is the derived abbreviation\.
+.nf 
+.sp 
+\f[CB]kind_\fR my_abstract
+.fi 
+.br 
+.ti +2
+An abstract kind abbreviation (no manifest), used by \f[CI]t_abstract\fR\.
 .nf 
 .sp 
 \f[CB]type\fR t_abstract : my_abstract
@@ -449,22 +477,66 @@ A qualified use of a kind abbreviation from another module\.
 A qualified kind abbreviation on a type parameter\.
 .nf 
 .sp 
-\f[CB]module\fR \f[CB]type\fR S_kind = \f[CB]sig\fR \f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR S_kind = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]kind_\fR functor_kind = value \f[CB]mod\fR portable
+.fi 
+.br 
+.ti +4
+A kind declared in a module type\.
+.nf 
+
+.br 
+\f[CB]end\fR
 .sp 
 \f[CB]module\fR F_kind (X : S_kind) : S_kind
 .sp 
 \f[CB]module\fR Arg_kind : S_kind
 .sp 
+\f[CB]type\fR t_functor_app : F_kind(Arg_kind)\.functor_kind
+.fi 
+.br 
+.ti +2
+A use behind a functor application\.
+.nf 
+.sp 
 \f[CB]module\fR F_nested (X : S_kind) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]kind_\fR functor_abbrev = F_nested(Arg_kind)\.abstract_kind
+.fi 
+.br 
+.ti +2
+A kind abbreviation defined through a functor-application path\.
+.nf 
+.sp 
+\f[CB]kind_\fR nested_functor_abbrev = F_nested(Arg_kind)\.Nested\.custom_kind_abbrev
+.fi 
+.br 
+.ti +2
+A kind abbreviation defined through a functor-application-then-nested-module path\.
+.nf 
+.sp 
+\f[CB]kind_\fR to_be_shadowed = value \f[CB]mod\fR portable
+.fi 
+.br 
+.ti +2
+Shadowed below by a kind abbreviation of the same name\.
+.nf 
 .sp 
 \f[CB]module\fR X_shadowing : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .sp 
 \f[CB]module\fR M_inc : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .sp 
+\f[CB]kind_\fR inc_kind = value \f[CB]mod\fR portable
+.sp 
 \f[CB]type\fR t_inc : inc_kind
 .sp 
 \f[CB]module\fR \f[CB]type\fR S_param = \f[CB]sig\fR
 .br 
+.ti +2
+\f[CB]kind_\fR param_kind = value \f[CB]mod\fR portable
+.sp 
 .ti +2
 \f[CB]type\fR ('a : param_kind) t
 .fi 

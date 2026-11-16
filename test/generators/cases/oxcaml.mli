@@ -232,6 +232,8 @@ module F_kind (X : S_kind) : S_kind
 
 module Arg_kind : S_kind
 
+type t_functor_app : F_kind(Arg_kind).functor_kind
+(** A use behind a functor application. *)
 
 module F_nested (X : S_kind) : sig
   kind_ abstract_kind
@@ -243,7 +245,12 @@ module F_nested (X : S_kind) : sig
   end
 end
 
+kind_ functor_abbrev = F_nested(Arg_kind).abstract_kind
+(** A kind abbreviation defined through a functor-application path. *)
 
+kind_ nested_functor_abbrev = F_nested(Arg_kind).Nested.custom_kind_abbrev
+(** A kind abbreviation defined through a functor-application-then-nested-module
+    path. *)
 
 kind_ to_be_shadowed = value mod portable
 (** Shadowed below by a kind abbreviation of the same name. *)

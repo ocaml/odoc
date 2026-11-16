@@ -17,4 +17,11 @@ Oxcaml\.X_shadowing
 .ti +2
 Uses the outer to_be_shadowed, declared before the one below\.
 .nf 
+.sp 
+\f[CB]kind_\fR to_be_shadowed = value_or_null \f[CB]mod\fR non_null global
+.fi 
+.br 
+.ti +2
+Shadows the outer to_be_shadowed\.
+.nf 
 

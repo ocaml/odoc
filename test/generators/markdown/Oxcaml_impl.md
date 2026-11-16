@@ -96,6 +96,9 @@ module Anonymous_functor : sig ... end
 module Include_functor_kind : sig ... end
 ```
 ```ocaml
+kind_ my_abbrev = value_or_null mod non_null global
+```
+```ocaml
 type t_abbrev : my_abbrev mod immutable
 ```
 ```ocaml
@@ -103,4 +106,7 @@ module Shadowing_source : sig ... end
 ```
 ```ocaml
 type t_dup : dup
+```
+```ocaml
+kind_ dup = value_or_null mod non_null
 ```

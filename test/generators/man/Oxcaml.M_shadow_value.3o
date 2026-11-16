@@ -11,6 +11,8 @@ Oxcaml\.M_shadow_value
 .SH Documentation
 .sp 
 .nf 
+\f[CB]kind_\fR value = value \f[CB]mod\fR portable
+.sp 
 \f[CB]type\fR t_unannotated
 .sp 
 \f[CB]val\fR poly_unannotated : 'a\. \f[CB]'a\fR \f[CB]\->\fR \f[CB]'a\fR
