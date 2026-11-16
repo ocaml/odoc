@@ -98,7 +98,8 @@ module Entry = struct
     in
     let kind =
       Entry.UnboxedField
-        { mutable_ = field.mutable_; type_ = field.type_; parent_type }
+        (* Unboxed record labels cannot be mutable. *)
+        { mutable_ = false; type_ = field.type_; parent_type }
     in
     Entry.entry ~id:field.id ~doc:field.doc.elements ~kind
 

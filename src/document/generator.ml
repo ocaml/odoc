@@ -677,7 +677,7 @@ module Make (Syntax : SYNTAX) = struct
       content
 
     let unboxed_record fields =
-      let field mutable_ id typ =
+      let field id typ =
         let url = Url.from_identifier ~stop_before:true id in
         let name = Paths.Identifier.name id in
         let attrs = [ "def"; "record"; Url.Anchor.string_of_kind url.kind ] in
@@ -686,8 +686,7 @@ module Make (Syntax : SYNTAX) = struct
            *   [O.a ~a:[O.a_href ("#" ^ anchor); O.a_class ["anchor"]] []
            *   ; *)
           O.code
-            ((if mutable_ then O.keyword "mutable" ++ O.txt " " else O.noop)
-            ++ O.txt name
+            (O.txt name
             ++ O.txt Syntax.Type.annotation_separator
             ++ type_expr typ
             ++ O.txt Syntax.Type.Record.field_separator)
@@ -700,7 +699,7 @@ module Make (Syntax : SYNTAX) = struct
         |> List.map (fun fld ->
                let open Odoc_model.Lang.TypeDecl.UnboxedField in
                let url, attrs, code =
-                 field fld.mutable_ (fld.id :> Paths.Identifier.t) fld.type_
+                 field (fld.id :> Paths.Identifier.t) fld.type_
                in
                let anchor = Some url in
                let doc = fld.doc.elements in

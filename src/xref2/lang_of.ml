@@ -965,7 +965,6 @@ and type_decl_unboxed_field :
   {
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) f.doc;
-    mutable_ = f.mutable_;
     type_ = type_expr map (parent :> Identifier.LabelParent.t) f.type_;
   }
 

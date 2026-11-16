@@ -260,12 +260,7 @@ and TypeDecl : sig
   end
 
   module UnboxedField : sig
-    type t = {
-      name : string;
-      doc : CComment.docs;
-      mutable_ : bool;
-      type_ : TypeExpr.t;
-    }
+    type t = { name : string; doc : CComment.docs; type_ : TypeExpr.t }
   end
 
   module Constructor : sig
@@ -1144,8 +1139,7 @@ module Fmt = struct
 
   and type_decl_unboxed_field c ppf t =
     let open TypeDecl.UnboxedField in
-    let mutable_ = if t.mutable_ then "mutable " else "" in
-    fpf ppf "%s%s : %a" mutable_ t.name (type_expr c) t.type_
+    fpf ppf "%s : %a" t.name (type_expr c) t.type_
 
   and type_decl_fields c ppf fs =
     fpf ppf "{ %a }" (fpp_list "; " "%a" (type_decl_field c)) fs
@@ -2404,7 +2398,6 @@ module Of_Lang = struct
     {
       TypeDecl.UnboxedField.name = Paths.Identifier.name f.id;
       doc = docs ident_map f.doc;
-      mutable_ = f.mutable_;
       type_;
     }
 

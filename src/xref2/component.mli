@@ -250,12 +250,7 @@ and TypeDecl : sig
   end
 
   module UnboxedField : sig
-    type t = {
-      name : string;
-      doc : CComment.docs;
-      mutable_ : bool;
-      type_ : TypeExpr.t;
-    }
+    type t = { name : string; doc : CComment.docs; type_ : TypeExpr.t }
   end
 
   module Constructor : sig
