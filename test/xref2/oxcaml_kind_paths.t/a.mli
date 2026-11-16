@@ -29,8 +29,20 @@ module App : module type of F (Arg)
 
 module Local : sig
   kind_ lk = value mod portable
+
+  type t
 end
 
 type l : Local.lk
 
 type 'a w : immutable_data with u
+
+module C : sig
+  type t : Local.lk
+
+  type t2 = Local.t
+end
+
+module D : sig
+  include module type of C
+end

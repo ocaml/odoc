@@ -176,11 +176,19 @@ module Identifier = struct
 
   type path_value = value
 
+  type path_kind_abbreviation = kind_abbreviation
+  (** @canonical Odoc_model.Paths.Identifier.Path.KindAbbreviation.t *)
+
   type path_class_type = [ class_ | class_type ]
   (** @canonical Odoc_model.Paths.Identifier.Path.ClassType.t *)
 
   type path_any =
-    [ path_module | module_type | path_type | path_class_type | value ]
+    [ path_module
+    | module_type
+    | path_type
+    | path_class_type
+    | value
+    | kind_abbreviation ]
   (** @canonical Odoc_model.Paths.Identifier.Path.t *)
 
   type fragment_module = path_module
@@ -259,6 +267,12 @@ module rec Path : sig
     | `DotV of module_ * ValueName.t ]
   (** @canonical Odoc_model.Paths.Path.Value.t *)
 
+  type kind_abbreviation =
+    [ `Resolved of Resolved_path.kind_abbreviation
+    | `Identifier of Identifier.path_kind_abbreviation * bool
+    | `DotK of module_ * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Path.KindAbbreviation.t *)
+
   type class_type =
     [ `Resolved of Resolved_path.class_type
     | `SubstitutedCT of class_type
@@ -278,6 +292,7 @@ module rec Path : sig
     | `DotT of module_ * TypeName.t
     | `DotMT of module_ * ModuleTypeName.t
     | `DotV of module_ * ValueName.t
+    | `DotK of module_ * TypeName.t
     | `Apply of module_ * module_
     | `ApplyParam of instance * ModuleName.t * instance
     | `Unbox of type_ ]
@@ -319,6 +334,12 @@ and Resolved_path : sig
   type value =
     [ `Identifier of Identifier.path_value | `Value of module_ * ValueName.t ]
   (** @canonical Odoc_model.Paths.Path.Resolved.Value.t *)
+
+  type kind_abbreviation =
+    [ `Identifier of Identifier.path_kind_abbreviation
+    | `KindAbbreviation of module_ * TypeName.t
+    | `CoreKind of TypeName.t ]
+  (** @canonical Odoc_model.Paths.Path.Resolved.KindAbbreviation.t *)
 
   type class_type =
     [ `Identifier of Identifier.path_class_type
@@ -365,6 +386,8 @@ and Resolved_path : sig
     | `Value of module_ * ValueName.t
     | `ClassType of module_ * TypeName.t
     | `CoreType of TypeName.t
+    | `KindAbbreviation of module_ * TypeName.t
+    | `CoreKind of TypeName.t
     | `Unbox of type_ ]
   (** @canonical Odoc_model.Paths.Path.Resolved.t *)
 end =

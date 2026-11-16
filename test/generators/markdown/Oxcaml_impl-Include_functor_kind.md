@@ -10,5 +10,5 @@ A kind abbreviation reaching the functor through its argument. `T.k` is rendered
 kind_ k = value mod portable
 ```
 ```ocaml
-type inherited : T.k
+type inherited : k
 ```

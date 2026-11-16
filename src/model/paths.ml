@@ -439,6 +439,13 @@ module Identifier = struct
       let compare = compare
     end
 
+    module KindAbbreviation = struct
+      type t = Id.path_kind_abbreviation
+      let equal = equal
+      let hash = hash
+      let compare = compare
+    end
+
     module ClassType = struct
       type t = Id.path_class_type
       let equal = equal
@@ -666,6 +673,9 @@ module Path = struct
       | `Type (p, _) -> inner (p : module_ :> any)
       | `Value (_, t) when Names.ValueName.is_hidden t -> true
       | `Value (p, _) -> inner (p : module_ :> any)
+      | `KindAbbreviation (_, t) when Names.TypeName.is_hidden t -> true
+      | `KindAbbreviation (p, _) -> inner (p : module_ :> any)
+      | `CoreKind _ -> false
       | (`Class (_, t) | `ClassType (_, t)) when Names.TypeName.is_hidden t ->
           true
       | `Class (p, _) -> inner (p : module_ :> any)
@@ -711,6 +721,8 @@ module Path = struct
         TypeName.is_hidden n || is_path_hidden (p : module_ :> any)
     | `DotV (p, n) ->
         ValueName.is_hidden n || is_path_hidden (p : module_ :> any)
+    | `DotK (p, n) ->
+        TypeName.is_hidden n || is_path_hidden (p : module_ :> any)
     | `Apply (p1, p2) ->
         is_path_hidden (p1 : module_ :> any)
         || is_path_hidden (p2 : module_ :> any)
@@ -800,6 +812,10 @@ module Path = struct
       type t = Paths_types.Resolved_path.value
     end
 
+    module KindAbbreviation = struct
+      type t = Paths_types.Resolved_path.kind_abbreviation
+    end
+
     module ClassType = struct
       type t = Paths_types.Resolved_path.class_type
     end
@@ -812,7 +828,7 @@ module Path = struct
       in
       function
       | `Identifier id -> Some id
-      | `CoreType _ -> None
+      | `CoreType _ | `CoreKind _ -> None
       | `Subst (sub, _) -> identifier (sub :> t)
       | `Hidden _p -> None
       | `Module (m, n) -> parent m (fun p -> Identifier.Mk.module_ (p, n))
@@ -822,6 +838,8 @@ module Path = struct
       | `ApplyParam (m, _, _) -> identifier (m :> t)
       | `Type (m, n) -> parent m (fun p -> Identifier.Mk.type_ (p, n))
       | `Value (m, n) -> parent m (fun p -> Identifier.Mk.value (p, n))
+      | `KindAbbreviation (m, n) ->
+          parent m (fun p -> Identifier.Mk.kind_abbreviation (p, n))
       | `ModuleType (m, n) ->
           parent m (fun p -> Identifier.Mk.module_type (p, n))
       | `Class (m, n) -> parent m (fun p -> Identifier.Mk.class_ (p, n))
@@ -869,6 +887,10 @@ module Path = struct
 
   module Value = struct
     type t = Paths_types.Path.value
+  end
+
+  module KindAbbreviation = struct
+    type t = Paths_types.Path.kind_abbreviation
   end
 
   module ClassType = struct

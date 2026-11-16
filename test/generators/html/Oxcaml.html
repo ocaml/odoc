@@ -778,7 +778,8 @@
     <div class="spec type anchored" id="type-t_plain_value">
      <a href="#type-t_plain_value" class="anchor"></a>
      <code>
-      <span><span class="keyword">type</span> t_plain_value : plain_value
+      <span><span class="keyword">type</span> t_plain_value : 
+       <a href="#kind-plain_value">plain_value</a>
       </span>
      </code>
     </div>
@@ -803,7 +804,8 @@
     <div class="spec type anchored" id="type-t_abbrev">
      <a href="#type-t_abbrev" class="anchor"></a>
      <code>
-      <span><span class="keyword">type</span> t_abbrev : my_abbrev 
+      <span><span class="keyword">type</span> t_abbrev : 
+       <a href="#kind-my_abbrev">my_abbrev</a> 
        <span class="keyword">mod</span> immutable
       </span>
      </code>
@@ -813,8 +815,9 @@
     <div class="spec type kind-abbreviation anchored" id="kind-my_derived">
      <a href="#kind-my_derived" class="anchor"></a>
      <code>
-      <span><span class="keyword">kind_</span> my_derived = my_abbrev
-        <span class="keyword">mod</span> portable
+      <span><span class="keyword">kind_</span> my_derived = 
+       <a href="#kind-my_abbrev">my_abbrev</a> 
+       <span class="keyword">mod</span> portable
       </span>
      </code>
     </div>
@@ -826,7 +829,9 @@
     <div class="spec type anchored" id="type-t_derived">
      <a href="#type-t_derived" class="anchor"></a>
      <code>
-      <span><span class="keyword">type</span> t_derived : my_derived</span>
+      <span><span class="keyword">type</span> t_derived : 
+       <a href="#kind-my_derived">my_derived</a>
+      </span>
      </code>
     </div>
     <div class="spec-doc">
@@ -848,7 +853,9 @@
     <div class="spec type anchored" id="type-t_abstract">
      <a href="#type-t_abstract" class="anchor"></a>
      <code>
-      <span><span class="keyword">type</span> t_abstract : my_abstract</span>
+      <span><span class="keyword">type</span> t_abstract : 
+       <a href="#kind-my_abstract">my_abstract</a>
+      </span>
      </code>
     </div>
     <div class="spec-doc"><p>A type with an abstract abbreviated kind.</p>
@@ -859,7 +866,8 @@
      <a href="#type-abbrev_param" class="anchor"></a>
      <code>
       <span><span class="keyword">type</span> 
-       <span>('a : my_abbrev) abbrev_param</span>
+       <span>('a : <a href="#kind-my_abbrev">my_abbrev</a>) abbrev_param
+       </span>
       </span>
      </code>
     </div>
@@ -871,8 +879,8 @@
     <div class="spec value anchored" id="val-poly_abbrev">
      <a href="#val-poly_abbrev" class="anchor"></a>
      <code>
-      <span><span class="keyword">val</span> poly_abbrev : ('a : my_abbrev
-       ). 
+      <span><span class="keyword">val</span> poly_abbrev : ('a : 
+       <a href="#kind-my_abbrev">my_abbrev</a>). 
        <span><span class="type-var">'a</span> 
         <span class="arrow">&#45;&gt;</span>
        </span> <span class="type-var">'a</span>
@@ -888,8 +896,8 @@
      <a href="#type-t_with_abbrev" class="anchor"></a>
      <code>
       <span><span class="keyword">type</span> <span>'a t_with_abbrev</span>
-        : my_abbrev <span class="keyword">with</span> 
-       <span class="type-var">'a</span>
+        : <a href="#kind-my_abbrev">my_abbrev</a> 
+       <span class="keyword">with</span> <span class="type-var">'a</span>
       </span>
      </code>
     </div>
@@ -914,7 +922,8 @@
     <div class="spec type anchored" id="type-t_qualified">
      <a href="#type-t_qualified" class="anchor"></a>
      <code>
-      <span><span class="keyword">type</span> t_qualified : M_kinds.mod_kind
+      <span><span class="keyword">type</span> t_qualified : 
+       <a href="Oxcaml-M_kinds.html#kind-mod_kind">M_kinds.mod_kind</a>
       </span>
      </code>
     </div>
@@ -927,7 +936,10 @@
      <a href="#type-qualified_param" class="anchor"></a>
      <code>
       <span><span class="keyword">type</span> 
-       <span>('a : M_kinds.mod_kind) qualified_param</span>
+       <span>('a : 
+        <a href="Oxcaml-M_kinds.html#kind-mod_kind">M_kinds.mod_kind</a>
+        ) qualified_param
+       </span>
       </span>
      </code>
     </div>
@@ -979,7 +991,9 @@
      <a href="#type-t_functor_app" class="anchor"></a>
      <code>
       <span><span class="keyword">type</span> t_functor_app : 
-       F_kind(Arg_kind).functor_kind
+       <a href="Oxcaml-F_kind.html#kind-functor_kind">
+        F_kind(Arg_kind).functor_kind
+       </a>
       </span>
      </code>
     </div>
@@ -1005,7 +1019,9 @@
      <a href="#kind-functor_abbrev" class="anchor"></a>
      <code>
       <span><span class="keyword">kind_</span> functor_abbrev = 
-       F_nested(Arg_kind).abstract_kind
+       <a href="Oxcaml-F_nested.html#kind-abstract_kind">
+        F_nested(Arg_kind).abstract_kind
+       </a>
       </span>
      </code>
     </div>
@@ -1019,7 +1035,10 @@
      <a href="#kind-nested_functor_abbrev" class="anchor"></a>
      <code>
       <span><span class="keyword">kind_</span> nested_functor_abbrev =
+        
+       <a href="Oxcaml-F_nested-Nested.html#kind-custom_kind_abbrev">
         F_nested(Arg_kind).Nested.custom_kind_abbrev
+       </a>
       </span>
      </code>
     </div>
@@ -1096,7 +1115,10 @@
    <div class="odoc-spec">
     <div class="spec type anchored" id="type-t_inc">
      <a href="#type-t_inc" class="anchor"></a>
-     <code><span><span class="keyword">type</span> t_inc : inc_kind</span>
+     <code>
+      <span><span class="keyword">type</span> t_inc : 
+       <a href="#kind-inc_kind">inc_kind</a>
+      </span>
      </code>
     </div>
    </div>

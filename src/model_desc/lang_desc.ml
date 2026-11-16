@@ -403,7 +403,9 @@ and kind_annotation =
   Variant
     (function
     | Default -> C0 "Default"
-    | Abbreviation x -> C ("Abbreviation", x, string)
+    | Abbreviation x -> C ("Abbreviation", (x :> Paths.Path.t), Paths_desc.path)
+    | Operator (x1, x2) ->
+        C ("Operator", (x1, x2), Pair (kind_annotation, List string))
     | Mod (x1, x2) -> C ("Mod", (x1, x2), Pair (kind_annotation, List string))
     | With (x1, x2, x3) ->
         C

@@ -2,6 +2,8 @@
 
 module ModuleMap : Map.S with type key = Ident.module_
 
+module KindAbbreviationMap : Map.S with type key = Ident.kind_abbreviation
+
 module TypeMap : Map.S with type key = Ident.type_
 
 module ModuleTypeMap : Map.S with type key = Ident.module_type
@@ -130,7 +132,7 @@ and TypeExpr : sig
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
     | Class of Cpath.class_type * t list
-    | Poly of (string * Odoc_model.Lang.Kind.t) list * t
+    | Poly of (string * Kind.t) list * t
     | Quote of t
     | Splice of t
     | Package of TypeExpr.Package.t
@@ -157,11 +159,22 @@ and Extension : sig
   }
 end
 
+and Kind : sig
+  type t =
+    | Default
+    | Abbreviation of Cpath.kind_abbreviation
+    | Operator of t * string list
+    | Mod of t * string list
+    | With of t * TypeExpr.t * Odoc_model.Lang.Modalities.t
+    | Kind_of of TypeExpr.t
+    | Product of t list
+end
+
 and KindAbbreviation : sig
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
-    manifest : Odoc_model.Lang.Kind.t option;
+    manifest : Kind.t option;
   }
 end
 
@@ -287,7 +300,12 @@ and TypeDecl : sig
       | Extensible
   end
 
-  type param = Odoc_model.Lang.TypeDecl.param
+  type param = {
+    desc : Odoc_model.Lang.TypeDecl.param_desc;
+    variance : Odoc_model.Lang.TypeDecl.variance option;
+    injectivity : bool;
+    kind : Kind.t;
+  }
 
   module Equation : sig
     type t = {
@@ -295,7 +313,7 @@ and TypeDecl : sig
       private_ : bool;
       manifest : TypeExpr.t option;
       constraints : (TypeExpr.t * TypeExpr.t) list;
-      kind : Odoc_model.Lang.Kind.t;
+      kind : Kind.t;
     }
   end
 
@@ -463,11 +481,16 @@ and Substitution : sig
     [ `Prefixed of Cpath.class_type * Cpath.Resolved.class_type
     | `Renamed of Ident.type_ ]
 
+  type subst_kind_abbreviation =
+    [ `Prefixed of Cpath.kind_abbreviation * Cpath.Resolved.kind_abbreviation
+    | `Renamed of Ident.kind_abbreviation ]
+
   type t = {
     module_ : subst_module ModuleMap.t;
     module_type : subst_module_type ModuleTypeMap.t;
     type_ : subst_type TypeMap.t;
     class_type : subst_class_type TypeMap.t;
+    kind_abbreviation : subst_kind_abbreviation KindAbbreviationMap.t;
     type_replacement : (TypeExpr.t * TypeDecl.Equation.t) TypeMap.t;
     module_type_replacement : ModuleType.expr ModuleTypeMap.t;
     path_invalidating_modules : Ident.module_ list;
@@ -515,6 +538,9 @@ module Element : sig
 
   type value = [ `Value of Identifier.Value.t * Value.t ]
 
+  type kind_abbreviation =
+    [ `KindAbbreviation of Identifier.KindAbbreviation.t * KindAbbreviation.t ]
+
   type label = [ `Label of Identifier.Label.t * Label.t ]
 
   type class_ = [ `Class of Identifier.Class.t * Class.t ]
@@ -552,6 +578,7 @@ module Element : sig
   type any =
     [ signature
     | value
+    | kind_abbreviation
     | datatype
     | label
     | class_
@@ -781,6 +808,9 @@ module Fmt : sig
 
   val value_path : config -> Format.formatter -> Cpath.value -> unit
 
+  val kind_abbreviation_path :
+    config -> Format.formatter -> Cpath.kind_abbreviation -> unit
+
   val resolved_class_type_path :
     config -> Format.formatter -> Cpath.Resolved.class_type -> unit
 
@@ -862,6 +892,9 @@ module Of_Lang : sig
   val type_path : map -> Odoc_model.Paths.Path.Type.t -> Cpath.type_
 
   val value_path : map -> Odoc_model.Paths.Path.Value.t -> Cpath.value
+
+  val kind_abbreviation_path :
+    map -> Odoc_model.Paths.Path.KindAbbreviation.t -> Cpath.kind_abbreviation
 
   val class_type_path :
     map -> Odoc_model.Paths.Path.ClassType.t -> Cpath.class_type
@@ -953,6 +986,9 @@ module Of_Lang : sig
     map -> Odoc_model.Lang.Extension.Constructor.t -> Extension.Constructor.t
 
   val exception_ : map -> Odoc_model.Lang.Exception.t -> Exception.t
+
+  val kind_abbreviation :
+    map -> Odoc_model.Lang.KindAbbreviation.t -> KindAbbreviation.t
 
   val u_module_type_expr :
     map -> Odoc_model.Lang.ModuleType.U.expr -> ModuleType.U.expr

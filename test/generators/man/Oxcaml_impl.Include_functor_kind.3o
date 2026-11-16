@@ -20,4 +20,4 @@ A kind abbreviation reaching the functor through its argument\. T\.k is rendered
 .sp 
 \f[CB]kind_\fR k = value \f[CB]mod\fR portable
 .sp 
-\f[CB]type\fR inherited : T\.k
+\f[CB]type\fR inherited : k

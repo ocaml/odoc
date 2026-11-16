@@ -164,6 +164,8 @@ module Identifier : sig
 
     module Value : IdSig with type t = Id.path_value
 
+    module KindAbbreviation : IdSig with type t = Id.path_kind_abbreviation
+
     module ClassType : IdSig with type t = Id.path_class_type
 
     type t = Id.path_any
@@ -384,6 +386,10 @@ module rec Path : sig
       type t = Paths_types.Resolved_path.value
     end
 
+    module KindAbbreviation : sig
+      type t = Paths_types.Resolved_path.kind_abbreviation
+    end
+
     module ClassType : sig
       type t = Paths_types.Resolved_path.class_type
 
@@ -420,6 +426,10 @@ module rec Path : sig
 
   module Value : sig
     type t = Paths_types.Path.value
+  end
+
+  module KindAbbreviation : sig
+    type t = Paths_types.Path.kind_abbreviation
   end
 
   module ClassType : sig

@@ -105,7 +105,7 @@ type t_abbrev : my_abbrev mod immutable
 module Shadowing_source : sig ... end
 ```
 ```ocaml
-type t_dup : dup
+type t_dup : value mod portable
 ```
 ```ocaml
 kind_ dup = value_or_null mod non_null

@@ -139,6 +139,22 @@ val resolve_value_path :
   Cpath.value ->
   (Cpath.Resolved.value, simple_value_lookup_error) result
 
+val resolve_kind_abbreviation :
+  Env.t ->
+  Cpath.kind_abbreviation ->
+  ( Cpath.Resolved.kind_abbreviation * Component.KindAbbreviation.t option,
+    simple_kind_abbreviation_lookup_error )
+  result
+(** The declaration is [None] for a built-in kind. *)
+
+val resolve_kind_abbreviation_path :
+  Env.t ->
+  Cpath.kind_abbreviation ->
+  (Cpath.Resolved.kind_abbreviation, simple_kind_abbreviation_lookup_error) result
+
+val reresolve_kind_abbreviation :
+  Env.t -> Cpath.Resolved.kind_abbreviation -> Cpath.Resolved.kind_abbreviation
+
 val resolve_class_type_path :
   Env.t ->
   Cpath.class_type ->

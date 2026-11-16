@@ -22,6 +22,7 @@
 - `{!modules: ...}` lists accept path references such as
   `{!modules: /lib/Module}` (@jonludlam, #1503)
 - Render OxCaml kind abbreviations (@art-w, #1524)
+- Links for OxCaml kind abbreviations (@art-w, #1467)
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)

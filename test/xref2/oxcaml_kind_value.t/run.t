@@ -44,9 +44,8 @@ A kind abbreviation can be named [value], shadowing the built-in kind.
   $ odoc markdown-generate -o md m.odocl
 
 The [value] the compiler inserts on unannotated declarations is the built-in
-default, so it is hidden. Kind names are rendered as written, so the later
-[value] on [t], which is the abbreviation above, cannot be told apart from the
-default and is hidden too (BROKEN):
+default, so it is hidden. The later [value] on [t] is the abbreviation above,
+so it is rendered:
 
   $ cat md/M.md
   
@@ -62,7 +61,7 @@ default and is hidden too (BROKEN):
   val poly_unannotated : 'a. 'a -> 'a
   ```
   ```ocaml
-  type t
+  type t : value
   ```
   ```ocaml
   kind_ k
@@ -104,15 +103,21 @@ default and is hidden too (BROKEN):
   type ('a, 'b) two_with : (immutable_data with 'a @@ many) with 'b @@ contended
   ```
 
-Kind names are rendered as plain text, without links:
+Kind names link to their abbreviations, and [F(K).k] links into the result
+signature of [F]:
 
   $ odoc html-generate -o html m.odocl
   $ grep -o '<a href="[^"]*">[^<]*</a>' html/M/index.html | grep -v 'class="anchor"'
   <a href="../index.html">Up</a>
   <a href="../index.html">Index</a>
+  <a href="#kind-value">value</a>
+  <a href="#kind-k">k</a>
   <a href="K/index.html">K</a>
+  <a href="K/index.html#kind-k">K.k</a>
+  <a href="#kind-value">value</a>
   <a href="F/index.html">F</a>
   <a href="F/argument-1-X/index.html">X</a>
+  <a href="F/index.html#kind-k">F(K).k</a>
 
 From a [.cmi] alone, the compiler drops the kind annotation on [t] and stores only
 its expansion, so [t] is rendered as [value mod portable], where [value] is the
@@ -157,7 +162,7 @@ is not rendered as it was not written by the user. The with-bounds of
   type 'a w : immutable_data with 'a
   ```
   ```ocaml
-  type p : float64 & value non_pointer mod external_
+  type p : (float64 & value non_pointer) mod external_
   ```
   ```ocaml
   type m : immediate = int
@@ -181,12 +186,16 @@ is not rendered as it was not written by the user. The with-bounds of
   type ('a, 'b) two_with : (immutable_data with 'b @@ contended) with 'a @@ many
   ```
 
-Kind names are still rendered as plain text:
+Kind names still link to their abbreviations (but [t : value mod portable] is
+now the built-in [value], so it does not):
 
   $ odoc html-generate -o html m.odocl
   $ grep -o '<a href="[^"]*">[^<]*</a>' html/M/index.html | grep -v 'class="anchor"'
   <a href="../index.html">Up</a>
   <a href="../index.html">Index</a>
+  <a href="#kind-k">k</a>
   <a href="K/index.html">K</a>
+  <a href="K/index.html#kind-k">K.k</a>
   <a href="F/index.html">F</a>
   <a href="F/argument-1-X/index.html">X</a>
+  <a href="F/index.html#kind-k">F(K).k</a>

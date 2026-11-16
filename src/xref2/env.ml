@@ -85,6 +85,7 @@ type kind =
   | Kind_Module
   | Kind_ModuleType
   | Kind_Type
+  | Kind_KindAbbreviation
   | Kind_Value
   | Kind_Label
   | Kind_Class
@@ -611,6 +612,11 @@ let s_module_type : Component.Element.module_type scope =
 let s_type : Component.Element.type_ scope =
   make_scope (function #Component.Element.type_ as r -> Some r | _ -> None)
 
+let s_kind_abbreviation : Component.Element.kind_abbreviation scope =
+  make_scope (function
+    | #Component.Element.kind_abbreviation as r -> Some r
+    | _ -> None)
+
 let s_datatype : Component.Element.datatype scope =
   make_scope (function #Component.Element.datatype as r -> Some r | _ -> None)
 
@@ -839,7 +845,11 @@ let rec open_signature : Lang.Signature.t -> t -> t =
             add_value v.L.Value.id ty env
         (* Skip when compiling *)
         | Exception _, false -> env
-        | KindAbbreviation _, _ -> env
+        | KindAbbreviation ka, _ ->
+            let ty = kind_abbreviation ident_map ka in
+            add_to_elts Kind_KindAbbreviation ka.L.KindAbbreviation.id
+              (`KindAbbreviation (ka.L.KindAbbreviation.id, ty))
+              env
         | TypExt _, false -> env
         | Comment _, false -> env
         | L.Signature.Value _, false -> env)

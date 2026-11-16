@@ -36,7 +36,7 @@ Uses of a kind abbreviation link to its declaration, like uses of a type:
   type t2 = u
   ```
   ```ocaml
-  type h : Hidden__.hk
+  type h : value mod contended
   ```
   ```ocaml
   module type S = sig ... end
@@ -59,9 +59,16 @@ Uses of a kind abbreviation link to its declaration, like uses of a type:
   ```ocaml
   type 'a w : immutable_data with u
   ```
+  ```ocaml
+  module C : sig ... end
+  ```
+  ```ocaml
+  module D : sig ... end
+  ```
   $ grep -o '<a href="[^"]*">[^<]*</a>' html/A/index.html | grep -v 'class="anchor"'
   <a href="../index.html">Up</a>
   <a href="../index.html">Index</a>
+  <a href="#kind-k">k</a>
   <a href="#type-u">u</a>
   <a href="module-type-S/index.html">S</a>
   <a href="F/index.html">F</a>
@@ -71,8 +78,13 @@ Uses of a kind abbreviation link to its declaration, like uses of a type:
   <a href="module-type-S/index.html">S</a>
   <a href="App/index.html">App</a>
   <a href="Local/index.html">Local</a>
+  <a href="Local/index.html#kind-lk">Local.lk</a>
+  <a href="C/index.html">C</a>
+  <a href="D/index.html">D</a>
 
-The functor application [F(Arg)] substitutes the argument's kind:
+[module type of F (Arg)] takes the signature computed by the compiler, which
+keeps the kind annotation as written in [F] ([X.sk]) instead of substituting
+it, so it is not linked (KNOWN LIMITATION):
 
   $ cat md/A-App.md
   
@@ -87,7 +99,8 @@ The functor application [F(Arg)] substitutes the argument's kind:
   <a href="../index.html">A</a>
   <a href="../F/index.html#type-t">F(Arg).t</a>
 
-After [include module type of A], [t : k] refers to [A.k], like [t2 = A.u]:
+After [include module type of A], [t : k] refers to [B]'s own copy of [k],
+like [t2 = u]:
 
   $ cat md/B.md
   
@@ -106,7 +119,7 @@ After [include module type of A], [t : k] refers to [A.k], like [t2 = A.u]:
   type t2 = u
   ```
   ```ocaml
-  type h : Hidden__.hk
+  type h : value mod contended
   ```
   ```ocaml
   module type S = sig ... end
@@ -129,10 +142,17 @@ After [include module type of A], [t : k] refers to [A.k], like [t2 = A.u]:
   ```ocaml
   type 'a w : immutable_data with u
   ```
+  ```ocaml
+  module C : sig ... end
+  ```
+  ```ocaml
+  module D : sig ... end
+  ```
   $ grep -o '<a href="[^"]*">[^<]*</a>' html/B/index.html | grep -v 'class="anchor"'
   <a href="../index.html">Up</a>
   <a href="../index.html">Index</a>
   <a href="../A/index.html">A</a>
+  <a href="#kind-k">k</a>
   <a href="#type-u">u</a>
   <a href="module-type-S/index.html">S</a>
   <a href="F/index.html">F</a>
@@ -142,6 +162,9 @@ After [include module type of A], [t : k] refers to [A.k], like [t2 = A.u]:
   <a href="module-type-S/index.html">S</a>
   <a href="App/index.html">App</a>
   <a href="Local/index.html">Local</a>
+  <a href="Local/index.html#kind-lk">Local.lk</a>
+  <a href="C/index.html">C</a>
+  <a href="D/index.html">D</a>
 
 A kind in a module with a canonical alias links to the canonical module:
 
@@ -153,9 +176,32 @@ A kind in a module with a canonical alias links to the canonical module:
   module Canon : sig ... end
   ```
   ```ocaml
-  type c : Canon__.ck
+  type c : Canon.ck
   ```
   $ grep -o '<a href="[^"]*">[^<]*</a>' html/C/index.html | grep -v 'class="anchor"'
   <a href="../index.html">Up</a>
   <a href="../index.html">Index</a>
   <a href="Canon/index.html">Canon</a>
+  <a href="Canon/index.html#kind-ck">Canon.ck</a>
+
+A qualified kind keeps its path through [include module type of C], like the
+type path [Local.t]:
+
+  $ odoc markdown-generate -o md a.odocl
+  $ cat md/A-D.md
+  
+  # Module `A.D`
+  
+  ```ocaml
+  type t : Local.lk
+  ```
+  ```ocaml
+  type t2 = Local.t
+  ```
+  $ grep -o '<a href="[^"]*">[^<]*</a>' html/A/D/index.html | grep -v 'class="anchor"'
+  <a href="../index.html">Up</a>
+  <a href="../../index.html">Index</a>
+  <a href="../index.html">A</a>
+  <a href="../C/index.html">C</a>
+  <a href="../Local/index.html#kind-lk">Local.lk</a>
+  <a href="../Local/index.html#type-t">Local.t</a>

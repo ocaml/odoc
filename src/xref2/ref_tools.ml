@@ -69,6 +69,7 @@ let ref_kind_of_element = function
   | `Module _ -> "module"
   | `ModuleType _ -> "module-type"
   | `Type _ -> "type"
+  | `KindAbbreviation _ -> "kind"
   | `Value _ -> "val"
   | `Label _ -> "section"
   | `Class _ -> "class"
@@ -965,6 +966,7 @@ let resolve_reference :
         | `ModuleType (_, _) as e -> resolved (MT.of_element env e)
         | `Value (id, _) -> identifier id
         | `Type (id, _) -> identifier id
+        | `KindAbbreviation (id, _) -> identifier id
         | `Label (id, _) ->
             let text =
               match Env.lookup_by_id Env.s_label id env with

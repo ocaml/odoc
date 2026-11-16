@@ -6,6 +6,12 @@ module ModuleMap = Map.Make (struct
   let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
 end)
 
+module KindAbbreviationMap = Map.Make (struct
+  type t = Ident.kind_abbreviation
+
+  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
+end)
+
 module TypeMap = Map.Make (struct
   type t = Ident.type_
 
@@ -135,7 +141,7 @@ and TypeExpr : sig
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
     | Class of Cpath.class_type * t list
-    | Poly of (string * Odoc_model.Lang.Kind.t) list * t
+    | Poly of (string * Kind.t) list * t
     | Quote of t
     | Splice of t
     | Package of TypeExpr.Package.t
@@ -164,11 +170,23 @@ and Extension : sig
 end =
   Extension
 
+and Kind : sig
+  type t =
+    | Default
+    | Abbreviation of Cpath.kind_abbreviation
+    | Operator of t * string list
+    | Mod of t * string list
+    | With of t * TypeExpr.t * Odoc_model.Lang.Modalities.t
+    | Kind_of of TypeExpr.t
+    | Product of t list
+end =
+  Kind
+
 and KindAbbreviation : sig
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
     doc : CComment.docs;
-    manifest : Odoc_model.Lang.Kind.t option;
+    manifest : Kind.t option;
   }
 end =
   KindAbbreviation
@@ -298,7 +316,12 @@ and TypeDecl : sig
       | Extensible
   end
 
-  type param = Odoc_model.Lang.TypeDecl.param
+  type param = {
+    desc : Odoc_model.Lang.TypeDecl.param_desc;
+    variance : Odoc_model.Lang.TypeDecl.variance option;
+    injectivity : bool;
+    kind : Kind.t;
+  }
 
   module Equation : sig
     type t = {
@@ -306,7 +329,7 @@ and TypeDecl : sig
       private_ : bool;
       manifest : TypeExpr.t option;
       constraints : (TypeExpr.t * TypeExpr.t) list;
-      kind : Odoc_model.Lang.Kind.t;
+      kind : Kind.t;
     }
   end
 
@@ -485,11 +508,16 @@ and Substitution : sig
     [ `Prefixed of Cpath.class_type * Cpath.Resolved.class_type
     | `Renamed of Ident.type_ ]
 
+  type subst_kind_abbreviation =
+    [ `Prefixed of Cpath.kind_abbreviation * Cpath.Resolved.kind_abbreviation
+    | `Renamed of Ident.kind_abbreviation ]
+
   type t = {
     module_ : subst_module ModuleMap.t;
     module_type : subst_module_type ModuleTypeMap.t;
     type_ : subst_type TypeMap.t;
     class_type : subst_class_type TypeMap.t;
+    kind_abbreviation : subst_kind_abbreviation KindAbbreviationMap.t;
     type_replacement : (TypeExpr.t * TypeDecl.Equation.t) TypeMap.t;
     module_type_replacement : ModuleType.expr ModuleTypeMap.t;
     path_invalidating_modules : Ident.module_ list;
@@ -542,6 +570,9 @@ module Element = struct
 
   type value = [ `Value of Identifier.Value.t * Value.t ]
 
+  type kind_abbreviation =
+    [ `KindAbbreviation of Identifier.KindAbbreviation.t * KindAbbreviation.t ]
+
   type label = [ `Label of Identifier.Label.t * Label.t ]
 
   type class_ = [ `Class of Identifier.Class.t * Class.t ]
@@ -579,6 +610,7 @@ module Element = struct
   type any =
     [ signature
     | value
+    | kind_abbreviation
     | datatype
     | label
     | class_
@@ -600,6 +632,7 @@ module Element = struct
     | `ClassType (id, _) -> (id :> t)
     | `Class (id, _) -> (id :> t)
     | `Value (id, _) -> (id :> t)
+    | `KindAbbreviation (id, _) -> (id :> t)
     | `Label (id, _) -> (id :> t)
     | `Constructor (id, _) -> (id :> t)
     | `Exception (id, _) -> (id :> t)
@@ -1173,8 +1206,7 @@ module Fmt = struct
     fpp_list " * " "%a" (type_expr c) ppf ts
 
   and type_param ppf t =
-    let desc =
-      match t.Odoc_model.Lang.TypeDecl.desc with Any -> "_" | Var n -> n
+    let desc = match t.TypeDecl.desc with Any -> "_" | Var n -> n
     and variance =
       match t.variance with
       | Some Pos -> "+"
@@ -1450,6 +1482,31 @@ module Fmt = struct
     | `Identifier _ as p ->
         Format.fprintf ppf "%a" (model_resolved_path c) (p :> rpath)
 
+  and resolved_kind_abbreviation_path :
+      config -> Format.formatter -> Cpath.Resolved.kind_abbreviation -> unit =
+   fun c ppf p ->
+    match p with
+    | `CoreKind n -> Format.fprintf ppf "%s" (TypeName.to_string n)
+    | `Local id -> ident_fmt c ppf id
+    | `Identifier _ as p -> model_resolved_path c ppf (p :> rpath)
+    | `KindAbbreviation (p, t) ->
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (TypeName.to_string t)
+
+  and kind_abbreviation_path :
+      config -> Format.formatter -> Cpath.kind_abbreviation -> unit =
+   fun c ppf p ->
+    match p with
+    | `Resolved r -> wrap c "resolved" resolved_kind_abbreviation_path ppf r
+    | `Identifier (id, b) ->
+        wrap2 c "identifier" model_identifier bool ppf (id :> id) b
+    | `Local (id, b) -> wrap2 c "local" ident_fmt bool ppf id b
+    | `DotK (m, s) ->
+        Format.fprintf ppf "%a.%a" (module_path c) m TypeName.fmt s
+    | `KindAbbreviation (p, t) ->
+        Format.fprintf ppf "%a.%s" (resolved_parent_path c) p
+          (TypeName.to_string t)
+
   and resolved_parent_path :
       config -> Format.formatter -> Cpath.Resolved.parent -> unit =
    fun c ppf p ->
@@ -1544,6 +1601,7 @@ module Fmt = struct
     | `DotMT (p, s) -> dot p (ModuleTypeName.to_string s)
     | `DotT (p, s) -> dot p (TypeName.to_string s)
     | `DotV (p, s) -> dot p (ValueName.to_string s)
+    | `DotK (p, s) -> dot p (TypeName.to_string s)
     | `Apply (func, arg) ->
         Format.fprintf ppf "%a(%a)" (model_path c)
           (func :> path)
@@ -1567,7 +1625,8 @@ module Fmt = struct
   and model_resolved_path (c : config) ppf (p : rpath) =
     let open Odoc_model.Paths.Path.Resolved in
     match p with
-    | `CoreType x -> Format.fprintf ppf "%s" (TypeName.to_string x)
+    | `CoreType x | `CoreKind x ->
+        Format.fprintf ppf "%s" (TypeName.to_string x)
     | `Identifier id when c.identifier_name_only ->
         Format.fprintf ppf "%s" (Odoc_model.Paths.Identifier.name (id :> id))
     | `Identifier id -> Format.fprintf ppf "%a" (model_identifier c) (id :> id)
@@ -1587,6 +1646,10 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (model_resolved_path c)
           (parent :> t)
           (ValueName.to_string name)
+    | `KindAbbreviation (parent, name) ->
+        Format.fprintf ppf "%a.%s" (model_resolved_path c)
+          (parent :> t)
+          (TypeName.to_string name)
     | `Alias (dest, src) ->
         wrap2r c "alias" model_resolved_path model_path ppf
           (dest :> t)
@@ -1984,6 +2047,7 @@ module LocalIdents = struct
     modules : Paths.Identifier.Module.t list;
     module_types : Paths.Identifier.ModuleType.t list;
     types : Paths.Identifier.Type.t list;
+    kind_abbreviations : Paths.Identifier.KindAbbreviation.t list;
     classes : Paths.Identifier.Class.t list;
     class_types : Paths.Identifier.ClassType.t list;
   }
@@ -1993,6 +2057,7 @@ module LocalIdents = struct
       modules = [];
       module_types = [];
       types = [];
+      kind_abbreviations = [];
       classes = [];
       class_types = [];
     }
@@ -2017,8 +2082,13 @@ module LocalIdents = struct
         | Class (_, c) -> { ids with classes = c.Class.id :: ids.classes }
         | ClassType (_, c) ->
             { ids with class_types = c.ClassType.id :: ids.class_types }
-        | TypExt _ | Exception _ | KindAbbreviation _ | Value _ | Comment _ ->
-            ids
+        | KindAbbreviation ka ->
+            {
+              ids with
+              kind_abbreviations =
+                ka.KindAbbreviation.id :: ids.kind_abbreviations;
+            }
+        | TypExt _ | Exception _ | Value _ | Comment _ -> ids
         | Include i -> signature i.Include.expansion.content ids
         | Open o -> signature o.Open.expansion ids)
       ids s
@@ -2034,6 +2104,8 @@ module Of_Lang = struct
     module_types : Ident.module_type Paths.Identifier.Maps.ModuleType.t;
     functor_parameters : Ident.module_ Paths.Identifier.Maps.FunctorParameter.t;
     types : Ident.type_ Paths.Identifier.Maps.Type.t;
+    kind_abbreviations :
+      Ident.kind_abbreviation Paths.Identifier.Maps.KindAbbreviation.t;
     path_types : Ident.type_ Paths.Identifier.Maps.Path.Type.t;
     path_class_types : Ident.type_ Paths.Identifier.Maps.Path.ClassType.t;
     classes : Ident.type_ Paths.Identifier.Maps.Class.t;
@@ -2047,6 +2119,7 @@ module Of_Lang = struct
       module_types = ModuleType.empty;
       functor_parameters = FunctorParameter.empty;
       types = Type.empty;
+      kind_abbreviations = KindAbbreviation.empty;
       path_types = Path.Type.empty;
       path_class_types = Path.ClassType.empty;
       classes = Class.empty;
@@ -2066,6 +2139,14 @@ module Of_Lang = struct
             Maps.Path.Type.add (i :> Path.Type.t) id path_types ))
         (map.types, map.path_types)
         ids.LocalIdents.types
+    in
+    let kind_abbreviations_new =
+      List.fold_left
+        (fun acc i ->
+          Maps.KindAbbreviation.add i
+            (Ident.Of_Identifier.kind_abbreviation i)
+            acc)
+        map.kind_abbreviations ids.LocalIdents.kind_abbreviations
     in
     let classes_new, path_class_types_new =
       List.fold_left
@@ -2104,6 +2185,7 @@ module Of_Lang = struct
     let module_types = module_types_new in
     let functor_parameters = map.functor_parameters in
     let types = types_new in
+    let kind_abbreviations = kind_abbreviations_new in
     let classes = classes_new in
     let class_types = class_types_new in
     let path_types = path_types_new in
@@ -2113,6 +2195,7 @@ module Of_Lang = struct
       module_types;
       functor_parameters;
       types;
+      kind_abbreviations;
       classes;
       class_types;
       path_types;
@@ -2210,6 +2293,35 @@ module Of_Lang = struct
     | `Value (p, name) ->
         `Value (`Module (resolved_module_path ident_map p), name)
     | `Identifier _ as i -> i
+
+  and resolved_kind_abbreviation_path :
+      _ ->
+      Odoc_model.Paths.Path.Resolved.KindAbbreviation.t ->
+      Cpath.Resolved.kind_abbreviation =
+   fun ident_map p ->
+    match p with
+    | `CoreKind _ as c -> c
+    | `Identifier i -> (
+        match
+          identifier Maps.KindAbbreviation.find ident_map.kind_abbreviations i
+        with
+        | `Local l -> `Local l
+        | `Identifier _ -> `Identifier i)
+    | `KindAbbreviation (p, name) ->
+        `KindAbbreviation (`Module (resolved_module_path ident_map p), name)
+
+  and kind_abbreviation_path :
+      _ -> Odoc_model.Paths.Path.KindAbbreviation.t -> Cpath.kind_abbreviation =
+   fun ident_map p ->
+    match p with
+    | `Resolved r -> `Resolved (resolved_kind_abbreviation_path ident_map r)
+    | `Identifier (i, b) -> (
+        match
+          identifier Maps.KindAbbreviation.find ident_map.kind_abbreviations i
+        with
+        | `Identifier i -> `Identifier (i, b)
+        | `Local i -> `Local (i, b))
+    | `DotK (path', x) -> `DotK (module_path ident_map path', x)
 
   and resolved_class_type_path :
       _ ->
@@ -2428,7 +2540,7 @@ module Of_Lang = struct
   and type_equation ident_map teq =
     let open Odoc_model.Lang.TypeDecl.Equation in
     {
-      TypeDecl.Equation.params = teq.params;
+      TypeDecl.Equation.params = List.map (type_decl_param ident_map) teq.params;
       private_ = teq.private_;
       manifest = option type_expression ident_map teq.manifest;
       constraints =
@@ -2436,7 +2548,7 @@ module Of_Lang = struct
           (fun (x, y) ->
             (type_expression ident_map x, type_expression ident_map y))
           teq.constraints;
-      kind = teq.kind;
+      kind = kind ident_map teq.kind;
     }
 
   and type_expr_polyvar ident_map v =
@@ -2505,7 +2617,10 @@ module Of_Lang = struct
           (List.map (fun (l, t) -> (l, type_expression ident_map t)) ts)
     | Polymorphic_variant v ->
         Polymorphic_variant (type_expr_polyvar ident_map v)
-    | Poly (s, ts) -> Poly (s, type_expression ident_map ts)
+    | Poly (vars, ts) ->
+        Poly
+          ( List.map (fun (v, k) -> (v, kind ident_map k)) vars,
+            type_expression ident_map ts )
     | Alias (t, s) -> Alias (type_expression ident_map t, s)
     | Class (p, ts) ->
         Class
@@ -2621,7 +2736,7 @@ module Of_Lang = struct
     {
       Extension.type_path;
       doc = docs ident_map e.doc;
-      type_params = e.type_params;
+      type_params = List.map (type_decl_param ident_map) e.type_params;
       private_ = e.private_;
       constructors;
     }
@@ -2638,12 +2753,30 @@ module Of_Lang = struct
       res;
     }
 
+  and kind ident_map (k : Odoc_model.Lang.Kind.t) : Kind.t =
+    match k with
+    | Default -> Default
+    | Abbreviation p -> Abbreviation (kind_abbreviation_path ident_map p)
+    | Operator (b, axes) -> Operator (kind ident_map b, axes)
+    | Mod (b, m) -> Mod (kind ident_map b, m)
+    | With (b, ty, m) -> With (kind ident_map b, type_expression ident_map ty, m)
+    | Kind_of ty -> Kind_of (type_expression ident_map ty)
+    | Product ks -> Product (List.map (kind ident_map) ks)
+
+  and type_decl_param ident_map (p : Odoc_model.Lang.TypeDecl.param) =
+    {
+      TypeDecl.desc = p.desc;
+      variance = p.variance;
+      injectivity = p.injectivity;
+      kind = kind ident_map p.kind;
+    }
+
   and kind_abbreviation ident_map k =
     let open Odoc_model.Lang.KindAbbreviation in
     {
       KindAbbreviation.source_loc = k.source_loc;
       doc = docs ident_map k.doc;
-      manifest = k.manifest;
+      manifest = Opt.map (kind ident_map) k.manifest;
     }
 
   and exception_ ident_map e =
@@ -2798,7 +2931,7 @@ module Of_Lang = struct
       Class.source_loc = c.source_loc;
       doc = docs ident_map c.doc;
       virtual_ = c.virtual_;
-      params = c.params;
+      params = List.map (type_decl_param ident_map) c.params;
       type_ = class_decl ident_map c.type_;
       expansion;
     }
@@ -2825,7 +2958,7 @@ module Of_Lang = struct
       ClassType.source_loc = t.source_loc;
       doc = docs ident_map t.doc;
       virtual_ = t.virtual_;
-      params = t.params;
+      params = List.map (type_decl_param ident_map) t.params;
       expr = class_type_expr ident_map t.expr;
       expansion;
     }
@@ -2974,7 +3107,10 @@ module Of_Lang = struct
              let m' = Delayed.put (fun () -> module_type ident_map m) in
              Signature.ModuleType (id, m')
          | KindAbbreviation k ->
-             let id = Ident.Of_Identifier.kind_abbreviation k.id in
+             let id =
+               Identifier.Maps.KindAbbreviation.find k.id
+                 ident_map.kind_abbreviations
+             in
              Signature.KindAbbreviation (id, kind_abbreviation ident_map k)
          | Value v ->
              let id = Ident.Of_Identifier.value v.id in

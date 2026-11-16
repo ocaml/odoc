@@ -151,6 +151,9 @@ module Make (Syntax : SYNTAX) = struct
       | `DotV (prefix, suffix) ->
           let link = from_path (prefix :> Path.t) in
           link ++ O.txt ("." ^ ValueName.to_string suffix)
+      | `DotK (prefix, suffix) ->
+          let link = from_path (prefix :> Path.t) in
+          link ++ O.txt ("." ^ TypeName.to_string suffix)
       | `Apply (p1, p2) ->
           let link1 = from_path (p1 :> Path.t) in
           let link2 = from_path (p2 :> Path.t) in
@@ -478,7 +481,20 @@ module Make (Syntax : SYNTAX) = struct
       in
       match k with
       | Default -> O.noop
-      | Abbreviation name -> O.txt name
+      | Abbreviation
+          ( `Resolved (`Identifier (`KindAbbreviation (_, name)))
+          | `Identifier (`KindAbbreviation (_, name), _) )
+        when Odoc_model.Names.TypeName.is_hidden name ->
+          (* A shadowed abbreviation is not rendered, print its name as
+             written. *)
+          O.txt (Odoc_model.Names.TypeName.to_string_unsafe name)
+      | Abbreviation p -> Link.from_path (p :> Paths.Path.t)
+      | Operator (base, axes) ->
+          let res =
+            kind_annotation ~needs_parentheses:true base
+            ++ O.txt (" " ^ String.concat ~sep:" " axes)
+          in
+          enclose_parens_if_needed res
       | Mod (base, modes) ->
           let res =
             kind_annotation ~needs_parentheses:true base
@@ -504,7 +520,9 @@ module Make (Syntax : SYNTAX) = struct
           enclose_parens_if_needed res
 
     and kind_is_default = function
-      | Odoc_model.Lang.Kind.Default | Abbreviation "value" -> true
+      | Odoc_model.Lang.Kind.Default -> true
+      | Abbreviation (`Resolved (`CoreKind name)) ->
+          Odoc_model.Names.TypeName.to_string name = "value"
       | _ -> false
 
     and with_kind_annotation kind base =

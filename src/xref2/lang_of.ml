@@ -7,6 +7,8 @@ type maps = {
   module_type : Identifier.ModuleType.t Component.ModuleTypeMap.t;
   functor_parameter : (Ident.module_ * Identifier.FunctorParameter.t) list;
   type_ : Identifier.Type.t Component.TypeMap.t;
+  kind_abbreviation :
+    Identifier.KindAbbreviation.t Component.KindAbbreviationMap.t;
   path_type : Identifier.Path.Type.t Component.TypeMap.t;
   class_ : (Ident.type_ * Identifier.Class.t) list;
   class_type : (Ident.type_ * Identifier.ClassType.t) list;
@@ -34,6 +36,7 @@ let empty () =
     module_type = Component.ModuleTypeMap.empty;
     functor_parameter = [];
     type_ = Component.TypeMap.empty;
+    kind_abbreviation = Component.KindAbbreviationMap.empty;
     path_type = Component.TypeMap.empty;
     class_ = [];
     class_type = [];
@@ -204,6 +207,29 @@ module Path = struct
     | `Substituted s -> `SubstitutedT (resolved_type map s)
     | `Unbox t -> `Unbox (resolved_type map t)
 
+  and kind_abbreviation map (p : Cpath.kind_abbreviation) :
+      Odoc_model.Paths.Path.KindAbbreviation.t =
+    match p with
+    | `Identifier (y, b) -> `Identifier (y, b)
+    | `Local (id, b) ->
+        `Identifier
+          (Component.KindAbbreviationMap.find id map.kind_abbreviation, b)
+    | `Resolved x -> `Resolved (resolved_kind_abbreviation map x)
+    | `DotK (p, n) -> `DotK (module_ map p, n)
+    | `KindAbbreviation (`Module p, n) ->
+        `DotK (`Resolved (resolved_module map p), n)
+    | `KindAbbreviation _ -> failwith "Probably shouldn't happen"
+
+  and resolved_kind_abbreviation map (p : Cpath.Resolved.kind_abbreviation) :
+      Odoc_model.Paths.Path.Resolved.KindAbbreviation.t =
+    match p with
+    | (`CoreKind _ | `Identifier _) as y -> y
+    | `Local id ->
+        `Identifier
+          (Component.KindAbbreviationMap.find id map.kind_abbreviation)
+    | `KindAbbreviation (p, name) ->
+        `KindAbbreviation (resolved_parent map p, name)
+
   and resolved_value map (p : Cpath.Resolved.value) :
       Odoc_model.Paths.Path.Resolved.Value.t =
     match p with
@@ -310,6 +336,23 @@ module ExtractIDs = struct
           map.path_type;
     }
 
+  and kind_abbreviation parent map id =
+    let name = Ident.Name.typed_kind_abbreviation id in
+    let name =
+      match
+        List.assoc_opt (TypeName.to_string name)
+          map.shadowed.s_kind_abbreviations
+      with
+      | Some shadowed -> shadowed
+      | None -> name
+    in
+    let identifier = Identifier.Mk.kind_abbreviation (parent, name) in
+    {
+      map with
+      kind_abbreviation =
+        Component.KindAbbreviationMap.add id identifier map.kind_abbreviation;
+    }
+
   and module_ parent map id =
     let name = Ident.Name.module_ id in
     let typed_name =
@@ -398,8 +441,9 @@ module ExtractIDs = struct
           inner rest (type_decl parent map id)
       | Class (id, _, _) :: rest -> inner rest (class_ parent map id)
       | ClassType (id, _, _) :: rest -> inner rest (class_type parent map id)
+      | KindAbbreviation (id, _) :: rest ->
+          inner rest (kind_abbreviation parent map id)
       | Exception (_, _) :: rest
-      | KindAbbreviation (_, _) :: rest
       | Value (_, _) :: rest
       | TypExt _ :: rest
       | Comment _ :: rest ->
@@ -456,18 +500,7 @@ let rec signature_items id map items =
     | TypeSubstitution (id, t) :: rest ->
         inner rest (TypeSubstitution (type_decl map parent id t) :: acc)
     | KindAbbreviation (id, ka) :: rest ->
-        (* Like a shadowed type, a shadowed kind abbreviation is kept under its
-           hidden shadowed name. *)
-        let name = Ident.Name.typed_kind_abbreviation id in
-        let name =
-          match
-            List.assoc_opt (TypeName.to_string name)
-              map.shadowed.s_kind_abbreviations
-          with
-          | Some shadowed -> shadowed
-          | None -> name
-        in
-        inner rest (KindAbbreviation (kind_abbreviation parent name ka) :: acc)
+        inner rest (KindAbbreviation (kind_abbreviation map id ka) :: acc)
     | Class (id, r, c) :: rest ->
         inner rest (Class (r, class_ map parent id c) :: acc)
     | ClassType (id, r, c) :: rest ->
@@ -522,7 +555,10 @@ and class_ map parent id c =
     source_loc = c.source_loc;
     doc = docs (parent :> Identifier.LabelParent.t) c.doc;
     virtual_ = c.virtual_;
-    params = c.params;
+    params =
+      List.map
+        (type_decl_param map (parent :> Identifier.LabelParent.t))
+        c.params;
     type_ =
       class_decl map (identifier :> Paths.Identifier.Path.ClassType.t) c.type_;
     expansion;
@@ -560,7 +596,10 @@ and class_type map parent id c =
     source_loc = c.source_loc;
     doc = docs (parent :> Identifier.LabelParent.t) c.doc;
     virtual_ = c.virtual_;
-    params = c.params;
+    params =
+      List.map
+        (type_decl_param map (parent :> Identifier.LabelParent.t))
+        c.params;
     expr =
       class_type_expr map
         (identifier :> Paths.Identifier.Path.ClassType.t)
@@ -739,7 +778,10 @@ and typ_ext map parent t =
     parent;
     type_path = (Path.type_ map t.type_path :> Paths.Path.Type.t);
     doc = docs (parent :> Identifier.LabelParent.t) t.doc;
-    type_params = t.type_params;
+    type_params =
+      List.map
+        (type_decl_param map (parent :> Identifier.LabelParent.t))
+        t.type_params;
     private_ = t.private_;
     constructors = List.map (extension_constructor map parent) t.constructors;
   }
@@ -986,19 +1028,38 @@ and type_decl_unboxed_field :
     type_ = type_expr map (parent :> Identifier.LabelParent.t) f.type_;
   }
 
+and kind map parent (k : Component.Kind.t) : Odoc_model.Lang.Kind.t =
+  match k with
+  | Default -> Default
+  | Abbreviation p -> Abbreviation (Path.kind_abbreviation map p)
+  | Operator (b, axes) -> Operator (kind map parent b, axes)
+  | Mod (b, m) -> Mod (kind map parent b, m)
+  | With (b, ty, m) -> With (kind map parent b, type_expr map parent ty, m)
+  | Kind_of ty -> Kind_of (type_expr map parent ty)
+  | Product ks -> Product (List.map (kind map parent) ks)
+
+and type_decl_param map parent (p : Component.TypeDecl.param) :
+    Odoc_model.Lang.TypeDecl.param =
+  {
+    desc = p.desc;
+    variance = p.variance;
+    injectivity = p.injectivity;
+    kind = kind map parent p.kind;
+  }
+
 and type_decl_equation map (parent : Identifier.FieldParent.t)
     (eqn : Component.TypeDecl.Equation.t) : Odoc_model.Lang.TypeDecl.Equation.t
     =
   let parent = (parent :> Identifier.LabelParent.t) in
   {
-    params = eqn.params;
+    params = List.map (type_decl_param map parent) eqn.params;
     private_ = eqn.private_;
     manifest = Opt.map (type_expr map parent) eqn.manifest;
     constraints =
       List.map
         (fun (x, y) -> (type_expr map parent x, type_expr map parent y))
         eqn.constraints;
-    kind = eqn.kind;
+    kind = kind map parent eqn.kind;
   }
 
 and type_decl map parent id (t : Component.TypeDecl.t) :
@@ -1089,7 +1150,10 @@ and type_expr map (parent : Identifier.LabelParent.t) (t : Component.TypeExpr.t)
     | Object o -> Object (type_expr_object map parent o)
     | Class (p, ts) ->
         Class (Path.class_type map p, List.map (type_expr map parent) ts)
-    | Poly (strs, t) -> Poly (strs, type_expr map parent t)
+    | Poly (vars, t) ->
+        Poly
+          ( List.map (fun (v, k) -> (v, kind map parent k)) vars,
+            type_expr map parent t )
     | Quote t -> Quote (type_expr map parent t)
     | Splice t -> Splice (type_expr map parent t)
     | Package p -> Package (type_expr_package map parent p)
@@ -1158,13 +1222,15 @@ and functor_parameter map f : Odoc_model.Lang.FunctorParameter.parameter =
         f.expr;
   }
 
-and kind_abbreviation parent name (ka : Component.KindAbbreviation.t) :
+and kind_abbreviation map id (ka : Component.KindAbbreviation.t) :
     Odoc_model.Lang.KindAbbreviation.t =
+  let id = Component.KindAbbreviationMap.find id map.kind_abbreviation in
+  let parent = Identifier.label_parent id in
   {
-    id = Identifier.Mk.kind_abbreviation (parent, name);
+    id;
     source_loc = ka.source_loc;
-    doc = docs (parent :> Identifier.LabelParent.t) ka.doc;
-    manifest = ka.manifest;
+    doc = docs parent ka.doc;
+    manifest = Opt.map (kind map parent) ka.manifest;
   }
 
 and exception_ map parent id (e : Component.Exception.t) :

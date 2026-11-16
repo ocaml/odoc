@@ -555,6 +555,7 @@ module LangUtils = struct
             | `ModuleType (p, mt) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (ModuleTypeName.to_string mt)
             | `Type (p, t) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (TypeName.to_string t)
             | `Value (p, t) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (ValueName.to_string t)
+            | `KindAbbreviation (p, t) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (TypeName.to_string t)
             | `OpaqueModule m -> Format.fprintf ppf "opaquemodule(%a)" resolved_path (cast m)
             | `OpaqueModuleType m -> Format.fprintf ppf "opaquemoduletype(%a)" resolved_path (cast m)
             | `SubstT (_, _)
@@ -566,6 +567,7 @@ module LangUtils = struct
             | `SubstitutedT _
             | `SubstitutedMT _
             | `CoreType _
+            | `CoreKind _
             | `Substituted _
             | `SubstitutedCT _
             | `Unbox _
@@ -581,6 +583,7 @@ module LangUtils = struct
             | `DotMT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ModuleTypeName.fmt s
             | `DotT (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) TypeName.fmt s
             | `DotV (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) ValueName.fmt s
+            | `DotK (parent,s) -> Format.fprintf ppf "%a.%a" path (parent :> Odoc_model.Paths.Path.t) TypeName.fmt s
             | `Apply (func,arg) -> Format.fprintf ppf "%a(%a)" path (func :> Odoc_model.Paths.Path.t) path (arg :> Odoc_model.Paths.Path.t)
             | `ApplyParam (inst,param,arg) -> Format.fprintf ppf "%a[%a:%a]" path (inst :> Odoc_model.Paths.Path.t) Odoc_model.Names.ModuleName.fmt param path (arg :> Odoc_model.Paths.Path.t)
             | `SubstitutedT _|`SubstitutedMT _|`Substituted _|`SubstitutedCT _|`Unbox _  -> Format.fprintf ppf "Unimplemented path"

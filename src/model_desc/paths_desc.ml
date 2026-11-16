@@ -238,6 +238,8 @@ module General_paths = struct
           C ("`DotMT", ((x1 :> p), x2), Pair (path, Names.moduletypename))
       | `DotV (x1, x2) ->
           C ("`DotV", ((x1 :> p), x2), Pair (path, Names.valuename))
+      | `DotK (x1, x2) ->
+          C ("`DotK", ((x1 :> p), x2), Pair (path, Names.typename))
       | `Apply (x1, x2) ->
           C ("`Apply", ((x1 :> p), (x2 :> p)), Pair (path, path))
       | `ApplyParam (x1, x2, x3) ->
@@ -256,6 +258,7 @@ module General_paths = struct
       (function
       | `Identifier x -> C ("`Identifier", x, identifier)
       | `CoreType n -> C ("`CoreType", n, Names.typename)
+      | `CoreKind n -> C ("`CoreKind", n, Names.typename)
       | `Subst (x1, x2) ->
           C
             ( "`Subst",
@@ -309,6 +312,11 @@ module General_paths = struct
           C ("`Type", ((x1 :> rp), x2), Pair (resolved_path, Names.typename))
       | `Value (x1, x2) ->
           C ("`Value", ((x1 :> rp), x2), Pair (resolved_path, Names.valuename))
+      | `KindAbbreviation (x1, x2) ->
+          C
+            ( "`KindAbbreviation",
+              ((x1 :> rp), x2),
+              Pair (resolved_path, Names.typename) )
       | `Class (x1, x2) ->
           C ("`Class", ((x1 :> rp), x2), Pair (resolved_path, Names.classname))
       | `ClassType (x1, x2) ->

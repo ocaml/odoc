@@ -20,6 +20,8 @@ open Names
 module Id = Paths.Identifier
 module P = Paths.Path
 
+module StringMap = Map.Make(String)
+
 module LocHashtbl = Hashtbl.Make(struct
     type t = Location.t
     let equal l1 l2 = l1 = l2
@@ -39,6 +41,8 @@ type t =
     classes : Id.Class.t Ident.tbl;
     class_types : Id.ClassType.t Ident.tbl;
     kind_abbreviations : Id.KindAbbreviation.t Ident.tbl;
+    kinds_in_scope : Ident.t StringMap.t;
+    modules_in_scope : Ident.t StringMap.t;
     loc_to_ident : Id.t LocHashtbl.t;
     shadowed : Ident.t list;
   }
@@ -56,6 +60,8 @@ let empty () =
     classes = Ident.empty;
     class_types = Ident.empty;
     kind_abbreviations = Ident.empty;
+    kinds_in_scope = StringMap.empty;
+    modules_in_scope = StringMap.empty;
     loc_to_ident = LocHashtbl.create 100;
     shadowed = [];
   }
@@ -682,7 +688,31 @@ let add_parameter parent id name env =
   let module_paths = Ident.add id path env.module_paths in
   let modules = Ident.add id oid env.modules in
   let parameters = Ident.add id oid env.parameters in
-  { env with module_paths; modules; parameters }
+  let modules_in_scope = StringMap.add (Ident.name id) id env.modules_in_scope in
+  { env with module_paths; modules; parameters; modules_in_scope }
+
+let scope_module env id =
+  { env with
+    modules_in_scope = StringMap.add (Ident.name id) id env.modules_in_scope }
+
+let scope_kind_abbreviation env id =
+  { env with
+    kinds_in_scope = StringMap.add (Ident.name id) id env.kinds_in_scope }
+
+let scope_signature env (sg : Types.signature) =
+  List.fold_left
+    (fun env (item : Types.signature_item) ->
+      match item with
+#if OCAML_VERSION >= (4,8,0)
+      | Sig_module (id, _, _, _, _) -> scope_module env id
+#else
+      | Sig_module (id, _, _) -> scope_module env id
+#endif
+#if defined OXCAML
+      | Sig_jkind (id, _, _) -> scope_kind_abbreviation env id
+#endif
+      | _ -> env)
+    env sg
 
 let add_module_arg parent id name env =
   let oid = Odoc_model.Paths.Identifier.Mk.(parameter (parent, name)) in
@@ -863,6 +893,55 @@ module Path = struct
 #if OCAML_VERSION >= (5,1,0)
     | Path.Pextra_ty (p,_) -> read_type env p
 #endif
+
+  let read_kind_abbreviation_ident env id : Paths.Path.KindAbbreviation.t =
+    match Ident.find_same id env.kind_abbreviations with
+    | id -> `Identifier (id, false)
+    | exception Not_found -> `Resolved (`CoreKind (TypeName.of_ident id))
+
+  let read_kind_abbreviation env : Path.t -> Paths.Path.KindAbbreviation.t =
+    function
+    | Path.Pident id -> read_kind_abbreviation_ident env id
+    | Path.Pdot(p, s) -> `DotK(read_module env p, TypeName.make_std s)
+    | Path.Papply(_, _) -> assert false
+#if OCAML_VERSION >= (5,1,0)
+    | Path.Pextra_ty _ -> assert false
+#endif
+
+#if OCAML_VERSION >= (5,4,0)
+  let ldot p s = (p.Location.txt, s.Location.txt)
+#else
+  let ldot p s = (p, s)
+#endif
+
+  let rec read_module_longident env : Longident.t -> Paths.Path.Module.t =
+    function
+    | Longident.Lident s -> (
+        match StringMap.find_opt s env.modules_in_scope with
+        | Some id when ident_is_global_or_predef id -> module_of_id id
+        | Some id -> (
+            try find_module env id
+            with Not_found -> `Root (ModuleName.make_std s))
+        | None -> `Root (ModuleName.make_std s))
+    | Longident.Ldot (p, s) ->
+        let p, s = ldot p s in
+        `Dot (read_module_longident env p, ModuleName.make_std s)
+    | Longident.Lapply (f, a) ->
+#if OCAML_VERSION >= (5,4,0)
+        let f = f.Location.txt and a = a.Location.txt in
+#endif
+        `Apply (read_module_longident env f, read_module_longident env a)
+
+  let read_kind_abbreviation_longident env :
+      Longident.t -> Paths.Path.KindAbbreviation.t = function
+    | Longident.Lident s -> (
+        match StringMap.find_opt s env.kinds_in_scope with
+        | Some id -> read_kind_abbreviation_ident env id
+        | None -> `Resolved (`CoreKind (TypeName.make_std s)))
+    | Longident.Ldot (p, s) ->
+        let p, s = ldot p s in
+        `DotK (read_module_longident env p, TypeName.make_std s)
+    | Longident.Lapply _ -> assert false
 
   let read_value env = function
     | Path.Pident id -> read_value_ident env id

@@ -45,6 +45,12 @@ module rec Resolved : sig
   and value =
     [ `Value of parent * ValueName.t | `Identifier of Identifier.Path.Value.t ]
 
+  and kind_abbreviation =
+    [ `Local of Ident.kind_abbreviation
+    | `Identifier of Identifier.Path.KindAbbreviation.t
+    | `KindAbbreviation of parent * TypeName.t
+    | `CoreKind of TypeName.t ]
+
   and class_type =
     [ `Local of Ident.type_
     | `Substituted of class_type
@@ -90,6 +96,13 @@ and Cpath : sig
     | `DotV of module_ * ValueName.t
     | `Value of Resolved.parent * ValueName.t
     | `Identifier of Identifier.Value.t * bool ]
+
+  and kind_abbreviation =
+    [ `Resolved of Resolved.kind_abbreviation
+    | `Local of Ident.kind_abbreviation * bool
+    | `Identifier of Identifier.Path.KindAbbreviation.t * bool
+    | `DotK of module_ * TypeName.t
+    | `KindAbbreviation of Resolved.parent * TypeName.t ]
 
   and class_type =
     [ `Resolved of Resolved.class_type
@@ -377,6 +390,13 @@ and unresolve_resolved_module_type_path : Resolved.module_type -> module_type =
 and unresolve_resolved_parent_path : Resolved.parent -> module_ = function
   | `Module m -> unresolve_resolved_module_path m
   | `FragmentRoot | `ModuleType _ -> assert false
+
+and unresolve_resolved_kind_abbreviation_path :
+    Resolved.kind_abbreviation -> kind_abbreviation = function
+  | `Local id -> `Local (id, false)
+  | `Identifier id -> `Identifier (id, false)
+  | `CoreKind _ as p -> `Resolved p
+  | `KindAbbreviation (p, n) -> `DotK (unresolve_resolved_parent_path p, n)
 
 and unresolve_resolved_type_path : Resolved.type_ -> type_ = function
   | (`Identifier _ | `Local _ | `CoreType _) as p -> `Resolved p

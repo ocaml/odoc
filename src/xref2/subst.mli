@@ -60,6 +60,16 @@ val module_type_expr :
 
 val exception_ : t -> Component.Exception.t -> Component.Exception.t
 
+val kind_abbreviation :
+  t -> Component.KindAbbreviation.t -> Component.KindAbbreviation.t
+
+val add_kind_abbreviation :
+  Ident.kind_abbreviation ->
+  Cpath.kind_abbreviation ->
+  Cpath.Resolved.kind_abbreviation ->
+  t ->
+  t
+
 val extension : t -> Component.Extension.t -> Component.Extension.t
 
 val include_ : t -> Component.Include.t -> Component.Include.t

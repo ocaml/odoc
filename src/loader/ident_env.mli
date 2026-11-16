@@ -39,6 +39,12 @@ val add_signature_tree_items :
 val add_structure_tree_items :
   Paths.Identifier.Signature.t -> Typedtree.structure -> t -> t
 
+val scope_module : t -> Ident.t -> t
+
+val scope_kind_abbreviation : t -> Ident.t -> t
+
+val scope_signature : t -> Types.signature -> t
+
 module Path : sig
   val read_module : t -> Path.t -> Paths.Path.Module.t
 
@@ -49,6 +55,11 @@ module Path : sig
   val read_class_type : t -> Path.t -> Paths.Path.ClassType.t
 
   val read_value : t -> Path.t -> Paths.Path.Value.t
+
+  val read_kind_abbreviation : t -> Path.t -> Paths.Path.KindAbbreviation.t
+
+  val read_kind_abbreviation_longident :
+    t -> Longident.t -> Paths.Path.KindAbbreviation.t
 end
 
 val find_module : t -> Ident.t -> Paths.Path.Module.t

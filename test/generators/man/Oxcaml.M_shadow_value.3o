@@ -22,7 +22,7 @@ Oxcaml\.M_shadow_value
 The compiler implicitly adds the default kind value, but it should not be confused with the kind abbreviation above\.
 .nf 
 .sp 
-\f[CB]type\fR t
+\f[CB]type\fR t : value
 .fi 
 .br 
 .ti +2

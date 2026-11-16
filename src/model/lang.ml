@@ -468,7 +468,8 @@ end =
 and Kind : sig
   type t =
     | Default
-    | Abbreviation of string
+    | Abbreviation of Path.KindAbbreviation.t
+    | Operator of t * string list
     | Mod of t * string list
     | With of t * TypeExpr.t * Modalities.t
     | Kind_of of TypeExpr.t

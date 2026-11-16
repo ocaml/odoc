@@ -105,10 +105,12 @@ let wrapper_items dummy_id items =
     | Include incl ->
       (* The items an [include] brings in are visible to the functor too. *)
       List.fold_left (fun acc item -> wrapper_item item acc) acc incl.Include.expansion.content.items
-    | KindAbbreviation _ ->
-      (* Kind annotations are rendered as written, never through a path, so
-         nothing in the expansion can refer to the alias. *)
-      acc
+    | KindAbbreviation ka ->
+      let id = Id.Mk.kind_abbreviation (parent, Odoc_model.Names.TypeName.make_std (name ka.id)) in
+      let manifest =
+        Some (Kind.Abbreviation (`Identifier ((ka.id :> Id.Path.KindAbbreviation.t), false)))
+      in
+      Signature.KindAbbreviation { ka with KindAbbreviation.id; manifest; source_loc = None } :: acc
     | Value _ | ModuleSubstitution _ | ModuleTypeSubstitution _ | Open _
     | TypeSubstitution _ | TypExt _ | Exception _ | Comment _ ->
       (* Nothing in the expansion of [F(BODY__n)] can refer to these. *)
@@ -239,7 +241,7 @@ and read_core_type_modal env modes container ctyp =
 #if defined OXCAML
     | Ttyp_poly(vars, typ) ->
       Poly(List.map (fun (name, jk) ->
-        (name, Cmi.read_jkind_annotation jk)
+        (name, Cmi.read_jkind_annotation env.ident_env jk)
       ) vars, read_core_type env container typ)
 #else
     | Ttyp_poly(vars, typ) -> Poly(List.map (fun v -> (v, Kind.Default)) vars, read_core_type env container typ)
@@ -362,13 +364,16 @@ let read_primitive_description env parent pd =
   Value { Value.id; source_loc; doc; type_; value; ext_attrs; modalities }
 #endif
 
-let read_type_parameter (ctyp, var_and_injectivity)  =
+let read_type_parameter env (ctyp, var_and_injectivity)  =
   let open TypeDecl in
+#if not defined OXCAML
+  ignore env;
+#endif
   let desc, kind =
     match ctyp.ctyp_desc with
 #if defined OXCAML
-    | Ttyp_var (None, layout) -> Any, Cmi.read_jkind_annotation layout
-    | Ttyp_var (Some s, layout) -> Var s, Cmi.read_jkind_annotation layout
+    | Ttyp_var (None, layout) -> Any, Cmi.read_jkind_annotation env.ident_env layout
+    | Ttyp_var (Some s, layout) -> Var s, Cmi.read_jkind_annotation env.ident_env layout
 #else
     | Ttyp_any -> Any, Kind.Default
     | Ttyp_var s -> Var s, Kind.Default
@@ -515,7 +520,7 @@ let read_type_kind env parent =
 
 let read_type_equation env container decl =
   let open TypeDecl.Equation in
-  let params = List.map read_type_parameter decl.typ_params in
+  let params = List.map (read_type_parameter env) decl.typ_params in
   let private_ = (decl.typ_private = Private) in
   let manifest = opt_map (read_core_type env container) decl.typ_manifest in
   let constraints =
@@ -531,7 +536,7 @@ let read_type_equation env container decl =
   in
   let kind =
 #if defined OXCAML
-    Cmi.read_jkind_annotation decl.typ_jkind_annotation
+    Cmi.read_jkind_annotation env.ident_env decl.typ_jkind_annotation
 #else
     Kind.Default
 #endif
@@ -583,7 +588,7 @@ let read_kind_abbreviation env parent (jkd : Typedtree.jkind_declaration) =
       jkd.jkind_attributes
   in
   let manifest =
-    opt_map Cmi.read_jkind jkd.jkind_annotation
+    opt_map (Cmi.read_jkind env.ident_env) jkd.jkind_annotation
   in
   { id; source_loc; doc; manifest }
 #endif
@@ -614,7 +619,7 @@ let read_type_extension env parent tyext =
   let type_path = Env.Path.read_type env.ident_env tyext.tyext_path in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container tyext.tyext_attributes in
-  let type_params = List.map read_type_parameter tyext.tyext_params in
+  let type_params = List.map (read_type_parameter env) tyext.tyext_params in
   let private_ = (tyext.tyext_private = Private) in
   let constructors =
     List.map (read_extension_constructor env parent) tyext.tyext_constructors
@@ -719,7 +724,7 @@ let read_class_type_declaration env parent cltd =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ~warnings_tag:env.warnings_tag cltd.ci_attributes in
   let virtual_ = (cltd.ci_virt = Virtual) in
-  let params = List.map read_type_parameter cltd.ci_params in
+  let params = List.map (read_type_parameter env) cltd.ci_params in
   let expr = read_class_signature env (id :> Identifier.ClassSignature.t) container cltd.ci_expr in
   { id; source_loc; doc; virtual_; params; expr; expansion = None }
 
@@ -754,7 +759,7 @@ let read_class_description env parent cld =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached_no_tag container ~warnings_tag:env.warnings_tag cld.ci_attributes in
   let virtual_ = (cld.ci_virt = Virtual) in
-  let params = List.map read_type_parameter cld.ci_params in
+  let params = List.map (read_type_parameter env) cld.ci_params in
   let type_ = read_class_type env (id :> Identifier.ClassSignature.t) container cld.ci_expr in
   { id; source_loc; doc; virtual_; params; type_; expansion = None }
 
@@ -1131,9 +1136,30 @@ and read_open env parent o =
   let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature signature) in
   { expansion; doc }
 
+and scope_signature_item env item =
+#if defined OXCAML
+  let scope f x = { env with ident_env = f env.ident_env x } in
+  match item.sig_desc with
+  | Tsig_module { md_id = Some id; _ } -> scope Env.scope_module id
+  | Tsig_recmodule mds ->
+      List.fold_left
+        (fun env md ->
+          match md.md_id with
+          | Some id -> { env with ident_env = Env.scope_module env.ident_env id }
+          | None -> env)
+        env mds
+  | Tsig_include (incl, _) -> scope Env.scope_signature incl.incl_type
+  | Tsig_open o -> scope Env.scope_signature o.open_bound_items
+  | Tsig_jkind jkd -> scope Env.scope_kind_abbreviation jkd.jkind_id
+  | _ -> env
+#else
+  ignore item; env
+#endif
+
 and read_items env parent items =
   List.fold_left
-    (fun acc item ->
+    (fun (acc, env) item ->
+      let acc =
       match item.sig_desc with
 #if defined OXCAML
       | Tsig_include ({ incl_kind = (Tincl_functor _ | Tincl_gen_functor _);
@@ -1144,9 +1170,11 @@ and read_items env parent items =
         let items = read_include_functor env parent (snd wrapper) incl in
         List.rev_append items (wrapper_module :: acc)
 #endif
-      | _ -> List.rev_append (read_signature_item env parent item) acc)
-    [] items
-  |> List.rev
+      | _ -> List.rev_append (read_signature_item env parent item) acc
+      in
+      (acc, scope_signature_item env item))
+    ([], env) items
+  |> fst |> List.rev
 
 and read_signature :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->
