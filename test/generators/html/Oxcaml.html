@@ -751,6 +751,31 @@
     <a href="#kind-abbreviations_2" class="anchor"></a>Kind abbreviations
    </h2>
    <div class="odoc-spec">
+    <div class="spec module anchored" id="module-M_shadow_value">
+     <a href="#module-M_shadow_value" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-M_shadow_value.html">M_shadow_value</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_plain_value">
+     <a href="#type-t_plain_value" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_plain_value : plain_value
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A use of the <code>plain_value</code> abbreviation.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
     <div class="spec type anchored" id="type-t_abbrev">
      <a href="#type-t_abbrev" class="anchor"></a>
      <code>
@@ -759,6 +784,247 @@
       </span>
      </code>
     </div><div class="spec-doc"><p>A type with an abbreviated kind.</p></div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_derived">
+     <a href="#type-t_derived" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_derived : my_derived</span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A type whose kind is the derived abbreviation.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_abstract">
+     <a href="#type-t_abstract" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_abstract : my_abstract</span>
+     </code>
+    </div>
+    <div class="spec-doc"><p>A type with an abstract abbreviated kind.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-abbrev_param">
+     <a href="#type-abbrev_param" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> 
+       <span>('a : my_abbrev) abbrev_param</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A type parameter constrained by an abbreviated kind.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec value anchored" id="val-poly_abbrev">
+     <a href="#val-poly_abbrev" class="anchor"></a>
+     <code>
+      <span><span class="keyword">val</span> poly_abbrev : ('a : my_abbrev
+       ). 
+       <span><span class="type-var">'a</span> 
+        <span class="arrow">&#45;&gt;</span>
+       </span> <span class="type-var">'a</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A polymorphic value with an abbreviated kind constraint.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_with_abbrev">
+     <a href="#type-t_with_abbrev" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> <span>'a t_with_abbrev</span>
+        : my_abbrev <span class="keyword">with</span> 
+       <span class="type-var">'a</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>An abbreviated kind in a <code>with</code> constraint.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-M_kinds">
+     <a href="#module-M_kinds" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-M_kinds.html">M_kinds</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_qualified">
+     <a href="#type-t_qualified" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> t_qualified : M_kinds.mod_kind
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A qualified use of a kind abbreviation from another module.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-qualified_param">
+     <a href="#type-qualified_param" class="anchor"></a>
+     <code>
+      <span><span class="keyword">type</span> 
+       <span>('a : M_kinds.mod_kind) qualified_param</span>
+      </span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>A qualified kind abbreviation on a type parameter.</p>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module-type anchored" id="module-type-S_kind">
+     <a href="#module-type-S_kind" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <span class="keyword">type</span> 
+       <a href="Oxcaml-module-type-S_kind.html">S_kind</a>
+      </span>
+      <span> = <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-F_kind">
+     <a href="#module-F_kind" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-F_kind.html">F_kind</a>
+      </span>
+      <span> (<a href="Oxcaml-F_kind-argument-1-X.html">X</a> : 
+       <a href="Oxcaml-module-type-S_kind.html">S_kind</a>) : 
+       <a href="Oxcaml-module-type-S_kind.html">S_kind</a>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-Arg_kind">
+     <a href="#module-Arg_kind" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-Arg_kind.html">Arg_kind</a>
+      </span>
+      <span> : <a href="Oxcaml-module-type-S_kind.html">S_kind</a></span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-F_nested">
+     <a href="#module-F_nested" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-F_nested.html">F_nested</a>
+      </span>
+      <span> (<a href="Oxcaml-F_nested-argument-1-X.html">X</a> : 
+       <a href="Oxcaml-module-type-S_kind.html">S_kind</a>) : 
+       <span class="keyword">sig</span> ... <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-X_shadowing">
+     <a href="#module-X_shadowing" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-X_shadowing.html">X_shadowing</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-M_inc">
+     <a href="#module-M_inc" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-M_inc.html">M_inc</a>
+      </span>
+      <span> : <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-include shadowed-include">
+    <details open="open">
+     <summary class="spec include">
+      <code>
+       <span><span class="keyword">include</span> 
+        <span class="keyword">module</span> <span class="keyword">type</span>
+         <span class="keyword">of</span> 
+        <a href="Oxcaml-M_inc.html">M_inc</a>
+       </span>
+      </code>
+     </summary>
+    </details>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec type anchored" id="type-t_inc">
+     <a href="#type-t_inc" class="anchor"></a>
+     <code><span><span class="keyword">type</span> t_inc : inc_kind</span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module-type anchored" id="module-type-S_param">
+     <a href="#module-type-S_param" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <span class="keyword">type</span> 
+       <a href="Oxcaml-module-type-S_param.html">S_param</a>
+      </span>
+      <span> = <span class="keyword">sig</span> ... 
+       <span class="keyword">end</span>
+      </span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-M_param">
+     <a href="#module-M_param" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-M_param.html">M_param</a>
+      </span>
+      <span> : <a href="Oxcaml-module-type-S_param.html">S_param</a></span>
+     </code>
+    </div>
+   </div>
+   <div class="odoc-spec">
+    <div class="spec module anchored" id="module-M_param2">
+     <a href="#module-M_param2" class="anchor"></a>
+     <code>
+      <span><span class="keyword">module</span> 
+       <a href="Oxcaml-M_param2.html">M_param2</a>
+      </span>
+      <span> : <a href="Oxcaml-module-type-S_param.html">S_param</a></span>
+     </code>
+    </div>
+    <div class="spec-doc">
+     <p>Each instantiation renders its own copy of <code>param_kind</code>.
+     </p>
+    </div>
    </div>
    <h2 id="zero-alloc"><a href="#zero-alloc" class="anchor"></a>Zero alloc
    </h2>
