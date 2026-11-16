@@ -448,13 +448,8 @@ let read_unboxed_label_declaration env parent label_parent ld =
   let name = Ident.name ld.ld_id in
   let id = Identifier.Mk.unboxed_field(parent, UnboxedFieldName.make_std name) in
   let doc = Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag label_parent ld.ld_attributes in
-  let atomic = is_atomic ld in
-  let mutable_ = match Cmi.mutability ld.ld_mutable ~atomic with
-    | Immutable -> false
-    | Atomically_mutable | Mutable -> true
-  in
   let type_ = read_core_type env label_parent ld.ld_type in
-    {id; doc; mutable_; type_}
+    {id; doc; type_}
 
 let read_constructor_declaration_arguments env parent label_parent arg =
   let open TypeDecl.Constructor in

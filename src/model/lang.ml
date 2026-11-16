@@ -254,7 +254,6 @@ and TypeDecl : sig
     type t = {
       id : Identifier.UnboxedField.t;
       doc : Comment.docs;
-      mutable_ : bool;
       type_ : TypeExpr.t;
     }
   end

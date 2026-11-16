@@ -357,7 +357,6 @@ and typedecl_unboxed_field =
     [
       UF ("id", (fun t -> t.id), identifier);
       UF ("doc", (fun t -> t.doc), docs);
-      UF ("mutable_", (fun t -> t.mutable_), bool);
       UF ("type_", (fun t -> t.type_), typeexpr_t);
     ]
 
