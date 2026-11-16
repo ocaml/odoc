@@ -1,0 +1,14 @@
+
+.TH Arg_kind 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml\.Arg_kind
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml\.Arg_kind\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+

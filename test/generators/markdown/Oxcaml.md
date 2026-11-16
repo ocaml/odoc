@@ -265,9 +265,87 @@ Should render as `float64 & (immediate mod portable)`.
 ## Kind abbreviations
 
 ```ocaml
+module M_shadow_value : sig ... end
+```
+```ocaml
+type t_plain_value : plain_value
+```
+A use of the `plain_value` abbreviation.
+
+```ocaml
 type t_abbrev : my_abbrev mod immutable
 ```
 A type with an abbreviated kind.
+
+```ocaml
+type t_derived : my_derived
+```
+A type whose kind is the derived abbreviation.
+
+```ocaml
+type t_abstract : my_abstract
+```
+A type with an abstract abbreviated kind.
+
+```ocaml
+type ('a : my_abbrev) abbrev_param
+```
+A type parameter constrained by an abbreviated kind.
+
+```ocaml
+val poly_abbrev : ('a : my_abbrev). 'a -> 'a
+```
+A polymorphic value with an abbreviated kind constraint.
+
+```ocaml
+type 'a t_with_abbrev : my_abbrev with 'a
+```
+An abbreviated kind in a `with` constraint.
+
+```ocaml
+module M_kinds : sig ... end
+```
+```ocaml
+type t_qualified : M_kinds.mod_kind
+```
+A qualified use of a kind abbreviation from another module.
+
+```ocaml
+type ('a : M_kinds.mod_kind) qualified_param
+```
+A qualified kind abbreviation on a type parameter.
+
+```ocaml
+module type S_kind = sig ... end
+```
+```ocaml
+module F_kind (X : S_kind) : S_kind
+```
+```ocaml
+module Arg_kind : S_kind
+```
+```ocaml
+module F_nested (X : S_kind) : sig ... end
+```
+```ocaml
+module X_shadowing : sig ... end
+```
+```ocaml
+module M_inc : sig ... end
+```
+```ocaml
+type t_inc : inc_kind
+```
+```ocaml
+module type S_param = sig ... end
+```
+```ocaml
+module M_param : S_param
+```
+```ocaml
+module M_param2 : S_param
+```
+Each instantiation renders its own copy of `param_kind`.
 
 
 ## Zero alloc
