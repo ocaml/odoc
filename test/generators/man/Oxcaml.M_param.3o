@@ -11,6 +11,8 @@ Oxcaml\.M_param
 .SH Documentation
 .sp 
 .nf 
+\f[CB]kind_\fR param_kind = value \f[CB]mod\fR portable
+.sp 
 \f[CB]type\fR ('a : param_kind) t
 .fi 
 .br 

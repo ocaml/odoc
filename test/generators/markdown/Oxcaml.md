@@ -268,9 +268,19 @@ Should render as `float64 & (immediate mod portable)`.
 module M_shadow_value : sig ... end
 ```
 ```ocaml
+kind_ plain_value = value
+```
+An abbreviation for the `value` kind.
+
+```ocaml
 type t_plain_value : plain_value
 ```
 A use of the `plain_value` abbreviation.
+
+```ocaml
+kind_ my_abbrev = value_or_null mod non_null global
+```
+Declares a kind abbreviation named `my_abbrev`.
 
 ```ocaml
 type t_abbrev : my_abbrev mod immutable
@@ -278,9 +288,19 @@ type t_abbrev : my_abbrev mod immutable
 A type with an abbreviated kind.
 
 ```ocaml
+kind_ my_derived = my_abbrev mod portable
+```
+A kind abbreviation defined in terms of another one.
+
+```ocaml
 type t_derived : my_derived
 ```
 A type whose kind is the derived abbreviation.
+
+```ocaml
+kind_ my_abstract
+```
+An abstract kind abbreviation (no manifest), used by [`t_abstract`](./#type-t_abstract).
 
 ```ocaml
 type t_abstract : my_abstract
@@ -325,13 +345,36 @@ module F_kind (X : S_kind) : S_kind
 module Arg_kind : S_kind
 ```
 ```ocaml
+type t_functor_app : F_kind(Arg_kind).functor_kind
+```
+A use behind a functor application.
+
+```ocaml
 module F_nested (X : S_kind) : sig ... end
 ```
+```ocaml
+kind_ functor_abbrev = F_nested(Arg_kind).abstract_kind
+```
+A kind abbreviation defined through a functor-application path.
+
+```ocaml
+kind_ nested_functor_abbrev = F_nested(Arg_kind).Nested.custom_kind_abbrev
+```
+A kind abbreviation defined through a functor-application-then-nested-module path.
+
+```ocaml
+kind_ to_be_shadowed = value mod portable
+```
+Shadowed below by a kind abbreviation of the same name.
+
 ```ocaml
 module X_shadowing : sig ... end
 ```
 ```ocaml
 module M_inc : sig ... end
+```
+```ocaml
+kind_ inc_kind = value mod portable
 ```
 ```ocaml
 type t_inc : inc_kind

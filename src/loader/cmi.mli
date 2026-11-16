@@ -105,6 +105,9 @@ val read_jkind_annotation :
   Parsetree.jkind_annotation option ->
   Odoc_model.Lang.Kind.t
 
+val read_jkind :
+  Parsetree.jkind_annotation -> Odoc_model.Lang.Kind.t
+
 val read_modalities :
   Types.mutability ->
   Mode.Modality.Const.t ->

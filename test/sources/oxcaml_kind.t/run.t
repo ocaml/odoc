@@ -13,8 +13,8 @@ The kind abbreviation links to its own definition, not to the whole file:
 
   $ grep -o 'href="[^"]*src/k.ml.html[^"]*"' html/K/index.html
   href="../src/k.ml.html"
+  href="../src/k.ml.html#kind-my_kind"
   href="../src/k.ml.html#type-t"
 
   $ grep -c 'id="kind-my_kind"' html/src/k.ml.html
-  0
-  [1]
+  1

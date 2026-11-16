@@ -11,4 +11,4 @@ Oxcaml\.M_kinds
 .SH Documentation
 .sp 
 .nf 
-
+\f[CB]kind_\fR mod_kind = value \f[CB]mod\fR portable

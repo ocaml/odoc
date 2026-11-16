@@ -115,18 +115,27 @@ Unboxed types have a trailing hash '\#'
 \label{Oxcaml--type-t_inner_mod}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}inner\_\allowbreak{}mod : float64 \& (immediate \ocamltag{keyword}{mod} portable)}\begin{ocamlindent}Should render as \ocamlinlinecode{float64 \& (immediate mod portable)}.\end{ocamlindent}%
 \medbreak
 \subsection{Kind abbreviations\label{Oxcaml--kind-abbreviations_2}}%
-\label{Oxcaml--module-M_shadow_value}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M_shadow_value]{\ocamlinlinecode{M\_\allowbreak{}shadow\_\allowbreak{}value}}}\label{Oxcaml-M_shadow_value}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-M_shadow_value--type-t_unannotated}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}unannotated}\\
+\label{Oxcaml--module-M_shadow_value}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M_shadow_value]{\ocamlinlinecode{M\_\allowbreak{}shadow\_\allowbreak{}value}}}\label{Oxcaml-M_shadow_value}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-M_shadow_value--kind-value}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} value = value \ocamltag{keyword}{mod} portable}\\
+\label{Oxcaml-M_shadow_value--type-t_unannotated}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}unannotated}\\
 \label{Oxcaml-M_shadow_value--val-poly_unannotated}\ocamlcodefragment{\ocamltag{keyword}{val} poly\_\allowbreak{}unannotated : 'a.\allowbreak{} \ocamltag{type-var}{'a} \ocamltag{arrow}{$\rightarrow$} \ocamltag{type-var}{'a}}\begin{ocamlindent}The compiler implicitly adds the default kind \ocamlinlinecode{value}, but it should not be confused with the kind abbreviation above.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml-M_shadow_value--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\begin{ocamlindent}\ocamlinlinecode{value} here is the abbreviation above, not the built-in default. Kinds are rendered as written, so it cannot be told apart from the default and is not rendered.\end{ocamlindent}%
 \medbreak
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\label{Oxcaml--kind-plain_value}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} plain\_\allowbreak{}value = value}\begin{ocamlindent}An abbreviation for the \ocamlinlinecode{value} kind.\end{ocamlindent}%
+\medbreak
 \label{Oxcaml--type-t_plain_value}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}plain\_\allowbreak{}value : plain\_\allowbreak{}value}\begin{ocamlindent}A use of the \ocamlinlinecode{plain\_\allowbreak{}value} abbreviation.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--kind-my_abbrev}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} my\_\allowbreak{}abbrev = value\_\allowbreak{}or\_\allowbreak{}null \ocamltag{keyword}{mod} non\_\allowbreak{}null global}\begin{ocamlindent}Declares a kind abbreviation named \ocamlinlinecode{my\_\allowbreak{}abbrev}.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--type-t_abbrev}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}abbrev : my\_\allowbreak{}abbrev \ocamltag{keyword}{mod} immutable}\begin{ocamlindent}A type with an abbreviated kind.\end{ocamlindent}%
 \medbreak
+\label{Oxcaml--kind-my_derived}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} my\_\allowbreak{}derived = my\_\allowbreak{}abbrev \ocamltag{keyword}{mod} portable}\begin{ocamlindent}A kind abbreviation defined in terms of another one.\end{ocamlindent}%
+\medbreak
 \label{Oxcaml--type-t_derived}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}derived : my\_\allowbreak{}derived}\begin{ocamlindent}A type whose kind is the derived abbreviation.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--kind-my_abstract}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} my\_\allowbreak{}abstract}\begin{ocamlindent}An abstract kind abbreviation (no manifest), used by \hyperref[Oxcaml--type-t_abstract]{\ocamlinlinecode{\ocamlinlinecode{t\_\allowbreak{}abstract}}[p\pageref*{Oxcaml--type-t_abstract}]}.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--type-t_abstract}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}abstract : my\_\allowbreak{}abstract}\begin{ocamlindent}A type with an abstract abbreviated kind.\end{ocamlindent}%
 \medbreak
@@ -136,25 +145,41 @@ Unboxed types have a trailing hash '\#'
 \medbreak
 \label{Oxcaml--type-t_with_abbrev}\ocamlcodefragment{\ocamltag{keyword}{type} 'a t\_\allowbreak{}with\_\allowbreak{}abbrev : my\_\allowbreak{}abbrev \ocamltag{keyword}{with} \ocamltag{type-var}{'a}}\begin{ocamlindent}An abbreviated kind in a \ocamlinlinecode{with} constraint.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--module-M_kinds}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M_kinds]{\ocamlinlinecode{M\_\allowbreak{}kinds}}}\label{Oxcaml-M_kinds}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\label{Oxcaml--module-M_kinds}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M_kinds]{\ocamlinlinecode{M\_\allowbreak{}kinds}}}\label{Oxcaml-M_kinds}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-M_kinds--kind-mod_kind}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} mod\_\allowbreak{}kind = value \ocamltag{keyword}{mod} portable}\\
+\end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
 \label{Oxcaml--type-t_qualified}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}qualified : M\_\allowbreak{}kinds.\allowbreak{}mod\_\allowbreak{}kind}\begin{ocamlindent}A qualified use of a kind abbreviation from another module.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml--type-qualified_param}\ocamlcodefragment{\ocamltag{keyword}{type} ('a : M\_\allowbreak{}kinds.\allowbreak{}mod\_\allowbreak{}kind) qualified\_\allowbreak{}param}\begin{ocamlindent}A qualified kind abbreviation on a type parameter.\end{ocamlindent}%
 \medbreak
-\label{Oxcaml--module-type-S_kind}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}}\label{Oxcaml-module-type-S_kind}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
-\ocamlcodefragment{\ocamltag{keyword}{end}}\\
-\label{Oxcaml--module-F_kind}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-F_kind]{\ocamlinlinecode{F\_\allowbreak{}kind}}}\ocamlcodefragment{ (\hyperref[Oxcaml-F_kind-argument-1-X]{\ocamlinlinecode{X}} : \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}) : \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}}\\
-\label{Oxcaml--module-Arg_kind}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-Arg_kind]{\ocamlinlinecode{Arg\_\allowbreak{}kind}}}\ocamlcodefragment{ : \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}}\\
-\label{Oxcaml--module-F_nested}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-F_nested]{\ocamlinlinecode{F\_\allowbreak{}nested}}}\ocamlcodefragment{ (\hyperref[Oxcaml-F_nested-argument-1-X]{\ocamlinlinecode{X}} : \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
-\label{Oxcaml--module-X_shadowing}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-X_shadowing]{\ocamlinlinecode{X\_\allowbreak{}shadowing}}}\label{Oxcaml-X_shadowing}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-X_shadowing--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t : to\_\allowbreak{}be\_\allowbreak{}shadowed}\begin{ocamlindent}Uses the outer \ocamlinlinecode{to\_\allowbreak{}be\_\allowbreak{}shadowed}, declared before the one below.\end{ocamlindent}%
+\label{Oxcaml--module-type-S_kind}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}}\label{Oxcaml-module-type-S_kind}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-module-type-S_kind--kind-functor_kind}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} functor\_\allowbreak{}kind = value \ocamltag{keyword}{mod} portable}\begin{ocamlindent}A kind declared in a module type.\end{ocamlindent}%
 \medbreak
 \end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
-\label{Oxcaml--module-M_inc}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M_inc]{\ocamlinlinecode{M\_\allowbreak{}inc}}}\label{Oxcaml-M_inc}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\end{ocamlindent}%
+\label{Oxcaml--module-F_kind}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-F_kind]{\ocamlinlinecode{F\_\allowbreak{}kind}}}\ocamlcodefragment{ (\hyperref[Oxcaml-F_kind-argument-1-X]{\ocamlinlinecode{X}} : \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}) : \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}}\\
+\label{Oxcaml--module-Arg_kind}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-Arg_kind]{\ocamlinlinecode{Arg\_\allowbreak{}kind}}}\ocamlcodefragment{ : \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}}\\
+\label{Oxcaml--type-t_functor_app}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}functor\_\allowbreak{}app : F\_\allowbreak{}kind(Arg\_\allowbreak{}kind).\allowbreak{}functor\_\allowbreak{}kind}\begin{ocamlindent}A use behind a functor application.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--module-F_nested}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-F_nested]{\ocamlinlinecode{F\_\allowbreak{}nested}}}\ocamlcodefragment{ (\hyperref[Oxcaml-F_nested-argument-1-X]{\ocamlinlinecode{X}} : \hyperref[Oxcaml-module-type-S_kind]{\ocamlinlinecode{S\_\allowbreak{}kind}}) : \ocamltag{keyword}{sig} .\allowbreak{}.\allowbreak{}.\allowbreak{} \ocamltag{keyword}{end}}\\
+\label{Oxcaml--kind-functor_abbrev}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} functor\_\allowbreak{}abbrev = F\_\allowbreak{}nested(Arg\_\allowbreak{}kind).\allowbreak{}abstract\_\allowbreak{}kind}\begin{ocamlindent}A kind abbreviation defined through a functor-application path.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--kind-nested_functor_abbrev}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} nested\_\allowbreak{}functor\_\allowbreak{}abbrev = F\_\allowbreak{}nested(Arg\_\allowbreak{}kind).\allowbreak{}Nested.\allowbreak{}custom\_\allowbreak{}kind\_\allowbreak{}abbrev}\begin{ocamlindent}A kind abbreviation defined through a functor-application-then-nested-module path.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--kind-to_be_shadowed}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} to\_\allowbreak{}be\_\allowbreak{}shadowed = value \ocamltag{keyword}{mod} portable}\begin{ocamlindent}Shadowed below by a kind abbreviation of the same name.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml--module-X_shadowing}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-X_shadowing]{\ocamlinlinecode{X\_\allowbreak{}shadowing}}}\label{Oxcaml-X_shadowing}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-X_shadowing--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t : to\_\allowbreak{}be\_\allowbreak{}shadowed}\begin{ocamlindent}Uses the outer \ocamlinlinecode{to\_\allowbreak{}be\_\allowbreak{}shadowed}, declared before the one below.\end{ocamlindent}%
+\medbreak
+\label{Oxcaml-X_shadowing--kind-to_be_shadowed}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} to\_\allowbreak{}be\_\allowbreak{}shadowed = value\_\allowbreak{}or\_\allowbreak{}null \ocamltag{keyword}{mod} non\_\allowbreak{}null global}\begin{ocamlindent}Shadows the outer \ocamlinlinecode{to\_\allowbreak{}be\_\allowbreak{}shadowed}.\end{ocamlindent}%
+\medbreak
+\end{ocamlindent}%
 \ocamlcodefragment{\ocamltag{keyword}{end}}\\
-\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[Oxcaml-M_inc]{\ocamlinlinecode{M\_\allowbreak{}inc}}\label{Oxcaml--type-t_inc}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}inc : inc\_\allowbreak{}kind}\\
-\label{Oxcaml--module-type-S_param}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[Oxcaml-module-type-S_param]{\ocamlinlinecode{S\_\allowbreak{}param}}}\label{Oxcaml-module-type-S_param}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-module-type-S_param--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} ('a : param\_\allowbreak{}kind) t}\begin{ocamlindent}A kind-constrained type parameter inside a signature expansion.\end{ocamlindent}%
+\label{Oxcaml--module-M_inc}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[Oxcaml-M_inc]{\ocamlinlinecode{M\_\allowbreak{}inc}}}\label{Oxcaml-M_inc}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-M_inc--kind-inc_kind}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} inc\_\allowbreak{}kind = value \ocamltag{keyword}{mod} portable}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
+\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \hyperref[Oxcaml-M_inc]{\ocamlinlinecode{M\_\allowbreak{}inc}}\label{Oxcaml--kind-inc_kind}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} inc\_\allowbreak{}kind = value \ocamltag{keyword}{mod} portable}\\
+\label{Oxcaml--type-t_inc}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}inc : inc\_\allowbreak{}kind}\\
+\label{Oxcaml--module-type-S_param}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[Oxcaml-module-type-S_param]{\ocamlinlinecode{S\_\allowbreak{}param}}}\label{Oxcaml-module-type-S_param}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{Oxcaml-module-type-S_param--kind-param_kind}\ocamlcodefragment{\ocamltag{keyword}{kind\_\allowbreak{}} param\_\allowbreak{}kind = value \ocamltag{keyword}{mod} portable}\\
+\label{Oxcaml-module-type-S_param--type-t}\ocamlcodefragment{\ocamltag{keyword}{type} ('a : param\_\allowbreak{}kind) t}\begin{ocamlindent}A kind-constrained type parameter inside a signature expansion.\end{ocamlindent}%
 \medbreak
 \label{Oxcaml-module-type-S_param--type-t_direct}\ocamlcodefragment{\ocamltag{keyword}{type} t\_\allowbreak{}direct : param\_\allowbreak{}kind}\begin{ocamlindent}A kind annotation inside a signature expansion.\end{ocamlindent}%
 \medbreak

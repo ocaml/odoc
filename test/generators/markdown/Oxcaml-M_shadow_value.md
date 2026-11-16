@@ -2,6 +2,9 @@
 # Module `Oxcaml.M_shadow_value`
 
 ```ocaml
+kind_ value = value mod portable
+```
+```ocaml
 type t_unannotated
 ```
 ```ocaml

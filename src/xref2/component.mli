@@ -157,6 +157,14 @@ and Extension : sig
   }
 end
 
+and KindAbbreviation : sig
+  type t = {
+    source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    doc : CComment.docs;
+    manifest : Odoc_model.Lang.Kind.t option;
+  }
+end
+
 and Exception : sig
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
@@ -310,6 +318,7 @@ and Signature : sig
     | ModuleTypeSubstitution of Ident.module_type * ModuleTypeSubstitution.t
     | Type of Ident.type_ * recursive * TypeDecl.t Delayed.t
     | TypeSubstitution of Ident.type_ * TypeDecl.t
+    | KindAbbreviation of Ident.kind_abbreviation * KindAbbreviation.t
     | Exception of Ident.exception_ * Exception.t
     | TypExt of Extension.t
     | Value of Ident.value * Value.t Delayed.t

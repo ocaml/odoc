@@ -18,4 +18,6 @@ Oxcaml_impl\.Include_functor_kind
 A kind abbreviation reaching the functor through its argument\. T\.k is rendered as plain text: it is a reference through the parameter, which the wrapper the functor is applied to does not bind\.
 .nf 
 .sp 
+\f[CB]kind_\fR k = value \f[CB]mod\fR portable
+.sp 
 \f[CB]type\fR inherited : T\.k

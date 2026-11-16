@@ -11,4 +11,10 @@ Oxcaml\.Arg_kind
 .SH Documentation
 .sp 
 .nf 
+\f[CB]kind_\fR functor_kind = value \f[CB]mod\fR portable
+.fi 
+.br 
+.ti +2
+A kind declared in a module type\.
+.nf 
 

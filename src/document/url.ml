@@ -242,6 +242,7 @@ module Anchor = struct
     [ Path.kind
     | `Section
     | `Type
+    | `KindAbbreviation
     | `Extension
     | `ExtensionDecl
     | `Exception
@@ -256,6 +257,7 @@ module Anchor = struct
     | #Path.kind as k -> Path.string_of_kind k
     | `Section -> "section"
     | `Type -> "type"
+    | `KindAbbreviation -> "kind"
     | `Extension -> "extension"
     | `ExtensionDecl -> "extension-decl"
     | `Exception -> "exception"
@@ -318,6 +320,11 @@ module Anchor = struct
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Type in
         let name = TypeName.to_string type_name in
+        { page; anchor = Format.asprintf "%a-%s" pp_kind kind name; kind }
+    | `KindAbbreviation (parent, name) ->
+        let page = Path.from_identifier (parent :> Path.any) in
+        let kind = `KindAbbreviation in
+        let name = TypeName.to_string name in
         { page; anchor = Format.asprintf "%a-%s" pp_kind kind name; kind }
     | `Extension (parent, name) ->
         let page = Path.from_identifier (parent :> Path.any) in
