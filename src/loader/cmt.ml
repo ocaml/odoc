@@ -675,10 +675,10 @@ and read_structure :
   | _ ->
     ({ Signature.items = Comment (`Docs doc_post) :: items; compiled=false; removed = []; doc }, tags)
 
-let read_implementation (id : Identifier.RootModule.t) ~warnings_tag impl =
+let read_implementation (id : Identifier.RootModule.t) ~scope ~warnings_tag impl =
   let sg, canonical =
     read_structure Odoc_model.Semantics.Expect_canonical
-      { ident_env = Env.empty (); warnings_tag }
+      { ident_env = Env.empty ~scope (); warnings_tag }
       (id :> Identifier.Signature.t) impl
   in
   let canonical =

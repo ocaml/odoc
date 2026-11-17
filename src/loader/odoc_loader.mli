@@ -12,10 +12,15 @@ val read_string :
   string ->
   (Comment.docs * Frontmatter.t, Error.t) result Error.with_warnings
 
+(** The [read_*] functions take the libraries the unit is compiled against. Each
+    root path in the unit is resolved among them (or anywhere, if there are
+    none: a legacy unit). *)
+
 val read_cmti :
   make_root:make_root ->
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
+  libraries:string list ->
   warnings_tag:string option ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
@@ -23,12 +28,14 @@ val read_cmt :
   make_root:make_root ->
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
+  libraries:string list ->
   warnings_tag:string option ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 
 val read_impl :
   make_root:make_root ->
   filename:string ->
+  libraries:string list ->
   source_id:Identifier.SourcePage.t option ->
   (Lang.Implementation.t, Error.t) result Error.with_warnings
 
@@ -36,6 +43,7 @@ val read_cmi :
   make_root:make_root ->
   parent:Identifier.ContainerPage.t option ->
   filename:string ->
+  libraries:string list ->
   warnings_tag:string option ->
   (Lang.Compilation_unit.t, Error.t) result Error.with_warnings
 

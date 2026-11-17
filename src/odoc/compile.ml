@@ -119,26 +119,29 @@ let resolve_imports resolver imports =
              a previous build, associating the wrong digest with this
              import and breaking incremental rebuilds. *)
           unresolved
-      | Unresolved (name, Some _) as unresolved -> (
-          match Resolver.resolve_import resolver name with
+      | Unresolved (name, Some digest) as unresolved -> (
+          match Resolver.resolve_import resolver name digest with
           | Some root -> Resolved (root, Names.ModuleName.make_std name)
           | None -> unresolved))
     imports
 
 (** Raises warnings and errors. *)
-let resolve_and_substitute ~resolver ~make_root ~hidden ~warnings_tag
+let resolve_and_substitute ~resolver ~make_root ~hidden ~warnings_tag ~libraries
     (parent : Paths.Identifier.ContainerPage.t option) input_file input_type =
   let filename = Fs.File.to_string input_file in
   let unit =
     match input_type with
     | `Cmti ->
-        Odoc_loader.read_cmti ~make_root ~parent ~filename ~warnings_tag
+        Odoc_loader.read_cmti ~make_root ~parent ~filename ~libraries
+          ~warnings_tag
         |> Error.raise_errors_and_warnings
     | `Cmt ->
-        Odoc_loader.read_cmt ~make_root ~parent ~filename ~warnings_tag
+        Odoc_loader.read_cmt ~make_root ~parent ~filename ~libraries
+          ~warnings_tag
         |> Error.raise_errors_and_warnings
     | `Cmi ->
-        Odoc_loader.read_cmi ~make_root ~parent ~filename ~warnings_tag
+        Odoc_loader.read_cmi ~make_root ~parent ~filename ~libraries
+          ~warnings_tag
         |> Error.raise_errors_and_warnings
   in
   let unit = { unit with hidden = hidden || unit.hidden } in
@@ -388,7 +391,8 @@ let resolve_spec ~input resolver cli_spec =
   | CliNoParent output ->
       Ok { output; parent_id = None; parents_children = None; children = [] }
 
-let compile ~resolver ~hidden ~cli_spec ~warnings_options ~short_title input =
+let compile ~resolver ~hidden ~cli_spec ~warnings_options ~short_title
+    ~libraries ~own_library input =
   resolve_spec ~input resolver cli_spec
   >>= fun { parent_id; output; parents_children; children } ->
   let ext = Fs.File.get_ext input in
@@ -403,14 +407,20 @@ let compile ~resolver ~hidden ~cli_spec ~warnings_options ~short_title input =
     let make_root =
       root_of_compilation_unit ~parent_id ~parents_children ~hidden ~output
     in
+    (* TEMPORARY: see [Odoc_model.Reference.own_library]. *)
+    Odoc_model.Reference.own_library := own_library output;
     let result =
       Error.catch_errors_and_warnings (fun () ->
           resolve_and_substitute ~resolver ~make_root ~hidden
-            ~warnings_tag:warnings_options.warnings_tag parent_id input
-            input_type)
+            ~warnings_tag:warnings_options.warnings_tag ~libraries parent_id
+            input input_type)
     in
     (* Extract warnings to write them into the output file *)
     let _, warnings = Error.unpack_warnings result in
     Error.handle_errors_and_warnings ~warnings_options result >>= fun unit ->
+    (* Remember the libraries the unit was compiled against, so that a later
+       run resolving a path or a reference into this unit can look the names it
+       mentions up among them. *)
+    let unit = { unit with Lang.Compilation_unit.libraries } in
     Odoc_file.save_unit output ~warnings unit;
     Ok ()

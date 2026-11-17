@@ -2,6 +2,7 @@
  (package odoc)
  (mld_files
   driver
+  scope_model
   dune
   features
   index

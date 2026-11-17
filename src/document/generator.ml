@@ -138,7 +138,13 @@ module Make (Syntax : SYNTAX) = struct
       | `SubstitutedT m -> from_path (m :> Path.t)
       | `SubstitutedCT m -> from_path (m :> Path.t)
       | `Unbox t -> from_path (t :> Path.t)
-      | `Root root -> unresolved [ inline @@ Text (ModuleName.to_string root) ]
+      | `Root (root, _) ->
+          unresolved [ inline @@ Text (ModuleName.to_string root) ]
+      | `LibraryRoot (`Only, lib, root) ->
+          unresolved
+            [ inline @@ Text ("/" ^ lib ^ "/" ^ ModuleName.to_string root) ]
+      | `LibraryRoot (`First, _, root) ->
+          unresolved [ inline @@ Text (ModuleName.to_string root) ]
       | `Dot (prefix, suffix) ->
           let link = from_path (prefix :> Path.t) in
           link ++ O.txt ("." ^ ModuleName.to_string suffix)

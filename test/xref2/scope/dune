@@ -1,0 +1,9 @@
+(cram
+ (package odoc)
+ (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile} digests.sh))
+
+; The scope tests are not checked below OCaml 4.14.
+
+(cram
+ (enabled_if
+  (>= %{ocaml_version} 4.14.0)))
