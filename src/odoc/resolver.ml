@@ -266,8 +266,7 @@ let lookup_unit_with_digest ap target_name digest =
   let unit_that_match_digest u =
     match u with
     | Odoc_file.Unit_content m
-      when Digest.compare m.Odoc_model.Lang.Compilation_unit.digest digest = 0
-      ->
+      when Digest.equal m.Odoc_model.Lang.Compilation_unit.digest digest ->
         Some m
     | _ -> None
   in
@@ -662,7 +661,7 @@ let resolve_import t target_name digest =
         | Ok root -> (
             match root.Odoc_model.Root.file with
             | Compilation_unit _
-              when Digest.compare root.Odoc_model.Root.digest digest = 0 ->
+              when Digest.equal root.Odoc_model.Root.digest digest ->
                 Some root
             | Compilation_unit _ | Impl _ | Page _ | Asset _ -> loop tl))
   in
