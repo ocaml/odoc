@@ -23,6 +23,7 @@ let identity =
     module_type = ModuleTypeMap.empty;
     module_type_replacement = ModuleTypeMap.empty;
     type_ = TypeMap.empty;
+    kind_abbreviation = KindAbbreviationMap.empty;
     class_type = TypeMap.empty;
     type_replacement = TypeMap.empty;
     path_invalidating_modules = [];
@@ -137,6 +138,28 @@ let add_class_type :
         t.type_;
     class_type =
       TypeMap.add (id :> Ident.type_) (`Prefixed (p, rp)) t.class_type;
+  }
+
+let add_kind_abbreviation :
+    Ident.kind_abbreviation ->
+    Cpath.kind_abbreviation ->
+    Cpath.Resolved.kind_abbreviation ->
+    t ->
+    t =
+ fun id p rp t ->
+  {
+    t with
+    kind_abbreviation =
+      KindAbbreviationMap.add id (`Prefixed (p, rp)) t.kind_abbreviation;
+  }
+
+let rename_kind_abbreviation :
+    Ident.kind_abbreviation -> Ident.kind_abbreviation -> t -> t =
+ fun id id' t ->
+  {
+    t with
+    kind_abbreviation =
+      KindAbbreviationMap.add id (`Renamed id') t.kind_abbreviation;
   }
 
 let add_type_replacement id texp equation t =
@@ -441,6 +464,36 @@ and type_path : t -> Cpath.type_ -> Cpath.type_ type_or_replaced =
   | `Class (p, n) -> Not_replaced (`Class (resolved_parent_path s p, n))
   | `ClassType (p, n) -> Not_replaced (`ClassType (resolved_parent_path s p, n))
 
+and resolved_kind_abbreviation_path :
+    t -> Cpath.Resolved.kind_abbreviation -> Cpath.Resolved.kind_abbreviation =
+ fun s p ->
+  match p with
+  | `Local id -> (
+      match KindAbbreviationMap.find_opt id s.kind_abbreviation with
+      | Some (`Prefixed (_p, rp)) -> rp
+      | Some (`Renamed x) -> `Local x
+      | None -> `Local id)
+  | `Identifier _ | `CoreKind _ -> p
+  | `KindAbbreviation (p, n) -> `KindAbbreviation (resolved_parent_path s p, n)
+
+and kind_abbreviation_path :
+    t -> Cpath.kind_abbreviation -> Cpath.kind_abbreviation =
+ fun s p ->
+  match p with
+  | `Resolved r -> (
+      try `Resolved (resolved_kind_abbreviation_path s r)
+      with Invalidated ->
+        let path' = Cpath.unresolve_resolved_kind_abbreviation_path r in
+        kind_abbreviation_path s path')
+  | `Local (id, b) -> (
+      match KindAbbreviationMap.find_opt id s.kind_abbreviation with
+      | Some (`Prefixed (p, _rp)) -> p
+      | Some (`Renamed x) -> `Local (x, b)
+      | None -> `Local (id, b))
+  | `Identifier _ -> p
+  | `DotK (p, n) -> `DotK (module_path s p, n)
+  | `KindAbbreviation (p, n) -> `KindAbbreviation (resolved_parent_path s p, n)
+
 and resolved_class_type_path :
     t -> Cpath.Resolved.class_type -> Cpath.Resolved.class_type =
  fun s p ->
@@ -645,7 +698,7 @@ and type_expr s t =
       match type_path s p with
       | Replaced (t, eq) ->
           let mk_var acc pexpr param =
-            match param.Odoc_model.Lang.TypeDecl.desc with
+            match param.Component.TypeDecl.desc with
             | Any -> acc
             | Var n -> (n, type_expr s pexpr) :: acc
           in
@@ -660,7 +713,8 @@ and type_expr s t =
   | Polymorphic_variant v -> Polymorphic_variant (type_poly_var s v)
   | Object o -> Object (type_object s o)
   | Class (p, ts) -> Class (class_type_path s p, List.map (type_expr s) ts)
-  | Poly (strs, ts) -> Poly (strs, type_expr s ts)
+  | Poly (vars, ts) ->
+      Poly (List.map (fun (v, k) -> (v, kind s k)) vars, type_expr s ts)
   | Quote t -> Quote (type_expr s t)
   | Splice t -> Splice (type_expr s t)
   | Package p -> Package (type_package s p)
@@ -815,13 +869,31 @@ and type_decl_constructor_arg s a =
   | Tuple ts -> Tuple (List.map (fun (te, mods) -> (type_expr s te, mods)) ts)
   | Record fs -> Record (list type_decl_field s fs)
 
+and kind s (k : Component.Kind.t) : Component.Kind.t =
+  match k with
+  | Default -> k
+  | Abbreviation p -> Abbreviation (kind_abbreviation_path s p)
+  | Operator (b, axes) -> Operator (kind s b, axes)
+  | Mod (b, m) -> Mod (kind s b, m)
+  | With (b, ty, m) -> With (kind s b, type_expr s ty, m)
+  | Kind_of ty -> Kind_of (type_expr s ty)
+  | Product ks -> Product (List.map (kind s) ks)
+
+and type_decl_param s (p : Component.TypeDecl.param) =
+  { p with kind = kind s p.kind }
+
+and kind_abbreviation s (ka : Component.KindAbbreviation.t) =
+  { ka with manifest = option_ kind s ka.manifest }
+
 and type_decl_equation s t =
   let open Component.TypeDecl.Equation in
   {
     t with
+    params = List.map (type_decl_param s) t.params;
     manifest = option_ type_expr s t.manifest;
     constraints =
       List.map (fun (x, y) -> (type_expr s x, type_expr s y)) t.constraints;
+    kind = kind s t.kind;
   }
 
 and exception_ s e =
@@ -1003,6 +1075,12 @@ and rename_bound_idents s sg =
   | Exception (id, e) :: rest ->
       let id' = Ident.Rename.exception_ id in
       rename_bound_idents s (Exception (id', e) :: sg) rest
+  | KindAbbreviation (id, ka) :: rest ->
+      let id' = Ident.Rename.kind_abbreviation id in
+      rename_bound_idents
+        (rename_kind_abbreviation id id' s)
+        (KindAbbreviation (id', ka) :: sg)
+        rest
   | TypExt e :: rest -> rename_bound_idents s (TypExt e :: sg) rest
   | Value (id, v) :: rest ->
       let id' = Ident.Rename.value id in
@@ -1076,6 +1154,7 @@ and apply_sig_map_item s item =
           Component.Delayed.put (fun () -> type_ s (Component.Delayed.get t)) )
   | TypeSubstitution (id, t) -> TypeSubstitution (id, type_ s t)
   | Exception (id, e) -> Exception (id, exception_ s e)
+  | KindAbbreviation (id, ka) -> KindAbbreviation (id, kind_abbreviation s ka)
   | TypExt e -> TypExt (extension s e)
   | Value (id, v) ->
       Value

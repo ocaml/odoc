@@ -126,6 +126,11 @@ module General_paths = struct
               ( "`Type",
                 ((parent :> id_t), name),
                 Pair (identifier, Names.typename) )
+        | `KindAbbreviation (parent, name) ->
+            C
+              ( "`KindAbbreviation",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.typename) )
         | `Constructor (parent, name) ->
             C
               ( "`Constructor",
@@ -215,6 +220,7 @@ module General_paths = struct
       | `TType -> C0 "`TType"
       | `TUnknown -> C0 "`TUnknown"
       | `TValue -> C0 "`TValue"
+      | `TKindAbbreviation -> C0 "`TKindAbbreviation"
       | `TChildPage -> C0 "`TChildPage"
       | `TChildModule -> C0 "`TChildModule")
 
@@ -233,6 +239,8 @@ module General_paths = struct
           C ("`DotMT", ((x1 :> p), x2), Pair (path, Names.moduletypename))
       | `DotV (x1, x2) ->
           C ("`DotV", ((x1 :> p), x2), Pair (path, Names.valuename))
+      | `DotK (x1, x2) ->
+          C ("`DotK", ((x1 :> p), x2), Pair (path, Names.typename))
       | `Apply (x1, x2) ->
           C ("`Apply", ((x1 :> p), (x2 :> p)), Pair (path, path))
       | `ApplyParam (x1, x2, x3) ->
@@ -251,6 +259,7 @@ module General_paths = struct
       (function
       | `Identifier x -> C ("`Identifier", x, identifier)
       | `CoreType n -> C ("`CoreType", n, Names.typename)
+      | `CoreKind n -> C ("`CoreKind", n, Names.typename)
       | `Subst (x1, x2) ->
           C
             ( "`Subst",
@@ -304,6 +313,11 @@ module General_paths = struct
           C ("`Type", ((x1 :> rp), x2), Pair (resolved_path, Names.typename))
       | `Value (x1, x2) ->
           C ("`Value", ((x1 :> rp), x2), Pair (resolved_path, Names.valuename))
+      | `KindAbbreviation (x1, x2) ->
+          C
+            ( "`KindAbbreviation",
+              ((x1 :> rp), x2),
+              Pair (resolved_path, Names.typename) )
       | `Class (x1, x2) ->
           C ("`Class", ((x1 :> rp), x2), Pair (resolved_path, Names.classname))
       | `ClassType (x1, x2) ->
@@ -390,7 +404,12 @@ module General_paths = struct
               ((x1 :> r), x2),
               Pair (reference, Names.instancevariablename) )
       | `Label (x1, x2) ->
-          C ("`Label", ((x1 :> r), x2), Pair (reference, Names.labelname)))
+          C ("`Label", ((x1 :> r), x2), Pair (reference, Names.labelname))
+      | `KindAbbreviation (x1, x2) ->
+          C
+            ( "`KindAbbreviation",
+              ((x1 :> r), x2),
+              Pair (reference, Names.typename) ))
 
   and resolved_reference : rr t =
     Variant
@@ -488,7 +507,12 @@ module General_paths = struct
           C
             ( "`Value",
               ((x1 :> rr), x2),
-              Pair (resolved_reference, Names.valuename) ))
+              Pair (resolved_reference, Names.valuename) )
+      | `KindAbbreviation (x1, x2) ->
+          C
+            ( "`KindAbbreviation",
+              ((x1 :> rr), x2),
+              Pair (resolved_reference, Names.typename) ))
 
   let resolved_fragment_root : Paths.Fragment.Resolved.root t =
     Variant

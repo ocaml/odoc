@@ -597,6 +597,7 @@ The prefixes supported are:
 - [extension-decl] for refering to the declaration point of an extension constructor
 - [field] (and the equivalent deprecated prefix [recfield])
 - [instance-variable]
+- [kind] for OxCaml kind abbreviations ([kind_ k = ...])
 - [section] (and the equivalent deprecated prefix [label]) - for referring to headings
 - [page] - for referring to [.mld] pages
 

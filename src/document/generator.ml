@@ -151,6 +151,9 @@ module Make (Syntax : SYNTAX) = struct
       | `DotV (prefix, suffix) ->
           let link = from_path (prefix :> Path.t) in
           link ++ O.txt ("." ^ ValueName.to_string suffix)
+      | `DotK (prefix, suffix) ->
+          let link = from_path (prefix :> Path.t) in
+          link ++ O.txt ("." ^ TypeName.to_string suffix)
       | `Apply (p1, p2) ->
           let link1 = from_path (p1 :> Path.t) in
           let link2 = from_path (p2 :> Path.t) in
@@ -344,6 +347,8 @@ module Make (Syntax : SYNTAX) = struct
       ?needs_parentheses:bool -> Odoc_model.Lang.Kind.t -> text
 
     val with_kind_annotation : Odoc_model.Lang.Kind.t -> text -> text
+
+    val kind_is_default : Odoc_model.Lang.Kind.t -> bool
   end = struct
     let format_modes (modes : Odoc_model.Lang.Modes.t) =
       match modes with
@@ -476,8 +481,20 @@ module Make (Syntax : SYNTAX) = struct
       in
       match k with
       | Default -> O.noop
-      | Abbreviation frag ->
-          O.txt (Link.render_fragment_any (frag :> Paths.Fragment.t))
+      | Abbreviation
+          ( `Resolved (`Identifier (`KindAbbreviation (_, name)))
+          | `Identifier (`KindAbbreviation (_, name), _) )
+        when Odoc_model.Names.TypeName.is_hidden name ->
+          (* A shadowed abbreviation is not rendered, print its name as
+             written. *)
+          O.txt (Odoc_model.Names.TypeName.to_string_unsafe name)
+      | Abbreviation p -> Link.from_path (p :> Paths.Path.t)
+      | Operator (base, axes) ->
+          let res =
+            kind_annotation ~needs_parentheses:true base
+            ++ O.txt (" " ^ String.concat ~sep:" " axes)
+          in
+          enclose_parens_if_needed res
       | Mod (base, modes) ->
           let res =
             kind_annotation ~needs_parentheses:true base
@@ -502,10 +519,15 @@ module Make (Syntax : SYNTAX) = struct
           in
           enclose_parens_if_needed res
 
+    and kind_is_default = function
+      | Odoc_model.Lang.Kind.Default -> true
+      | Abbreviation (`Resolved (`CoreKind name)) ->
+          Odoc_model.Names.TypeName.to_string name = "value"
+      | _ -> false
+
     and with_kind_annotation kind base =
-      match kind with
-      | Odoc_model.Lang.Kind.Default -> base
-      | k -> O.txt "(" ++ base ++ O.txt " : " ++ kind_annotation k ++ O.txt ")"
+      if kind_is_default kind then base
+      else O.txt "(" ++ base ++ O.txt " : " ++ kind_annotation kind ++ O.txt ")"
 
     and type_expr ?(needs_parentheses = false) (t : Odoc_model.Lang.TypeExpr.t)
         =
@@ -608,6 +630,8 @@ module Make (Syntax : SYNTAX) = struct
       ?is_substitution:bool ->
       Lang.Signature.recursive * Lang.TypeDecl.t ->
       Item.t
+
+    val kind_abbreviation : Lang.KindAbbreviation.t -> Item.t
 
     val extension : Lang.Extension.t -> Item.t
 
@@ -1005,9 +1029,8 @@ module Make (Syntax : SYNTAX) = struct
             Syntax.Type.handle_constructor_params (O.txt tyname) params
       in
       let kind_annot =
-        match t.equation.kind with
-        | Default -> O.noop
-        | k -> O.txt " : " ++ Type_expression.kind_annotation k
+        if Type_expression.kind_is_default t.equation.kind then O.noop
+        else O.txt " : " ++ Type_expression.kind_annotation t.equation.kind
       in
       let intro = keyword' ++ O.txt " " ++ tconstr ++ kind_annot in
       let constraints = format_constraints t.equation.constraints in
@@ -1066,6 +1089,21 @@ module Make (Syntax : SYNTAX) = struct
             (if Syntax.Type.type_def_semicolon then O.txt ";" else O.noop)
       in
       let attr = "type" :: (if is_substitution then [ "subst" ] else []) in
+      let anchor = path_to_id t.id in
+      let doc = Comment.to_ir t.doc.elements in
+      let source_anchor = source_anchor t.source_loc in
+      Item.Declaration { attr; anchor; doc; content; source_anchor }
+
+    let kind_abbreviation (t : Lang.KindAbbreviation.t) =
+      let name = Paths.Identifier.name t.id in
+      let intro = O.keyword "kind_" ++ O.sp ++ O.txt name in
+      let manifest =
+        match t.manifest with
+        | None -> O.noop
+        | Some k -> O.txt " =" ++ O.sp ++ Type_expression.kind_annotation k
+      in
+      let content = O.documentedSrc (intro ++ manifest) in
+      let attr = [ "type"; "kind-abbreviation" ] in
       let anchor = path_to_id t.id in
       let doc = Comment.to_ir t.doc.elements in
       let source_anchor = source_anchor t.source_loc in
@@ -1434,6 +1472,12 @@ module Make (Syntax : SYNTAX) = struct
       | `ModuleType (_, name) when ModuleTypeName.is_hidden name -> true
       | _ -> false
 
+    let internal_kind_abbreviation t =
+      let open Lang.KindAbbreviation in
+      match t.id with
+      | `KindAbbreviation (_, name) when TypeName.is_hidden name -> true
+      | _ -> false
+
     let internal_module_substitution t =
       let open Lang.ModuleSubstitution in
       match t.id with
@@ -1457,6 +1501,8 @@ module Make (Syntax : SYNTAX) = struct
             | Type (_, t) when internal_type t -> loop rest acc_items
             | Value v when internal_value v -> loop rest acc_items
             | ModuleType m when internal_module_type m -> loop rest acc_items
+            | KindAbbreviation t when internal_kind_abbreviation t ->
+                loop rest acc_items
             | ModuleSubstitution m when internal_module_substitution m ->
                 loop rest acc_items
             | ModuleTypeSubstitution m when internal_module_type_substitution m
@@ -1472,6 +1518,7 @@ module Make (Syntax : SYNTAX) = struct
             | TypeSubstitution t ->
                 continue @@ type_decl ~is_substitution:true (Ordinary, t)
             | Type (r, t) -> continue @@ type_decl (r, t)
+            | KindAbbreviation t -> continue @@ kind_abbreviation t
             | TypExt e -> continue @@ extension e
             | Exception e -> continue @@ exn e
             | Value v -> continue @@ value v

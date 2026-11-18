@@ -53,6 +53,8 @@ module Reference = struct
     | `Exception (r, s) ->
         render_resolved (r :> t) ^ "." ^ ExceptionName.to_string s
     | `Value (r, s) -> render_resolved (r :> t) ^ "." ^ ValueName.to_string s
+    | `KindAbbreviation (r, s) ->
+        render_resolved (r :> t) ^ "." ^ TypeName.to_string s
     | `Class (r, s) -> render_resolved (r :> t) ^ "." ^ TypeName.to_string s
     | `ClassType (r, s) -> render_resolved (r :> t) ^ "." ^ TypeName.to_string s
     | `Method (r, s) ->
@@ -99,6 +101,8 @@ module Reference = struct
     | `Exception (p, f) ->
         render_unresolved (p :> t) ^ "." ^ ExceptionName.to_string f
     | `Value (p, f) -> render_unresolved (p :> t) ^ "." ^ ValueName.to_string f
+    | `KindAbbreviation (p, f) ->
+        render_unresolved (p :> t) ^ "." ^ TypeName.to_string f
     | `Class (p, f) -> render_unresolved (p :> t) ^ "." ^ TypeName.to_string f
     | `ClassType (p, f) ->
         render_unresolved (p :> t) ^ "." ^ TypeName.to_string f

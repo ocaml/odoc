@@ -51,6 +51,12 @@ let rec shape_of_id env :
     | `LibraryParameter _ ->
         (* A library parameter has no implementation, hence no shape. *)
         None
+#if defined OXCAML
+    | `KindAbbreviation (parent, name) ->
+        proj parent Kind.Jkind (TypeName.to_string_unsafe name)
+#else
+    | `KindAbbreviation _ -> None
+#endif
     | `Page _ | `LeafPage _ | `Label _
     | `Constructor _ | `Field _ | `UnboxedField _ | `Method _ | `InstanceVariable _ | `Parameter _
       ->
@@ -103,6 +109,7 @@ let rec shape_of_kind_path env kind :
     | `DotT (parent, name) -> proj parent kind (TypeName.to_string_unsafe name)
     | `DotMT (parent, name) -> proj parent kind (ModuleTypeName.to_string_unsafe name)
     | `DotV (parent, name) -> proj parent kind (ValueName.to_string_unsafe name)
+    | `DotK (parent, name) -> proj parent kind (TypeName.to_string_unsafe name)
     | `SubstitutedT t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
     | `SubstitutedMT t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)
     | `SubstitutedCT t -> shape_of_kind_path env kind (t :> Odoc_model.Paths.Path.t)

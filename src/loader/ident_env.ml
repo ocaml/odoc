@@ -20,6 +20,8 @@ open Names
 module Id = Paths.Identifier
 module P = Paths.Path
 
+module StringMap = Map.Make(String)
+
 module LocHashtbl = Hashtbl.Make(struct
     type t = Location.t
     let equal l1 l2 = l1 = l2
@@ -38,6 +40,9 @@ type t =
     values: Id.Value.t Ident.tbl;
     classes : Id.Class.t Ident.tbl;
     class_types : Id.ClassType.t Ident.tbl;
+    kind_abbreviations : Id.KindAbbreviation.t Ident.tbl;
+    kinds_in_scope : Ident.t StringMap.t;
+    modules_in_scope : Ident.t StringMap.t;
     loc_to_ident : Id.t LocHashtbl.t;
     shadowed : Ident.t list;
   }
@@ -54,6 +59,9 @@ let empty () =
     values = Ident.empty;
     classes = Ident.empty;
     class_types = Ident.empty;
+    kind_abbreviations = Ident.empty;
+    kinds_in_scope = StringMap.empty;
+    modules_in_scope = StringMap.empty;
     loc_to_ident = LocHashtbl.create 100;
     shadowed = [];
   }
@@ -64,6 +72,7 @@ type item = [
     `Module of Ident.t * bool * Location.t option
   | `ModuleType of Ident.t * bool * Location.t option
   | `Type of Ident.t * bool * Location.t option
+  | `KindAbbreviation of Ident.t * bool * Location.t option
   | `Constructor of Ident.t * Ident.t * Location.t option
   (* Second ident.t is for the type parent *)
   | `Value of Ident.t * bool * Location.t option
@@ -90,6 +99,9 @@ let extract_visibility =
   | Sig_value (_, _, vis)
   | Sig_class (_, _, _, vis)
   | Sig_class_type (_, _, _, vis)
+#if defined OXCAML
+  | Sig_jkind (_, _, vis)
+#endif
   | Sig_typext (_, _, _, vis) ->
       vis
 
@@ -142,6 +154,11 @@ and extract_signature_type_items_extract vis ~hidden item rest =
     | Sig_module(id, _, _, _, _), _ ->
       `Module (id, hidden, None) :: extract_signature_type_items vis rest
 
+#if defined OXCAML
+    | Sig_jkind(id, _, _), _ ->
+      `KindAbbreviation (id, hidden, None) :: extract_signature_type_items vis rest
+#endif
+
     | Sig_modtype(id, _, _), _ ->
       `ModuleType (id, hidden, None) :: extract_signature_type_items vis rest
 
@@ -190,6 +207,9 @@ and extract_signature_type_items_skip vis item rest =
   | Sig_modtype _, rest
   | Sig_module _, rest
   | Sig_type _, rest
+#if defined OXCAML
+  | Sig_jkind _, rest
+#endif
   | Sig_value  _, rest ->
     extract_signature_type_items vis rest
 
@@ -305,7 +325,9 @@ let rec extract_signature_tree_items : bool -> Typedtree.signature_item list -> 
 #endif
     | { sig_desc = Tsig_open _;_} :: rest -> extract_signature_tree_items hide_item rest
 #if defined OXCAML
-    | { sig_desc = Tsig_jkind _;_} :: rest -> extract_signature_tree_items hide_item rest
+    | { sig_desc = Tsig_jkind jkd; _} :: rest ->
+        `KindAbbreviation (jkd.jkind_id, hide_item, Some jkd.jkind_loc)
+        :: extract_signature_tree_items hide_item rest
 #endif
     | [] -> []
 
@@ -464,7 +486,9 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
 #endif
     | { str_desc = Tstr_eval _; _} :: rest -> extract_structure_tree_items hide_item rest
 #if defined OXCAML
-    | { str_desc = Tstr_jkind _; _ } :: rest -> extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_jkind jkd; _ } :: rest ->
+        `KindAbbreviation (jkd.jkind_id, hide_item, Some jkd.jkind_loc)
+        :: extract_structure_tree_items hide_item rest
 #endif
     | [] -> []
 
@@ -472,6 +496,7 @@ let rec extract_structure_tree_items : bool -> Typedtree.structure_item list -> 
 let flatten_includes : items list -> item list = fun items ->
   List.map (function
     | `Type _
+    | `KindAbbreviation _
     | `Constructor _
     | `Module _
     | `ModuleType _
@@ -484,6 +509,9 @@ let flatten_includes : items list -> item list = fun items ->
 
 let type_name_exists name items =
   List.exists (function | `Type (id', _, _) when Ident.name id' = name -> true | _ -> false) items
+
+let kind_abbreviation_name_exists name items =
+  List.exists (function | `KindAbbreviation (id', _, _) when Ident.name id' = name -> true | _ -> false) items
 
 let value_name_exists name items =
     List.exists (function | `Value (id', _, _) when Ident.name id' = name -> true | _ -> false) items
@@ -515,6 +543,18 @@ let add_items : Id.Signature.t -> item list -> t -> t = fun parent items env ->
       let types = Ident.add t identifier env.types in
       (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
       inner rest { env with types; shadowed }
+
+    | `KindAbbreviation (t, is_hidden_item, loc) :: rest ->
+      let name = Ident.name t in
+      let is_shadowed = kind_abbreviation_name_exists name rest in
+      let identifier, shadowed =
+        if is_shadowed
+        then Mk.kind_abbreviation(parent, TypeName.shadowed_of_string name), t :: env.shadowed
+        else Mk.kind_abbreviation(parent, (if is_hidden_item then TypeName.hidden_of_string else TypeName.make_std) name), env.shadowed
+      in
+      let kind_abbreviations = Ident.add t identifier env.kind_abbreviations in
+      (match loc with | Some l -> LocHashtbl.add env.loc_to_ident l (identifier :> Id.any) | _ -> ());
+      inner rest { env with kind_abbreviations; shadowed }
 
     | `Constructor (t, t_parent, loc) :: rest ->
       let name = Ident.name t in
@@ -648,7 +688,31 @@ let add_parameter parent id name env =
   let module_paths = Ident.add id path env.module_paths in
   let modules = Ident.add id oid env.modules in
   let parameters = Ident.add id oid env.parameters in
-  { env with module_paths; modules; parameters }
+  let modules_in_scope = StringMap.add (Ident.name id) id env.modules_in_scope in
+  { env with module_paths; modules; parameters; modules_in_scope }
+
+let scope_module env id =
+  { env with
+    modules_in_scope = StringMap.add (Ident.name id) id env.modules_in_scope }
+
+let scope_kind_abbreviation env id =
+  { env with
+    kinds_in_scope = StringMap.add (Ident.name id) id env.kinds_in_scope }
+
+let scope_signature env (sg : Types.signature) =
+  List.fold_left
+    (fun env (item : Types.signature_item) ->
+      match item with
+#if OCAML_VERSION >= (4,8,0)
+      | Sig_module (id, _, _, _, _) -> scope_module env id
+#else
+      | Sig_module (id, _, _) -> scope_module env id
+#endif
+#if defined OXCAML
+      | Sig_jkind (id, _, _) -> scope_kind_abbreviation env id
+#endif
+      | _ -> env)
+    env sg
 
 let add_module_arg parent id name env =
   let oid = Odoc_model.Paths.Identifier.Mk.(parameter (parent, name)) in
@@ -671,6 +735,9 @@ let find_module_type env id =
 
 let find_type_identifier env id =
   Ident.find_same id env.types
+
+let find_kind_abbreviation_identifier env id =
+  Ident.find_same id env.kind_abbreviations
 
 let find_constructor_identifier env id =
   Ident.find_same id env.constructors
@@ -826,6 +893,55 @@ module Path = struct
 #if OCAML_VERSION >= (5,1,0)
     | Path.Pextra_ty (p,_) -> read_type env p
 #endif
+
+  let read_kind_abbreviation_ident env id : Paths.Path.KindAbbreviation.t =
+    match Ident.find_same id env.kind_abbreviations with
+    | id -> `Identifier (id, false)
+    | exception Not_found -> `Resolved (`CoreKind (TypeName.of_ident id))
+
+  let read_kind_abbreviation env : Path.t -> Paths.Path.KindAbbreviation.t =
+    function
+    | Path.Pident id -> read_kind_abbreviation_ident env id
+    | Path.Pdot(p, s) -> `DotK(read_module env p, TypeName.make_std s)
+    | Path.Papply(_, _) -> assert false
+#if OCAML_VERSION >= (5,1,0)
+    | Path.Pextra_ty _ -> assert false
+#endif
+
+#if OCAML_VERSION >= (5,4,0)
+  let ldot p s = (p.Location.txt, s.Location.txt)
+#else
+  let ldot p s = (p, s)
+#endif
+
+  let rec read_module_longident env : Longident.t -> Paths.Path.Module.t =
+    function
+    | Longident.Lident s -> (
+        match StringMap.find_opt s env.modules_in_scope with
+        | Some id when ident_is_global_or_predef id -> module_of_id id
+        | Some id -> (
+            try find_module env id
+            with Not_found -> `Root (ModuleName.make_std s))
+        | None -> `Root (ModuleName.make_std s))
+    | Longident.Ldot (p, s) ->
+        let p, s = ldot p s in
+        `Dot (read_module_longident env p, ModuleName.make_std s)
+    | Longident.Lapply (f, a) ->
+#if OCAML_VERSION >= (5,4,0)
+        let f = f.Location.txt and a = a.Location.txt in
+#endif
+        `Apply (read_module_longident env f, read_module_longident env a)
+
+  let read_kind_abbreviation_longident env :
+      Longident.t -> Paths.Path.KindAbbreviation.t = function
+    | Longident.Lident s -> (
+        match StringMap.find_opt s env.kinds_in_scope with
+        | Some id -> read_kind_abbreviation_ident env id
+        | None -> `Resolved (`CoreKind (TypeName.make_std s)))
+    | Longident.Ldot (p, s) ->
+        let p, s = ldot p s in
+        `DotK (read_module_longident env p, TypeName.make_std s)
+    | Longident.Lapply _ -> assert false
 
   let read_value env = function
     | Path.Pident id -> read_value_ident env id

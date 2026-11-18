@@ -145,6 +145,8 @@ val s_type : Component.Element.type_ scope
 
 val s_datatype : Component.Element.datatype scope
 
+val s_kind_abbreviation : Component.Element.kind_abbreviation scope
+
 val s_class : Component.Element.class_ scope
 
 val s_class_type : Component.Element.class_type scope

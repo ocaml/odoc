@@ -92,7 +92,7 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
  fun p ->
   let open Paths.Path.Resolved in
   match p with
-  | `CoreType _ -> false
+  | `CoreType _ | `CoreKind _ -> false
   | `Identifier _ -> false
   | `Subst (x, y) -> should_reresolve (x :> t) || should_reresolve (y :> t)
   | `Hidden p -> should_reresolve (p :> t)
@@ -112,6 +112,7 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
       should_reresolve (x :> t) || should_reresolve (y :> t)
   | `Type (p, _)
   | `Value (p, _)
+  | `KindAbbreviation (p, _)
   | `Class (p, _)
   | `ClassType (p, _)
   | `ModuleType (p, _)
@@ -162,6 +163,25 @@ let value_path : Env.t -> Paths.Path.Value.t -> Paths.Path.Value.t =
             `Resolved Lang_of.(Path.resolved_value (empty ()) result)
         | Error e ->
             Errors.report ~what:(`Value_path cp) ~tools_error:e `Lookup;
+            p)
+
+let kind_abbreviation_path :
+    Env.t -> Paths.Path.KindAbbreviation.t -> Paths.Path.KindAbbreviation.t =
+ fun env p ->
+  if not (should_resolve (p :> Paths.Path.t)) then p
+  else
+    let cp = Component.Of_Lang.(kind_abbreviation_path (empty ()) p) in
+    match cp with
+    | `Resolved p ->
+        let result = Tools.reresolve_kind_abbreviation env p in
+        `Resolved Lang_of.(Path.resolved_kind_abbreviation (empty ()) result)
+    | _ -> (
+        match Tools.resolve_kind_abbreviation_path env cp with
+        | Ok p' ->
+            let result = Tools.reresolve_kind_abbreviation env p' in
+            `Resolved Lang_of.(Path.resolved_kind_abbreviation (empty ()) result)
+        | Error e ->
+            Errors.report ~what:(`Kind_path cp) ~tools_error:e `Lookup;
             p)
 
 let class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
@@ -705,6 +725,8 @@ and signature_items :
         | TypeSubstitution t ->
             let env' = Env.open_type_substitution t env in
             (TypeSubstitution (type_decl env id t) :: items, env')
+        | KindAbbreviation t ->
+            std @@ KindAbbreviation (kind_abbreviation env id t)
         | ModuleType mt -> std @@ ModuleType (module_type env mt)
         | ModuleTypeSubstitution mts ->
             let env' = Env.open_module_type_substitution mts env in
@@ -721,6 +743,13 @@ and signature_items :
       ([], env) s
   in
   List.rev items
+
+and kind_abbreviation env parent t =
+  let open KindAbbreviation in
+  let source_loc = source_loc env t.id t.source_loc in
+  let doc = comment_docs env parent t.doc in
+  let manifest = Opt.map (kind env parent) t.manifest in
+  { t with source_loc; doc; manifest }
 
 and simple_expansion :
     Env.t ->
@@ -1125,7 +1154,42 @@ and type_decl_equation env parent t =
         (type_expression env parent [] tex1, type_expression env parent [] tex2))
       t.constraints
   in
-  { t with manifest; constraints }
+  let params = List.map (type_decl_param env parent) t.params in
+  { t with params; manifest; constraints; kind = kind env parent t.kind }
+
+and type_decl_param env parent (p : TypeDecl.param) =
+  { p with kind = kind env parent p.kind }
+
+and kind env parent (k : Kind.t) : Kind.t = kind_aux env parent [] k
+
+and kind_aux env parent visited (k : Kind.t) : Kind.t =
+  let kind = kind_aux env parent visited in
+  match k with
+  | Default -> k
+  | Abbreviation p' -> (
+      let p = kind_abbreviation_path env p' in
+      if not (Paths.Path.is_hidden (p :> Paths.Path.t)) then Abbreviation p
+      else
+        (* A hidden kind abbreviation is replaced by its manifest, like a
+           hidden type alias. *)
+        let cp = Component.Of_Lang.(kind_abbreviation_path (empty ()) p') in
+        match Tools.resolve_kind_abbreviation env cp with
+        | Ok (cp', Some { manifest = Some manifest; _ }) ->
+            let cp' = Tools.reresolve_kind_abbreviation env cp' in
+            let lp = Lang_of.(Path.resolved_kind_abbreviation (empty ()) cp') in
+            if List.mem lp visited then Abbreviation p
+            else
+              let manifest =
+                Lang_of.(kind (empty ()) (parent :> Id.LabelParent.t) manifest)
+              in
+              kind_aux env parent (lp :: visited) manifest
+        | Ok (_, (None | Some { manifest = None; _ })) | Error _ ->
+            Abbreviation p)
+  | Operator (b, axes) -> Operator (kind b, axes)
+  | Mod (b, m) -> Mod (kind b, m)
+  | With (b, ty, m) -> With (kind b, type_expression env parent [] ty, m)
+  | Kind_of ty -> Kind_of (type_expression env parent [] ty)
+  | Product ks -> Product (List.map kind ks)
 
 and type_decl_field env parent f =
   let open TypeDecl.Field in
@@ -1246,7 +1310,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
                     let map =
                       List.fold_left2
                         (fun acc param sub ->
-                          match param.Lang.TypeDecl.desc with
+                          match param.Component.TypeDecl.desc with
                           | Lang.TypeDecl.Var x -> (x, sub) :: acc
                           | Any -> acc)
                         [] params ts
@@ -1289,7 +1353,9 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
             let p = Lang_of.(Path.resolved_class_type (empty ()) cp') in
             Class (`Resolved p, ts)
         | _ -> Class (path', ts))
-  | Poly (strs, t) -> Poly (strs, type_expression env parent visited t)
+  | Poly (vars, t) ->
+      let vars = List.map (fun (v, k) -> (v, kind env parent k)) vars in
+      Poly (vars, type_expression env parent visited t)
   | Quote t -> Quote (type_expression env parent visited t)
   | Splice t -> Splice (type_expression env parent visited t)
   | Package p -> Package (type_expression_package env parent visited p)

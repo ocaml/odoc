@@ -58,6 +58,8 @@ module Identifier : sig
 
   module Type : IdSig with type t = Id.type_
 
+  module KindAbbreviation : IdSig with type t = Id.kind_abbreviation
+
   module Class : IdSig with type t = Id.class_
 
   module ClassType : IdSig with type t = Id.class_type
@@ -162,6 +164,8 @@ module Identifier : sig
 
     module Value : IdSig with type t = Id.path_value
 
+    module KindAbbreviation : IdSig with type t = Id.path_kind_abbreviation
+
     module ClassType : IdSig with type t = Id.path_class_type
 
     type t = Id.path_any
@@ -195,6 +199,8 @@ module Identifier : sig
     module ModuleType : Map.S with type key = ModuleType.t
 
     module Type : Map.S with type key = Type.t
+
+    module KindAbbreviation : Map.S with type key = KindAbbreviation.t
 
     module Class : Map.S with type key = Class.t
 
@@ -262,6 +268,10 @@ module Identifier : sig
 
     val type_ :
       Signature.t * TypeName.t -> [> `Type of Signature.t * TypeName.t ]
+
+    val kind_abbreviation :
+      Signature.t * TypeName.t ->
+      [> `KindAbbreviation of Signature.t * TypeName.t ]
 
     val core_type : string -> [> `CoreType of TypeName.t ]
 
@@ -376,6 +386,10 @@ module rec Path : sig
       type t = Paths_types.Resolved_path.value
     end
 
+    module KindAbbreviation : sig
+      type t = Paths_types.Resolved_path.kind_abbreviation
+    end
+
     module ClassType : sig
       type t = Paths_types.Resolved_path.class_type
 
@@ -412,6 +426,10 @@ module rec Path : sig
 
   module Value : sig
     type t = Paths_types.Path.value
+  end
+
+  module KindAbbreviation : sig
+    type t = Paths_types.Path.kind_abbreviation
   end
 
   module ClassType : sig
@@ -541,6 +559,10 @@ module rec Reference : sig
       type t = Paths_types.Resolved_reference.value
     end
 
+    module KindAbbreviation : sig
+      type t = Paths_types.Resolved_reference.kind_abbreviation
+    end
+
     module Class : sig
       type t = Paths_types.Resolved_reference.class_
     end
@@ -634,6 +656,10 @@ module rec Reference : sig
 
   module Value : sig
     type t = Paths_types.Reference.value
+  end
+
+  module KindAbbreviation : sig
+    type t = Paths_types.Reference.kind_abbreviation
   end
 
   module Class : sig

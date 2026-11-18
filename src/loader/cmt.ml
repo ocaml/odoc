@@ -166,7 +166,7 @@ let read_type_extension env parent tyext =
   in
   let type_params =
     List.map
-      (Cmi.read_type_parameter false Types.Variance.null)
+      (Cmi.read_type_parameter env.ident_env false Types.Variance.null)
       type_params
   in
   let private_ = (tyext.tyext_private = Private) in
@@ -378,7 +378,7 @@ let read_class_declaration env parent cld =
     in
     let params =
       List.map
-        (Cmi.read_type_parameter false Types.Variance.null)
+        (Cmi.read_type_parameter env.ident_env false Types.Variance.null)
         clparams
     in
     let type_ = read_class_expr env (id :> Identifier.ClassSignature.t) clparams cld.ci_expr in
@@ -571,7 +571,8 @@ and read_structure_item env parent item =
         let cltyps = List.map (fun (_, _, clty) -> clty) cltyps in
           Cmti.read_class_type_declarations env parent cltyps
 #if defined OXCAML
-    | Tstr_jkind _ -> []
+    | Tstr_jkind jkd ->
+        [ KindAbbreviation (Cmti.read_kind_abbreviation env parent jkd) ]
 #endif
     | Tstr_attribute attr ->
       let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -637,9 +638,30 @@ and read_open env parent o =
   let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature signature) in
   Open.{expansion; doc}
 
+and scope_structure_item env item =
+#if defined OXCAML
+  let scope f x = { env with ident_env = f env.ident_env x } in
+  match item.str_desc with
+  | Tstr_module { mb_id = Some id; _ } -> scope Env.scope_module id
+  | Tstr_recmodule mbs ->
+      List.fold_left
+        (fun env mb ->
+          match mb.mb_id with
+          | Some id -> { env with ident_env = Env.scope_module env.ident_env id }
+          | None -> env)
+        env mbs
+  | Tstr_include incl -> scope Env.scope_signature incl.incl_type
+  | Tstr_open o -> scope Env.scope_signature o.open_bound_items
+  | Tstr_jkind jkd -> scope Env.scope_kind_abbreviation jkd.jkind_id
+  | _ -> env
+#else
+  ignore item; env
+#endif
+
 and read_items env parent items =
   List.fold_left
-    (fun acc item ->
+    (fun (acc, env) item ->
+      let acc =
       match item.str_desc with
 #if defined OXCAML
       | Tstr_include ({ incl_kind = (Tincl_functor _ | Tincl_gen_functor _); _ } as incl) ->
@@ -649,9 +671,11 @@ and read_items env parent items =
         let items = read_include_functor env parent (snd wrapper) incl in
         List.rev_append items (wrapper_module :: acc)
 #endif
-      | _ -> List.rev_append (read_structure_item env parent item) acc)
-    [] items
-  |> List.rev
+      | _ -> List.rev_append (read_structure_item env parent item) acc
+      in
+      (acc, scope_structure_item env item))
+    ([], env) items
+  |> fst |> List.rev
 
 and read_structure :
       'tags. 'tags Odoc_model.Semantics.handle_internal_tags -> _ -> _ -> _ ->

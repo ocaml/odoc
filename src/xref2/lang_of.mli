@@ -31,6 +31,9 @@ module Path : sig
 
   val resolved_value : maps -> Cpath.Resolved.value -> Path.Resolved.Value.t
 
+  val resolved_kind_abbreviation :
+    maps -> Cpath.Resolved.kind_abbreviation -> Path.Resolved.KindAbbreviation.t
+
   val resolved_class_type :
     maps -> Cpath.Resolved.class_type -> Path.Resolved.ClassType.t
 
@@ -226,6 +229,9 @@ val type_expr :
   Identifier.LabelParent.t ->
   Component.TypeExpr.t ->
   Odoc_model.Lang.TypeExpr.t
+
+val kind :
+  maps -> Identifier.LabelParent.t -> Component.Kind.t -> Odoc_model.Lang.Kind.t
 
 val type_expr_polyvar :
   maps ->

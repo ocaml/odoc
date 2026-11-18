@@ -137,6 +137,14 @@ let prefix_substitution path sg =
         get_sub
           (Subst.add_type id (`Type (path, name)) (`Type (path, name)) sub')
           rest
+    | KindAbbreviation (id, _) :: rest ->
+        let name = Ident.Name.typed_kind_abbreviation id in
+        get_sub
+          (Subst.add_kind_abbreviation id
+             (`KindAbbreviation (path, name))
+             (`KindAbbreviation (path, name))
+             sub')
+          rest
     | Exception _ :: rest
     | TypExt _ :: rest
     | Value (_, _) :: rest
@@ -204,7 +212,10 @@ let prefix_signature (path, sg) =
             ClassType (Ident.Rename.type_ id, r, Subst.class_type sub c)
         | Include i -> Include (Subst.include_ sub i)
         | Open o -> Open (Subst.open_ sub o)
-        | Comment c -> Comment c)
+        | Comment c -> Comment c
+        | KindAbbreviation (id, ka) ->
+            KindAbbreviation
+              (Ident.Rename.kind_abbreviation id, Subst.kind_abbreviation sub ka))
       sg.items
   in
   { sg with items }
@@ -2142,6 +2153,68 @@ let resolve_module_type_path env p =
 let resolve_type_path env p = resolve_type env p >>= fun (p, _) -> Ok p
 
 let resolve_value_path env p = resolve_value env p >>= fun (p, _) -> Ok p
+
+type resolve_kind_abbreviation_result =
+  ( Cpath.Resolved.kind_abbreviation * Component.KindAbbreviation.t option,
+    simple_kind_abbreviation_lookup_error )
+  result
+
+(* The declaration is [None] for a built-in kind. *)
+let lookup_kind_abbreviation env (p : Cpath.Resolved.kind_abbreviation) :
+    ( Component.KindAbbreviation.t option,
+      simple_kind_abbreviation_lookup_error )
+    result =
+  match p with
+  | `CoreKind _ -> Ok None
+  | `Local id -> Error (`LocalKind (env, id))
+  | `Identifier i ->
+      of_option ~error:(`Lookup_failureK i)
+        (Env.lookup_by_id Env.s_kind_abbreviation i env)
+      >>= fun (`KindAbbreviation (_, ka)) -> Ok (Some ka)
+  | `KindAbbreviation (parent, name) ->
+      lookup_parent env parent
+      |> map_error (fun e -> (e :> simple_kind_abbreviation_lookup_error))
+      >>= fun (sg, sub) ->
+      of_option ~error:`Find_failure (Find.kind_abbreviation_in_sig sg name)
+      >>= fun (`FKindAbbreviation (_, ka)) ->
+      Ok (Some (Subst.kind_abbreviation sub ka))
+
+let resolve_kind_abbreviation env (p : Cpath.kind_abbreviation) :
+    resolve_kind_abbreviation_result =
+  match p with
+  | `Resolved r -> lookup_kind_abbreviation env r >>= fun ka -> Ok (r, ka)
+  | `Identifier (i, _) ->
+      lookup_kind_abbreviation env (`Identifier i) >>= fun ka ->
+      Ok (`Identifier i, ka)
+  | `Local (id, _) -> Error (`LocalKind (env, id))
+  | `DotK (parent, name) ->
+      resolve_module env parent
+      |> map_error (fun e -> `Parent (`Parent_module e))
+      >>= fun (p, m) ->
+      let m = Component.Delayed.get m in
+      expansion_of_module_cached env p m
+      |> map_error (fun e -> `Parent (`Parent_sig e))
+      >>= assert_not_functor
+      >>= fun sg ->
+      let sub = prefix_substitution (`Module p) sg in
+      of_option ~error:`Find_failure (Find.kind_abbreviation_in_sig sg name)
+      >>= fun (`FKindAbbreviation (name, ka)) ->
+      Ok
+        ( `KindAbbreviation (`Module p, name),
+          Some (Subst.kind_abbreviation sub ka) )
+  | `KindAbbreviation (parent, name) ->
+      let r = `KindAbbreviation (parent, name) in
+      lookup_kind_abbreviation env r >>= fun ka -> Ok (r, ka)
+
+let resolve_kind_abbreviation_path env p =
+  resolve_kind_abbreviation env p >>= fun (p, _) -> Ok p
+
+let reresolve_kind_abbreviation env (p : Cpath.Resolved.kind_abbreviation) :
+    Cpath.Resolved.kind_abbreviation =
+  match p with
+  | `KindAbbreviation (parent, name) ->
+      `KindAbbreviation (reresolve_parent env parent, name)
+  | `Local _ | `Identifier _ | `CoreKind _ -> p
 
 let resolve_class_type_path env p =
   resolve_class_type env p >>= fun (p, _) -> Ok p

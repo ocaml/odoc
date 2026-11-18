@@ -92,6 +92,9 @@ module Identifier = struct
   type type_ = [ `Type of signature * TypeName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Type.t *)
 
+  type kind_abbreviation = [ `KindAbbreviation of signature * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.KindAbbreviation.t *)
+
   type constructor = [ `Constructor of datatype * ConstructorName.t ]
   (** @canonical Odoc_model.Paths.Identifier.Constructor.t *)
 
@@ -143,6 +146,7 @@ module Identifier = struct
     | functor_result
     | module_type
     | type_
+    | kind_abbreviation
     | constructor
     | field
     | unboxed_field
@@ -172,11 +176,19 @@ module Identifier = struct
 
   type path_value = value
 
+  type path_kind_abbreviation = kind_abbreviation
+  (** @canonical Odoc_model.Paths.Identifier.Path.KindAbbreviation.t *)
+
   type path_class_type = [ class_ | class_type ]
   (** @canonical Odoc_model.Paths.Identifier.Path.ClassType.t *)
 
   type path_any =
-    [ path_module | module_type | path_type | path_class_type | value ]
+    [ path_module
+    | module_type
+    | path_type
+    | path_class_type
+    | value
+    | kind_abbreviation ]
   (** @canonical Odoc_model.Paths.Identifier.Path.t *)
 
   type fragment_module = path_module
@@ -202,6 +214,8 @@ module Identifier = struct
   type reference_exception = exception_
 
   type reference_value = value
+
+  type reference_kind_abbreviation = kind_abbreviation
 
   type reference_class = class_
 
@@ -255,6 +269,12 @@ module rec Path : sig
     | `DotV of module_ * ValueName.t ]
   (** @canonical Odoc_model.Paths.Path.Value.t *)
 
+  type kind_abbreviation =
+    [ `Resolved of Resolved_path.kind_abbreviation
+    | `Identifier of Identifier.path_kind_abbreviation * bool
+    | `DotK of module_ * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Path.KindAbbreviation.t *)
+
   type class_type =
     [ `Resolved of Resolved_path.class_type
     | `SubstitutedCT of class_type
@@ -274,6 +294,7 @@ module rec Path : sig
     | `DotT of module_ * TypeName.t
     | `DotMT of module_ * ModuleTypeName.t
     | `DotV of module_ * ValueName.t
+    | `DotK of module_ * TypeName.t
     | `Apply of module_ * module_
     | `ApplyParam of instance * ModuleName.t * instance
     | `Unbox of type_ ]
@@ -315,6 +336,12 @@ and Resolved_path : sig
   type value =
     [ `Identifier of Identifier.path_value | `Value of module_ * ValueName.t ]
   (** @canonical Odoc_model.Paths.Path.Resolved.Value.t *)
+
+  type kind_abbreviation =
+    [ `Identifier of Identifier.path_kind_abbreviation
+    | `KindAbbreviation of module_ * TypeName.t
+    | `CoreKind of TypeName.t ]
+  (** @canonical Odoc_model.Paths.Path.Resolved.KindAbbreviation.t *)
 
   type class_type =
     [ `Identifier of Identifier.path_class_type
@@ -361,6 +388,8 @@ and Resolved_path : sig
     | `Value of module_ * ValueName.t
     | `ClassType of module_ * TypeName.t
     | `CoreType of TypeName.t
+    | `KindAbbreviation of module_ * TypeName.t
+    | `CoreKind of TypeName.t
     | `Unbox of type_ ]
   (** @canonical Odoc_model.Paths.Path.Resolved.t *)
 end =
@@ -462,6 +491,8 @@ module rec Reference : sig
 
   type tag_only_value = [ `TValue ]
 
+  type tag_only_kind_abbreviation = [ `TKindAbbreviation ]
+
   type tag_only_class = [ `TClass ]
 
   type tag_only_class_type = [ `TClassType ]
@@ -497,6 +528,7 @@ module rec Reference : sig
     | `TExtensionDecl
     | `TException
     | `TValue
+    | `TKindAbbreviation
     | `TClass
     | `TClassType
     | `TMethod
@@ -659,6 +691,13 @@ module rec Reference : sig
     | `Value of signature * ValueName.t ]
   (** @canonical Odoc_model.Paths.Reference.Value.t *)
 
+  type kind_abbreviation =
+    [ `Resolved of Resolved_reference.kind_abbreviation
+    | `Root of string * [ `TKindAbbreviation | `TUnknown ]
+    | `Dot of label_parent * string
+    | `KindAbbreviation of signature * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Reference.KindAbbreviation.t *)
+
   type class_ =
     [ `Resolved of Resolved_reference.class_
     | `Root of string * [ `TClass | `TUnknown ]
@@ -719,6 +758,7 @@ module rec Reference : sig
     | `ExtensionDecl of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t
     | `Value of signature * ValueName.t
+    | `KindAbbreviation of signature * TypeName.t
     | `Class of signature * TypeName.t
     | `ClassType of signature * TypeName.t
     | `Method of class_signature * MethodName.t
@@ -850,6 +890,11 @@ and Resolved_reference : sig
     | `Value of signature * ValueName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Value.t *)
 
+  type kind_abbreviation =
+    [ `Identifier of Identifier.reference_kind_abbreviation
+    | `KindAbbreviation of signature * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Reference.Resolved.KindAbbreviation.t *)
+
   type class_ =
     [ `Identifier of Identifier.reference_class
     | `Class of signature * TypeName.t ]
@@ -898,6 +943,7 @@ and Resolved_reference : sig
     | `ExtensionDecl of signature * ExtensionName.t * ExtensionName.t
     | `Exception of signature * ExceptionName.t
     | `Value of signature * ValueName.t
+    | `KindAbbreviation of signature * TypeName.t
     | `Class of signature * TypeName.t
     | `ClassType of signature * TypeName.t
     | `Method of class_signature * MethodName.t

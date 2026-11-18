@@ -7,7 +7,7 @@ let render_path : Path.t -> string =
     let open Path.Resolved in
     function
     | `Identifier id -> Identifier.name id
-    | `CoreType n -> TypeName.to_string n
+    | `CoreType n | `CoreKind n -> TypeName.to_string n
     | `OpaqueModule p -> render_resolved (p :> t)
     | `OpaqueModuleType p -> render_resolved (p :> t)
     | `Subst (_, p) -> render_resolved (p :> t)
@@ -47,6 +47,8 @@ let render_path : Path.t -> string =
         render_resolved (p :> t) ^ "." ^ ModuleTypeName.to_string s
     | `Type (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
     | `Value (p, s) -> render_resolved (p :> t) ^ "." ^ ValueName.to_string s
+    | `KindAbbreviation (p, s) ->
+        render_resolved (p :> t) ^ "." ^ TypeName.to_string s
     | `Class (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
     | `ClassType (p, s) -> render_resolved (p :> t) ^ "." ^ TypeName.to_string s
     | `Unbox p -> render_resolved (p :> t) ^ "#"
@@ -60,6 +62,7 @@ let render_path : Path.t -> string =
     | `DotT (p, s) -> dot p (TypeName.to_string s)
     | `DotMT (p, s) -> dot p (ModuleTypeName.to_string s)
     | `DotV (p, s) -> dot p (ValueName.to_string s)
+    | `DotK (p, s) -> dot p (TypeName.to_string s)
     | `Apply (p1, p2) ->
         render_path (p1 :> Path.t) ^ "(" ^ render_path (p2 :> Path.t) ^ ")"
     | `ApplyParam (p1, p2, p3) ->
@@ -242,6 +245,7 @@ module Anchor = struct
     [ Path.kind
     | `Section
     | `Type
+    | `KindAbbreviation
     | `Extension
     | `ExtensionDecl
     | `Exception
@@ -256,6 +260,7 @@ module Anchor = struct
     | #Path.kind as k -> Path.string_of_kind k
     | `Section -> "section"
     | `Type -> "type"
+    | `KindAbbreviation -> "kind"
     | `Extension -> "extension"
     | `ExtensionDecl -> "extension-decl"
     | `Exception -> "exception"
@@ -318,6 +323,11 @@ module Anchor = struct
         let page = Path.from_identifier (parent :> Path.any) in
         let kind = `Type in
         let name = TypeName.to_string type_name in
+        { page; anchor = Format.asprintf "%a-%s" pp_kind kind name; kind }
+    | `KindAbbreviation (parent, name) ->
+        let page = Path.from_identifier (parent :> Path.any) in
+        let kind = `KindAbbreviation in
+        let name = TypeName.to_string name in
         { page; anchor = Format.asprintf "%a-%s" pp_kind kind name; kind }
     | `Extension (parent, name) ->
         let page = Path.from_identifier (parent :> Path.any) in
