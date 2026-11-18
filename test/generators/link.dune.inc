@@ -11674,9 +11674,6 @@
    Oxcaml-Include_functor_argument_shapes-module-type-S.html.gen
    Oxcaml-Include_functor_argument_shapes-class-output_class_via_type.html.gen
    Oxcaml-Include_functor_argument_shapes-class-output_class_via_name.html.gen
-   Oxcaml-Include_functor_argument_shapes-Aliased.html.gen
-   Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.html.gen
-   Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.html.gen
    Oxcaml-Include_functor_desugared.html.gen
    Oxcaml-Include_functor_desugared-Make.html.gen
    Oxcaml-Include_functor_desugared-Make-argument-1-T.html.gen
@@ -11975,30 +11972,6 @@
   (package odoc)
   (action
    (diff
-    Oxcaml-Include_functor_argument_shapes-Aliased.html
-    Oxcaml-Include_functor_argument_shapes-Aliased.html.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
-    Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.html
-    Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.html.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
-    Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.html
-    Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.html.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
     Oxcaml-Include_functor_desugared.html
     Oxcaml-Include_functor_desugared.html.gen))
   (enabled_if %{ocaml-config:ox}))
@@ -12265,8 +12238,6 @@
    Oxcaml.Include_functor_argument_shapes.X.3o.gen
    Oxcaml.Include_functor_argument_shapes.class-output_class_via_type.3o.gen
    Oxcaml.Include_functor_argument_shapes.class-output_class_via_name.3o.gen
-   Oxcaml.Include_functor_argument_shapes.Aliased.3o.gen
-   Oxcaml.Include_functor_argument_shapes.Aliased.To_include_module.3o.gen
    Oxcaml.Include_functor_desugared.3o.gen
    Oxcaml.Include_functor_desugared.Make.3o.gen
    Oxcaml.Include_functor_named_type_desugared.3o.gen
@@ -12434,22 +12405,6 @@
   (package odoc)
   (action
    (diff
-    Oxcaml.Include_functor_argument_shapes.Aliased.3o
-    Oxcaml.Include_functor_argument_shapes.Aliased.3o.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
-    Oxcaml.Include_functor_argument_shapes.Aliased.To_include_module.3o
-    Oxcaml.Include_functor_argument_shapes.Aliased.To_include_module.3o.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
     Oxcaml.Include_functor_desugared.3o
     Oxcaml.Include_functor_desugared.3o.gen))
   (enabled_if %{ocaml-config:ox}))
@@ -12596,9 +12551,6 @@
    Oxcaml-Include_functor_argument_shapes-module-type-S.md.gen
    Oxcaml-Include_functor_argument_shapes-class-output_class_via_type.md.gen
    Oxcaml-Include_functor_argument_shapes-class-output_class_via_name.md.gen
-   Oxcaml-Include_functor_argument_shapes-Aliased.md.gen
-   Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.md.gen
-   Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.md.gen
    Oxcaml-Include_functor_desugared.md.gen
    Oxcaml-Include_functor_desugared-Make.md.gen
    Oxcaml-Include_functor_desugared-Make-argument-1-T.md.gen
@@ -12883,30 +12835,6 @@
    (diff
     Oxcaml-Include_functor_argument_shapes-class-output_class_via_name.md
     Oxcaml-Include_functor_argument_shapes-class-output_class_via_name.md.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
-    Oxcaml-Include_functor_argument_shapes-Aliased.md
-    Oxcaml-Include_functor_argument_shapes-Aliased.md.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
-    Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.md
-    Oxcaml-Include_functor_argument_shapes-Aliased-module-type-To_include_module_type.md.gen))
-  (enabled_if %{ocaml-config:ox}))
- (rule
-  (alias runtest)
-  (package odoc)
-  (action
-   (diff
-    Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.md
-    Oxcaml-Include_functor_argument_shapes-Aliased-To_include_module.md.gen))
   (enabled_if %{ocaml-config:ox}))
  (rule
   (alias runtest)

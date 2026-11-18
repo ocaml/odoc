@@ -21,6 +21,7 @@
 - Support for OxCaml parameterized libraries (@art-w, #1464)
 - `{!modules: ...}` lists accept path references such as
   `{!modules: /lib/Module}` (@jonludlam, #1503)
+- Support for OxCaml 5.4.0-ox9 (@avsm, #1526)
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)

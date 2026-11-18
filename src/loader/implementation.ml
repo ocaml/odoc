@@ -107,7 +107,11 @@ module Env = struct
     match mexpr.mod_desc with
     | Tmod_ident _ -> ()
     | Tmod_structure str -> structure env parent str
+#if defined OXCAML
+    | Tmod_functor (parameter, res, _) ->
+#else
     | Tmod_functor (parameter, res) ->
+#endif
         let open Odoc_model.Names in
         let env =
           match parameter with
