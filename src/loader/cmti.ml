@@ -105,6 +105,10 @@ let wrapper_items dummy_id items =
     | Include incl ->
       (* The items an [include] brings in are visible to the functor too. *)
       List.fold_left (fun acc item -> wrapper_item item acc) acc incl.Include.expansion.content.items
+    | KindAbbreviation _ ->
+      (* Kind annotations are rendered as written, never through a path, so
+         nothing in the expansion can refer to the alias. *)
+      acc
     | Value _ | ModuleSubstitution _ | ModuleTypeSubstitution _ | Open _
     | TypeSubstitution _ | TypExt _ | Exception _ | Comment _ ->
       (* Nothing in the expansion of [F(BODY__n)] can refer to these. *)
@@ -562,6 +566,22 @@ let read_type_declarations env parent rec_flag decls =
 
 let read_type_substitutions env parent decls =
   List.map (fun decl -> Odoc_model.Lang.Signature.TypeSubstitution (read_type_declaration env parent decl)) decls
+
+#if defined OXCAML
+let read_kind_abbreviation env parent (jkd : Typedtree.jkind_declaration) =
+  let open KindAbbreviation in
+  let id = Env.find_kind_abbreviation_identifier env.ident_env jkd.jkind_id in
+  let source_loc = None in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
+  let doc =
+    Doc_attr.attached_no_tag ~warnings_tag:env.warnings_tag container
+      jkd.jkind_attributes
+  in
+  let manifest =
+    opt_map Cmi.read_jkind jkd.jkind_annotation
+  in
+  { id; source_loc; doc; manifest }
+#endif
 
 let read_extension_constructor env parent ext =
   let open Extension.Constructor in
@@ -1028,7 +1048,8 @@ and read_signature_item env parent item =
         [ModuleTypeSubstitution (read_module_type_substitution env parent mtst)]
 #endif
 #if defined OXCAML
-    | Tsig_jkind _ -> []
+    | Tsig_jkind jkd ->
+        [ KindAbbreviation (read_kind_abbreviation env parent jkd) ]
 #endif
 
 

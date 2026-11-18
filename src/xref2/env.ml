@@ -839,6 +839,7 @@ let rec open_signature : Lang.Signature.t -> t -> t =
             add_value v.L.Value.id ty env
         (* Skip when compiling *)
         | Exception _, false -> env
+        | KindAbbreviation _, _ -> env
         | TypExt _, false -> env
         | Comment _, false -> env
         | L.Signature.Value _, false -> env)

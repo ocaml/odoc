@@ -705,6 +705,8 @@ and signature_items :
         | TypeSubstitution t ->
             let env' = Env.open_type_substitution t env in
             (TypeSubstitution (type_decl env id t) :: items, env')
+        | KindAbbreviation t ->
+            std @@ KindAbbreviation (kind_abbreviation env id t)
         | ModuleType mt -> std @@ ModuleType (module_type env mt)
         | ModuleTypeSubstitution mts ->
             let env' = Env.open_module_type_substitution mts env in
@@ -721,6 +723,12 @@ and signature_items :
       ([], env) s
   in
   List.rev items
+
+and kind_abbreviation env parent t =
+  let open KindAbbreviation in
+  let source_loc = source_loc env t.id t.source_loc in
+  let doc = comment_docs env parent t.doc in
+  { t with source_loc; doc }
 
 and simple_expansion :
     Env.t ->
