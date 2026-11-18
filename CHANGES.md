@@ -23,6 +23,7 @@
   `{!modules: /lib/Module}` (@jonludlam, #1503)
 - Support for strikethrough text (@Leonidas-from-XIV, #1515)
 - Improve source locations (@lukemaurer, @avsm, #1527)
+- Support for OxCaml 5.4.0-ox9 (@avsm, #1526)
 
 ### Performance
 - Memoize doc-comment parsing and skip doc rebuilding during link when nothing needs resolution (@jonludlam, #1480)
