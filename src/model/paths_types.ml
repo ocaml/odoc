@@ -215,6 +215,8 @@ module Identifier = struct
 
   type reference_value = value
 
+  type reference_kind_abbreviation = kind_abbreviation
+
   type reference_class = class_
 
   type reference_class_type = [ class_ | class_type ]
@@ -489,6 +491,8 @@ module rec Reference : sig
 
   type tag_only_value = [ `TValue ]
 
+  type tag_only_kind_abbreviation = [ `TKindAbbreviation ]
+
   type tag_only_class = [ `TClass ]
 
   type tag_only_class_type = [ `TClassType ]
@@ -524,6 +528,7 @@ module rec Reference : sig
     | `TExtensionDecl
     | `TException
     | `TValue
+    | `TKindAbbreviation
     | `TClass
     | `TClassType
     | `TMethod
@@ -686,6 +691,13 @@ module rec Reference : sig
     | `Value of signature * ValueName.t ]
   (** @canonical Odoc_model.Paths.Reference.Value.t *)
 
+  type kind_abbreviation =
+    [ `Resolved of Resolved_reference.kind_abbreviation
+    | `Root of string * [ `TKindAbbreviation | `TUnknown ]
+    | `Dot of label_parent * string
+    | `KindAbbreviation of signature * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Reference.KindAbbreviation.t *)
+
   type class_ =
     [ `Resolved of Resolved_reference.class_
     | `Root of string * [ `TClass | `TUnknown ]
@@ -746,6 +758,7 @@ module rec Reference : sig
     | `ExtensionDecl of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t
     | `Value of signature * ValueName.t
+    | `KindAbbreviation of signature * TypeName.t
     | `Class of signature * TypeName.t
     | `ClassType of signature * TypeName.t
     | `Method of class_signature * MethodName.t
@@ -877,6 +890,11 @@ and Resolved_reference : sig
     | `Value of signature * ValueName.t ]
   (** @canonical Odoc_model.Paths.Reference.Resolved.Value.t *)
 
+  type kind_abbreviation =
+    [ `Identifier of Identifier.reference_kind_abbreviation
+    | `KindAbbreviation of signature * TypeName.t ]
+  (** @canonical Odoc_model.Paths.Reference.Resolved.KindAbbreviation.t *)
+
   type class_ =
     [ `Identifier of Identifier.reference_class
     | `Class of signature * TypeName.t ]
@@ -925,6 +943,7 @@ and Resolved_reference : sig
     | `ExtensionDecl of signature * ExtensionName.t * ExtensionName.t
     | `Exception of signature * ExceptionName.t
     | `Value of signature * ValueName.t
+    | `KindAbbreviation of signature * TypeName.t
     | `Class of signature * TypeName.t
     | `ClassType of signature * TypeName.t
     | `Method of class_signature * MethodName.t

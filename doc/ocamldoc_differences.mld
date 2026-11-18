@@ -56,6 +56,7 @@ Additionally, we support extra annotations:
 - [extension-decl] refers to the declaration point of an extension constructor.
 - [field] is a replacement for [recfield].
 - [instance-variable] refers to instance variables.
+- [kind] refers to OxCaml kind abbreviations.
 - [label] refers to labels introduced in anchors.
 - [page] refers to [.mld] pages as outlined above.
 - [value] is recognised as [val].

@@ -381,6 +381,21 @@ module V = struct
     | `FValue (name, _) -> Ok (`Value (parent, name))
 end
 
+module KA = struct
+  (** Kind abbreviation *)
+
+  type t = Resolved.KindAbbreviation.t
+
+  let in_env env name : t ref_result =
+    env_lookup_by_name Env.s_kind_abbreviation name env
+    >>= fun (`KindAbbreviation (id, _)) -> Ok (`Identifier id)
+
+  let in_signature _env ((parent, _, sg) : signature_lookup_result) name :
+      t ref_result =
+    find Find.kind_abbreviation_in_sig sg TypeName.to_string name >>= function
+    | `FKindAbbreviation (name, _) -> Ok (`KindAbbreviation (parent, name))
+end
+
 module L = struct
   (** Label *)
 
@@ -1009,6 +1024,10 @@ let resolve_reference :
     | `Value (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
         V.in_signature env p name >>= resolved1
+    | `Root (name, `TKindAbbreviation) -> KA.in_env env name >>= resolved1
+    | `KindAbbreviation (parent, name) ->
+        resolve_signature_reference env parent >>= fun p ->
+        KA.in_signature env p name >>= resolved1
     | `Root (name, `TLabel) -> L.in_env env name >>= resolved_with_text
     | `Label (parent, name) ->
         resolve_label_parent_reference env parent >>= fun p ->

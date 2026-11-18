@@ -559,6 +559,10 @@ module rec Reference : sig
       type t = Paths_types.Resolved_reference.value
     end
 
+    module KindAbbreviation : sig
+      type t = Paths_types.Resolved_reference.kind_abbreviation
+    end
+
     module Class : sig
       type t = Paths_types.Resolved_reference.class_
     end
@@ -652,6 +656,10 @@ module rec Reference : sig
 
   module Value : sig
     type t = Paths_types.Reference.value
+  end
+
+  module KindAbbreviation : sig
+    type t = Paths_types.Reference.kind_abbreviation
   end
 
   module Class : sig

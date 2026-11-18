@@ -1875,6 +1875,11 @@ module Fmt = struct
           (model_resolved_reference c)
           (parent :> t)
           (TypeName.to_string name)
+    | `KindAbbreviation (parent, name) ->
+        Format.fprintf ppf "%a.%s"
+          (model_resolved_reference c)
+          (parent :> t)
+          (TypeName.to_string name)
     | `Constructor (parent, name) ->
         Format.fprintf ppf "%a.%s"
           (model_resolved_reference c)
@@ -1980,6 +1985,10 @@ module Fmt = struct
           (parent :> t)
           (ModuleTypeName.to_string name)
     | `Type (parent, name) ->
+        Format.fprintf ppf "%a.%s" (model_reference c)
+          (parent :> t)
+          (TypeName.to_string name)
+    | `KindAbbreviation (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_reference c)
           (parent :> t)
           (TypeName.to_string name)

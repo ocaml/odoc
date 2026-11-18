@@ -1119,6 +1119,10 @@ module Reference = struct
           match parent_signature_identifier p with
           | None -> None
           | Some p -> Some (Identifier.Mk.value (p, q)))
+      | `KindAbbreviation (p, q) -> (
+          match parent_signature_identifier p with
+          | None -> None
+          | Some p -> Some (Identifier.Mk.kind_abbreviation (p, q)))
       | `Method (p, q) -> (
           match parent_class_signature_identifier p with
           | None -> None
@@ -1194,6 +1198,10 @@ module Reference = struct
 
     module Value = struct
       type t = Paths_types.Resolved_reference.value
+    end
+
+    module KindAbbreviation = struct
+      type t = Paths_types.Resolved_reference.kind_abbreviation
     end
 
     module Class = struct
@@ -1290,6 +1298,10 @@ module Reference = struct
 
   module Value = struct
     type t = Paths_types.Reference.value
+  end
+
+  module KindAbbreviation = struct
+    type t = Paths_types.Reference.kind_abbreviation
   end
 
   module Class = struct

@@ -93,6 +93,7 @@ let match_extra_odoc_reference_kind (_location as loc) s :
   | "module-type" -> Some `TModuleType
   | "page" -> Some `TPage
   | "asset" -> Some `TAsset
+  | "kind" -> Some `TKindAbbreviation
   | "value" ->
       d loc "value" "val";
       Some `TValue
@@ -493,6 +494,9 @@ let parse whole_reference_location s :
                 (signature next_token tokens, ExceptionName.make_std identifier)
           | `TValue ->
               `Value (signature next_token tokens, ValueName.make_std identifier)
+          | `TKindAbbreviation ->
+              `KindAbbreviation
+                (signature next_token tokens, TypeName.make_std identifier)
           | `TClass ->
               `Class (signature next_token tokens, TypeName.make_std identifier)
           | `TClassType ->
