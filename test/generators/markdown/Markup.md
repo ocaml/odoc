@@ -80,9 +80,29 @@ There are also verbatim blocks:
 ```
 The main difference is these don't get syntax highlighting.
 ```
-here is a quote block
 
-> hello
+## Block quotes
+
+A few examples
+
+> hello this is quote
+
+a separating line.
+
+> this quote has {b some
+
+*formatting*, as well as `code`, newlines,
+
+- lists
+- of
+- elements
+and also nested quotes
+
+> wow
+
+yeah i know
+
+}
 
 
 ## Lists

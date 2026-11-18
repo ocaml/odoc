@@ -102,8 +102,23 @@
 The main difference is these don't get syntax highlighting.
 v}
 
-here is a quote block
-{quote hello}
+    {1 Block quotes}
+
+    A few examples
+
+    {quote hello this is quote}
+
+    a separating line.
+
+    {quote this quote has {b some} {i formatting}, as well as [code],
+    newlines,
+    - lists
+    - of
+    - elements
+
+    and also nested quotes
+    {quote wow}
+    yeah i know}
 
 
     {1 Lists}

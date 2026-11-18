@@ -163,14 +163,40 @@ There are also verbatim blocks:
 .EX 
 The main difference is these don't get syntax highlighting\.
 .EE 
-.sp 
-here is a quote block
-.sp 
- hello
 .nf 
 .sp 
 .in 3
-\fB5 Lists\fR
+\fB5 Block quotes\fR
+.in 
+.sp 
+.fi 
+A few examples
+.sp 
+ hello this is quote
+.sp 
+a separating line\.
+.sp 
+ this quote has {b some
+.sp 
+\fIformatting\fR, as well as code, newlines,
+.sp 
+\(bu lists
+.br 
+\(bu of
+.br 
+\(bu elements
+.sp 
+and also nested quotes
+.sp 
+ wow
+.sp 
+yeah i know
+.sp 
+}
+.nf 
+.sp 
+.in 3
+\fB6 Lists\fR
 .in 
 .sp 
 .fi 
@@ -214,7 +240,7 @@ can use explicitly-delimited lists\.
 .nf 
 .sp 
 .in 3
-\fB6 Unicode\fR
+\fB7 Unicode\fR
 .in 
 .sp 
 .fi 
@@ -224,7 +250,7 @@ In particuλar UTF-8\.
 .nf 
 .sp 
 .in 3
-\fB7 Raw HTML\fR
+\fB8 Raw HTML\fR
 .in 
 .sp 
 .fi 
@@ -233,7 +259,7 @@ Raw HTML can be  as inline elements into sentences\.
 .nf 
 .sp 
 .in 3
-\fB8 Math\fR
+\fB9 Math\fR
 .in 
 .sp 
 .fi 
@@ -248,7 +274,7 @@ Math elements can be inline: \int_{-\infty}^\infty, or blocks:
 .nf 
 .sp 
 .in 3
-\fB9 Modules\fR
+\fB10 Modules\fR
 .in 
 .sp 
 .fi 
@@ -260,7 +286,7 @@ Math elements can be inline: \int_{-\infty}^\infty, or blocks:
 .nf 
 .sp 
 .in 3
-\fB10 Tables\fR
+\fB11 Tables\fR
 .in 
 .sp 
 .fi 
@@ -372,7 +398,7 @@ T}
 .nf 
 .sp 
 .in 3
-\fB11 Tags\fR
+\fB12 Tags\fR
 .in 
 .sp 
 .fi 

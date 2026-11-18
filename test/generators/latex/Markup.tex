@@ -57,11 +57,29 @@ This is a code block:\medbreak
 There are also verbatim blocks:
 
 \begin{verbatim}The main difference is these don't get syntax highlighting.\end{verbatim}%
-here is a quote block
+\subsection{Block quotes\label{Markup--block-quotes}}%
+A few examples
 
 \begin{quote}
- hello
-\end{quote}\subsection{Lists\label{Markup--lists}}%
+ hello this is quote
+\end{quote}a separating line.
+
+\begin{quote}
+ this quote has {b some
+\end{quote}\emph{formatting}, as well as \ocamlinlinecode{code}, newlines,
+
+\begin{itemize}\item{lists}%
+\item{of}%
+\item{elements}\end{itemize}%
+and also nested quotes
+
+\begin{quote}
+ wow
+\end{quote}yeah i know
+
+\}
+
+\subsection{Lists\label{Markup--lists}}%
 \begin{itemize}\item{This is a}%
 \item{shorthand bulleted list,}%
 \item{and the paragraphs in each list item support \emph{styling}.}\end{itemize}%
