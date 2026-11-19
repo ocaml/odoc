@@ -70,7 +70,7 @@ val build_link_env_for_impl : t -> Lang.Implementation.t -> Odoc_xref2.Env.t
 val build_env_for_reference : t -> Odoc_xref2.Env.t
 (** Initialize the environment for a reference. *)
 
-val resolve_import : t -> string -> Root.t option
+val resolve_import : t -> string -> Digest.t -> Root.t option
 (** Similar to {!Odoc_xref2.Env.lookup_root_module} but save work by loading
-    only the root. Only used when resolving imports, which are needed for the
-    [link-deps] command. *)
+    only the root. Only a unit with the given digest matches. Only used when
+    resolving imports, which are needed for the [link-deps] command. *)

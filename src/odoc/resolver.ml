@@ -266,8 +266,7 @@ let lookup_unit_with_digest ap target_name digest =
   let unit_that_match_digest u =
     match u with
     | Odoc_file.Unit_content m
-      when Digest.compare m.Odoc_model.Lang.Compilation_unit.digest digest = 0
-      ->
+      when Digest.equal m.Odoc_model.Lang.Compilation_unit.digest digest ->
         Some m
     | _ -> None
   in
@@ -653,7 +652,7 @@ let lookup_page t target_name =
   | Ok p -> Some p
   | Error `Not_found -> None
 
-let resolve_import t target_name =
+let resolve_import t target_name digest =
   let rec loop = function
     | [] -> None
     | path :: tl -> (
@@ -661,7 +660,9 @@ let resolve_import t target_name =
         | Error _ -> loop tl
         | Ok root -> (
             match root.Odoc_model.Root.file with
-            | Compilation_unit _ -> Some root
-            | Impl _ | Page _ | Asset _ -> loop tl))
+            | Compilation_unit _
+              when Digest.equal root.Odoc_model.Root.digest digest ->
+                Some root
+            | Compilation_unit _ | Impl _ | Page _ | Asset _ -> loop tl))
   in
   loop (Accessible_paths.find t.ap target_name)
