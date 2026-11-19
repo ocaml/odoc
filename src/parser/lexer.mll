@@ -337,6 +337,9 @@ and token input = parse
   | "{e"
     { emit input (`Begin_style `Emphasis) }
 
+  | "{~"
+    { emit input (`Begin_style `Strikethrough) }
+
   | "{L"
     { emit input (`Begin_paragraph_style `Left) }
 
