@@ -13,7 +13,15 @@ Start with a base module:
   module T : sig type t type u end
 
 Script to compile the modules:
-  $ ./compile.sh
+
+  $ compile() {
+  >   for i in $(seq 1 14); do
+  >     echo + ocamlc -c m$i.mli -bin-annot
+  >     ocamlc -c m$i.mli -bin-annot
+  >   done
+  > }
+
+  $ compile
   + ocamlc -c m1.mli -bin-annot
   + ocamlc -c m2.mli -bin-annot
   + ocamlc -c m3.mli -bin-annot
@@ -30,7 +38,15 @@ Script to compile the modules:
   + ocamlc -c m14.mli -bin-annot
 
 And one to run odoc on the files:
-  $ ./odoc.sh
+
+  $ odoc_compile() {
+  >   for i in $(seq 1 14); do
+  >     echo + odoc compile -I . m$i.cmti
+  >     odoc compile -I . m$i.cmti
+  >   done
+  > }
+
+  $ odoc_compile
   + odoc compile -I . m1.cmti
   + odoc compile -I . m2.cmti
   + odoc compile -I . m3.cmti

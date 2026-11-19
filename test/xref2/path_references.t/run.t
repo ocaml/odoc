@@ -9,7 +9,7 @@
   $ odoc compile-asset --output-dir h --parent-id pkg --name img.png
 
   $ odoc link -P pkg:h/pkg -L libname:h/pkg/libname h/pkg/subdir/page-dup.odoc
-  $ odoc link -P pkg:h/pkg -L libname:h/pkg/libname h/pkg/subdir/page-bar.odoc
+  $ odoc link -P pkg:h/pkg -L libname:h/pkg/libname h/pkg/subdir/page-bar.odoc 2>&1 | cram_test_helper
   File "doc/subdir/bar.mld", line 12, characters 39-48:
   Warning: Failed to resolve reference ./Test Path 'Test' not found
   File "doc/subdir/bar.mld", line 12, characters 18-38:
@@ -17,7 +17,7 @@
   File "doc/subdir/bar.mld", line 12, characters 0-17:
   Warning: Failed to resolve reference //libname/Test Path '//libname/Test' not found
   $ odoc link -P pkg:h/pkg -L libname:h/pkg/libname h/pkg/page-dup.odoc
-  $ odoc link -P pkg:h/pkg -L libname:h/pkg/libname h/pkg/page-foo.odoc
+  $ odoc link -P pkg:h/pkg -L libname:h/pkg/libname h/pkg/page-foo.odoc 2>&1 | cram_test_helper
   File "doc/foo.mld", line 12, characters 27-36:
   Warning: Failed to resolve reference ./Test Path 'Test' not found
   File "doc/foo.mld", line 12, characters 0-9:

@@ -25,9 +25,11 @@ type test_case = {
 }
 
 module Dune = struct
-  let arg_fpath f = Fpath.to_string f
+  let arg_fpath f =
+    (* always construct paths with [/] to keep paths portable *)
+    f |> Fpath.segs |> String.concat ~sep:"/"
 
-  let arg_dep f = "%{dep:" ^ Fpath.to_string f ^ "}"
+  let arg_dep f = "%{dep:" ^ arg_fpath f ^ "}"
 
   let arg_list args = List.map (fun x -> Atom x) args
 
@@ -127,7 +129,7 @@ let gen_targets_file enabledif ?flat_flag backend target_path relinput =
         Dune.rule_with_output_to ?enabledif gen_path
           ([
              "odoc";
-             Fpath.to_string backend ^ "-targets";
+             Dune.arg_fpath backend ^ "-targets";
              "-o";
              ".";
              Dune.arg_dep relinput;
