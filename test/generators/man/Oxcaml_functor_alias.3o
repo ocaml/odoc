@@ -1,0 +1,44 @@
+
+.TH Oxcaml_functor_alias 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_functor_alias
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml_functor_alias\fR
+.in 
+.sp 
+.fi 
+A functor whose result aliases its argument, applied by include functor\.
+.nf 
+.sp 
+.fi 
+OxCaml 5\.4 rejects such an alias, as OCaml does, so this is kept apart from the oxcaml\.mli case and runs on earlier versions of OxCaml only\.
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR Make (T : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]type\fR t
+.sp 
+\f[CB]type\fR 'a p
+.sp 
+\f[CB]module\fR X : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR S = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR u
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]val\fR via_module_type_include : unit
+.sp 
+\f[CB]module\fR Aliased : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+The input module itself\. It should contain everything from the top level module
+.nf 
+

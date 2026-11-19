@@ -1,0 +1,14 @@
+
+.TH X 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_functor_alias\.X
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml_functor_alias\.X\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]type\fR v

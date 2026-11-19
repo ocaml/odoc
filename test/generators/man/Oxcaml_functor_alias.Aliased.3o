@@ -1,0 +1,32 @@
+
+.TH Aliased 3 "" "Odoc" "OCaml Library"
+.SH Name
+Oxcaml_functor_alias\.Aliased
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Oxcaml_functor_alias\.Aliased\fR
+.in 
+.sp 
+.fi 
+The input module itself\. It should contain everything from the top level module
+.nf 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR Make = Make
+.sp 
+\f[CB]module\fR \f[CB]type\fR To_include_module_type = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]val\fR via_module_type_include : unit
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]type\fR t = t
+.sp 
+\f[CB]type\fR 'a p = \f[CB]'a\fR p
+.sp 
+\f[CB]module\fR X = X
+.sp 
+\f[CB]module\fR \f[CB]type\fR S = S

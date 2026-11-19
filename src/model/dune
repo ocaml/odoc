@@ -28,4 +28,4 @@
   (backend landmarks --auto))
  (instrumentation
   (backend bisect_ppx))
- (libraries compiler-libs.common odoc-parser odoc_utils))
+ (libraries compiler-libs.optcomp odoc-parser odoc_utils))
