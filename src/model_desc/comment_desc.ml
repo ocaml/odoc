@@ -23,7 +23,7 @@ type general_block_element =
     string option
     * string with_location
     * general_block_element with_location list option
-  | `Block_quote of string
+  | `Block_quote of general_block_element with_location list
   | `Math_block of string
   | `Verbatim of string
   | `Modules of Comment.module_reference list
@@ -129,7 +129,7 @@ let rec block_element : general_block_element t =
     | `Paragraph x -> C ("`Paragraph", x, link_content)
     | `Code_block (x1, x2, _) ->
         C ("`Code_block", (x1, ignore_loc x2), Pair (Option string, string))
-    | `Block_quote x -> C ("`Block_quote", x, string)
+    | `Block_quote x -> C ("`Block_quote", x, general_content)
     | `Math_block x -> C ("`Math_block", x, string)
     | `Verbatim x -> C ("`Verbatim", x, string)
     | `Modules x -> C ("`Modules", x, List module_reference)

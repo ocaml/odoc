@@ -251,7 +251,9 @@ let rec nestable_block_element :
         @@ Source (lang_tag, source_of_code (Odoc_model.Location_.value code));
       ]
       @ rest
-  | `Block_quote s -> [ block @@ Block_quote s ]
+  | `Block_quote s ->
+      let b = nestable_block_element_list s in
+      [ block @@ Block_quote b ]
   | `Math_block s -> [ block @@ Math s ]
   | `Verbatim s -> [ block @@ Verbatim s ]
   | `Modules ms -> [ module_references ms ]

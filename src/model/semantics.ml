@@ -329,7 +329,7 @@ let rec nestable_block_element :
       let content = Location.at content.location trimmed_content in
       Location.at location (`Code_block (lang_tag, content, outputs))
   | { value = `Block_quote text; location } ->
-      Location.at location (`Block_quote text)
+      Location.at location (`Block_quote (nestable_block_elements text))
   | { value = `Math_block s; location } -> Location.at location (`Math_block s)
   | { value = `Verbatim v; location } ->
       let v, warnings = Odoc_parser.codeblock_content location v in
