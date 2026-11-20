@@ -56,6 +56,7 @@ module Of_comments = struct
     | `Heading (_, _, h) -> inlines h
     | `Modules _ -> ""
     | `Code_block (_, s, _todo) -> s |> get_value
+    | `Block_quote q -> q
     | `Verbatim v -> v
     | `Math_block m -> m
     | `Media (_, _, is) -> is

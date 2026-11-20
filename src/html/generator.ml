@@ -243,6 +243,7 @@ let rec block ~config ~resolve (l : Block.t) : flow Html.elt list =
         mk_block ~extra_class:[ "odoc-table" ]
           (fun ?a x -> Html.table ?a x)
           (mk_rows ~config ~resolve t)
+    | Block_quote s -> mk_block Html.blockquote [ Html.txt s ]
     | Description l ->
         let item i =
           let a = class_ i.Description.attr in

@@ -64,7 +64,9 @@ type code_block = {
 and nestable_block_element =
   [ `Paragraph of inline_element with_location list
   | `Code_block of code_block
-  | `Verbatim of string
+  | `Block_quote of string
+  | (* TODO: ambre ?? nestable_block_element with_location list *)
+    `Verbatim of string
     (** This is the raw content, that is the exact string inside the delimiters.
         In order to get the "processed" content, see
         {!Odoc_parser.verbatim_content} *)

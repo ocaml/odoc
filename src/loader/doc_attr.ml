@@ -196,7 +196,7 @@ let rec nestable_block_element_needs_own_location
                    (Odoc_parser.Loc.value e))
                cell))
         grid
-  | `Code_block _ | `Verbatim _ | `Math_block _ -> false
+  | `Code_block _ | `Verbatim _ | `Math_block _ | `Block_quote _ -> false
 
 let tag_needs_own_location (x : Odoc_parser.Ast.tag) =
   match x with

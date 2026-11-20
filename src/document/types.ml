@@ -92,6 +92,7 @@ and Block : sig
     | Description of Description.t
     | Source of lang_tag * Source.t
     | Math of Math.t
+    | Block_quote of string
     | Verbatim of string
     | Raw_markup of Raw_markup.t
     | Table of t Table.t

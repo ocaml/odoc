@@ -236,6 +236,7 @@ module Refs = struct
     | `Paragraph p -> List.iter (inline c indent) p
     | `Code_block (_, _, Some output) -> List.iter (nestable c indent) output
     | `Code_block (_, _, None) | `Math_block _ | `Verbatim _ -> ()
+    | `Block_quote s -> Format.printf "%s@." s
     | `Modules ms -> List.iter (module_entry c indent) ms
     | `Table { data; _ } ->
         List.iter

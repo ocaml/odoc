@@ -81,6 +81,8 @@ val code_fragment : 'a t
 
 val code_block : 'a t
 
+val block_quote : 'a t
+
 (** {2 Package-dependent primitives}*)
 
 val indent : 'a t

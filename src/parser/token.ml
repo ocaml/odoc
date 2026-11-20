@@ -80,6 +80,7 @@ type t =
   | `Raw_markup of string option * string
   | `Math_span of string
   | `Math_block of string
+  | `Block_quote of string
   | `Begin_style of style
   | `Begin_paragraph_style of paragraph_style
   | (* Other inline element markup. *)
@@ -189,6 +190,7 @@ let describe : [< t | `Comment ] -> string = function
   | `Begin_style `Strikethrough -> "'{~...} (strikethrough)'"
   | `Math_span _ -> "'{m ...}' (math span)"
   | `Math_block _ -> "'{math ...}' (math block)"
+  | `Block_quote _ -> "'{quote ...}' (quote)"
   | `Simple_reference _ -> "'{!...}' (cross-reference)"
   | `Begin_reference_with_replacement_text _ ->
       "'{{!...} ...}' (cross-reference)"

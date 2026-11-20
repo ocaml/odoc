@@ -205,7 +205,9 @@ let rec merge_ast_nestable elt =
           grid
       in
       { elt with Location_.value = `Table ((grid, align), weight) }
-  | `Code_block _ | `Verbatim _ | `Modules _ | `Math_block _ | `Media _ -> elt
+  | `Code_block _ | `Block_quote _ | `Verbatim _ | `Modules _ | `Math_block _
+  | `Media _ ->
+      elt
 
 (* Internal tags are skipped: they parse their payload word by word. *)
 let merge_ast (ast : Ast.t) : Ast.t =
@@ -326,6 +328,8 @@ let rec nestable_block_element :
       List.iter (Error.raise_warning ~non_fatal:true) warnings;
       let content = Location.at content.location trimmed_content in
       Location.at location (`Code_block (lang_tag, content, outputs))
+  | { value = `Block_quote text; location } ->
+      Location.at location (`Block_quote text)
   | { value = `Math_block s; location } -> Location.at location (`Math_block s)
   | { value = `Verbatim v; location } ->
       let v, warnings = Odoc_parser.codeblock_content location v in

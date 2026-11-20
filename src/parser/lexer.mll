@@ -361,6 +361,8 @@ and token input = parse
   | "{m" horizontal_space
     { math Inline (Buffer.create 1024) 0 (Lexing.lexeme_start lexbuf) input lexbuf }
 
+  | "{quote" ([^ '}']* as text) '}'
+    { emit input (`Block_quote text)}
 
   | "{!modules:" ([^ '}']* as modules) '}'
     { emit input (`Modules modules) }

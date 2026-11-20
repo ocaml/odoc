@@ -129,6 +129,13 @@ let code_block pp ppf x =
   Fmt.cut ppf ();
   mend ppf name
 
+let block_quote pp ppf s =
+  mbegin ppf "quote";
+  Fmt.cut ppf ();
+  pp ppf s;
+  Fmt.cut ppf ();
+  mend ppf "quote"
+
 let includegraphics pp = create "includegraphics" pp
 
 let section pp = create "section" pp
