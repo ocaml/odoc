@@ -27,7 +27,7 @@ type elt =
   | Table of table
   | Ligaturable of string
   | Image of Fpath.t
-  | Block_quote of string
+  | Block_quote of t
 
 and section = { level : int; label : string option; content : t }
 

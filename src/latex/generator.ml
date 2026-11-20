@@ -191,7 +191,7 @@ let rec pp_elt ppf = function
   | Ligaturable s -> Fmt.string ppf s
   | Tag (s, t) -> tag s ppf t
   | Image target -> Raw.includegraphics Fpath.pp ppf target
-  | Block_quote s -> Raw.block_quote Fmt.string ppf s
+  | Block_quote s -> Raw.block_quote pp ppf s
 
 and pp ppf = function
   | [] -> ()
@@ -341,7 +341,7 @@ let rec block ~config ~in_source (l : Block.t) =
     | List (typ, l) ->
         [ List { typ; items = List.map (block ~config ~in_source:false) l } ]
     | Table t -> table_block ~config t
-    | Block_quote s -> block_quote ~config s
+    | Block_quote s -> block_quote ~config ~in_source s
     | Description l ->
         [
           (let item i =
@@ -374,7 +374,8 @@ and table_block ~config { Table.data; align } =
   in
   [ Table { align; data } ]
 
-and block_quote ~config s = [ Block_quote s ]
+and block_quote ~config ~in_source s =
+  [ Block_quote (block ~config ~in_source s) ]
 
 let rec is_only_text l =
   let is_text : Item.t -> _ = function

@@ -397,7 +397,7 @@ let rec block (l : Block.t) =
       | Source (_, content) ->
           env "EX" "EE" "" (source_code content) ++ continue rest
       | Math s -> math s ++ continue rest
-      | Block_quote s -> str "%s" s ++ continue rest
+      | Block_quote s -> String "\"" ++ block s ++ String "\"" ++ continue rest
       | Verbatim content -> env "EX" "EE" "" (str "%s" content) ++ continue rest
       | Raw_markup t -> raw_markup t ++ continue rest)
 

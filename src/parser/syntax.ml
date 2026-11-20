@@ -610,6 +610,7 @@ type ('block, 'stops_at_which_tokens) context =
   | In_explicit_list : (Ast.nestable_block_element, stops_at_delimiters) context
   | In_table_cell : (Ast.nestable_block_element, stops_at_delimiters) context
   | In_code_results : (Ast.nestable_block_element, code_stop) context
+  | In_quote : (Ast.nestable_block_element, stops_at_delimiters) context
 
 (* This is a no-op. It is needed to prove to the type system that nestable block
    elements are acceptable block elements in all contexts. *)
@@ -624,6 +625,7 @@ let accepted_in_all_contexts : type block stops_at_which_tokens.
   | In_explicit_list -> block
   | In_table_cell -> block
   | In_code_results -> block
+  | In_quote -> block
 
 (* Converts a tag to a series of words. This is used in error recovery, when a
    tag cannot be generated. *)
@@ -706,7 +708,8 @@ let rec block_element_list : type block stops_at_which_tokens.
             (List.rev acc, next_token, where_in_line)
         | In_explicit_list -> (List.rev acc, next_token, where_in_line)
         | In_table_cell -> (List.rev acc, next_token, where_in_line)
-        | In_code_results -> (List.rev acc, next_token, where_in_line))
+        | In_code_results -> (List.rev acc, next_token, where_in_line)
+        | In_quote -> (List.rev acc, next_token, where_in_line))
     | { value = `Right_brace; _ } as next_token -> (
         (* This little absurdity is needed to satisfy the type system. Without it,
            OCaml is unable to prove that [stream_head] has the right type for all
@@ -719,7 +722,8 @@ let rec block_element_list : type block stops_at_which_tokens.
         | In_table_cell -> (List.rev acc, next_token, where_in_line)
         | In_code_results ->
             junk input;
-            consume_block_elements where_in_line acc)
+            consume_block_elements where_in_line acc
+        | In_quote -> (List.rev acc, next_token, where_in_line))
     | { value = `Right_code_delimiter; _ } as next_token -> (
         match context with
         | In_code_results -> (List.rev acc, next_token, where_in_line)
@@ -814,6 +818,7 @@ let rec block_element_list : type block stops_at_which_tokens.
             else recover_when_not_at_top_level context
         | In_table_cell -> recover_when_not_at_top_level context
         | In_code_results -> recover_when_not_at_top_level context
+        | In_quote -> recover_when_not_at_top_level context
         (* If this is the top-level call to [block_element_list], parse the
            tag. *)
         | Top_level -> (
@@ -927,10 +932,20 @@ let rec block_element_list : type block stops_at_which_tokens.
         let block = Loc.at location block in
         let acc = block :: acc in
         consume_block_elements `After_text acc
-    | { value = `Block_quote q as token; location } as next_token ->
+    | { value = `Block_quote as token; location } as next_token ->
         warn_if_after_text next_token;
         junk input;
-        let block = accepted_in_all_contexts context token in
+
+        let items, brace_location =
+          consume_block_quote ~parent_markup:token input
+        in
+        if items = [] then
+          Parse_error.should_not_be_empty ~what:(Token.describe token) location
+          |> add_warning input;
+
+        let location = Loc.span [ location; brace_location ] in
+
+        let block = accepted_in_all_contexts context (`Block_quote items) in
         let block = Loc.at location block in
         let acc = block :: acc in
         consume_block_elements `After_text acc
@@ -1109,6 +1124,7 @@ let rec block_element_list : type block stops_at_which_tokens.
         | In_explicit_list -> recover_when_not_at_top_level context
         | In_table_cell -> recover_when_not_at_top_level context
         | In_code_results -> recover_when_not_at_top_level context
+        | In_quote -> recover_when_not_at_top_level context
         | Top_level ->
             if where_in_line <> `At_start_of_line then
               Parse_error.should_begin_on_its_own_line
@@ -1218,9 +1234,56 @@ let rec block_element_list : type block stops_at_which_tokens.
     | In_table_cell -> `After_table_cell
     | In_code_results -> `After_tag
     | In_implicitly_ended `Tag -> `After_tag
+    | In_quote -> `After_tag
   in
 
   consume_block_elements where_in_line []
+
+and consume_block_quote :
+    parent_markup:[< Token.t ] ->
+    input ->
+    Ast.nestable_block_element with_location list * Loc.span =
+ fun ~parent_markup input ->
+  let rec consume_rec :
+      Ast.nestable_block_element with_location list ->
+      Ast.nestable_block_element with_location list * Loc.span =
+   fun acc ->
+    let next_token = peek input in
+    match next_token.value with
+    | `End ->
+        Parse_error.end_not_allowed next_token.location
+          ~in_what:(Token.describe parent_markup)
+        |> add_warning input;
+        (List.rev acc, next_token.location)
+    | `Right_brace ->
+        junk input;
+        (List.rev acc, next_token.location)
+    | `Space _ | `Single_newline _ | `Blank_line _ ->
+        junk input;
+        consume_rec acc
+    | token ->
+        junk input;
+
+        let content, token_after_quote_content, _where_in_line =
+          block_element_list In_quote ~parent_markup input
+        in
+
+        if content = [] then
+          Parse_error.should_not_be_empty next_token.location
+            ~what:(Token.describe token)
+          |> add_warning input;
+
+        (match token_after_quote_content.value with
+        | `Right_brace -> junk input
+        | `End ->
+            Parse_error.end_not_allowed token_after_quote_content.location
+              ~in_what:(Token.describe token)
+            |> add_warning input);
+
+        let acc = content @ acc in
+        consume_rec acc
+  in
+  consume_rec []
 
 (* {3 Lists} *)
 

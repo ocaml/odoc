@@ -145,7 +145,11 @@ module Ast_to_sexp = struct
           @ warnings)
     | `Code_block { meta = None; content = _; output = Some _output; _ } ->
         List [ Atom "code_block_err" ]
-    | `Block_quote s -> List [ Atom "Block_quote"; Atom s ]
+    | `Block_quote s ->
+        let content =
+          List.map (fun element -> nestable_block_element at element) s
+        in
+        List (Atom "Block_quote" :: content)
     | `Verbatim t ->
         let trimmed_content, warnings =
           Odoc_parser.verbatim_content v.location t
