@@ -1003,6 +1003,9 @@ and rename_bound_idents s sg =
   | Exception (id, e) :: rest ->
       let id' = Ident.Rename.exception_ id in
       rename_bound_idents s (Exception (id', e) :: sg) rest
+  | KindAbbreviation (id, ka) :: rest ->
+      let id' = Ident.Rename.kind_abbreviation id in
+      rename_bound_idents s (KindAbbreviation (id', ka) :: sg) rest
   | TypExt e :: rest -> rename_bound_idents s (TypExt e :: sg) rest
   | Value (id, v) :: rest ->
       let id' = Ident.Rename.value id in
@@ -1076,6 +1079,7 @@ and apply_sig_map_item s item =
           Component.Delayed.put (fun () -> type_ s (Component.Delayed.get t)) )
   | TypeSubstitution (id, t) -> TypeSubstitution (id, type_ s t)
   | Exception (id, e) -> Exception (id, exception_ s e)
+  | KindAbbreviation _ -> item
   | TypExt e -> TypExt (extension s e)
   | Value (id, v) ->
       Value

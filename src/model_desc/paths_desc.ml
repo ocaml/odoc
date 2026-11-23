@@ -126,6 +126,11 @@ module General_paths = struct
               ( "`Type",
                 ((parent :> id_t), name),
                 Pair (identifier, Names.typename) )
+        | `KindAbbreviation (parent, name) ->
+            C
+              ( "`KindAbbreviation",
+                ((parent :> id_t), name),
+                Pair (identifier, Names.typename) )
         | `Constructor (parent, name) ->
             C
               ( "`Constructor",

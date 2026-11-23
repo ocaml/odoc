@@ -164,6 +164,15 @@ and Extension : sig
 end =
   Extension
 
+and KindAbbreviation : sig
+  type t = {
+    source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
+    doc : CComment.docs;
+    manifest : Odoc_model.Lang.Kind.t option;
+  }
+end =
+  KindAbbreviation
+
 and Exception : sig
   type t = {
     source_loc : Odoc_model.Paths.Identifier.SourceLocation.t option;
@@ -330,6 +339,7 @@ and Signature : sig
     | ModuleTypeSubstitution of Ident.module_type * ModuleTypeSubstitution.t
     | Type of Ident.type_ * recursive * TypeDecl.t Delayed.t
     | TypeSubstitution of Ident.type_ * TypeDecl.t
+    | KindAbbreviation of Ident.kind_abbreviation * KindAbbreviation.t
     | Exception of Ident.exception_ * Exception.t
     | TypExt of Extension.t
     | Value of Ident.value * Value.t Delayed.t
@@ -754,6 +764,10 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (ty :> id)
           (ConstructorName.to_string x)
+    | `KindAbbreviation (parent, name) ->
+        Format.fprintf ppf "%a.%s" (model_identifier c)
+          (parent :> id)
+          (TypeName.to_string name)
     | `Value (parent, name) ->
         Format.fprintf ppf "%a.%s" (model_identifier c)
           (parent :> id)
@@ -840,6 +854,8 @@ module Fmt = struct
       | ModuleTypeSubstitution (id, mts) ->
           Format.fprintf ppf "@[<v 2>module type %a := %a@]" ident_fmt id
             (module_type_expr c) mts.ModuleTypeSubstitution.manifest
+      | KindAbbreviation (id, _) ->
+          Format.fprintf ppf "@[<v 2>kind_ %a@]" ident_fmt id
       | Type (id, _, t) ->
           Format.fprintf ppf "@[<v 2>type %a%a@]" ident_fmt id (type_decl c)
             (Delayed.get t)
@@ -1995,7 +2011,8 @@ module LocalIdents = struct
         | Class (_, c) -> { ids with classes = c.Class.id :: ids.classes }
         | ClassType (_, c) ->
             { ids with class_types = c.ClassType.id :: ids.class_types }
-        | TypExt _ | Exception _ | Value _ | Comment _ -> ids
+        | TypExt _ | Exception _ | KindAbbreviation _ | Value _ | Comment _ ->
+            ids
         | Include i -> signature i.Include.expansion.content ids
         | Open o -> signature o.Open.expansion ids)
       ids s
@@ -2614,6 +2631,14 @@ module Of_Lang = struct
       res;
     }
 
+  and kind_abbreviation ident_map k =
+    let open Odoc_model.Lang.KindAbbreviation in
+    {
+      KindAbbreviation.source_loc = k.source_loc;
+      doc = docs ident_map k.doc;
+      manifest = k.manifest;
+    }
+
   and exception_ ident_map e =
     let open Odoc_model.Lang.Exception in
     let args = type_decl_constructor_argument ident_map e.args in
@@ -2941,6 +2966,9 @@ module Of_Lang = struct
              in
              let m' = Delayed.put (fun () -> module_type ident_map m) in
              Signature.ModuleType (id, m')
+         | KindAbbreviation k ->
+             let id = Ident.Of_Identifier.kind_abbreviation k.id in
+             Signature.KindAbbreviation (id, kind_abbreviation ident_map k)
          | Value v ->
              let id = Ident.Of_Identifier.value v.id in
              let v' = Delayed.put (fun () -> value ident_map v) in
