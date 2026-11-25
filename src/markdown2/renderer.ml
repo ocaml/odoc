@@ -422,10 +422,28 @@ let break c =
   newline c;
   indent c
 
+(* Delimiter: a backtick run absent from the code, as in cmarkit. *)
 let code_span c cs =
-  nchars c 1 '`';
-  List.iter (Context.string c) cs;
-  nchars c 1 '`'
+  let code = String.concat "" cs in
+  let max = String.length code - 1 in
+  let backtick_count =
+    let rec runs acc run k =
+      if k > max then if run > 0 then run :: acc else acc
+      else if code.[k] = '`' then runs acc (run + 1) (k + 1)
+      else runs (if run > 0 then run :: acc else acc) 0 (k + 1)
+    in
+    let rec smallest_unused n = function
+      | r :: rs when r = n -> smallest_unused (n + 1) rs
+      | _ -> n
+    in
+    smallest_unused 1 (List.sort_uniq Int.compare (runs [] 0 0))
+  in
+  let need_space = max >= 0 && (code.[0] = '`' || code.[max] = '`') in
+  nchars c backtick_count '`';
+  if need_space then Context.byte c ' ';
+  Context.string c code;
+  if need_space then Context.byte c ' ';
+  nchars c backtick_count '`'
 
 let emphasis c i =
   let delim = '*' in
