@@ -222,5 +222,5 @@
   
   #### Tags
   
-  since 4\.08
+  since 4.08
   Tags are explained in this section.

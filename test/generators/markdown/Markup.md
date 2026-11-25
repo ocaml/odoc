@@ -179,8 +179,8 @@ see [\#](#) this url
 see `foo.ml` this file
 see Foo this document
 since 0
-before 1\.0 it was in beta
-version \-1
+before 1.0 it was in beta
+version -1
 ```ocaml
 val foo : unit
 ```

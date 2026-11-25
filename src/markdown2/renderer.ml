@@ -221,6 +221,7 @@ type indent = [ `I of int | `L of int * string * int * Uchar.t option ]
 type state = {
   newline_to_output : string;
   mutable start_of_text : bool;
+  mutable line_start : bool;
   mutable identation_stack : indent list;
 }
 
@@ -229,7 +230,12 @@ let get_state c = Context.State.get c state
 let init_context c _d =
   Context.State.set c state
     (Some
-       { newline_to_output = "\n"; start_of_text = true; identation_stack = [] })
+       {
+         newline_to_output = "\n";
+         start_of_text = true;
+         line_start = false;
+         identation_stack = [];
+       })
 
 module Char_set = Set.Make (Char)
 
@@ -271,10 +277,11 @@ let buffer_add_escaped_string ?(esc_ctrl = true) b cs s =
 let escaped_string ?esc_ctrl c cs s =
   buffer_add_escaped_string ?esc_ctrl (Context.buffer c) cs s
 
-let buffer_add_escaped_text b s =
+(* Block markers such as [-] or [1.] need escaping only at a line start. *)
+let buffer_add_escaped_text ~line_start b s =
   let esc_first b s =
     match s.[0] with
-    | ('-' | '+' | '_' | '=') as c ->
+    | ('-' | '+' | '_' | '=') as c when line_start ->
         Buffer.add_char b '\\';
         Buffer.add_char b c;
         true
@@ -287,7 +294,8 @@ let buffer_add_escaped_text b s =
     (not (Char.equal prev '~')) && next <= max && s.[next] = '~'
   in
   let esc_item_marker s i =
-    if i = 0 || i > 9 (* marker has from 1-9 digits *) then false
+    if (not line_start) || i = 0 || i > 9 (* marker has from 1-9 digits *) then
+      false
     else
       let k = ref (i - 1) in
       while !k >= 0 && is_digit s.[!k] do
@@ -340,7 +348,8 @@ let buffer_add_escaped_text b s =
   else if esc_first b s then loop b s max 1 s.[0] 1
   else loop b s max 0 '\x00' 0
 
-let escaped_text c s = buffer_add_escaped_text (Context.buffer c) s
+let escaped_text ~line_start c s =
+  buffer_add_escaped_text ~line_start (Context.buffer c) s
 
 let nchars c n char =
   for _i = 1 to n do
@@ -420,7 +429,8 @@ let block_lines c = function
 let break c =
   Context.string c " ";
   newline c;
-  indent c
+  indent c;
+  (get_state c).line_start <- true
 
 (* Delimiter: a backtick run absent from the code, as in cmarkit. *)
 let code_span c cs =
@@ -495,9 +505,17 @@ let link c (l : Inline.link) =
 let image c l =
   Context.byte c '!';
   link c l
-let text c t = escaped_text c t
+let text c t =
+  let state = get_state c in
+  escaped_text ~line_start:state.line_start c t;
+  (* Leading spaces keep the line start. *)
+  if String.trim t <> "" then state.line_start <- false
 
-let inline c = function
+let inline c i =
+  (match i with
+  | Inline.Text _ | Inline.Inlines _ | Inline.Break -> ()
+  | _ -> (get_state c).line_start <- false);
+  match i with
   | Inline.Text t -> text c t
   | Inline.Link l -> link c l
   | Inline.Break -> break c
@@ -578,7 +596,10 @@ let paragraph c p =
   newline c;
   indent c;
   nchars c 0 ' ';
+  let state = get_state c in
+  state.line_start <- true;
   Context.inline c p;
+  state.line_start <- false;
   Context.string c ""
 
 let table c t =

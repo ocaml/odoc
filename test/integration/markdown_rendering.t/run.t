@@ -96,3 +96,31 @@ HTML backend.
   ## Details
   
   Text.
+
+Characters that could start a block are escaped only at the start of a line.
+
+  $ cat > escaping.mld <<'MLD'
+  > {0 Escaping}
+  > Operators: a + b, a - b, a = b, 1. 2) and x_y.
+  > 
+  > Separate words: {e a} + {e b} - c = d.
+  > 
+  > After code: [x] + y, [n + 1]-th, [x]=y, {e a}+b, {e a}_b.
+  > 
+  > = at the start of a paragraph.
+  > 
+  > 1. at the start of a paragraph.
+  > MLD
+  $ gen escaping
+  
+  # Escaping
+  
+  Operators: a + b, a - b, a = b, 1. 2) and x\_y.
+  
+  Separate words: *a* + *b* - c = d.
+  
+  After code: `x` + y, `n + 1`-th, `x`=y, *a*+b, *a*\_b.
+  
+  \= at the start of a paragraph.
+  
+  1\. at the start of a paragraph.

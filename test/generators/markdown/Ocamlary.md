@@ -217,9 +217,9 @@ val changing : unit
 ```
 This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
 
-before 1\.0.0 before 1.0.0
-before 1\.1.0 before 1.1.0
-version 1\.2.0
+before 1.0.0 before 1.0.0
+before 1.1.0 before 1.1.0
+version 1.2.0
 
 #### Some Operators
 
