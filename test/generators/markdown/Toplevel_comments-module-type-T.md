@@ -1,4 +1,3 @@
-
 # Module type `Toplevel_comments.T`
 
 Doc of `T`, part 1.

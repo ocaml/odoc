@@ -1,4 +1,3 @@
-
 # Class `Nested.z`
 
 This is class z.
@@ -8,6 +7,7 @@ Some additional comments.
 ```ocaml
 val y : int
 ```
+
 Some value.
 
 ```ocaml
@@ -19,6 +19,7 @@ val mutable virtual y' : int
 ```ocaml
 method z : int
 ```
+
 Some method.
 
 ```ocaml

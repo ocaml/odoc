@@ -1,4 +1,3 @@
-
 # Module `X.Y`
 
 ```ocaml

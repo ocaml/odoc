@@ -1,4 +1,3 @@
-
 # Parameter `S1._`
 
 ```ocaml

@@ -221,6 +221,7 @@ type indent = [ `I of int | `L of int * string * int * Uchar.t option ]
 type state = {
   newline_to_output : string;
   mutable start_of_text : bool;
+  mutable line_start : bool;
   mutable identation_stack : indent list;
 }
 
@@ -229,7 +230,12 @@ let get_state c = Context.State.get c state
 let init_context c _d =
   Context.State.set c state
     (Some
-       { newline_to_output = "\n"; start_of_text = true; identation_stack = [] })
+       {
+         newline_to_output = "\n";
+         start_of_text = true;
+         line_start = false;
+         identation_stack = [];
+       })
 
 module Char_set = Set.Make (Char)
 
@@ -271,10 +277,11 @@ let buffer_add_escaped_string ?(esc_ctrl = true) b cs s =
 let escaped_string ?esc_ctrl c cs s =
   buffer_add_escaped_string ?esc_ctrl (Context.buffer c) cs s
 
-let buffer_add_escaped_text b s =
+(* Block markers such as [-] or [1.] need escaping only at a line start. *)
+let buffer_add_escaped_text ~line_start b s =
   let esc_first b s =
     match s.[0] with
-    | ('-' | '+' | '_' | '=') as c ->
+    | ('-' | '+' | '_' | '=') as c when line_start ->
         Buffer.add_char b '\\';
         Buffer.add_char b c;
         true
@@ -287,7 +294,8 @@ let buffer_add_escaped_text b s =
     (not (Char.equal prev '~')) && next <= max && s.[next] = '~'
   in
   let esc_item_marker s i =
-    if i = 0 || i > 9 (* marker has from 1-9 digits *) then false
+    if (not line_start) || i = 0 || i > 9 (* marker has from 1-9 digits *) then
+      false
     else
       let k = ref (i - 1) in
       while !k >= 0 && is_digit s.[!k] do
@@ -340,7 +348,8 @@ let buffer_add_escaped_text b s =
   else if esc_first b s then loop b s max 1 s.[0] 1
   else loop b s max 0 '\x00' 0
 
-let escaped_text c s = buffer_add_escaped_text (Context.buffer c) s
+let escaped_text ~line_start c s =
+  buffer_add_escaped_text ~line_start (Context.buffer c) s
 
 let nchars c n char =
   for _i = 1 to n do
@@ -420,12 +429,37 @@ let block_lines c = function
 let break c =
   Context.string c " ";
   newline c;
-  indent c
+  indent c;
+  (get_state c).line_start <- true
 
+(* Delimiter: a backtick run absent from the code, as in cmarkit. CommonMark
+   has no empty code span. *)
 let code_span c cs =
-  nchars c 1 '`';
-  List.iter (Context.string c) cs;
-  nchars c 1 '`'
+  let code = String.concat "" cs in
+  let last = String.length code - 1 in
+  if last >= 0 then (
+    let backtick_runs =
+      let rec loop acc run k =
+        let acc' = if run > 0 then run :: acc else acc in
+        if k > last then acc'
+        else if code.[k] = '`' then loop acc (run + 1) (k + 1)
+        else loop acc' 0 (k + 1)
+      in
+      List.sort_uniq Int.compare (loop [] 0 0)
+    in
+    let delimiter_length =
+      let rec smallest_unused n = function
+        | r :: rs when r = n -> smallest_unused (n + 1) rs
+        | _ -> n
+      in
+      smallest_unused 1 backtick_runs
+    in
+    let need_space = code.[0] = '`' || code.[last] = '`' in
+    nchars c delimiter_length '`';
+    if need_space then Context.byte c ' ';
+    Context.string c code;
+    if need_space then Context.byte c ' ';
+    nchars c delimiter_length '`')
 
 let emphasis c i =
   let delim = '*' in
@@ -477,9 +511,17 @@ let link c (l : Inline.link) =
 let image c l =
   Context.byte c '!';
   link c l
-let text c t = escaped_text c t
+let text c t =
+  let state = get_state c in
+  escaped_text ~line_start:state.line_start c t;
+  (* Leading spaces keep the line start. *)
+  if String.trim t <> "" then state.line_start <- false
 
-let inline c = function
+let inline c i =
+  (match i with
+  | Inline.Text _ | Inline.Inlines _ | Inline.Break -> ()
+  | _ -> (get_state c).line_start <- false);
+  match i with
   | Inline.Text t -> text c t
   | Inline.Link l -> link c l
   | Inline.Break -> break c
@@ -493,7 +535,6 @@ let inline c = function
 
 let blank_line c l =
   newline c;
-  indent c;
   Context.string c l
 
 let string_node_option c = function None -> () | Some s -> Context.string c s
@@ -542,9 +583,9 @@ let unordered_item c marker i =
   Context.block c i;
   pop_indent c
 
-let ordered_item c num i =
+let ordered_item c delim num i =
   let before = 0 in
-  let marker = Int.to_string num ^ "." in
+  let marker = Int.to_string num ^ delim in
   let after = 1 in
   let task = None in
   push_indent c (`L (before, marker, after, task));
@@ -552,15 +593,18 @@ let ordered_item c num i =
   pop_indent c;
   num + 1
 
-let unordered_list c l = List.iter (unordered_item c "-") l
+let unordered_list c marker l = List.iter (unordered_item c marker) l
 
-let ordered_list c l = ignore (List.fold_left (ordered_item c) 1 l)
+let ordered_list c delim l = ignore (List.fold_left (ordered_item c delim) 1 l)
 
 let paragraph c p =
   newline c;
   indent c;
   nchars c 0 ' ';
+  let state = get_state c in
+  state.line_start <- true;
   Context.inline c p;
+  state.line_start <- false;
   Context.string c ""
 
 let table c t =
@@ -603,14 +647,40 @@ let table c t =
   in
   List.iter (row c) (Block.Table.rows t)
 
+(* Alternate markers, or CommonMark merges adjacent lists. *)
+let blocks c bs =
+  let list_marker ~prev ~default ~alternate =
+    match prev with
+    | Some m when String.equal m default -> alternate
+    | _ -> default
+  in
+  let rec loop prev = function
+    | [] -> ()
+    | Block.Blank_line :: rest ->
+        Context.block c Block.Blank_line;
+        loop prev rest
+    | Block.Unordered_list l :: rest ->
+        let marker = list_marker ~prev ~default:"-" ~alternate:"*" in
+        unordered_list c marker l;
+        loop (Some marker) rest
+    | Block.Ordered_list l :: rest ->
+        let delim = list_marker ~prev ~default:"." ~alternate:")" in
+        ordered_list c delim l;
+        loop (Some delim) rest
+    | b :: rest ->
+        Context.block c b;
+        loop None rest
+  in
+  loop None bs
+
 let block c = function
   | Block.Blank_line -> blank_line c ""
-  | Block.Blocks bs -> List.iter (Context.block c) bs
+  | Block.Blocks bs -> blocks c bs
   | Block.Code_block cb -> code_block c cb
   | Block.Heading h -> heading c h
   | Block.Html_block h -> html_block c h
-  | Block.Unordered_list l -> unordered_list c l
-  | Block.Ordered_list l -> ordered_list c l
+  | Block.Unordered_list l -> unordered_list c "-" l
+  | Block.Ordered_list l -> ordered_list c "." l
   | Block.Paragraph p -> paragraph c p
   | Block.Table t -> table c t
 
@@ -619,4 +689,5 @@ let to_string d =
   let buffer = Buffer.create 1024 in
   let ctx = Context.make t buffer in
   Context.doc ctx d;
+  if Buffer.length buffer > 0 then Buffer.add_char buffer '\n';
   Buffer.contents buffer

@@ -1,4 +1,3 @@
-
 # Module `Aliases.P2`
 
 ```ocaml

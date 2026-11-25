@@ -1,4 +1,3 @@
-
 # Module `Ocamlary.Empty`
 
 A plain, empty module

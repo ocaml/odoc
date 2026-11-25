@@ -1,4 +1,3 @@
-
 # Parameter `First.T`
 
 ```ocaml

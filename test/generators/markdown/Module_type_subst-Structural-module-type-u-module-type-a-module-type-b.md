@@ -1,4 +1,3 @@
-
 # Module type `a.b`
 
 ```ocaml

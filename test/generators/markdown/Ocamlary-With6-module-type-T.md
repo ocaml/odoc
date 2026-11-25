@@ -1,4 +1,3 @@
-
 # Module type `With6.T`
 
 ```ocaml

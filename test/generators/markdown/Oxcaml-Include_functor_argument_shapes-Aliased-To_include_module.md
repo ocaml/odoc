@@ -1,4 +1,3 @@
-
 # Module `Aliased.To_include_module`
 
 ```ocaml

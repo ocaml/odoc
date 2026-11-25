@@ -1,4 +1,3 @@
-
 # Module `Stop.O`
 
 ```ocaml

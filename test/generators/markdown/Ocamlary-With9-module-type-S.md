@@ -1,4 +1,3 @@
-
 # Module type `With9.S`
 
 ```ocaml

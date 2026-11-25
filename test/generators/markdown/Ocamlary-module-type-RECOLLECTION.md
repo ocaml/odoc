@@ -1,4 +1,3 @@
-
 # Module type `Ocamlary.RECOLLECTION`
 
 ```ocaml

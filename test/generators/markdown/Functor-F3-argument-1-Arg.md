@@ -1,4 +1,3 @@
-
 # Parameter `F3.Arg`
 
 ```ocaml

@@ -1,4 +1,3 @@
-
 # Module type `Structural.w`
 
 ```ocaml

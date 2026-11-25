@@ -1,4 +1,3 @@
-
 # Parameter `Make.T`
 
 ```ocaml

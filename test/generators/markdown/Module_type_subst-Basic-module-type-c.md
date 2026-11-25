@@ -1,4 +1,3 @@
-
 # Module type `Basic.c`
 
 ```ocaml

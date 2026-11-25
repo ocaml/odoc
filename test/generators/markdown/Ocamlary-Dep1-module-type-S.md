@@ -1,4 +1,3 @@
-
 # Module type `Dep1.S`
 
 ```ocaml

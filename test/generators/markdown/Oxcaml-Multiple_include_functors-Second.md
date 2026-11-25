@@ -1,6 +1,4 @@
-
 # Module `Multiple_include_functors.Second`
-
 
 ## Parameters
 
@@ -13,6 +11,7 @@ module T : sig ... end
 ```ocaml
 type second = T.first
 ```
+
 ```ocaml
 type third = T.between
 ```

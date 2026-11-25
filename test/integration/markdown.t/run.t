@@ -31,37 +31,37 @@
   $ odoc markdown-generate list.odocl -o markdown
 
   $ cat markdown/test/Test.md
-  
   # Module `Test`
-  
   
   ## Section 1
   
   ```ocaml
   type t = int
   ```
-  A very important type
   
+  A very important type
   
   ### Section 2
   
   ```ocaml
   val v : t
   ```
+  
   A very important value
   
   ```ocaml
   module List : sig ... end
   ```
+  
   ```ocaml
   module type X = sig ... end
   ```
+  
   ```ocaml
   module type T = sig ... end
   ```
 
   $ cat markdown/test/Test-module-type-X.md
-  
   # Module type `Test.X`
   
   ```ocaml
@@ -69,7 +69,6 @@
   ```
 
   $ cat markdown/test/Test-module-type-T.md
-  
   # Module type `Test.T`
   
   ```ocaml
@@ -77,36 +76,32 @@
   ```
 
   $ cat markdown/test/Test-List.md
-  
   # Module `Test.List`
   
   ```ocaml
   type 'a t = 'a list
   ```
+  
   ```ocaml
   val head : 'a t -> 'a option
   ```
+  
   ```ocaml
   val headExn : 'a t -> 'a
   ```
 
   $ cat markdown/test/page.md
-  
   # The title
   
   Quick reference for the odoc language rendering markdown
   
-  
   ## Title
-  
   
   ### Subtitle
   
-  
   #### Referenceable title
   
-  See [Referenceable title](./#my_id).
-  
+  See [Referenceable title](#my_id).
   
   #### Styled
   
@@ -114,13 +109,11 @@
   
   H2O and 1st
   
-  
   #### Link
   
   Here is a link: [https://www.example.com](https://www.example.com).
   
   You can also click [here](https://www.example.com).
-  
   
   #### References
   
@@ -130,23 +123,24 @@
   
   See `this page from another package`.
   
-  See [this section](./#styled) for the syntax of references.
-  
+  See [this section](#styled) for the syntax of references.
   
   ##### Subpages
   
   There's a subpage here [`Test`](./Test.md) and another one [`Test2`](./Test2.md)
   
-  
   #### Lists
   
   - First item
   - Second item
+  
   1. First ordered item
   2. Second numbered item
+  
   - First item
   - Second item
   - can also be used
+  
   1. First numbered item
   2. Second numbered item
   3. can also be used
@@ -158,9 +152,11 @@
   ```ocaml
   let _ = "Block code"
   ```
+  
   ```text
   Code block with {[inner code block syntax]}
   ```
+  
   ```python
   [i+1 for i in xrange(2)]
   ```
@@ -184,10 +180,10 @@
   #### Images
   
   ![./odoc\_logo\_placeholder.jpg]()
+  
   ![https://picsum.photos/200/100](https://picsum.photos/200/100)
   
   #### Table
-  
   
   ##### Explicit syntax
   
@@ -218,5 +214,6 @@
   
   #### Tags
   
-  since 4\.08
+  since 4.08
+  
   Tags are explained in this section.

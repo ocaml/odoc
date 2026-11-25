@@ -1,6 +1,4 @@
-
 # Module `Functor.F2`
-
 
 ## Parameters
 

@@ -1,4 +1,3 @@
-
 # Class `Ocamlary.param_class`
 
 ```ocaml

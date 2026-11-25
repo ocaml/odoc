@@ -1,6 +1,4 @@
-
 # Module `Ocamlary.Dep2`
-
 
 ## Parameters
 
@@ -13,6 +11,7 @@ module Arg : sig ... end
 ```ocaml
 module A : sig ... end
 ```
+
 ```ocaml
 module B = A.Y
 ```

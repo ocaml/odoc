@@ -1,4 +1,3 @@
-
 # Module `Ocamlary.Dep8`
 
 ```ocaml

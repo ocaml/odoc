@@ -1,4 +1,3 @@
-
 # Module `Toplevel_comments.Alias`
 
 Doc of `Alias`.

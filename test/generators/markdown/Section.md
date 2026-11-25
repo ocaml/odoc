@@ -1,21 +1,16 @@
-
 # Module `Section`
 
 This is the module comment. Eventually, sections won't be allowed in it.
 
-
 ## Empty section
-
 
 ## Text only
 
 Foo bar.
 
-
 ## Aside only
 
 Foo bar.
-
 
 ## Value only
 
@@ -25,12 +20,9 @@ val foo : unit
 
 ## Empty section
 
-
 ## within a comment
 
-
 ### and one with a nested section
-
 
 ## *This* `section` **title** has markup
 

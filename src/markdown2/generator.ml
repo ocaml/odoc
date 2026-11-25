@@ -99,22 +99,47 @@ and inline_link ~config ~resolve link =
       [ Renderer.Inline.Link { text = link_inline; url = Some href } ]
   | None -> [ Renderer.Inline.Code_span (inline_text_only link.content) ]
 
+let is_list = function
+  | Renderer.Block.Unordered_list _ | Renderer.Block.Ordered_list _ -> true
+  | _ -> false
+
+let is_paragraph = function Renderer.Block.Paragraph _ -> true | _ -> false
+
+(* One blank line between blocks, except before a nested list in an item,
+   to keep the list tight. *)
+let separate ~in_item blocks =
+  let blocks =
+    List.filter
+      (function
+        | Renderer.Block.Blank_line -> false
+        | Renderer.Block.Paragraph i -> not (Renderer.Inline.is_empty i)
+        | Renderer.Block.Unordered_list items
+        | Renderer.Block.Ordered_list items ->
+            List.exists (fun item -> item <> Renderer.Block.Blocks []) items
+        | _ -> true)
+      blocks
+  in
+  let rec loop acc = function
+    | a :: (b :: _ as rest) ->
+        if in_item && is_list b && is_paragraph a then loop (a :: acc) rest
+        else loop (Renderer.Block.Blank_line :: a :: acc) rest
+    | l -> List.rev_append acc l
+  in
+  loop [] blocks
+
 let rec block ~config ~resolve l =
   let one (t : Types.Block.one) =
     match t.desc with
     | Paragraph paragraph ->
         let inlines = inline ~config ~resolve paragraph in
         let inlines = Renderer.Inline.Inlines inlines in
-        let paragraph_block = Renderer.Block.Paragraph inlines in
-        (* CommonMark treats paragraph as a block, to align the behavior with other generators such as HTML, we add a blank line after it *)
-        let break = Renderer.Block.Blank_line in
-        [ paragraph_block; break ]
+        [ Renderer.Block.Paragraph inlines ]
     | List (type_, l) ->
         let items =
           List.map
             (fun items ->
               let block = block ~config ~resolve items in
-              Renderer.Block.Blocks block)
+              Renderer.Block.Blocks (separate ~in_item:true block))
             l
         in
         [
@@ -212,7 +237,7 @@ and block_table ~config ~resolve t =
   in
 
   match t.data with
-  | [] -> [ Renderer.Block.Paragraph (Renderer.Inline.Inlines []) ]
+  | [] -> []
   | rows ->
       let table_rows = List.map convert_row rows in
       let separator = `Sep (List.map alignment t.align) in
@@ -244,15 +269,13 @@ and items ~config ~resolve l : Renderer.Block.t list =
         let content = block ~config ~resolve text in
         (continue_with [@tailcall]) rest content
     | Heading h :: rest ->
-        (* Markdown headings are rendered as a blank line before and after the heading, otherwise it treats it as an inline paragraph *)
-        let break = Renderer.Block.Blank_line in
         let inlines = inline ~config ~resolve h.title in
         let content = Renderer.Inline.Inlines inlines in
         let block : Renderer.Block.heading =
           { level = h.level + 1; inline = content; id = None }
         in
         let heading_block = Renderer.Block.Heading block in
-        (continue_with [@tailcall]) rest [ break; heading_block; break ]
+        (continue_with [@tailcall]) rest [ heading_block ]
     | Include
         {
           attr = _attr;
@@ -402,7 +425,10 @@ module Page = struct
     let header = items ~config ~resolve header in
     let preamble = items ~config ~resolve preamble in
     let content = items ~config ~resolve i in
-    let root_block = Renderer.Block.Blocks (header @ preamble @ content) in
+    let root_block =
+      Renderer.Block.Blocks
+        (separate ~in_item:false (header @ preamble @ content))
+    in
     let doc = root_block in
     Markdown_page.make ~config ~url:p.url doc subpages
 
@@ -427,7 +453,7 @@ module Page = struct
       Renderer.Block.Code_block
         { info_string = Some "ocaml"; code = [ extract_source_text contents ] }
     in
-    let doc = header @ [ source_block ] in
+    let doc = separate ~in_item:false (header @ [ source_block ]) in
     Markdown_page.make_src ~config ~url title doc
 end
 
