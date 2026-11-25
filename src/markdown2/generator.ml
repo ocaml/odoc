@@ -103,17 +103,25 @@ let is_list = function
   | Renderer.Block.Unordered_list _ | Renderer.Block.Ordered_list _ -> true
   | _ -> false
 
+let is_paragraph = function Renderer.Block.Paragraph _ -> true | _ -> false
+
 (* One blank line between blocks, except before a nested list in an item,
    to keep the list tight. *)
 let separate ~in_item blocks =
   let blocks =
     List.filter
-      (function Renderer.Block.Blank_line -> false | _ -> true)
+      (function
+        | Renderer.Block.Blank_line -> false
+        | Renderer.Block.Paragraph i -> not (Renderer.Inline.is_empty i)
+        | Renderer.Block.Unordered_list items
+        | Renderer.Block.Ordered_list items ->
+            List.exists (fun item -> item <> Renderer.Block.Blocks []) items
+        | _ -> true)
       blocks
   in
   let rec loop acc = function
     | a :: (b :: _ as rest) ->
-        if in_item && is_list b && not (is_list a) then loop (a :: acc) rest
+        if in_item && is_list b && is_paragraph a then loop (a :: acc) rest
         else loop (Renderer.Block.Blank_line :: a :: acc) rest
     | l -> List.rev_append acc l
   in
@@ -229,7 +237,7 @@ and block_table ~config ~resolve t =
   in
 
   match t.data with
-  | [] -> [ Renderer.Block.Paragraph (Renderer.Inline.Inlines []) ]
+  | [] -> []
   | rows ->
       let table_rows = List.map convert_row rows in
       let separator = `Sep (List.map alignment t.align) in

@@ -191,3 +191,29 @@ lists instead of merging into one.
   1. one
   
   1) two
+
+In a list item, a nested list follows a paragraph directly, but other blocks
+are separated from it by a blank line: an HTML block would otherwise absorb
+the list. An empty table and a list of empty items produce no block.
+
+  $ cat > item_blocks.mld <<'MLD'
+  > {0 Item blocks}
+  > {ul {li {%html:<div>x</div>%}
+  > {ul {li nested}}}}
+  > 
+  > {table }
+  > 
+  > {ol {li }}
+  > 
+  > {ul {li after the empty table}}
+  > MLD
+  $ gen item_blocks
+  File "item_blocks.mld", line 7, characters 4-7:
+  Warning: '{li ...}' (list item) should not be empty.
+  # Item blocks
+  
+  - <div>x</div>
+  
+    - nested
+  
+  * after the empty table
