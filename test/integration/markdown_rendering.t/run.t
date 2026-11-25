@@ -217,3 +217,15 @@ the list. An empty table and a list of empty items produce no block.
     - nested
   
   * after the empty table
+
+CommonMark has no empty code span, so empty code renders as nothing rather
+than as two literal backticks.
+
+  $ cat > empty_code.mld <<'MLD'
+  > {0 Empty code}
+  > Before [] after.
+  > MLD
+  $ gen empty_code
+  # Empty code
+  
+  Before  after.

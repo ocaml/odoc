@@ -432,28 +432,34 @@ let break c =
   indent c;
   (get_state c).line_start <- true
 
-(* Delimiter: a backtick run absent from the code, as in cmarkit. *)
+(* Delimiter: a backtick run absent from the code, as in cmarkit. CommonMark
+   has no empty code span. *)
 let code_span c cs =
   let code = String.concat "" cs in
-  let max = String.length code - 1 in
-  let backtick_count =
-    let rec runs acc run k =
-      if k > max then if run > 0 then run :: acc else acc
-      else if code.[k] = '`' then runs acc (run + 1) (k + 1)
-      else runs (if run > 0 then run :: acc else acc) 0 (k + 1)
+  let last = String.length code - 1 in
+  if last >= 0 then (
+    let backtick_runs =
+      let rec loop acc run k =
+        let acc' = if run > 0 then run :: acc else acc in
+        if k > last then acc'
+        else if code.[k] = '`' then loop acc (run + 1) (k + 1)
+        else loop acc' 0 (k + 1)
+      in
+      List.sort_uniq Int.compare (loop [] 0 0)
     in
-    let rec smallest_unused n = function
-      | r :: rs when r = n -> smallest_unused (n + 1) rs
-      | _ -> n
+    let delimiter_length =
+      let rec smallest_unused n = function
+        | r :: rs when r = n -> smallest_unused (n + 1) rs
+        | _ -> n
+      in
+      smallest_unused 1 backtick_runs
     in
-    smallest_unused 1 (List.sort_uniq Int.compare (runs [] 0 0))
-  in
-  let need_space = max >= 0 && (code.[0] = '`' || code.[max] = '`') in
-  nchars c backtick_count '`';
-  if need_space then Context.byte c ' ';
-  Context.string c code;
-  if need_space then Context.byte c ' ';
-  nchars c backtick_count '`'
+    let need_space = code.[0] = '`' || code.[last] = '`' in
+    nchars c delimiter_length '`';
+    if need_space then Context.byte c ' ';
+    Context.string c code;
+    if need_space then Context.byte c ' ';
+    nchars c delimiter_length '`')
 
 let emphasis c i =
   let delim = '*' in
