@@ -23,7 +23,7 @@ but odoc has banned deeper headings. There are also title headings, but they are
 
 #### Anchors
 
-Sections can have attached [Anchors](./#anchors), and it is possible to [link](./#anchors) to them. Links to section headers should not be set in source code style.
+Sections can have attached [Anchors](#anchors), and it is possible to [link](#anchors) to them. Links to section headers should not be set in source code style.
 
 
 ##### Paragraph
@@ -59,7 +59,7 @@ Consecutive whitespaces not after a newline are conserved as they are: `a   b`.
 
 This is a [link](#). It sends you to the top of this page. Links can have markup inside them: [**bold**](#), [*italics*](#), [*emphasis*](#), [superscript](#), [subscript](#), and [`code`](#). Links can also be nested *[inside](#)* markup. Links cannot be nested inside each other. This link has no replacement text: [\#](#). The text is filled in by odoc. This is a shorthand link: [\#](#). The text is also filled in by odoc in this case.
 
-This is a reference to [`foo`](./#val-foo). References can have replacement text: [the value foo](./#val-foo). Except for the special lookup support, references are pretty much just like links. The replacement text can have nested styles: [**bold**](./#val-foo), [*italic*](./#val-foo), [*emphasis*](./#val-foo), [superscript](./#val-foo), [subscript](./#val-foo), and [`code`](./#val-foo). It's also possible to surround a reference in a style: **[`foo`](./#val-foo)**. References can't be nested inside references, and links and references can't be nested inside each other.
+This is a reference to [`foo`](#val-foo). References can have replacement text: [the value foo](#val-foo). Except for the special lookup support, references are pretty much just like links. The replacement text can have nested styles: [**bold**](#val-foo), [*italic*](#val-foo), [*emphasis*](#val-foo), [superscript](#val-foo), [subscript](#val-foo), and [`code`](#val-foo). It's also possible to surround a reference in a style: **[`foo`](#val-foo)**. References can't be nested inside references, and links and references can't be nested inside each other.
 
 
 ## Preformatted text
@@ -108,7 +108,7 @@ just creates a paragraph outside the list.
 - - lists
   - can be nested
   - and can include references
-  - [`foo`](./#val-foo)
+  - [`foo`](#val-foo)
 
 
 ## Unicode

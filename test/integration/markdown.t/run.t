@@ -105,7 +105,7 @@
   
   #### Referenceable title
   
-  See [Referenceable title](./#my_id).
+  See [Referenceable title](#my_id).
   
   
   #### Styled
@@ -130,7 +130,7 @@
   
   See `this page from another package`.
   
-  See [this section](./#styled) for the syntax of references.
+  See [this section](#styled) for the syntax of references.
   
   
   ##### Subpages

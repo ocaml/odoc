@@ -126,7 +126,7 @@ There's a signature in a module in this signature.
 ```ocaml
 module type SuperSig = sig ... end
 ```
-For a good time, see [A Labeled Section Header Inside of a Signature](./Ocamlary-module-type-SuperSig-module-type-SubSigA.md#subSig) or [Another Labeled Section Header Inside of a Signature](./Ocamlary-module-type-SuperSig-module-type-SubSigB.md#subSig) or [`SuperSig.EmptySig`](./Ocamlary-module-type-SuperSig-module-type-EmptySig.md). Section [Section 9000](./#s9000) is also interesting. [EmptySig](./#emptySig) is the section and [`EmptySig`](./Ocamlary-module-type-EmptySig.md) is the module signature.
+For a good time, see [A Labeled Section Header Inside of a Signature](./Ocamlary-module-type-SuperSig-module-type-SubSigA.md#subSig) or [Another Labeled Section Header Inside of a Signature](./Ocamlary-module-type-SuperSig-module-type-SubSigB.md#subSig) or [`SuperSig.EmptySig`](./Ocamlary-module-type-SuperSig-module-type-EmptySig.md). Section [Section 9000](#s9000) is also interesting. [EmptySig](#emptySig) is the section and [`EmptySig`](./Ocamlary-module-type-EmptySig.md) is the module signature.
 
 ```ocaml
 module Buffer : sig ... end
@@ -158,12 +158,12 @@ Unary exception constructor over binary tuple
 ```ocaml
 exception EmptySig
 ```
-[`EmptySig`](./Ocamlary-module-type-EmptySig.md) is a module and [`EmptySig`](./#exception-EmptySig) is this exception.
+[`EmptySig`](./Ocamlary-module-type-EmptySig.md) is a module and [`EmptySig`](#exception-EmptySig) is this exception.
 
 ```ocaml
 exception EmptySigAlias
 ```
-[`EmptySigAlias`](./#exception-EmptySigAlias) is this exception.
+[`EmptySigAlias`](#exception-EmptySigAlias) is this exception.
 
 
 #### Basic type and value stuff with advanced doc comments
@@ -171,7 +171,7 @@ exception EmptySigAlias
 ```ocaml
 type ('a, 'b) a_function = 'a -> 'b
 ```
-[`a_function`](./#type-a_function) is this type and [`a_function`](./#val-a_function) is the value below.
+[`a_function`](#type-a_function) is this type and [`a_function`](#val-a_function) is the value below.
 
 ```ocaml
 val a_function : x:int -> int
@@ -193,7 +193,7 @@ raises `Not_found` That's all it does
 ```ocaml
 val kaboom : unit -> unit
 ```
-raises [`Kaboom`](./#exception-Kaboom) That's all it does
+raises [`Kaboom`](#exception-Kaboom) That's all it does
 ```ocaml
 val ocaml_org : string
 ```
@@ -490,21 +490,21 @@ This comment is for `partial_gadt_alias`.
 ```ocaml
 exception Exn_arrow : unit -> exn
 ```
-This comment is for [`Exn_arrow`](./#exception-Exn_arrow).
+This comment is for [`Exn_arrow`](#exception-Exn_arrow).
 
 ```ocaml
 type mutual_constr_a = 
   | A
   | B_ish of mutual_constr_b (* This comment is between mutual_constr_a and mutual_constr_b. *)
 ```
-This comment is for [`mutual_constr_a`](./#type-mutual_constr_a) then [`mutual_constr_b`](./#type-mutual_constr_b).
+This comment is for [`mutual_constr_a`](#type-mutual_constr_a) then [`mutual_constr_b`](#type-mutual_constr_b).
 
 ```ocaml
 and mutual_constr_b = 
   | B
   | A_ish of mutual_constr_a (* This comment must be here for the next to associate correctly. *)
 ```
-This comment is for [`mutual_constr_b`](./#type-mutual_constr_b) then [`mutual_constr_a`](./#type-mutual_constr_a).
+This comment is for [`mutual_constr_b`](#type-mutual_constr_b) then [`mutual_constr_a`](#type-mutual_constr_a).
 
 ```ocaml
 type rec_obj = < f : int ; g : unit -> unit ; h : rec_obj >
@@ -763,8 +763,8 @@ Let's imitate jst's layout.
 
 I can refer to
 
-- `{!section:indexmodules}` : [Trying the {!modules: ...} command.](./#indexmodules)
-- `{!aliases}` : [Aliases again](./#aliases)
+- `{!section:indexmodules}` : [Trying the {!modules: ...} command.](#indexmodules)
+- `{!aliases}` : [Aliases again](#aliases)
 
 But also to things in submodules:
 
@@ -773,8 +773,8 @@ But also to things in submodules:
 
 And just to make sure we do not mess up:
 
-- `{{!section:indexmodules}A}` : [A](./#indexmodules)
-- `{{!aliases}B}` : [B](./#aliases)
+- `{{!section:indexmodules}A}` : [A](#indexmodules)
+- `{{!aliases}B}` : [B](#aliases)
 - `{{!section:SuperSig.SubSigA.subSig}C}` : [C](./Ocamlary-module-type-SuperSig-module-type-SubSigA.md#subSig)
 - `{{!Aliases.incl}D}` : [D](./Ocamlary-Aliases.md#incl)
 

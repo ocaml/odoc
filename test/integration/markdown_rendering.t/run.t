@@ -76,3 +76,23 @@ lazy continuation of the last item. Nested lists stay tight.
   ## Heading
   
   - last
+
+A link to an anchor on the current page is a fragment-only link, as in the
+HTML backend.
+
+  $ cat > anchors.mld <<'MLD'
+  > {0 Anchors}
+  > See {!section-details}, or {{!section-details}there}.
+  > {1:details Details}
+  > Text.
+  > MLD
+  $ gen anchors
+  
+  # Anchors
+  
+  See [Details](#details), or [there](#details).
+  
+  
+  ## Details
+  
+  Text.
