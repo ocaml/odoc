@@ -87,7 +87,7 @@ just creates a paragraph outside the list.
 
 - Similarly, inserting a blank line between two list items
 
-- creates two separate lists.
+* creates two separate lists.
 
 - To get around this limitation, one
 

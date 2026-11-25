@@ -577,9 +577,9 @@ let unordered_item c marker i =
   Context.block c i;
   pop_indent c
 
-let ordered_item c num i =
+let ordered_item c delim num i =
   let before = 0 in
-  let marker = Int.to_string num ^ "." in
+  let marker = Int.to_string num ^ delim in
   let after = 1 in
   let task = None in
   push_indent c (`L (before, marker, after, task));
@@ -587,9 +587,9 @@ let ordered_item c num i =
   pop_indent c;
   num + 1
 
-let unordered_list c l = List.iter (unordered_item c "-") l
+let unordered_list c marker l = List.iter (unordered_item c marker) l
 
-let ordered_list c l = ignore (List.fold_left (ordered_item c) 1 l)
+let ordered_list c delim l = ignore (List.fold_left (ordered_item c delim) 1 l)
 
 let paragraph c p =
   newline c;
@@ -641,14 +641,40 @@ let table c t =
   in
   List.iter (row c) (Block.Table.rows t)
 
+(* Alternate markers, or CommonMark merges adjacent lists. *)
+let blocks c bs =
+  let list_marker ~prev ~default ~alternate =
+    match prev with
+    | Some m when String.equal m default -> alternate
+    | _ -> default
+  in
+  let rec loop prev = function
+    | [] -> ()
+    | Block.Blank_line :: rest ->
+        Context.block c Block.Blank_line;
+        loop prev rest
+    | Block.Unordered_list l :: rest ->
+        let marker = list_marker ~prev ~default:"-" ~alternate:"*" in
+        unordered_list c marker l;
+        loop (Some marker) rest
+    | Block.Ordered_list l :: rest ->
+        let delim = list_marker ~prev ~default:"." ~alternate:")" in
+        ordered_list c delim l;
+        loop (Some delim) rest
+    | b :: rest ->
+        Context.block c b;
+        loop None rest
+  in
+  loop None bs
+
 let block c = function
   | Block.Blank_line -> blank_line c ""
-  | Block.Blocks bs -> List.iter (Context.block c) bs
+  | Block.Blocks bs -> blocks c bs
   | Block.Code_block cb -> code_block c cb
   | Block.Heading h -> heading c h
   | Block.Html_block h -> html_block c h
-  | Block.Unordered_list l -> unordered_list c l
-  | Block.Ordered_list l -> ordered_list c l
+  | Block.Unordered_list l -> unordered_list c "-" l
+  | Block.Ordered_list l -> ordered_list c "." l
   | Block.Paragraph p -> paragraph c p
   | Block.Table t -> table c t
 

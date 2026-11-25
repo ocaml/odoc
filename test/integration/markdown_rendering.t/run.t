@@ -167,3 +167,27 @@ newline.
   | cell |
   
   Last paragraph.
+
+Adjacent lists of the same kind use alternate markers, so that they stay two
+lists instead of merging into one.
+
+  $ cat > adjacent_lists.mld <<'MLD'
+  > {0 Adjacent lists}
+  > {ul {li a}}
+  > {ul {li b}}
+  > {ul {li c}}
+  > {ol {li one}}
+  > {ol {li two}}
+  > MLD
+  $ gen adjacent_lists
+  # Adjacent lists
+  
+  - a
+  
+  * b
+  
+  - c
+  
+  1. one
+  
+  1) two

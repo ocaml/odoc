@@ -39,6 +39,8 @@
 - Markdown: separate blocks with exactly one blank line, so that lists, code
   blocks, tables and consecutive paragraphs no longer run into what follows
   them, and end pages with a newline (@davesnx)
+- Markdown: keep adjacent lists of the same kind apart by alternating their
+  markers (@davesnx)
 - `odoc compile` and `odoc link` look up a unit that an identifier names by
   that identifier. They look it up by name only if no single file holds it.
   This removes repeated "Ambiguous lookup" warnings (@jonludlam, #1511)
