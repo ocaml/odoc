@@ -1,4 +1,3 @@
-
 # Module type `Include_sections.Something`
 
 A module type.
@@ -20,8 +19,8 @@ val foo : unit
 ```ocaml
 val bar : unit
 ```
-foo bar
 
+foo bar
 
 ## Something 1-bis
 

@@ -1,4 +1,3 @@
-
 # Module type `u.a`
 
 ```ocaml

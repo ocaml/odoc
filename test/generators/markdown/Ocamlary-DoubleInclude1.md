@@ -1,4 +1,3 @@
-
 # Module `Ocamlary.DoubleInclude1`
 
 ```ocaml

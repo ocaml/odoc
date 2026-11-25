@@ -1,4 +1,3 @@
-
 # Parameter `Dep12.Arg`
 
 ```ocaml

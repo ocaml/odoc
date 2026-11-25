@@ -1,6 +1,4 @@
-
 # Module `S.F`
-
 
 ## Parameters
 

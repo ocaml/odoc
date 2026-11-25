@@ -1,4 +1,3 @@
-
 # Module type `Functor.S`
 
 ```ocaml

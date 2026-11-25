@@ -1,4 +1,3 @@
-
 # Module `No_include_functor.T`
 
 ```ocaml

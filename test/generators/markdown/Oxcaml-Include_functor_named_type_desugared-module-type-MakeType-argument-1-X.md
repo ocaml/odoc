@@ -1,4 +1,3 @@
-
 # Parameter `MakeType.X`
 
 ```ocaml

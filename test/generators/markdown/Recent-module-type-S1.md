@@ -1,6 +1,4 @@
-
 # Module type `Recent.S1`
-
 
 ## Parameters
 

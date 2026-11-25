@@ -1,4 +1,3 @@
-
 # Module type `Include.Dorminant_Module`
 
 ```ocaml

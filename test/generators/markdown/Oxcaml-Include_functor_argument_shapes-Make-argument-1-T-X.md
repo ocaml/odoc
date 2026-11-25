@@ -1,4 +1,3 @@
-
 # Module `T.X`
 
 ```ocaml

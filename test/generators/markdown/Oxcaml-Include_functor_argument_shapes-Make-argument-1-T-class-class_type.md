@@ -1,4 +1,3 @@
-
 # Class `T.class_type`
 
 ```ocaml

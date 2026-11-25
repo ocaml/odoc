@@ -1,2 +1,1 @@
-
 # Module type `Inner.Empty`

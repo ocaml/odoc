@@ -1,4 +1,3 @@
-
 # Module `Ocamlary.One`
 
 ```ocaml

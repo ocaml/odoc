@@ -1,4 +1,3 @@
-
 # Module `Stop.P`
 
 Doc.

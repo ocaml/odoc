@@ -1,4 +1,3 @@
-
 # Module `SigForMod.Inner`
 
 ```ocaml

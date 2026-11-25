@@ -1,4 +1,3 @@
-
 # Parameter `Foo'.X`
 
 ```ocaml

@@ -1,6 +1,4 @@
-
 # Module `Resolve_functor.F`
-
 
 ## Parameters
 

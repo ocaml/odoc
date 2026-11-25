@@ -529,7 +529,6 @@ let inline c i =
 
 let blank_line c l =
   newline c;
-  indent c;
   Context.string c l
 
 let string_node_option c = function None -> () | Some s -> Context.string c s
@@ -658,4 +657,5 @@ let to_string d =
   let buffer = Buffer.create 1024 in
   let ctx = Context.make t buffer in
   Context.doc ctx d;
+  if Buffer.length buffer > 0 then Buffer.add_char buffer '\n';
   Buffer.contents buffer

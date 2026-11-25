@@ -1,2 +1,1 @@
-
 # Module `S.Y`

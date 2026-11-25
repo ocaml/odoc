@@ -1,4 +1,3 @@
-
 # Parameter `F_with.X`
 
 ```ocaml

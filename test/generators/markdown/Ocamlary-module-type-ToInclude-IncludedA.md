@@ -1,4 +1,3 @@
-
 # Module `ToInclude.IncludedA`
 
 ```ocaml

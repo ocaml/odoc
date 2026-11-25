@@ -1,4 +1,3 @@
-
 # Module `Ocamlary.With2`
 
 ```ocaml

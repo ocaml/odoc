@@ -1,4 +1,3 @@
-
 # Module `Functor_ml.Bar`
 
 ```ocaml

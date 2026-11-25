@@ -1,6 +1,4 @@
-
 # Module type `Functor.S1`
-
 
 ## Parameters
 

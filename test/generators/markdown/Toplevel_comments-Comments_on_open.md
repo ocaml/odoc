@@ -1,4 +1,3 @@
-
 # Module `Toplevel_comments.Comments_on_open`
 
 ```ocaml

@@ -37,7 +37,6 @@ Check that markdown files were generated:
 Check the generated markdown source file:
 
   $ cat markdown/src/simple_test.ml.md
-  
   # Source file `simple_test.ml`
   
   ```ocaml

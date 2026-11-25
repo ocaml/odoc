@@ -1,4 +1,3 @@
-
 # Module `SubSigA.SubSigAMod`
 
 ```ocaml

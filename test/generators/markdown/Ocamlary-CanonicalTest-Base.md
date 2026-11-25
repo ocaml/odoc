@@ -1,4 +1,3 @@
-
 # Module `CanonicalTest.Base`
 
 ```ocaml

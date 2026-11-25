@@ -1,4 +1,3 @@
-
 # Module type `Ocamlary.NestedInclude1`
 
 ```ocaml

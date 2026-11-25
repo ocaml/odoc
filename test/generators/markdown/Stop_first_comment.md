@@ -1,4 +1,3 @@
-
 # Module `Stop_first_comment`
 
 ```ocaml

@@ -1,4 +1,3 @@
-
 # Module `DoubleInclude3.DoubleInclude2`
 
 ```ocaml

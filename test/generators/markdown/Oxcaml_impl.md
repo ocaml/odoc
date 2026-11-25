@@ -1,21 +1,22 @@
-
 # Module `Oxcaml_impl`
 
 ```ocaml
 val add : bool -> int -> int -> int [@@zero_alloc]
 ```
+
 ```ocaml
 module To_be_included : sig ... end
 ```
+
 ```ocaml
 module Including : sig ... end
 ```
+
 ```ocaml
 type opaque
 ```
 
 ## Modalities
-
 
 ### Modalities on record fields
 
@@ -39,12 +40,12 @@ type modalities_variant =
 
 ## Modes
 
-
 ### Modes in type definitions
 
 ```ocaml
 type mode_alias = int @ local -> int
 ```
+
 Type alias for an arrow with a mode on its argument.
 
 ```ocaml
@@ -53,6 +54,7 @@ type mode_record = {
   fn_both : int @ local -> int @ local; (* Modes on both sides. *)
 }
 ```
+
 ```ocaml
 type mode_cstr = 
   | Mc_arrow of int @ local -> int (* Constructor argument is a parenthesized arrow with a mode. *)
@@ -64,31 +66,37 @@ type mode_cstr =
 ```ocaml
 val mode_arg : int @ local -> int
 ```
+
 Mode on a function argument, via a type annotation.
 
 ```ocaml
 val mode_multi : string @ local once -> string @ local once
 ```
-Multiple modes on argument and return.
 
+Multiple modes on argument and return.
 
 ## Include functor on structures
 
 ```ocaml
 module Include_functor : sig ... end
 ```
+
 ```ocaml
 module Include_functor_desugared : sig ... end
 ```
+
 ```ocaml
 module Resolve_functor : sig ... end
 ```
+
 ```ocaml
 module Multiple_include_functors : sig ... end
 ```
+
 ```ocaml
 module Include_functor_not_last : sig ... end
 ```
+
 ```ocaml
 module Anonymous_functor : sig ... end
 ```

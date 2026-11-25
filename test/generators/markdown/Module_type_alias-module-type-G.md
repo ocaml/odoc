@@ -1,6 +1,4 @@
-
 # Module type `Module_type_alias.G`
-
 
 ## Parameters
 

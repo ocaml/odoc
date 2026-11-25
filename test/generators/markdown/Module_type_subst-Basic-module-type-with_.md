@@ -1,4 +1,3 @@
-
 # Module type `Basic.with_`
 
 ```ocaml

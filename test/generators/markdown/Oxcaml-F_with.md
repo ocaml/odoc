@@ -1,8 +1,6 @@
-
 # Module `Oxcaml.F_with`
 
 Helper functor used in the `with` constraint below.
-
 
 ## Parameters
 

@@ -1,4 +1,3 @@
-
 # Module `Toplevel_comments.Ref_in_synopsis`
 
 [`t`](#type-t).

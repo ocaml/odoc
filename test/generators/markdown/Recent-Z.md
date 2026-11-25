@@ -1,4 +1,3 @@
-
 # Module `Recent.Z`
 
 ```ocaml

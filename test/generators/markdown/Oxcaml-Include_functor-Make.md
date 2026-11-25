@@ -1,8 +1,6 @@
-
 # Module `Include_functor.Make`
 
 Module which defines a functor and includes it via `module type of`
-
 
 ## Parameters
 

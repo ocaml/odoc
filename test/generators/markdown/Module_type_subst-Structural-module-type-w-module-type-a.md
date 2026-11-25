@@ -1,4 +1,3 @@
-
 # Module type `w.a`
 
 ```ocaml

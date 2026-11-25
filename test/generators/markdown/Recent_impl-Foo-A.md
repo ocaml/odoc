@@ -1,4 +1,3 @@
-
 # Module `Foo.A`
 
 ```ocaml

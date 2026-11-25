@@ -20,7 +20,6 @@ padded with a space when the content starts or ends with a backtick.
   > Plain: [plain].
   > MLD
   $ gen code_spans
-  
   # Code spans
   
   Polymorphic variant: `` `Partial ``. Labelled argument: ``~consume:`All``. Character literal: ``'`'``. Double backtick: `a``b`. Both: ``` ``a`b ```. Plain: `plain`.
@@ -44,7 +43,6 @@ lazy continuation of the last item. Nested lists stay tight.
   > {ul {li last}}
   > MLD
   $ gen lists
-  
   # Lists
   
   - first
@@ -58,7 +56,6 @@ lazy continuation of the last item. Nested lists stay tight.
   Paragraph after an ordered list.
   
   - outer
-    
     - inner
     - inner too
   - outer again
@@ -70,8 +67,8 @@ lazy continuation of the last item. Nested lists stay tight.
   ```ocaml
   let x = 1
   ```
-  - before heading
   
+  - before heading
   
   ## Heading
   
@@ -87,11 +84,9 @@ HTML backend.
   > Text.
   > MLD
   $ gen anchors
-  
   # Anchors
   
   See [Details](#details), or [there](#details).
-  
   
   ## Details
   
@@ -112,7 +107,6 @@ Characters that could start a block are escaped only at the start of a line.
   > 1. at the start of a paragraph.
   > MLD
   $ gen escaping
-  
   # Escaping
   
   Operators: a + b, a - b, a = b, 1. 2) and x\_y.
@@ -124,3 +118,52 @@ Characters that could start a block are escaped only at the start of a line.
   \= at the start of a paragraph.
   
   1\. at the start of a paragraph.
+
+Blocks are separated by exactly one blank line, including after a code block
+and before a heading. The page starts with its first block and ends with a
+newline.
+
+  $ cat > spacing.mld <<'MLD'
+  > {0 Spacing}
+  > First paragraph.
+  > {[let x = 1]}
+  > Paragraph after code.
+  > {1 Heading after a paragraph}
+  > {[let y = 2]}
+  > {[let z = 3]}
+  > {ul {li item
+  > 
+  > second paragraph of the item
+  > }}
+  > {table {tr {td cell}}}
+  > Last paragraph.
+  > MLD
+  $ gen spacing
+  # Spacing
+  
+  First paragraph.
+  
+  ```ocaml
+  let x = 1
+  ```
+  
+  Paragraph after code.
+  
+  ## Heading after a paragraph
+  
+  ```ocaml
+  let y = 2
+  ```
+  
+  ```ocaml
+  let z = 3
+  ```
+  
+  - item
+  
+    second paragraph of the item
+  
+  | --- |
+  | cell |
+  
+  Last paragraph.

@@ -1,4 +1,3 @@
-
 # Class `Nested.inherits`
 
 ```ocaml

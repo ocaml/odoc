@@ -1,4 +1,3 @@
-
 # Parameter `F.I`
 
 ```ocaml

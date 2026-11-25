@@ -1,4 +1,3 @@
-
 # Class `Dep13.c`
 
 ```ocaml

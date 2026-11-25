@@ -1,4 +1,3 @@
-
 # Module type `Recent.PolyS`
 
 ```ocaml

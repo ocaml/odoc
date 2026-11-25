@@ -1,2 +1,1 @@
-
 # Class type `Class.recursive`

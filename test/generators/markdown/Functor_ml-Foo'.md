@@ -1,6 +1,4 @@
-
 # Module `Functor_ml.Foo'`
-
 
 ## Parameters
 

@@ -1,4 +1,3 @@
-
 # Parameter `X.Z`
 
 ```ocaml

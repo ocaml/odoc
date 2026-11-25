@@ -1,4 +1,3 @@
-
 # Module `Comments_on_open.M`
 
 ```ocaml

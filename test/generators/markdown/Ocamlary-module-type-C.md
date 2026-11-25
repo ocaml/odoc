@@ -1,4 +1,3 @@
-
 # Module type `Ocamlary.C`
 
 This module type includes two signatures.
@@ -9,7 +8,9 @@ This module type includes two signatures.
 ```ocaml
 type t
 ```
+
 ```ocaml
 module Q : COLLECTION
 ```
+
 This comment is for `CollectionModule`.

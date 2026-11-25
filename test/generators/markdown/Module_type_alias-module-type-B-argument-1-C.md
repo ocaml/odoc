@@ -1,4 +1,3 @@
-
 # Parameter `B.C`
 
 ```ocaml

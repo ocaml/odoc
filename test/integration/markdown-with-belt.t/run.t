@@ -10,7 +10,6 @@
   $ odoc markdown-generate Belt_Id.odocl -o markdown
 
   $ cat markdown/Belt/Belt.md
-  
   # Module `Belt`
   
   A stdlib shipped with Melange
@@ -33,6 +32,7 @@
     val forEach  : 'a t -> ('a -> unit) -> unit
     val forEachU : 'a t -> ('a -> unit [\@u]) -> unit
   ```
+  
   In general, uncurried version will be faster, but it may be less familiar to people who have a background in functional programming.
   
   **A special encoding for collection safety**
@@ -62,12 +62,14 @@
   
     let mySet2 = Belt.Set.make ~id:(module Comparable2)
   ```
+  
   Here, the compiler would infer `mySet1` and `mySet2` having different type, so e.g. a \`merge\` operation that tries to merge these two sets will correctly fail.
   
   ```ocaml
     val mySet1 : (int * int, Comparable1.identity) t
     val mySet2 : (int * int, Comparable2.identity) t
   ```
+  
   `Comparable1.identity` and `Comparable2.identity` are not the same using our encoding scheme.
   
   **Collection Hierarchy**
@@ -79,6 +81,7 @@
     Belt.Set.Int
     Belt.Set.String
   ```
+  
   The specialized modules *Belt.Set.Int*, *Belt.Set.String* are in general more efficient.
   
   Currently, both *Belt\_Set* and *Belt.Set* are accessible to users for some technical reasons, we **strongly recommend** users stick to qualified import, *Belt.Set*, we may hide the internal, *i.e*, *Belt\_Set* in the future
@@ -86,6 +89,7 @@
   ```ocaml
   module Id = Belt_Id
   ```
+  
   [`Belt.Id`](./Belt_Id.md)
   
   Provide utilities to create identified comparators or hashes for data structures used below.

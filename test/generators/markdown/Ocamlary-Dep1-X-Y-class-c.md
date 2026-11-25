@@ -1,4 +1,3 @@
-
 # Class `Y.c`
 
 ```ocaml

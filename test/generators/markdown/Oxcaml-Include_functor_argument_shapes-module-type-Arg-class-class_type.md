@@ -1,4 +1,3 @@
-
 # Class `Arg.class_type`
 
 ```ocaml
