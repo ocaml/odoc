@@ -14,11 +14,13 @@ This is an *interface* with **all** of the *module system* features. This docume
   4. module type aliases
   5. modules with signatures
   6. modules with aliased signatures
+
 A numbered list:
 
 1. 3
 2. 2
 3. 1
+
 David Sheets is the author.
 
 author David Sheets
@@ -763,16 +765,19 @@ I can refer to
 
 - `{!section:indexmodules}` : [Trying the {!modules: ...} command.](./#indexmodules)
 - `{!aliases}` : [Aliases again](./#aliases)
+
 But also to things in submodules:
 
 - `{!section:SuperSig.SubSigA.subSig}` : [A Labeled Section Header Inside of a Signature](./Ocamlary-module-type-SuperSig-module-type-SubSigA.md#subSig)
 - `{!Aliases.incl}` : [include of Foo](./Ocamlary-Aliases.md#incl)
+
 And just to make sure we do not mess up:
 
 - `{{!section:indexmodules}A}` : [A](./#indexmodules)
 - `{{!aliases}B}` : [B](./#aliases)
 - `{{!section:SuperSig.SubSigA.subSig}C}` : [C](./Ocamlary-module-type-SuperSig-module-type-SubSigA.md#subSig)
 - `{{!Aliases.incl}D}` : [D](./Ocamlary-Aliases.md#incl)
+
 
 ## New reference syntax
 
@@ -786,6 +791,7 @@ Here goes:
 
 - `{!module-M.t}` : [`M.t`](./Ocamlary-M.md#type-t)
 - `{!module-type-M.t}` : [`M.t`](./Ocamlary-module-type-M.md#type-t)
+
 ```ocaml
 module Only_a_module : sig ... end
 ```
@@ -793,6 +799,7 @@ module Only_a_module : sig ... end
 - `{!module-Only_a_module.t}` : [`Only_a_module.t`](./Ocamlary-Only_a_module.md#type-t)
 - `{!module-Only_a_module.type-t}` : [`Only_a_module.t`](./Ocamlary-Only_a_module.md#type-t)
 - `{!type:Only_a_module.t}` : [`Only_a_module.t`](./Ocamlary-Only_a_module.md#type-t)
+
 ```ocaml
 module type TypeExt = sig ... end
 ```

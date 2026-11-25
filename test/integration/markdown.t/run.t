@@ -142,14 +142,18 @@
   
   - First item
   - Second item
+  
   1. First ordered item
   2. Second numbered item
+  
   - First item
   - Second item
   - can also be used
+  
   1. First numbered item
   2. Second numbered item
   3. can also be used
+  
   
   #### Code blocks
   

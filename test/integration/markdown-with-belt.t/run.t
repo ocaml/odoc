@@ -24,6 +24,7 @@
   1. Consistency in name convention: camlCase, and arguments order
   2. Exception thrown functions are all suffixed with *Exn*, e.g, *getExn*
   3. Better performance and smaller code size running on JS platform
+  
   **Name Convention**
   
   For higher order functions, it will be suffixed **U** if it takes uncurried callback.

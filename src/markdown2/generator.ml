@@ -110,17 +110,29 @@ let rec block ~config ~resolve l =
         let break = Renderer.Block.Blank_line in
         [ paragraph_block; break ]
     | List (type_, l) ->
+        let rec drop_trailing_blank_lines = function
+          | [] -> []
+          | x :: rest -> (
+              match (x, drop_trailing_blank_lines rest) with
+              | Renderer.Block.Blank_line, [] -> []
+              | x, rest -> x :: rest)
+        in
         let items =
           List.map
             (fun items ->
               let block = block ~config ~resolve items in
-              Renderer.Block.Blocks block)
+              (* A blank line at the end of an item would separate it from the
+                 next item and make the list loose. *)
+              Renderer.Block.Blocks (drop_trailing_blank_lines block))
             l
         in
+        (* Without a blank line after the list, a following paragraph would
+           be a lazy continuation of the last item. *)
         [
           (match type_ with
           | Ordered -> Renderer.Block.Ordered_list items
           | Unordered -> Renderer.Block.Unordered_list items);
+          Renderer.Block.Blank_line;
         ]
     | Inline i ->
         let inlines = Renderer.Inline.Inlines (inline ~config ~resolve i) in

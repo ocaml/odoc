@@ -32,6 +32,8 @@
 ### Fixed
 - Markdown: code spans whose content contains backticks, such as
   `` `Partial ``, use a longer delimiter instead of breaking (@davesnx)
+- Markdown: end lists with a blank line, so that a following paragraph is no
+  longer merged into the last list item (@davesnx)
 - `odoc compile` and `odoc link` look up a unit that an identifier names by
   that identifier. They look it up by name only if no single file holds it.
   This removes repeated "Ambiguous lookup" warnings (@jonludlam, #1511)
