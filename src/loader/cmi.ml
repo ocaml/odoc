@@ -515,9 +515,12 @@ let mark_class_declaration cld =
 let lid_txt (l : Longident.t Location.loc) = l.txt
 let lid_name (s : string Location.loc) = s.txt
 
+(* These paths are read from the parsetree of a jkind annotation and are only
+   shown, never resolved by the compiler, so their roots are looked up
+   anywhere. *)
 let rec read_longident_module (l : Longident.t) : Paths.Path.Module.t =
   match l with
-  | Longident.Lident s -> `Root (ModuleName.make_std s)
+  | Longident.Lident s -> `Root (ModuleName.make_std s, Odoc_model.Library_scope.any)
   | Longident.Ldot (p, s) ->
       `Dot (read_longident_module (lid_txt p), ModuleName.make_std (lid_name s))
   | Longident.Lapply (p, arg) ->
@@ -535,18 +538,18 @@ let read_longident_class_type (l : Longident.t) : Paths.Path.ClassType.t =
   | Longident.Ldot (p, s) ->
       `DotT (read_longident_module (lid_txt p), TypeName.make_std (lid_name s))
   | Longident.Lident s ->
-      `DotT (`Root (ModuleName.make_std "*"), TypeName.make_std s)
+      `DotT (`Root (ModuleName.make_std "*", Odoc_model.Library_scope.any), TypeName.make_std s)
   | Longident.Lapply _ ->
-      `DotT (`Root (ModuleName.make_std "*"), TypeName.make_std "_")
+      `DotT (`Root (ModuleName.make_std "*", Odoc_model.Library_scope.any), TypeName.make_std "_")
 
 let read_longident_module_type (l : Longident.t) : Paths.Path.ModuleType.t =
   match l with
   | Longident.Ldot (p, s) ->
       `DotMT (read_longident_module (lid_txt p), ModuleTypeName.make_std (lid_name s))
   | Longident.Lident s ->
-      `DotMT (`Root (ModuleName.make_std "_"), ModuleTypeName.make_std s)
+      `DotMT (`Root (ModuleName.make_std "_", Odoc_model.Library_scope.any), ModuleTypeName.make_std s)
   | Longident.Lapply _ ->
-      `DotMT (`Root (ModuleName.make_std "_"), ModuleTypeName.make_std "_")
+      `DotMT (`Root (ModuleName.make_std "_", Odoc_model.Library_scope.any), ModuleTypeName.make_std "_")
 
 let read_parsetree_modes (modes : Parsetree.modes) =
   List.map (fun (m : Parsetree.mode Location.loc) ->
@@ -1707,10 +1710,10 @@ and read_signature env parent (items : Odoc_model.Compat.signature) =
   fst @@ read_signature_noenv env parent items
 
 
-let read_interface (id : Identifier.RootModule.t) ~warnings_tag intf =
+let read_interface (id : Identifier.RootModule.t) ~scope ~warnings_tag intf =
   let items =
     read_signature
-      { ident_env = Env.empty (); warnings_tag }
+      { ident_env = Env.empty ~scope (); warnings_tag }
       (id :> Identifier.Signature.t) intf
   in
   (id, items)

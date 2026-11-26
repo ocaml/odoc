@@ -1,4 +1,10 @@
-type path = [ `Root of string | `Dot of path * string ]
+type path =
+  [ `Root of string
+  | `LibraryRoot of [ `Only | `First ] * string * string
+    (** [`LibraryRoot (`Only, lib, name)]: the root [name] in library [lib]
+        alone, written [/lib/name]. TEMPORARY: [`First] looks in [lib] first,
+        then anywhere. *)
+  | `Dot of path * string ]
 
 let expected_err :
     (Format.formatter -> 'a -> unit) -> 'a -> Location_.span -> Error.t =
@@ -576,25 +582,39 @@ let parse_asset whole_reference_location s :
   let path = parse_path whole_reference_location s in
   Error.catch_errors_and_warnings (fun () -> `Asset_path path)
 
+(* TEMPORARY: remove when dune writes the library in its canonical tags, as
+   [@canonical /lib/Name.X]. dune's tags name no library, so they are
+   ambiguous when two libraries have the same main module. While [odoc compile]
+   reads a unit of library [lib], this is [Some lib], and a tag that names no
+   library looks in [lib] first. *)
+let own_library = ref None
+
 let read_path_longident location s =
-  let rec loop : string -> int -> path option =
-   fun s pos ->
-    try
-      let idx = String.rindex_from s pos '.' in
-      let name = String.sub s (idx + 1) (pos - idx) in
-      if String.length name = 0 then None
-      else
-        match loop s (idx - 1) with
-        | None -> None
-        | Some parent -> Some (`Dot (parent, name))
-    with Not_found ->
-      let name = String.sub s 0 (pos + 1) in
-      if String.length name = 0 then None else Some (`Root name)
+  (* A canonical tag uses the reference syntax, so that [/lib/Name.X] names the
+     library of its root as in [{!/lib/Name.X}]. Only a module path, with an
+     optional library, is a valid tag; of the kind qualifiers, only [module-]
+     on its first name is accepted. *)
+  let rec to_path : Paths.Reference.t -> path option = function
+    | `Root (name, (`TUnknown | `TModule)) -> (
+        match !own_library with
+        | Some lib -> Some (`LibraryRoot (`First, lib, name))
+        | None -> Some (`Root name))
+    | `Module_path (`TAbsolutePath, [ lib; name ])
+    | `Any_path (`TAbsolutePath, [ lib; name ]) ->
+        Some (`LibraryRoot (`Only, lib, name))
+    | `Dot (parent, name) -> (
+        match to_path (parent :> Paths.Reference.t) with
+        | Some p -> Some (`Dot (p, name))
+        | None -> None)
+    | _ -> None
   in
   Error.catch_warnings (fun () ->
-      match loop s (String.length s - 1) with
-      | Some r -> Ok (r :> path)
-      | None -> Error (expected_err_str "a valid path" location))
+      match Error.raise_warnings (parse location s) with
+      | Ok r -> (
+          match to_path r with
+          | Some p -> Ok p
+          | None -> Error (expected_err_str "a valid path" location))
+      | Error _ as e -> e)
 
 let read_mod_longident location lid =
   Error.catch_warnings (fun () ->

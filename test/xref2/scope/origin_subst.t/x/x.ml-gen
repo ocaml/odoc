@@ -1,0 +1,8 @@
+(** @canonical X.Fn *)
+module Fn = X__Fn
+
+(** @canonical X.Wt *)
+module Wt = X__Wt
+
+(** @canonical X.Hid *)
+module Hid = X__Hid

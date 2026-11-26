@@ -69,6 +69,7 @@ let class_type name (p : P.ClassType.t) =
        (Of_Lang.class_type_path (Of_Lang.empty ()) p))
 
 let () =
+  let scope = Odoc_model.Library_scope.any in
   print_endline "Resolved paths:";
   resolved_module "Alias (hidden, visible unresolved)"
     (`Alias (rh, `Identifier (m, false)));
@@ -86,12 +87,12 @@ let () =
   resolved_module ~weak:true "Subst, weak canonical test"
     (`Subst
        ( `ModuleType
-           ( `Canonical (rh, `Root (ModuleName.make_std "C")),
+           ( `Canonical (rh, `Root (ModuleName.make_std "C", scope)),
              ModuleTypeName.make_std "T" ),
          rm ));
   print_endline "Unresolved paths:";
   module_ "Identifier (hidden name)" (`Identifier (h, false));
-  module_ "Root (hidden name)" (`Root (ModuleName.make_std "H__x"));
+  module_ "Root (hidden name)" (`Root (ModuleName.make_std "H__x", scope));
   module_ "Dot (visible, hidden name)"
     (`Dot (`Identifier (m, false), ModuleName.make_std "H__x"));
   module_ "Apply (hidden, visible)"

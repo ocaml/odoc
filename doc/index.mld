@@ -1,4 +1,4 @@
-@children_order odoc_for_authors cheatsheet dune features ocamldoc_differences interface driver json deprecated/
+@children_order odoc_for_authors cheatsheet dune features ocamldoc_differences interface driver scope_model json deprecated/
 @short_title The odoc documentation generator
 
 {0 The [odoc] documentation generator}
@@ -49,3 +49,7 @@ For guidance on how to document your OCaml project, see {!page-odoc_for_authors}
 
 To integrate [odoc] into your tool, webpage or any other
 setting, you'll need to understand {{!page-driver}how to drive [odoc]}.
+
+How [odoc] resolves module names across libraries, and what a driver must
+pass with [-L] for that, is specified in {{!page-scope_model}the library scope
+model}. It is written for driver authors and [odoc]'s developers.
