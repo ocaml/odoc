@@ -60,20 +60,20 @@ end = struct
     let open Inline in
     l
     |> List.map (fun one ->
-           let return desc = [ { one with desc } ] in
-           match one.desc with
-           | Text _ as t -> return t
-           | Entity _ as t -> return t
-           | Linebreak as t -> return t
-           | Styled (st, content) -> return (Styled (st, remove_links content))
-           | Link { target = _; content = t; _ } -> t
-           | Source l ->
-               let rec f = function
-                 | Source.Elt t -> Source.Elt (remove_links t)
-                 | Tag (tag, t) -> Tag (tag, List.map f t)
-               in
-               return @@ Source (List.map f l)
-           | (Math _ | Raw_markup _) as t -> return t)
+        let return desc = [ { one with desc } ] in
+        match one.desc with
+        | Text _ as t -> return t
+        | Entity _ as t -> return t
+        | Linebreak as t -> return t
+        | Styled (st, content) -> return (Styled (st, remove_links content))
+        | Link { target = _; content = t; _ } -> t
+        | Source l ->
+            let rec f = function
+              | Source.Elt t -> Source.Elt (remove_links t)
+              | Tag (tag, t) -> Tag (tag, List.map f t)
+            in
+            return @@ Source (List.map f l)
+        | (Math _ | Raw_markup _) as t -> return t)
     |> List.concat
 
   let classify ~on_sub (i : Item.t) : _ Rewire.action =

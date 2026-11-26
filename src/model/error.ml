@@ -17,9 +17,9 @@ let kasprintf k fmt =
 let kmake k ?suggestion format =
   format
   |> kasprintf (fun message ->
-         match suggestion with
-         | None -> k message
-         | Some suggestion -> k (message ^ "\nSuggestion: " ^ suggestion))
+      match suggestion with
+      | None -> k message
+      | Some suggestion -> k (message ^ "\nSuggestion: " ^ suggestion))
 
 let make ?suggestion format =
   let k message location = `With_full_location { location; message } in

@@ -90,15 +90,15 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
       let leafs =
         In_progress.leafs dir
         |> List.map (fun (_, page) ->
-               let id :> Id.t = page.Lang.Page.name in
-               let entry = entry_of_page page in
-               (id, Tree.leaf entry))
+            let id :> Id.t = page.Lang.Page.name in
+            let entry = entry_of_page page in
+            (id, Tree.leaf entry))
       in
       let dirs =
         In_progress.dirs dir
         |> List.map (fun (id, payload) ->
-               let id :> Id.t = id in
-               (id, t_of_in_progress payload))
+            let id :> Id.t = id in
+            (id, t_of_in_progress payload))
       in
       let modules =
         In_progress.modules dir
@@ -107,7 +107,7 @@ let rec t_of_in_progress (dir : In_progress.in_progress) : t =
       let implementations =
         In_progress.implementations dir
         |> List.map (fun (id, _impl) ->
-               ((id :> Id.t), Tree.leaf @@ entry_of_impl id))
+            ((id :> Id.t), Tree.leaf @@ entry_of_impl id))
       in
       leafs @ dirs @ modules @ implementations
     in

@@ -166,7 +166,7 @@ module Ast_to_sexp = struct
         let items =
           items
           |> List.map (fun item ->
-                 List (List.map (at.at (nestable_block_element at)) item))
+              List (List.map (at.at (nestable_block_element at)) item))
           |> fun items -> List items
         in
         List [ Atom kind; Atom weight; items ]

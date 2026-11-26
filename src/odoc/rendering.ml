@@ -67,8 +67,8 @@ let render_odoc ~resolver ~warnings_options ~syntax ~renderer ~output extra file
 let generate_odoc ~syntax ~warnings_options:_ ~renderer ~output ~extra_suffix
     ~sidebar extra file =
   (match sidebar with
-  | None -> Ok None
-  | Some x -> Odoc_file.load_sidebar x >>= fun sidebar -> Ok (Some sidebar))
+    | None -> Ok None
+    | Some x -> Odoc_file.load_sidebar x >>= fun sidebar -> Ok (Some sidebar))
   >>= fun sidebar ->
   document_of_odocl ~syntax file >>= fun doc ->
   render_document renderer ~output ~sidebar ~extra_suffix ~extra doc;
@@ -96,8 +96,8 @@ let generate_source_odoc ~syntax ~warnings_options ~renderer ~output
     ~source_file ~extra_suffix ~sidebar extra file =
   Odoc_file.load file >>= fun unit ->
   (match sidebar with
-  | None -> Ok None
-  | Some x -> Odoc_file.load_sidebar x >>= fun sidebar -> Ok (Some sidebar))
+    | None -> Ok None
+    | Some x -> Odoc_file.load_sidebar x >>= fun sidebar -> Ok (Some sidebar))
   >>= fun sidebar ->
   match unit.content with
   | Odoc_file.Impl_content impl ->

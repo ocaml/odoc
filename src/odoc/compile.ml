@@ -245,10 +245,10 @@ let mld ~parent_id ~parents_children ~output ~children ~warnings_options
        else Error (`Msg "Specified parent is not a parent of this file")
      in
      (match parents_children with
-     | Some parents_children ->
-         check parents_children >>= fun () ->
-         Ok (Paths.Identifier.Mk.page (parent_id, page_name))
-     | None -> Ok (Paths.Identifier.Mk.page (parent_id, page_name)))
+       | Some parents_children ->
+           check parents_children >>= fun () ->
+           Ok (Paths.Identifier.Mk.page (parent_id, page_name))
+       | None -> Ok (Paths.Identifier.Mk.page (parent_id, page_name)))
      >>= fun id -> Ok (id :> Paths.Identifier.Page.t))
   >>= fun id ->
   let resolve content frontmatter =

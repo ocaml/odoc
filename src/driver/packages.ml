@@ -552,30 +552,28 @@ let remap_virtual_interfaces duplicate_hashes pkgs =
         libraries =
           pkg.libraries
           |> List.map (fun lib ->
-                 {
-                   lib with
-                   modules =
-                     lib.modules
-                     |> List.map (fun m ->
-                            let m_intf =
-                              if
-                                Util.StringMap.mem m.m_intf.mif_hash
-                                  duplicate_hashes
-                                && Fpath.has_ext "cmt" m.m_intf.mif_path
-                              then
-                                match
-                                  List.filter
-                                    (fun intf ->
-                                      Fpath.has_ext "cmti" intf.mif_path)
-                                    (Util.StringMap.find m.m_intf.mif_hash
-                                       duplicate_hashes)
-                                with
-                                | [ x ] -> x
-                                | _ -> m.m_intf
-                              else m.m_intf
-                            in
-                            { m with m_intf });
-                 });
+              {
+                lib with
+                modules =
+                  lib.modules
+                  |> List.map (fun m ->
+                      let m_intf =
+                        if
+                          Util.StringMap.mem m.m_intf.mif_hash duplicate_hashes
+                          && Fpath.has_ext "cmt" m.m_intf.mif_path
+                        then
+                          match
+                            List.filter
+                              (fun intf -> Fpath.has_ext "cmti" intf.mif_path)
+                              (Util.StringMap.find m.m_intf.mif_hash
+                                 duplicate_hashes)
+                          with
+                          | [ x ] -> x
+                          | _ -> m.m_intf
+                        else m.m_intf
+                      in
+                      { m with m_intf });
+              });
       })
     pkgs
 

@@ -36,9 +36,9 @@ let display_constructor_args args =
   | TypeDecl.Constructor.Tuple args ->
       let no_label (arg, _mods) = (None, arg) in
       (match args with
-      | _ :: _ :: _ -> Some TypeExpr.(Tuple (List.map no_label args))
-      | [ (arg, _) ] -> Some arg
-      | _ -> None)
+        | _ :: _ :: _ -> Some TypeExpr.(Tuple (List.map no_label args))
+        | [ (arg, _) ] -> Some arg
+        | _ -> None)
       |> map_option Text.of_type
   | TypeDecl.Constructor.Record fields -> Some (Text.of_record fields)
 
@@ -101,7 +101,7 @@ let typedecl_repr ~private_ (repr : TypeDecl.Representation.t) =
   | Variant constructors ->
       constructors
       |> List.map (fun ({ id; args; res; _ } : TypeDecl.Constructor.t) ->
-             constructor ~id ~args ~res)
+          constructor ~id ~args ~res)
       |> String.concat " | "
   | Record record -> Text.of_record record
   | Record_unboxed_product record -> Text.of_unboxed_record record

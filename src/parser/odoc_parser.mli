@@ -11,7 +11,7 @@ val parse_comment : location:Lexing.position -> text:string -> t
     start of the {i content} of the documentation comment - so for a line such
     as
     {[
-      (** A comment starting in the first column (0) *)
+    (** A comment starting in the first column (0) *)
     ]}
     the location should represent the space immediately before the [A], so the
     in the 4th column (e.g. [{... pos_bol=0; pos_cnum=3 }]) *)
@@ -59,9 +59,9 @@ val codeblock_content : Loc.span -> string -> string * Warning.t list
     We can go from the raw content ["\n    hello\n  "] to the processed content
     ["  hello"] with:
     {[
-      match codeblock.value with
-      | `Code_block { content; _ } ->
-          codeblock_content codeblock.location content.value
+    match codeblock.value with
+    | `Code_block { content; _ } ->
+        codeblock_content codeblock.location content.value
     ]}
 
     Also returns a list of warnings, eg if the content is not appropriately

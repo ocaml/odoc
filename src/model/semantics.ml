@@ -435,12 +435,12 @@ let generate_heading_label : Comment.inline_element with_location list -> string
     let result = Bytes.create (String.length s) in
     s
     |> String.iteri (fun index c ->
-           let c =
-             match c with
-             | ' ' | '\t' | '\r' | '\n' -> '-'
-             | _ -> Astring.Char.Ascii.lowercase c
-           in
-           Bytes.set result index c);
+        let c =
+          match c with
+          | ' ' | '\t' | '\r' | '\n' -> '-'
+          | _ -> Astring.Char.Ascii.lowercase c
+        in
+        Bytes.set result index c);
     Bytes.unsafe_to_string result
   in
   (* Whitespace runs inside a merged [`Word] stood for a single [`Space], so
@@ -482,7 +482,7 @@ let generate_heading_label : Comment.inline_element with_location list -> string
           | `Reference (_, content) | `Link (_, content) ->
               content |> strip_locs
               |> List.map (fun (ele : Comment.non_link_inline_element) ->
-                     (ele :> Comment.inline_element))
+                  (ele :> Comment.inline_element))
               |> scan_inline_elements anchor
         in
         scan_inline_elements anchor more

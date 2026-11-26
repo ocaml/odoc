@@ -281,21 +281,21 @@ val reresolve_module_type_fragment :
     For example:
 
     {[
-      module type S = sig
-        type t
-      end
-      module type T = sig
-        module M : S
-      end
-      module type Z = T with type M.t = int
+    module type S = sig
+      type t
+    end
+    module type T = sig
+      module M : S
+    end
+    module type Z = T with type M.t = int
     ]}
 
     these functions should return a representation of [Z] as:
 
     {[
-      module type T = sig
-        module M : S with type t = int
-      end
+    module type T = sig
+      module M : S with type t = int
+    end
     ]}
 
     In particular, it will also handle [include] statements such that if a type

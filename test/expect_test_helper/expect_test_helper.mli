@@ -28,7 +28,7 @@
     binding inside the group's [let module ... struct ... end]:
 
     {[
-      let my_new_case = test "{some odoc markup}"
+    let my_new_case = test "{some odoc markup}"
     ]}
 
     The binding name is documentation; only the group name appears in the
@@ -49,12 +49,12 @@
         [test/model/semantics/odoc_semantic_test.ml]):
 
         {[
-          let my_new_group () =
-            let module My_new_group = struct
-              let case_one = test "..."
-              let case_two = test "..."
-            end in
-            ()
+        let my_new_group () =
+          let module My_new_group = struct
+            let case_one = test "..."
+            let case_two = test "..."
+          end in
+          ()
         ]}
      }
      {- Register it in the dispatcher's [groups] list (parser:
@@ -62,7 +62,7 @@
         [odoc_semantic_test.ml]):
 
         {[
-          "my_new_group", Test.my_new_group
+        "my_new_group", Test.my_new_group
         ]}
      }
      {- Seed the expected file and regenerate the dune rules:

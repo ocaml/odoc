@@ -39,7 +39,7 @@ let () =
     ocaml_files
     (* Remove .ml files that have a corresponding .mli. *)
     |> List.filter (fun f ->
-           not (Fpath.has_ext ".ml" f && List.mem (Fpath.rem_ext f) mli_files))
+        not (Fpath.has_ext ".ml" f && List.mem (Fpath.rem_ext f) mli_files))
     (* Side effect: error on unknown extension *)
     |> List.map cmt_filename
   in

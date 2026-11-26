@@ -104,7 +104,7 @@ module type EmptySig = sig end
 module type EmptySigAlias = EmptySig
 (** A plain, empty module signature alias of
     {[
-      EmptySig
+    EmptySig
     ]}
     (preformatted). *)
 
