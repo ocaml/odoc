@@ -1,0 +1,2 @@
+(** See {!//Other}. *)
+type t
