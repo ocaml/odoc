@@ -670,6 +670,35 @@ unit or page must be {e compiled} and available to [odoc]. That is, when perform
 [-I] must contain the relevant [.odoc] file. This is normally the responsibility of
 the {{!page-driver}driver}.
 
+{4:substitution_scope Substitutions}
+
+Local substitutions ([type t := ...], [module M := ...] and
+[module type S := ...]) are documented in the signature they appear in. Like
+other elements, they are in scope throughout that signature, so its comments
+can refer to them, before or after the substitution:
+
+{[
+type offset := int
+(** A position in the file. [-1] means the current position. *)
+
+val read : offset -> unit
+(** Reads at the given {!offset}. *)
+]}
+
+Unlike other elements:
+
+- If the signature also declares an element of the same name and kind (a
+  type, class or class type; a module; or a module type), a reference to that
+  name always refers to that element rather than to the substitution, wherever
+  the substitution is.
+- If a name is substituted more than once, a reference to it refers to the
+  last substitution.
+- Substitutions aren't part of the signature's interface, so they can't be
+  referred to from outside it (e.g. [{!M.offset}]), and [--open] doesn't bring
+  them into scope. When a signature is included, its substitutions are applied,
+  so references in its comments resolve as they would in the including
+  signature.
+
 {2:tags Tags}
 
 Tags are used to provide specific information for individual elements, such
