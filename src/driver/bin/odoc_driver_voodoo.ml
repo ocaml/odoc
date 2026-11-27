@@ -149,7 +149,7 @@ let odocl_dir =
 
 let cmd =
   let doc = "Process output from voodoo-prep" in
-  let info = Cmd.info "odoc_driver_voodoo" ~doc in
+  let info = Cmd.info "odoc_driver_voodoo" ~version:"%%VERSION%%" ~doc in
   Cmd.v info
     Term.(
       const run $ package_name $ blessed $ actions $ odoc_dir $ odocl_dir
