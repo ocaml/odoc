@@ -31,8 +31,8 @@ end = struct
     let rec loop start i =
       if i > max_idx
       then flush start i
-      else begin
-        match String.get s i with
+      else
+        begin match String.get s i with
         | '&' -> escape "&amp;" start i
         | '<' -> escape "&lt;" start i
         | '>' -> escape "&gt;" start i
@@ -40,7 +40,7 @@ end = struct
         | '"' -> escape "&quot;" start i
         | '@' -> escape "&commat;" start i
         | _ -> loop start (i + 1)
-      end
+        end
     and escape amperstr start i =
       flush start i ;
       add amperstr ;

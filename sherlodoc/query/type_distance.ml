@@ -31,17 +31,16 @@ let rec paths_of_type ~prefix t =
         (paths_of_type ~prefix:prefix_right b)
   | Constr (name, args) ->
       let prefix = Type name :: prefix in
-      begin
-        match args with
-        | [] -> [ prefix ]
-        | _ ->
-            let length = List.length args in
-            rev_concat
-            @@ List.mapi
-                 (fun i arg ->
-                    let prefix = Argument { pos = i; length } :: prefix in
-                    paths_of_type ~prefix arg)
-                 args
+      begin match args with
+      | [] -> [ prefix ]
+      | _ ->
+          let length = List.length args in
+          rev_concat
+          @@ List.mapi
+               (fun i arg ->
+                  let prefix = Argument { pos = i; length } :: prefix in
+                  paths_of_type ~prefix arg)
+               args
       end
   | Tuple args ->
       let length = List.length args in

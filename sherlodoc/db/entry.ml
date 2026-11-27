@@ -74,29 +74,29 @@ let string_compare_shorter a b =
 
 let structural_compare a b =
   match string_compare_shorter a.name b.name with
-  | 0 -> begin
-      match Package.compare a.pkg b.pkg with
-      | 0 -> begin
-          match Stdlib.compare a.kind b.kind with
-          | 0 -> begin
-              match string_compare_shorter a.doc_html b.doc_html with
+  | 0 ->
+      begin match Package.compare a.pkg b.pkg with
+      | 0 ->
+          begin match Stdlib.compare a.kind b.kind with
+          | 0 ->
+              begin match string_compare_shorter a.doc_html b.doc_html with
               | 0 -> String.compare a.url b.url
               | c -> c
-            end
+              end
           | c -> c
-        end
+          end
       | c -> c
-    end
+      end
   | c -> c
 
 let compare a b =
   if a == b
   then 0
-  else begin
-    match Int.compare a.cost b.cost with
+  else
+    begin match Int.compare a.cost b.cost with
     | 0 -> structural_compare a b
     | cmp -> cmp
-  end
+    end
 
 let equal a b = compare a b = 0
 
