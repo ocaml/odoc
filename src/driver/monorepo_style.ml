@@ -211,7 +211,7 @@ let of_dune_build dir ~extra_pkgs ~extra_libs =
       let assets =
         find_docs ".jpg"
         |> List.map (fun (p, r) ->
-               { Packages.asset_path = p; asset_rel_path = r })
+            { Packages.asset_path = p; asset_rel_path = r })
       in
       let libs = List.flatten libs in
       let global_config =

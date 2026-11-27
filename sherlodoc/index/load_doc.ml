@@ -79,14 +79,14 @@ let register_full_name ~db (elt : Db.Entry.t) =
 let searchable_type_of_constructor args res =
   let open Odoc_model.Lang in
   match args with
-  | TypeDecl.Constructor.Tuple args -> begin
-      match args with
+  | TypeDecl.Constructor.Tuple args ->
+      begin match args with
       | _ :: _ :: _ ->
           TypeExpr.Arrow
             (None, (Tuple (List.map (fun (x, _mods) -> None, x) args), []), (res, []))
       | [ (arg, _) ] -> TypeExpr.Arrow (None, (arg, []), (res, []))
       | _ -> res
-    end
+      end
   | TypeDecl.Constructor.Record fields ->
       List.fold_left
         (fun res field ->

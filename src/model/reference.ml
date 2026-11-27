@@ -173,9 +173,8 @@ let tokenize location s : token list * path_prefix option =
     let identifier =
       Astring.String.cuts ~sep:"\"" identifier
       |> List.mapi (fun i s ->
-             if i mod 2 = 0 then
-               Astring.String.cuts s ~sep:" " |> String.concat ""
-             else s)
+          if i mod 2 = 0 then Astring.String.cuts s ~sep:" " |> String.concat ""
+          else s)
       |> String.concat ""
     in
     let location = Location_.in_string s ~offset ~length location in

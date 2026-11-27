@@ -46,11 +46,11 @@ module Make (IO : Io.S) = struct
         IO.bind (seq ())
         @@ function
         | Seq.Nil -> IO.return t
-        | Cons (x, xs) -> begin
-            match add ~query ~limit x t with
+        | Cons (x, xs) ->
+            begin match add ~query ~limit x t with
             | Stop t -> IO.return t
             | Continue t -> go (total_seen + 1) t xs
-          end
+            end
       end
     in
     IO.map (go 0 empty seq) @@ fun t -> List.of_seq @@ Bests.to_seq t.bests

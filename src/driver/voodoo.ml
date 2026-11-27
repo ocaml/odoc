@@ -160,23 +160,23 @@ let of_voodoo pkg =
   let meta_libraries : Packages.libty list =
     metas
     |> List.filter_map (fun meta_file ->
-           let full_meta_path = Fpath.(pkg_path // meta_file) in
-           let m = Library_names.process_meta_file full_meta_path in
-           let libname_of_archive = Library_names.libname_of_archive m in
-           Fpath.Map.iter
-             (fun k v -> Logs.debug (fun m -> m "%a,%s\n%!" Fpath.pp k v))
-             libname_of_archive;
+        let full_meta_path = Fpath.(pkg_path // meta_file) in
+        let m = Library_names.process_meta_file full_meta_path in
+        let libname_of_archive = Library_names.libname_of_archive m in
+        Fpath.Map.iter
+          (fun k v -> Logs.debug (fun m -> m "%a,%s\n%!" Fpath.pp k v))
+          libname_of_archive;
 
-           let directories = Library_names.directories m in
-           Some
-             (List.concat_map
-                (fun directory ->
-                  Logs.debug (fun m ->
-                      m "Processing directory: %a\n%!" Fpath.pp directory);
-                  Packages.Lib.v ~libname_of_archive ~pkg_name:pkg.name
-                    ~dir:directory ~cmtidir:None ~all_lib_deps ~cmi_only_libs
-                    ~id_override:None)
-                Fpath.(Set.to_list directories)))
+        let directories = Library_names.directories m in
+        Some
+          (List.concat_map
+             (fun directory ->
+               Logs.debug (fun m ->
+                   m "Processing directory: %a\n%!" Fpath.pp directory);
+               Packages.Lib.v ~libname_of_archive ~pkg_name:pkg.name
+                 ~dir:directory ~cmtidir:None ~all_lib_deps ~cmi_only_libs
+                 ~id_override:None)
+             Fpath.(Set.to_list directories)))
     |> List.flatten
   in
 

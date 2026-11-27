@@ -231,10 +231,10 @@ module Make (Syntax : SYNTAX) = struct
       let l =
         infos
         |> List.sort (fun (_, (l1, e1)) (_, (l2, e2)) ->
-               if l1 = l2 then compare e2 e1
-                 (* If two intervals open at the same time, we open
+            if l1 = l2 then compare e2 e1
+              (* If two intervals open at the same time, we open
                     first the one that closes last *)
-               else compare l1 l2)
+            else compare l1 l2)
       in
       let get_src a b =
         let in_bound x = min (max x 0) (String.length src) in
@@ -587,10 +587,10 @@ module Make (Syntax : SYNTAX) = struct
           O.sp
           ++ O.box_hv (O.keyword "with" ++ O.txt " " ++ package_subst fst)
           ++ O.list lst ~f:(fun s ->
-                 O.cut
-                 ++ (O.box_hv
-                    @@ O.txt " " ++ O.keyword "and" ++ O.txt " "
-                       ++ package_subst s))
+              O.cut
+              ++ (O.box_hv
+                 @@ O.txt " " ++ O.keyword "and" ++ O.txt " " ++ package_subst s
+                 ))
 
     and package_subst
         ((frag_typ, te) : Paths.Fragment.Type.t * Odoc_model.Lang.TypeExpr.t) :
@@ -660,18 +660,18 @@ module Make (Syntax : SYNTAX) = struct
       let rows =
         fields
         |> List.map (fun fld ->
-               let open Odoc_model.Lang.TypeDecl.Field in
-               let url, attrs, code =
-                 field fld.mutability
-                   (fld.id :> Paths.Identifier.t)
-                   fld.type_ fld.modalities
-               in
-               let anchor = Some url in
-               let doc = fld.doc.elements in
-               let rhs = Comment.to_ir doc in
-               let doc = if not (Comment.has_doc doc) then [] else rhs in
-               let markers = Syntax.Comment.markers in
-               DocumentedSrc.Documented { anchor; attrs; code; doc; markers })
+            let open Odoc_model.Lang.TypeDecl.Field in
+            let url, attrs, code =
+              field fld.mutability
+                (fld.id :> Paths.Identifier.t)
+                fld.type_ fld.modalities
+            in
+            let anchor = Some url in
+            let doc = fld.doc.elements in
+            let rhs = Comment.to_ir doc in
+            let doc = if not (Comment.has_doc doc) then [] else rhs in
+            let markers = Syntax.Comment.markers in
+            DocumentedSrc.Documented { anchor; attrs; code; doc; markers })
       in
       let content =
         O.documentedSrc (O.txt "{") @ rows @ O.documentedSrc (O.txt "}")
@@ -699,16 +699,16 @@ module Make (Syntax : SYNTAX) = struct
       let rows =
         fields
         |> List.map (fun fld ->
-               let open Odoc_model.Lang.TypeDecl.UnboxedField in
-               let url, attrs, code =
-                 field (fld.id :> Paths.Identifier.t) fld.type_
-               in
-               let anchor = Some url in
-               let doc = fld.doc.elements in
-               let rhs = Comment.to_ir doc in
-               let doc = if not (Comment.has_doc doc) then [] else rhs in
-               let markers = Syntax.Comment.markers in
-               DocumentedSrc.Documented { anchor; attrs; code; doc; markers })
+            let open Odoc_model.Lang.TypeDecl.UnboxedField in
+            let url, attrs, code =
+              field (fld.id :> Paths.Identifier.t) fld.type_
+            in
+            let anchor = Some url in
+            let doc = fld.doc.elements in
+            let rhs = Comment.to_ir doc in
+            let doc = if not (Comment.has_doc doc) then [] else rhs in
+            let markers = Syntax.Comment.markers in
+            DocumentedSrc.Documented { anchor; attrs; code; doc; markers })
       in
       let content =
         O.documentedSrc (O.txt "#{") @ rows @ O.documentedSrc (O.txt "}")
@@ -778,18 +778,16 @@ module Make (Syntax : SYNTAX) = struct
           let rows =
             cstrs
             |> List.map (fun cstr ->
-                   let open Odoc_model.Lang.TypeDecl.Constructor in
-                   let url, attrs, code =
-                     constructor
-                       (cstr.id :> Paths.Identifier.t)
-                       cstr.args cstr.res
-                   in
-                   let anchor = Some url in
-                   let doc = cstr.doc.elements in
-                   let rhs = Comment.to_ir doc in
-                   let doc = if not (Comment.has_doc doc) then [] else rhs in
-                   let markers = Syntax.Comment.markers in
-                   DocumentedSrc.Nested { anchor; attrs; code; doc; markers })
+                let open Odoc_model.Lang.TypeDecl.Constructor in
+                let url, attrs, code =
+                  constructor (cstr.id :> Paths.Identifier.t) cstr.args cstr.res
+                in
+                let anchor = Some url in
+                let doc = cstr.doc.elements in
+                let rhs = Comment.to_ir doc in
+                let doc = if not (Comment.has_doc doc) then [] else rhs in
+                let markers = Syntax.Comment.markers in
+                DocumentedSrc.Nested { anchor; attrs; code; doc; markers })
           in
           rows
 

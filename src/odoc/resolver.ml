@@ -371,10 +371,10 @@ let lookup_unit_by_id ap (id : Odoc_model.Paths.Identifier.RootModule.t) =
   let (`Root (_, name) | `LibraryParameter (_, name)) = id in
   load_units_from_name ap (Odoc_model.Names.ModuleName.to_string name)
   |> List.filter_map (function
-       | Odoc_file.Unit_content m
-         when Odoc_model.Paths.Identifier.RootModule.equal m.id id ->
-           Some m
-       | _ -> None)
+    | Odoc_file.Unit_content m
+      when Odoc_model.Paths.Identifier.RootModule.equal m.id id ->
+        Some m
+    | _ -> None)
   |> function
   | [ m ] -> Some m
   | [] | _ :: _ :: _ -> None
@@ -395,10 +395,10 @@ let lookup_impl ap target_name =
 let add_unit_to_cache u =
   let target_name =
     (match u with
-    | Odoc_file.Page_content _ -> "page-"
-    | Impl_content _ -> "impl-"
-    | Unit_content _ -> ""
-    | Asset_content _ -> "asset-")
+      | Odoc_file.Page_content _ -> "page-"
+      | Impl_content _ -> "impl-"
+      | Unit_content _ -> ""
+      | Asset_content _ -> "asset-")
     ^ unit_name u
   in
   self := Some (target_name, u)
@@ -445,10 +445,10 @@ let lookup_path ~possible_unit_names ~named_roots ~hierarchy (tag, path) :
       |> option_to_result
   | `TAbsolutePath ->
       (match path with
-      | root :: path ->
-          ref_path_to_file_path path
-          |> List.find_map (find_in_named_roots ~root)
-      | [] -> None)
+        | root :: path ->
+            ref_path_to_file_path path
+            |> List.find_map (find_in_named_roots ~root)
+        | [] -> None)
       |> option_to_result
   | `TRelativePath ->
       ref_path_to_file_path path

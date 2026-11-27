@@ -73,12 +73,12 @@ type result =
 let rec succ ~strictness t =
   match t with
   | Empty -> Is_empty
-  | All -> begin
-      match strictness with
+  | All ->
+      begin match strictness with
       | First -> Is_all
       | Gt _ -> Is_all
       | Ge _ -> Found_eq All
-    end
+      end
   | Pq pqueue -> begin
       let pqueue' =
         match strictness with
@@ -91,34 +91,34 @@ let rec succ ~strictness t =
       | Ge elt, Some e when Db.Entry.equal e elt -> Found_eq (Pq pqueue')
       | _, Some e -> Found_gt (e, Pq pqueue')
     end
-  | Union (l, r) -> begin
-      match succ ~strictness l with
+  | Union (l, r) ->
+      begin match succ ~strictness l with
       | Is_empty -> succ ~strictness r
       | Is_all -> failwith "union all"
       | Found_eq l -> Found_eq (Union (l, r))
-      | Found_gt (elt_l, l') -> begin
-          match succ ~strictness r with
+      | Found_gt (elt_l, l') ->
+          begin match succ ~strictness r with
           | Is_empty -> Found_gt (elt_l, l')
           | Is_all -> failwith "union all"
           | Found_eq r' -> Found_eq (Union (l', r'))
           | Found_gt (elt_r, r') when Db.Entry.compare elt_l elt_r <= 0 ->
               Found_gt (elt_l, Union (l', r'))
           | Found_gt (elt_r, r') -> Found_gt (elt_r, Union (l', r'))
-        end
-    end
-  | Inter (l, r) -> begin
-      match succ ~strictness l with
+          end
+      end
+  | Inter (l, r) ->
+      begin match succ ~strictness l with
       | Is_empty -> Is_empty
       | Is_all -> failwith "inter all"
-      | Found_eq l' -> begin
-          match succ ~strictness r with
+      | Found_eq l' ->
+          begin match succ ~strictness r with
           | Is_empty -> Is_empty
           | Is_all -> failwith "inter all"
           | Found_eq r' -> Found_eq (Inter (l', r'))
           | Found_gt (elt, r') -> Found_gt (elt, Inter (l', r'))
-        end
+          end
       | Found_gt (elt, l') -> Found_gt (elt, Inter (l', r))
-    end
+      end
 
 let rec succ_loop ?(count = 0) ~strictness t =
   match strictness, succ ~strictness t with

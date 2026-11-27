@@ -174,10 +174,9 @@ let make_leaf ~prev_leaf ~buffer ~doc str_start =
 let set_suffix_link ~prev ~depth node =
   match prev with
   | Some (prev, prev_depth) when depth = prev_depth ->
-      begin
-        match prev.suffix_link with
-        | None -> prev.suffix_link <- Some node
-        | Some node' -> assert (node == node')
+      begin match prev.suffix_link with
+      | None -> prev.suffix_link <- Some node
+      | Some node' -> assert (node == node')
       end ;
       None
   | _ -> prev
@@ -188,16 +187,14 @@ let add_document trie doc =
     if node == root
     then None
     else begin
-      begin
-        match prev_leaf with
-        | None -> ()
-        | Some (prev_leaf, prev_depth, _) ->
-            assert (prev_depth = depth) ;
-            begin
-              match prev_leaf.suffix_link with
-              | None -> prev_leaf.suffix_link <- Some node
-              | Some node' -> assert (node' == node)
-            end
+      begin match prev_leaf with
+      | None -> ()
+      | Some (prev_leaf, prev_depth, _) ->
+          assert (prev_depth = depth) ;
+          begin match prev_leaf.suffix_link with
+          | None -> prev_leaf.suffix_link <- Some node
+          | Some node' -> assert (node' == node)
+          end
       end ;
       Some (node, depth - 1)
     end
@@ -227,8 +224,8 @@ let add_document trie doc =
             in
             follow_suffix ~prev ~prev_leaf ~parent:node ~depth ~i
           end
-      | Char chr -> begin
-          match Char_map.find chr node.children with
+      | Char chr ->
+          begin match Char_map.find chr node.children with
           | child ->
               assert (depth >= 0) ;
               assert (i - depth >= 0) ;
@@ -264,7 +261,7 @@ let add_document trie doc =
                 | Some (t, depth) -> Some (t, depth, Terminals.empty)
               in
               follow_suffix ~prev ~prev_leaf ~parent:node ~depth ~i
-        end)
+          end)
   and add_leaf ~prev_leaf ~node ~child ~depth ~i ~len =
     match Doc.get doc i with
     | Terminal doc_uid ->
@@ -283,14 +280,13 @@ let add_document trie doc =
             | Some (t, depth) -> Some (t, depth, prev_terminals)
           in
           assert (Doc.length doc - i = 1) ;
-          begin
-            match child.suffix_link with
-            | None ->
-                let i, depth = i - len, depth - len in
-                follow_suffix ~prev:None ~prev_leaf ~parent:node ~depth ~i
-            | Some next_child ->
-                let depth = depth - 1 in
-                go ~prev:None ~prev_leaf:None ~depth next_child i
+          begin match child.suffix_link with
+          | None ->
+              let i, depth = i - len, depth - len in
+              follow_suffix ~prev:None ~prev_leaf ~parent:node ~depth ~i
+          | Some next_child ->
+              let depth = depth - 1 in
+              go ~prev:None ~prev_leaf:None ~depth next_child i
           end
         end
     | Char new_chr ->

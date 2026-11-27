@@ -45,12 +45,12 @@ let insert_sort x lst =
       let rec insert lst =
         match lst with
         | [] -> [ x ]
-        | y :: ys -> begin
-            match minimum y with
+        | y :: ys ->
+            begin match minimum y with
             | None -> insert ys
             | Some min_y when Entry.compare min_elt min_y <= 0 -> x :: lst
             | _ -> y :: insert ys
-          end
+            end
       in
       insert lst
 
@@ -64,11 +64,11 @@ let rec union_sorted lst =
   match lst with
   | [] -> Empty
   | [ t ] -> t
-  | x :: xs -> begin
-      match minimum x with
+  | x :: xs ->
+      begin match minimum x with
       | None -> union_sorted xs
       | Some min_elt -> Union (min_elt, lst)
-    end
+      end
 
 let expand_automata ~min_elt ({ String_automata.t; _ } as automata) =
   match t.terminals with

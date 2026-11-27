@@ -60,11 +60,11 @@ let lcp i_str i j_str j j_len =
 let rec find ~str node pattern i =
   if i >= String.length pattern
   then Some node
-  else begin
-    match array_find ~str pattern.[i] node.children with
+  else
+    begin match array_find ~str pattern.[i] node.children with
     | None -> None
     | Some child -> find_lcp ~str child pattern (i + 1)
-  end
+    end
 
 and find_lcp ~str child pattern i =
   let n = lcp pattern i str child.start child.len in
@@ -97,23 +97,23 @@ let rec find_skip ~spaces t pattern yield =
       then ()
       else find_skip ~spaces { t with t = advance t.t } pattern yield
     end
-    else begin
-      match node.children with
+    else
+      begin match node.children with
       | None -> ()
       | Some children ->
           Array.iter
             (fun child -> find_skip ~spaces { t with t = stepback child } pattern yield)
             children
-    end
+      end
   in
   if spaces = 0
   then skip ()
   else if spaces = 1 && pattern = Type_polarity.poly
-  then begin
-    match find t pattern with
+  then
+    begin match find t pattern with
     | None -> ()
     | Some here -> yield here
-  end
+    end
   else begin
     skip () ;
     match find t pattern with
@@ -128,11 +128,11 @@ let find_star t pattern yield =
   in
   match String.split_on_char ' ' pattern with
   | [] -> ()
-  | p :: ps -> begin
-      match find t p with
+  | p :: ps ->
+      begin match find t p with
       | None -> ()
       | Some t -> go t ps
-    end
+      end
 
 let find_star t pattern =
   let found = ref [] in

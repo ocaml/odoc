@@ -114,12 +114,12 @@ let search message db =
               let prefix_name, name =
                 match kind with
                 | Db.Entry.Kind.Doc -> None, None
-                | _ -> begin
-                    match List.rev (String.split_on_char '.' name) with
+                | _ ->
+                    begin match List.rev (String.split_on_char '.' name) with
                     | [] -> None, None
                     | [ hd ] -> None, Some hd
                     | hd :: tl -> Some (String.concat "." (List.rev tl)), Some hd
-                  end
+                    end
               in
               let kind = string_of_kind kind in
               let html =
