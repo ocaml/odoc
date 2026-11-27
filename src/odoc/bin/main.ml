@@ -122,22 +122,26 @@ let libraries_of_lib_roots lib_roots =
              if List.mem name ~set:acc then acc else acc @ [ name ])
            ~init:[] lib_roots)
 
-(** The root of [l] whose directory holds [o], with its directory. *)
+(** The root of [l] whose directory holds [o], with its directory. When the
+    directories overlap, as [--custom-layout] allows, it is the root whose
+    directory holds [o] most closely, so that a library below another's
+    directory owns the files below its own. Of roots with the same directory,
+    the first. *)
 let find_root_of_input l o =
-  let l =
-    List.map
-      ~f:(fun (x, p) ->
-        (x, p, p |> Fs.Directory.to_fpath |> Antichain.absolute_normalization))
-      l
-  in
   let o = Antichain.absolute_normalization o in
-  match l with
-  | [] -> None
-  | _ ->
-      Odoc_utils.List.find_map
-        (fun (root, orig_path, norm_path) ->
-          if Fpath.is_prefix norm_path o then Some (root, orig_path) else None)
-        l
+  let depth p = List.length (Fpath.segs p) in
+  List.fold_left
+    ~f:(fun best (root, orig_path) ->
+      let p =
+        orig_path |> Fs.Directory.to_fpath |> Antichain.absolute_normalization
+      in
+      if not (Fpath.is_prefix p o) then best
+      else
+        match best with
+        | Some (_, _, d) when d >= depth p -> best
+        | _ -> Some (root, orig_path, depth p))
+    ~init:None l
+  |> Option.map (fun (root, orig_path, _) -> (root, orig_path))
 
 let docs = "ARGUMENTS"
 

@@ -564,7 +564,7 @@ refers to.
     that library, so they resolve there. A tag that names a module of
     another library, such as one that depends on [lib(u)], finds no unit in
     [lib(u)] and follows S1. [odoc compile] knows [lib(u)] from the [-L]
-    whose directory holds its output. This exception will be removed when
+    whose directory holds its output most closely. This exception will be removed when
     dune writes the library.}
 {li {b S3 (hidden).} Hidden units, such as [Foo__Bar], are not linked to,
     and do not appear in the search index or the sidebar.}}

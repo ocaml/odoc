@@ -25,6 +25,4 @@ below the current library's directory, should resolve to [p.sub]'s
 for below [h/p].
 
   $ odoc link --custom-layout -L p:h/p -L p.sub:h/p/sub h/p/sub/sub.odoc
-  File "sub.mli", line 1, characters 8-18:
-  Warning: Failed to resolve reference //Other Path '//Other' not found
   $ odoc link --custom-layout -L p.sub:h/p/sub -L p:h/p h/p/sub/sub.odoc
